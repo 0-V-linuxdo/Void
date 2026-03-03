@@ -141,7 +141,7 @@ function RateLimitIndicator({ iconOnly }: ChatBarButtonRenderProps) {
     const streaming = ChatPageStore.useChatPageStore(s => !!s.streamedMessageId);
     const modelByMode = ModelsStore.useModelsStore(s => s.modelByMode);
 
-    const requestKind = ReasoningModeUtils.reasoningModeToRequestKind?.(reasoningMode) ?? "DEFAULT" as RequestKind;
+    const requestKind = ReasoningModeUtils.reasoningModeToRequestKind?.(reasoningMode) ?? "DEFAULT";
     const fastId = modelByMode?.fast?.modelId;
     const expertId = modelByMode?.expert?.modelId;
     const singleId = modelMode !== "auto" ? modelByMode?.[modelMode]?.modelId : undefined;

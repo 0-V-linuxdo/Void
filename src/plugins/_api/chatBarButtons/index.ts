@@ -7,12 +7,13 @@
 import { VoidChatBarButtons } from "@api/ChatBarButtons";
 import { ModalContainer } from "@api/Modals";
 import { createElement, Fragment } from "@turbopack/common/react";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "ChatBarButtonAPI",
     description: "Adds buttons to the chat input bar.",
-    authors: ["Prism"],
+    authors: [Devs.Prism],
     required: true,
     hidden: true,
 

@@ -6,7 +6,7 @@
 
 import type { ContextMenuLocationMap } from "@api/ContextMenus";
 import { DropdownMenuItem } from "@components";
-import type { GrokConversation, GrokResponse } from "@grok-types";
+import type { GrokResponse } from "@grok-types";
 import { ApiClients, FileUtils } from "@turbopack/common";
 import { React } from "@turbopack/common/react";
 import { ConversationStore } from "@turbopack/common/stores";
@@ -37,7 +37,7 @@ async function exportChat(conversationId: string) {
     const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
     if (!responses?.length) return;
 
-    const conversation: GrokConversation | undefined = ConversationStore.useConversationStore.getState().byId[conversationId];
+    const conversation = ConversationStore.useConversationStore.getState().byId[conversationId];
     const title = conversation?.title ?? "Untitled Chat";
 
     await FileUtils.downloadBlob(

@@ -19,8 +19,11 @@
  */
 
 import { Devs } from "@utils/constants";
+import { Logger } from "@utils/Logger";
 import { fetchExternal } from "@utils/misc";
 import definePlugin from "@utils/types";
+
+const logger = new Logger("Oneko");
 
 const ONEKO_SCRIPT = "https://raw.githubusercontent.com/adryd325/oneko.js/c4ee66353b11a44e4a5b7e914a81f8d33111555e/oneko.js";
 const ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
@@ -49,7 +52,8 @@ export default definePlugin({
                     el.remove();
                     URL.revokeObjectURL(el.src);
                 });
-            });
+            })
+            .catch(e => logger.error("Failed to load oneko script", e));
     },
 
     stop() {

@@ -14,6 +14,7 @@ import { BracesIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/i
 import { CustomCSSTab, loadSavedCSS, PluginsTab, ThemesTab } from "@components/settings/tabs";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import { createElement, Fragment, React } from "@turbopack/common/react";
+import { Devs } from "@utils/constants";
 import { classes, classNameFactory, registerStyle } from "@utils/css";
 import { useEventSubscription, useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
@@ -127,7 +128,7 @@ function VoidPanels({ jsx, activeTab, Wrapper }: { jsx: typeof createElement; ac
 export default definePlugin({
     name: "Settings",
     description: "Adds Void settings UI.",
-    authors: ["Prism"],
+    authors: [Devs.Prism],
     required: true,
     settings,
 

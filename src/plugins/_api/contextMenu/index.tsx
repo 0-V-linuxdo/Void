@@ -6,12 +6,13 @@
 
 import { VoidContextMenuItems } from "@api/ContextMenus";
 import { createElement } from "@turbopack/common/react";
+import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "ContextMenuAPI",
     description: "Adds items to context menus.",
-    authors: ["Prism"],
+    authors: [Devs.Prism],
     required: true,
     hidden: true,
 

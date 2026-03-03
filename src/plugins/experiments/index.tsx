@@ -147,7 +147,7 @@ function ExperimentsTab() {
         if (filter === "enabled") return enabled;
         if (filter === "disabled") return !enabled;
         if (filter === "new") return isNewFlag(k);
-        if (filter === "modified") return override !== undefined;
+        return override !== undefined;
     }, [filter, config, overrides]);
 
     const prefiltered = useMemo(() => booleanKeys.filter(filterFn), [booleanKeys, filterFn]);
