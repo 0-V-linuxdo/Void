@@ -9,7 +9,7 @@ import { DropdownMenuItem } from "@components";
 import type { GrokResponse } from "@grok-types";
 import { ApiClients, FileUtils } from "@turbopack/common";
 import { React } from "@turbopack/common/react";
-import { ConversationStore } from "@turbopack/common/stores";
+import { ChatPageStore, ConversationStore } from "@turbopack/common/stores";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { sanitizeFilename } from "@utils/misc";
@@ -47,8 +47,10 @@ async function exportChat(conversationId: string) {
 }
 
 function ExportItem({ conversationId }: ContextMenuLocationMap["conversation"]) {
+    const streaming = ChatPageStore.useChatPageStore(s => s.conversationId === conversationId && !!s.streamedMessageId);
+
     return (
-        <DropdownMenuItem onSelect={() => exportChat(conversationId)}>
+        <DropdownMenuItem onSelect={() => exportChat(conversationId)} disabled={streaming}>
             <DownloadIcon size={16} className="me-2" />
             Export
         </DropdownMenuItem>
