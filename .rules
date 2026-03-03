@@ -34,6 +34,19 @@ rules:
     enums: const enum for fixed sets (zero runtime cost, inlined). as const objects when you need runtime key iteration or computed values
     typing: proper type > any. Prefer any over unknown when something cant be properly typed, unknown is annoying to handle. Use any for turbopack finders/module exports, Proxy handlers, catch params, untyped callbacks, JSON parse, anything that would need verbose casting. Only use unknown when you genuinely need type narrowing guards
     grokTypes: NEVER use any for Grok objects when types exist in packages/grok-types/, import proper types
+    grokEnums: |
+      ALWAYS use enums from packages/grok-types/enums/ instead of raw string/number literals for Grok values.
+      Key enums: ResponseSender ("human"/"assistant"), ResponseState ("streaming"/"closed"/"error"),
+      ConversationMode ("chat"/"deep_search"), ConversationState ("open"/"closed"),
+      ModelId, ModelMode ("auto"/"fast"/"expert"), ReasoningMode, RequestKind ("DEFAULT"/"REASONING"/"DEEPSEARCH"),
+      SubscriptionTier, SubscriptionTierLevel, SubscriptionType ("MONTHLY"/"YEARLY"),
+      MediaPostType ("MEDIA_POST_TYPE_IMAGE"/"MEDIA_POST_TYPE_VIDEO"), ImagineMode, VideoResolution,
+      FeatureStoreStatus ("idle"/"loading"/"ready"/"error"), PlaybackStatus, GrokPage,
+      TaskState ("active"/"completed"/"archived"), TaskCadence, TaskResultStatus,
+      OrganizationType (0-4), SignInMethod (0-5), TeamMemberRole (0-2), UserSegment,
+      ConnectorType (0-10), Theme ("light"/"dark"/"system"), SettingsDialogTab, VoiceConnectionStatus, VoiceActivityStatus.
+      String literals in patch find/match/replace are EXEMPT (patches must be hardcoded).
+      When a store field or function param accepts a Grok enum value, type it with the enum, not raw string/number
   react:
     errorBoundary: wrap complex components with ErrorBoundary.wrap(Component, { noop: true })
     nullNotUndefined: return null for conditional rendering not undefined
@@ -58,6 +71,7 @@ rules:
     classConcat: "`${a} ${b}`" ⟹ classes(a, b) from @utils/css
     perFileFinders: findByPropsLazy for common modules ⟹ import from @turbopack/common/*
     perFileStores: findByPropsLazy("useXxxStore") ⟹ typed import from @turbopack/common/stores
+    rawGrokEnums: raw string/number literals for Grok enum values ⟹ import type from @grok-types/enums
     perFileUtils: findByPropsLazy for common utils (router, i18n, zustand, toaster, classnames) ⟹ import from @turbopack/common/utils
     nullGuards: ⟹ isTruthy, isNonNullish from @utils/guards
     objectGuards: typeof x === "object" ⟹ isObject from @utils/guards
@@ -94,6 +108,12 @@ structure:
   addingGrokComponent: 1. type in packages/grok-types/components.d.ts → 2. LazyComponent wrapper in common/components.ts → 3. re-exported via wildcard from common/index.ts
   addingGrokUtil: typed finder in common/utils.ts → re-exported via wildcard from common/index.ts
   grokTypes: packages/grok-types/ — TypeScript type definitions for Grok runtime (stores, components, enums). No runtime code
+  grokEnums: |
+    packages/grok-types/enums/ — type-only string/number literal unions for Grok constants.
+    All have `(string & {})` or similar escape hatch for forward compat.
+    Files: artifacts, connectors, conversation, feature, files, media, models,
+    notifications, report, routing, settings, subscription, tasks, tools, tts, upsell, user, voice.
+    Barrel: packages/grok-types/enums/index.ts re-exports all
   plugins: |
     src/plugins/<name>/index.ts(x) — plugin entry, uses definePlugin
     Folder suffix conventions: .dev (dev builds only), .chrome (Chromium only, hidden otherwise)
@@ -143,6 +163,10 @@ finding:
   core: ALWAYS verify finders match exactly 1 module via MCP. Use 2+ props. NEVER single-char/common prop names. Use @turbopack/common/* over per-file findByPropsLazy
   stores: ALWAYS import from @turbopack/common/stores. NEVER per-plugin findByPropsLazy("useXxxStore"). If store missing, add it there first
   storeTyping: 1. interfaces in packages/grok-types/stores/ → 2. enums in packages/grok-types/enums/ → 3. export from barrel → 4. typed finder in common/stores.ts
+  storeDiscovery: |
+    getAllStores() scans module cache for all Zustand stores (~47). findStore(name) uses cache-first lookup.
+    isZustandStore(val) duck-types by checking getState/setState/subscribe.
+    All available via window.Void.getAllStores(), window.Void.findStore(), window.Void.isZustandStore()
 
 pluginInterop:
   checkEnabled: isPluginEnabled(name) from @api/PluginManager
