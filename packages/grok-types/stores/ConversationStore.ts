@@ -79,6 +79,32 @@ export interface ConversationStoreState {
     /** Clear all cached data (logout/reset). */
     clear: () => void;
 
+    /** Store an in-flight fetch promise for a conversation. */
+    idsertConversationPromise: (id: string, promise: Promise<any>) => void;
+    /** Remove an in-flight fetch promise for a conversation. */
+    removeConversationPromise: (id: string) => void;
+    /** Replace the entire promiseById map. */
+    setPromiseById: (promiseById: Record<string, Promise<any>>) => void;
+    /** Store an abort controller for a conversation request. */
+    idsertAbortControllerById: (id: string, controller: AbortController) => void;
+    /** Remove an abort controller for a conversation request. */
+    removeAbortControllerById: (id: string) => void;
+    /** Replace the entire listPromiseByQuery map. */
+    setListPromiseByQuery: (promises: Record<string, Promise<any>>) => void;
+    /** Store a list fetch promise for a query string. */
+    idsertListPromiseByQuery: (query: string, promise: Promise<any>) => void;
+    /** Store a next-page pagination token for a query string. */
+    idsertNextPageTokenByQuery: (query: string, token: string) => void;
+    /** Insert or update a conversation with workspace context. */
+    upsertConversationWithWorkspaces: (conversation: GrokConversation) => void;
+    /** Store an in-flight workspace conversation fetch promise. */
+    idsertConversationPromiseWithWorkspaces: (id: string, promise: Promise<any>) => void;
+    /** Remove an in-flight workspace conversation fetch promise. */
+    removeConversationPromiseWithWorkspaces: (id: string) => void;
+    /** Replace the entire byIdWithWorkspaces cache. */
+    setByIdWithWorkspaces: (byId: Record<string, GrokConversation>) => void;
+    /** Replace the entire promiseByIdWithWorkspaces map. */
+    setPromiseByIdWithWorkspaces: (promises: Record<string, Promise<any>>) => void;
 
     /** Upsert a conversation and update the runtime cache. */
     upsertAndCacheConversation: (conversation: GrokConversation, cache: any) => void;

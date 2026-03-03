@@ -73,6 +73,8 @@ export interface FilesPageStoreState {
 	isLoadingOwnAssets: boolean;
 	/** Whether the file explorer sidebar is collapsed. */
 	isFileExplorerCollapsed: boolean;
+	/** Array of cleanup/unsubscribe functions for store teardown. */
+	dispose: (() => void)[];
 
 	/** Reset the store to initial state. */
 	clear: () => void;
@@ -122,6 +124,23 @@ export interface FilesPageStoreState {
 	getContent: (assetId: string, type: "binary" | "string") => string | ArrayBuffer | null;
 	/** Clean up store subscriptions. */
 	destroy: () => void;
+
+	/** Internal: debounced setter for the search query. */
+	_setQueryDebounced: () => void;
+	/** Internal: insert or update a single asset in the cache. */
+	_upsertAsset: (asset: any) => void;
+	/** Internal: add search highlight matches for a query. */
+	_addHighlights: (query: string, highlights: any) => void;
+	/** Internal: check whether a new asset should appear in the current filtered list. */
+	_shouldShowNewAssetInList: (asset: any) => boolean;
+	/** Internal: load a page of assets from the API. */
+	_loadPage: (options?: any) => Promise<void>;
+	/** Internal: create a new asset with the given name. */
+	_createAsset: (name: string, callback?: Function) => void;
+	/** Internal: debounced text content update for the active asset. */
+	_debouncedUpdateAssetContent: () => void;
+	/** Internal: debounced binary content update for the active asset. */
+	_debouncedUpdateBinaryAssetContent: () => void;
 }
 
 /** Module exports for the FilesPage store. */

@@ -32,6 +32,8 @@ export interface ChatPageStoreState {
     reasoningMode: ReasoningMode;
     /** Model variant mode from the model picker (e.g. "expert", "fast", "auto"). */
     modelMode: ModelMode;
+    /** Whether the 4/20 special model mode is enabled. */
+    enable420: boolean;
 
 
     /** Whether the user is rate-limited. `false` when not limited, or a string error message. */
@@ -136,6 +138,8 @@ export interface ChatPageStoreState {
     exitVoiceModePromise: Promise<void> | null;
     /** Optimistic asset IDs for voice conversation attachments. */
     optimisticVoiceConversationAssetIds: string[];
+    /** Whether an active voice response was interrupted by the user. */
+    voiceInterruptedActiveResponse: boolean;
     /** Whether to show the voice session rating survey. */
     showVoiceRatingSurvey: boolean;
     /** Session data collected for the voice rating survey. */
@@ -151,6 +155,8 @@ export interface ChatPageStoreState {
     setSidePanelContent: (content: any) => void;
     closeSidePanel: () => void;
     getSidePanelResponseId: () => string | undefined;
+    /** Extract the response ID from a side panel content object, if present. */
+    _extractResponseIdFromContent: (content: any) => string | undefined;
     setSidePanelStack: (stack: any[]) => void;
     updateSidePanelResponseId: (id: string | undefined, content: any) => void;
     toggleSidePanelContent: (content: any) => void;
@@ -171,9 +177,11 @@ export interface ChatPageStoreState {
     setSelectedPersonalityId: (id: string | undefined) => void;
     setCustomPersonality: (personality: any) => void;
     setQuotedText: (text: string | undefined) => void;
+    idsetQueryByConversationId: (conversationId: string, query: string) => void;
     setQueryBarExpanded: (expanded: boolean) => void;
     setIsTypingDebounce: (value: boolean) => void;
     setIsDeeperSearchSelected: (value: boolean) => void;
+    setEnable420: (value: boolean) => void;
     setShowStreamingIndicator: (value: boolean) => void;
     setRequestShareDialogOpen: (open: boolean) => void;
     setSideBySideConfig: (config: any) => void;
@@ -200,6 +208,7 @@ export interface ChatPageStoreState {
     setVoiceModeTimeoutId: (id: number | null) => void;
     setCurrentVoiceSessionId: (id: string | null) => void;
     setVoiceSessionConversationId: (id: string | null) => void;
+    setVoiceInterruptedActiveResponse: (value: boolean) => void;
     setShowVoiceRatingSurvey: (show: boolean) => void;
     setVoiceRatingSessionData: (data: any) => void;
     setOptimisticVoiceConversationAssetIds: (ids: string[]) => void;
@@ -237,6 +246,40 @@ export interface ChatPageStoreState {
     sendVoiceAttachments: (...args: any[]) => void;
     /** Handle a voice connection ping (keepalive). */
     handleVoiceConnectionPing: () => void;
+    /** Optimistically update a conversation title before server confirmation. */
+    optimisticSetConversationTitle: (conversationId: string, title: string) => void;
+    /** Append streaming text to the current voice response transcript. */
+    appendVoiceStreamingText: (text: any) => void;
+    /** Handle output data from Grok during a voice session. */
+    handleVoiceGrokOutput: (output: any) => void;
+    /** Handle a search result returned during a voice response. */
+    handleVoiceResponseSearchResult: (result: any) => void;
+
+    /** Handle a new conversation created during voice mode. */
+    handleConversationCreated: (event: any) => void;
+    /** Handle a new conversation item created during voice mode. */
+    handleConversationItemCreated: (event: any) => void;
+    /** Handle a new message conversation item created during voice mode. */
+    handleMessageConversationItemCreated: (event: any) => void;
+    /** Handle a new attachment conversation item created during voice mode. */
+    handleAttachmentConversationItemCreated: (event: any) => void;
+    /** Handle completion of a conversation item transcription. */
+    handleConversationItemTranscriptionCompleted: (event: any) => void;
+    /** Handle creation of an assistant voice response. */
+    handleAssistantVoiceResponseCreated: (event: any) => void;
+    /** Handle a transcript delta from the assistant voice response. */
+    handleAssistantVoiceResponseTranscriptDelta: (event: any) => void;
+    /** Handle a text delta from the assistant voice response. */
+    handleAssistantVoiceResponseTextDelta: (event: any) => void;
+    /** Handle completion of assistant voice response text. */
+    handleAssistantVoiceResponseTextDone: (event: any) => void;
+    /** Handle a new output item added to the assistant voice response. */
+    handleAssistantVoiceResponseOutputItemAdded: (event: any) => void;
+    /** Handle a new content part added to the assistant voice response. */
+    handleAssistantVoiceResponseContentPartAdded: (event: any) => void;
+    /** Handle completion of the assistant voice response transcript. */
+    handleAssistantVoiceResponseTranscriptDone: (event: any) => void;
+
     /** Check if microphone permission is already granted. */
     checkMicrophonePermission: () => Promise<boolean>;
     /** Request microphone permission from the browser. */

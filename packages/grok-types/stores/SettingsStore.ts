@@ -29,6 +29,8 @@ export interface UserSettings {
     allowCompanionNotifications: boolean;
     /** Automatically share conversations when a share link is generated. */
     allowAutoShare: boolean;
+    /** Custom agent behavior configurations. */
+    agentCustomizations: any[];
 }
 
 /**

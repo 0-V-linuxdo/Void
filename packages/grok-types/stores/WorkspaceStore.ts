@@ -44,6 +44,8 @@ export interface WorkspaceStoreState {
     sharedWithMeList: any[];
     /** Loading status of the shared-with-me list. */
     sharedWithMeListStatus: LoadingStatus;
+    /** Snapshot of the initial state used for reset. */
+    initialState: WorkspaceStoreState;
 
     /** Reset the store to initial state. */
     clear: () => void;

@@ -12,6 +12,8 @@ export interface WorkspaceCollectionsStoreState {
     workspaceIdToCollectionsState: Record<string, any>;
     /** Whether collections are currently being loaded. */
     isLoadingCollections: boolean;
+    /** Snapshot of the initial state used for reset. */
+    initialState: WorkspaceCollectionsStoreState;
 
     /** Reset the store to initial state. */
     clear: () => void;

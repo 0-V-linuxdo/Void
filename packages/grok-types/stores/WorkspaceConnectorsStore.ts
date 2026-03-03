@@ -12,6 +12,8 @@ export interface WorkspaceConnectorsStoreState {
     workspaceIdToConnectorsState: Record<string, any>;
     /** Whether connectors are currently being loaded. */
     isLoadingConnectors: boolean;
+    /** Snapshot of the initial state used for reset. */
+    initialState: WorkspaceConnectorsStoreState;
 
     /** Reset the store to initial state. */
     clear: () => void;

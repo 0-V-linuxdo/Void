@@ -32,7 +32,7 @@ export type ImagineMode = "image" | "video" | (string & {});
 export type ImagineActionMode = "videoGen" | (string & {});
 
 /** Media player tab selection. */
-export type MediaPlayerTab = "video" | (string & {});
+export type MediaPlayerTab = "image" | "video" | (string & {});
 
 /** Video resolution option. */
 export type VideoResolution = "480p" | "720p" | (string & {});

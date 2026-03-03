@@ -204,10 +204,16 @@ export interface MediaStoreState {
 	errorClearTimeout: ReturnType<typeof setTimeout> | null;
 	/** Timeout handle for clearing resolution fallback. */
 	resolution720pFallbackClearTimeout: ReturnType<typeof setTimeout> | null;
+	/** General error state for non-specific failures. */
+	generalError: any;
+	/** Timeout handle for clearing general error state. */
+	generalErrorTimeout: ReturnType<typeof setTimeout> | null;
 	/** Disliked media IDs. */
 	dislikedIds: Record<string, boolean>;
 	/** Liked media IDs. */
 	likedIds: Record<string, boolean>;
+	/** Pending unlike action awaiting commit or undo. */
+	_pendingUnlike: any;
 	/** In-flight video generation requests keyed by image ID. */
 	inflightGenerateVideoForImage: Record<string, any>;
 	/** Canceled in-flight video generation IDs. */
@@ -226,6 +232,8 @@ export interface MediaStoreState {
 	sideBySideImagePromptKey: string | null;
 	/** Currently active prompt key. */
 	activePromptKey: string | null;
+	/** Internal side-by-side insertion index for image placement. */
+	_sideBySideInsertionIndex: number | null;
 	/** Video IDs inhibited from side-by-side display. */
 	inhibitedVideoIds: Record<string, boolean>;
 	/** Image IDs inhibited from side-by-side display. */
@@ -250,12 +258,14 @@ export interface MediaStoreState {
 	optimisticToRealIdMap: Record<string, string>;
 	/** In-flight media URL imports. */
 	inflightMediaUrlImports: Record<string, any>;
-	/** Last viewed media ID per container. */
-	lastViewedMediaIdByContainerId: Record<string, string>;
+	/** Last viewed media ID per container post. */
+	lastViewedMediaIdByContainerPostId: Record<string, string>;
 	/** Last generated video ID. */
 	lastGeneratedVideoId: string | null;
 	/** Recently edited image IDs. */
 	lastEditedImageIds: string[];
+	/** Current authenticated user ID. */
+	currentUserId: string | null;
 	/** Whether the user is logged in. */
 	loggedIn: boolean;
 	/** Whether login is being requested. */
@@ -264,6 +274,8 @@ export interface MediaStoreState {
 	pendingOobSideBySideIds: string[];
 	/** Whether out-of-band side-by-side images are allowed. */
 	allowOutOfBandSideBySideImage: boolean;
+	/** Source-specific append functions for media posts, keyed by MediaPostSource. */
+	appendMediaPostsBySource: Record<string, Function>;
 
 	setActivePromptKey: (key: string | null) => void;
 	setSideBySideInsertionIndex: (index: number | null) => void;
@@ -278,9 +290,10 @@ export interface MediaStoreState {
 	clearFeedbackEligibility: () => void;
 	setPendingImport: (data: any) => void;
 	clearPendingImport: () => void;
-	setLoggedIn: (loggedIn: boolean) => void;
+	setLoggedIn: (loggedIn: boolean, userId: string | null) => void;
 	setRequestingLogin: (requesting: boolean) => void;
 	setLastUsedPromptById: (id: string, prompt: string) => void;
+	clearLastUsedPromptById: (id: string) => void;
 	setDisliked: (id: string, value?: boolean) => void;
 	setLiked: (id: string, value?: boolean) => void;
 	setImageDimensions: (containerId: string, itemId: string, width: number, height: number) => void;
@@ -320,11 +333,19 @@ export interface MediaStoreState {
 	upscaleVideo: (containerId: string, videoId: string) => Promise<any>;
 
 	/** Insert or update a media post. */
-	upsertMediaPost: (post: MediaItem, isNested?: boolean) => void;
+	upsertMediaPost: (post: MediaItem) => void;
 	/** Remove a media post by ID. */
 	removeMediaPost: (id: string) => void;
 	/** Update child media post items (videos/images). */
 	upsertChildMediaPost: (post: MediaItem) => void;
+	/** Insert or update a list fetch promise for a query. */
+	idsertListPromiseByQuery: (query: string, promise: Promise<any>) => void;
+	/** Insert or update a media fetch promise by ID. */
+	idsertPromiseById: (id: string, promise: Promise<any>) => void;
+	/** Insert or update a next page cursor for a query. */
+	idsertNextPageCursorByQuery: (query: string, cursor: string) => void;
+	/** Insert or update an image stream by ID. */
+	upsertImageStreamById: (data: any) => void;
 	/** Fetch a paginated list of media posts. */
 	fetchListMediaPosts: (filter: any) => Promise<any>;
 	/** Fetch a single media post by ID. */
@@ -343,6 +364,10 @@ export interface MediaStoreState {
 	like: (id: string) => Promise<void>;
 	/** Unlike a media post. */
 	unlike: (id: string) => Promise<void>;
+	/** Undo a pending unlike before it is committed. */
+	undoUnlike: () => void;
+	/** Commit the pending unlike action. */
+	commitPendingUnlike: () => void;
 	/** Delete a media post. */
 	deletePost: (id: string, containerId: string) => Promise<void>;
 
@@ -400,8 +425,8 @@ export interface MediaStoreState {
 
 	/** Switch the imagine context. */
 	switchContext: (context: string) => void;
-	/** Get the container root for a media ID. */
-	getContainerRoot: (id: string) => string | undefined;
+	/** Get the container post ID for a media ID. */
+	getContainerPostId: (id: string) => string | undefined;
 
 	/** Push a section to a post page. */
 	pushPostPageSection: (id: string, section: any) => void;
@@ -416,6 +441,25 @@ export interface MediaStoreState {
 	getOrCreateInflightMediaUrlImport: (url: string) => { optimisticId: string; isNew: boolean };
 	/** Clear an inflight media URL import. */
 	clearInflightMediaUrlImport: (url: string) => void;
+
+	/** Backfill video input media items for a container. */
+	_backfillVideoInputMediaItems: (containerId: string, items: any) => void;
+	/** Show a rate limited toast notification. */
+	_showRateLimitedToast: () => void;
+	/** Show a server error toast notification. */
+	_showServerErrorToast: () => void;
+	/** Show a toast when 720p resolution falls back to 480p. */
+	_showResolution720pFallbackToast: () => void;
+	/** Try to parse rate limit JSON from a response. */
+	_tryRateLimitJson: (response: any) => any;
+	/** Set rate limited peak hours state with optional timeout. */
+	_setRateLimitedPeakHours: (hours: string | null, timeout?: number) => void;
+	/** Show a general error toast notification. */
+	_showGeneralErrorToast: (error: any) => void;
+	/** Run the video generation request for an image. */
+	_runGenerateVideoForImage: (params: any) => Promise<any>;
+	/** Fetch image edits (internal, single attempt). */
+	_fetchGenerateImageEdits: (params: any) => Promise<any>;
 }
 
 /**
@@ -554,6 +598,8 @@ export interface ScrollStoreState {
 	getPositioner: (key: string, itemCount: number) => any;
 	/** Set the positioner for a layout key with optional item count. */
 	setPositioner: (key: string, positioner: any, itemCount?: number) => void;
+	/** Invalidate all cached positioners, forcing recalculation on next access. */
+	invalidatePositioners: () => void;
 	/** Reset all scroll positions and positioners. */
 	reset: () => void;
 }
