@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/github/license/imjustprism/Void?style=flat-square)](LICENSE)
 [![Contributing](https://img.shields.io/badge/contributing-guide-blue?style=flat-square)](CONTRIBUTING.md)
+[![Discord](https://img.shields.io/discord/1346547498754437182?style=flat-square&label=discord)](https://discord.gg/4Rx3qUCR5Y)
 [![GitHub Stars](https://img.shields.io/github/stars/imjustprism/Void?style=flat-square)](https://github.com/imjustprism/Void/stargazers)
 
 A client-side modification for [Grok](https://grok.com), inspired by [Vencord](https://github.com/Vendicated/Vencord). Patches Grok's bundled code at runtime with a plugin system, custom CSS editor, and theme support. No server-side changes, no telemetry. Works as a userscript or browser extension.
@@ -28,6 +29,10 @@ cd Void
 bun install
 bun run build
 ```
+
+## Support
+
+Join our [Discord server](https://discord.gg/4Rx3qUCR5Y) to report bugs, request plugins, or get help.
 
 ## Contributing
 
