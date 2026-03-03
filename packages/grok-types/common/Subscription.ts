@@ -1,4 +1,5 @@
 import type { SubscriptionStatus, SubscriptionTier, SubscriptionTierName } from "../enums/subscription";
+import type { OrganizationType } from "../enums/user";
 
 /**
  * A user subscription object returned by `GET /rest/subscriptions`.
@@ -93,7 +94,7 @@ export interface ResolvedSubscriptionInfo {
     /** All subscriptions with an active status. */
     activeSubscriptions: GrokSubscription[];
     /** Enterprise organization type, if applicable. */
-    organizationType?: number;
+    organizationType?: OrganizationType;
 }
 
 /**

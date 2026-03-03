@@ -1,4 +1,5 @@
 export * from "./artifacts";
+export * from "./connectors";
 export * from "./conversation";
 export * from "./feature";
 export * from "./files";
@@ -13,4 +14,5 @@ export * from "./tasks";
 export * from "./tools";
 export * from "./tts";
 export * from "./upsell";
+export * from "./user";
 export * from "./voice";

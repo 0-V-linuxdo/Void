@@ -70,3 +70,25 @@ export type XSubscriptionType = "" | "Basic" | "Premium" | "PremiumPlus" | (stri
  * | "2"   | X Premium+  |
  */
 export type SessionTierId = "0" | "1" | "2" | (string & {});
+
+/** Subscription billing period from the API (`GrokApiV2SubscriptionType`). */
+export type SubscriptionType = "MONTHLY" | "YEARLY" | (string & {});
+
+/**
+ * Subscription update result status returned by the cancel/change flow.
+ *
+ * | Status                                               | Description                          |
+ * |------------------------------------------------------|--------------------------------------|
+ * | `"SUBSCRIPTION_UPDATE_STATUS_SUCCESS"`                | Update completed successfully        |
+ * | `"SUBSCRIPTION_UPDATE_STATUS_FAILED"`                 | Payment or processing failure        |
+ * | `"SUBSCRIPTION_UPDATE_STATUS_INVALID"`                | Invalid request                      |
+ * | `"SUBSCRIPTION_UPDATE_STATUS_NOT_SUPPORTED"`          | Plan does not support this update    |
+ * | `"SUBSCRIPTION_UPDATE_STATUS_NO_UPDATEABLE_SUBSCRIPTION"` | No active subscription found    |
+ */
+export type SubscriptionUpdateStatus =
+	| "SUBSCRIPTION_UPDATE_STATUS_SUCCESS"
+	| "SUBSCRIPTION_UPDATE_STATUS_FAILED"
+	| "SUBSCRIPTION_UPDATE_STATUS_INVALID"
+	| "SUBSCRIPTION_UPDATE_STATUS_NOT_SUPPORTED"
+	| "SUBSCRIPTION_UPDATE_STATUS_NO_UPDATEABLE_SUBSCRIPTION"
+	| (string & {});

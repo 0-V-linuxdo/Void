@@ -1,4 +1,5 @@
 import type { SessionTierId, XSubscriptionType } from "../enums/subscription";
+import type { OrganizationType } from "../enums/user";
 
 /**
  * Authenticated Grok user profile returned by the session API.
@@ -48,8 +49,8 @@ export interface GrokUser {
     organizationRole?: string;
     /** RBAC role ID within the organization. */
     organizationRbacRoleId?: string;
-    /** Organization type enum. 0 = none/individual. */
-    organizationType: number;
+    /** Organization type enum. 0 = unspecified/individual. */
+    organizationType: OrganizationType;
 
     /** Raw profile image URL from the API (before any remapping). */
     profileImage?: string;

@@ -1,5 +1,5 @@
 import type { FileMetadata } from "../common/Asset";
-import type { ResponseSender } from "../enums/conversation";
+import type { ResponseSender, ResponseState } from "../enums/conversation";
 import type { ModelId, ModelMode, RequestKind } from "../enums/models";
 import type { ZustandStore } from "../zustand";
 
@@ -14,6 +14,8 @@ export interface GrokResponse {
     message: string;
     /** Who sent this response (e.g. "human", "assistant"). */
     sender: ResponseSender;
+    /** Response streaming/lifecycle state (e.g. "streaming", "closed", "error"). */
+    state?: ResponseState;
     /** ISO 8601 timestamp of when the response was created. */
     createTime: string;
     /** Parent response ID for branching conversations (thread support). */
@@ -153,6 +155,32 @@ export interface ResponseStoreState {
     /** Clear all cached response data (logout/reset). */
     clear: () => void;
 
+    /** Store a promise for the initial responses fetch for a conversation. */
+    idsertInitialResponsesPromisesByConversationId: (conversationId: string, promise: Promise<any>) => void;
+    /** Remove the initial responses fetch promise for a conversation. */
+    removeInitialResponsesPromiseByConversationId: (conversationId: string) => void;
+    /** Store a promise for loading more responses for a conversation. */
+    idsertLoadMoreResponsesPromisesByConversationId: (conversationId: string, promise: Promise<any>) => void;
+    /** Remove the load-more responses fetch promise for a conversation. */
+    removeLoadMoreResponsesPromiseByConversationId: (conversationId: string) => void;
+    /** Store a promise for preview responses by conversation and response ID key. */
+    idsertPreviewResponsesPromisesByConversationIdResponseId: (key: string, promise: Promise<any>) => void;
+    /** Remove the preview responses fetch promise by conversation and response ID key. */
+    removePreviewResponsesPromiseByConversationIdResponseId: (key: string) => void;
+    /** Store a promise for image responses fetch for a conversation. */
+    idsertConversationImageResponsesPromisesByConversationId: (conversationId: string, promise: Promise<any>) => void;
+    /** Remove the image responses fetch promise for a conversation. */
+    removeConversationImageResponsesPromiseByConversationId: (conversationId: string) => void;
+    /** Set a single image ID mapping for a URL. */
+    setOneImageIdByUrl: (url: string, imageId: string) => void;
+    /** Store an in-flight streaming promise for a conversation. */
+    idsertInflightPromisesByConversationId: (conversationId: string, promise: Promise<any>) => void;
+    /** Store response tree nodes for a conversation. */
+    idsertNodesByConversationId: (conversationId: string, nodes: ResponseNode[]) => void;
+    /** Store a promise for the node tree fetch for a conversation. */
+    idsertNodesPromisesByConversationId: (conversationId: string, promise: Promise<any>) => void;
+    /** Remove the node tree fetch promise for a conversation. */
+    removeNodesPromise: (conversationId: string) => void;
 
     /** Fetch the response node tree for a conversation. */
     fetchListResponseNodes: (conversationId: string) => Promise<any>;
