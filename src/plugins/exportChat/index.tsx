@@ -7,9 +7,9 @@
 import type { ContextMenuLocationMap } from "@api/ContextMenus";
 import { DropdownMenuItem } from "@components";
 import type { GrokConversation, GrokResponse } from "@grok-types";
-import { FileUtils } from "@turbopack/common";
+import { ApiClients, FileUtils } from "@turbopack/common";
 import { React } from "@turbopack/common/react";
-import { ConversationStore, ResponseStore } from "@turbopack/common/stores";
+import { ConversationStore } from "@turbopack/common/stores";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { sanitizeFilename } from "@utils/misc";
@@ -34,7 +34,7 @@ function buildExportMessage(r: GrokResponse) {
 }
 
 async function exportChat(conversationId: string) {
-    const responses: GrokResponse[] = await ResponseStore.useResponseStore.getState().loadInitialResponses(conversationId, true);
+    const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
     if (!responses?.length) return;
 
     const conversation: GrokConversation | undefined = ConversationStore.useConversationStore.getState().byId[conversationId];
