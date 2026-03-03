@@ -36,6 +36,7 @@ function silenceWarns<T>(fn: () => T): T {
 }
 
 const fnSourceCache = new WeakMap<Function, string>();
+const zustandStoreCache = new Map<string, any>();
 
 function getFnSource(fn: Function): string {
     let src = fnSourceCache.get(fn);
@@ -49,6 +50,13 @@ function getFnSource(fn: Function): string {
 function toZustandHookName(name: string): string {
     if (name.startsWith("use")) return name;
     return name.endsWith("Store") ? `use${name}` : `use${name}Store`;
+}
+
+export function isZustandStore(val: any): boolean {
+    return typeof val === "function"
+        && typeof val.getState === "function"
+        && typeof val.setState === "function"
+        && typeof val.subscribe === "function";
 }
 
 export const filters = {
@@ -218,14 +226,46 @@ export function findExportedComponentLazy(...props: string[]): any {
     return LazyComponent(props[0], () => findExportedComponent(...props));
 }
 
+function collectStores(): void {
+    for (const [, exports] of getModuleCache()) {
+        if (exports == null || typeof exports !== "object" || isBlacklisted(exports)) continue;
+        for (const key in exports) {
+            try {
+                if (zustandStoreCache.has(key)) continue;
+                const val = exports[key];
+                if (isZustandStore(val)) zustandStoreCache.set(key, val);
+            } catch {}
+        }
+    }
+}
+
+function populateStoreCache(): void {
+    silenceWarns(() => {
+        collectStores();
+        const prevSize = getModuleCache().size;
+        syncLazyModules();
+        if (getModuleCache().size !== prevSize) collectStores();
+    });
+}
+
 export function findStore(name: string): any {
     const hookName = toZustandHookName(name);
+    if (zustandStoreCache.has(hookName)) return zustandStoreCache.get(hookName);
+    if (!zustandStoreCache.size) populateStoreCache();
+    if (zustandStoreCache.has(hookName)) return zustandStoreCache.get(hookName);
     const mod = find(filters.byStoreName(name));
-    return mod?.[hookName] ?? mod;
+    const hook = mod?.[hookName] ?? mod;
+    if (hook && isZustandStore(hook)) zustandStoreCache.set(hookName, hook);
+    return hook;
 }
 
 export function findStoreLazy(name: string): any {
     return proxyLazy(() => findStore(name));
+}
+
+export function getAllStores(): Map<string, any> {
+    if (!zustandStoreCache.size) populateStoreCache();
+    return new Map(zustandStoreCache);
 }
 
 export function findCssClasses(...classes: string[]): Record<string, string> {
