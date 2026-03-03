@@ -29,6 +29,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @grant        GM_deleteValue
 // @grant        GM_listValues
 // @license      GPL-3.0-or-later
+// @supportURL   https://discord.gg/4Rx3qUCR5Y
 // @downloadURL  ${repoRawUrl}/main/userscript/Void.user.js
 // @updateURL    ${repoRawUrl}/main/userscript/Void.user.js
 // ==/UserScript==
