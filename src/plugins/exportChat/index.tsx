@@ -6,16 +6,14 @@
 
 import type { ContextMenuLocationMap } from "@api/ContextMenus";
 import { DropdownMenuItem } from "@components";
+import { DownloadIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
 import { ApiClients, FileUtils } from "@turbopack/common";
 import { React } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore } from "@turbopack/common/stores";
-import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { sanitizeFilename } from "@utils/misc";
 import definePlugin from "@utils/types";
-
-const DownloadIcon = findExportedComponentLazy("DownloadIcon");
 
 function buildExportMessage(r: GrokResponse) {
     return {
