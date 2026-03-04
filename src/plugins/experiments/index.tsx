@@ -95,7 +95,17 @@ const FLAG_ACRONYMS: Record<string, string> = {
     Xai: "xAI", Grok: "Grok", Id: "ID",
 };
 
-const prettifyKey = (key: string) => humanizeKey(key, FLAG_ACRONYMS);
+function tryDecodeBase64Key(key: string): string | null {
+    if (key.includes("_") || key.includes("-") || key.length < 10) return null;
+    if (!/^[A-Za-z0-9+/=]+$/.test(key)) return null;
+    try {
+        const decoded = atob(key);
+        if (/^[a-z][a-z0-9_]+$/.test(decoded)) return decoded;
+    } catch { /* not valid base64 */ }
+    return null;
+}
+
+const prettifyKey = (key: string) => humanizeKey(tryDecodeBase64Key(key) ?? key, FLAG_ACRONYMS);
 
 function ExperimentRow({ flagKey, isNew }: { flagKey: string; isNew: boolean }) {
     const config = FeatureStore.useFeatureStore(s => s.config[flagKey]);
@@ -103,6 +113,7 @@ function ExperimentRow({ flagKey, isNew }: { flagKey: string; isNew: boolean }) 
 
     const isOverridden = override !== undefined;
     const checked = isOverridden ? !!override : !!config;
+    const decodedKey = useMemo(() => tryDecodeBase64Key(flagKey), [flagKey]);
 
     const handleToggle = useCallback(
         (value: boolean) => {
@@ -118,13 +129,14 @@ function ExperimentRow({ flagKey, isNew }: { flagKey: string; isNew: boolean }) 
             <SettingsTitle>
                 {prettifyKey(flagKey)}
                 {isNew && <Chip className={cl("new-chip")}>NEW</Chip>}
+                {decodedKey && <Chip className={cl("obfuscated-chip")}>OBFUSCATED</Chip>}
                 {isOverridden && (
                     <Text size="xs" as="span" className={cl("modified")}>
                         (modified)
                     </Text>
                 )}
             </SettingsTitle>
-            <SettingsDescription>{flagKey}</SettingsDescription>
+            <SettingsDescription>{decodedKey ?? flagKey}</SettingsDescription>
         </SettingsRow>
     );
 }
@@ -138,7 +150,10 @@ function ExperimentsTab() {
     const overrides = FeatureStore.useFeatureStore(s => s.overrides);
 
     const booleanKeys = useMemo(() => getBooleanKeys(config).sort(), [config]);
-    const getFlagSearchText = useCallback((k: string) => `${k} ${prettifyKey(k)}`, []);
+    const getFlagSearchText = useCallback((k: string) => {
+        const decoded = tryDecodeBase64Key(k);
+        return decoded ? `${k} ${decoded} ${prettifyKey(k)}` : `${k} ${prettifyKey(k)}`;
+    }, []);
 
     const filterFn = useCallback((k: string) => {
         if (filter === "all") return true;
