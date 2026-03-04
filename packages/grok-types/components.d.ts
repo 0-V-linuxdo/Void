@@ -200,6 +200,18 @@ export type TooltipContent = ComponentType<TooltipContentProps>;
 
 // #region DropdownMenu (Radix DropdownMenu)
 
+export interface DropdownMenuProps extends RadixRootProps {
+    dir?: "ltr" | "rtl";
+}
+
+export interface DropdownMenuTriggerProps extends RadixTriggerProps {}
+
+export interface DropdownMenuContentProps extends RadixContentProps {
+    loop?: boolean;
+    onCloseAutoFocus?: (e: Event) => void;
+    forceMount?: boolean;
+}
+
 export interface DropdownMenuItemProps {
     onSelect?: (e: Event) => void;
     disabled?: boolean;
@@ -209,7 +221,45 @@ export interface DropdownMenuItemProps {
     [key: string]: any;
 }
 
+export interface DropdownMenuCheckboxItemProps extends DropdownMenuItemProps {
+    checked?: boolean | "indeterminate";
+    onCheckedChange?: (checked: boolean) => void;
+}
+
+export interface DropdownMenuRadioGroupProps {
+    value?: string;
+    onValueChange?: (value: string) => void;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface DropdownMenuRadioItemProps extends DropdownMenuItemProps {
+    value?: string;
+}
+
+export interface DropdownMenuSubProps {
+    open?: boolean;
+    defaultOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    children?: ReactNode;
+}
+
+export interface DropdownMenuSubTriggerProps extends DropdownMenuItemProps {}
+export interface DropdownMenuSubContentProps extends RadixContentProps {}
+export interface DropdownMenuSeparatorProps extends RadixSubProps {}
+
+export type DropdownMenu = ComponentType<DropdownMenuProps>;
+export type DropdownMenuTrigger = ComponentType<DropdownMenuTriggerProps>;
+export type DropdownMenuContent = ComponentType<DropdownMenuContentProps>;
 export type DropdownMenuItem = ComponentType<DropdownMenuItemProps>;
+export type DropdownMenuCheckboxItem = ComponentType<DropdownMenuCheckboxItemProps>;
+export type DropdownMenuRadioGroup = ComponentType<DropdownMenuRadioGroupProps>;
+export type DropdownMenuRadioItem = ComponentType<DropdownMenuRadioItemProps>;
+export type DropdownMenuSub = ComponentType<DropdownMenuSubProps>;
+export type DropdownMenuSubTrigger = ComponentType<DropdownMenuSubTriggerProps>;
+export type DropdownMenuSubContent = ComponentType<DropdownMenuSubContentProps>;
+export type DropdownMenuSeparator = ComponentType<DropdownMenuSeparatorProps>;
 
 // #endregion
 
@@ -470,5 +520,256 @@ export interface AnimatePresenceProps {
 }
 
 export type AnimatePresence = ComponentType<AnimatePresenceProps>;
+
+// #endregion
+
+// #region Popover (Radix Popover)
+
+export interface PopoverProps extends RadixRootProps {
+    modal?: boolean;
+}
+
+export interface PopoverTriggerProps extends RadixTriggerProps {}
+
+export interface PopoverContentProps extends RadixContentProps {
+    onOpenAutoFocus?: (e: Event) => void;
+    onCloseAutoFocus?: (e: Event) => void;
+    onInteractOutside?: (e: Event) => void;
+    onEscapeKeyDown?: (e: KeyboardEvent) => void;
+    forceMount?: boolean;
+}
+
+export interface PopoverArrowProps {
+    className?: string;
+    width?: number;
+    height?: number;
+    [key: string]: any;
+}
+
+export type Popover = ComponentType<PopoverProps>;
+export type PopoverTrigger = ComponentType<PopoverTriggerProps>;
+export type PopoverContent = ComponentType<PopoverContentProps>;
+export type PopoverArrow = ComponentType<PopoverArrowProps>;
+
+// #endregion
+
+// #region Tabs (Radix Tabs)
+
+export interface TabsProps {
+    value?: string;
+    defaultValue?: string;
+    onValueChange?: (value: string) => void;
+    orientation?: "horizontal" | "vertical";
+    dir?: "ltr" | "rtl";
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface TabsListProps {
+    loop?: boolean;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface TabsTriggerProps {
+    value?: string;
+    disabled?: boolean;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface TabsContentProps {
+    value?: string;
+    forceMount?: boolean;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export type Tabs = ComponentType<TabsProps>;
+export type TabsList = ComponentType<TabsListProps>;
+export type TabsTrigger = ComponentType<TabsTriggerProps>;
+export type TabsContent = ComponentType<TabsContentProps>;
+
+// #endregion
+
+// #region Accordion (Radix Accordion)
+
+export interface AccordionProps {
+    type?: "single" | "multiple";
+    value?: string | string[];
+    defaultValue?: string | string[];
+    onValueChange?: (value: string | string[]) => void;
+    collapsible?: boolean;
+    disabled?: boolean;
+    dir?: "ltr" | "rtl";
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface AccordionItemProps {
+    value?: string;
+    disabled?: boolean;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface AccordionTriggerProps {
+    className?: string;
+    chevronPosition?: "left" | "right";
+    icon?: ReactNode;
+    showIconOnly?: boolean;
+    disabled?: boolean;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface AccordionContentProps {
+    forceMount?: boolean;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export type Accordion = ComponentType<AccordionProps>;
+export type AccordionItem = ComponentType<AccordionItemProps>;
+export type AccordionTrigger = ComponentType<AccordionTriggerProps>;
+export type AccordionContent = ComponentType<AccordionContentProps>;
+
+// #endregion
+
+// #region Checkbox (Radix Checkbox)
+
+export interface CheckboxProps {
+    checked?: boolean | "indeterminate";
+    defaultChecked?: boolean;
+    onCheckedChange?: (checked: boolean | "indeterminate") => void;
+    disabled?: boolean;
+    required?: boolean;
+    name?: string;
+    value?: string;
+    className?: string;
+    [key: string]: any;
+}
+
+export type Checkbox = ComponentType<CheckboxProps>;
+
+// #endregion
+
+// #region Textarea
+
+export interface TextareaProps {
+    value?: string;
+    defaultValue?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    rows?: number;
+    maxLength?: number;
+    className?: string;
+    onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    onFocus?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
+    onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
+    [key: string]: any;
+}
+
+export type Textarea = ComponentType<TextareaProps>;
+
+// #endregion
+
+// #region Spinner
+
+export type SpinnerSize = "xs" | "sm" | "md" | "lg" | "xl";
+
+export interface SpinnerProps {
+    size?: SpinnerSize;
+    className?: string;
+    [key: string]: any;
+}
+
+export type Spinner = ComponentType<SpinnerProps>;
+
+// #endregion
+
+// #region Avatar
+
+export interface AvatarProps {
+    src?: string;
+    alt?: string;
+    fallback?: ReactNode;
+    className?: string;
+    [key: string]: any;
+}
+
+export type Avatar = ComponentType<AvatarProps>;
+
+// #endregion
+
+// #region Command (cmdk)
+
+export interface CommandProps {
+    value?: string;
+    onValueChange?: (value: string) => void;
+    filter?: (value: string, search: string) => number;
+    loop?: boolean;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface CommandInputProps {
+    value?: string;
+    onValueChange?: (value: string) => void;
+    placeholder?: string;
+    className?: string;
+    [key: string]: any;
+}
+
+export interface CommandListProps {
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface CommandItemProps {
+    value?: string;
+    onSelect?: (value: string) => void;
+    disabled?: boolean;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface CommandGroupProps {
+    heading?: ReactNode;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface CommandEmptyProps {
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export type Command = ComponentType<CommandProps>;
+export type CommandInput = ComponentType<CommandInputProps>;
+export type CommandList = ComponentType<CommandListProps>;
+export type CommandItem = ComponentType<CommandItemProps>;
+export type CommandGroup = ComponentType<CommandGroupProps>;
+export type CommandEmpty = ComponentType<CommandEmptyProps>;
+
+// #endregion
+
+// #region ResponsiveDialog
+
+export interface ResponsiveDialogProps extends DialogProps {}
+
+export type ResponsiveDialog = ComponentType<ResponsiveDialogProps>;
 
 // #endregion
