@@ -5,7 +5,7 @@
  */
 
 import { subscribe } from "@api/Events";
-import { React, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "@turbopack/common/react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
 import { onModuleLoad } from "@turbopack/patchTurbopack";
 import { debounce, type ExternalStore } from "@utils/misc";
 import type { ReactNode } from "react";
@@ -19,7 +19,7 @@ export function resolveLazyNode(node: LazyNode | undefined): ReactNode {
 }
 
 export function useExternalStore(store: ExternalStore) {
-    React.useSyncExternalStore(store.subscribe, store.getSnapshot);
+    useSyncExternalStore(store.subscribe, store.getSnapshot);
 }
 
 export function useForceUpdater() {

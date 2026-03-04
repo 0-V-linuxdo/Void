@@ -14,13 +14,18 @@ export {
     React,
     ReactDOM,
     useCallback,
+    useContext,
+    useDeferredValue,
     useEffect,
+    useId,
     useLayoutEffect,
     useMemo,
     useReducedMotion,
     useReducer,
     useRef,
     useState,
+    useSyncExternalStore,
+    useTransition,
 } from "./react";
 export * from "./stores";
 export * from "./utils";

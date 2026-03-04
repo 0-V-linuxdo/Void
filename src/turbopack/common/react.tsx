@@ -22,6 +22,11 @@ export let useMemo: ReactInstance["useMemo"];
 export let useRef: ReactInstance["useRef"];
 export let useReducer: ReactInstance["useReducer"];
 export let useCallback: ReactInstance["useCallback"];
+export let useContext: ReactInstance["useContext"];
+export let useId: ReactInstance["useId"];
+export let useTransition: ReactInstance["useTransition"];
+export let useDeferredValue: ReactInstance["useDeferredValue"];
+export let useSyncExternalStore: ReactInstance["useSyncExternalStore"];
 export let createElement: ReactInstance["createElement"];
 export let useReducedMotion: () => boolean;
 
@@ -32,7 +37,7 @@ waitFor(filters.byProps("useReducedMotion"), mod => {
 waitFor(filters.byProps("useState", "createElement"), mod => {
     const m = mod as ReactInstance;
     React = m;
-    ({ useState, useEffect, useLayoutEffect, useMemo, useRef, useReducer, useCallback, createElement } = m);
+    ({ useState, useEffect, useLayoutEffect, useMemo, useRef, useReducer, useCallback, useContext, useId, useTransition, useDeferredValue, useSyncExternalStore, createElement } = m);
     setCreateElement(m.createElement);
 });
 
