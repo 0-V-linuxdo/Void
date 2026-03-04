@@ -8,7 +8,29 @@ import type { ReasoningMode, RequestKind } from "@grok-types/enums";
 
 import { findByPropsLazy } from "../turbopack";
 
-export const ApiClients = findByPropsLazy("chatApi", "modelsApi");
+export const ApiClients: {
+    chatApi: any;
+    modelsApi: any;
+    mediaApi: any;
+    settingsApi: any;
+    subscriptionsApi: any;
+    rateLimitsApi: any;
+    grokTasksApi: any;
+    notificationsApi: any;
+    highlightsApi: any;
+    voiceApi: any;
+    livekitApi: any;
+    githubApi: any;
+    assetRepositoryApi: any;
+    workspaceRepositoryApi: any;
+    systemPromptRepositoryApi: any;
+    sandboxEnvironmentsApi: any;
+    authFrontendApi: any;
+    authMgmtApi: any;
+    devConfigApi: any;
+    grokForTeamsApi: any;
+    suggestionsApi: any;
+} = findByPropsLazy("chatApi", "modelsApi");
 
 export const Toaster = findByPropsLazy("Toaster", "toast");
 
@@ -67,3 +89,7 @@ export const NextRouter: {
     redirect: (url: string, type?: string) => never;
     notFound: () => never;
 } = findByPropsLazy("useRouter", "usePathname");
+
+export const TanStackQuery: {
+    useQuery: <T = unknown>(options: { queryKey: any[]; queryFn: () => Promise<T>; enabled?: boolean; refetchInterval?: number; staleTime?: number; gcTime?: number; retry?: boolean | number; refetchOnWindowFocus?: boolean; placeholderData?: T | ((prev: T | undefined) => T | undefined) }) => { data: T | undefined; error: Error | null; isPending: boolean; isError: boolean; isSuccess: boolean; refetch: () => Promise<any> };
+} = findByPropsLazy("useQuery");

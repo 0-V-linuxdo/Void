@@ -8,6 +8,7 @@ import type {
     ArtifactStoreModule,
     AssetStoreModule,
     ChatPageStoreModule,
+    CodePageStoreModule,
     CommandMenuStoreModule,
     ConversationStoreModule,
     DevModelsStoreModule,
@@ -50,6 +51,7 @@ import { findByPropsLazy } from "../turbopack";
 export const ArtifactStore: ArtifactStoreModule = findByPropsLazy("useArtifactStore", "useArtifactEdits");
 export const AssetStore: AssetStoreModule = findByPropsLazy("useAssetStore");
 export const ChatPageStore: ChatPageStoreModule = findByPropsLazy("useChatPageStore", "getLatestThreadMessageId");
+export const CodePageStore: CodePageStoreModule = findByPropsLazy("useCodePageStore");
 export const CommandMenuStore: CommandMenuStoreModule = findByPropsLazy("useCommandMenuStore", "createSelection");
 export const ConversationStore: ConversationStoreModule = findByPropsLazy("useConversationStore", "createOptimisticConversation");
 export const DevModelsStore: DevModelsStoreModule = findByPropsLazy("useDevModelsStore", "DRAFT_MODEL_ID");

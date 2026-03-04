@@ -1,6 +1,7 @@
 export * from "./ArtifactStore";
 export * from "./AssetStore";
 export * from "./ChatPageStore";
+export * from "./CodePageStore";
 export * from "./CommandMenuStore";
 export * from "./ConversationStore";
 export * from "./DevModelsStore";
