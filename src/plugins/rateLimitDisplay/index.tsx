@@ -6,20 +6,17 @@
 
 import type { ChatBarButtonRenderProps } from "@api/ChatBarButtons";
 import { definePluginSettings } from "@api/Settings";
-import { ChatBarButton, Separator, Skeleton } from "@components";
+import { ChatBarButton, Separator } from "@components";
 import { ClockIcon, GaugeIcon } from "@components/icons";
 import type { EffortRateLimits, RateLimitResponse } from "@grok-types";
-import type { ModelId, ModelMode, RequestKind } from "@grok-types/enums";
-import { React, useEffect, useState } from "@turbopack/common/react";
+import type { ModelId, ModelMode } from "@grok-types/enums";
+import { React, useMemo } from "@turbopack/common/react";
 import { ChatPageStore, ModelsStore } from "@turbopack/common/stores";
-import { ApiClients, ReasoningModeUtils } from "@turbopack/common/utils";
+import { ApiClients, ReasoningModeUtils, TanStackQuery } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
-import { Logger } from "@utils/Logger";
 import { formatCountdown, formatDuration } from "@utils/misc";
 import { useCountdown } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
-
-const logger = new Logger("RateLimitDisplay", "#ef9f76");
 
 const settings = definePluginSettings({
     showMaxCount: {
@@ -70,21 +67,14 @@ function parse(data: RateLimitResponse, mode?: ModelMode): Usage {
     return { ...EMPTY, windowSeconds };
 }
 
-const responseCache = new Map<string, RateLimitResponse>();
-
-function cacheKey(modelId: ModelId, requestKind: RequestKind) {
-    return `${modelId}:${requestKind}`;
-}
-
-async function fetchForModel(modelId: ModelId, requestKind: RequestKind) {
-    const data: RateLimitResponse = await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: modelId, requestKind } });
-    responseCache.set(cacheKey(modelId, requestKind), data);
-    return data;
-}
-
-function getCached(modelId: ModelId, requestKind: RequestKind, mode?: ModelMode): Usage {
-    const data = responseCache.get(cacheKey(modelId, requestKind));
-    return data ? parse(data, mode) : EMPTY;
+function useRateLimitQuery(modelId: ModelId | undefined, requestKind: string, cacheKey: string | undefined, enabled: boolean) {
+    return TanStackQuery.useQuery<RateLimitResponse>({
+        queryKey: ["void-rate-limits", modelId, requestKind, cacheKey],
+        queryFn: () => ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: modelId, requestKind } }),
+        enabled: enabled && !!modelId,
+        staleTime: 10_000,
+        placeholderData: prev => prev,
+    });
 }
 
 function formatLabel(u: Usage, short?: boolean) {
@@ -103,7 +93,7 @@ function SingleDisplay({ usage, iconOnly }: { usage: Usage; iconOnly: boolean })
 
     return (
         <ChatBarButton icon={limited ? <ClockIcon size={18} /> : <GaugeIcon size={18} />} tooltip={tooltip} className={limited ? "text-fg-danger" : undefined} iconOnly={iconOnly}>
-            {u.total < 0 ? <Skeleton className="h-4 w-3 rounded" /> : formatLabel(u)}
+            {formatLabel(u)}
         </ChatBarButton>
     );
 }
@@ -126,9 +116,9 @@ function AutoDisplay({ fast, expert, iconOnly }: { fast: Usage; expert: Usage; i
             className={limited ? "text-fg-danger" : undefined}
             iconOnly={iconOnly}
         >
-            {f.total < 0 ? <Skeleton className="h-4 w-3 rounded" /> : formatLabel(f, true)}
+            {formatLabel(f, true)}
             <Separator orientation="vertical" className="mx-1 h-3 w-0.5" />
-            {e.total < 0 ? <Skeleton className="h-4 w-3 rounded" /> : formatLabel(e, true)}
+            {formatLabel(e, true)}
         </ChatBarButton>
     );
 }
@@ -142,62 +132,21 @@ function RateLimitIndicator({ iconOnly }: ChatBarButtonRenderProps) {
     const modelByMode = ModelsStore.useModelsStore(s => s.modelByMode);
 
     const requestKind = ReasoningModeUtils.reasoningModeToRequestKind?.(reasoningMode) ?? "DEFAULT";
+    const isAuto = modelMode === "auto";
     const fastId = modelByMode?.fast?.modelId;
     const expertId = modelByMode?.expert?.modelId;
-    const singleId = modelMode !== "auto" ? modelByMode?.[modelMode]?.modelId : undefined;
+    const singleId = !isAuto ? modelByMode?.[modelMode]?.modelId : undefined;
 
-    const [fast, setFast] = useState(() => fastId ? getCached(fastId, requestKind, "fast") : EMPTY);
-    const [expert, setExpert] = useState(() => expertId ? getCached(expertId, requestKind, "expert") : EMPTY);
-    const [single, setSingle] = useState(() => singleId ? getCached(singleId, requestKind, modelMode) : EMPTY);
+    const cacheKey = `${conversationId}:${lastMessageId}`;
+    const fastQuery = useRateLimitQuery(fastId, requestKind, cacheKey, isAuto && !streaming);
+    const expertQuery = useRateLimitQuery(expertId, requestKind, cacheKey, isAuto && !streaming);
+    const singleQuery = useRateLimitQuery(singleId, requestKind, cacheKey, !isAuto && !streaming);
 
-    useEffect(() => {
-        if (modelMode === "auto" && streaming) return;
+    const fast = useMemo(() => fastQuery.data ? parse(fastQuery.data, "fast") : EMPTY, [fastQuery.data]);
+    const expert = useMemo(() => expertQuery.data ? parse(expertQuery.data, "expert") : EMPTY, [expertQuery.data]);
+    const single = useMemo(() => singleQuery.data ? parse(singleQuery.data, modelMode) : EMPTY, [singleQuery.data, modelMode]);
 
-        let cancelled = false;
-
-        if (modelMode === "auto") {
-            if (!fastId && !expertId) return;
-
-            if (fastId) setFast(getCached(fastId, requestKind, "fast"));
-            if (expertId) setExpert(getCached(expertId, requestKind, "expert"));
-
-            const sharedModel = fastId === expertId;
-            const targetId = fastId ?? expertId;
-
-            if (sharedModel && targetId) {
-                fetchForModel(targetId, requestKind)
-                    .then(data => {
-                        if (cancelled) return;
-                        setFast(parse(data, "fast"));
-                        setExpert(parse(data, "expert"));
-                    })
-                    .catch(e => logger.error("Failed to fetch rate limits", e));
-            } else {
-                Promise.all([fastId ? fetchForModel(fastId, requestKind) : null, expertId ? fetchForModel(expertId, requestKind) : null])
-                    .then(([f, e]) => {
-                        if (cancelled) return;
-                        if (f) setFast(parse(f, "fast"));
-                        if (e) setExpert(parse(e, "expert"));
-                    })
-                    .catch(e => logger.error("Failed to fetch rate limits", e));
-            }
-        } else {
-            if (!singleId) return;
-
-            setSingle(getCached(singleId, requestKind, modelMode));
-
-            fetchForModel(singleId, requestKind)
-                .then(result => {
-                    if (cancelled) return;
-                    setSingle(parse(result, modelMode));
-                })
-                .catch(e => logger.error("Failed to fetch rate limits", e));
-        }
-
-        return () => { cancelled = true; };
-    }, [modelMode, reasoningMode, conversationId, lastMessageId, streaming, fastId, expertId, singleId, requestKind]);
-
-    if (modelMode === "auto") return <AutoDisplay fast={fast} expert={expert} iconOnly={iconOnly} />;
+    if (isAuto) return <AutoDisplay fast={fast} expert={expert} iconOnly={iconOnly} />;
     return <SingleDisplay usage={single} iconOnly={iconOnly} />;
 }
 
