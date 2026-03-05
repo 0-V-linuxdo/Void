@@ -152,6 +152,14 @@ export const GhostFilledIcon = (props: IconProps = {}) => (
     </svg>
 );
 
+export const ImageUpIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21" />,
+        <path d="m14 19.5 3-3 3 3" />,
+        <path d="M17 22v-5.5" />,
+        <circle cx="9" cy="9" r="2" />,
+    );
+
 export const TriangleAlert = (props: IconProps = {}) =>
     svg(props,
         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />,
