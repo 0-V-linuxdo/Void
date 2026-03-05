@@ -11,6 +11,7 @@ export * from "./FilesPageStore";
 export * from "./FileStore";
 export * from "./HighlightsStore";
 export * from "./ImageEditorStore";
+export * from "./MediaFolderStore";
 export * from "./MediaStore";
 export * from "./MentionMenuStore";
 export * from "./ModelsStore";
