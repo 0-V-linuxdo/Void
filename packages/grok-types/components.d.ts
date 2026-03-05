@@ -38,9 +38,42 @@ export interface RadixSubProps {
 
 // #region Button
 
-export type ButtonVariant = "primary" | "secondary" | "tertiary" | "danger" | "text" | "textsecondary" | "none";
+export type ButtonVariant =
+	| "filled"
+	| "filledSecondary"
+	| "outline"
+	| "ghost"
+	| "ghostSecondary"
+	| "text"
+	| "textSecondary"
+	| "sticky"
+	| "none"
+	| "primary"
+	| "secondary"
+	| "accent"
+	| "card"
+	| "destructive"
+	| "link"
+	| (string & {});
 
-export type ButtonSize = "none" | "xs" | "sm" | "md" | "xl";
+export type ButtonSize =
+	| "xxs"
+	| "xs"
+	| "sm"
+	| "md"
+	| "lg"
+	| "iconXs"
+	| "iconSm"
+	| "iconMd"
+	| "iconLg"
+	| "iconXl"
+	| "icon"
+	| "pill"
+	| "nav"
+	| "default"
+	| "noPadding"
+	| "none"
+	| (string & {});
 
 export type ButtonShape = "rectangle" | "pill" | "square" | "circle";
 
