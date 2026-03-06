@@ -6,11 +6,11 @@
 
 import { Settings } from "@api/Settings";
 import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Slider, Switch, Text } from "@components";
-import { React, useCallback, useState } from "@turbopack/common/react";
+import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
 import { humanizeKey } from "@utils/text";
 import { OptionType, type PluginSettingDef, type PluginSettingSelectOption } from "@utils/types";
 
-import { resolveDefault } from "./utils";
+import { type InputChangeEvent, resolveDefault } from "./utils";
 
 interface SettingFieldProps {
     id: string;
@@ -55,15 +55,18 @@ function SelectField({ id, setting, pluginName }: SettingFieldProps) {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     if (!("options" in setting)) return null;
 
+    const { options } = (setting as { options: readonly PluginSettingSelectOption[] });
+    const valueMap = useMemo(() => new Map(options.map(o => [String(o.value), o.value])), [options]);
+
     return (
         <Flex flexDirection="column" gap="0.5rem">
             <SettingLabel id={id} setting={setting} />
-            <Select value={String(value ?? "")} onValueChange={update}>
+            <Select value={String(value ?? "")} onValueChange={(v: string) => update(valueMap.get(v) ?? v)}>
                 <SelectTrigger>
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                    {(setting as { options: readonly PluginSettingSelectOption[] }).options.map((o: PluginSettingSelectOption) => (
+                    {options.map((o: PluginSettingSelectOption) => (
                         <SelectItem key={String(o.value)} value={String(o.value)}>
                             {o.label}
                         </SelectItem>
@@ -114,7 +117,7 @@ function NumberField({ id, setting, pluginName }: SettingFieldProps) {
             <Input
                 type="number"
                 value={(value as string) ?? ""}
-                onChange={(e: { target: { value: string } }) => {
+                onChange={(e: InputChangeEvent) => {
                     const n = Number(e.target.value);
                     if (!isNaN(n)) update(n);
                 }}
@@ -132,7 +135,7 @@ function StringField({ id, setting, pluginName }: SettingFieldProps) {
             <Input
                 type="text"
                 value={(value as string) ?? ""}
-                onChange={(e: { target: { value: string } }) => update(e.target.value)}
+                onChange={(e: InputChangeEvent) => update(e.target.value)}
                 placeholder={"placeholder" in setting ? (setting as { placeholder?: string }).placeholder : undefined}
                 className="w-full"
             />

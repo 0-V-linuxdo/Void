@@ -5,6 +5,7 @@
  */
 
 import { useEffect } from "@turbopack/common/react";
+import { isObject } from "@utils/guards";
 import { idbGet, idbSet } from "@utils/idb";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
@@ -13,6 +14,8 @@ import { SettingsStore as SettingsStoreClass } from "@utils/SettingsStore";
 import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingSelectOption, type SettingsChecks, type SettingsDefinition } from "@utils/types";
 
 const logger = new Logger("Settings");
+
+const STORAGE_KEY = "VoidSettings";
 
 export interface Settings {
     plugins: {
@@ -46,8 +49,11 @@ export const Settings = SettingsStore.store;
 export async function initSettings(): Promise<void> {
     if (typeof GM_getValue === "function") {
         try {
-            const raw = GM_getValue("VoidSettings", null);
-            if (raw) Object.assign(settings, JSON.parse(raw));
+            const raw = GM_getValue(STORAGE_KEY, null);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (isObject(parsed)) Object.assign(settings, parsed);
+            }
         } catch (e) {
             logger.error("Failed to load settings:", e);
         }
@@ -58,19 +64,20 @@ export async function initSettings(): Promise<void> {
     let raw: string | null = null;
 
     try {
-        raw = await idbGet("VoidSettings") as string | null;
+        raw = await idbGet(STORAGE_KEY) as string | null;
     } catch (e) {
         logger.warn("Failed to read IndexedDB:", e);
     }
 
     if (!raw) {
         raw = migrateFromLocalStorage();
-        if (raw) idbSet("VoidSettings", raw).catch((e: any) => logger.debug("Failed to persist settings to IndexedDB:", e));
+        if (raw) idbSet(STORAGE_KEY, raw).catch((e: any) => logger.debug("Failed to persist settings to IndexedDB:", e));
     }
 
     if (raw) {
         try {
-            Object.assign(settings, JSON.parse(raw));
+            const parsed = JSON.parse(raw);
+            if (isObject(parsed)) Object.assign(settings, parsed);
         } catch (e) {
             logger.error("Failed to parse settings:", e);
         }
@@ -81,9 +88,9 @@ export async function initSettings(): Promise<void> {
 
 function migrateFromLocalStorage(): string | null {
     try {
-        const raw = localStorage.getItem("VoidSettings");
+        const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
-            localStorage.removeItem("VoidSettings");
+            localStorage.removeItem(STORAGE_KEY);
             logger.info("Migrated settings from localStorage to IndexedDB");
             return raw;
         }
@@ -137,6 +144,22 @@ export function migrateSettingsToPlugin(targetPlugin: string, sourcePlugin: stri
         logger.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
         SettingsStore.markAsChanged();
     }
+}
+
+export interface SettingsPluginData {
+    themes?: import("@api/Themes").ThemeData[];
+    themesEnabled?: boolean;
+    customCSS?: string;
+    customCSSEnabled?: boolean;
+    [key: string]: any;
+}
+
+export function getSettingsPluginData(): SettingsPluginData {
+    return (Settings.plugins.Settings as SettingsPluginData) ?? {};
+}
+
+export function updateSettingsPluginData(patch: Partial<SettingsPluginData>) {
+    Settings.plugins.Settings = { ...Settings.plugins.Settings, ...patch };
 }
 
 export function resolveDefault(setting: PluginSettingDef): any {

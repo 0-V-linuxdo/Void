@@ -10,6 +10,9 @@ import { Logger } from "./Logger";
 
 const logger = new Logger("SettingsStore");
 
+const STORAGE_KEY = "VoidSettings";
+const SAVE_DEBOUNCE_MS = 100;
+
 type Listener = (path: string) => void;
 
 function getOrCreateSet<K, V>(map: Map<K, Set<V>>, key: K): Set<V> {
@@ -34,6 +37,16 @@ export class SettingsStore<T extends object> {
     constructor(plain: T) {
         this.plain = plain;
         this.store = this.makeProxy(plain as any);
+        window.addEventListener("beforeunload", () => this.flush());
+    }
+
+    /** Flush any pending save immediately. */
+    public flush() {
+        if (this.saveTimer) {
+            clearTimeout(this.saveTimer);
+            this.saveTimer = null;
+            this.save();
+        }
     }
 
     public setDefaultGetter(prefix: string, getter: (key: string) => any) {
@@ -100,16 +113,16 @@ export class SettingsStore<T extends object> {
         this.saveTimer = setTimeout(() => {
             this.saveTimer = null;
             this.save();
-        }, 100);
+        }, SAVE_DEBOUNCE_MS);
     }
 
     private save() {
         try {
             const json = JSON.stringify(this.plain);
             if (typeof GM_setValue === "function") {
-                GM_setValue("VoidSettings", json);
+                GM_setValue(STORAGE_KEY, json);
             } else {
-                idbSet("VoidSettings", json).catch(() => {});
+                idbSet(STORAGE_KEY, json).catch(e => logger.warn("Failed to save settings to IndexedDB:", e));
             }
         } catch (e) {
             logger.error("Failed to save settings:", e);
@@ -133,7 +146,8 @@ export class SettingsStore<T extends object> {
     }
 
     public removeChangeListener(path: string, listener: Listener) {
-        this.pathListeners.get(path)?.delete(listener);
+        const set = this.pathListeners.get(path);
+        if (set) { set.delete(listener); if (!set.size) this.pathListeners.delete(path); }
     }
 
     public addPrefixChangeListener(prefix: string, listener: Listener) {
@@ -141,6 +155,7 @@ export class SettingsStore<T extends object> {
     }
 
     public removePrefixChangeListener(prefix: string, listener: Listener) {
-        this.prefixListeners.get(prefix)?.delete(listener);
+        const set = this.prefixListeners.get(prefix);
+        if (set) { set.delete(listener); if (!set.size) this.prefixListeners.delete(prefix); }
     }
 }

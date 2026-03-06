@@ -10,6 +10,7 @@ import { isPluginEnabled, plugins } from "@api/PluginManager";
 import {
     Button,
     ConfirmDialog,
+    ErrorBoundary,
     Flex,
     Grid,
     Input,
@@ -27,21 +28,16 @@ import { classes, classNameFactory } from "@utils/css";
 import { useFiltered } from "@utils/react";
 
 import PluginCard from "../PluginCard";
+import { type InputChangeEvent, type ListFilter } from "../utils";
 import PluginDialog from "./PluginDialog";
 
 const cl = classNameFactory("void-plugins-");
-
-let initialStates: Map<string, boolean> | null = null;
-const changedPlugins = new Set<string>();
-let dismissed = false;
-
-type Filter = "all" | "enabled" | "disabled";
 
 const getPluginKey = (name: string) => `${name} ${plugins[name].description ?? ""}`;
 
 export default function PluginsTab() {
     const [search, setSearch] = useState("");
-    const [filter, setFilter] = useState<Filter>("all");
+    const [filter, setFilter] = useState<ListFilter>("all");
     const [dialogName, setDialogName] = useState<string | null>(null);
     const [showReload, setShowReload] = useState(false);
 
@@ -56,11 +52,16 @@ export default function PluginsTab() {
         return { userPlugins: user, requiredPlugins: required };
     }, []);
 
+    const initialStatesRef = React.useRef<Map<string, boolean> | null>(null);
+    const changedPluginsRef = React.useRef(new Set<string>());
+    const dismissedRef = React.useRef(false);
+
     useEffect(() => {
-        if (initialStates) return;
-        initialStates = new Map<string, boolean>();
-        for (const n of userPlugins) initialStates.set(n, isPluginEnabled(n));
-        for (const n of requiredPlugins) initialStates.set(n, isPluginEnabled(n));
+        if (initialStatesRef.current) return;
+        const map = new Map<string, boolean>();
+        for (const n of userPlugins) map.set(n, isPluginEnabled(n));
+        for (const n of requiredPlugins) map.set(n, isPluginEnabled(n));
+        initialStatesRef.current = map;
     }, [userPlugins, requiredPlugins]);
 
     const visibleUser = useMemo(() => {
@@ -79,31 +80,33 @@ export default function PluginsTab() {
     const filteredRequired = useFiltered(visibleRequired, search, getPluginKey);
 
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
-    const hasResults = filteredUser.length || filteredRequired.length;
-    const needsReload = changedPlugins.size > 0;
+    const hasResults = filteredUser.length > 0 || filteredRequired.length > 0;
+    const needsReload = changedPluginsRef.current.size > 0;
 
     const onReload = useCallback((pluginName: string) => {
+        const initialStates = initialStatesRef.current;
+        const changedPlugins = changedPluginsRef.current;
         if (!initialStates) return;
         const current = isPluginEnabled(pluginName);
         if (current === initialStates.get(pluginName)) changedPlugins.delete(pluginName);
         else changedPlugins.add(pluginName);
 
         if (changedPlugins.size) {
-            if (!dismissed) setShowReload(true);
+            if (!dismissedRef.current) setShowReload(true);
         } else {
             setShowReload(false);
-            dismissed = false;
+            dismissedRef.current = false;
         }
     }, []);
 
     const onDismiss = useCallback(() => {
-        dismissed = true;
+        dismissedRef.current = true;
         setShowReload(false);
     }, []);
 
     return (
         <Flex flexDirection="column" gap="1.5rem">
-            <Flex flexDirection="column" gap="0" style={{ padding: "0 0.75rem" }}>
+            <Flex flexDirection="column" gap="0" className="px-3">
                 <Text size="sm" weight="medium">
                     Plugins
                 </Text>
@@ -121,15 +124,15 @@ export default function PluginsTab() {
                     </Button>
                 </Flex>
             )}
-            <Flex alignItems="center" gap="0.75rem" style={{ padding: "0 0.75rem" }}>
+            <Flex alignItems="center" gap="0.75rem" className="px-3">
                 <Input
                     type="text"
                     placeholder={`Search ${visibleUser.length + visibleRequired.length} plugins...`}
                     value={search}
-                    onChange={(e: { target: { value: string } }) => setSearch(e.target.value)}
+                    onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
                     className="flex-1 min-w-0"
                 />
-                <Select value={filter} onValueChange={(v: string) => setFilter(v as Filter)}>
+                <Select value={filter} onValueChange={(v: string) => setFilter(v as ListFilter)}>
                     <SelectTrigger className="w-28">
                         <SelectValue />
                     </SelectTrigger>
@@ -141,18 +144,22 @@ export default function PluginsTab() {
                 </Select>
             </Flex>
             {filteredUser.length > 0 && (
-                <Grid columns="repeat(2, 1fr)" style={{ padding: "0 0.75rem" }}>
+                <Grid columns="repeat(2, 1fr)" className="px-3">
                     {filteredUser.map(n => (
-                        <PluginCard key={n} name={n} onSettings={setDialogName} onReload={onReload} />
+                        <ErrorBoundary key={n} fallback={null}>
+                            <PluginCard name={n} onSettings={setDialogName} onReload={onReload} />
+                        </ErrorBoundary>
                     ))}
                 </Grid>
             )}
             {filteredRequired.length > 0 && (
                 <>
                     <Separator className="mx-3 w-auto" />
-                    <Grid columns="repeat(2, 1fr)" style={{ padding: "0 0.75rem" }}>
+                    <Grid columns="repeat(2, 1fr)" className="px-3">
                         {filteredRequired.map(n => (
-                            <PluginCard key={n} name={n} onSettings={setDialogName} onReload={onReload} />
+                            <ErrorBoundary key={n} fallback={null}>
+                                <PluginCard name={n} onSettings={setDialogName} onReload={onReload} />
+                            </ErrorBoundary>
                         ))}
                     </Grid>
                 </>

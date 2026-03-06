@@ -8,6 +8,12 @@ import { OptionType, type Plugin, type PluginSettingDef } from "@utils/types";
 
 export { resolveDefault } from "@api/Settings";
 
+/** Lightweight event type for `<Input onChange>` handlers (avoids importing React event types). */
+export type InputChangeEvent = { target: { value: string } };
+
+/** Common filter for list views (plugins, themes). */
+export type ListFilter = "all" | "enabled" | "disabled";
+
 export function isVisibleSetting([, s]: [string, PluginSettingDef]): boolean {
     return s.type !== OptionType.CUSTOM && !("hidden" in s && s.hidden);
 }
