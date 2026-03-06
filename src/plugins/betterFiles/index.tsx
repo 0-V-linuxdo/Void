@@ -11,7 +11,10 @@ import { TrashIcon } from "@components/icons";
 import { Fragment, React, useState } from "@turbopack/common/react";
 import { FilesPageStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
+import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
+
+const logger = new Logger("BetterFiles");
 
 const settings = definePluginSettings({
     skipDeleteConfirm: {
@@ -31,7 +34,7 @@ function DeleteAllButton() {
     const handleConfirm = async () => {
         const ids = [...list];
         for (const id of ids) {
-            try { await deleteAsset(id); } catch {}
+            try { await deleteAsset(id); } catch (e) { logger.error("Failed to delete asset", id, e); }
         }
     };
 

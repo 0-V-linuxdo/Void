@@ -101,7 +101,7 @@ function tryDecodeBase64Key(key: string): string | null {
     try {
         const decoded = atob(key);
         if (/^[a-z][a-z0-9_]+$/.test(decoded)) return decoded;
-    } catch { /* not valid base64 */ }
+    } catch { return null; }
     return null;
 }
 

@@ -6,7 +6,10 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
+import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
+
+const logger = new Logger("NoAutoplay");
 
 const settings = definePluginSettings({
     playOnHover: {
@@ -19,7 +22,7 @@ const settings = definePluginSettings({
 const pending = new WeakMap<HTMLVideoElement, Promise<void>>();
 
 function playVideo(video: HTMLVideoElement) {
-    pending.set(video, video.play().catch(() => {}));
+    pending.set(video, video.play().catch(e => logger.error("Failed to play video", e)));
 }
 
 function pauseVideo(video: HTMLVideoElement) {

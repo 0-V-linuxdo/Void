@@ -6,14 +6,18 @@
 
 import type { ContextMenuLocationMap } from "@api/ContextMenus";
 import { DropdownMenuItem } from "@components";
+import { ErrorBoundary } from "@components/ErrorBoundary";
 import { DownloadIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
 import { ApiClients, FileUtils } from "@turbopack/common";
 import { React } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
+import { Logger } from "@utils/Logger";
 import { sanitizeFilename } from "@utils/misc";
 import definePlugin from "@utils/types";
+
+const logger = new Logger("ExportChat");
 
 function buildExportMessage(r: GrokResponse) {
     return {
@@ -48,7 +52,7 @@ function ExportItem({ conversationId }: ContextMenuLocationMap["conversation"]) 
     const streaming = ChatPageStore.useChatPageStore(s => s.conversationId === conversationId && !!s.streamedMessageId);
 
     return (
-        <DropdownMenuItem onSelect={() => exportChat(conversationId)} disabled={streaming}>
+        <DropdownMenuItem onSelect={() => exportChat(conversationId).catch(e => logger.error("Failed to export chat", e))} disabled={streaming}>
             <DownloadIcon size={16} className="me-2" />
             Export
         </DropdownMenuItem>
@@ -63,7 +67,7 @@ export default definePlugin({
     contextMenuItems: {
         conversation: {
             label: "Export",
-            render: ExportItem,
+            render: ErrorBoundary.wrap(ExportItem),
         },
     },
 });
