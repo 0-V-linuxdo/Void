@@ -124,3 +124,35 @@ export interface TurbopackModule {
 }
 
 export type FilterFn = (mod: any) => boolean;
+
+export interface TurbopackPushable {
+    push: (...args: any[]) => any;
+    [key: string]: any;
+}
+
+export type PageWindow = Window & typeof globalThis & { TURBOPACK: TurbopackPushable | any[] | undefined };
+
+export type PatchReplacementStatus = "applied" | "noEffect" | "error";
+
+export interface PatchResult {
+    plugin: string;
+    find: string;
+    moduleId: number;
+    replacements: Array<{
+        match: string;
+        status: PatchReplacementStatus;
+    }>;
+}
+
+export interface PatchStats {
+    applied: number;
+    noEffect: number;
+    errors: number;
+    patchedModules: Set<number>;
+}
+
+export interface PatchReport {
+    stats: Omit<PatchStats, "patchedModules"> & { patchedModules: number[] };
+    results: PatchResult[];
+    orphaned: Array<{ plugin: string; find: string }>;
+}

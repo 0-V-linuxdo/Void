@@ -21,14 +21,16 @@ export { closeNotice, NoticeType, showNotice } from "@api/Notices";
 export { showToast, ToastType } from "@api/Notifications";
 export { addPatch, isPluginEnabled, plugins, registerPlugin, startPlugin, stopPlugin } from "@api/PluginManager";
 export { definePluginSettings, initSettings, migratePluginSetting, migratePluginSettings, migrateSettingsToPlugin, PlainSettings, Settings, SettingsStore } from "@api/Settings";
+export { addTheme, disableTheme, enableTheme, getThemes, isThemesEnabled, removeTheme, setThemesEnabled } from "@api/Themes";
 export * as common from "@turbopack/common";
-export { getModuleCache, getRuntimeFactoryRegistry, getRuntimeModuleCache, getTurbopackHelpers, isBlacklisted, onceReady, patches, patchReport, patchResults, patchStats, syncLazyModules } from "@turbopack/patchTurbopack";
+export { getModuleCache, getRuntimeFactoryRegistry, getRuntimeModuleCache, getTurbopackHelpers, isBlacklisted, onceReady, onModuleLoad, patches, patchReport, patchResults, patchStats, syncLazyModules } from "@turbopack/patchTurbopack";
 export * from "@turbopack/turbopack";
 export { classes, classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
 export { isNonNullish, isObject, isTruthy } from "@utils/guards";
 export { makeLazy, proxyLazy } from "@utils/lazy";
 export { Logger } from "@utils/Logger";
-export { clamp, copyToClipboard, debounce, errorMessage, fetchExternal, formatCountdown, formatDuration, mergeDefaults, onlyOnce, sanitizeFilename, sleep } from "@utils/misc";
+export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, fetchExternal, formatCountdown, formatDuration, mergeDefaults, onlyOnce, sanitizeFilename, sleep } from "@utils/misc";
+export { escapeRegExp, humanizeKey, pluralize } from "@utils/text";
 export { default as definePlugin, OptionType, StartAt } from "@utils/types";
 
 const logger = new Logger("TurbopackPatcher", "#e78284");

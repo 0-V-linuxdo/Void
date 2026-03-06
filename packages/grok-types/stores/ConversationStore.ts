@@ -111,19 +111,19 @@ export interface ConversationStoreState {
     /** Append conversations from an API response and update the cache. */
     appendAndCacheConversations: (data: any) => void;
     /** Create a new conversation via the API. */
-    fetchCreateConversation: (params: any) => Promise<any>;
+    fetchCreateConversation: (params: any) => Promise<GrokConversation>;
     /** Update a conversation's title, starred status, etc. */
-    fetchUpdateConversation: (id: string, updates: any) => Promise<any>;
+    fetchUpdateConversation: (id: string, updates: Partial<GrokConversation>) => Promise<GrokConversation>;
     /** Permanently delete a conversation. */
     fetchForceDeleteConversation: (id: string) => Promise<void>;
     /** Soft-delete a conversation (mark as deleted, recoverable). */
     fetchSoftDeleteConversation: (id: string) => Promise<void>;
     /** Fetch a single conversation by ID. */
-    fetchGetConversation: (id: string, options?: any) => Promise<any>;
+    fetchGetConversation: (id: string, options?: any) => Promise<GrokConversation>;
     /** Fetch a conversation with workspace context. */
-    fetchGetConversationWithWorkspaces: (id: string, options?: any) => Promise<any>;
+    fetchGetConversationWithWorkspaces: (id: string, options?: any) => Promise<GrokConversation>;
     /** Fetch multiple conversations by IDs in a batch. */
-    fetchGetManyConversations: (ids: string[]) => Promise<any>;
+    fetchGetManyConversations: (ids: string[]) => Promise<GrokConversation[]>;
     /** Fetch a paginated list of conversations with optional query filters. */
     fetchListConversations: (query: any, options?: any) => Promise<any>;
     /** Soft-delete all conversations for the current user. */

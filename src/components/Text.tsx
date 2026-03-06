@@ -6,20 +6,18 @@
 
 import { createElement } from "@turbopack/common/react";
 import { ClassNames } from "@turbopack/common/utils";
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 
 export type TextSize = "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
 export type TextWeight = "normal" | "medium" | "semibold" | "bold";
 export type TextColor = "primary" | "secondary" | "muted";
 
-export interface TextProps {
+export interface TextProps extends HTMLAttributes<HTMLElement> {
     size?: TextSize;
     weight?: TextWeight;
     color?: TextColor;
     as?: string;
-    className?: string;
     children?: ReactNode;
-    [key: string]: any;
 }
 
 const sizeClasses = {

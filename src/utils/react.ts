@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { subscribe } from "@api/Events";
+import { subscribe, type VoidEvent } from "@api/Events";
 import { useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
 import type { ExternalStore } from "@utils/misc";
 import type { ReactNode } from "react";
@@ -23,7 +23,7 @@ export function useForceUpdater() {
     return useReducer((x: number) => x + 1, 0)[1];
 }
 
-export function useEventSubscription(event: string, handler: () => void) {
+export function useEventSubscription(event: VoidEvent, handler: () => void) {
     useEffect(() => subscribe(event, handler), [event, handler]);
 }
 

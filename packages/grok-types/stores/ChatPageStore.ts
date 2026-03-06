@@ -1,3 +1,4 @@
+import type { GrokPersonality } from "../common/Personality";
 import type { ConversationMode } from "../enums/conversation";
 import type { ModelId, ModelMode, ModelConfigModelMode, ReasoningMode } from "../enums/models";
 import type { VoiceActivityStatus, VoiceConnectionStatus } from "../enums/voice";
@@ -91,7 +92,7 @@ export interface ChatPageStoreState {
     /** Selected personality preset ID, or undefined for default assistant. */
     selectedPersonalityId: string | undefined;
     /** Custom personality configuration object. */
-    customPersonality: any;
+    customPersonality: GrokPersonality | null;
     /** Text quoted from a response for reply context. */
     quotedText: string | undefined;
     /** Map of conversation ID to draft query text (preserves drafts across conversations). */
@@ -175,7 +176,7 @@ export interface ChatPageStoreState {
     setDefaultProModelId: (id: ModelId) => void;
     setMetadata: (metadata: Record<string, any>) => void;
     setSelectedPersonalityId: (id: string | undefined) => void;
-    setCustomPersonality: (personality: any) => void;
+    setCustomPersonality: (personality: GrokPersonality | null) => void;
     setQuotedText: (text: string | undefined) => void;
     idsetQueryByConversationId: (conversationId: string, query: string) => void;
     setQueryBarExpanded: (expanded: boolean) => void;

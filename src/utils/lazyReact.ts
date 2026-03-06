@@ -8,9 +8,11 @@ import type { ComponentType } from "react";
 
 export type AnyComponent = ComponentType & Record<string, any>;
 
-let _createElement: Function | null = null;
+type CreateElementFn = (type: any, props?: any, ...children: any[]) => any;
 
-export function setCreateElement(fn: Function) {
+let _createElement: CreateElementFn | null = null;
+
+export function setCreateElement(fn: CreateElementFn) {
     _createElement = fn;
 }
 

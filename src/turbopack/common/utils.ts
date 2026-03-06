@@ -32,9 +32,15 @@ export const ApiClients: {
     suggestionsApi: any;
 } = findByPropsLazy("chatApi", "modelsApi");
 
-export const Toaster = findByPropsLazy("Toaster", "toast");
+export const Toaster: {
+    Toaster: import("react").ComponentType;
+    toast: import("@grok-types").ToastFn;
+} = findByPropsLazy("Toaster", "toast");
 
-export const ClassNames = findByPropsLazy("cn", "middleTruncate");
+export const ClassNames: {
+    cn: (...inputs: any[]) => string;
+    middleTruncate: (text: string, maxLength: number) => string;
+} = findByPropsLazy("cn", "middleTruncate");
 
 export const ReasoningModeUtils: {
     reasoningModeToRequestKind: (mode: ReasoningMode) => RequestKind;

@@ -77,6 +77,12 @@ import type { ComponentType } from "react";
 import { filters, findByProps, findByPropsLazy, findExportedComponent, waitFor } from "../turbopack";
 import { type AnyComponent, LazyComponent } from "./react";
 
+function createModuleLazy(...filterProps: string[]) {
+    let mod: Record<string, ComponentType> | null = null;
+    waitFor(filters.byProps(...filterProps), m => { mod = m; });
+    return (name: string): AnyComponent => LazyComponent(name, () => (mod?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+}
+
 export type {
     AccordionContentProps,
     AccordionItemProps,
@@ -153,8 +159,6 @@ export type {
     TabsProps,
     TabsTriggerProps,
     TextareaProps,
-    ToastFn,
-    ToastOptions,
     TooltipContentProps,
     TooltipProps,
     TooltipTriggerProps,
@@ -174,13 +178,7 @@ export const ButtonWithTooltip = buttonLazy<ComponentType<ButtonWithTooltipProps
 
 export const Card: ComponentType<CardProps> = LazyComponent("Card", () => findExportedComponent("Card"));
 
-let dialogModule: Record<string, ComponentType> | null = null;
-
-waitFor(filters.byProps("Dialog", "DialogContent", "DialogHeader"), m => {
-    dialogModule = m;
-});
-
-const dialogLazy = (name: string): AnyComponent => LazyComponent(name, () => (dialogModule?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+const dialogLazy = createModuleLazy("Dialog", "DialogContent", "DialogHeader");
 
 export const Dialog: ComponentType<DialogProps> = dialogLazy("Dialog");
 export const DialogContent: ComponentType<DialogContentProps> = dialogLazy("DialogContent");
@@ -191,13 +189,7 @@ export const DialogDescription: ComponentType<RadixSubProps> = dialogLazy("Dialo
 export const DialogFooter: ComponentType<RadixSubProps> = dialogLazy("DialogFooter");
 export const DialogClose: ComponentType<RadixSubProps> = dialogLazy("DialogClose");
 
-let dropdownMenuModule: Record<string, ComponentType> | null = null;
-
-waitFor(filters.byProps("DropdownMenu", "DropdownMenuContent", "DropdownMenuTrigger"), m => {
-    dropdownMenuModule = m;
-});
-
-const dropdownMenuLazy = (name: string): AnyComponent => LazyComponent(name, () => (dropdownMenuModule?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+const dropdownMenuLazy = createModuleLazy("DropdownMenu", "DropdownMenuContent", "DropdownMenuTrigger");
 
 export const DropdownMenu: ComponentType<DropdownMenuProps> = dropdownMenuLazy("DropdownMenu");
 export const DropdownMenuTrigger: ComponentType<DropdownMenuTriggerProps> = dropdownMenuLazy("DropdownMenuTrigger");
@@ -211,13 +203,7 @@ export const DropdownMenuSub: ComponentType<DropdownMenuSubProps> = dropdownMenu
 export const DropdownMenuSubTrigger: ComponentType<DropdownMenuSubTriggerProps> = dropdownMenuLazy("DropdownMenuSubTrigger");
 export const DropdownMenuSubContent: ComponentType<DropdownMenuSubContentProps> = dropdownMenuLazy("DropdownMenuSubContent");
 
-let contextMenuModule: Record<string, ComponentType> | null = null;
-
-waitFor(filters.byProps("ContextMenu", "ContextMenuContent", "ContextMenuTrigger"), m => {
-    contextMenuModule = m;
-});
-
-const contextMenuLazy = (name: string): AnyComponent => LazyComponent(name, () => (contextMenuModule?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+const contextMenuLazy = createModuleLazy("ContextMenu", "ContextMenuContent", "ContextMenuTrigger");
 
 export const ContextMenu: ComponentType<ContextMenuProps> = contextMenuLazy("ContextMenu");
 export const ContextMenuTrigger: ComponentType<ContextMenuTriggerProps> = contextMenuLazy("ContextMenuTrigger");
@@ -254,8 +240,6 @@ export const Tooltip: ComponentType<TooltipProps> = LazyComponent("Tooltip", () 
 export const TooltipTrigger: ComponentType<TooltipTriggerProps> = LazyComponent("TooltipTrigger", () => findExportedComponent("TooltipTrigger"));
 export const TooltipContent: ComponentType<TooltipContentProps> = LazyComponent("TooltipContent", () => findExportedComponent("TooltipContent"));
 
-export const { toast } = findByPropsLazy("toast", "Toaster");
-
 export const Textarea: ComponentType<TextareaProps> = LazyComponent("Textarea", () => findExportedComponent("Textarea"));
 
 export const Checkbox: ComponentType<CheckboxProps> = LazyComponent("Checkbox", () => findExportedComponent("Checkbox"));
@@ -264,52 +248,28 @@ export const Spinner: ComponentType<SpinnerProps> = LazyComponent("Spinner", () 
 
 export const Avatar: ComponentType<AvatarProps> = LazyComponent("Avatar", () => findExportedComponent("Avatar"));
 
-let popoverModule: Record<string, ComponentType> | null = null;
-
-waitFor(filters.byProps("Popover", "PopoverContent", "PopoverTrigger"), m => {
-    popoverModule = m;
-});
-
-const popoverLazy = (name: string): AnyComponent => LazyComponent(name, () => (popoverModule?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+const popoverLazy = createModuleLazy("Popover", "PopoverContent", "PopoverTrigger");
 
 export const Popover: ComponentType<PopoverProps> = popoverLazy("Popover");
 export const PopoverTrigger: ComponentType<PopoverTriggerProps> = popoverLazy("PopoverTrigger");
 export const PopoverContent: ComponentType<PopoverContentProps> = popoverLazy("PopoverContent");
 export const PopoverArrow: ComponentType<PopoverArrowProps> = popoverLazy("PopoverArrow");
 
-let tabsModule: Record<string, ComponentType> | null = null;
-
-waitFor(filters.byProps("Tabs", "TabsList", "TabsTrigger", "TabsContent"), m => {
-    tabsModule = m;
-});
-
-const tabsLazy = (name: string): AnyComponent => LazyComponent(name, () => (tabsModule?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+const tabsLazy = createModuleLazy("Tabs", "TabsList", "TabsTrigger", "TabsContent");
 
 export const Tabs: ComponentType<TabsProps> = tabsLazy("Tabs");
 export const TabsList: ComponentType<TabsListProps> = tabsLazy("TabsList");
 export const TabsTrigger: ComponentType<TabsTriggerProps> = tabsLazy("TabsTrigger");
 export const TabsContent: ComponentType<TabsContentProps> = tabsLazy("TabsContent");
 
-let accordionModule: Record<string, ComponentType> | null = null;
-
-waitFor(filters.byProps("Accordion", "AccordionContent", "AccordionItem"), m => {
-    accordionModule = m;
-});
-
-const accordionLazy = (name: string): AnyComponent => LazyComponent(name, () => (accordionModule?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+const accordionLazy = createModuleLazy("Accordion", "AccordionContent", "AccordionItem");
 
 export const Accordion: ComponentType<AccordionProps> = accordionLazy("Accordion");
 export const AccordionItem: ComponentType<AccordionItemProps> = accordionLazy("AccordionItem");
 export const AccordionTrigger: ComponentType<AccordionTriggerProps> = accordionLazy("AccordionTrigger");
 export const AccordionContent: ComponentType<AccordionContentProps> = accordionLazy("AccordionContent");
 
-let commandModule: Record<string, ComponentType> | null = null;
-
-waitFor(filters.byProps("Command", "CommandInput", "CommandList", "CommandItem"), m => {
-    commandModule = m;
-});
-
-const commandLazy = (name: string): AnyComponent => LazyComponent(name, () => (commandModule?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+const commandLazy = createModuleLazy("Command", "CommandInput", "CommandList", "CommandItem");
 
 export const Command: ComponentType<CommandProps> = commandLazy("Command");
 export const CommandInput: ComponentType<CommandInputProps> = commandLazy("CommandInput");

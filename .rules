@@ -72,7 +72,7 @@ Always use centralized imports. Never create per-file finders for things that ex
 | copyToClipboard, debounce, sleep, clamp, errorMessage, sanitizeFilename, formatCountdown, formatDuration, mergeDefaults, onlyOnce, fetchExternal, createExternalStore | `@utils/misc` |
 | registerStyle, enableStyle, disableStyle, classNameFactory, classes | `@utils/css` |
 | Logger | `@utils/Logger` |
-| buildZip | `@utils/zip` |
+| addTheme, removeTheme, enableTheme, disableTheme, getThemes, isThemesEnabled, setThemesEnabled | `@api/Themes` |
 | ConfirmDialog, ErrorBoundary, ErrorCard | `@components` |
 | Text, Flex, Grid, Paragraph, Chip, ChatBarButton | `@components` |
 | Icons | `@components/icons` |

@@ -1,6 +1,6 @@
 import type { FileMetadata } from "../common/Asset";
 import type { ResponseSender, ResponseState } from "../enums/conversation";
-import type { ModelId, ModelMode, RequestKind } from "../enums/models";
+import type { ModelId, ModelMode, ReasoningMode, RequestKind } from "../enums/models";
 import type { ZustandStore } from "../zustand";
 
 /**
@@ -100,7 +100,7 @@ export interface GrokResponse {
     requestMetadata?: {
         model?: ModelId;
         mode?: ModelMode;
-        effort?: any;
+        effort?: ReasoningMode;
     };
 }
 
@@ -183,9 +183,9 @@ export interface ResponseStoreState {
     removeNodesPromise: (conversationId: string) => void;
 
     /** Fetch the response node tree for a conversation. */
-    fetchListResponseNodes: (conversationId: string) => Promise<any>;
+    fetchListResponseNodes: (conversationId: string) => Promise<ResponseNode[]>;
     /** Fetch in-flight (still streaming) responses for a conversation. */
-    fetchListInflightResponses: (conversationId: string) => Promise<any>;
+    fetchListInflightResponses: (conversationId: string) => Promise<GrokResponse[]>;
     /** Load responses for a conversation with caching. */
     loadResponses: (conversationId: string, options?: any) => Promise<any>;
     /** Load the initial page of responses for a conversation. */
@@ -193,7 +193,7 @@ export interface ResponseStoreState {
     /** Load the next page of responses (pagination). */
     loadMoreResponses: (conversationId: string, options?: any) => Promise<any>;
     /** Load preview responses for a specific response branch. */
-    loadPreviewResponses: (conversationId: string, responseId?: any) => Promise<any>;
+    loadPreviewResponses: (conversationId: string, responseId?: string) => Promise<any>;
     /** Load a specific branch of the conversation tree. */
     loadConversationBranch: (conversationId: string, branchId: string, options?: any) => Promise<any>;
     /** Load image-specific responses for a conversation. */

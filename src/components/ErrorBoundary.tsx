@@ -11,7 +11,6 @@ export interface ErrorBoundaryProps {
     fallback?: ReactNode;
     children?: ReactNode;
     onError?: (error: Error) => void;
-    [key: string]: any;
 }
 
 interface ErrorBoundaryState {

@@ -1,3 +1,4 @@
+import type { LoadingStatus } from "../common/LoadingStatus";
 import type {
 	GridPermitState,
 	ImagineActionMode,
@@ -185,7 +186,7 @@ export interface MediaStoreState {
 	/** Prompt index within the current session. */
 	imagineSessionPromptIndex: number;
 	/** First fetch status per context. */
-	firstFetchStatus: Record<string, any>;
+	firstFetchStatus: Record<string, LoadingStatus>;
 	/** Last context switch value. */
 	lastSwitchContext: string | null;
 	/** Whether a video generation was content moderated. */
@@ -349,13 +350,13 @@ export interface MediaStoreState {
 	/** Fetch a paginated list of media posts. */
 	fetchListMediaPosts: (filter: any) => Promise<any>;
 	/** Fetch a single media post by ID. */
-	fetchMediaPost: (id: string) => Promise<any>;
+	fetchMediaPost: (id: string) => Promise<MediaItem>;
 	/** Create a media post from a text prompt. */
-	createMediaPostFromPrompt: (mediaType: string, prompt: string) => Promise<any>;
+	createMediaPostFromPrompt: (mediaType: MediaPostType, prompt: string) => Promise<MediaItem>;
 	/** Create a media post from a generated image. */
-	createMediaPostFromGeneratedImage: (media: MediaItem) => Promise<any>;
+	createMediaPostFromGeneratedImage: (media: MediaItem) => Promise<MediaItem>;
 	/** Create a media post from a URL. */
-	createMediaPostFromUrl: (url: string, mimeType?: string) => Promise<any>;
+	createMediaPostFromUrl: (url: string, mimeType?: string) => Promise<MediaItem>;
 	/** Resolve a possibly-generated media item to a permanent post. */
 	resolveMediaPostForMaybeGenerated: (media: MediaItem) => Promise<MediaItem>;
 	/** Create a share link for a media post. */
