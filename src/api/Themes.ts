@@ -25,8 +25,12 @@ interface ThemeMeta {
     description: string;
 }
 
-function getSettingsObj(): Record<string, any> {
+function getPluginSettings(): Record<string, any> {
     return (Settings.plugins.Settings as Record<string, any>) ?? {};
+}
+
+function updatePluginSettings(patch: Record<string, any>) {
+    Settings.plugins.Settings = { ...Settings.plugins.Settings, ...patch };
 }
 
 function themeStyleId(url: string) {
@@ -53,22 +57,16 @@ function parseThemeMeta(css: string) {
 }
 
 export function getThemes(): ThemeData[] {
-    const s = getSettingsObj();
+    const s = getPluginSettings();
     return Array.isArray(s.themes) ? s.themes as ThemeData[] : [];
 }
 
 export function isThemesEnabled(): boolean {
-    return getSettingsObj().themesEnabled !== false;
-}
-
-function saveThemes(themes: ThemeData[]) {
-    const prev = Settings.plugins.Settings;
-    Settings.plugins.Settings = { ...prev, themes };
+    return getPluginSettings().themesEnabled !== false;
 }
 
 export function setThemesEnabled(enabled: boolean) {
-    const prev = Settings.plugins.Settings;
-    Settings.plugins.Settings = { ...prev, themesEnabled: enabled };
+    updatePluginSettings({ themesEnabled: enabled });
 
     for (const theme of getThemes()) {
         if (theme.enabled) {
@@ -105,7 +103,7 @@ export async function addTheme(url: string): Promise<ThemeData> {
     const meta = parseThemeMeta(css);
     const theme: ThemeData = {
         url,
-        name: meta.name || urlToName(url),
+        name: meta.name || (url.split("/").pop() ?? url).replace(/\.css$/i, "").replace(/[-_]/g, " "),
         author: meta.author,
         description: meta.description,
         enabled: false,
@@ -114,18 +112,18 @@ export async function addTheme(url: string): Promise<ThemeData> {
     registerStyle(themeStyleId(url), css);
     disableStyle(themeStyleId(url));
 
-    saveThemes([...existing, theme]);
+    updatePluginSettings({ themes: [...existing, theme] });
     logger.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
 }
 
 export function removeTheme(url: string) {
     disableStyle(themeStyleId(url));
-    saveThemes(getThemes().filter(t => t.url !== url));
+    updatePluginSettings({ themes: getThemes().filter(t => t.url !== url) });
 }
 
 export async function enableTheme(url: string) {
-    saveThemes(getThemes().map(t => (t.url === url ? { ...t, enabled: true } : t)));
+    updatePluginSettings({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: true } : t)) });
     if (!isThemesEnabled()) return;
 
     const id = themeStyleId(url);
@@ -138,7 +136,7 @@ export async function enableTheme(url: string) {
 }
 
 export function disableTheme(url: string) {
-    saveThemes(getThemes().map(t => (t.url === url ? { ...t, enabled: false } : t)));
+    updatePluginSettings({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: false } : t)) });
     disableStyle(themeStyleId(url));
 }
 
@@ -156,13 +154,9 @@ export async function loadSavedThemes() {
     );
 
     for (let i = 0; i < results.length; i++) {
-        if (results[i].status === "rejected") {
-            logger.warn(`Failed to load theme "${enabled[i].name}":`, (results[i] as PromiseRejectedResult).reason);
+        const result = results[i];
+        if (result.status === "rejected") {
+            logger.warn(`Failed to load theme "${enabled[i].name}":`, result.reason);
         }
     }
-}
-
-function urlToName(url: string) {
-    const filename = url.split("/").pop() ?? url;
-    return filename.replace(/\.css$/i, "").replace(/[-_]/g, " ");
 }

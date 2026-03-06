@@ -48,7 +48,7 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
                     )}
                 </DialogHeader>
                 <Separator />
-                {plugin.authors?.length && (
+                {!!plugin.authors?.length && (
                     <Flex flexDirection="column" gap="0.25rem">
                         <Text size="sm" weight="medium">
                             Authors

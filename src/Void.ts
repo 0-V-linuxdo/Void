@@ -8,6 +8,7 @@ import { initPluginManager, isPluginEnabled, plugins, registerPlugin, startAllPl
 import { _resolveReady, blacklistBadModules, getModuleCache, getRuntimeFactoryRegistry, onModuleLoad, patches, patchTurbopack, reportOrphanedPatches, rescanRuntimeModules } from "@turbopack/patchTurbopack";
 import { filters, waitFor } from "@turbopack/turbopack";
 import { Logger } from "@utils/Logger";
+import { onlyOnce } from "@utils/misc";
 import { type Plugin, StartAt } from "@utils/types";
 import { checkForUpdates } from "@utils/updateChecker";
 
@@ -105,10 +106,9 @@ function waitForModulesStable() {
     let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
     let unsubLoad: (() => void) | null = null;
     let cancelWaitFor: (() => void) | null = null;
-    let fired = false;
 
-    const fire = () => {
-        if (fired) return;
+    let fired = false;
+    const fire = onlyOnce(() => {
         fired = true;
         if (settleTimer) clearTimeout(settleTimer);
         if (fallbackTimer) clearTimeout(fallbackTimer);
@@ -122,10 +122,9 @@ function waitForModulesStable() {
         retryFailedPlugins();
         deferOrphanReport();
         checkForUpdates();
-    };
+    });
 
     const settleUntilReady = () => {
-        if (fired) return;
         if (settleTimer) clearTimeout(settleTimer);
         if (hasEnoughModules()) {
             fire();

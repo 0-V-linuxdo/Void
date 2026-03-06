@@ -18,50 +18,44 @@ const STYLE_ID = "void-custom-css";
 
 const ThemeModule: { darkTheme: any } = findLazy(m => m.darkTheme?.base === "vs-dark");
 
-export function getCustomCSSSettings(): Record<string, any> {
+function getPluginSettings(): Record<string, any> {
     return (Settings.plugins.Settings as Record<string, any>) ?? {};
 }
 
-function injectCSS(css: string) {
-    registerStyle(STYLE_ID, css);
-}
-
-function removeCSS() {
-    disableStyle(STYLE_ID);
+function updatePluginSettings(patch: Record<string, any>) {
+    Settings.plugins.Settings = { ...Settings.plugins.Settings, ...patch };
 }
 
 export function setCustomCSSEnabled(enabled: boolean) {
-    const prev = Settings.plugins.Settings;
-    Settings.plugins.Settings = { ...prev, customCSSEnabled: enabled };
+    updatePluginSettings({ customCSSEnabled: enabled });
     if (enabled) {
-        const css = typeof getCustomCSSSettings().customCSS === "string" ? getCustomCSSSettings().customCSS : "";
-        if (css) injectCSS(css);
+        const css = getPluginSettings().customCSS;
+        if (typeof css === "string" && css) registerStyle(STYLE_ID, css);
     } else {
-        removeCSS();
+        disableStyle(STYLE_ID);
     }
 }
 
 export function loadSavedCSS(): string {
-    const s = getCustomCSSSettings();
+    const s = getPluginSettings();
     const saved = s.customCSS;
     if (typeof saved === "string" && saved && s.customCSSEnabled !== false) {
-        injectCSS(saved);
+        registerStyle(STYLE_ID, saved);
         return saved;
     }
     return typeof saved === "string" ? saved : "";
 }
 
 function applyCSS(css: string) {
-    const prev = Settings.plugins.Settings;
-    const enabled = (prev as Record<string, any>)?.customCSSEnabled !== false;
-    Settings.plugins.Settings = { ...prev, customCSS: css };
-    if (enabled) injectCSS(css);
+    const enabled = getPluginSettings().customCSSEnabled !== false;
+    updatePluginSettings({ customCSS: css });
+    if (enabled) registerStyle(STYLE_ID, css);
 }
 
 export default function CustomCSSTab() {
     const containerRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<any>(null);
-    const [enabled, setEnabled] = useState(() => getCustomCSSSettings().customCSSEnabled !== false);
+    const [enabled, setEnabled] = useState(() => getPluginSettings().customCSSEnabled !== false);
 
     const handleToggle = (checked: boolean) => {
         setEnabled(checked);

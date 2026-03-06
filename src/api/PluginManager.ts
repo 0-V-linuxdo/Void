@@ -27,8 +27,7 @@ const storeRegistry: Record<string, Record<string, any>> = allStores as never;
 export function isPluginEnabled(pluginName: string): boolean {
     const plugin = plugins[pluginName];
     if (!plugin) return false;
-    if (plugin.required) return true;
-    if (plugin.isDependency) return true;
+    if (plugin.required || plugin.isDependency) return true;
     return Settings.plugins[pluginName]?.enabled ?? plugin.enabledByDefault ?? false;
 }
 
@@ -280,7 +279,10 @@ export function initPluginManager() {
         }
     }
 
-    const visible = Object.values(plugins).filter(p => !p.hidden);
-    const enabled = visible.filter(p => isPluginEnabled(p.name)).length;
-    logger.info(`${enabled}/${visible.length} plugins enabled, ${patches.length} patches`);
+    let visible = 0, enabled = 0;
+    for (const p of Object.values(plugins)) {
+        if (p.hidden) continue;
+        visible++;
+        if (isPluginEnabled(p.name)) enabled++;
+    }
 }

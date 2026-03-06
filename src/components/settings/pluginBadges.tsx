@@ -22,8 +22,9 @@ const badges: BadgeDef[] = [
 ];
 
 export function PluginBadges({ plugin, className }: { plugin: Plugin; className?: string }) {
-    return badges.map(b =>
-        plugin[b.key] ? (
+    return badges
+        .filter(b => plugin[b.key])
+        .map(b => (
             <Tooltip key={b.key}>
                 <TooltipTrigger asChild>
                     <span className={className}>
@@ -32,6 +33,5 @@ export function PluginBadges({ plugin, className }: { plugin: Plugin; className?
                 </TooltipTrigger>
                 <TooltipContent>{b.tooltip}</TooltipContent>
             </Tooltip>
-        ) : null,
-    );
+        ));
 }

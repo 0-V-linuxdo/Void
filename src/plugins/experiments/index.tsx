@@ -45,17 +45,9 @@ function syncKnownFlags(config: FeatureStoreState["config"]) {
 
     const existing = settings.plain.knownFlags;
     const firstRun = existing == null;
-    const known: Record<string, number> = existing ?? {};
+    const known: Record<string, number> = { ...(existing ?? {}) };
     const now = Date.now();
     let changed = firstRun;
-
-    if (!firstRun) {
-        const timestamps = Object.values(known);
-        if (timestamps.length > 1 && timestamps.every(t => t === timestamps[0] && t !== 0)) {
-            for (const key of Object.keys(known)) known[key] = 0;
-            changed = true;
-        }
-    }
 
     const newFlags: string[] = [];
     for (const key of booleanKeys) {
@@ -171,7 +163,7 @@ function ExperimentsTab() {
     const overrideCount = Object.keys(overrides).length;
 
     return (
-        <Flex flexDirection="column" gap="1rem" className={cl("root")}>
+        <Flex flexDirection="column" gap="1rem">
             <Flex flexDirection="column" gap="0" className={cl("section")}>
                 <Text size="sm" weight="medium">
                     Experiments

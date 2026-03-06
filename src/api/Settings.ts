@@ -139,7 +139,7 @@ export function migrateSettingsToPlugin(targetPlugin: string, sourcePlugin: stri
     }
 }
 
-function resolveDefault(setting: PluginSettingDef): any {
+export function resolveDefault(setting: PluginSettingDef): any {
     if ("default" in setting) return setting.default;
     if (setting.type === OptionType.SELECT) return (setting as { options: readonly PluginSettingSelectOption[] }).options.find(o => o.default)?.value;
     return;

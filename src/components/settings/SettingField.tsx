@@ -7,9 +7,10 @@
 import { Settings } from "@api/Settings";
 import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Slider, Switch, Text } from "@components";
 import { React, useCallback, useState } from "@turbopack/common/react";
+import { humanizeKey } from "@utils/text";
 import { OptionType, type PluginSettingDef, type PluginSettingSelectOption } from "@utils/types";
 
-import { camelToTitle, getDefaultValue } from "./utils";
+import { resolveDefault } from "./utils";
 
 interface SettingFieldProps {
     id: string;
@@ -18,7 +19,7 @@ interface SettingFieldProps {
 }
 
 function usePluginSetting(pluginName: string, id: string, setting: PluginSettingDef) {
-    const [value, setValue] = useState((Settings.plugins[pluginName] ?? {})[id] ?? getDefaultValue(setting));
+    const [value, setValue] = useState((Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting));
 
     const update = useCallback(
         (val: any) => {
@@ -35,7 +36,7 @@ function usePluginSetting(pluginName: string, id: string, setting: PluginSetting
 function SettingLabel({ id, setting }: { id: string; setting: PluginSettingDef }) {
     return (
         <Flex flexDirection="column" gap="0">
-            <SettingsTitle>{camelToTitle(id)}</SettingsTitle>
+            <SettingsTitle>{humanizeKey(id)}</SettingsTitle>
             {"description" in setting && setting.description && <SettingsDescription>{setting.description}</SettingsDescription>}
         </Flex>
     );

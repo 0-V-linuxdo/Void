@@ -4,16 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { OptionType, type Plugin, type PluginSettingDef, type PluginSettingSelectOption } from "@utils/types";
+import { OptionType, type Plugin, type PluginSettingDef } from "@utils/types";
 
-export { humanizeKey as camelToTitle } from "@utils/text";
-
-export function getDefaultValue(setting: PluginSettingDef): any {
-    if ("default" in setting) return setting.default;
-    if ("options" in setting && setting.type === OptionType.SELECT) {
-        return setting.options.find((o: PluginSettingSelectOption) => o.default)?.value;
-    }
-}
+export { resolveDefault } from "@api/Settings";
 
 export function isVisibleSetting([, s]: [string, PluginSettingDef]): boolean {
     return s.type !== OptionType.CUSTOM && !("hidden" in s && s.hidden);

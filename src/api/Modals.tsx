@@ -57,33 +57,31 @@ export function closeAllModals() {
 
 export function confirm(options: ConfirmOptions): Promise<boolean> {
     return new Promise(resolve => {
-        const key = openModal(({ onClose }) => {
-            const close = (value: boolean) => {
-                resolve(value);
-                onClose();
-            };
+        let resolved = false;
+        const settle = (value: boolean) => {
+            if (resolved) return;
+            resolved = true;
+            unsub();
+            resolve(value);
+        };
 
-            return (
-                <DialogHeader>
-                    <DialogTitle>{options.title}</DialogTitle>
-                    <DialogDescription>{options.body}</DialogDescription>
-                    <DialogFooter>
-                        <Button variant="secondary" size="md" onClick={() => close(false)}>
-                            {options.cancelText ?? "Cancel"}
-                        </Button>
-                        <Button variant={options.danger ? "danger" : "primary"} size="md" onClick={() => close(true)}>
-                            {options.confirmText ?? "Confirm"}
-                        </Button>
-                    </DialogFooter>
-                </DialogHeader>
-            );
-        });
+        const key = openModal(({ onClose }) => (
+            <DialogHeader>
+                <DialogTitle>{options.title}</DialogTitle>
+                <DialogDescription>{options.body}</DialogDescription>
+                <DialogFooter>
+                    <Button variant="secondary" size="md" onClick={() => { settle(false); onClose(); }}>
+                        {options.cancelText ?? "Cancel"}
+                    </Button>
+                    <Button variant={options.danger ? "danger" : "primary"} size="md" onClick={() => { settle(true); onClose(); }}>
+                        {options.confirmText ?? "Confirm"}
+                    </Button>
+                </DialogFooter>
+            </DialogHeader>
+        ));
 
         const unsub = store.subscribe(() => {
-            if (!modalStack.some(m => m.key === key)) {
-                unsub();
-                resolve(false);
-            }
+            if (!modalStack.some(m => m.key === key)) settle(false);
         });
     });
 }

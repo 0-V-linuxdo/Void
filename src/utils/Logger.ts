@@ -12,16 +12,6 @@ const ANSI = {
     green: "\x1b[32m",
     red: "\x1b[31m",
     yellow: "\x1b[33m",
-    magenta: "\x1b[35m",
-    gray: "\x1b[90m",
-} as const;
-
-const COLORS = {
-    log: "#a6d189",
-    info: "#a6d189",
-    error: "#e78284",
-    warn: "#e5c890",
-    debug: "#eebebe",
 } as const;
 
 export class Logger {

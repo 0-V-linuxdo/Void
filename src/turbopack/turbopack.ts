@@ -10,30 +10,12 @@ import { Logger } from "@utils/Logger";
 import { escapeRegExp } from "@utils/text";
 
 import { matchesAllPatterns } from "./match";
-import { addWaitForSubscription, getModuleCache, getRuntimeFactoryRegistry, getTurbopackHelpers, isBlacklisted, removeWaitForSubscription, syncLazyModules } from "./patchTurbopack";
+import { addWaitForSubscription, getModuleCache, getRuntimeFactoryRegistry, getTurbopackHelpers, isBlacklisted, removeWaitForSubscription, silenceWarns, syncLazyModules } from "./patchTurbopack";
 import type { FilterFn, ModuleFactory } from "./types";
 
 export { matchesAllPatterns, matchesPattern } from "./match";
 
 const logger = new Logger("TurbopackFinder", "#a6d189");
-
-let warnsSuppressed = false;
-function silenceWarns<T>(fn: () => T): T {
-    if (warnsSuppressed) return fn();
-    warnsSuppressed = true;
-    const orig = console.warn;
-    console.warn = (...args: any[]) => {
-        if (args.some(a => typeof a === "string" && (a.includes("has been renamed to") || a.includes("silence this warning")))) return;
-        if (args.length === 1 && args[0] === "") return;
-        orig.apply(console, args);
-    };
-    try {
-        return fn();
-    } finally {
-        console.warn = orig;
-        warnsSuppressed = false;
-    }
-}
 
 const fnSourceCache = new WeakMap<Function, string>();
 const zustandStoreCache = new Map<string, any>();
@@ -278,14 +260,10 @@ export function findCssClassesLazy(...classes: string[]): Record<string, string>
     return proxyLazy(() => findCssClasses(...classes));
 }
 
-function makeClassNameRegex(className: string): RegExp {
-    return new RegExp(`(?:\\b|_)${escapeRegExp(className)}(?:\\b|_)`);
-}
-
 export function mapMangledCssClasses<S extends string>(mod: Record<string, string>, classes: S[] | readonly S[]): Record<S, string> {
     const result = {} as Record<S, string>;
     for (const name of classes) {
-        const regex = makeClassNameRegex(name);
+        const regex = new RegExp(`(?:\\b|_)${escapeRegExp(name)}(?:\\b|_)`);
         let found = false;
         for (const key in mod) {
             if (typeof mod[key] === "string" && regex.test(mod[key])) {

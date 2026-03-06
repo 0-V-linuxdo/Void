@@ -17,6 +17,30 @@ Write modern, clean, professional code. Every function should be the shortest co
 - **Fast**: no unnecessary re-renders, no API spam (debounce/cache where needed), no redundant computation. `Promise.all` for parallel async. `.find`/`.some` over `.filter()[0]`.
 - **Organized**: file order is imports → Logger → finders → types → constants → functions/components → definePlugin export. Group related logic together.
 - **Concise**: inline single-use variables unless they clarify intent. No wrapper functions that just call another function. No redundant type annotations the compiler infers. No unnecessary destructuring.
+- **DRY**: no duplicate logic across files. If two files share the same helper, extract it to a shared location or re-export. When a pattern repeats (e.g. read-modify-write on settings), extract a shared helper in the same file.
+
+### What NOT to do
+
+- **No single-use wrappers**: if a function is 1–3 lines and called once, inline it at the call site.
+- **No trivial getters/setters**: `getX() { return this.x; }` — access the value directly.
+- **No alias re-exports**: don't create `camelToTitle` that just calls `humanizeKey`. Import the original.
+- **No falsy-value JSX gates**: `{arr.length && <Foo/>}` renders `0` when empty. Use `{!!arr.length && <Foo/>}` or `{arr.length > 0 && <Foo/>}`.
+- **No mutation before spread**: `const obj = existing ?? {}; obj.key = val; save({...base, obj})` mutates the original. Always copy first: `const obj = {...(existing ?? {})}`.
+- **No dangling subscriptions**: every `subscribe()` must have a matching `unsubscribe()` in all code paths (success, error, early return).
+- **No `map` returning nulls**: use `.filter().map()` instead of `.map(x => cond ? <X/> : null)`.
+- **No manual patterns when utils exist**: use `onlyOnce()` instead of hand-rolled `fired` flags, `createExternalStore()` instead of manual subscribe/getSnapshot, shared helpers instead of repeated spread patterns.
+- **No barrel imports for submodules**: import from `@turbopack/common/utils`, not `@turbopack/common`.
+
+### What TO do
+
+- Inline trivial helpers at their single call site.
+- Extract repeated multi-line patterns into a local helper within the same file.
+- Use `filter().map()` for conditional rendering lists.
+- Copy objects before mutating: `const copy = {...original}; copy.key = val;`.
+- Clean up all subscriptions and timers in every exit path.
+- Use existing utilities from `@utils/*` — check what's available before writing manual logic.
+- Prefer `for...of` with a counter over double-pass `.filter().length` when you need both count and iteration.
+
 - License header on new files uses 2026. Never edit existing headers.
 - No comments unless explicitly asked. Keep existing ones.
 - Delete dead code, don't comment it out.
@@ -47,7 +71,6 @@ Always use centralized imports. Never create per-file finders for things that ex
 | useForceUpdater, useFiltered, useCountdown, useEventSubscription | `@utils/react` |
 | copyToClipboard, debounce, sleep, clamp, errorMessage, sanitizeFilename, formatCountdown, formatDuration, mergeDefaults, onlyOnce, fetchExternal, createExternalStore | `@utils/misc` |
 | registerStyle, enableStyle, disableStyle, classNameFactory, classes | `@utils/css` |
-| Queue (sequential promise queue) | `@utils/Queue` |
 | Logger | `@utils/Logger` |
 | buildZip | `@utils/zip` |
 | ConfirmDialog, ErrorBoundary, ErrorCard | `@components` |

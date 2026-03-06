@@ -21,10 +21,6 @@ const settings = definePluginSettings({
 
 const pending = new WeakMap<HTMLVideoElement, Promise<void>>();
 
-function playVideo(video: HTMLVideoElement) {
-    pending.set(video, video.play().catch(e => logger.error("Failed to play video", e)));
-}
-
 function pauseVideo(video: HTMLVideoElement) {
     const promise = pending.get(video);
     pending.delete(video);
@@ -41,7 +37,7 @@ function pauseVideo(video: HTMLVideoElement) {
 
 const onMouseEnter = (e: { currentTarget: HTMLElement }) => {
     const video = e.currentTarget.querySelector("video");
-    if (video) playVideo(video);
+    if (video) pending.set(video, video.play().catch(e => logger.error("Failed to play video", e)));
 };
 
 const onMouseLeave = (e: { currentTarget: HTMLElement }) => {

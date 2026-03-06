@@ -8,16 +8,12 @@ import { React } from "@turbopack/common/react";
 import { ClassNames } from "@turbopack/common/utils";
 import type { HTMLAttributes, ReactNode } from "react";
 
+import { colorClasses, type TextColor } from "./Text";
+
 export interface ParagraphProps extends HTMLAttributes<HTMLParagraphElement> {
-    color?: "primary" | "secondary" | "muted";
+    color?: TextColor;
     children?: ReactNode;
 }
-
-const colorClasses = {
-    primary: "",
-    secondary: "text-secondary",
-    muted: "text-muted-foreground",
-} as const;
 
 export function Paragraph({ color = "secondary", className, children, ...props }: ParagraphProps) {
     return (

@@ -149,14 +149,26 @@ function shouldIgnoreValue(value: any): boolean {
     );
 }
 
-export function blacklistBadModules(): void {
-    const origWarn = console.warn;
+let warnsSuppressed = false;
+export function silenceWarns<T>(fn: () => T): T {
+    if (warnsSuppressed) return fn();
+    warnsSuppressed = true;
+    const orig = console.warn;
     console.warn = (...args: any[]) => {
         if (args.some(a => typeof a === "string" && (a.includes("has been renamed to") || a.includes("silence this warning")))) return;
         if (args.length === 1 && args[0] === "") return;
-        origWarn.apply(console, args);
+        orig.apply(console, args);
     };
     try {
+        return fn();
+    } finally {
+        console.warn = orig;
+        warnsSuppressed = false;
+    }
+}
+
+export function blacklistBadModules(): void {
+    silenceWarns(() => {
         for (const [, exports] of moduleCache) {
             if (shouldIgnoreValue(exports)) {
                 if (exports != null && (typeof exports === "object" || typeof exports === "function")) badExports.add(exports);
@@ -170,9 +182,7 @@ export function blacklistBadModules(): void {
                 } catch {}
             }
         }
-    } finally {
-        console.warn = origWarn;
-    }
+    });
 }
 
 export function isBlacklisted(value: any): boolean {
@@ -322,18 +332,7 @@ function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
     const original = (patched as PatchedModuleFactory)[SYM_ORIGINAL] ?? factory;
 
     const wrapped: PatchedModuleFactory = function (this: any, helpers: TurbopackHelpers, mod?: TurbopackModule, exports?: Record<string, any>) {
-        if (!turbopackHelpers) turbopackHelpers = helpers;
-        if (!runtimeModuleCache && helpers.c) {
-            runtimeModuleCache = helpers.c;
-            scanExistingModules(runtimeModuleCache);
-            for (const cb of cacheDiscoveryListeners) {
-                try {
-                    cb();
-                } catch {}
-            }
-            cacheDiscoveryListeners.clear();
-        }
-        if (!runtimeFactoryRegistry && helpers.M) runtimeFactoryRegistry = helpers.M;
+        captureRuntimeState(helpers);
 
         try {
             patched.call(this, helpers, mod, exports);
@@ -421,7 +420,7 @@ export function reportOrphanedPatches(): void {
     }
 }
 
-function scanExistingModules(cache: Record<number, TurbopackModule>) {
+function scanCache(cache: Record<number, TurbopackModule>): number {
     let count = 0;
     for (const id in cache) {
         const mod = cache[id];
@@ -432,21 +431,17 @@ function scanExistingModules(cache: Record<number, TurbopackModule>) {
             count++;
         }
     }
+    return count;
+}
+
+function scanExistingModules(cache: Record<number, TurbopackModule>) {
+    const count = scanCache(cache);
     if (IS_DEV) logger.debug(`Scanned ${count} existing modules`);
 }
 
 export function rescanRuntimeModules(): void {
     if (!runtimeModuleCache) return;
-    let count = 0;
-    for (const id in runtimeModuleCache) {
-        const mod = runtimeModuleCache[id];
-        if (mod?.exports == null) continue;
-        const numId = Number(id);
-        if (moduleCache.get(numId) !== mod.exports) {
-            notifyModuleLoaded(mod.exports, numId);
-            count++;
-        }
-    }
+    const count = scanCache(runtimeModuleCache);
     if (count > 0) logger.info(`Rescan found ${count} new/updated modules`);
 }
 
@@ -471,26 +466,38 @@ function captureFactoryRegistry(): Map<number, ModuleFactory> | null {
     return captured as Map<number, ModuleFactory> | null;
 }
 
+function captureRuntimeState(helpers: TurbopackHelpers) {
+    if (!turbopackHelpers) turbopackHelpers = helpers;
+    if (!runtimeModuleCache && helpers.c) {
+        runtimeModuleCache = helpers.c;
+        scanExistingModules(runtimeModuleCache);
+        for (const cb of cacheDiscoveryListeners) {
+            try { cb(); } catch {}
+        }
+        cacheDiscoveryListeners.clear();
+    }
+    if (!runtimeFactoryRegistry && helpers.M) runtimeFactoryRegistry = helpers.M;
+}
+
 function captureModuleCache(factoryRegistry: Map<number, ModuleFactory>): void {
     const PROBE_ID = FACTORY_PROBE_ID - 1;
-    factoryRegistry.set(PROBE_ID, ((helpers: TurbopackHelpers) => {
-        if (!turbopackHelpers) turbopackHelpers = helpers;
-        if (!runtimeModuleCache && helpers.c) {
-            runtimeModuleCache = helpers.c;
-            scanExistingModules(runtimeModuleCache);
-            for (const cb of cacheDiscoveryListeners) {
-                try {
-                    cb();
-                } catch {}
-            }
-            cacheDiscoveryListeners.clear();
-        }
-        if (!runtimeFactoryRegistry && helpers.M) runtimeFactoryRegistry = helpers.M;
-    }) as ModuleFactory);
+    factoryRegistry.set(PROBE_ID, ((helpers: TurbopackHelpers) => captureRuntimeState(helpers)) as ModuleFactory);
 
     originalPush!(["void-cache-probe", { otherChunks: [], runtimeModuleIds: [PROBE_ID] }]);
 
     Promise.resolve().then(() => factoryRegistry.delete(PROBE_ID));
+}
+
+function wrapExistingFactories() {
+    runtimeFactoryRegistry = captureFactoryRegistry();
+    if (runtimeFactoryRegistry) {
+        for (const [id, factory] of runtimeFactoryRegistry) {
+            runtimeFactoryRegistry.set(id, wrapFactory(id, factory));
+        }
+    }
+    if (!runtimeModuleCache && runtimeFactoryRegistry) {
+        captureModuleCache(runtimeFactoryRegistry);
+    }
 }
 
 export function patchTurbopack(): void {
@@ -499,18 +506,7 @@ export function patchTurbopack(): void {
     if (existingTp && !Array.isArray(existingTp) && typeof existingTp.push === "function") {
         originalPush = existingTp.push.bind(existingTp);
         existingTp.push = (...args: any[]) => handleChunkPush(...args);
-
-        runtimeFactoryRegistry = captureFactoryRegistry();
-        if (runtimeFactoryRegistry) {
-            for (const [id, factory] of runtimeFactoryRegistry) {
-                runtimeFactoryRegistry.set(id, wrapFactory(id, factory));
-            }
-        }
-
-        if (!runtimeModuleCache && runtimeFactoryRegistry) {
-            captureModuleCache(runtimeFactoryRegistry);
-        }
-
+        wrapExistingFactories();
         return;
     }
 
@@ -540,15 +536,7 @@ export function patchTurbopack(): void {
                 }
                 queuedChunks.length = 0;
 
-                runtimeFactoryRegistry = captureFactoryRegistry();
-                if (runtimeFactoryRegistry) {
-                    for (const [id, factory] of runtimeFactoryRegistry) {
-                        runtimeFactoryRegistry.set(id, wrapFactory(id, factory));
-                    }
-                }
-                if (!runtimeModuleCache && runtimeFactoryRegistry) {
-                    captureModuleCache(runtimeFactoryRegistry);
-                }
+                wrapExistingFactories();
             } else {
                 currentTurbopack = newValue as TurbopackPushable | any[];
             }
