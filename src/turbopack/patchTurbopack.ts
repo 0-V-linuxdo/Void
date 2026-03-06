@@ -8,14 +8,7 @@ import { Logger } from "@utils/Logger";
 import type { Patch, PatchReplacement } from "@utils/types";
 
 import { matchesAllPatterns, matchesPattern } from "./match";
-import { type ModuleFactory, type PatchedModuleFactory, SYM_ORIGINAL, SYM_PATCHED, SYM_PATCHED_BY, SYM_PATCHED_CODE, type TurbopackHelpers, type TurbopackModule } from "./types";
-
-interface TurbopackPushable {
-    push: (...args: any[]) => any;
-    [key: string]: any;
-}
-
-type PageWindow = Window & typeof globalThis & { TURBOPACK: TurbopackPushable | any[] | undefined };
+import { type ModuleFactory, type PageWindow, type PatchedModuleFactory, type PatchReport, type PatchResult, type PatchStats, SYM_ORIGINAL, SYM_PATCHED, SYM_PATCHED_BY, SYM_PATCHED_CODE, type TurbopackHelpers, type TurbopackModule, type TurbopackPushable } from "./types";
 
 const logger = new Logger("TurbopackPatcher", "#e78284");
 const pageWindow = (typeof unsafeWindow !== "undefined" ? unsafeWindow : window) as PageWindow;
@@ -64,19 +57,9 @@ export const onceReady = new Promise<void>(r => (_resolveReady = r));
 
 const patchTimings: Array<[plugin: string, moduleId: number, match: PatchReplacement["match"], totalTime: number]> = [];
 
-interface PatchResult {
-    plugin: string;
-    find: string;
-    moduleId: number;
-    replacements: Array<{
-        match: string;
-        status: "applied" | "noEffect" | "error";
-    }>;
-}
-
 export const patchResults: PatchResult[] = [];
 
-export const patchStats = {
+export const patchStats: PatchStats = {
     applied: 0,
     noEffect: 0,
     errors: 0,
@@ -144,6 +127,8 @@ function shouldIgnoreValue(value: any): boolean {
         value instanceof MessagePort ||
         value instanceof Map ||
         value instanceof Set ||
+        value instanceof WeakMap ||
+        value instanceof WeakSet ||
         ArrayBuffer.isView(value) ||
         (typeof WebSocket !== "undefined" && value instanceof WebSocket)
     );
@@ -215,7 +200,9 @@ function notifyModuleLoaded(exports: any, id: number) {
     for (const cb of [...moduleLoadListeners]) {
         try {
             cb();
-        } catch {}
+        } catch (e) {
+            logger.error("Module load listener error:", e);
+        }
     }
 }
 
@@ -289,9 +276,7 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
                 patchedFactory = lastFactory;
 
                 if (patch.group) {
-                    code = previousCode;
-                    patchedFactory = previousFactory;
-                    patchedBy.delete(patch.plugin);
+                    allSucceeded = false;
                     break;
                 }
             }
@@ -350,7 +335,9 @@ function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
         try {
             const actualId = mod?.id ?? moduleId;
             if (mod?.exports != null) notifyModuleLoaded(mod.exports, actualId);
-        } catch {}
+        } catch (e) {
+            logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+        }
     };
 
     wrapped.toString = () => String(factory);
@@ -364,10 +351,7 @@ function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
     return wrapped;
 }
 
-function handleChunkPush(...args: any[]) {
-    const entry = args[0];
-    if (!Array.isArray(entry)) return originalPush!(...args);
-
+function patchChunkEntry(entry: any[]): any[] {
     let patchedEntry: any[] | null = null;
     const wrappedInChunk = new Map<ModuleFactory, ModuleFactory>();
 
@@ -388,10 +372,17 @@ function handleChunkPush(...args: any[]) {
             patchedEntry[i] = wrapped;
         }
     }
-    return originalPush!.call(null, patchedEntry ?? entry);
+    return patchedEntry ?? entry;
 }
 
-export function patchReport() {
+function handleChunkPush(...args: any[]) {
+    for (let i = 0; i < args.length; i++) {
+        if (Array.isArray(args[i])) args[i] = patchChunkEntry(args[i]);
+    }
+    return originalPush!(...args);
+}
+
+export function patchReport(): PatchReport {
     return {
         stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] },
         results: patchResults,
@@ -450,7 +441,7 @@ function captureFactoryRegistry(): Map<number, ModuleFactory> | null {
     let captured: Map<number, any> | null = null;
 
     Map.prototype.set = function (key: any, value: any) {
-        if (!captured && typeof key === "number" && typeof value === "function") {
+        if (!captured && key === FACTORY_PROBE_ID && typeof value === "function") {
             captured = this;
         }
         return origMapSet.call(this, key, value);
@@ -472,7 +463,7 @@ function captureRuntimeState(helpers: TurbopackHelpers) {
         runtimeModuleCache = helpers.c;
         scanExistingModules(runtimeModuleCache);
         for (const cb of cacheDiscoveryListeners) {
-            try { cb(); } catch {}
+            try { cb(); } catch (e) { logger.error("Cache discovery listener error:", e); }
         }
         cacheDiscoveryListeners.clear();
     }

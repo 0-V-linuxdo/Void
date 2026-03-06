@@ -170,6 +170,18 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
         return true;
     } catch (e) {
         logger.error(`Failed to start plugin ${plugin.name}:`, e);
+        if (plugin.managedStyle) disableStyle(plugin.managedStyle);
+        removeChatBarButton(plugin.name);
+        if (plugin.contextMenuItems) {
+            for (const location of Object.keys(plugin.contextMenuItems)) {
+                removeContextMenuItem(location as ContextMenuLocation, plugin.name);
+            }
+        }
+        const unsubs = pluginUnsubscribers.get(plugin.name);
+        if (unsubs) {
+            for (const unsub of unsubs) unsub();
+            pluginUnsubscribers.delete(plugin.name);
+        }
         return false;
     }
 }
@@ -204,6 +216,7 @@ export function stopPlugin(plugin: Plugin): boolean {
         plugin.started = false;
         return true;
     } catch (e) {
+        plugin.started = false;
         logger.error(`Failed to stop plugin ${plugin.name}:`, e);
         return false;
     }
@@ -279,10 +292,4 @@ export function initPluginManager() {
         }
     }
 
-    let visible = 0, enabled = 0;
-    for (const p of Object.values(plugins)) {
-        if (p.hidden) continue;
-        visible++;
-        if (isPluginEnabled(p.name)) enabled++;
-    }
 }

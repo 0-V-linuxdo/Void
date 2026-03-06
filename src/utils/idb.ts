@@ -11,7 +11,8 @@ const DB_VERSION = 1;
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function open(): Promise<IDBDatabase> {
-    return dbPromise ??= new Promise((resolve, reject) => {
+    if (dbPromise) return dbPromise;
+    const promise = new Promise<IDBDatabase>((resolve, reject) => {
         const req = indexedDB.open(DB_NAME, DB_VERSION);
         req.onupgradeneeded = () => {
             if (!req.result.objectStoreNames.contains(STORE_NAME)) {
@@ -21,6 +22,9 @@ function open(): Promise<IDBDatabase> {
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
     });
+    promise.catch(() => { dbPromise = null; });
+    dbPromise = promise;
+    return promise;
 }
 
 export async function idbGet(key: string): Promise<any> {

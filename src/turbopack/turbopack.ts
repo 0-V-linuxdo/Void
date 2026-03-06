@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { makeLazy, proxyLazy } from "@utils/lazy";
+import type { ZustandStore } from "@grok-types/zustand";
+import { proxyLazy } from "@utils/lazy";
 import { LazyComponent } from "@utils/lazyReact";
 import { Logger } from "@utils/Logger";
 import { escapeRegExp } from "@utils/text";
@@ -34,7 +35,7 @@ function toZustandHookName(name: string): string {
     return name.endsWith("Store") ? `use${name}` : `use${name}Store`;
 }
 
-export function isZustandStore(val: any): boolean {
+export function isZustandStore(val: any): val is ZustandStore<any> {
     return typeof val === "function"
         && typeof val.getState === "function"
         && typeof val.setState === "function"
@@ -85,19 +86,24 @@ export const filters = {
     },
 };
 
-function searchCache(filter: FilterFn, collectAll: true, topLevelOnly?: boolean): any[];
-function searchCache(filter: FilterFn, collectAll?: false, topLevelOnly?: boolean): any;
-function searchCache(filter: FilterFn, collectAll = false, topLevelOnly = false): any {
+function withLazySync<T>(scan: () => T, isEmpty: (result: T) => boolean): T {
     return silenceWarns(() => {
-        const result = scanModuleCache(filter, collectAll, topLevelOnly);
-        if (!collectAll && result) return result;
-        if (collectAll && (result as any[]).length) return result;
-
+        const result = scan();
+        if (!isEmpty(result)) return result;
         const prevSize = getModuleCache().size;
         syncLazyModules();
         if (getModuleCache().size === prevSize) return result;
-        return scanModuleCache(filter, collectAll, topLevelOnly);
+        return scan();
     });
+}
+
+function searchCache(filter: FilterFn, collectAll: true, topLevelOnly?: boolean): any[];
+function searchCache(filter: FilterFn, collectAll?: false, topLevelOnly?: boolean): any;
+function searchCache(filter: FilterFn, collectAll = false, topLevelOnly = false): any {
+    return withLazySync(
+        () => scanModuleCache(filter, collectAll, topLevelOnly),
+        result => collectAll ? !(result as any[]).length : !result,
+    );
 }
 
 function scanModuleCache(filter: FilterFn, collectAll: boolean, topLevelOnly: boolean): any {
@@ -169,6 +175,14 @@ export function findByCodeLazy(...code: (string | RegExp)[]): any {
     return proxyLazy(() => findByCode(...code));
 }
 
+export function findByDisplayName(name: string): any {
+    return find(filters.byDisplayName(name));
+}
+
+export function findByDisplayNameLazy(name: string): any {
+    return proxyLazy(() => findByDisplayName(name));
+}
+
 export function findComponentByCode(...code: (string | RegExp)[]): any {
     return find(filters.componentByCode(...code));
 }
@@ -178,15 +192,7 @@ export function findComponentByCodeLazy(...code: (string | RegExp)[]): any {
 }
 
 export function findExportedComponent(...props: string[]): any {
-    return silenceWarns(() => {
-        const result = scanExportedComponent(props);
-        if (result) return result;
-
-        const prevSize = getModuleCache().size;
-        syncLazyModules();
-        if (getModuleCache().size === prevSize) return null;
-        return scanExportedComponent(props);
-    });
+    return withLazySync(() => scanExportedComponent(props), result => !result);
 }
 
 function scanExportedComponent(props: string[]): any {
@@ -237,7 +243,8 @@ export function findStore(name: string): any {
     if (zustandStoreCache.has(hookName)) return zustandStoreCache.get(hookName);
     const mod = find(filters.byStoreName(name));
     const hook = mod?.[hookName] ?? mod;
-    if (hook && isZustandStore(hook)) zustandStoreCache.set(hookName, hook);
+    if (!hook || !isZustandStore(hook)) return undefined;
+    zustandStoreCache.set(hookName, hook);
     return hook;
 }
 
@@ -284,7 +291,7 @@ export function findBulk(...filterFns: FilterFn[]): any[] {
         return length === 1 ? [find(filterFns[0])] : [];
     }
 
-    return silenceWarns(() => {
+    const scan = () => {
         const activeFilters: Array<FilterFn | undefined> = [...filterFns];
         const results = new Array(length).fill(null);
         let found = 0;
@@ -323,6 +330,18 @@ export function findBulk(...filterFns: FilterFn[]): any[] {
                     } catch {}
                 }
             }
+        }
+
+        return { results, found };
+    };
+
+    return silenceWarns(() => {
+        let { results, found } = scan();
+
+        if (found < length) {
+            const prevSize = getModuleCache().size;
+            syncLazyModules();
+            if (getModuleCache().size > prevSize) ({ results, found } = scan());
         }
 
         if (found !== length) logger.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
@@ -429,7 +448,14 @@ export async function extractAndLoadChunks(code: (string | RegExp)[], matcher = 
 }
 
 export function extractAndLoadChunksLazy(code: (string | RegExp)[], matcher = DefaultChunkLoadRegex): () => Promise<boolean> {
-    return makeLazy(() => extractAndLoadChunks(code, matcher));
+    let cache: Promise<boolean> | null = null;
+    return () => {
+        if (cache) return cache;
+        const promise = extractAndLoadChunks(code, matcher);
+        promise.then(ok => { if (!ok) cache = null; }, () => { cache = null; });
+        cache = promise;
+        return promise;
+    };
 }
 
 export function search(...code: (string | RegExp)[]): Record<number, ModuleFactory> {
@@ -515,7 +541,7 @@ export function waitFor(filter: FilterFn, callback: (mod: any, id: number) => vo
     if (timeout > 0) {
         timeoutId = setTimeout(() => {
             timeoutId = null;
-            if (getModuleCache().size > 0 && !searchCache(filter)) {
+            if (!searchCache(filter)) {
                 logger.warn(`waitFor timed out after ${timeout}ms:`, filter);
                 cancel();
             }
