@@ -345,6 +345,7 @@ export function handlePatch(args: PatchArgs): unknown {
                 applied: patchStats.applied,
                 noEffect: patchStats.noEffect,
                 errors: patchStats.errors,
+                runtimeFallbacks: patchStats.runtimeFallbacks,
                 patched: patchStats.patchedModules.size,
             },
         };

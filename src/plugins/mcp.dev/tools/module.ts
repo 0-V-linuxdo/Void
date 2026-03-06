@@ -287,6 +287,7 @@ export function handleModule(args: ModuleArgs): unknown {
             applied: patchStats.applied,
             errors: patchStats.errors,
             noEffect: patchStats.noEffect,
+            runtimeFallbacks: patchStats.runtimeFallbacks,
             patched: patchStats.patchedModules.size,
         };
     }

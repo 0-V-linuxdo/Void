@@ -63,6 +63,7 @@ export const patchStats: PatchStats = {
     applied: 0,
     noEffect: 0,
     errors: 0,
+    runtimeFallbacks: 0,
     patchedModules: new Set<number>(),
 };
 
@@ -323,6 +324,7 @@ function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
             patched.call(this, helpers, mod, exports);
         } catch (err) {
             if (patched === factory) throw err;
+            patchStats.runtimeFallbacks++;
             logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
             try {
                 original.call(this, helpers, mod, exports);
@@ -398,17 +400,21 @@ export function reportOrphanedPatches(): void {
             orphaned.map(p => `${p.plugin}: ${String(p.find)}`),
         );
 
-    if (IS_DEV) {
+    if (patchStats.noEffect || patchStats.errors) {
         for (const result of patchResults) {
             for (const rep of result.replacements) {
                 if (rep.status === "noEffect") logger.error(`[no effect] ${result.plugin} on ${result.moduleId}: ${rep.match}`);
                 else if (rep.status === "error") logger.error(`[error] ${result.plugin} on ${result.moduleId}: ${rep.match}`);
             }
         }
+    }
 
+    if (IS_DEV) {
         const slow = patchTimings.filter(([, , , t]) => t > 5);
         for (const [plugin, moduleId, match, time] of slow) logger.warn(`Slow patch: ${plugin} on ${moduleId} took ${time.toFixed(2)}ms (${String(match)})`);
     }
+
+    logger.info(`Patches: ${patchStats.applied} applied, ${patchStats.noEffect} no-effect, ${patchStats.errors} errors, ${patchStats.runtimeFallbacks} fallbacks, ${orphaned.length} orphaned`);
 }
 
 function scanCache(cache: Record<number, TurbopackModule>): number {

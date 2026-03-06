@@ -148,6 +148,7 @@ export interface PatchStats {
     applied: number;
     noEffect: number;
     errors: number;
+    runtimeFallbacks: number;
     patchedModules: Set<number>;
 }
 
