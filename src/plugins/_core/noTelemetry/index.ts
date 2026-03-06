@@ -17,8 +17,8 @@ export default definePlugin({
         {
             find: "ingest.us.sentry.io",
             replacement: {
-                match: /dsn:"https:\/\/.{0,80}\.ingest\.us\.sentry\.io\/.{0,30}"/,
-                replace: 'dsn:""',
+                match: /e\.s\(\["onRouterTransitionStart",\(\)=>\i\],(\d+)\);var/,
+                replace: 'e.s(["onRouterTransitionStart",()=>function(){}],$1);return;var',
             },
         },
         {
