@@ -17,7 +17,11 @@ export default definePlugin({
     hidden: true,
 
     renderItems(location: string, ctx?: Record<string, any>) {
-        return createElement(VoidContextMenuItems as any, { location, ...ctx });
+        try {
+            return createElement(VoidContextMenuItems as any, { location, ...ctx });
+        } catch {
+            return null;
+        }
     },
 
     patches: [

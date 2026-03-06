@@ -35,7 +35,7 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
         >
             <DialogContent className={cl("content")} aria-describedby={undefined}>
                 <DialogClose asChild>
-                    <Button variant="tertiary" size="sm" shape="square" className={cl("close")}>
+                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className={cl("close")}>
                         <Cross2Icon />
                     </Button>
                 </DialogClose>

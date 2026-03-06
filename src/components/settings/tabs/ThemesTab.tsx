@@ -10,6 +10,7 @@ import { addTheme, getThemes, isThemesEnabled, removeTheme, setThemesEnabled, ty
 import {
     Button,
     ConfirmDialog,
+    ErrorBoundary,
     Flex,
     Grid,
     Input,
@@ -29,16 +30,15 @@ import { useFiltered } from "@utils/react";
 import { pluralize } from "@utils/text";
 
 import ThemeCard from "../ThemeCard";
+import { type InputChangeEvent, type ListFilter } from "../utils";
 
 const cl = classNameFactory("void-themes-");
 
-type Filter = "all" | "enabled" | "disabled";
-
-const getThemeKey = (t: ThemeData) => `${t.name} ${t.description} ${t.author}`;
+const getThemeKey = (t: ThemeData) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
 
 export default function ThemesTab() {
     const [search, setSearch] = useState("");
-    const [filter, setFilter] = useState<Filter>("all");
+    const [filter, setFilter] = useState<ListFilter>("all");
     const [url, setUrl] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -86,7 +86,7 @@ export default function ThemesTab() {
 
     return (
         <Flex flexDirection="column" gap="2rem">
-            <Flex alignItems="center" justifyContent="space-between" style={{ padding: "0 0.75rem" }}>
+            <Flex alignItems="center" justifyContent="space-between" className="px-3">
                 <Flex flexDirection="column" gap="0">
                     <Text size="sm" weight="medium">
                         Themes
@@ -97,13 +97,13 @@ export default function ThemesTab() {
                 </Flex>
                 <Switch checked={enabled} onCheckedChange={handleToggle} />
             </Flex>
-            <Flex flexDirection="column" gap="0.5rem" style={{ padding: "0 0.75rem" }}>
+            <Flex flexDirection="column" gap="0.5rem" className="px-3">
                 <Flex alignItems="center" gap="0.5rem">
                     <Input
                         type="text"
                         placeholder="https://raw.githubusercontent.com/..."
                         value={url}
-                        onChange={(e: { target: { value: string } }) => { setUrl(e.target.value); setError(""); }}
+                        onChange={(e: InputChangeEvent) => { setUrl(e.target.value); setError(""); }}
                         onKeyDown={(e: { key: string }) => { if (e.key === "Enter") handleAdd(); }}
                         className="flex-1 min-w-0"
                     />
@@ -114,7 +114,7 @@ export default function ThemesTab() {
                 {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
             </Flex>
             {themes.length > 0 && (
-                <Flex flexDirection="column" gap="0.375rem" style={{ padding: "0 0.75rem" }}>
+                <Flex flexDirection="column" gap="0.375rem" className="px-3">
                     <Flex flexDirection="column" gap="0">
                         <Text size="sm" weight="medium">Installed Themes</Text>
                         <Text size="xs" color="secondary">
@@ -127,15 +127,15 @@ export default function ThemesTab() {
                 </Flex>
             )}
             {themes.length > 0 && (
-                <Flex alignItems="center" gap="0.75rem" style={{ padding: "0 0.75rem" }}>
+                <Flex alignItems="center" gap="0.75rem" className="px-3">
                     <Input
                         type="text"
                         placeholder={`Search ${themes.length} themes...`}
                         value={search}
-                        onChange={(e: { target: { value: string } }) => setSearch(e.target.value)}
+                        onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
                         className="flex-1 min-w-0"
                     />
-                    <Select value={filter} onValueChange={(v: string) => setFilter(v as Filter)}>
+                    <Select value={filter} onValueChange={(v: string) => setFilter(v as ListFilter)}>
                         <SelectTrigger className="w-28">
                             <SelectValue />
                         </SelectTrigger>
@@ -148,9 +148,11 @@ export default function ThemesTab() {
                 </Flex>
             )}
             {filtered.length > 0 && (
-                <Grid columns="repeat(2, 1fr)" style={{ padding: "0 0.75rem" }}>
+                <Grid columns="repeat(2, 1fr)" className="px-3">
                     {filtered.map(t => (
-                        <ThemeCard key={t.url} theme={t} globalEnabled={enabled} onRemove={setRemoveUrl} onToggle={() => setThemes(getThemes())} />
+                        <ErrorBoundary key={t.url} fallback={null}>
+                            <ThemeCard theme={t} globalEnabled={enabled} onRemove={setRemoveUrl} onToggle={() => setThemes(getThemes())} />
+                        </ErrorBoundary>
                     ))}
                 </Grid>
             )}

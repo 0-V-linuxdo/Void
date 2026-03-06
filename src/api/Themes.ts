@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Settings } from "@api/Settings";
+import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
 import { disableStyle, enableStyle, registerStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { fetchExternal } from "@utils/misc";
@@ -23,14 +23,6 @@ interface ThemeMeta {
     name: string;
     author: string;
     description: string;
-}
-
-function getPluginSettings(): Record<string, any> {
-    return (Settings.plugins.Settings as Record<string, any>) ?? {};
-}
-
-function updatePluginSettings(patch: Record<string, any>) {
-    Settings.plugins.Settings = { ...Settings.plugins.Settings, ...patch };
 }
 
 function themeStyleId(url: string) {
@@ -57,16 +49,16 @@ function parseThemeMeta(css: string) {
 }
 
 export function getThemes(): ThemeData[] {
-    const s = getPluginSettings();
+    const s = getSettingsPluginData();
     return Array.isArray(s.themes) ? s.themes as ThemeData[] : [];
 }
 
 export function isThemesEnabled(): boolean {
-    return getPluginSettings().themesEnabled !== false;
+    return getSettingsPluginData().themesEnabled !== false;
 }
 
 export function setThemesEnabled(enabled: boolean) {
-    updatePluginSettings({ themesEnabled: enabled });
+    updateSettingsPluginData({ themesEnabled: enabled });
 
     for (const theme of getThemes()) {
         if (theme.enabled) {
@@ -83,7 +75,7 @@ function validateThemeUrl(url: string) {
     } catch {
         throw new Error("Enter a valid URL.");
     }
-    if (!/\.css$/i.test(url)) throw new Error("URL must point to a .css file.");
+    if (!/\.css(?:[?#]|$)/i.test(url)) throw new Error("URL must point to a .css file.");
 }
 
 export async function addTheme(url: string): Promise<ThemeData> {
@@ -112,31 +104,34 @@ export async function addTheme(url: string): Promise<ThemeData> {
     registerStyle(themeStyleId(url), css);
     disableStyle(themeStyleId(url));
 
-    updatePluginSettings({ themes: [...existing, theme] });
+    updateSettingsPluginData({ themes: [...existing, theme] });
     logger.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
 }
 
 export function removeTheme(url: string) {
     disableStyle(themeStyleId(url));
-    updatePluginSettings({ themes: getThemes().filter(t => t.url !== url) });
+    updateSettingsPluginData({ themes: getThemes().filter(t => t.url !== url) });
 }
 
 export async function enableTheme(url: string) {
-    updatePluginSettings({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: true } : t)) });
+    updateSettingsPluginData({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: true } : t)) });
     if (!isThemesEnabled()) return;
 
     const id = themeStyleId(url);
     if (enableStyle(id)) return;
 
     const resp = await fetchExternal(url);
-    if (!resp.ok) return;
+    if (!resp.ok) {
+        logger.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+        return;
+    }
     const css = await resp.text();
     registerStyle(id, css);
 }
 
 export function disableTheme(url: string) {
-    updatePluginSettings({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: false } : t)) });
+    updateSettingsPluginData({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: false } : t)) });
     disableStyle(themeStyleId(url));
 }
 

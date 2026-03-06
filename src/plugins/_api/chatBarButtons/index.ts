@@ -18,7 +18,11 @@ export default definePlugin({
     hidden: true,
 
     renderButtons(iconOnly: boolean) {
-        return createElement(Fragment, null, createElement(VoidChatBarButtons, { iconOnly }), createElement(ModalContainer, null));
+        try {
+            return createElement(Fragment, null, createElement(VoidChatBarButtons, { iconOnly }), createElement(ModalContainer, null));
+        } catch {
+            return null;
+        }
     },
 
     patches: [

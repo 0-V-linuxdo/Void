@@ -72,7 +72,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
                     </Text>
                     <Flex alignItems="center" gap="0.375rem" className={cl("controls")}>
                         {hasVisibleSettings(plugin) && (
-                            <Button variant="tertiary" size="xs" shape="square" onClick={() => onSettings(name)}>
+                            <Button variant="tertiary" size="xs" shape="square" aria-label="Plugin settings" onClick={() => onSettings(name)}>
                                 <EllipsisVertical size={16} />
                             </Button>
                         )}

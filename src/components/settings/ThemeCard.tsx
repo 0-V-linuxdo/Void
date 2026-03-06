@@ -11,8 +11,10 @@ import { ButtonWithTooltip, Flex, Switch, Text } from "@components";
 import { CopyIcon, Trash2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
+import { Logger } from "@utils/Logger";
 import { copyToClipboard } from "@utils/misc";
 
+const logger = new Logger("ThemeCard");
 const cl = classNameFactory("void-theme-card-");
 
 interface ThemeCardProps {
@@ -25,7 +27,7 @@ interface ThemeCardProps {
 export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle }: ThemeCardProps) {
     const handleToggle = () => {
         if (theme.enabled) disableTheme(theme.url);
-        else enableTheme(theme.url);
+        else enableTheme(theme.url).catch(e => logger.error("Failed to enable theme:", e));
         onToggle();
     };
 

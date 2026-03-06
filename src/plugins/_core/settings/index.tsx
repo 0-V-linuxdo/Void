@@ -16,10 +16,12 @@ import { Tab as ExperimentsTab } from "@plugins/experiments";
 import { createElement, Fragment, React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory, registerStyle } from "@utils/css";
+import { Logger } from "@utils/Logger";
 import { useEventSubscription, useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType, ReactNode } from "react";
 
+const logger = new Logger("Settings");
 const cl = classNameFactory("void-settings-");
 
 const settings = definePluginSettings({
@@ -141,18 +143,28 @@ export default definePlugin({
     },
 
     renderTabs(jsx: typeof createElement, TabButton: ComponentType<TabButtonProps>) {
-        return [<VoidTabs key="void-tabs" jsx={jsx} TabButton={TabButton} />, <VersionInfo key="void-version" />];
+        try {
+            return [<VoidTabs key="void-tabs" jsx={jsx} TabButton={TabButton} />, <VersionInfo key="void-version" />];
+        } catch (e) {
+            logger.error("Failed to render tabs:", e);
+            return [];
+        }
     },
 
     renderPanels(jsx: typeof createElement, activeTab: string, Wrapper: ComponentType<WrapperProps>) {
-        return [<VoidPanels key="void-panels" jsx={jsx} activeTab={activeTab} Wrapper={Wrapper} />];
+        try {
+            return [<VoidPanels key="void-panels" jsx={jsx} activeTab={activeTab} Wrapper={Wrapper} />];
+        } catch (e) {
+            logger.error("Failed to render panels:", e);
+            return [];
+        }
     },
 
     start() {
         registerStyle("void-global", "[data-sonner-toast] [data-title]{font-weight:400}");
         if (document.head) loadSavedCSS();
         else document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
-        loadSavedThemes();
+        loadSavedThemes().catch(e => logger.error("Failed to load saved themes:", e));
     },
 
     patches: [

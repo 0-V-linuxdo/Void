@@ -70,7 +70,8 @@ export default definePlugin({
     renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
 
     _deleteFile(assetId: string) {
-        FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId);
+        Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId))
+            .catch(e => logger.error("Failed to delete asset", assetId, e));
     },
 
     patches: [

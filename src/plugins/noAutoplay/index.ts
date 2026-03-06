@@ -26,9 +26,10 @@ function pauseVideo(video: HTMLVideoElement) {
     pending.delete(video);
     if (promise) {
         promise.then(() => {
+            if (pending.has(video)) return;
             video.pause();
             video.currentTime = 0;
-        });
+        }).catch(e => logger.warn("Failed to pause video:", e));
     } else {
         video.pause();
         video.currentTime = 0;

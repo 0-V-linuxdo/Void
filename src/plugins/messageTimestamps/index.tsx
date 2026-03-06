@@ -40,13 +40,17 @@ export default definePlugin({
     settings,
 
     _renderTimestamp(response: GrokResponse) {
-        if (!response?.createTime) return null;
-        if (settings.store.hideOwnMessages && response.sender === "human") return null;
-        return (
-            <Text as="span" size="xs" color="muted" className="mb-0.5 print:hidden">
-                {formatTimestamp(response.createTime, settings.store.showDate)}
-            </Text>
-        );
+        try {
+            if (!response?.createTime) return null;
+            if (settings.store.hideOwnMessages && response.sender === "human") return null;
+            return (
+                <Text as="span" size="xs" color="muted" className="mb-0.5 print:hidden">
+                    {formatTimestamp(response.createTime, settings.store.showDate)}
+                </Text>
+            );
+        } catch {
+            return null;
+        }
     },
 
     patches: [
