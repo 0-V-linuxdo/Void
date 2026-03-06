@@ -20,6 +20,14 @@ import type {
     CommandItemProps,
     CommandListProps,
     CommandProps,
+    ContextMenuContentProps,
+    ContextMenuItemProps,
+    ContextMenuProps,
+    ContextMenuSeparatorProps,
+    ContextMenuSubContentProps,
+    ContextMenuSubProps,
+    ContextMenuSubTriggerProps,
+    ContextMenuTriggerProps,
     DialogContentProps,
     DialogHeaderProps,
     DialogProps,
@@ -89,6 +97,14 @@ export type {
     CommandItemProps,
     CommandListProps,
     CommandProps,
+    ContextMenuContentProps,
+    ContextMenuItemProps,
+    ContextMenuProps,
+    ContextMenuSeparatorProps,
+    ContextMenuSubContentProps,
+    ContextMenuSubProps,
+    ContextMenuSubTriggerProps,
+    ContextMenuTriggerProps,
     DialogCloseProps,
     DialogContentProps,
     DialogDescriptionProps,
@@ -194,6 +210,23 @@ export const DropdownMenuSeparator: ComponentType<DropdownMenuSeparatorProps> = 
 export const DropdownMenuSub: ComponentType<DropdownMenuSubProps> = dropdownMenuLazy("DropdownMenuSub");
 export const DropdownMenuSubTrigger: ComponentType<DropdownMenuSubTriggerProps> = dropdownMenuLazy("DropdownMenuSubTrigger");
 export const DropdownMenuSubContent: ComponentType<DropdownMenuSubContentProps> = dropdownMenuLazy("DropdownMenuSubContent");
+
+let contextMenuModule: Record<string, ComponentType> | null = null;
+
+waitFor(filters.byProps("ContextMenu", "ContextMenuContent", "ContextMenuTrigger"), m => {
+    contextMenuModule = m;
+});
+
+const contextMenuLazy = (name: string): AnyComponent => LazyComponent(name, () => (contextMenuModule?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
+
+export const ContextMenu: ComponentType<ContextMenuProps> = contextMenuLazy("ContextMenu");
+export const ContextMenuTrigger: ComponentType<ContextMenuTriggerProps> = contextMenuLazy("ContextMenuTrigger");
+export const ContextMenuContent: ComponentType<ContextMenuContentProps> = contextMenuLazy("ContextMenuContent");
+export const ContextMenuItem: ComponentType<ContextMenuItemProps> = contextMenuLazy("ContextMenuItem");
+export const ContextMenuSeparator: ComponentType<ContextMenuSeparatorProps> = contextMenuLazy("ContextMenuSeparator");
+export const ContextMenuSub: ComponentType<ContextMenuSubProps> = contextMenuLazy("ContextMenuSub");
+export const ContextMenuSubTrigger: ComponentType<ContextMenuSubTriggerProps> = contextMenuLazy("ContextMenuSubTrigger");
+export const ContextMenuSubContent: ComponentType<ContextMenuSubContentProps> = contextMenuLazy("ContextMenuSubContent");
 
 export const Input: ComponentType<InputProps> = LazyComponent("Input", () => findExportedComponent("Input"));
 

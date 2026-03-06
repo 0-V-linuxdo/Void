@@ -10,7 +10,7 @@ rules:
     afterBuild: after `bun run build`, ask user to reload Grok page and restart MCP server (`bun run mcp`)
     checkDeprecated: always verify components/functions arent deprecated before using
     minimalChanges: fix with smallest possible change, no refactoring unless explicitly asked
-    noOverengineering: solve the problem at hand only, no patterns for patterns sake
+    noOverengineering: solve the problem at hand only, no patterns for patterns sake. NEVER add finders/utils/components to turbopack/common/ unless existing code already needs them. Forward-looking "nice to have" additions are bloat
     commands: you can run `bun run lint:fix`, `bun run lint:styles:fix`, `bun run tsc` after changes. NEVER run `bun run build` unless explicitly asked
     humanText: write natural human text in errors, descriptions, messages. No dashes or robotic formatting
     descriptions: capital first letter, end with period
@@ -25,7 +25,7 @@ rules:
     logger: use Logger from @utils/Logger, NEVER raw console.log/warn/error
     classNames: import classNameFactory from @utils/css, prefix MUST end with `-` (e.g. `classNameFactory("void-foo-")`), use `cl("bar")` not `cl("-bar")` or `cl("")`, use `cl("root")` for root element. ONLY use cl() for our own custom CSS class names — never for Grok's Tailwind/design-token classes (e.g. use `"text-fg-danger"` directly, not `cl("danger")`)
     classJoin: use `classes()` from @utils/css to combine cl() with Tailwind or other classes, not template strings like `${a} ${b}`
-    useExisting: use utilities from @utils/, @api/, @components/, @turbopack/common/. Check barrel exports before creating new finders. Key modules: @utils/guards (isTruthy, isNonNullish, isObject), @utils/text (humanizeKey, pluralize, escapeRegExp), @utils/react (useForceUpdater, useFiltered, useAwaiter, useCountdown, useIntersection, useEventSubscription, useExternalStore), @utils/misc (copyToClipboard, debounce, errorMessage, sanitizeFilename, createExternalStore)
+    useExisting: use utilities from @utils/, @api/, @components/, @turbopack/common/. Check barrel exports before creating new finders. Key modules: @utils/guards (isTruthy, isNonNullish, isObject), @utils/text (humanizeKey, pluralize, escapeRegExp), @utils/react (useForceUpdater, useFiltered, useCountdown, useEventSubscription, useExternalStore), @utils/misc (copyToClipboard, debounce, errorMessage, sanitizeFilename, createExternalStore, sleep, clamp, fetchExternal, formatCountdown, formatDuration, mergeDefaults, onlyOnce), @utils/css (registerStyle, enableStyle, disableStyle, classNameFactory, classes), @utils/Queue (sequential promise queue)
   typescript:
     prefer: optional chaining (?.), nullish coalescing (??), const, arrow functions, satisfies over as
     use: destructuring, template literals, object shorthand, array methods, readonly where immutable
@@ -75,7 +75,7 @@ rules:
     perFileUtils: findByPropsLazy for common utils (router, i18n, zustand, toaster, classnames) ⟹ import from @turbopack/common/utils
     nullGuards: ⟹ isTruthy, isNonNullish from @utils/guards
     objectGuards: typeof x === "object" ⟹ isObject from @utils/guards
-    clipboard: navigator.clipboard ⟹ copyToClipboard from @utils/misc
+    clipboard: navigator.clipboard ⟹ copyToClipboard from @utils/misc. If also toasting on copy, use CopyUtils.copyAndToast from @turbopack/common/utils instead
     textFormatting: manual key formatting ⟹ humanizeKey from @utils/text, manual pluralization ⟹ pluralize from @utils/text
     errorStrings: manual error-to-string ⟹ errorMessage from @utils/misc
     downloads: manual blob/anchor downloads ⟹ FileUtils.downloadBlob from @turbopack/common, manual filename cleaning ⟹ sanitizeFilename from @utils/misc
@@ -103,7 +103,12 @@ structure:
   corePlugins: src/plugins/_core/ and _api/ — patch Grok to inject API functionality. Pattern: API in src/api/ → Core plugin patches to inject it
   components: src/components/ — custom Void components only, no turbopack finders. Icons in src/components/icons/
   grokComponents: src/turbopack/common/components.ts — all Grok native wrappers via LazyComponent + findExportedComponent
-  grokUtils: src/turbopack/common/utils.ts — shared Grok runtime utils (ApiClients, Toaster, ClassNames, ReasoningModeUtils, zustandCreate, i18n, NextRouter)
+  grokUtils: |
+    src/turbopack/common/utils.ts — shared Grok runtime utils. ONLY add new finders here when actually needed by existing code.
+    Exports: ApiClients (21 API clients), Toaster, ClassNames (cn, middleTruncate), ReasoningModeUtils,
+    zustandCreate, i18n (useTranslation), EnvUtils (getEnv, useEnvironment), AssetUtils (getAssetUrl, getCachedAssetUrl),
+    DownloadUtils (downloadImage), FileUtils (downloadBlob, downloadUri), RateLimitUtils (useRateLimits),
+    NextRouter (useRouter, usePathname, useSearchParams, useParams), TanStackQuery (useQuery), CopyUtils (copyAndToast)
   grokReact: src/turbopack/common/react.tsx — React instance, hooks (useState, useEffect, etc.), useReducedMotion, ReactDOM, Fragment
   addingGrokComponent: 1. type in packages/grok-types/components.d.ts → 2. LazyComponent wrapper in common/components.ts → 3. re-exported via wildcard from common/index.ts
   addingGrokUtil: typed finder in common/utils.ts → re-exported via wildcard from common/index.ts

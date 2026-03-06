@@ -799,6 +799,51 @@ export type CommandEmpty = ComponentType<CommandEmptyProps>;
 
 // #endregion
 
+// #region ContextMenu (Radix ContextMenu)
+
+export interface ContextMenuProps extends RadixRootProps {}
+
+export interface ContextMenuTriggerProps extends RadixTriggerProps {
+    disabled?: boolean;
+}
+
+export interface ContextMenuContentProps extends RadixContentProps {
+    loop?: boolean;
+    onCloseAutoFocus?: (e: Event) => void;
+    forceMount?: boolean;
+}
+
+export interface ContextMenuItemProps {
+    onSelect?: (e: Event) => void;
+    disabled?: boolean;
+    inset?: boolean;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface ContextMenuSubProps {
+    open?: boolean;
+    defaultOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    children?: ReactNode;
+}
+
+export interface ContextMenuSubTriggerProps extends ContextMenuItemProps {}
+export interface ContextMenuSubContentProps extends RadixContentProps {}
+export interface ContextMenuSeparatorProps extends RadixSubProps {}
+
+export type ContextMenu = ComponentType<ContextMenuProps>;
+export type ContextMenuTrigger = ComponentType<ContextMenuTriggerProps>;
+export type ContextMenuContent = ComponentType<ContextMenuContentProps>;
+export type ContextMenuItem = ComponentType<ContextMenuItemProps>;
+export type ContextMenuSub = ComponentType<ContextMenuSubProps>;
+export type ContextMenuSubTrigger = ComponentType<ContextMenuSubTriggerProps>;
+export type ContextMenuSubContent = ComponentType<ContextMenuSubContentProps>;
+export type ContextMenuSeparator = ComponentType<ContextMenuSeparatorProps>;
+
+// #endregion
+
 // #region ResponsiveDialog
 
 export interface ResponsiveDialogProps extends DialogProps {}

@@ -9,16 +9,12 @@ import "./CustomCSSTab.css";
 import { Settings } from "@api/Settings";
 import { Flex, Switch, Text } from "@components";
 import { React, useEffect, useRef, useState } from "@turbopack/common/react";
-import { findByPropsLazy, findLazy } from "@turbopack/turbopack";
+import { MonacoModule } from "@turbopack/common/utils";
+import { findLazy } from "@turbopack/turbopack";
 import { classNameFactory, disableStyle, registerStyle } from "@utils/css";
 
 const cl = classNameFactory("void-css-");
 const STYLE_ID = "void-custom-css";
-
-const MonacoModule: {
-    initMonaco(): Promise<void>;
-    monacoInstance: any;
-} = findByPropsLazy("initMonaco");
 
 const ThemeModule: { darkTheme: any } = findLazy(m => m.darkTheme?.base === "vs-dark");
 
