@@ -26,7 +26,7 @@ export default definePlugin({
 
     patches: [
         {
-            find: "handleIsolateClick,children:[i&&",
+            find: '"Editing actions","Editing actions"',
             all: true,
             group: true,
             replacement: [
@@ -45,10 +45,10 @@ export default definePlugin({
             ],
         },
         {
-            find: '"CopyButton",()=>',
+            find: '"more-actions-dropdown"',
             all: true,
             replacement: {
-                match: /slice\(0,5\)\}\}\)\}\)\]\}\)/,
+                match: /"more-action\.copy-model-hash".{0,80}slice\(0,5\)\}\}\)\}\)\]\}\)\]\}\)/,
                 replace: '$&,$self.renderItems("message",{response:arguments[0].response})',
             },
         },
