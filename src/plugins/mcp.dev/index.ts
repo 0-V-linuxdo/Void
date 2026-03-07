@@ -13,7 +13,10 @@ import definePlugin, { OptionType } from "@utils/types";
 
 import { toolHandlers } from "./tools";
 import { MCP as MCP_CONSTANTS } from "./tools/constants";
-
+import { clearAllIntercepts } from "./tools/intercept";
+import { clearWhereUsedCache } from "./tools/module";
+import { clearStoreCache } from "./tools/store";
+import { clearFactoryCaches } from "./tools/utils";
 const settings = definePluginSettings({
     logToolCalls: {
         type: OptionType.BOOLEAN,
@@ -21,49 +24,60 @@ const settings = definePluginSettings({
         default: true,
     },
 });
-
 const logger = new Logger("MCP", "#ca9ee6");
-
 const MCP_URL = `ws://localhost:${MCP_CONSTANTS.PORT}`;
 const { SLOW_THRESHOLD, MAX_RESULT_SIZE, INITIAL_RECONNECT_DELAY, MAX_RECONNECT_DELAY } = MCP_CONSTANTS;
-
 interface WsMessage {
     id: string | number;
     tool: string;
     arguments?: Record<string, unknown>;
 }
-
 interface WsResponse {
     id: string | number;
     result?: unknown;
     error?: string;
 }
-
 let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectDelay: number = INITIAL_RECONNECT_DELAY;
-
+let connectingLock = false;
 function truncateResult(result: unknown): unknown {
     if (Array.isArray(result)) {
-        const half = Math.max(MCP_CONSTANTS.MIN_TRUNCATED_ITEMS, Math.floor(result.length / 2));
-        return [...result.slice(0, half), { _truncated: true, total: result.length, showing: half, hint: "Use narrower query, limit, or pagination to see more" }];
+        const showing = Math.min(result.length, Math.max(MCP_CONSTANTS.MIN_TRUNCATED_ITEMS, Math.floor(result.length / 2)));
+        return [...result.slice(0, showing), { _truncated: true, total: result.length, showing, hint: "Use narrower query, limit, or pagination to see more" }];
     }
     if (isObject(result)) {
         const out: Record<string, unknown> = {};
         for (const [k, v] of Object.entries(result as Record<string, unknown>)) {
-            if (Array.isArray(v) && JSON.stringify(v).length > MCP_CONSTANTS.TRUNCATION_THRESHOLD) {
-                const half = Math.max(MCP_CONSTANTS.MIN_TRUNCATED_NESTED, Math.floor(v.length / 2));
-                out[k] = [...v.slice(0, half), { _truncated: true, total: v.length, showing: half }];
-            } else {
-                out[k] = v;
+            if (Array.isArray(v) && v.length > 0) {
+                try {
+                    const sampleSize = JSON.stringify(v[0]).length;
+                    if (sampleSize * v.length > MCP_CONSTANTS.TRUNCATION_THRESHOLD) {
+                        const showing = Math.min(v.length, Math.max(MCP_CONSTANTS.MIN_TRUNCATED_NESTED, Math.floor(v.length / 2)));
+                        out[k] = [...v.slice(0, showing), { _truncated: true, total: v.length, showing }];
+                        continue;
+                    }
+                } catch {
+                    out[k] = `[Unserializable array (${v.length} items)]`;
+                    continue;
+                }
             }
+            out[k] = v;
         }
         out._warning = "Result auto-truncated. Use narrower queries, filters, or pagination.";
         return out;
     }
     return result;
 }
-
+function safeSend(json: string) {
+    if (ws?.readyState === WebSocket.OPEN) {
+        try {
+            ws.send(json);
+        } catch (err: unknown) {
+            logger.error("WebSocket send failed", err);
+        }
+    }
+}
 function send(data: WsResponse) {
     try {
         let json = JSON.stringify(data);
@@ -71,36 +85,31 @@ function send(data: WsResponse) {
             data.result = truncateResult(data.result);
             json = JSON.stringify(data);
             if (json.length > MAX_RESULT_SIZE) {
-                ws?.send(JSON.stringify({ id: data.id, error: `Result too large (${json.length} chars) even after auto-truncation. Use narrower queries or pagination.` }));
+                safeSend(JSON.stringify({ id: data.id, error: `Result too large (${json.length} chars) even after auto-truncation. Use narrower queries or pagination.` }));
                 return;
             }
         }
-        ws?.send(json);
+        safeSend(json);
     } catch (err: unknown) {
-        try {
-            ws?.send(JSON.stringify({ id: data.id, error: `Serialization failed: ${errorMessage(err)}` }));
-        } catch (sendErr: unknown) {
-            logger.error("WebSocket send failed", sendErr);
-        }
+        safeSend(JSON.stringify({ id: data.id, error: `Serialization failed: ${errorMessage(err)}` }));
     }
 }
-
 function connect() {
-    if (ws?.readyState === WebSocket.OPEN || ws?.readyState === WebSocket.CONNECTING) return;
-
+    if (connectingLock || ws?.readyState === WebSocket.OPEN || ws?.readyState === WebSocket.CONNECTING) return;
+    connectingLock = true;
     try {
         ws = new WebSocket(MCP_URL);
     } catch {
+        connectingLock = false;
         scheduleReconnect();
         return;
     }
-
     ws.onopen = () => {
+        connectingLock = false;
         reconnectDelay = INITIAL_RECONNECT_DELAY;
         const toolCount = Object.keys(toolHandlers).length;
         logger.info(`Connected to MCP session with ${toolCount} tools ready`);
     };
-
     ws.onmessage = (event: MessageEvent) => {
         let msg: WsMessage;
         try {
@@ -109,23 +118,21 @@ function connect() {
             logger.error("Failed to parse WebSocket message", err);
             return;
         }
-
         const { id, tool, arguments: args } = msg;
-        if (!id || !tool) return;
-
+        if (id == null || !tool) return;
         const handler = toolHandlers[tool];
         if (!handler) {
             logger.error(`Unknown tool: ${tool}`);
             send({ id, error: `Unknown tool: ${tool}` });
             return;
         }
-
         const start = performance.now();
         const logCall = (failed = false) => {
             if (!settings.store.logToolCalls && !failed) return;
-            const ms = (performance.now() - start).toFixed(2);
+            const elapsed = performance.now() - start;
+            const ms = elapsed.toFixed(2);
             if (failed) logger.error(`${tool} ${ms} ms (failed)`);
-            else if (performance.now() - start > SLOW_THRESHOLD) logger.warn(`${tool} ${ms} ms (slow)`);
+            else if (elapsed > SLOW_THRESHOLD) logger.warn(`${tool} ${ms} ms (slow)`);
             else logger.info(`${tool} ${ms} ms`);
         };
         try {
@@ -150,19 +157,18 @@ function connect() {
             send({ id, error: errorMessage(err) });
         }
     };
-
     ws.onclose = ({ code, reason }) => {
         ws = null;
+        connectingLock = false;
         logger.warn(`Disconnected (code ${code}${reason ? `, ${reason}` : ""}), reconnecting in ${reconnectDelay / 1000}s`);
         scheduleReconnect();
     };
-
     ws.onerror = () => {
+        connectingLock = false;
         logger.error(`Connection to ${MCP_URL} failed. Is the MCP server running? (bun run mcp)`);
         ws?.close();
     };
 }
-
 function scheduleReconnect() {
     if (reconnectTimer) return;
     reconnectTimer = setTimeout(() => {
@@ -171,8 +177,8 @@ function scheduleReconnect() {
     }, reconnectDelay);
     reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
 }
-
 function disconnect() {
+    connectingLock = false;
     if (reconnectTimer) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
@@ -183,7 +189,6 @@ function disconnect() {
         ws = null;
     }
 }
-
 export default definePlugin({
     name: "MCP",
     description: "Connects AI coding agents to Grok via WebSocket for live inspection.",
@@ -193,8 +198,11 @@ export default definePlugin({
     start() {
         connect();
     },
-
     stop() {
         disconnect();
+        clearAllIntercepts();
+        clearFactoryCaches();
+        clearWhereUsedCache();
+        clearStoreCache();
     },
 });

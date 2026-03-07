@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { getModuleCache } from "@turbopack/patchTurbopack";
+import { getModuleCache, syncLazyModules } from "@turbopack/patchTurbopack";
 import { isObject } from "@utils/guards";
 
 import { SERIALIZE, STORE } from "./constants";
@@ -15,6 +15,11 @@ const STORE_ACTIONS = ["list", "get", "keys", "methods", "call", "subscribe"] as
 
 let storeCache: StoreEntry[] | null = null;
 let storeCacheGen = 0;
+
+export function clearStoreCache(): void {
+    storeCache = null;
+    storeCacheGen = 0;
+}
 
 function isZustandStore(value: unknown): value is ZustandLike {
     if (value == null) return false;
@@ -27,6 +32,7 @@ function isZustandStore(value: unknown): value is ZustandLike {
 function findStores(): StoreEntry[] {
     const cache = getModuleCache();
     if (storeCache && storeCacheGen === cache.size) return storeCache;
+    syncLazyModules();
 
     const stores: StoreEntry[] = [];
     const seen = new WeakSet<object>();
@@ -67,7 +73,7 @@ function getStoreFromModule(moduleId: number, exportName?: string | null): Zusta
 
 function findStoreByQuery(query: string | number): ZustandLike | null {
     const stores = findStores();
-    const numQuery = typeof query === "string" ? Number(query) : query;
+    const numQuery = typeof query === "number" ? query : (String(query).trim().length > 0 ? Number(query) : NaN);
     if (!Number.isNaN(numQuery) && Number.isFinite(numQuery)) return getStoreFromModule(numQuery);
 
     const lower = String(query).toLowerCase();
@@ -104,10 +110,12 @@ function storeNotFound(query: string | number): { error: string; similar?: strin
     return similar.length ? { error: `No store "${query}"`, similar } : { error: `No store "${query}". Use list action.` };
 }
 
-const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "clearAll", "deleteUser", "signOut", "clearSession"]);
+const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "clearAll", "deleteUser", "signOut", "clearSession", "__proto__", "constructor", "prototype"]);
 
 export function handleStore(args: StoreArgs): unknown {
-    const { action, query, path, depth = SERIALIZE.DEFAULT_DEPTH } = args;
+    const { action, query, path } = args;
+    const rawDepth = Number(args.depth);
+    const depth = Number.isFinite(rawDepth) && rawDepth >= 0 ? rawDepth : SERIALIZE.DEFAULT_DEPTH;
 
     if (action === "list") {
         return findStores().map(s => ({ id: s.id, n: s.name, k: s.keys.slice(0, STORE.LIST_KEYS_PREVIEW) }));
@@ -184,8 +192,10 @@ export function handleStore(args: StoreArgs): unknown {
         if (!query) return { error: "Provide query (store name or module ID)" };
         const store = findStoreByQuery(query);
         if (!store) return storeNotFound(query);
-        const duration = clamp(args.duration ?? STORE.DEFAULT_DURATION, STORE.MIN_DURATION, STORE.MAX_DURATION);
-        const maxCaptures = Math.min(args.maxCaptures ?? STORE.DEFAULT_CAPTURES, STORE.MAX_CAPTURES);
+        const rawDuration = Number(args.duration);
+        const duration = clamp(Number.isFinite(rawDuration) ? rawDuration : STORE.DEFAULT_DURATION, STORE.MIN_DURATION, STORE.MAX_DURATION);
+        const rawCaptures = Number(args.maxCaptures);
+        const maxCaptures = Math.min(Number.isFinite(rawCaptures) && rawCaptures > 0 ? rawCaptures : STORE.DEFAULT_CAPTURES, STORE.MAX_CAPTURES);
         const watchPath = args.path;
 
         return new Promise<unknown>(resolve => {
@@ -197,6 +207,7 @@ export function handleStore(args: StoreArgs): unknown {
             const finish = (capped: boolean) => {
                 if (done) return;
                 done = true;
+                clearTimeout(timer);
                 unsub();
                 resolve({ changes, ...(capped ? { capped: true } : {}), ms: Date.now() - startTime });
             };
@@ -216,6 +227,11 @@ export function handleStore(args: StoreArgs): unknown {
                             changes.push({ t: Date.now() - startTime, p: k, from: serialize(prevObj[k], STORE.SUBSCRIBE_DEPTH), to: serialize(curObj[k], STORE.SUBSCRIBE_DEPTH) });
                         }
                     }
+                    for (const k of Object.keys(prevObj)) {
+                        if (!(k in curObj) && changes.length < maxCaptures) {
+                            changes.push({ t: Date.now() - startTime, p: k, from: serialize(prevObj[k], STORE.SUBSCRIBE_DEPTH), to: "[deleted]" });
+                        }
+                    }
                 } else {
                     changes.push({ t: Date.now() - startTime, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
                 }
@@ -224,7 +240,7 @@ export function handleStore(args: StoreArgs): unknown {
                 if (changes.length >= maxCaptures) finish(true);
             });
 
-            setTimeout(() => finish(false), duration);
+            const timer = setTimeout(() => finish(false), duration);
         });
     }
 

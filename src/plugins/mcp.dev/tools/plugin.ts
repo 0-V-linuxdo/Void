@@ -6,6 +6,7 @@
 
 import { isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
 import { Settings } from "@api/Settings";
+import { OptionType } from "@utils/types";
 
 import type { PluginArgs, PluginInfo } from "./types";
 
@@ -38,7 +39,7 @@ export function handlePlugin(args: PluginArgs): unknown {
     if (action === "enable") {
         const wasEnabled = isPluginEnabled(resolved);
         Settings.plugins[resolved] = { ...Settings.plugins[resolved], enabled: true };
-        startPlugin(plugin);
+        if (!wasEnabled) startPlugin(plugin);
         return wasEnabled ? { ok: true, action: "enabled", name: resolved, noop: true } : { ok: true, action: "enabled", name: resolved };
     }
 
@@ -47,7 +48,7 @@ export function handlePlugin(args: PluginArgs): unknown {
         if (resolved === "MCP") return { error: "Cannot disable MCP plugin via MCP — it would kill this connection" };
         const wasDisabled = !isPluginEnabled(resolved);
         Settings.plugins[resolved] = { ...Settings.plugins[resolved], enabled: false };
-        stopPlugin(plugin);
+        if (!wasDisabled) stopPlugin(plugin);
         return wasDisabled ? { ok: true, action: "disabled", name: resolved, noop: true } : { ok: true, action: "disabled", name: resolved };
     }
 
@@ -65,6 +66,26 @@ export function handlePlugin(args: PluginArgs): unknown {
     const settingsDef = plugin.settings?.def;
     if (settingsDef && !(key in settingsDef)) {
         return { error: `Unknown setting key "${key}" for ${resolved}. Valid keys: ${Object.keys(settingsDef).join(", ")}` };
+    }
+    if (settingsDef && key in settingsDef) {
+        const def = settingsDef[key];
+        const TYPE_MAP: Partial<Record<number, string>> = {
+            [OptionType.BOOLEAN]: "boolean",
+            [OptionType.STRING]: "string",
+            [OptionType.NUMBER]: "number",
+            [OptionType.SLIDER]: "number",
+            [OptionType.BIGINT]: "bigint",
+        };
+        const expectedType = TYPE_MAP[def.type] ?? null;
+        if (expectedType && typeof value !== expectedType) {
+            return { error: `Setting "${key}" expects ${expectedType}, got ${typeof value}.` };
+        }
+        if (def.type === OptionType.SELECT) {
+            const { options } = (def as { options: readonly { value: unknown }[] });
+            if (!options.some(o => o.value === value)) {
+                return { error: `Invalid value for "${key}". Valid options: ${options.map(o => JSON.stringify(o.value)).join(", ")}` };
+            }
+        }
     }
     Settings.plugins[resolved] = { ...Settings.plugins[resolved], [key]: value };
     return { ok: true, name: resolved, key, value };

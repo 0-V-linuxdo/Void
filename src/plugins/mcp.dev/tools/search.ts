@@ -39,7 +39,9 @@ function shouldSkipModule(id: number, filter: string | undefined, loadedCache: M
 }
 
 export function handleSearch(args: SearchArgs): unknown {
-    const { pattern, max = SEARCH.DEFAULT_MAX, context = SEARCH.DEFAULT_CONTEXT, id: targetId, and: andPatterns, filter } = args;
+    const { pattern, id: targetId, and: andPatterns, filter } = args;
+    const max = Number.isFinite(args.max) && args.max! > 0 ? args.max! : SEARCH.DEFAULT_MAX;
+    const context = Number.isFinite(args.context) && args.context! >= 0 ? args.context! : SEARCH.DEFAULT_CONTEXT;
     const cappedMax = Math.min(max, SEARCH.MAX_RESULTS_CAP);
     const wasCapped = max > SEARCH.MAX_RESULTS_CAP;
 
@@ -79,16 +81,21 @@ export function handleSearch(args: SearchArgs): unknown {
             moduleHits++;
             if (matches.length >= cappedMax) continue;
 
-            let idx: number;
-            let matchLen: number;
+            let idx = 0;
+            let matchLen = 0;
             if (typeof firstPat === "string") {
-                idx = src.indexOf(firstPat);
-                matchLen = firstPat.length;
+                const pos = src.indexOf(firstPat);
+                if (pos !== -1) {
+                    idx = pos;
+                    matchLen = firstPat.length;
+                }
             } else {
                 firstPat.lastIndex = 0;
                 const m = firstPat.exec(src);
-                idx = m ? m.index : 0;
-                matchLen = m ? m[0].length : 0;
+                if (m) {
+                    idx = m.index;
+                    matchLen = m[0].length;
+                }
             }
             const { snippet, truncatedMatch } = buildSnippet(src, idx, matchLen, ctx);
             const entry: SearchMatch = { id, at: idx, s: snippet, len: src.length };
@@ -102,8 +109,9 @@ export function handleSearch(args: SearchArgs): unknown {
         return result;
     }
 
-    const { regex } = parseRegexPattern(pattern!);
-    if (!regex && pattern!.startsWith("/")) {
+    if (!pattern) return { error: "Pattern must not be empty." };
+    const { regex } = parseRegexPattern(pattern);
+    if (!regex && pattern.startsWith("/")) {
         return { error: `Invalid regex: could not parse ${pattern}. Use /pattern/flags syntax.` };
     }
 
@@ -112,7 +120,7 @@ export function handleSearch(args: SearchArgs): unknown {
         for (const [id, src] of sources) {
             if (targetId != null && id !== targetId) continue;
             if (shouldSkipModule(id, filter, loadedCache)) continue;
-            if (findMatch(src, pattern!, regex)) moduleHits++;
+            if (findMatch(src, pattern, regex)) moduleHits++;
         }
         return { count: moduleHits, total: sources.size };
     }
@@ -130,7 +138,7 @@ export function handleSearch(args: SearchArgs): unknown {
             const patched = isModulePatched(id);
             let startFrom = 0;
             while (matches.length < cappedMax && total < SEARCH.MAX_TOTAL) {
-                const hit = findMatch(src, pattern!, regex, startFrom);
+                const hit = findMatch(src, pattern, regex, startFrom);
                 if (!hit) break;
                 const { snippet, truncatedMatch } = buildSnippet(src, hit.idx, hit.len, ctx);
                 total += snippet.length;
@@ -141,7 +149,7 @@ export function handleSearch(args: SearchArgs): unknown {
                 startFrom = hit.idx + Math.max(hit.len, 1);
             }
         } else {
-            const hit = findMatch(src, pattern!, regex);
+            const hit = findMatch(src, pattern, regex);
             if (!hit) continue;
             moduleHits++;
             if (capped) continue;

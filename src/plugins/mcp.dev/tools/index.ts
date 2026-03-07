@@ -4,9 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { MCP } from "./constants";
 import { handleEval } from "./evaluate";
-import { handleGrok } from "./grok";
 import { handleIntercept } from "./intercept";
 import { handleModule } from "./module";
 import { handlePatch } from "./patch";
@@ -18,13 +16,6 @@ import type { ToolHandler } from "./types";
 
 export { TOOL_DEFINITIONS } from "./definitions";
 
-function handleReload(): Promise<string> {
-    return new Promise(resolve => {
-        resolve("Reloading page. Connection will drop and auto-reconnect.");
-        setTimeout(() => location.reload(), MCP.RELOAD_DELAY);
-    });
-}
-
 export const toolHandlers: Record<string, ToolHandler> = {
     module: handleModule,
     search: handleSearch,
@@ -33,7 +24,5 @@ export const toolHandlers: Record<string, ToolHandler> = {
     plugin: handlePlugin,
     react: handleReact,
     store: handleStore,
-    grok: handleGrok,
     intercept: handleIntercept,
-    reload: handleReload,
 };

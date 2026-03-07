@@ -94,11 +94,6 @@ export interface StoreArgs {
     maxCaptures?: number;
 }
 
-export interface GrokArgs {
-    action: "context" | "features" | "models" | "route" | "settings" | "performance";
-    filter?: string;
-}
-
 export interface InterceptArgs {
     action: "set" | "get" | "stop" | "list";
     moduleId?: number;
@@ -108,7 +103,7 @@ export interface InterceptArgs {
     maxCaptures?: number;
 }
 
-export type ToolArgs = ModuleArgs | SearchArgs | EvalArgs | PatchArgs | PluginArgs | ReactArgs | StoreArgs | GrokArgs | InterceptArgs;
+export type ToolArgs = ModuleArgs | SearchArgs | EvalArgs | PatchArgs | PluginArgs | ReactArgs | StoreArgs | InterceptArgs;
 
 export type ToolHandler = (args: any) => unknown;
 
@@ -215,10 +210,4 @@ export interface PluginInfo {
     started: boolean;
     required?: boolean;
     desc?: string;
-}
-
-export interface MemoryInfo {
-    usedJSHeapSize: number;
-    totalJSHeapSize: number;
-    jsHeapSizeLimit: number;
 }

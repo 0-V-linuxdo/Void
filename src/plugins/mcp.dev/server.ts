@@ -8,6 +8,7 @@ import { Logger } from "@utils/Logger";
 import { errorMessage } from "@utils/misc";
 import type { ServerWebSocket } from "bun";
 
+import pkg from "../../../package.json";
 import { MCP } from "./tools/constants";
 import { TOOL_DEFINITIONS } from "./tools/definitions";
 
@@ -52,7 +53,13 @@ function forwardToPage(id: string | number, tool: string, args: Record<string, u
         }, REQUEST_TIMEOUT);
 
         pending.set(id, { id, resolve, reject, timer });
-        pageSocket.send(JSON.stringify({ id, tool, arguments: args }));
+        try {
+            pageSocket.send(JSON.stringify({ id, tool, arguments: args }));
+        } catch (err: unknown) {
+            clearTimeout(timer);
+            pending.delete(id);
+            reject(new Error(`Failed to send to page: ${errorMessage(err)}`));
+        }
     });
 }
 
@@ -76,7 +83,11 @@ const server = Bun.serve({
 
         let body: JsonRpcRequest;
         try {
-            body = await req.json();
+            const parsed = await req.json();
+            if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+                return Response.json(jsonRpc(null, undefined, { code: -32600, message: "Request must be a JSON object" }), { headers: corsHeaders });
+            }
+            body = parsed;
         } catch {
             return Response.json(jsonRpc(null, undefined, { code: -32700, message: "Parse error" }), { headers: corsHeaders });
         }
@@ -84,7 +95,7 @@ const server = Bun.serve({
         const { id, method, params } = body;
 
         if (method === "initialize")
-            return Response.json(jsonRpc(id, { protocolVersion: "2024-11-05", serverInfo: { name: "void-mcp", version: "0.3.0" }, capabilities: { tools: {} } }), { headers: corsHeaders });
+            return Response.json(jsonRpc(id, { protocolVersion: "2024-11-05", serverInfo: { name: "void-mcp", version: pkg.version }, capabilities: { tools: {} } }), { headers: corsHeaders });
 
         if (method === "notifications/initialized" || method === "ping") return Response.json(jsonRpc(id, {}), { headers: corsHeaders });
 
@@ -109,7 +120,7 @@ const server = Bun.serve({
             } catch (err: unknown) {
                 const message = errorMessage(err);
                 logger.error(`${tool} FAILED: ${message}`);
-                return Response.json(jsonRpc(id, undefined, { code: -32603, message }), { headers: corsHeaders });
+                return Response.json(jsonRpc(id, { content: [{ type: "text", text: message }], isError: true }), { headers: corsHeaders });
             }
         }
 
@@ -118,6 +129,15 @@ const server = Bun.serve({
 
     websocket: {
         open(ws) {
+            if (pageSocket) {
+                logger.warn("New page connection replacing existing one");
+                for (const [, req] of pending) {
+                    clearTimeout(req.timer);
+                    req.reject(new Error("Page reconnected, previous session ended"));
+                }
+                pending.clear();
+                try { pageSocket.close(1000, "Replaced by new connection"); } catch (e) { logger.debug("Old socket already closed", e); }
+            }
             pageSocket = ws;
             connectedAt = Date.now();
             logger.info("Page connected");
