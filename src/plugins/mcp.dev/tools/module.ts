@@ -56,8 +56,26 @@ function findSharedFactoryIds(id: number, src: string): number[] {
     return siblings;
 }
 
+function attachModuleMetadata(result: Record<string, unknown>, id: number): void {
+    const src = getFactorySource(id);
+    if (src) {
+        result.len = src.length;
+        const siblings = findSharedFactoryIds(id, src);
+        if (siblings.length) {
+            result.sharedWith = siblings.length > MODULE.MAX_SHARED_WITH ? siblings.slice(0, MODULE.MAX_SHARED_WITH) : siblings;
+            if (siblings.length > MODULE.MAX_SHARED_WITH) result.sharedTotal = siblings.length;
+        }
+    }
+    attachPatchInfo(result, id);
+}
+
 let whereUsedCache: Map<number, Array<{ id: number; n: number }>> | null = null;
 let whereUsedCacheGen = 0;
+
+export function clearWhereUsedCache(): void {
+    whereUsedCache = null;
+    whereUsedCacheGen = 0;
+}
 
 function buildWhereUsedIndex(): Map<number, Array<{ id: number; n: number }>> {
     const registry = getRuntimeFactoryRegistry();
@@ -102,12 +120,23 @@ function isFunctionBrace(src: string, braceIdx: number): boolean {
     return ch !== "," && ch !== "(" && ch !== ":" && ch !== "[";
 }
 
+function skipQuote(src: string, i: number): number {
+    const q = src[i];
+    for (let j = i + 1; j < src.length; j++) {
+        if (src[j] === "\\") { j++; continue; }
+        if (src[j] === q) return j;
+    }
+    return src.length - 1;
+}
+
 function extractFunctionAt(src: string, patternIdx: number): { start: number; end: number } | null {
     let openBrace = -1;
     let hitSemicolon = false;
     const forwardLimit = Math.min(src.length, patternIdx + MODULE.FUNCTION_AT_FORWARD);
     for (let i = patternIdx; i < forwardLimit; i++) {
-        if (src[i] === "{") {
+        const ch = src[i];
+        if (ch === '"' || ch === "'" || ch === "`") { i = skipQuote(src, i); continue; }
+        if (ch === "{") {
             if (isFunctionBrace(src, i)) {
                 openBrace = i;
                 break;
@@ -115,15 +144,17 @@ function extractFunctionAt(src: string, patternIdx: number): { start: number; en
             let depth = 1;
             let k = i + 1;
             while (k < src.length && depth > 0) {
-                if (src[k] === "{") depth++;
-                else if (src[k] === "}") depth--;
+                const kc = src[k];
+                if (kc === '"' || kc === "'" || kc === "`") { k = skipQuote(src, k) + 1; continue; }
+                if (kc === "{") depth++;
+                else if (kc === "}") depth--;
                 k++;
             }
             i = k - 1;
             continue;
         }
-        if (src[i] === "}" || src[i] === ";") {
-            hitSemicolon = src[i] === ";";
+        if (ch === "}" || ch === ";") {
+            hitSemicolon = ch === ";";
             break;
         }
     }
@@ -132,16 +163,24 @@ function extractFunctionAt(src: string, patternIdx: number): { start: number; en
         const lookback = src.slice(Math.max(0, patternIdx - MODULE.FUNCTION_AT_LOOKBACK), patternIdx);
         const arrowIdx = lookback.lastIndexOf("=>");
         if (arrowIdx >= 0) {
-            let headerStart = Math.max(0, patternIdx - MODULE.FUNCTION_AT_LOOKBACK) + arrowIdx;
-            while (headerStart > 0 && patternIdx - headerStart < MODULE.FUNCTION_AT_HEADER_MAX) {
-                const ch = src[headerStart - 1];
-                if (ch === ";" || ch === "}" || ch === "\n") break;
-                headerStart--;
+            const arrowAbsIdx = Math.max(0, patternIdx - MODULE.FUNCTION_AT_LOOKBACK) + arrowIdx;
+            const between = src.slice(arrowAbsIdx + 2, patternIdx);
+            if (!between.includes("{")) {
+                let headerStart = arrowAbsIdx;
+                while (headerStart > 0 && patternIdx - headerStart < MODULE.FUNCTION_AT_HEADER_MAX) {
+                    const ch = src[headerStart - 1];
+                    if (ch === ";" || ch === "}" || ch === "\n") break;
+                    headerStart--;
+                }
+                let end = patternIdx;
+                while (end < src.length && src[end] !== ";") {
+                    const ec = src[end];
+                    if (ec === '"' || ec === "'" || ec === "`") { end = skipQuote(src, end) + 1; continue; }
+                    end++;
+                }
+                if (end < src.length) end++;
+                return { start: headerStart, end };
             }
-            let end = patternIdx;
-            while (end < src.length && src[end] !== ";") end++;
-            if (end < src.length) end++;
-            return { start: headerStart, end };
         }
     }
 
@@ -170,8 +209,10 @@ function extractFunctionAt(src: string, patternIdx: number): { start: number; en
     let fnEnd = openBrace + 1;
     let braceCount = 1;
     while (fnEnd < src.length && braceCount > 0) {
-        if (src[fnEnd] === "{") braceCount++;
-        else if (src[fnEnd] === "}") braceCount--;
+        const ch = src[fnEnd];
+        if (ch === '"' || ch === "'" || ch === "`") { fnEnd = skipQuote(src, fnEnd) + 1; continue; }
+        if (ch === "{") braceCount++;
+        else if (ch === "}") braceCount--;
         fnEnd++;
     }
 
@@ -340,6 +381,12 @@ export function handleModule(args: ModuleArgs): unknown {
                     hint: "componentByCode checks function source, $$typeof.type, and .render. Use search tool for factory source.",
                 };
             }
+            if (filterType === "storeName") {
+                return {
+                    error: `No store "${args.storeName}" found`,
+                    hint: "storeName is case-sensitive and auto-prefixes 'use'/suffixes 'Store' (e.g. 'ChatPage' → useChatPageStore). Use the store tool's list action to see all stores, or the store tool with a partial query for fuzzy matching.",
+                };
+            }
             return { error: `No match in ${cache.size} modules` };
         }
         const moduleId = findModuleId(mod);
@@ -350,15 +397,7 @@ export function handleModule(args: ModuleArgs): unknown {
                 if (state && typeof state === "object") result.stateKeys = Object.keys(state);
             } catch {}
         }
-        if (moduleId != null) {
-            const src = getFactorySource(moduleId);
-            if (src) {
-                result.len = src.length;
-                const siblings = findSharedFactoryIds(moduleId, src);
-                if (siblings.length) result.sharedWith = siblings;
-            }
-            attachPatchInfo(result, moduleId);
-        }
+        if (moduleId != null) attachModuleMetadata(result, moduleId);
         return result;
     }
 
@@ -375,11 +414,7 @@ export function handleModule(args: ModuleArgs): unknown {
         const results = mods.slice(0, cap).map(m => {
             const moduleId = findModuleId(m);
             const result: Record<string, unknown> = { id: moduleId, exports: serialize(m, 1) };
-            if (moduleId != null) {
-                const src = getFactorySource(moduleId);
-                if (src) result.len = src.length;
-                attachPatchInfo(result, moduleId);
-            }
+            if (moduleId != null) attachModuleMetadata(result, moduleId);
             return result;
         });
         if (mods.length > cap) results.push({ truncated: mods.length });
@@ -421,15 +456,9 @@ export function handleModule(args: ModuleArgs): unknown {
         const fn = comp as { displayName?: string; name?: string };
         const result: Record<string, unknown> = { id: moduleId, name: fn.displayName ?? fn.name ?? props?.[0] ?? null };
         if (moduleId != null) {
-            const src = getFactorySource(moduleId);
-            if (src) {
-                result.len = src.length;
-                const siblings = findSharedFactoryIds(moduleId, src);
-                if (siblings.length) result.sharedWith = siblings;
-            }
+            attachModuleMetadata(result, moduleId);
             const exports = getModuleCache().get(moduleId);
             if (exports && typeof exports === "object") result.keys = Object.keys(exports as object).slice(0, MODULE.EXPORT_KEYS_SLICE);
-            attachPatchInfo(result, moduleId);
         }
         return result;
     }
@@ -439,13 +468,7 @@ export function handleModule(args: ModuleArgs): unknown {
         const foundId = findModuleIdByCode(...code);
         if (foundId == null) return { error: `No factory matches [${code}]` };
         const result: Record<string, unknown> = { id: foundId, loaded: getModuleCache().has(foundId) };
-        const src = getFactorySource(foundId);
-        if (src) {
-            result.len = src.length;
-            const siblings = findSharedFactoryIds(foundId, src);
-            if (siblings.length) result.sharedWith = siblings;
-        }
-        attachPatchInfo(result, foundId);
+        attachModuleMetadata(result, foundId);
         return result;
     }
 
@@ -478,7 +501,7 @@ export function handleModule(args: ModuleArgs): unknown {
         const src = patchedCode ?? getFactorySource(id);
         if (!src) return { error: `Module ${id} not found.` };
         const cap = clampDefault(args.limit, MODULE.DEFAULT_SOURCE_LIMIT, MODULE.MAX_SOURCE_LIMIT);
-        let start = args.offset ?? 0;
+        let start = Math.max(0, Math.floor(args.offset ?? 0));
         let searchIdx = -1;
         if (args.search) {
             searchIdx = src.indexOf(args.search, start);
@@ -499,8 +522,14 @@ export function handleModule(args: ModuleArgs): unknown {
         }
         if (patchedCode) result.patched = true;
         attachPatchInfo(result, id);
-        const siblingIds = findSharedFactoryIds(id, src);
-        if (siblingIds.length) result.sharedWith = siblingIds;
+        const origSrc = patchedCode ? getFactorySource(id) : src;
+        if (origSrc) {
+            const siblingIds = findSharedFactoryIds(id, origSrc);
+            if (siblingIds.length) {
+                result.sharedWith = siblingIds.length > MODULE.MAX_SHARED_WITH ? siblingIds.slice(0, MODULE.MAX_SHARED_WITH) : siblingIds;
+                if (siblingIds.length > MODULE.MAX_SHARED_WITH) result.sharedTotal = siblingIds.length;
+            }
+        }
         return result;
     }
 
@@ -580,13 +609,9 @@ export function handleModule(args: ModuleArgs): unknown {
         const src = getFactorySource(factoryId);
         const modCache = getModuleCache();
         const loaded = modCache.has(factoryId);
-        const result: Record<string, unknown> = { id: factoryId, len: src?.length ?? 0, loaded };
+        const result: Record<string, unknown> = { id: factoryId, loaded };
         if (loaded) result.exports = serialize(modCache.get(factoryId), 1);
-        if (src) {
-            const siblings = findSharedFactoryIds(factoryId, src);
-            if (siblings.length) result.sharedWith = siblings;
-        }
-        attachPatchInfo(result, factoryId);
+        attachModuleMetadata(result, factoryId);
         return result;
     }
 
@@ -603,7 +628,10 @@ export function handleModule(args: ModuleArgs): unknown {
         if (typeof exports !== "object" || exports == null) return { id: factoryId, error: "Not an object" };
 
         const builtFilters: Record<string, FilterFn> = {};
-        for (const [name, filterType] of Object.entries(mapperDefs)) builtFilters[name] = buildFilter(filterType);
+        for (const [name, filterType] of Object.entries(mapperDefs)) {
+            if (typeof filterType !== "string") return { error: `Mapper "${name}" must be a string filter type, got ${typeof filterType}` };
+            builtFilters[name] = buildFilter(filterType);
+        }
 
         const mapped: Record<string, unknown> = {};
         const keys: Record<string, string> = {};
@@ -701,7 +729,7 @@ export function handleModule(args: ModuleArgs): unknown {
         if (idx < 0) return { error: "Pattern not found" };
         const fn = extractFunctionAt(src, idx);
         if (!fn) return { error: "Cannot determine function boundaries" };
-        const maxLen = clampDefault(args.limit, MODULE.DEFAULT_FUNCTION_AT, MODULE.FUNCTION_AT_MAX);
+        const maxLen = clampDefault(args.limit, MODULE.FUNCTION_AT_MAX, MODULE.FUNCTION_AT_MAX);
         const fnSrc = src.slice(fn.start, fn.end);
         return {
             at: idx,

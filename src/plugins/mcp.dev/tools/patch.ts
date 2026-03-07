@@ -13,15 +13,22 @@ import { PATCH } from "./constants";
 import type { LintWarning, PatchArgs } from "./types";
 import { clampDefault, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources } from "./utils";
 
+function findModulesByFind(findStr: string): { ids: number[]; results: Record<number, unknown>; canonFind: string | RegExp } {
+    const canonFind = canonicalizeMatch(findStr);
+    const results = search(canonFind);
+    const ids = Object.keys(results).map(Number);
+    return { ids, results, canonFind };
+}
+
 const PATCH_ACTIONS = ["test", "analyze", "list", "conflicts", "broken", "lint", "context"] as const;
 
 function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
     const warnings: LintWarning[] = [];
 
-    if (/\.\+\?/.test(matchStr)) warnings.push({ severity: "error", message: "Unbounded .+? gap", fix: "Use .{0,N}" });
-    if (/\.\*\?/.test(matchStr)) warnings.push({ severity: "error", message: "Unbounded .*? gap", fix: "Use .{0,N}" });
+    if (/(?<!\\)\.\+/.test(matchStr)) warnings.push({ severity: "error", message: "Unbounded .+ gap", fix: "Use .{0,N}" });
+    if (/(?<!\\)\.\*/.test(matchStr)) warnings.push({ severity: "error", message: "Unbounded .* gap", fix: "Use .{0,N}" });
 
-    const varRe = /(?:^|[^\\])(?:\b)([etrnioslcu])(?=[.,()[\]{}=!<>?:])/g;
+    const varRe = /(?:^|[^\\a-zA-Z_$\w])([etrnioslcu])(?=[.,()[\]{}=!<>?:])/g;
     const foundVars = new Set<string>();
     let vm;
     while ((vm = varRe.exec(matchStr)) !== null) {
@@ -75,13 +82,20 @@ function longestLiteral(matchStr: string): string {
         if (ch === "\\") {
             if (i + 1 < matchStr.length) {
                 const next = matchStr[i + 1];
-                if (/[dDwWsSbBnrtfvie]/.test(next)) {
+                if (/[a-zA-Z0-9]/.test(next)) {
                     if (current.length > best.length) best = current;
                     current = "";
                     i++;
                     if (next === "e" && matchStr[i + 1] === "{") {
                         const close = matchStr.indexOf("}", i + 2);
                         if (close !== -1) i = close;
+                    } else if ((next === "u" || next === "p" || next === "P" || next === "k") && i + 1 < matchStr.length && matchStr[i + 1] === "{") {
+                        const close = matchStr.indexOf("}", i + 2);
+                        if (close !== -1) i = close;
+                    } else if (next === "x") {
+                        i += 2;
+                    } else if (next === "u" && i + 1 < matchStr.length && matchStr[i + 1] !== "{") {
+                        i += 4;
                     }
                 } else {
                     current += next;
@@ -158,7 +172,7 @@ function testMatchOnSource(src: string, id: number, findStr: string, matchStr: s
     const patchedSrc = src.replace(regex, replaceStr);
     if (patchedSrc === src) warnings.push("Replacement produced identical output (no-op)");
 
-    const at = src.indexOf(matched[0]);
+    const at = matched.index!;
     const pad = clampDefault(contextPad, PATCH.DEFAULT_CONTEXT_PAD, PATCH.MAX_CONTEXT_PAD);
     const cs = Math.max(0, at - pad);
     const ce = Math.min(src.length, at + matched[0].length + pad);
@@ -175,7 +189,7 @@ function testMatchOnSource(src: string, id: number, findStr: string, matchStr: s
         matchLen: matched[0].length,
         matched: matched[0].slice(0, PATCH.MATCH_SLICE),
         before: src.slice(cs, ce),
-        after: patchedSrc.slice(cs, ce + (patchedSrc.length - src.length)),
+        after: patchedSrc.slice(cs, Math.max(cs, ce + (patchedSrc.length - src.length))),
     };
     if (/\\[ie]/.test(matchStr)) result.canonicalRegex = regex.source;
     if (matched.length > 1) result.groups = matched.slice(1).map((g: string) => g?.slice(0, PATCH.GROUP_SLICE));
@@ -184,20 +198,23 @@ function testMatchOnSource(src: string, id: number, findStr: string, matchStr: s
 }
 
 function diagnoseOrphaned(p: (typeof patches)[number]) {
-    const findStr = String(p.find);
-    const canonFind = canonicalizeMatch(findStr);
-    const results = search(canonFind);
+    const canonParts = Array.isArray(p.find) ? p.find.map(f => canonicalizeMatch(f)) : [canonicalizeMatch(String(p.find))];
+    const results = search(...canonParts);
     const ids = Object.keys(results).map(Number);
     const replacements = Array.isArray(p.replacement) ? p.replacement : [p.replacement];
+    const findLabel = String(p.find).slice(0, PATCH.FIND_SLICE);
 
-    if (!ids.length) return { plugin: p.plugin, find: findStr.slice(0, PATCH.FIND_SLICE), n: replacements.length, reason: "find matched 0 modules" };
+    if (!ids.length) return { plugin: p.plugin, find: findLabel, n: replacements.length, reason: "find matched 0 modules" };
 
-    const src = String(results[ids[0]]);
+    const sources = p.all ? ids.map(id => String(results[id])) : [String(results[ids[0]])];
     const failed = replacements.filter(r => {
+        if (typeof r.replace === "function" || typeof r.match === "function") return false;
         try {
             const regex = r.match instanceof RegExp ? r.match : canonicalizeMatch(new RegExp(r.match as string));
-            if (regex instanceof RegExp) regex.lastIndex = 0;
-            return !regex.test(src);
+            return !sources.some(src => {
+                if (regex instanceof RegExp) regex.lastIndex = 0;
+                return regex.test(src);
+            });
         } catch {
             return true;
         }
@@ -210,7 +227,7 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
             ? `find matched ${ids.length} module(s) but all ${replacements.length} match regex(es) failed`
             : `find matched ${ids.length} module(s), ${failed.length}/${replacements.length} match regex(es) failed`;
 
-    return { plugin: p.plugin, find: findStr.slice(0, PATCH.FIND_SLICE), n: replacements.length, reason };
+    return { plugin: p.plugin, find: findLabel, n: replacements.length, reason };
 }
 
 export function handlePatch(args: PatchArgs): unknown {
@@ -241,9 +258,7 @@ export function handlePatch(args: PatchArgs): unknown {
 
     if (action === "analyze") {
         if (!findStr) return { error: "Provide find string" };
-        const canonFind = canonicalizeMatch(findStr);
-        const results = search(canonFind);
-        const ids = Object.keys(results).map(Number);
+        const { ids, results, canonFind } = findModulesByFind(findStr);
         if (!ids.length) return { unique: false, count: 0, hint: "No modules match this find string" };
 
         const ctxPad = clampDefault(args.context, PATCH.ANALYZE_DEFAULT_CONTEXT, PATCH.MAX_CONTEXT_PAD);
@@ -286,9 +301,7 @@ export function handlePatch(args: PatchArgs): unknown {
     if (action === "test") {
         if (!findStr || !matchStr || !replaceStr) return { error: "Provide find, match, and replace" };
 
-        const canonFind = canonicalizeMatch(findStr);
-        const results = search(canonFind);
-        const ids = Object.keys(results).map(Number);
+        const { ids, results } = findModulesByFind(findStr);
         if (!ids.length) {
             const registry = getRuntimeFactoryRegistry();
             return { status: "FIND_NO_MATCH", hint: "No modules match this find string. Verify the string exists in module source or use search tool.", factories: registry?.size ?? 0 };
@@ -361,9 +374,7 @@ export function handlePatch(args: PatchArgs): unknown {
 
     if (action === "context") {
         if (!findStr) return { error: "Provide find string" };
-        const canonFind = canonicalizeMatch(findStr);
-        const results = search(canonFind);
-        const ids = Object.keys(results).map(Number);
+        const { ids, results, canonFind } = findModulesByFind(findStr);
         if (!ids.length) {
             const registry = getRuntimeFactoryRegistry();
             return { error: "No modules match this find string", hint: "Verify the string exists in module source or use search tool.", factories: registry?.size ?? 0 };

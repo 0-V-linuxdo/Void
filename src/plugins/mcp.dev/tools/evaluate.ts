@@ -14,34 +14,62 @@ function evalAsync(code: string): Promise<unknown> {
 
 function needsIIFE(code: string): boolean {
     const trimmed = code.trimStart();
-    return /^return\s/.test(trimmed) || /^(let|const|var)\s/.test(trimmed);
+    return /^return\s/.test(trimmed) || /^(let|const|var|class)\s/.test(trimmed);
 }
 
 const STATEMENT_RE = /^(return|throw|break|continue|if|for|while|switch|try|class|function|const|let|var)\b/;
 
+function stripTrailingComment(line: string): string {
+    let inStr: string | null = null;
+    let commentStart = -1;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === "\\" && inStr) { i++; continue; }
+        if (inStr) { if (ch === inStr) inStr = null; continue; }
+        if (ch === '"' || ch === "'" || ch === "`") { inStr = ch; continue; }
+        if (ch === "/" && line[i + 1] === "/") { commentStart = i; break; }
+        if (ch === "/" && line[i + 1] === "*") {
+            const end = line.indexOf("*/", i + 2);
+            if (end !== -1 && end === line.length - 2) { commentStart = i; break; }
+            if (end !== -1) { i = end + 1; continue; }
+        }
+    }
+    return (commentStart >= 0 ? line.slice(0, commentStart) : line).trim();
+}
+
 function autoReturn(code: string): string {
-    const lastNewline = code.lastIndexOf("\n");
-    const lastLine = lastNewline === -1 ? code.trim() : code.slice(lastNewline + 1).trim();
+    const trimmedCode = code.replace(/\s+$/, "");
+    const lastNewline = trimmedCode.lastIndexOf("\n");
+    const lastLine = lastNewline === -1 ? trimmedCode.trim() : trimmedCode.slice(lastNewline + 1).trim();
 
     if (!lastLine || /^[)\]},;]+$/.test(lastLine)) return code;
 
-    const expr = lastLine.replace(/;$/, "").trim();
+    if (/^\/\//.test(lastLine) || /^\/\*/.test(lastLine)) return code;
+
+    const expr = stripTrailingComment(lastLine).replace(/;$/, "").trim();
+    if (!expr) return code;
 
     if (STATEMENT_RE.test(expr)) {
-        const lastSemi = code.lastIndexOf(";");
-        if (lastSemi !== -1) {
-            const afterSemi = code.slice(lastSemi + 1).trim();
+        let lastSemi = trimmedCode.length - 1;
+        let parenDepth = 0;
+        for (let i = trimmedCode.length - 1; i >= 0; i--) {
+            if (trimmedCode[i] === ")") parenDepth++;
+            else if (trimmedCode[i] === "(") parenDepth--;
+            else if (trimmedCode[i] === ";" && parenDepth <= 0) { lastSemi = i; break; }
+        }
+        if (lastSemi < trimmedCode.length - 1 && trimmedCode[lastSemi] === ";") {
+            const afterSemi = stripTrailingComment(trimmedCode.slice(lastSemi + 1)).trim();
             if (afterSemi && !STATEMENT_RE.test(afterSemi)) {
-                return `${code.slice(0, lastSemi + 1)}\nreturn ${afterSemi};`;
+                return `${trimmedCode.slice(0, lastSemi + 1)}\nreturn ${afterSemi};`;
             }
         }
-        return code;
+        return trimmedCode;
     }
 
     if (lastNewline === -1) {
         return `return ${expr};`;
     }
-    return `${code.slice(0, lastNewline)}\nreturn ${expr};`;
+    return `${trimmedCode.slice(0, lastNewline)}\nreturn ${expr};`;
 }
 
 function wrapIIFE(code: string): string {
@@ -66,7 +94,7 @@ export function handleEval(args: EvalArgs): unknown {
     let r = tryEval(evalCode);
 
     if (!r.ok && r.error instanceof SyntaxError) {
-        if (r.error.message.includes("await")) {
+        if (r.error.message.includes("await") || code.includes("await ") || code.includes("import(")) {
             try {
                 return evalAsync(code).then(
                     val => serialize(val, EVAL.SERIALIZE_DEPTH),

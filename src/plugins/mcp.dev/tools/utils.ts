@@ -38,7 +38,11 @@ export function describeValue(val: unknown, maxSlice = MODULE.EXPORT_VALUE_SLICE
     if (Array.isArray(val)) return `[${val.length}]`;
     if (val instanceof Map) return `Map(${val.size})`;
     if (val instanceof Set) return `Set(${val.size})`;
-    return `{${Object.keys(val as object).slice(0, MODULE.EXPORT_KEYS_PREVIEW)}}`;
+    try {
+        return `{${Object.keys(val as object).slice(0, MODULE.EXPORT_KEYS_PREVIEW)}}`;
+    } catch {
+        return "{?}";
+    }
 }
 
 export function serialize(value: unknown, depth: number = SERIALIZE.DEFAULT_DEPTH): unknown {
@@ -67,6 +71,8 @@ function serializeInner(value: unknown, depth: number, seen: WeakSet<object>): u
     if (value === null) return null;
     const t = typeof value;
     if (t === "function") return `[fn:${(value as Function).name || "?"}]`;
+    if (t === "symbol") return (value as symbol).toString();
+    if (t === "bigint") return `${value}n`;
     if (t === "number") {
         if (Number.isNaN(value as number)) return "[NaN]";
         if (!Number.isFinite(value as number)) return value === Infinity ? "[Infinity]" : "[-Infinity]";
@@ -102,7 +108,12 @@ function serializeInner(value: unknown, depth: number, seen: WeakSet<object>): u
         if (value instanceof Error) return `[Error: ${value.message}]`;
         const obj = value as Record<string, unknown>;
         const result: Record<string, unknown> = {};
-        const keys = Object.keys(obj);
+        let keys: string[];
+        try {
+            keys = Object.keys(obj);
+        } catch {
+            return "[Object]";
+        }
         const len = Math.min(keys.length, SERIALIZE.MAX_KEYS);
         for (let i = 0; i < len; i++) {
             const key = keys[i];
@@ -119,19 +130,26 @@ function serializeInner(value: unknown, depth: number, seen: WeakSet<object>): u
     }
 }
 
-export const clampDefault = (value: number | undefined, defaultVal: number, max: number): number => Math.min(value ?? defaultVal, max);
+export const clampDefault = (value: number | undefined, defaultVal: number, max: number): number => {
+    const v = value ?? defaultVal;
+    return Number.isFinite(v) ? Math.max(0, Math.min(v, max)) : defaultVal;
+};
 
 export function getPath(obj: unknown, path: string): unknown {
     let current = obj;
     for (const p of path.split(".")) {
         if (current == null || typeof current !== "object") return undefined;
-        current = (current as Record<string, unknown>)[p];
+        try {
+            current = (current as Record<string, unknown>)[p];
+        } catch {
+            return undefined;
+        }
     }
     return current;
 }
 
 export function parseRegexPattern(pattern: string): { regex: RegExp | null; literal: string } {
-    const rm = pattern.match(/^\/(.+)\/([gimsuy]*)$/);
+    const rm = pattern.match(/^\/(.+)\/([dgimsuyv]*)$/);
     if (rm) {
         try {
             return { regex: new RegExp(rm[1], rm[2].includes("g") ? rm[2] : `${rm[2]}g`), literal: pattern };
@@ -202,8 +220,13 @@ export function getFactorySourceCache(): Map<number, string> {
     return factorySourceCache;
 }
 
+let allFactorySourcesCache: string[] | null = null;
+
 export function getAllFactorySources(): string[] {
-    return [...new Set(getFactorySourceCache().values())];
+    const cache = getFactorySourceCache();
+    if (allFactorySourcesCache && allFactorySourcesCache.length === cache.size) return allFactorySourcesCache;
+    allFactorySourcesCache = [...new Set(cache.values())];
+    return allFactorySourcesCache;
 }
 
 export function countInSources(sources: string[], text: string, max: number): number {
@@ -215,6 +238,14 @@ export function countInSources(sources: string[], text: string, max: number): nu
         }
     }
     return count;
+}
+
+export function clearFactoryCaches(): void {
+    factorySourceCache = null;
+    factorySourceCacheGen = 0;
+    allFactorySourcesCache = null;
+    reverseCache = null;
+    reverseCacheGeneration = 0;
 }
 
 export function getFactorySource(id: number): string | null {
