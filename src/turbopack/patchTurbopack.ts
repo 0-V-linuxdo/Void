@@ -76,16 +76,15 @@ export function getRuntimeModuleCache(): Record<number, TurbopackModule> | null 
 let lastSyncRtCount = 0;
 export function syncLazyModules(): void {
     if (!runtimeModuleCache) return;
-    let rtCount = 0;
-    for (const _ in runtimeModuleCache) rtCount++;
-    if (rtCount === lastSyncRtCount) return;
-    for (const id in runtimeModuleCache) {
-        const mod = runtimeModuleCache[id];
-        if (mod?.exports == null) continue;
+    const keys = Object.keys(runtimeModuleCache);
+    if (keys.length === lastSyncRtCount) return;
+    for (const id of keys) {
         const numId = Number(id);
+        const mod = runtimeModuleCache[numId];
+        if (mod?.exports == null) continue;
         if (!moduleCache.has(numId)) notifyModuleLoaded(mod.exports, numId);
     }
-    lastSyncRtCount = rtCount;
+    lastSyncRtCount = keys.length;
 }
 export function getRuntimeFactoryRegistry(): Map<number, ModuleFactory> | null {
     return runtimeFactoryRegistry;
@@ -176,7 +175,11 @@ export function isBlacklisted(value: any): boolean {
     const t = typeof value;
     if (t !== "object" && t !== "function") return false;
     if (badExports.has(value)) return true;
-    return shouldIgnoreValue(value);
+    if (shouldIgnoreValue(value)) {
+        badExports.add(value);
+        return true;
+    }
+    return false;
 }
 
 function notifyModuleLoaded(exports: any, id: number) {
@@ -185,7 +188,7 @@ function notifyModuleLoaded(exports: any, id: number) {
     moduleCache.set(id, exports);
 
     if (waitForSubscriptions.size) {
-        for (const [filter, callback] of [...waitForSubscriptions]) {
+        for (const [filter, callback] of waitForSubscriptions) {
             try {
                 if (!waitForSubscriptions.has(filter)) continue;
                 if (filter(exports)) {
@@ -198,11 +201,13 @@ function notifyModuleLoaded(exports: any, id: number) {
         }
     }
 
-    for (const cb of [...moduleLoadListeners]) {
-        try {
-            cb();
-        } catch (e) {
-            logger.error("Module load listener error:", e);
+    if (moduleLoadListeners.size) {
+        for (const cb of moduleLoadListeners) {
+            try {
+                cb();
+            } catch (e) {
+                logger.error("Module load listener error:", e);
+            }
         }
     }
 }
@@ -212,7 +217,6 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
 
     const originalCode = String(factory);
     let code = originalCode;
-    let patchedFactory: PatchedModuleFactory = factory as PatchedModuleFactory;
     const patchedBy = new Set<string>();
 
     for (let i = 0; i < patches.length; i++) {
@@ -223,9 +227,10 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
 
         const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
         const previousCode = code;
-        const previousFactory = patchedFactory;
         let allSucceeded = true;
         let groupApplied = 0;
+        let groupNoEffect = 0;
+        let groupErrors = 0;
         const result: PatchResult = {
             plugin: patch.plugin,
             find: String(patch.find),
@@ -236,7 +241,6 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
         for (const replacement of replacements) {
             if (replacement.predicate && !replacement.predicate()) continue;
             const lastCode = code;
-            const lastFactory = patchedFactory;
 
             try {
                 const { match } = replacement;
@@ -247,7 +251,7 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
                 if (IS_DEV) patchTimings.push([patch.plugin, moduleId, match, elapsed]);
 
                 if (newCode === code) {
-                    patchStats.noEffect++;
+                    groupNoEffect++;
                     result.replacements.push({ match: String(match), status: "noEffect" });
                     if (!patch.noWarn && !replacement.noWarn) logger.error(`Patch by ${patch.plugin} had no effect: ${String(match)}`);
                     if (patch.group) {
@@ -258,23 +262,14 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
                 }
 
                 code = newCode;
-
-                patchedFactory = compileFactory(code) as PatchedModuleFactory;
-                patchedFactory[SYM_ORIGINAL] = factory;
-                patchedFactory[SYM_PATCHED] = true;
-                patchedFactory[SYM_PATCHED_CODE] = code;
-
                 patchedBy.add(patch.plugin);
-                patchStats.applied++;
                 groupApplied++;
-                patchStats.patchedModules.add(moduleId);
                 result.replacements.push({ match: String(match), status: "applied" });
             } catch (err) {
-                patchStats.errors++;
+                groupErrors++;
                 result.replacements.push({ match: String(replacement.match), status: "error" });
                 logger.error(`Error in patch by ${patch.plugin} on module ${moduleId}:`, err);
                 code = lastCode;
-                patchedFactory = lastFactory;
 
                 if (patch.group) {
                     allSucceeded = false;
@@ -286,20 +281,23 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
         patchResults.push(result);
 
         if (patch.group && !allSucceeded) {
-            patchStats.applied -= groupApplied;
             code = previousCode;
-            patchedFactory = previousFactory;
             patchedBy.delete(patch.plugin);
             if (!patch.noWarn) logger.warn(`Group patch by ${patch.plugin} failed, reverting`);
             continue;
         }
+
+        patchStats.applied += groupApplied;
+        patchStats.noEffect += groupNoEffect;
+        patchStats.errors += groupErrors;
+        if (groupApplied) patchStats.patchedModules.add(moduleId);
 
         if (!patch.all) patches.splice(i--, 1);
     }
 
     if (patchedBy.size) {
         const plugins = [...patchedBy].join(", ");
-        patchedFactory = compileFactory(
+        const patchedFactory = compileFactory(
             code,
             `// Turbopack Module ${moduleId} - Patched by ${plugins}`,
             `//# sourceURL=file:///TurbopackModule${moduleId}`,
@@ -308,9 +306,10 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
         patchedFactory[SYM_PATCHED] = true;
         patchedFactory[SYM_PATCHED_CODE] = code;
         patchedFactory[SYM_PATCHED_BY] = [...patchedBy];
+        return patchedFactory;
     }
 
-    return patchedFactory;
+    return factory as PatchedModuleFactory;
 }
 
 function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {

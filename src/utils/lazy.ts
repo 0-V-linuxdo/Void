@@ -44,6 +44,16 @@ handler.getOwnPropertyDescriptor = (target, p) => {
     return descriptor;
 };
 
+handler.get = (target, p, receiver) => {
+    if (p === SYM_LAZY_CACHED || p === SYM_LAZY_GET) return Reflect.get(target, p, receiver);
+
+    const value = target[SYM_LAZY_GET]();
+    if (value == null) return undefined;
+    if (typeof value === "object" || typeof value === "function") return Reflect.get(value, p, receiver);
+
+    throw new Error("proxyLazy: factory returned a primitive value");
+};
+
 export function makeLazy<T>(factory: () => T): () => T {
     let cache: T;
     let resolved = false;
@@ -67,16 +77,5 @@ export function proxyLazy<T>(factory: () => T): T {
         },
     });
 
-    return new Proxy(proxyDummy, {
-        ...handler,
-        get(target, p, receiver) {
-            if (p === SYM_LAZY_CACHED || p === SYM_LAZY_GET) return Reflect.get(target, p, receiver);
-
-            const value = target[SYM_LAZY_GET]();
-            if (value == null) return undefined;
-            if (typeof value === "object" || typeof value === "function") return Reflect.get(value, p, receiver);
-
-            throw new Error("proxyLazy: factory returned a primitive value");
-        },
-    }) as unknown as T;
+    return new Proxy(proxyDummy, handler) as unknown as T;
 }
