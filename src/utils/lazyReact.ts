@@ -28,13 +28,11 @@ export function LazyComponent<T extends AnyComponent = AnyComponent>(name: strin
     Object.defineProperty(wrapper, "name", { value: name });
 
     return new Proxy(wrapper, {
-        get(target, prop) {
+        get(target, prop, receiver) {
             if (prop === "$$voidGetWrapped") return () => cached ?? factory();
-            if (prop === "displayName") {
-                cached ??= factory();
-                if (cached) return (cached as Record<string, any>)[prop];
-            }
-            return Reflect.get(target, prop);
+            cached ??= factory();
+            if (cached && prop in (cached as Record<string | symbol, any>)) return (cached as Record<string | symbol, any>)[prop];
+            return Reflect.get(target, prop, receiver);
         },
     }) as T;
 }
