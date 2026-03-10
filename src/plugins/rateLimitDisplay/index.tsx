@@ -8,9 +8,9 @@ import type { ChatBarButtonRenderProps } from "@api/ChatBarButtons";
 import { definePluginSettings } from "@api/Settings";
 import { ChatBarButton, Separator } from "@components";
 import { ClockIcon, GaugeIcon } from "@components/icons";
-import type { EffortRateLimits, RateLimitResponse } from "@grok-types";
-import type { ModelId, ModelMode, RequestKind } from "@grok-types/enums";
-import { React, useMemo } from "@turbopack/common/react";
+import type { RateLimitResponse } from "@grok-types";
+import type { ModelMode } from "@grok-types/enums";
+import { React, useEffect, useMemo } from "@turbopack/common/react";
 import { ChatPageStore, ModelsStore } from "@turbopack/common/stores";
 import { ApiClients, ReasoningModeUtils, TanStackQuery } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
@@ -29,96 +29,43 @@ const settings = definePluginSettings({
 interface Usage {
     remaining: number;
     total: number;
-    windowSeconds: number;
     waitSeconds: number | null;
 }
 
-const EMPTY: Usage = { remaining: -1, total: -1, windowSeconds: 0, waitSeconds: null };
+const EMPTY: Usage = { remaining: -1, total: -1, waitSeconds: null };
 
-function ceilWait(seconds?: number) {
+function ceilWait(seconds?: number): number | null {
     return seconds != null && seconds > 0 ? Math.ceil(seconds) : null;
 }
 
-function effortToUsage(effort: EffortRateLimits, totalTokens: number, windowSeconds: number): Usage {
-    return {
-        remaining: effort.remainingQueries,
-        total: Math.floor(totalTokens / effort.cost),
-        windowSeconds,
-        waitSeconds: ceilWait(effort.waitTimeSeconds),
-    };
-}
-
-function parse(data: RateLimitResponse, mode?: ModelMode): Usage {
+function parse(data: RateLimitResponse, mode: ModelMode): { single: Usage; fast: Usage; expert: Usage; windowSeconds: number } {
     const windowSeconds = data.windowSizeSeconds;
     const tokenBudget = data.totalTokens ?? 0;
 
     if (tokenBudget > 0) {
-        if (mode === "fast" && data.lowEffortRateLimits) return effortToUsage(data.lowEffortRateLimits, tokenBudget, windowSeconds);
-        if (mode === "expert" && data.highEffortRateLimits) return effortToUsage(data.highEffortRateLimits, tokenBudget, windowSeconds);
-        if (data.highEffortRateLimits) return effortToUsage(data.highEffortRateLimits, tokenBudget, windowSeconds);
-        if (data.lowEffortRateLimits) return effortToUsage(data.lowEffortRateLimits, tokenBudget, windowSeconds);
-        return { remaining: data.remainingTokens ?? 0, total: tokenBudget, windowSeconds, waitSeconds: ceilWait(data.waitTimeSeconds) };
+        const fast = data.lowEffortRateLimits
+            ? { remaining: data.lowEffortRateLimits.remainingQueries, total: Math.floor(tokenBudget / data.lowEffortRateLimits.cost), waitSeconds: ceilWait(data.lowEffortRateLimits.waitTimeSeconds) }
+            : EMPTY;
+        const expert = data.highEffortRateLimits
+            ? { remaining: data.highEffortRateLimits.remainingQueries, total: Math.floor(tokenBudget / data.highEffortRateLimits.cost), waitSeconds: ceilWait(data.highEffortRateLimits.waitTimeSeconds) }
+            : EMPTY;
+
+        const single = mode === "fast" ? fast : expert;
+        return { single, fast, expert, windowSeconds };
     }
 
-    if (data.totalQueries > 0) {
-        return { remaining: data.remainingQueries, total: data.totalQueries, windowSeconds, waitSeconds: ceilWait(data.waitTimeSeconds) };
-    }
+    const single = data.totalQueries > 0
+        ? { remaining: data.remainingQueries, total: data.totalQueries, waitSeconds: ceilWait(data.waitTimeSeconds) }
+        : EMPTY;
 
-    return { ...EMPTY, windowSeconds };
+    return { single, fast: EMPTY, expert: EMPTY, windowSeconds };
 }
 
-function useRateLimitQuery(modelId: ModelId | undefined, requestKind: RequestKind, cacheKey: string | undefined, enabled: boolean) {
-    return TanStackQuery.useQuery<RateLimitResponse>({
-        queryKey: ["void-rate-limits", modelId, requestKind, cacheKey],
-        queryFn: () => ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: modelId, requestKind } }),
-        enabled: enabled && !!modelId,
-        staleTime: 10_000,
-        placeholderData: prev => prev,
-    });
-}
-
-function formatLabel(u: Usage, short?: boolean) {
-    if (u.waitSeconds != null && u.waitSeconds > 0) return formatCountdown(u.waitSeconds);
+function formatLabel(u: Usage, wait: number | null, short?: boolean): string {
+    if (wait != null && wait > 0) return formatCountdown(wait);
     if (u.total < 0) return "...";
     if (u.total === 0) return "\u221e";
     return short || !settings.store.showMaxCount ? String(u.remaining) : `${u.remaining}/${u.total}`;
-}
-
-function SingleDisplay({ usage }: { usage: Usage }) {
-    const wait = useCountdown(usage.waitSeconds);
-    const limited = wait != null && wait > 0;
-    const u = limited ? { ...usage, waitSeconds: wait } : usage;
-    const reset = usage.windowSeconds > 0 ? `Resets every ${formatDuration(usage.windowSeconds)}` : "";
-
-    return (
-        <ChatBarButton icon={limited ? <ClockIcon size={18} /> : <GaugeIcon size={18} />} tooltip={reset || undefined} className={limited ? "text-fg-danger" : undefined}>
-            {formatLabel(u)}
-        </ChatBarButton>
-    );
-}
-
-function AutoDisplay({ fast, expert }: { fast: Usage; expert: Usage }) {
-    const fw = useCountdown(fast.waitSeconds);
-    const ew = useCountdown(expert.waitSeconds);
-    const fLimited = fw != null && fw > 0;
-    const eLimited = ew != null && ew > 0;
-    const limited = fLimited || eLimited;
-    const fastUsage = fLimited ? { ...fast, waitSeconds: fw } : fast;
-    const expertUsage = eLimited ? { ...expert, waitSeconds: ew } : expert;
-    const windowSeconds = fast.windowSeconds ?? expert.windowSeconds;
-    const reset = windowSeconds > 0 ? ` \u00b7 resets every ${formatDuration(windowSeconds)}` : "";
-
-    return (
-        <ChatBarButton
-            icon={limited ? <ClockIcon size={18} /> : <GaugeIcon size={18} />}
-            tooltip={`Fast ${formatLabel(fastUsage)} \u00b7 Expert ${formatLabel(expertUsage)}${reset}`}
-            className={limited ? "text-fg-danger" : undefined}
-        >
-            {formatLabel(fastUsage, true)}
-            <Separator orientation="vertical" className="mx-1 h-3 w-0.5" />
-            {formatLabel(expertUsage, true)}
-        </ChatBarButton>
-    );
 }
 
 function RateLimitIndicator(_props: ChatBarButtonRenderProps) {
@@ -130,22 +77,49 @@ function RateLimitIndicator(_props: ChatBarButtonRenderProps) {
     const modelByMode = ModelsStore.useModelsStore(s => s.modelByMode);
 
     const requestKind = ReasoningModeUtils.reasoningModeToRequestKind?.(reasoningMode) ?? "DEFAULT";
-    const isAuto = modelMode === "auto";
-    const fastId = modelByMode?.fast?.modelId;
-    const expertId = modelByMode?.expert?.modelId;
-    const singleId = !isAuto ? modelByMode?.[modelMode]?.modelId : undefined;
+    const modelId = modelByMode?.[modelMode === "auto" ? "expert" : modelMode]?.modelId;
 
-    const cacheKey = `${conversationId}:${lastMessageId}`;
-    const fastQuery = useRateLimitQuery(fastId, requestKind, cacheKey, isAuto && !streaming);
-    const expertQuery = useRateLimitQuery(expertId, requestKind, cacheKey, isAuto && !streaming);
-    const singleQuery = useRateLimitQuery(singleId, requestKind, cacheKey, !isAuto && !streaming);
+    const { data, refetch } = TanStackQuery.useQuery<RateLimitResponse>({
+        queryKey: ["void-rate-limits"],
+        queryFn: () => ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: modelId, requestKind } }),
+        enabled: !!modelId && !streaming,
+        staleTime: 10_000,
+        placeholderData: (prev: RateLimitResponse | undefined) => prev,
+    });
 
-    const fast = useMemo(() => fastQuery.data ? parse(fastQuery.data, "fast") : EMPTY, [fastQuery.data]);
-    const expert = useMemo(() => expertQuery.data ? parse(expertQuery.data, "expert") : EMPTY, [expertQuery.data]);
-    const single = useMemo(() => singleQuery.data ? parse(singleQuery.data, modelMode) : EMPTY, [singleQuery.data, modelMode]);
+    useEffect(() => { if (modelId && !streaming) refetch().catch(() => {}); }, [modelId, requestKind, conversationId, lastMessageId, streaming]);
 
-    if (isAuto) return <AutoDisplay fast={fast} expert={expert} />;
-    return <SingleDisplay usage={single} />;
+    const { single, fast, expert, windowSeconds } = useMemo(
+        () => data ? parse(data, modelMode) : { single: EMPTY, fast: EMPTY, expert: EMPTY, windowSeconds: 0 },
+        [data, modelMode],
+    );
+
+    const singleWait = useCountdown(single.waitSeconds);
+    const fastWait = useCountdown(fast.waitSeconds);
+    const expertWait = useCountdown(expert.waitSeconds);
+
+    const isAuto = modelMode === "auto" && fast !== EMPTY && expert !== EMPTY;
+    const limited = isAuto ? (fastWait ?? 0) > 0 || (expertWait ?? 0) > 0 : (singleWait ?? 0) > 0;
+    const icon = limited ? <ClockIcon size={18} /> : <GaugeIcon size={18} />;
+    const className = limited ? "text-fg-danger" : undefined;
+    const reset = windowSeconds > 0 ? formatDuration(windowSeconds) : "";
+
+    if (isAuto) {
+        const tooltip = `Fast ${formatLabel(fast, fastWait)} \u00b7 Expert ${formatLabel(expert, expertWait)}${reset ? ` \u00b7 resets every ${reset}` : ""}`;
+        return (
+            <ChatBarButton icon={icon} tooltip={tooltip} className={className}>
+                {formatLabel(fast, fastWait, true)}
+                <Separator orientation="vertical" className="mx-1 h-3 w-0.5" />
+                {formatLabel(expert, expertWait, true)}
+            </ChatBarButton>
+        );
+    }
+
+    return (
+        <ChatBarButton icon={icon} tooltip={reset ? `Resets every ${reset}` : undefined} className={className}>
+            {formatLabel(single, singleWait)}
+        </ChatBarButton>
+    );
 }
 
 export default definePlugin({
