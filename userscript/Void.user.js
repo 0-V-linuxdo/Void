@@ -3311,79 +3311,69 @@ ${sourceUrl}`;
   }
 
   // void-css:D:/Projects/Void/src/components/settings/tabs/CustomCSSTab.css
-  registerStyle("CustomCSSTab", `.void-css-block {
-    display: flex;
-    flex-direction: column;
-    min-height: 400px;
+  registerStyle("CustomCSSTab", `.void-css-wrap {
+    flex: 1;
+    min-height: 0;
     margin: 0 0.75rem;
     border: 1px solid var(--border-l1);
-    border-radius: 0.75rem;
+    background: hsl(var(--surface-l2));
+    overflow: auto;
+    display: grid;
+}
+
+.void-css-highlight,
+.void-css-input {
+    grid-area: 1 / 1;
+    margin: 0;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    tab-size: 4;
+}
+
+.void-css-highlight {
+    pointer-events: none;
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-css-input {
+    color: transparent;
+    caret-color: hsl(var(--fg-primary));
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
     overflow: hidden;
 }
 
-.void-css-header {
-    display: flex;
-    align-items: center;
-    height: 2.5rem;
-    padding: 0 1rem;
-    background: hsl(var(--surface-base));
-    border-radius: 0.75rem 0.75rem 0 0;
-}
+.void-css-sel { color: hsl(215deg 50% 68%); }
+.void-css-prop { color: hsl(195deg 35% 64%); }
+.void-css-val { color: hsl(28deg 45% 68%); }
+.void-css-str { color: hsl(155deg 30% 64%); }
+.void-css-num { color: hsl(265deg 30% 74%); }
 
-.void-css-header span {
-    font-family: var(--font-ibm-plex-mono), monospace;
-    font-size: 0.75rem;
-    color: hsl(var(--fg-secondary));
-    user-select: none;
+.void-css-com {
+    color: hsl(var(--fg-tertiary));
+    font-style: italic;
 }
-
-.void-css-editor {
-    flex: 1;
-    background: hsl(var(--surface-inset));
-    border-radius: 0 0 0.75rem 0.75rem;
-}
-
-.void-css-editor .monaco-editor,
-.void-css-editor .monaco-editor .overflow-guard {
-    border-radius: 0 0 0.75rem 0.75rem;
-}
-
-.void-css-editor .monaco-editor .focused .selected-text,
-.void-css-editor .monaco-editor.focused {
-    outline: none !important;
-    border: none !important;
-}
-
-.void-css-editor .monaco-editor,
-.void-css-editor .monaco-editor .inputarea {
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.void-css-editor .monaco-editor .cursors-layer > .cursor {
-    visibility: hidden !important;
-}
-
-.void-css-editor .monaco-editor.focused .cursors-layer > .cursor {
-    visibility: inherit !important;
-}
-
-.void-css-editor .monaco-editor .current-line-margin-both {
-    border: none !important;
-}
+.void-css-at { color: hsl(335deg 35% 70%); }
+.void-css-brace { color: hsl(var(--fg-secondary)); }
+.void-css-punct { color: hsl(var(--fg-tertiary)); }
 `);
 
   // src/components/settings/tabs/CustomCSSTab.tsx
-  var logger11 = new Logger("CustomCSS");
   var cl2 = classNameFactory("void-css-");
   var STYLE_ID = "void-custom-css";
-  var ThemeModule = findLazy((m) => m.darkTheme?.base === "vs-dark");
   function setCustomCSSEnabled(enabled) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
     if (enabled) {
       const css = getSettingsPluginData().customCSS;
-      if (typeof css === "string" && css)
+      if (typeof css === "string" && css) {
         registerStyle(STYLE_ID, css);
+        enableStyle(STYLE_ID);
+      }
     } else {
       disableStyle(STYLE_ID);
     }
@@ -3397,74 +3387,139 @@ ${sourceUrl}`;
     }
     return typeof saved === "string" ? saved : "";
   }
-  function applyCSS(css) {
-    const enabled = getSettingsPluginData().customCSSEnabled !== false;
-    updateSettingsPluginData({ customCSS: css });
-    if (enabled)
-      registerStyle(STYLE_ID, css);
+  function formatCSS(raw) {
+    let out = "";
+    let indent = 0;
+    const pad2 = () => "    ".repeat(indent);
+    const tokens = raw.replace(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
+    for (const t of tokens) {
+      const s = t.trim();
+      if (!s)
+        continue;
+      if (s === "{") {
+        out += ` {
+`;
+        indent++;
+      } else if (s === "}") {
+        indent = Math.max(0, indent - 1);
+        out += pad2() + `}
+
+`;
+      } else if (s === ";") {
+        out += `;
+`;
+      } else if (s === ":") {
+        out += ": ";
+      } else if (indent > 0) {
+        out += pad2() + s;
+      } else {
+        out += s;
+      }
+    }
+    return out.replace(/\n{3,}/g, `
+
+`).trim() + `
+`;
+  }
+  var TOKEN = /\/\*[\s\S]*?\*\/|@[\w-]+|"[^"]*"|'[^']*'|#[\da-fA-F]{3,8}|[\d.]+(?:px|em|rem|%|vh|vw|s|ms|deg|fr|ch)?|[\w-]+|[{}:;,()!]/g;
+  function highlight(css) {
+    let inBlock = 0;
+    let afterColon = false;
+    let result = "";
+    let lastEnd = 0;
+    for (const m of css.matchAll(TOKEN)) {
+      if (m.index > lastEnd)
+        result += esc(css.slice(lastEnd, m.index));
+      lastEnd = m.index + m[0].length;
+      const t = m[0];
+      if (t.startsWith("/*")) {
+        result += span("com", t);
+        afterColon = false;
+      } else if (t.startsWith("@")) {
+        result += span("at", t);
+      } else if (t === "{") {
+        inBlock++;
+        afterColon = false;
+        result += span("brace", t);
+      } else if (t === "}") {
+        inBlock = Math.max(0, inBlock - 1);
+        afterColon = false;
+        result += span("brace", t);
+      } else if (t === ":") {
+        afterColon = inBlock > 0;
+        result += span("punct", t);
+      } else if (t === ";" || t === ",") {
+        afterColon = false;
+        result += span("punct", t);
+      } else if (t === "(" || t === ")" || t === "!") {
+        result += span("punct", t);
+      } else if (t.startsWith('"') || t.startsWith("'")) {
+        result += span("str", t);
+      } else if (t.startsWith("#") || /^[\d.]/.test(t)) {
+        result += span("num", t);
+      } else if (afterColon) {
+        result += span("val", t);
+      } else if (inBlock > 0) {
+        result += span("prop", t);
+      } else {
+        result += span("sel", t);
+      }
+    }
+    if (lastEnd < css.length)
+      result += esc(css.slice(lastEnd));
+    return result;
+  }
+  function span(cls, text) {
+    return `<span class="${cl2(cls)}">${esc(text)}</span>`;
+  }
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
   function CustomCSSTab() {
-    const containerRef = useRef(null);
-    const editorRef = useRef(null);
+    const highlightRef = useRef(null);
     const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
+    const [css, setCss] = useState(loadSavedCSS);
+    const apply = useCallback((val) => {
+      setCss(val);
+      updateSettingsPluginData({ customCSS: val });
+      if (getSettingsPluginData().customCSSEnabled !== false)
+        registerStyle(STYLE_ID, val);
+    }, []);
     const handleToggle = (checked) => {
       setEnabled(checked);
       setCustomCSSEnabled(checked);
     };
-    useEffect(() => {
-      if (!containerRef.current)
-        return;
-      let disposed = false;
-      let editor = null;
-      (async () => {
-        if (!MonacoModule.monacoInstance)
-          await MonacoModule.initMonaco();
-        if (disposed)
-          return;
-        const monaco = MonacoModule.monacoInstance;
-        monaco.editor.defineTheme("grok-dark", ThemeModule.darkTheme);
-        editor = monaco.editor.create(containerRef.current, {
-          value: loadSavedCSS(),
-          language: "css",
-          theme: "grok-dark",
-          minimap: { enabled: false },
-          scrollbar: { vertical: "hidden", horizontal: "hidden" },
-          overviewRulerLanes: 0,
-          hideCursorInOverviewRuler: true,
-          overviewRulerBorder: false,
-          folding: false,
-          glyphMargin: false,
-          fontSize: 13,
-          lineNumbers: "off",
-          scrollBeyondLastLine: false,
-          automaticLayout: true,
-          tabSize: 4,
-          wordWrap: "on",
-          padding: { top: 8 },
-          renderLineHighlight: "none",
-          renderLineHighlightOnlyWhenFocus: true,
-          lineDecorationsWidth: 0,
-          readOnly: !enabled
+    const handlePaste = useCallback((e) => {
+      const pasted = e.clipboardData.getData("text/plain");
+      if (pasted.includes("{") && !pasted.includes(`
+`)) {
+        e.preventDefault();
+        const ta = e.currentTarget;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const formatted = formatCSS(pasted);
+        const next = css.slice(0, start) + formatted + css.slice(end);
+        apply(next);
+        requestAnimationFrame(() => {
+          const pos = start + formatted.length;
+          ta.selectionStart = pos;
+          ta.selectionEnd = pos;
         });
-        editorRef.current = editor;
-        editor.onDidChangeModelContent(() => applyCSS(editor.getValue()));
-      })().catch((e) => logger11.error("Failed to initialize editor:", e));
-      return () => {
-        disposed = true;
-        editor?.dispose();
-        editorRef.current = null;
-      };
-    }, []);
+      }
+    }, [css, apply]);
     useEffect(() => {
-      editorRef.current?.updateOptions({ readOnly: !enabled });
-    }, [enabled]);
+      if (highlightRef.current)
+        highlightRef.current.innerHTML = highlight(css) + `
+`;
+    }, [css]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
-      gap: "1rem"
+      gap: "0.75rem",
+      className: "h-full min-h-0"
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
-      className: "px-3"
+      className: "px-3 shrink-0"
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -3478,14 +3533,21 @@ ${sourceUrl}`;
       checked: enabled,
       onCheckedChange: handleToggle
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl2("block")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl2("header")
-    }, /* @__PURE__ */ React.createElement(Text, {
-      as: "span"
-    }, "CSS")), /* @__PURE__ */ React.createElement("div", {
-      ref: containerRef,
-      className: cl2("editor")
+      className: cl2("wrap")
+    }, /* @__PURE__ */ React.createElement("pre", {
+      ref: highlightRef,
+      className: cl2("highlight"),
+      "aria-hidden": "true"
+    }), /* @__PURE__ */ React.createElement("textarea", {
+      className: cl2("input"),
+      value: css,
+      onChange: (e) => apply(e.target.value),
+      onPaste: handlePaste,
+      disabled: !enabled,
+      spellCheck: false,
+      autoComplete: "off",
+      autoCorrect: "off",
+      autoCapitalize: "off"
     })));
   }
 
@@ -4153,14 +4215,14 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/ThemeCard.tsx
-  var logger12 = new Logger("ThemeCard");
+  var logger11 = new Logger("ThemeCard");
   var cl6 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, globalEnabled, onRemove, onToggle }) {
     const handleToggle = () => {
       if (theme.enabled)
         disableTheme(theme.url);
       else
-        enableTheme(theme.url).catch((e) => logger12.error("Failed to enable theme:", e));
+        enableTheme(theme.url).catch((e) => logger11.error("Failed to enable theme:", e));
       onToggle();
     };
     return /* @__PURE__ */ React.createElement("div", {
@@ -4679,7 +4741,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/_core/settings/index.tsx
-  var logger13 = new Logger("Settings");
+  var logger12 = new Logger("Settings");
   var cl9 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     hideUserId: {
@@ -4733,8 +4795,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, `v${"0.2.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"383ef04"}`
-    }, `(${"383ef04"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"688f9ba"}`
+    }, `(${"688f9ba"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -4780,7 +4842,7 @@ ${sourceUrl}`;
           key: "void-version"
         })];
       } catch (e) {
-        logger13.error("Failed to render tabs:", e);
+        logger12.error("Failed to render tabs:", e);
         return [];
       }
     },
@@ -4793,7 +4855,7 @@ ${sourceUrl}`;
           Wrapper
         })];
       } catch (e) {
-        logger13.error("Failed to render panels:", e);
+        logger12.error("Failed to render panels:", e);
         return [];
       }
     },
@@ -4803,7 +4865,7 @@ ${sourceUrl}`;
         loadSavedCSS();
       else
         document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
-      loadSavedThemes().catch((e) => logger13.error("Failed to load saved themes:", e));
+      loadSavedThemes().catch((e) => logger12.error("Failed to load saved themes:", e));
     },
     patches: [
       {
@@ -5010,7 +5072,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/betterFiles/index.tsx
-  var logger14 = new Logger("BetterFiles");
+  var logger13 = new Logger("BetterFiles");
   var settings4 = definePluginSettings({
     skipDeleteConfirm: {
       type: 3 /* BOOLEAN */,
@@ -5030,7 +5092,7 @@ ${sourceUrl}`;
         try {
           await deleteAsset(id);
         } catch (e) {
-          logger14.error("Failed to delete asset", id, e);
+          logger13.error("Failed to delete asset", id, e);
         }
       }
     };
@@ -5059,7 +5121,7 @@ ${sourceUrl}`;
     settings: settings4,
     renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
     _deleteFile(assetId) {
-      Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId)).catch((e) => logger14.error("Failed to delete asset", assetId, e));
+      Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId)).catch((e) => logger13.error("Failed to delete asset", assetId, e));
     },
     patches: [
       {
@@ -5209,7 +5271,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/exportChat/index.tsx
-  var logger15 = new Logger("ExportChat");
+  var logger14 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -5236,7 +5298,7 @@ ${sourceUrl}`;
   function ExportItem({ conversationId }) {
     const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
     return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => exportChat(conversationId).catch((e) => logger15.error("Failed to export chat", e)),
+      onSelect: () => exportChat(conversationId).catch((e) => logger14.error("Failed to export chat", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
@@ -5328,7 +5390,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/noAutoplay/index.ts
-  var logger16 = new Logger("NoAutoplay");
+  var logger15 = new Logger("NoAutoplay");
   var settings6 = definePluginSettings({
     playOnHover: {
       type: 3 /* BOOLEAN */,
@@ -5346,7 +5408,7 @@ ${sourceUrl}`;
           return;
         video.pause();
         video.currentTime = 0;
-      }).catch((e) => logger16.warn("Failed to pause video:", e));
+      }).catch((e) => logger15.warn("Failed to pause video:", e));
     } else {
       video.pause();
       video.currentTime = 0;
@@ -5355,7 +5417,7 @@ ${sourceUrl}`;
   var onMouseEnter = (e) => {
     const video = e.currentTarget.querySelector("video");
     if (video)
-      pending.set(video, video.play().catch((e2) => logger16.error("Failed to play video", e2)));
+      pending.set(video, video.play().catch((e2) => logger15.error("Failed to play video", e2)));
   };
   var onMouseLeave = (e) => {
     const video = e.currentTarget.querySelector("video");
@@ -5391,7 +5453,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/oneko/index.ts
-  var logger17 = new Logger("Oneko");
+  var logger16 = new Logger("Oneko");
   var ONEKO_SCRIPT = "https://raw.githubusercontent.com/adryd325/oneko.js/c4ee66353b11a44e4a5b7e914a81f8d33111555e/oneko.js";
   var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
   var stopped = false;
@@ -5413,7 +5475,7 @@ ${sourceUrl}`;
           el.remove();
           URL.revokeObjectURL(el.src);
         });
-      }).catch((e) => logger17.error("Failed to load oneko script", e));
+      }).catch((e) => logger16.error("Failed to load oneko script", e));
     },
     stop() {
       stopped = true;
@@ -5687,7 +5749,7 @@ ${sourceUrl}`;
   });
 
   // src/Void.ts
-  var logger18 = new Logger("TurbopackPatcher", "#e78284");
+  var logger17 = new Logger("TurbopackPatcher", "#e78284");
   var APP_READY_SETTLE_MS = 500;
   var MIN_FACTORY_RATIO = 0.4;
   var FALLBACK_MS = 15000;
@@ -5724,7 +5786,7 @@ ${sourceUrl}`;
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger18.info("All previously failed plugins started after late module load");
+          logger17.info("All previously failed plugins started after late module load");
         }
       }, 200);
     };
@@ -5739,7 +5801,7 @@ ${sourceUrl}`;
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger18.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger17.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -5769,7 +5831,7 @@ ${sourceUrl}`;
       blacklistBadModules();
       _resolveReady();
       startAllPlugins("TurbopackReady" /* TurbopackReady */);
-      logger18.info(`${getModuleCache().size} modules loaded, ready`);
+      logger17.info(`${getModuleCache().size} modules loaded, ready`);
       retryFailedPlugins();
       deferOrphanReport();
       checkForUpdates();
