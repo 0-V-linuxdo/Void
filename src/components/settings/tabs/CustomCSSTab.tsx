@@ -8,23 +8,20 @@ import "./CustomCSSTab.css";
 
 import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
 import { Flex, Switch, Text } from "@components";
-import { React, useEffect, useRef, useState } from "@turbopack/common/react";
-import { MonacoModule } from "@turbopack/common/utils";
-import { findLazy } from "@turbopack/turbopack";
-import { classNameFactory, disableStyle, registerStyle } from "@utils/css";
-import { Logger } from "@utils/Logger";
+import { React, useCallback, useEffect, useRef, useState } from "@turbopack/common/react";
+import { classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
 
-const logger = new Logger("CustomCSS");
 const cl = classNameFactory("void-css-");
 const STYLE_ID = "void-custom-css";
-
-const ThemeModule: { darkTheme: any } = findLazy(m => m.darkTheme?.base === "vs-dark");
 
 export function setCustomCSSEnabled(enabled: boolean) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
     if (enabled) {
         const css = getSettingsPluginData().customCSS;
-        if (typeof css === "string" && css) registerStyle(STYLE_ID, css);
+        if (typeof css === "string" && css) {
+            registerStyle(STYLE_ID, css);
+            enableStyle(STYLE_ID);
+        }
     } else {
         disableStyle(STYLE_ID);
     }
@@ -40,76 +37,135 @@ export function loadSavedCSS(): string {
     return typeof saved === "string" ? saved : "";
 }
 
-function applyCSS(css: string) {
-    const enabled = getSettingsPluginData().customCSSEnabled !== false;
-    updateSettingsPluginData({ customCSS: css });
-    if (enabled) registerStyle(STYLE_ID, css);
+function formatCSS(raw: string): string {
+    let out = "";
+    let indent = 0;
+    const pad = () => "    ".repeat(indent);
+    const tokens = raw.replace(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
+
+    for (const t of tokens) {
+        const s = t.trim();
+        if (!s) continue;
+        if (s === "{") {
+            out += " {\n";
+            indent++;
+        } else if (s === "}") {
+            indent = Math.max(0, indent - 1);
+            out += pad() + "}\n\n";
+        } else if (s === ";") {
+            out += ";\n";
+        } else if (s === ":") {
+            out += ": ";
+        } else if (indent > 0) {
+            out += pad() + s;
+        } else {
+            out += s;
+        }
+    }
+
+    return out.replace(/\n{3,}/g, "\n\n").trim() + "\n";
+}
+
+const TOKEN = /\/\*[\s\S]*?\*\/|@[\w-]+|"[^"]*"|'[^']*'|#[\da-fA-F]{3,8}|[\d.]+(?:px|em|rem|%|vh|vw|s|ms|deg|fr|ch)?|[\w-]+|[{}:;,()!]/g;
+
+function highlight(css: string): string {
+    let inBlock = 0;
+    let afterColon = false;
+    let result = "";
+    let lastEnd = 0;
+
+    for (const m of css.matchAll(TOKEN)) {
+        if (m.index! > lastEnd) result += esc(css.slice(lastEnd, m.index));
+        lastEnd = m.index! + m[0].length;
+        const t = m[0];
+
+        if (t.startsWith("/*")) {
+            result += span("com", t);
+            afterColon = false;
+        } else if (t.startsWith("@")) {
+            result += span("at", t);
+        } else if (t === "{") {
+            inBlock++;
+            afterColon = false;
+            result += span("brace", t);
+        } else if (t === "}") {
+            inBlock = Math.max(0, inBlock - 1);
+            afterColon = false;
+            result += span("brace", t);
+        } else if (t === ":") {
+            afterColon = inBlock > 0;
+            result += span("punct", t);
+        } else if (t === ";" || t === ",") {
+            afterColon = false;
+            result += span("punct", t);
+        } else if (t === "(" || t === ")" || t === "!") {
+            result += span("punct", t);
+        } else if (t.startsWith('"') || t.startsWith("'")) {
+            result += span("str", t);
+        } else if (t.startsWith("#") || /^[\d.]/.test(t)) {
+            result += span("num", t);
+        } else if (afterColon) {
+            result += span("val", t);
+        } else if (inBlock > 0) {
+            result += span("prop", t);
+        } else {
+            result += span("sel", t);
+        }
+    }
+
+    if (lastEnd < css.length) result += esc(css.slice(lastEnd));
+    return result;
+}
+
+function span(cls: string, text: string): string {
+    return `<span class="${cl(cls)}">${esc(text)}</span>`;
+}
+
+function esc(s: string): string {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 export default function CustomCSSTab() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const editorRef = useRef<any>(null);
+    const highlightRef = useRef<HTMLPreElement>(null);
     const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
+    const [css, setCss] = useState(loadSavedCSS);
+
+    const apply = useCallback((val: string) => {
+        setCss(val);
+        updateSettingsPluginData({ customCSS: val });
+        if (getSettingsPluginData().customCSSEnabled !== false) registerStyle(STYLE_ID, val);
+    }, []);
 
     const handleToggle = (checked: boolean) => {
         setEnabled(checked);
         setCustomCSSEnabled(checked);
     };
 
-    useEffect(() => {
-        if (!containerRef.current) return;
-
-        let disposed = false;
-        let editor: any = null;
-
-        (async () => {
-            if (!MonacoModule.monacoInstance) await MonacoModule.initMonaco();
-            if (disposed) return;
-
-            const monaco = MonacoModule.monacoInstance;
-            monaco.editor.defineTheme("grok-dark", ThemeModule.darkTheme);
-            editor = monaco.editor.create(containerRef.current!, {
-                value: loadSavedCSS(),
-                language: "css",
-                theme: "grok-dark",
-                minimap: { enabled: false },
-                scrollbar: { vertical: "hidden", horizontal: "hidden" },
-                overviewRulerLanes: 0,
-                hideCursorInOverviewRuler: true,
-                overviewRulerBorder: false,
-                folding: false,
-                glyphMargin: false,
-                fontSize: 13,
-                lineNumbers: "off",
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 4,
-                wordWrap: "on",
-                padding: { top: 8 },
-                renderLineHighlight: "none",
-                renderLineHighlightOnlyWhenFocus: true,
-                lineDecorationsWidth: 0,
-                readOnly: !enabled,
+    const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+        const pasted = e.clipboardData.getData("text/plain");
+        if (pasted.includes("{") && !pasted.includes("\n")) {
+            e.preventDefault();
+            const ta = e.currentTarget;
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            const formatted = formatCSS(pasted);
+            const next = css.slice(0, start) + formatted + css.slice(end);
+            apply(next);
+            requestAnimationFrame(() => {
+                const pos = start + formatted.length;
+                ta.selectionStart = pos;
+                ta.selectionEnd = pos;
             });
-
-            editorRef.current = editor;
-            editor.onDidChangeModelContent(() => applyCSS(editor.getValue()));
-        })().catch(e => logger.error("Failed to initialize editor:", e));
-
-        return () => {
-            disposed = true;
-            editor?.dispose();
-            editorRef.current = null;
-        };
-    }, []);
+        }
+    }, [css, apply]);
 
     useEffect(() => {
-        editorRef.current?.updateOptions({ readOnly: !enabled });
-    }, [enabled]);
+        if (highlightRef.current) highlightRef.current.innerHTML = highlight(css) + "\n";
+    }, [css]);
 
     return (
-        <Flex flexDirection="column" gap="1rem">
-            <Flex alignItems="center" justifyContent="space-between" className="px-3">
+        <Flex flexDirection="column" gap="0.75rem" className="h-full min-h-0">
+            <Flex alignItems="center" justifyContent="space-between" className="px-3 shrink-0">
                 <Flex flexDirection="column" gap="0">
                     <Text size="sm" weight="medium">
                         Quick CSS
@@ -120,11 +176,19 @@ export default function CustomCSSTab() {
                 </Flex>
                 <Switch checked={enabled} onCheckedChange={handleToggle} />
             </Flex>
-            <div className={cl("block")}>
-                <div className={cl("header")}>
-                    <Text as="span">CSS</Text>
-                </div>
-                <div ref={containerRef} className={cl("editor")} />
+            <div className={cl("wrap")}>
+                <pre ref={highlightRef} className={cl("highlight")} aria-hidden="true" />
+                <textarea
+                    className={cl("input")}
+                    value={css}
+                    onChange={e => apply(e.target.value)}
+                    onPaste={handlePaste}
+                    disabled={!enabled}
+                    spellCheck={false}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                />
             </div>
         </Flex>
     );
