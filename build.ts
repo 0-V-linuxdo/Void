@@ -132,13 +132,12 @@ function cssPlugin(): import("bun").BunPlugin {
     };
 }
 
-async function buildCore(outfile: string, isExt: boolean, minify = !isDev) {
+async function buildCore(outfile: string, isExt: boolean) {
     const result = await Bun.build({
         entrypoints: ["src/index.ts"],
         outdir: "dist",
         target: "browser",
         format: "iife",
-        minify,
         sourcemap: isDev ? "inline" : "none",
         define: {
             IS_DEV: JSON.stringify(isDev),
@@ -169,7 +168,7 @@ async function buildCore(outfile: string, isExt: boolean, minify = !isDev) {
 }
 
 async function buildUserscript() {
-    const output = await buildCore("Void.user.js", false, false);
+    const output = await buildCore("Void.user.js", false);
     const code = await output.text();
     const content = USERSCRIPT_HEADER + "\n" + LICENSE_BANNER + "\n" + code;
     await Bun.write("dist/Void.user.js", content);

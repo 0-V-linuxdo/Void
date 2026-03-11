@@ -4733,8 +4733,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, `v${"0.2.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"e26e93e"}`
-    }, `(${"e26e93e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"383ef04"}`
+    }, `(${"383ef04"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
