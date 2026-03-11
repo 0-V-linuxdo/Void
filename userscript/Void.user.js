@@ -19,9 +19,1772 @@
 // @updateURL    https://raw.githubusercontent.com/imjustprism/Void/main/userscript/Void.user.js
 // ==/UserScript==
 
-(()=>{var ma=Object.defineProperty;var fa=(e)=>e;function ga(e,t){this[e]=fa.bind(null,t)}var ln=(e,t)=>{for(var o in t)ma(e,o,{get:t[o],enumerable:!0,configurable:!0,set:ga.bind(t,o)})};var jr={};ln(jr,{waitFor:()=>be,syncLazyModules:()=>ft,subscribe:()=>It,stopPlugin:()=>jo,startPlugin:()=>ve,sleep:()=>bs,showToast:()=>rn,showNotice:()=>Yo,setThemesEnabled:()=>Zo,search:()=>Va,sanitizeFilename:()=>$o,requireModule:()=>Pn,removeTheme:()=>Ko,removeChatBarButton:()=>jt,registerStyle:()=>P,registerPlugin:()=>Xo,proxyLazy:()=>ce,pluralize:()=>Ue,plugins:()=>w,patches:()=>j,patchStats:()=>G,patchResults:()=>Vt,patchReport:()=>ri,openModal:()=>Mr,onlyOnce:()=>No,onceReady:()=>mo,onModuleLoad:()=>yt,migrateSettingsToPlugin:()=>Bs,migratePluginSettings:()=>Ns,migratePluginSetting:()=>As,mergeDefaults:()=>nt,matchesPattern:()=>Ot,matchesAllPatterns:()=>Ee,mapMangledModuleLazy:()=>Oa,mapMangledModule:()=>Pi,mapMangledCssClasses:()=>Ci,makeLazy:()=>un,isZustandStore:()=>Sn,isTruthy:()=>xs,isThemesEnabled:()=>Ft,isPluginEnabled:()=>$,isObject:()=>Pe,isNonNullish:()=>Cs,isBlacklisted:()=>ee,initSettings:()=>Ho,init:()=>Wr,importModule:()=>Ra,humanizeKey:()=>pt,getTurbopackHelpers:()=>gt,getThemes:()=>Q,getRuntimeModuleCache:()=>Jr,getRuntimeFactoryRegistry:()=>He,getModuleCache:()=>B,getAllStores:()=>Na,formatDuration:()=>Bo,formatCountdown:()=>Ao,findStoreLazy:()=>Fa,findStore:()=>Si,findModuleId:()=>bi,findModuleFactory:()=>Cn,findLazy:()=>xn,findExportedComponentLazy:()=>ka,findExportedComponent:()=>T,findCssClassesLazy:()=>Aa,findCssClasses:()=>xi,findComponentByCodeLazy:()=>La,findComponentByCode:()=>yi,findByPropsLazy:()=>p,findByProps:()=>ho,findByDisplayNameLazy:()=>Ia,findByDisplayName:()=>gi,findByCodeLazy:()=>wa,findByCode:()=>fi,findBulk:()=>Ba,findAll:()=>va,find:()=>Xe,filters:()=>R,fetchExternal:()=>Se,extractAndLoadChunksLazy:()=>$a,extractAndLoadChunks:()=>Mi,escapeRegExp:()=>no,errorMessage:()=>Oo,enableTheme:()=>Jo,enableStyle:()=>qe,dispatch:()=>Vo,disableTheme:()=>en,disableStyle:()=>te,definePluginSettings:()=>Y,definePlugin:()=>S,debounce:()=>Ps,createExternalStore:()=>Re,copyToClipboard:()=>Fo,confirm:()=>ra,common:()=>Ur,closeNotice:()=>rr,closeModal:()=>Dr,closeAllModals:()=>na,classes:()=>Z,classNameFactory:()=>E,clamp:()=>Ts,addTheme:()=>Qo,addPatch:()=>nr,addChatBarButton:()=>Go,ToastType:()=>nn,StartAt:()=>St,SettingsStore:()=>W,Settings:()=>L,PlainSettings:()=>qt,OptionType:()=>oe,NoticeType:()=>qo,Logger:()=>h,DefaultChunkLoadRegex:()=>bn,ChunkPathRegex:()=>Ti});var Tn={};ln(Tn,{WorkspaceStore:()=>ts,WorkspaceConnectorsStore:()=>es,WorkspaceCollectionsStore:()=>Ji,UpsellStore:()=>Ki,TourGuideStore:()=>Qi,TextToSpeechStore:()=>Zi,TasksStore:()=>Yi,TabsManagerStore:()=>qi,SuggestionStore:()=>Xi,SubscriptionsStore:()=>Co,SourcesSelectorStore:()=>ji,ShopStore:()=>Wi,ShareStore:()=>Hi,SettingsStore:()=>Ui,SettingsDialogStore:()=>_i,SessionStore:()=>xo,RoutingStore:()=>Gi,ResponseStore:()=>zi,ReportStore:()=>Ri,PersonalityStore:()=>Vi,NotificationsStore:()=>$i,ModesStore:()=>Oi,ModelsStore:()=>So,MentionMenuStore:()=>Bi,MediaStore:()=>Ai,ImageEditorStore:()=>Ni,HighlightsStore:()=>Fi,FilesPageStore:()=>ht,FileStore:()=>ki,FeatureStore:()=>U,DictationStore:()=>Ei,DevModelsStore:()=>Li,ConversationStore:()=>Rt,CommandMenuStore:()=>Ii,CodePageStore:()=>wi,ChatPageStore:()=>de,AssetStore:()=>vi,ArtifactStore:()=>Di});var qr=["arguments","caller","prototype"],ut=Symbol.for("void.lazy.get"),cn=Symbol.for("void.lazy.cached"),At={};for(let e of["apply","construct","defineProperty","deleteProperty","getPrototypeOf","has","isExtensible","preventExtensions","set","setPrototypeOf"])At[e]=(t,...o)=>Reflect[e](t[ut]?.()??t,...o);At.ownKeys=(e)=>{let t=e[ut]?.()??e,o=Reflect.ownKeys(t);for(let n of qr)if(!o.includes(n))o.push(n);return o};At.getOwnPropertyDescriptor=(e,t)=>{if(typeof t==="string"&&qr.includes(t))return Reflect.getOwnPropertyDescriptor(e,t);let o=e[ut]?.()??e,n=Reflect.getOwnPropertyDescriptor(o,t);if(n)Object.defineProperty(e,t,n);return n};At.get=(e,t,o)=>{if(t===cn||t===ut)return Reflect.get(e,t,o);let n=e[ut]();if(n==null)return;if(typeof n==="object"||typeof n==="function")return Reflect.get(n,t,o);throw Error("proxyLazy: factory returned a primitive value")};function un(e){let t,o=!1;return()=>{if(!o){if(t=e(),t!=null)o=!0}return t}}function ce(e){let t=un(e),o=Object.assign(()=>{},{[cn]:void 0,[ut](){let n=t();return o[cn]=n,n}});return new Proxy(o,At)}var pn=null;function Yr(e){pn=e}function b(e,t){let o=null,n=(i)=>{if(o??=t(),!o||!pn)return null;return pn(o,i)};return Object.defineProperty(n,"name",{value:e}),new Proxy(n,{get(i,s,a){if(s==="$$voidGetWrapped")return()=>o??t();if(o??=t(),o&&s in o)return o[s];return Reflect.get(i,s,a)}})}var ya=typeof window<"u",Bt={reset:"\x1B[0m",bold:"\x1B[1m",green:"\x1B[32m",red:"\x1B[31m",yellow:"\x1B[33m"};class h{name;color;constructor(e,t="white"){this.name=e;this.color=t}_log(e,t){if(ya){console[e](`%c Void %c %c ${this.name} `,"background: white; color: black; font-weight: bold; border-radius: 5px;","",`background: ${this.color}; color: black; font-weight: bold; border-radius: 5px;`,...t);return}let n={error:Bt.red,warn:Bt.yellow}[e]??Bt.green,i=`${Bt.bold}${n}[${this.name}]${Bt.reset}`;console[e](i,...t)}log(...e){this._log("log",e)}info(...e){this._log("info",e)}error(...e){this._log("error",e)}warn(...e){this._log("warn",e)}debug(...e){this._log("debug",e)}}function pt(e,t){let o=e.replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]/g," ").replace(/\b\w/g,(n)=>n.toUpperCase());if(!t)return o;return Object.entries(t).reduce((n,[i,s])=>n.replace(new RegExp(`\\b${i}\\b`,"g"),s),o)}function no(e){return e.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}function Ue(e,t,o){return`${e} ${e===1?t:o??t+"s"}`}function Ot(e,t){if(typeof t==="string")return e.includes(t);return t.lastIndex=0,t.test(e)}function Ee(e,t){return t.every((o)=>Ot(e,o))}var ro=Symbol("Void.originalFactory"),io=Symbol("Void.patched"),so=Symbol("Void.patchedBy"),ao=Symbol("Void.patchedCode");var _=new h("TurbopackPatcher","#e78284"),co=typeof unsafeWindow<"u"?unsafeWindow:window,lo=2147483646,ha=Symbol.for("motionComponentSymbol"),Sa=0,xa=(e,t,o)=>{let n=`__void_eval_${Sa++}`,i=document.createElement("script"),s=`window["${n}"]=(${e});`;if(t)s=`${t}
-${s}`;if(o)s+=`
-${o}`;i.textContent=s,(document.head??document.documentElement).appendChild(i),i.remove();let a=co[n];if(delete co[n],!a)throw Error("Factory compilation failed (CSP?)");return a},Zr=new Set,j=[],mt=new Map,dt=new Map,$t=null,ue=null,Ce=null,fn=null,yn,mo=new Promise((e)=>yn=e);var Vt=[],G={applied:0,noEffect:0,errors:0,runtimeFallbacks:0,patchedModules:new Set};function B(){return mt}function Jr(){return ue}var Qr=0;function ft(){if(!ue)return;let e=Object.keys(ue);if(e.length===Qr)return;for(let t of e){let o=Number(t),n=ue[o];if(n?.exports==null)continue;if(!mt.has(o))hn(n.exports,o)}Qr=e.length}function He(){return Ce}function gt(){return fn}function ei(e,t){dt.set(e,t)}function ti(e){dt.delete(e)}var uo=new Set;function yt(e){return uo.add(e),()=>uo.delete(e)}var po=new WeakSet;function gn(e){if(e==null)return!0;let t=typeof e;if(t!=="object"&&t!=="function")return!0;if(e===window||e===document||e===document.documentElement)return!0;try{if(e[Symbol.toStringTag]==="DOMTokenList")return!0;if(e[ha])return!0}catch{return!0}return e instanceof HTMLElement||e instanceof ArrayBuffer||e instanceof MessagePort||e instanceof Map||e instanceof Set||e instanceof WeakMap||e instanceof WeakSet||ArrayBuffer.isView(e)||typeof WebSocket<"u"&&e instanceof WebSocket}var dn=!1;function We(e){if(dn)return e();dn=!0;let t=console.warn;console.warn=(...o)=>{if(o.some((n)=>typeof n==="string"&&(n.includes("has been renamed to")||n.includes("silence this warning"))))return;if(o.length===1&&o[0]==="")return;t.apply(console,o)};try{return e()}finally{console.warn=t,dn=!1}}function oi(){We(()=>{for(let[,e]of mt){if(gn(e)){if(e!=null&&(typeof e==="object"||typeof e==="function"))po.add(e);continue}if(typeof e!=="object")continue;for(let t in e)try{let o=e[t];if(gn(o)&&o!=null&&(typeof o==="object"||typeof o==="function"))po.add(o)}catch{}}})}function ee(e){if(e==null)return!1;let t=typeof e;if(t!=="object"&&t!=="function")return!1;if(po.has(e))return!0;if(gn(e))return po.add(e),!0;return!1}function hn(e,t){if(e==null)return;if(mt.get(t)===e)return;if(mt.set(t,e),dt.size)for(let[o,n]of dt)try{if(!dt.has(o))continue;if(o(e))dt.delete(o),n(e,t)}catch(i){_.error("WaitFor listener error:",i)}if(uo.size)for(let o of uo)try{o()}catch(n){_.error("Module load listener error:",n)}}function Ca(e,t){if(!j.length)return t;let o=String(t),n=o,i=new Set;for(let s=0;s<j.length;s++){let a=j[s];if(a.predicate&&!a.predicate())continue;if(!(Array.isArray(a.find)?Ee(o,a.find):Ot(o,a.find)))continue;let l=Array.isArray(a.replacement)?a.replacement:[a.replacement],u=n,y=!0,D=0,g=0,I=0,z={plugin:a.plugin,find:String(a.find),moduleId:e,replacements:[]};for(let A of l){if(A.predicate&&!A.predicate())continue;let re=n;try{let{match:V}=A,J=performance.now(),ie=n.replace(V,A.replace),Ie=performance.now()-J;if(ie===n){if(g++,z.replacements.push({match:String(V),status:"noEffect"}),!a.noWarn&&!A.noWarn)_.error(`Patch by ${a.plugin} had no effect: ${String(V)}`);if(a.group){y=!1;break}continue}n=ie,i.add(a.plugin),D++,z.replacements.push({match:String(V),status:"applied"})}catch(V){if(I++,z.replacements.push({match:String(A.match),status:"error"}),_.error(`Error in patch by ${a.plugin} on module ${e}:`,V),n=re,a.group){y=!1;break}}}if(Vt.push(z),a.group&&!y){if(n=u,i.delete(a.plugin),!a.noWarn)_.warn(`Group patch by ${a.plugin} failed, reverting`);continue}if(G.applied+=D,G.noEffect+=g,G.errors+=I,D)G.patchedModules.add(e);if(!a.all)j.splice(s--,1)}if(i.size){let s=[...i].join(", "),a=xa(n,`// Turbopack Module ${e} - Patched by ${s}`,`//# sourceURL=file:///TurbopackModule${e}`);return a[ro]=t,a[io]=!0,a[ao]=n,a[so]=[...i],a}return t}function ni(e,t){let o=Ca(e,t),n=o[ro]??t,i=function(s,a,c){ai(s);try{o.call(this,s,a,c)}catch(l){if(o===t)throw l;G.runtimeFallbacks++,_.error(`Patched module ${a?.id??e} errored, using original:`,l);try{n.call(this,s,a,c)}catch(u){throw _.error(`Original module ${a?.id??e} also errored:`,u),u}}try{let l=a?.id??e;if(a?.exports!=null)hn(a.exports,l)}catch(l){_.error(`Module notification error for ${a?.id??e}:`,l)}};if(i.toString=()=>String(t),i[ro]=n,o[io])i[io]=!0,i[so]=o[so],i[ao]=o[ao];return i}function ba(e){let t=null,o=new Map;for(let n=1;n<e.length;n++){if(typeof e[n]!=="function")continue;let i=e[n-1];if(typeof i!=="number")continue;if(!t)t=[...e];let s=e[n],a=o.get(s);if(a)t[n]=a;else{let c=ni(i,s);o.set(s,c),t[n]=c}}return t??e}function mn(...e){for(let t=0;t<e.length;t++)if(Array.isArray(e[t]))e[t]=ba(e[t]);return $t(...e)}function ri(){return{stats:{...G,patchedModules:[...G.patchedModules]},results:Vt,orphaned:j.filter((e)=>!e.all).map((e)=>({plugin:e.plugin,find:String(e.find)}))}}function ii(){let e=j.filter((t)=>!t.all);if(e.length)_.warn(`${e.length} patch(es) found no module:`,e.map((t)=>`${t.plugin}: ${String(t.find)}`));if(G.noEffect||G.errors){for(let t of Vt)for(let o of t.replacements)if(o.status==="noEffect")_.error(`[no effect] ${t.plugin} on ${t.moduleId}: ${o.match}`);else if(o.status==="error")_.error(`[error] ${t.plugin} on ${t.moduleId}: ${o.match}`)}_.info(`Patches: ${G.applied} applied, ${G.noEffect} no-effect, ${G.errors} errors, ${G.runtimeFallbacks} fallbacks, ${e.length} orphaned`)}function si(e){let t=0;for(let o in e){let n=e[o];if(n?.exports==null)continue;let i=Number(o);if(mt.get(i)!==n.exports)hn(n.exports,i),t++}return t}function Pa(e){let t=si(e)}function fo(){if(!ue)return;let e=si(ue);if(e>0)_.info(`Rescan found ${e} new/updated modules`)}function Ta(){let e=Map.prototype.set,t=null;Map.prototype.set=function(o,n){if(!t&&o===lo&&typeof n==="function")t=this;return e.call(this,o,n)};try{$t(["void-factory-probe",lo,()=>{}])}finally{Map.prototype.set=e}return t?.delete(lo),t}function ai(e){if(!fn)fn=e;if(!ue&&e.c){ue=e.c,Pa(ue);for(let t of Zr)try{t()}catch(o){_.error("Cache discovery listener error:",o)}Zr.clear()}if(!Ce&&e.M)Ce=e.M}function Ma(e){let t=lo-1;e.set(t,(o)=>ai(o)),$t(["void-cache-probe",{otherChunks:[],runtimeModuleIds:[t]}]),Promise.resolve().then(()=>e.delete(t))}function Kr(){if(Ce=Ta(),Ce)for(let[e,t]of Ce)Ce.set(e,ni(e,t));if(!ue&&Ce)Ma(Ce)}function li(){let e=co.TURBOPACK;if(e&&!Array.isArray(e)&&typeof e.push==="function"){$t=e.push.bind(e),e.push=(...n)=>mn(...n),Kr();return}let t=[];if(Array.isArray(e))t.push(...e);let o=e??[];if(Object.defineProperty(co,"TURBOPACK",{configurable:!0,get(){return o},set(n){if(n&&!Array.isArray(n)&&typeof n.push==="function"){let i=n;$t=i.push.bind(i),i.push=(...s)=>mn(...s),o=i;for(let s of t)try{mn(s)}catch(a){_.error("Failed to process queued chunk:",a)}t.length=0,Kr()}else o=n}}),Array.isArray(o)){let n=o.push.bind(o);o.push=(...i)=>{return t.push(...i),n(...i)}}}var se=new h("TurbopackFinder","#a6d189"),ci=new WeakMap,pe=new Map;function yo(e){let t=ci.get(e);if(t===void 0)t=String(e),ci.set(e,t);return t}function di(e){if(e.startsWith("use"))return e;return e.endsWith("Store")?`use${e}`:`use${e}Store`}function Sn(e){return typeof e==="function"&&typeof e.getState==="function"&&typeof e.setState==="function"&&typeof e.subscribe==="function"}var R={byProps:(...e)=>{return e.length===1?(t)=>t[e[0]]!=null:(t)=>e.every((o)=>t[o]!=null)},byCode:(...e)=>{return(t)=>{if(typeof t!=="function")return!1;return Ee(yo(t),e)}},byDisplayName:(e)=>{return(t)=>t?.displayName===e||t?.render?.displayName===e},byStoreName:(e)=>{let t=di(e);return(o)=>{if(typeof o!=="object"||o===null)return!1;let n=o[t];return typeof n==="function"&&typeof n.getState==="function"}},componentByCode:(...e)=>{let t=R.byCode(...e);return(o)=>{if(t(o))return!0;if(!o?.$$typeof)return!1;if(o.type)return t(o.type);if(o.render)return t(o.render);return!1}},byClassName:(...e)=>{return(t)=>{if(typeof t!=="object"||t===null)return!1;return e.every((o)=>typeof t[o]==="string")}}};function mi(e,t){return We(()=>{let o=e();if(!t(o))return o;let n=B().size;if(ft(),B().size===n)return o;return e()})}function je(e,t=!1,o=!1){return mi(()=>Da(e,t,o),(n)=>t?!n.length:!n)}function Da(e,t,o){let n=[],i=t?new Set:null,s=B();for(let[,a]of s){if(a==null||ee(a))continue;try{if(e(a)){if(!t)return a;if(!i.has(a))i.add(a),n.push(a);continue}}catch{}if(!o&&typeof a==="object")for(let c in a)try{let l=a[c];if(l==null||ee(l))continue;if(e(l)){if(!t)return l;if(!i.has(l))i.add(l),n.push(l)}}catch{}}return t?n:null}function Xe(e){return je(e)}function va(e){return je(e,!0)}function xn(e){let t=je(e);if(t)return t;return ce(()=>je(e))}function ho(...e){return Xe(R.byProps(...e))}function p(...e){return ce(()=>ho(...e))}function fi(...e){return Xe(R.byCode(...e))}function wa(...e){return ce(()=>fi(...e))}function gi(e){return Xe(R.byDisplayName(e))}function Ia(e){return ce(()=>gi(e))}function yi(...e){return Xe(R.componentByCode(...e))}function La(...e){return b("findComponentByCode",()=>yi(...e))}function T(...e){return mi(()=>Ea(e),(t)=>!t)}function Ea(e){let t=B();for(let[,o]of t){if(o==null||typeof o!=="object"||ee(o))continue;for(let n of e)try{let i=o[n];if(i==null||ee(i))continue;if(typeof i==="function"||i?.$$typeof)return i}catch{}}return null}function ka(...e){return b(e[0],()=>T(...e))}function ui(){for(let[,e]of B()){if(e==null||typeof e!=="object"||ee(e))continue;for(let t in e)try{if(pe.has(t))continue;let o=e[t];if(Sn(o))pe.set(t,o)}catch{}}}function hi(){We(()=>{ui();let e=B().size;if(ft(),B().size!==e)ui()})}function Si(e){let t=di(e);if(pe.has(t))return pe.get(t);if(!pe.size)hi();if(pe.has(t))return pe.get(t);let o=Xe(R.byStoreName(e)),n=o?.[t]??o;if(!n||!Sn(n))return;return pe.set(t,n),n}function Fa(e){return ce(()=>Si(e))}function Na(){if(!pe.size)hi();return new Map(pe)}function xi(...e){let t=je(R.byClassName(...e),!1,!0);if(!t)return{};return Ci(t,e)}function Aa(...e){return ce(()=>xi(...e))}function Ci(e,t){let o={};for(let n of t){let i=new RegExp(`(?:\\b|_)${no(n)}(?:\\b|_)`),s=!1;for(let a in e)if(typeof e[a]==="string"&&i.test(e[a])){o[n]=e[a],s=!0;break}if(!s)se.warn(`mapMangledCssClasses: class "${n}" not found in module`)}return o}function Ba(...e){let{length:t}=e;if(t<2)return se.warn("findBulk called with fewer than 2 filters, use find instead."),t===1?[Xe(e[0])]:[];let o=()=>{let n=[...e],i=Array(t).fill(null),s=0,a=B();e:for(let[,c]of a){if(c==null||ee(c))continue;for(let l=0;l<t;l++){let u=n[l];if(!u)continue;try{if(u(c)){if(i[l]=c,n[l]=void 0,++s===t)break e}}catch{}}if(typeof c==="object")for(let l in c)try{let u=c[l];if(u==null||ee(u))continue;for(let y=0;y<t;y++){let D=n[y];if(!D)continue;if(D(u)){if(i[y]=u,n[y]=void 0,++s===t)break e;break}}}catch{}}return{results:i,found:s}};return We(()=>{let{results:n,found:i}=o();if(i<t){let s=B().size;if(ft(),B().size>s)({results:n,found:i}=o())}if(i!==t)se.warn(`findBulk: got ${t} filters but only found ${i} modules.`);return n})}function Cn(...e){let t=He();if(!t)return null;for(let[o,n]of t)if(Ee(yo(n),e))return[o,n];return null}function bi(...e){return Cn(...e)?.[0]??null}function Pi(e,t){let o={},n=bi(...e);if(n==null)return o;let i=Pn(n);if(i==null)return o;return We(()=>{let s=Object.entries(t),a=0;e:for(let c in i)try{let l=i[c];for(let u=0;u<s.length;u++){let[y,D]=s[u];if(y in o)continue;if(D(l)){if(o[y]=l,++a===s.length)break e;break}}}catch{}return o})}function Oa(e,t){return ce(()=>Pi(e,t))}var go="[A-Za-z_$][\\w$]*",bn=new RegExp(`Promise\\.all\\(\\[([^\\]]+)\\]\\.map\\(${go}=>${go}\\.l\\(${go}\\)\\)\\)\\.then\\(\\(\\)=>${go}\\((\\d+)\\)\\)`),Ti=/"(static\/chunks\/[^"]+)"/g;async function Mi(e,t=bn){let o=Cn(...e);if(!o)return se.warn("extractAndLoadChunks: no module factory found for:",e),!1;let n=yo(o[1]).match(t);if(!n)return se.warn("extractAndLoadChunks: no chunk loading pattern found in factory for:",e),!1;let[,i,s]=n;if(s==null)return se.warn("extractAndLoadChunks: matcher did not capture entry point ID for:",e),!1;let a=gt();if(!a)return se.warn("extractAndLoadChunks: Turbopack helpers not available."),!1;if(i){let l=Array.from(i.matchAll(Ti),(u)=>u[1]);if(l.length)try{await Promise.all(l.map((u)=>a.l(u)))}catch(u){return se.warn("extractAndLoadChunks: chunk loading failed:",u),!1}}let c=Number(s);try{Pn(c)}catch(l){return se.warn("extractAndLoadChunks: entry point module failed:",l),!1}return!0}function $a(e,t=bn){let o=null;return()=>{if(o)return o;let n=Mi(e,t);return n.then((i)=>{if(!i)o=null},()=>{o=null}),o=n,n}}function Va(...e){let t={},o=He();if(!o)return t;for(let[n,i]of o)if(Ee(yo(i),e))t[n]=i;return t}function Pn(e){let t=B();if(t.has(e))return t.get(e);let o=gt();if(!o)return null;try{return o.i(e)}catch{return null}}function Ra(e){let t=gt();if(!t)return Promise.reject(Error("Turbopack helpers not available"));return t.A(e)}function pi(e,t){return We(()=>{if(ee(e))return null;try{if(t(e))return e;if(typeof e==="object"&&e!==null)for(let o in e)try{let n=e[o];if(n!=null&&!ee(n)&&t(n))return n}catch{}}catch{}return null})}function be(e,t,o=0){let n=je(e);if(n)return t(n,-1),()=>{};let i=(u)=>pi(u,e)!=null,s=(u,y)=>{try{let D=pi(u,e);if(D)t(D,y)}catch(D){se.error("waitFor callback error:",D)}},a=null;ei(i,(u,y)=>{if(a)clearTimeout(a);s(u,y)});let l=()=>{if(a)clearTimeout(a);ti(i)};if(o>0)a=setTimeout(()=>{if(a=null,!je(e))se.warn(`waitFor timed out after ${o}ms:`,e),l()},o);return l}var Di=p("useArtifactStore","useArtifactEdits"),vi=p("useAssetStore"),de=p("useChatPageStore","getLatestThreadMessageId"),wi=p("useCodePageStore"),Ii=p("useCommandMenuStore","createSelection"),Rt=p("useConversationStore","createOptimisticConversation"),Li=p("useDevModelsStore","DRAFT_MODEL_ID"),Ei=p("useDictationStore"),U=p("useFeatureStore"),ht=p("useFilesPageStore","useAssetsList"),ki=p("useFileStore"),Fi=p("useHighlightsStore"),Ni=p("useImageEditorStore"),Ai=p("useMediaStore","useImagineModeStore"),Bi=p("useMentionMenuStore"),So=p("useModelsStore"),Oi=p("useModesStore"),$i=p("useNotificationsStore","useNotificationsStoreInit"),Vi=p("usePersonalityStore","DEFAULT_CUSTOM_PERSONALITY"),Ri=p("useReportStore"),zi=p("useResponseStore","createOptimisticResponse"),Gi=p("useRoutingStore","formatUrl"),xo=p("useSession","SessionStoreProvider"),_i=p("useSettingsDialogStore"),Ui=p("useSettingsStore","TOOL_NAMES"),Hi=p("useShareStore"),Wi=p("useShopStore"),ji=p("useSourcesSelectorStore"),Co=p("useSubscriptionsStore"),Xi=p("useSuggestionStore","useSuggestionStoreInit"),qi=p("useTabsManagerStore"),Yi=p("useTasksStore"),Zi=p("useTextToSpeechStore"),Qi=p("useTourGuideStore","useTourGuideTooltip"),Ki=p("useUpsellStore","useShouldShowUpgradeButton"),Ji=p("useWorkspaceCollectionsStore","useWorkspaceActiveCollectionIds"),es=p("useWorkspaceConnectorsStore","useWorkspaceActiveConnectorIds"),ts=p("useWorkspaceStore","useWorkspacesList");var za=new h("Styles","#a6d189"),ns=new Map,bo=new Map,zt=null,Po=[];function Mn(){if(zt)return zt;if(!document.head)return null;return zt=document.createElement("void-styles"),document.head.appendChild(zt),zt}function os(){let e=Mn();if(!e)return;for(let[t,o]of Po)Dn(e,t,o);Po=[]}function Dn(e,t,o){let n=bo.get(t);if(n){if(n.textContent!==o)n.textContent=o;return}let i=document.createElement("style");i.dataset.void=t,i.textContent=o,e.appendChild(i),bo.set(t,i)}function P(e,t){ns.set(e,t);let o=Mn();if(o)Dn(o,e,t);else if(Po.push([e,t]),Po.length===1)if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",os,{once:!0});else os()}function qe(e){let t=bo.get(e);if(t){if(t.disabled)return t.disabled=!1,!0;return!1}let o=ns.get(e);if(!o)return za.warn(`Style "${e}" not registered.`),!1;let n=Mn();if(!n)return!1;return Dn(n,e,o),!0}function te(e){let t=bo.get(e);if(!t)return!1;return t.disabled=!0,!0}var E=(e="")=>(...t)=>{let o=new Set;for(let n of t)if(typeof n==="string")o.add(n);else if(Array.isArray(n))n.forEach((i)=>o.add(i));else if(n&&typeof n==="object")Object.entries(n).forEach(([i,s])=>s&&o.add(i));return Array.from(o,(n)=>e+n).join(" ")};function Z(...e){return e.filter(Boolean).join(" ")}function vn(e){let t=typeof e==="string",o=t?e:e.source;if(o=o.replaceAll(/#{i18n::([^}]+)}/g,(i,s)=>t?`"${s}"`:`"${s.replaceAll(".","\\.")}"`),!t)o=o.replaceAll(/(\\*)\\i/g,(i,s)=>s.length%2===0?`${s}(?:[A-Za-z_$][\\w$]*)`:i.slice(1)),o=o.replaceAll(/\\e\{(\w+)\}/g,(i,s)=>`["']${s}["'],\\(\\)=>(?:[A-Za-z_$][\\w$]*)`);if(o===(t?e:e.source))return e;if(t)return o;let n=new RegExp(o,e.flags);return n.toString=e.toString.bind(e),n}function Ga(e,t){if(typeof e!=="function")return e.replaceAll("$self",t);return(o,...n)=>e(o,...n).replaceAll("$self",t)}function rs(e,t){e.match=vn(e.match),e.replace=Ga(e.replace,t)}function is(e){if(Array.isArray(e.find))e.find=e.find.map((t)=>vn(t));else e.find=vn(e.find)}function S(e){return e}var St;((n)=>{n.Init="Init";n.DOMContentLoaded="DOMContentLoaded";n.TurbopackReady="TurbopackReady"})(St||={});var oe;((l)=>{l[l.STRING=0]="STRING";l[l.NUMBER=1]="NUMBER";l[l.BIGINT=2]="BIGINT";l[l.BOOLEAN=3]="BOOLEAN";l[l.SELECT=4]="SELECT";l[l.SLIDER=5]="SLIDER";l[l.COMPONENT=6]="COMPONENT";l[l.CUSTOM=7]="CUSTOM"})(oe||={});var r,M,O,wn,F,me,Gt,X,In,Ln,En,kn,_t,ae,Ut;be(R.byProps("useReducedMotion"),(e)=>{({useReducedMotion:Ut}=e)});be(R.byProps("useState","createElement"),(e)=>{let t=e;r=t,{useState:M,useEffect:O,useLayoutEffect:wn,useMemo:F,useRef:me,useReducer:Gt,useCallback:X,useContext:In,useId:Ln,useTransition:En,useDeferredValue:kn,useSyncExternalStore:_t,createElement:ae}=t,Yr(t.createElement)});var ke=Symbol.for("react.fragment"),ss=p("createPortal","flushSync");function Ye(...e){let t=null;return be(R.byProps(...e),(o)=>{t=o}),(o)=>b(o,()=>t?.[o]??T(o))}var as=null;be(R.byProps("Button","ButtonWithTooltipOptimized"),(e)=>{as=e});var ls=(e)=>b(e,()=>as?.[e]??T(e)),k=ls("Button"),Ze=ls("ButtonWithTooltip"),To=b("Card",()=>T("Card")),Qe=Ye("Dialog","DialogContent","DialogHeader"),Fe=Qe("Dialog"),Ne=Qe("DialogContent"),Ae=Qe("DialogHeader"),Be=Qe("DialogTitle"),xt=Qe("DialogDescription"),Ct=Qe("DialogFooter"),Mo=Qe("DialogClose"),le=Ye("DropdownMenu","DropdownMenuContent","DropdownMenuTrigger"),_a=le("DropdownMenu"),Ua=le("DropdownMenuTrigger"),Ha=le("DropdownMenuContent"),bt=le("DropdownMenuItem"),Wa=le("DropdownMenuCheckboxItem"),ja=le("DropdownMenuRadioGroup"),Xa=le("DropdownMenuRadioItem"),qa=le("DropdownMenuSeparator"),Ya=le("DropdownMenuSub"),Za=le("DropdownMenuSubTrigger"),Qa=le("DropdownMenuSubContent"),Oe=Ye("ContextMenu","ContextMenuContent","ContextMenuTrigger"),Ka=Oe("ContextMenu"),Ja=Oe("ContextMenuTrigger"),el=Oe("ContextMenuContent"),tl=Oe("ContextMenuItem"),ol=Oe("ContextMenuSeparator"),nl=Oe("ContextMenuSub"),rl=Oe("ContextMenuSubTrigger"),il=Oe("ContextMenuSubContent"),ne=b("Input",()=>T("Input")),Do=b("MotionDiv",()=>ho("motion")?.motion?.div),fe=b("Select",()=>T("Select")),ge=b("SelectTrigger",()=>T("SelectTrigger")),ye=b("SelectContent",()=>T("SelectContent")),N=b("SelectItem",()=>T("SelectItem")),he=b("SelectValue",()=>T("SelectValue")),$e=b("Separator",()=>T("Separator")),cs=b("Skeleton",()=>T("Skeleton")),vo=b("Slider",()=>T("Slider")),Pt=b("SettingsRow",()=>T("SettingsRow")),Tt=b("SettingsTitle",()=>T("SettingsTitle")),Mt=b("SettingsDescription",()=>T("SettingsDescription")),q=b("Switch",()=>T("Switch")),Ke=b("Tooltip",()=>T("Tooltip")),Je=b("TooltipTrigger",()=>T("TooltipTrigger")),et=b("TooltipContent",()=>T("TooltipContent")),sl=b("Textarea",()=>T("Textarea")),al=b("Checkbox",()=>T("Checkbox")),ll=b("Spinner",()=>T("Spinner")),cl=b("Avatar",()=>T("Avatar")),wo=Ye("Popover","PopoverContent","PopoverTrigger"),ul=wo("Popover"),pl=wo("PopoverTrigger"),dl=wo("PopoverContent"),ml=wo("PopoverArrow"),Io=Ye("Tabs","TabsList","TabsTrigger","TabsContent"),fl=Io("Tabs"),gl=Io("TabsList"),yl=Io("TabsTrigger"),hl=Io("TabsContent"),Lo=Ye("Accordion","AccordionContent","AccordionItem"),Sl=Lo("Accordion"),xl=Lo("AccordionItem"),Cl=Lo("AccordionTrigger"),bl=Lo("AccordionContent"),Dt=Ye("Command","CommandInput","CommandList","CommandItem"),Pl=Dt("Command"),Tl=Dt("CommandInput"),Ml=Dt("CommandList"),Dl=Dt("CommandItem"),vl=Dt("CommandGroup"),wl=Dt("CommandEmpty"),Il=b("ResponsiveDialog",()=>T("ResponsiveDialog")),Fn=p("Sidebar","SidebarContent","SidebarProvider"),Nn=b("AnimatePresence",()=>T("AnimatePresence"));var Ht=p("chatApi","modelsApi"),An=p("Toaster","toast"),tt=p("cn","middleTruncate"),Bn=p("reasoningModeToRequestKind","reasoningModeToDeepsearchPreset"),Ll=p("create","useStore"),El=p("useTranslation"),kl=p("getEnv","useEnvironment"),Fl=p("getCachedAssetUrl","getAssetUrl"),Nl=p("downloadImage"),On=p("downloadBlob","downloadUri"),Al=p("useRateLimits"),Bl=p("useRouter","usePathname"),$n=p("useQuery"),Ol=p("copyAndToast"),Wt=p("initMonaco");var $l="inline-flex items-center rounded-full border border-input-border px-2 py-0.5 text-[10px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",Vl={default:"border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",secondary:"bg-popover border-border-l1 text-fg-secondary-foreground hover:bg-popover/80",destructive:"border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",outline:"text-secondary"};function Eo({variant:e="secondary",className:t,children:o,...n}){return r.createElement("div",{className:tt.cn($l,Vl[e],t),...n},o)}var Rl="w-full max-w-md p-6 rounded-2xl border border-border-l1 flex flex-col gap-6";function ot({open:e,onOpenChange:t,title:o,description:n,confirmText:i="Confirm",cancelText:s="Cancel",danger:a,onConfirm:c}){return r.createElement(Fe,{open:e,onOpenChange:t},r.createElement(Ne,{className:Rl},r.createElement(Ae,null,r.createElement(Be,null,o),r.createElement(xt,null,n)),r.createElement(Ct,null,r.createElement(k,{variant:"secondary",size:"md",onClick:()=>t(!1)},s),r.createElement(k,{variant:a?"danger":"primary",size:"md",onClick:()=>{t(!1),c()}},i))))}var ko=null;function zl(){if(ko)return ko;return ko=class extends r.Component{constructor(t){super(t);this.state={hasError:!1}}static getDerivedStateFromError(){return{hasError:!0}}componentDidCatch(t){this.props.onError?.(t)}render(){if(this.state.hasError)return this.props.fallback??null;return this.props.children??null}},ko}function Gl(e){let t=zl();return r.createElement(t,{...e})}var v=Gl;Object.defineProperty(v,"wrap",{value(e,t=null){let o=(n)=>r.createElement(v,{fallback:t},r.createElement(e,{...n}));return Object.defineProperty(o,"name",{value:`ErrorBoundary(${e.displayName??e.name??"Unknown"})`}),o},configurable:!0});P("ErrorCard",`.void-error-card-root {
+/**
+ * Void v0.2.6 — A modification for grok.com
+ * (c) 2026 Prism & Void Contributors
+ * Licensed under GPL-3.0-or-later
+ * Source: https://github.com/imjustprism/Void
+ */
+(() => {
+  var __defProp = Object.defineProperty;
+  var __returnValue = (v) => v;
+  function __exportSetter(name, newValue) {
+    this[name] = __returnValue.bind(null, newValue);
+  }
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, {
+        get: all[name],
+        enumerable: true,
+        configurable: true,
+        set: __exportSetter.bind(all, name)
+      });
+  };
+
+  // src/Void.ts
+  var exports_Void = {};
+  __export(exports_Void, {
+    waitFor: () => waitFor,
+    syncLazyModules: () => syncLazyModules,
+    subscribe: () => subscribe,
+    stopPlugin: () => stopPlugin,
+    startPlugin: () => startPlugin,
+    sleep: () => sleep,
+    showToast: () => showToast,
+    showNotice: () => showNotice,
+    setThemesEnabled: () => setThemesEnabled,
+    search: () => search,
+    sanitizeFilename: () => sanitizeFilename,
+    requireModule: () => requireModule,
+    removeTheme: () => removeTheme,
+    removeChatBarButton: () => removeChatBarButton,
+    registerStyle: () => registerStyle,
+    registerPlugin: () => registerPlugin,
+    proxyLazy: () => proxyLazy,
+    pluralize: () => pluralize,
+    plugins: () => plugins,
+    patches: () => patches,
+    patchStats: () => patchStats,
+    patchResults: () => patchResults,
+    patchReport: () => patchReport,
+    openModal: () => openModal,
+    onlyOnce: () => onlyOnce,
+    onceReady: () => onceReady,
+    onModuleLoad: () => onModuleLoad,
+    migrateSettingsToPlugin: () => migrateSettingsToPlugin,
+    migratePluginSettings: () => migratePluginSettings,
+    migratePluginSetting: () => migratePluginSetting,
+    mergeDefaults: () => mergeDefaults,
+    matchesPattern: () => matchesPattern,
+    matchesAllPatterns: () => matchesAllPatterns,
+    mapMangledModuleLazy: () => mapMangledModuleLazy,
+    mapMangledModule: () => mapMangledModule,
+    mapMangledCssClasses: () => mapMangledCssClasses,
+    makeLazy: () => makeLazy,
+    isZustandStore: () => isZustandStore,
+    isTruthy: () => isTruthy,
+    isThemesEnabled: () => isThemesEnabled,
+    isPluginEnabled: () => isPluginEnabled,
+    isObject: () => isObject,
+    isNonNullish: () => isNonNullish,
+    isBlacklisted: () => isBlacklisted,
+    initSettings: () => initSettings,
+    init: () => init,
+    importModule: () => importModule,
+    humanizeKey: () => humanizeKey,
+    getTurbopackHelpers: () => getTurbopackHelpers,
+    getThemes: () => getThemes,
+    getRuntimeModuleCache: () => getRuntimeModuleCache,
+    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry,
+    getModuleCache: () => getModuleCache,
+    getAllStores: () => getAllStores,
+    formatDuration: () => formatDuration,
+    formatCountdown: () => formatCountdown,
+    findStoreLazy: () => findStoreLazy,
+    findStore: () => findStore,
+    findModuleId: () => findModuleId,
+    findModuleFactory: () => findModuleFactory,
+    findLazy: () => findLazy,
+    findExportedComponentLazy: () => findExportedComponentLazy,
+    findExportedComponent: () => findExportedComponent,
+    findCssClassesLazy: () => findCssClassesLazy,
+    findCssClasses: () => findCssClasses,
+    findComponentByCodeLazy: () => findComponentByCodeLazy,
+    findComponentByCode: () => findComponentByCode,
+    findByPropsLazy: () => findByPropsLazy,
+    findByProps: () => findByProps,
+    findByDisplayNameLazy: () => findByDisplayNameLazy,
+    findByDisplayName: () => findByDisplayName,
+    findByCodeLazy: () => findByCodeLazy,
+    findByCode: () => findByCode,
+    findBulk: () => findBulk,
+    findAll: () => findAll,
+    find: () => find,
+    filters: () => filters,
+    fetchExternal: () => fetchExternal,
+    extractAndLoadChunksLazy: () => extractAndLoadChunksLazy,
+    extractAndLoadChunks: () => extractAndLoadChunks,
+    escapeRegExp: () => escapeRegExp,
+    errorMessage: () => errorMessage,
+    enableTheme: () => enableTheme,
+    enableStyle: () => enableStyle,
+    dispatch: () => dispatch,
+    disableTheme: () => disableTheme,
+    disableStyle: () => disableStyle,
+    definePluginSettings: () => definePluginSettings,
+    definePlugin: () => definePlugin,
+    debounce: () => debounce,
+    createExternalStore: () => createExternalStore,
+    copyToClipboard: () => copyToClipboard,
+    confirm: () => confirm,
+    common: () => exports_common,
+    closeNotice: () => closeNotice,
+    closeModal: () => closeModal,
+    closeAllModals: () => closeAllModals,
+    classes: () => classes,
+    classNameFactory: () => classNameFactory,
+    clamp: () => clamp,
+    addTheme: () => addTheme,
+    addPatch: () => addPatch,
+    addChatBarButton: () => addChatBarButton,
+    ToastType: () => ToastType,
+    StartAt: () => StartAt,
+    SettingsStore: () => SettingsStore3,
+    Settings: () => Settings,
+    PlainSettings: () => PlainSettings,
+    OptionType: () => OptionType,
+    NoticeType: () => NoticeType,
+    Logger: () => Logger,
+    DefaultChunkLoadRegex: () => DefaultChunkLoadRegex,
+    ChunkPathRegex: () => ChunkPathRegex
+  });
+
+  // src/turbopack/common/stores.ts
+  var exports_stores = {};
+  __export(exports_stores, {
+    WorkspaceStore: () => WorkspaceStore,
+    WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
+    WorkspaceCollectionsStore: () => WorkspaceCollectionsStore,
+    UpsellStore: () => UpsellStore,
+    TourGuideStore: () => TourGuideStore,
+    TextToSpeechStore: () => TextToSpeechStore,
+    TasksStore: () => TasksStore,
+    TabsManagerStore: () => TabsManagerStore,
+    SuggestionStore: () => SuggestionStore,
+    SubscriptionsStore: () => SubscriptionsStore,
+    SourcesSelectorStore: () => SourcesSelectorStore,
+    ShopStore: () => ShopStore,
+    ShareStore: () => ShareStore,
+    SettingsStore: () => SettingsStore,
+    SettingsDialogStore: () => SettingsDialogStore,
+    SessionStore: () => SessionStore,
+    RoutingStore: () => RoutingStore,
+    ResponseStore: () => ResponseStore,
+    ReportStore: () => ReportStore,
+    PersonalityStore: () => PersonalityStore,
+    NotificationsStore: () => NotificationsStore,
+    ModesStore: () => ModesStore,
+    ModelsStore: () => ModelsStore,
+    MentionMenuStore: () => MentionMenuStore,
+    MediaStore: () => MediaStore,
+    ImageEditorStore: () => ImageEditorStore,
+    HighlightsStore: () => HighlightsStore,
+    FilesPageStore: () => FilesPageStore,
+    FileStore: () => FileStore,
+    FeatureStore: () => FeatureStore,
+    DictationStore: () => DictationStore,
+    DevModelsStore: () => DevModelsStore,
+    ConversationStore: () => ConversationStore,
+    CommandMenuStore: () => CommandMenuStore,
+    CodePageStore: () => CodePageStore,
+    ChatPageStore: () => ChatPageStore,
+    AssetStore: () => AssetStore,
+    ArtifactStore: () => ArtifactStore
+  });
+
+  // src/utils/lazy.ts
+  var unconfigurable = ["arguments", "caller", "prototype"];
+  var SYM_LAZY_GET = Symbol.for("void.lazy.get");
+  var SYM_LAZY_CACHED = Symbol.for("void.lazy.cached");
+  var handler = {};
+  for (const method of [
+    "apply",
+    "construct",
+    "defineProperty",
+    "deleteProperty",
+    "getPrototypeOf",
+    "has",
+    "isExtensible",
+    "preventExtensions",
+    "set",
+    "setPrototypeOf"
+  ]) {
+    handler[method] = (target, ...args) => Reflect[method](target[SYM_LAZY_GET]?.() ?? target, ...args);
+  }
+  handler.ownKeys = (target) => {
+    const v = target[SYM_LAZY_GET]?.() ?? target;
+    const keys = Reflect.ownKeys(v);
+    for (const key of unconfigurable) {
+      if (!keys.includes(key))
+        keys.push(key);
+    }
+    return keys;
+  };
+  handler.getOwnPropertyDescriptor = (target, p) => {
+    if (typeof p === "string" && unconfigurable.includes(p))
+      return Reflect.getOwnPropertyDescriptor(target, p);
+    const resolved = target[SYM_LAZY_GET]?.() ?? target;
+    const descriptor = Reflect.getOwnPropertyDescriptor(resolved, p);
+    if (descriptor)
+      Object.defineProperty(target, p, descriptor);
+    return descriptor;
+  };
+  handler.get = (target, p, receiver) => {
+    if (p === SYM_LAZY_CACHED || p === SYM_LAZY_GET)
+      return Reflect.get(target, p, receiver);
+    const value = target[SYM_LAZY_GET]();
+    if (value == null)
+      return;
+    if (typeof value === "object" || typeof value === "function")
+      return Reflect.get(value, p, receiver);
+    throw new Error("proxyLazy: factory returned a primitive value");
+  };
+  function makeLazy(factory) {
+    let cache;
+    let resolved = false;
+    return () => {
+      if (!resolved) {
+        cache = factory();
+        if (cache != null)
+          resolved = true;
+      }
+      return cache;
+    };
+  }
+  function proxyLazy(factory) {
+    const getter = makeLazy(factory);
+    const proxyDummy = Object.assign(() => {}, {
+      [SYM_LAZY_CACHED]: undefined,
+      [SYM_LAZY_GET]() {
+        const result = getter();
+        proxyDummy[SYM_LAZY_CACHED] = result;
+        return result;
+      }
+    });
+    return new Proxy(proxyDummy, handler);
+  }
+
+  // src/utils/lazyReact.ts
+  var _createElement = null;
+  function setCreateElement(fn) {
+    _createElement = fn;
+  }
+  function LazyComponent(name, factory) {
+    let cached = null;
+    const wrapper = (props) => {
+      cached ??= factory();
+      if (!cached || !_createElement)
+        return null;
+      return _createElement(cached, props);
+    };
+    Object.defineProperty(wrapper, "name", { value: name });
+    return new Proxy(wrapper, {
+      get(target, prop, receiver) {
+        if (prop === "$$voidGetWrapped")
+          return () => cached ?? factory();
+        cached ??= factory();
+        if (cached && prop in cached)
+          return cached[prop];
+        return Reflect.get(target, prop, receiver);
+      }
+    });
+  }
+
+  // src/utils/Logger.ts
+  var isBrowser = typeof window !== "undefined";
+  var ANSI = {
+    reset: "\x1B[0m",
+    bold: "\x1B[1m",
+    green: "\x1B[32m",
+    red: "\x1B[31m",
+    yellow: "\x1B[33m"
+  };
+
+  class Logger {
+    name;
+    color;
+    constructor(name, color = "white") {
+      this.name = name;
+      this.color = color;
+    }
+    _log(level, args) {
+      if (isBrowser) {
+        console[level](`%c Void %c %c ${this.name} `, "background: white; color: black; font-weight: bold; border-radius: 5px;", "", `background: ${this.color}; color: black; font-weight: bold; border-radius: 5px;`, ...args);
+        return;
+      }
+      const LEVEL_ANSI = { error: ANSI.red, warn: ANSI.yellow };
+      const levelAnsi = LEVEL_ANSI[level] ?? ANSI.green;
+      const prefix = `${ANSI.bold}${levelAnsi}[${this.name}]${ANSI.reset}`;
+      console[level](prefix, ...args);
+    }
+    log(...args) {
+      this._log("log", args);
+    }
+    info(...args) {
+      this._log("info", args);
+    }
+    error(...args) {
+      this._log("error", args);
+    }
+    warn(...args) {
+      this._log("warn", args);
+    }
+    debug(...args) {
+      this._log("debug", args);
+    }
+  }
+
+  // src/utils/text.ts
+  function humanizeKey(key, acronyms) {
+    const title = key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    if (!acronyms)
+      return title;
+    return Object.entries(acronyms).reduce((s, [from, to]) => s.replace(new RegExp(`\\b${from}\\b`, "g"), to), title);
+  }
+  function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+  function pluralize(count, singular, plural) {
+    return `${count} ${count === 1 ? singular : plural ?? singular + "s"}`;
+  }
+
+  // src/turbopack/match.ts
+  function matchesPattern(text, pattern) {
+    if (typeof pattern === "string")
+      return text.includes(pattern);
+    pattern.lastIndex = 0;
+    return pattern.test(text);
+  }
+  function matchesAllPatterns(text, patterns) {
+    return patterns.every((p) => matchesPattern(text, p));
+  }
+
+  // src/turbopack/types.ts
+  var SYM_ORIGINAL = Symbol("Void.originalFactory");
+  var SYM_PATCHED = Symbol("Void.patched");
+  var SYM_PATCHED_BY = Symbol("Void.patchedBy");
+  var SYM_PATCHED_CODE = Symbol("Void.patchedCode");
+
+  // src/turbopack/patchTurbopack.ts
+  var logger = new Logger("TurbopackPatcher", "#e78284");
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  var FACTORY_PROBE_ID = 2147483646;
+  var motionSymbol = Symbol.for("motionComponentSymbol");
+  var compileCounter = 0;
+  var compileFactory = (code, header, sourceUrl) => {
+    const key = `__void_eval_${compileCounter++}`;
+    const script = document.createElement("script");
+    let src = `window["${key}"]=(${code});`;
+    if (header)
+      src = `${header}
+${src}`;
+    if (sourceUrl)
+      src += `
+${sourceUrl}`;
+    script.textContent = src;
+    (document.head ?? document.documentElement).appendChild(script);
+    script.remove();
+    const fn = pageWindow[key];
+    delete pageWindow[key];
+    if (!fn)
+      throw new Error("Factory compilation failed (CSP?)");
+    return fn;
+  };
+  var cacheDiscoveryListeners = new Set;
+  var patches = [];
+  var moduleCache = new Map;
+  var waitForSubscriptions = new Map;
+  var originalPush = null;
+  var runtimeModuleCache = null;
+  var runtimeFactoryRegistry = null;
+  var turbopackHelpers = null;
+  var _resolveReady;
+  var onceReady = new Promise((r) => _resolveReady = r);
+  var patchResults = [];
+  var patchStats = {
+    applied: 0,
+    noEffect: 0,
+    errors: 0,
+    runtimeFallbacks: 0,
+    patchedModules: new Set
+  };
+  function getModuleCache() {
+    return moduleCache;
+  }
+  function getRuntimeModuleCache() {
+    return runtimeModuleCache;
+  }
+  var lastSyncRtCount = 0;
+  function syncLazyModules() {
+    if (!runtimeModuleCache)
+      return;
+    const keys = Object.keys(runtimeModuleCache);
+    if (keys.length === lastSyncRtCount)
+      return;
+    for (const id of keys) {
+      const numId = Number(id);
+      const mod = runtimeModuleCache[numId];
+      if (mod?.exports == null)
+        continue;
+      if (!moduleCache.has(numId))
+        notifyModuleLoaded(mod.exports, numId);
+    }
+    lastSyncRtCount = keys.length;
+  }
+  function getRuntimeFactoryRegistry() {
+    return runtimeFactoryRegistry;
+  }
+  function getTurbopackHelpers() {
+    return turbopackHelpers;
+  }
+  function addWaitForSubscription(filter, cb) {
+    waitForSubscriptions.set(filter, cb);
+  }
+  function removeWaitForSubscription(filter) {
+    waitForSubscriptions.delete(filter);
+  }
+  var moduleLoadListeners = new Set;
+  function onModuleLoad(cb) {
+    moduleLoadListeners.add(cb);
+    return () => moduleLoadListeners.delete(cb);
+  }
+  var badExports = new WeakSet;
+  function shouldIgnoreValue(value) {
+    if (value == null)
+      return true;
+    const t = typeof value;
+    if (t !== "object" && t !== "function")
+      return true;
+    if (value === window || value === document || value === document.documentElement)
+      return true;
+    try {
+      if (value[Symbol.toStringTag] === "DOMTokenList")
+        return true;
+      if (value[motionSymbol])
+        return true;
+    } catch {
+      return true;
+    }
+    return value instanceof HTMLElement || value instanceof ArrayBuffer || value instanceof MessagePort || value instanceof Map || value instanceof Set || value instanceof WeakMap || value instanceof WeakSet || ArrayBuffer.isView(value) || typeof WebSocket !== "undefined" && value instanceof WebSocket;
+  }
+  var warnsSuppressed = false;
+  function silenceWarns(fn) {
+    if (warnsSuppressed)
+      return fn();
+    warnsSuppressed = true;
+    const orig = console.warn;
+    console.warn = (...args) => {
+      if (args.some((a) => typeof a === "string" && (a.includes("has been renamed to") || a.includes("silence this warning"))))
+        return;
+      if (args.length === 1 && args[0] === "")
+        return;
+      orig.apply(console, args);
+    };
+    try {
+      return fn();
+    } finally {
+      console.warn = orig;
+      warnsSuppressed = false;
+    }
+  }
+  function blacklistBadModules() {
+    silenceWarns(() => {
+      for (const [, exports] of moduleCache) {
+        if (shouldIgnoreValue(exports)) {
+          if (exports != null && (typeof exports === "object" || typeof exports === "function"))
+            badExports.add(exports);
+          continue;
+        }
+        if (typeof exports !== "object")
+          continue;
+        for (const key in exports) {
+          try {
+            const v = exports[key];
+            if (shouldIgnoreValue(v) && v != null && (typeof v === "object" || typeof v === "function"))
+              badExports.add(v);
+          } catch {}
+        }
+      }
+    });
+  }
+  function isBlacklisted(value) {
+    if (value == null)
+      return false;
+    const t = typeof value;
+    if (t !== "object" && t !== "function")
+      return false;
+    if (badExports.has(value))
+      return true;
+    if (shouldIgnoreValue(value)) {
+      badExports.add(value);
+      return true;
+    }
+    return false;
+  }
+  function notifyModuleLoaded(exports, id) {
+    if (exports == null)
+      return;
+    if (moduleCache.get(id) === exports)
+      return;
+    moduleCache.set(id, exports);
+    if (waitForSubscriptions.size) {
+      for (const [filter, callback] of waitForSubscriptions) {
+        try {
+          if (!waitForSubscriptions.has(filter))
+            continue;
+          if (filter(exports)) {
+            waitForSubscriptions.delete(filter);
+            callback(exports, id);
+          }
+        } catch (e) {
+          logger.error("WaitFor listener error:", e);
+        }
+      }
+    }
+    if (moduleLoadListeners.size) {
+      for (const cb of moduleLoadListeners) {
+        try {
+          cb();
+        } catch (e) {
+          logger.error("Module load listener error:", e);
+        }
+      }
+    }
+  }
+  function patchFactory(moduleId, factory) {
+    if (!patches.length)
+      return factory;
+    const originalCode = String(factory);
+    let code = originalCode;
+    const patchedBy = new Set;
+    for (let i = 0;i < patches.length; i++) {
+      const patch = patches[i];
+      if (patch.predicate && !patch.predicate())
+        continue;
+      const findMatches = Array.isArray(patch.find) ? matchesAllPatterns(originalCode, patch.find) : matchesPattern(originalCode, patch.find);
+      if (!findMatches)
+        continue;
+      const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
+      const previousCode = code;
+      let allSucceeded = true;
+      let groupApplied = 0;
+      let groupNoEffect = 0;
+      let groupErrors = 0;
+      const result = {
+        plugin: patch.plugin,
+        find: String(patch.find),
+        moduleId,
+        replacements: []
+      };
+      for (const replacement of replacements) {
+        if (replacement.predicate && !replacement.predicate())
+          continue;
+        const lastCode = code;
+        try {
+          const { match } = replacement;
+          const start = performance.now();
+          const newCode = code.replace(match, replacement.replace);
+          const elapsed = performance.now() - start;
+          if (false)
+            ;
+          if (newCode === code) {
+            groupNoEffect++;
+            result.replacements.push({ match: String(match), status: "noEffect" });
+            if (!patch.noWarn && !replacement.noWarn)
+              logger.error(`Patch by ${patch.plugin} had no effect: ${String(match)}`);
+            if (patch.group) {
+              allSucceeded = false;
+              break;
+            }
+            continue;
+          }
+          code = newCode;
+          patchedBy.add(patch.plugin);
+          groupApplied++;
+          result.replacements.push({ match: String(match), status: "applied" });
+        } catch (err) {
+          groupErrors++;
+          result.replacements.push({ match: String(replacement.match), status: "error" });
+          logger.error(`Error in patch by ${patch.plugin} on module ${moduleId}:`, err);
+          code = lastCode;
+          if (patch.group) {
+            allSucceeded = false;
+            break;
+          }
+        }
+      }
+      patchResults.push(result);
+      if (patch.group && !allSucceeded) {
+        code = previousCode;
+        patchedBy.delete(patch.plugin);
+        if (!patch.noWarn)
+          logger.warn(`Group patch by ${patch.plugin} failed, reverting`);
+        continue;
+      }
+      patchStats.applied += groupApplied;
+      patchStats.noEffect += groupNoEffect;
+      patchStats.errors += groupErrors;
+      if (groupApplied)
+        patchStats.patchedModules.add(moduleId);
+      if (!patch.all)
+        patches.splice(i--, 1);
+    }
+    if (patchedBy.size) {
+      const plugins = [...patchedBy].join(", ");
+      const patchedFactory = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
+      patchedFactory[SYM_ORIGINAL] = factory;
+      patchedFactory[SYM_PATCHED] = true;
+      patchedFactory[SYM_PATCHED_CODE] = code;
+      patchedFactory[SYM_PATCHED_BY] = [...patchedBy];
+      return patchedFactory;
+    }
+    return factory;
+  }
+  function wrapFactory(moduleId, factory) {
+    const patched = patchFactory(moduleId, factory);
+    const original = patched[SYM_ORIGINAL] ?? factory;
+    const wrapped = function(helpers, mod, exports) {
+      captureRuntimeState(helpers);
+      try {
+        patched.call(this, helpers, mod, exports);
+      } catch (err) {
+        if (patched === factory)
+          throw err;
+        patchStats.runtimeFallbacks++;
+        logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
+        try {
+          original.call(this, helpers, mod, exports);
+        } catch (origErr) {
+          logger.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
+          throw origErr;
+        }
+      }
+      try {
+        const actualId = mod?.id ?? moduleId;
+        if (mod?.exports != null)
+          notifyModuleLoaded(mod.exports, actualId);
+      } catch (e) {
+        logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+      }
+    };
+    wrapped.toString = () => String(factory);
+    wrapped[SYM_ORIGINAL] = original;
+    if (patched[SYM_PATCHED]) {
+      wrapped[SYM_PATCHED] = true;
+      wrapped[SYM_PATCHED_BY] = patched[SYM_PATCHED_BY];
+      wrapped[SYM_PATCHED_CODE] = patched[SYM_PATCHED_CODE];
+    }
+    return wrapped;
+  }
+  function patchChunkEntry(entry) {
+    let patchedEntry = null;
+    const wrappedInChunk = new Map;
+    for (let i = 1;i < entry.length; i++) {
+      if (typeof entry[i] !== "function")
+        continue;
+      const prev = entry[i - 1];
+      if (typeof prev !== "number")
+        continue;
+      if (!patchedEntry)
+        patchedEntry = [...entry];
+      const factory = entry[i];
+      const existing = wrappedInChunk.get(factory);
+      if (existing) {
+        patchedEntry[i] = existing;
+      } else {
+        const wrapped = wrapFactory(prev, factory);
+        wrappedInChunk.set(factory, wrapped);
+        patchedEntry[i] = wrapped;
+      }
+    }
+    return patchedEntry ?? entry;
+  }
+  function handleChunkPush(...args) {
+    for (let i = 0;i < args.length; i++) {
+      if (Array.isArray(args[i]))
+        args[i] = patchChunkEntry(args[i]);
+    }
+    return originalPush(...args);
+  }
+  function patchReport() {
+    return {
+      stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] },
+      results: patchResults,
+      orphaned: patches.filter((p) => !p.all).map((p) => ({ plugin: p.plugin, find: String(p.find) }))
+    };
+  }
+  function reportOrphanedPatches() {
+    const orphaned = patches.filter((p) => !p.all);
+    if (orphaned.length)
+      logger.warn(`${orphaned.length} patch(es) found no module:`, orphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
+    if (patchStats.noEffect || patchStats.errors) {
+      for (const result of patchResults) {
+        for (const rep of result.replacements) {
+          if (rep.status === "noEffect")
+            logger.error(`[no effect] ${result.plugin} on ${result.moduleId}: ${rep.match}`);
+          else if (rep.status === "error")
+            logger.error(`[error] ${result.plugin} on ${result.moduleId}: ${rep.match}`);
+        }
+      }
+    }
+    if (false) {}
+    logger.info(`Patches: ${patchStats.applied} applied, ${patchStats.noEffect} no-effect, ${patchStats.errors} errors, ${patchStats.runtimeFallbacks} fallbacks, ${orphaned.length} orphaned`);
+  }
+  function scanCache(cache) {
+    let count = 0;
+    for (const id in cache) {
+      const mod = cache[id];
+      if (mod?.exports == null)
+        continue;
+      const numId = Number(id);
+      if (moduleCache.get(numId) !== mod.exports) {
+        notifyModuleLoaded(mod.exports, numId);
+        count++;
+      }
+    }
+    return count;
+  }
+  function scanExistingModules(cache) {
+    const count = scanCache(cache);
+    if (false)
+      ;
+  }
+  function rescanRuntimeModules() {
+    if (!runtimeModuleCache)
+      return;
+    const count = scanCache(runtimeModuleCache);
+    if (count > 0)
+      logger.info(`Rescan found ${count} new/updated modules`);
+  }
+  function captureFactoryRegistry() {
+    const origMapSet = Map.prototype.set;
+    let captured = null;
+    Map.prototype.set = function(key, value) {
+      if (!captured && key === FACTORY_PROBE_ID && typeof value === "function") {
+        captured = this;
+      }
+      return origMapSet.call(this, key, value);
+    };
+    try {
+      originalPush(["void-factory-probe", FACTORY_PROBE_ID, () => {}]);
+    } finally {
+      Map.prototype.set = origMapSet;
+    }
+    captured?.delete(FACTORY_PROBE_ID);
+    return captured;
+  }
+  function captureRuntimeState(helpers) {
+    if (!turbopackHelpers)
+      turbopackHelpers = helpers;
+    if (!runtimeModuleCache && helpers.c) {
+      runtimeModuleCache = helpers.c;
+      scanExistingModules(runtimeModuleCache);
+      for (const cb of cacheDiscoveryListeners) {
+        try {
+          cb();
+        } catch (e) {
+          logger.error("Cache discovery listener error:", e);
+        }
+      }
+      cacheDiscoveryListeners.clear();
+    }
+    if (!runtimeFactoryRegistry && helpers.M)
+      runtimeFactoryRegistry = helpers.M;
+  }
+  function captureModuleCache(factoryRegistry) {
+    const PROBE_ID = FACTORY_PROBE_ID - 1;
+    factoryRegistry.set(PROBE_ID, (helpers) => captureRuntimeState(helpers));
+    originalPush(["void-cache-probe", { otherChunks: [], runtimeModuleIds: [PROBE_ID] }]);
+    Promise.resolve().then(() => factoryRegistry.delete(PROBE_ID));
+  }
+  function wrapExistingFactories() {
+    runtimeFactoryRegistry = captureFactoryRegistry();
+    if (runtimeFactoryRegistry) {
+      for (const [id, factory] of runtimeFactoryRegistry) {
+        runtimeFactoryRegistry.set(id, wrapFactory(id, factory));
+      }
+    }
+    if (!runtimeModuleCache && runtimeFactoryRegistry) {
+      captureModuleCache(runtimeFactoryRegistry);
+    }
+  }
+  function patchTurbopack() {
+    const existingTp = pageWindow.TURBOPACK;
+    if (existingTp && !Array.isArray(existingTp) && typeof existingTp.push === "function") {
+      originalPush = existingTp.push.bind(existingTp);
+      existingTp.push = (...args) => handleChunkPush(...args);
+      wrapExistingFactories();
+      return;
+    }
+    const queuedChunks = [];
+    if (Array.isArray(existingTp))
+      queuedChunks.push(...existingTp);
+    let currentTurbopack = existingTp ?? [];
+    Object.defineProperty(pageWindow, "TURBOPACK", {
+      configurable: true,
+      get() {
+        return currentTurbopack;
+      },
+      set(newValue) {
+        if (newValue && !Array.isArray(newValue) && typeof newValue.push === "function") {
+          const tp = newValue;
+          originalPush = tp.push.bind(tp);
+          tp.push = (...args) => handleChunkPush(...args);
+          currentTurbopack = tp;
+          for (const chunk of queuedChunks) {
+            try {
+              handleChunkPush(chunk);
+            } catch (e) {
+              logger.error("Failed to process queued chunk:", e);
+            }
+          }
+          queuedChunks.length = 0;
+          wrapExistingFactories();
+        } else {
+          currentTurbopack = newValue;
+        }
+      }
+    });
+    if (Array.isArray(currentTurbopack)) {
+      const origPush = currentTurbopack.push.bind(currentTurbopack);
+      currentTurbopack.push = (...args) => {
+        queuedChunks.push(...args);
+        return origPush(...args);
+      };
+    }
+  }
+
+  // src/turbopack/turbopack.ts
+  var logger2 = new Logger("TurbopackFinder", "#a6d189");
+  var fnSourceCache = new WeakMap;
+  var zustandStoreCache = new Map;
+  function getFnSource(fn) {
+    let src = fnSourceCache.get(fn);
+    if (src === undefined) {
+      src = String(fn);
+      fnSourceCache.set(fn, src);
+    }
+    return src;
+  }
+  function toZustandHookName(name) {
+    if (name.startsWith("use"))
+      return name;
+    return name.endsWith("Store") ? `use${name}` : `use${name}Store`;
+  }
+  function isZustandStore(val) {
+    return typeof val === "function" && typeof val.getState === "function" && typeof val.setState === "function" && typeof val.subscribe === "function";
+  }
+  var filters = {
+    byProps: (...props) => {
+      return props.length === 1 ? (m) => m[props[0]] != null : (m) => props.every((p) => m[p] != null);
+    },
+    byCode: (...code) => {
+      return (m) => {
+        if (typeof m !== "function")
+          return false;
+        return matchesAllPatterns(getFnSource(m), code);
+      };
+    },
+    byDisplayName: (name) => {
+      return (m) => m?.displayName === name || m?.render?.displayName === name;
+    },
+    byStoreName: (name) => {
+      const hookName = toZustandHookName(name);
+      return (m) => {
+        if (typeof m !== "object" || m === null)
+          return false;
+        const hook = m[hookName];
+        return typeof hook === "function" && typeof hook.getState === "function";
+      };
+    },
+    componentByCode: (...code) => {
+      const byCode = filters.byCode(...code);
+      return (m) => {
+        if (byCode(m))
+          return true;
+        if (!m?.$$typeof)
+          return false;
+        if (m.type)
+          return byCode(m.type);
+        if (m.render)
+          return byCode(m.render);
+        return false;
+      };
+    },
+    byClassName: (...classes) => {
+      return (m) => {
+        if (typeof m !== "object" || m === null)
+          return false;
+        return classes.every((c) => typeof m[c] === "string");
+      };
+    }
+  };
+  function withLazySync(scan, isEmpty) {
+    return silenceWarns(() => {
+      const result = scan();
+      if (!isEmpty(result))
+        return result;
+      const prevSize = getModuleCache().size;
+      syncLazyModules();
+      if (getModuleCache().size === prevSize)
+        return result;
+      return scan();
+    });
+  }
+  function searchCache(filter, collectAll = false, topLevelOnly = false) {
+    return withLazySync(() => scanModuleCache(filter, collectAll, topLevelOnly), (result) => collectAll ? !result.length : !result);
+  }
+  function scanModuleCache(filter, collectAll, topLevelOnly) {
+    const results = [];
+    const seen = collectAll ? new Set : null;
+    const cache = getModuleCache();
+    for (const [, exports] of cache) {
+      if (exports == null || isBlacklisted(exports))
+        continue;
+      try {
+        if (filter(exports)) {
+          if (!collectAll)
+            return exports;
+          if (!seen.has(exports)) {
+            seen.add(exports);
+            results.push(exports);
+          }
+          continue;
+        }
+      } catch {}
+      if (!topLevelOnly && typeof exports === "object") {
+        for (const key in exports) {
+          try {
+            const nested = exports[key];
+            if (nested == null || isBlacklisted(nested))
+              continue;
+            if (filter(nested)) {
+              if (!collectAll)
+                return nested;
+              if (!seen.has(nested)) {
+                seen.add(nested);
+                results.push(nested);
+              }
+            }
+          } catch {}
+        }
+      }
+    }
+    return collectAll ? results : null;
+  }
+  function find(filter) {
+    return searchCache(filter);
+  }
+  function findAll(filter) {
+    return searchCache(filter, true);
+  }
+  function findLazy(filter) {
+    const cached = searchCache(filter);
+    if (cached)
+      return cached;
+    return proxyLazy(() => searchCache(filter));
+  }
+  function findByProps(...props) {
+    return find(filters.byProps(...props));
+  }
+  function findByPropsLazy(...props) {
+    return proxyLazy(() => findByProps(...props));
+  }
+  function findByCode(...code) {
+    return find(filters.byCode(...code));
+  }
+  function findByCodeLazy(...code) {
+    return proxyLazy(() => findByCode(...code));
+  }
+  function findByDisplayName(name) {
+    return find(filters.byDisplayName(name));
+  }
+  function findByDisplayNameLazy(name) {
+    return proxyLazy(() => findByDisplayName(name));
+  }
+  function findComponentByCode(...code) {
+    return find(filters.componentByCode(...code));
+  }
+  function findComponentByCodeLazy(...code) {
+    return LazyComponent("findComponentByCode", () => findComponentByCode(...code));
+  }
+  function findExportedComponent(...props) {
+    return withLazySync(() => scanExportedComponent(props), (result) => !result);
+  }
+  function scanExportedComponent(props) {
+    const cache = getModuleCache();
+    for (const [, exports] of cache) {
+      if (exports == null || typeof exports !== "object" || isBlacklisted(exports))
+        continue;
+      for (const prop of props) {
+        try {
+          const comp = exports[prop];
+          if (comp == null || isBlacklisted(comp))
+            continue;
+          if (typeof comp === "function" || comp?.$$typeof)
+            return comp;
+        } catch {}
+      }
+    }
+    return null;
+  }
+  function findExportedComponentLazy(...props) {
+    return LazyComponent(props[0], () => findExportedComponent(...props));
+  }
+  function collectStores() {
+    for (const [, exports] of getModuleCache()) {
+      if (exports == null || typeof exports !== "object" || isBlacklisted(exports))
+        continue;
+      for (const key in exports) {
+        try {
+          if (zustandStoreCache.has(key))
+            continue;
+          const val = exports[key];
+          if (isZustandStore(val))
+            zustandStoreCache.set(key, val);
+        } catch {}
+      }
+    }
+  }
+  function populateStoreCache() {
+    silenceWarns(() => {
+      collectStores();
+      const prevSize = getModuleCache().size;
+      syncLazyModules();
+      if (getModuleCache().size !== prevSize)
+        collectStores();
+    });
+  }
+  function findStore(name) {
+    const hookName = toZustandHookName(name);
+    if (zustandStoreCache.has(hookName))
+      return zustandStoreCache.get(hookName);
+    if (!zustandStoreCache.size)
+      populateStoreCache();
+    if (zustandStoreCache.has(hookName))
+      return zustandStoreCache.get(hookName);
+    const mod = find(filters.byStoreName(name));
+    const hook = mod?.[hookName] ?? mod;
+    if (!hook || !isZustandStore(hook))
+      return;
+    zustandStoreCache.set(hookName, hook);
+    return hook;
+  }
+  function findStoreLazy(name) {
+    return proxyLazy(() => findStore(name));
+  }
+  function getAllStores() {
+    if (!zustandStoreCache.size)
+      populateStoreCache();
+    return new Map(zustandStoreCache);
+  }
+  function findCssClasses(...classes) {
+    const mod = searchCache(filters.byClassName(...classes), false, true);
+    if (!mod)
+      return {};
+    return mapMangledCssClasses(mod, classes);
+  }
+  function findCssClassesLazy(...classes) {
+    return proxyLazy(() => findCssClasses(...classes));
+  }
+  function mapMangledCssClasses(mod, classes) {
+    const result = {};
+    for (const name of classes) {
+      const regex = new RegExp(`(?:\\b|_)${escapeRegExp(name)}(?:\\b|_)`);
+      let found = false;
+      for (const key in mod) {
+        if (typeof mod[key] === "string" && regex.test(mod[key])) {
+          result[name] = mod[key];
+          found = true;
+          break;
+        }
+      }
+      if (!found)
+        logger2.warn(`mapMangledCssClasses: class "${name}" not found in module`);
+    }
+    return result;
+  }
+  function findBulk(...filterFns) {
+    const { length } = filterFns;
+    if (length < 2) {
+      logger2.warn("findBulk called with fewer than 2 filters, use find instead.");
+      return length === 1 ? [find(filterFns[0])] : [];
+    }
+    const scan = () => {
+      const activeFilters = [...filterFns];
+      const results = new Array(length).fill(null);
+      let found = 0;
+      const cache = getModuleCache();
+      outer:
+        for (const [, exports] of cache) {
+          if (exports == null || isBlacklisted(exports))
+            continue;
+          for (let j = 0;j < length; j++) {
+            const filter = activeFilters[j];
+            if (!filter)
+              continue;
+            try {
+              if (filter(exports)) {
+                results[j] = exports;
+                activeFilters[j] = undefined;
+                if (++found === length)
+                  break outer;
+              }
+            } catch {}
+          }
+          if (typeof exports === "object") {
+            for (const key in exports) {
+              try {
+                const nested = exports[key];
+                if (nested == null || isBlacklisted(nested))
+                  continue;
+                for (let j = 0;j < length; j++) {
+                  const filter = activeFilters[j];
+                  if (!filter)
+                    continue;
+                  if (filter(nested)) {
+                    results[j] = nested;
+                    activeFilters[j] = undefined;
+                    if (++found === length)
+                      break outer;
+                    break;
+                  }
+                }
+              } catch {}
+            }
+          }
+        }
+      return { results, found };
+    };
+    return silenceWarns(() => {
+      let { results, found } = scan();
+      if (found < length) {
+        const prevSize = getModuleCache().size;
+        syncLazyModules();
+        if (getModuleCache().size > prevSize)
+          ({ results, found } = scan());
+      }
+      if (found !== length)
+        logger2.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
+      return results;
+    });
+  }
+  function findModuleFactory(...code) {
+    const registry = getRuntimeFactoryRegistry();
+    if (!registry)
+      return null;
+    for (const [id, factory] of registry) {
+      if (matchesAllPatterns(getFnSource(factory), code))
+        return [id, factory];
+    }
+    return null;
+  }
+  function findModuleId(...code) {
+    return findModuleFactory(...code)?.[0] ?? null;
+  }
+  function mapMangledModule(code, mappers) {
+    const result = {};
+    const id = findModuleId(...code);
+    if (id == null)
+      return result;
+    const mod = requireModule(id);
+    if (mod == null)
+      return result;
+    return silenceWarns(() => {
+      const mapperEntries = Object.entries(mappers);
+      let found = 0;
+      outer:
+        for (const key in mod) {
+          try {
+            const member = mod[key];
+            for (let i = 0;i < mapperEntries.length; i++) {
+              const [name, filter] = mapperEntries[i];
+              if (name in result)
+                continue;
+              if (filter(member)) {
+                result[name] = member;
+                if (++found === mapperEntries.length)
+                  break outer;
+                break;
+              }
+            }
+          } catch {}
+        }
+      return result;
+    });
+  }
+  function mapMangledModuleLazy(code, mappers) {
+    return proxyLazy(() => mapMangledModule(code, mappers));
+  }
+  var IDENT = "[A-Za-z_$][\\w$]*";
+  var DefaultChunkLoadRegex = new RegExp(`Promise\\.all\\(\\[([^\\]]+)\\]\\.map\\(${IDENT}=>${IDENT}\\.l\\(${IDENT}\\)\\)\\)\\.then\\(\\(\\)=>${IDENT}\\((\\d+)\\)\\)`);
+  var ChunkPathRegex = /"(static\/chunks\/[^"]+)"/g;
+  async function extractAndLoadChunks(code, matcher = DefaultChunkLoadRegex) {
+    const factory = findModuleFactory(...code);
+    if (!factory) {
+      logger2.warn("extractAndLoadChunks: no module factory found for:", code);
+      return false;
+    }
+    const match = getFnSource(factory[1]).match(matcher);
+    if (!match) {
+      logger2.warn("extractAndLoadChunks: no chunk loading pattern found in factory for:", code);
+      return false;
+    }
+    const [, rawChunkPaths, entryPointId] = match;
+    if (entryPointId == null) {
+      logger2.warn("extractAndLoadChunks: matcher did not capture entry point ID for:", code);
+      return false;
+    }
+    const helpers = getTurbopackHelpers();
+    if (!helpers) {
+      logger2.warn("extractAndLoadChunks: Turbopack helpers not available.");
+      return false;
+    }
+    if (rawChunkPaths) {
+      const chunkPaths = Array.from(rawChunkPaths.matchAll(ChunkPathRegex), (m) => m[1]);
+      if (chunkPaths.length) {
+        try {
+          await Promise.all(chunkPaths.map((path) => helpers.l(path)));
+        } catch (e) {
+          logger2.warn("extractAndLoadChunks: chunk loading failed:", e);
+          return false;
+        }
+      }
+    }
+    const entryPoint = Number(entryPointId);
+    try {
+      requireModule(entryPoint);
+    } catch (e) {
+      logger2.warn("extractAndLoadChunks: entry point module failed:", e);
+      return false;
+    }
+    return true;
+  }
+  function extractAndLoadChunksLazy(code, matcher = DefaultChunkLoadRegex) {
+    let cache = null;
+    return () => {
+      if (cache)
+        return cache;
+      const promise = extractAndLoadChunks(code, matcher);
+      promise.then((ok) => {
+        if (!ok)
+          cache = null;
+      }, () => {
+        cache = null;
+      });
+      cache = promise;
+      return promise;
+    };
+  }
+  function search(...code) {
+    const results = {};
+    const registry = getRuntimeFactoryRegistry();
+    if (!registry)
+      return results;
+    for (const [id, factory] of registry) {
+      if (matchesAllPatterns(getFnSource(factory), code))
+        results[id] = factory;
+    }
+    return results;
+  }
+  function requireModule(moduleId) {
+    const cache = getModuleCache();
+    if (cache.has(moduleId))
+      return cache.get(moduleId);
+    const helpers = getTurbopackHelpers();
+    if (!helpers)
+      return null;
+    try {
+      return helpers.i(moduleId);
+    } catch {
+      return null;
+    }
+  }
+  function importModule(moduleId) {
+    const helpers = getTurbopackHelpers();
+    if (!helpers)
+      return Promise.reject(new Error("Turbopack helpers not available"));
+    return helpers.A(moduleId);
+  }
+  function findMatchInExports(exports, filter) {
+    return silenceWarns(() => {
+      if (isBlacklisted(exports))
+        return null;
+      try {
+        if (filter(exports))
+          return exports;
+        if (typeof exports === "object" && exports !== null) {
+          for (const key in exports) {
+            try {
+              const nested = exports[key];
+              if (nested != null && !isBlacklisted(nested) && filter(nested))
+                return nested;
+            } catch {}
+          }
+        }
+      } catch {}
+      return null;
+    });
+  }
+  function waitFor(filter, callback, timeout = 0) {
+    const cached = searchCache(filter);
+    if (cached) {
+      callback(cached, -1);
+      return () => {};
+    }
+    const wrappedFilter = (exports) => findMatchInExports(exports, filter) != null;
+    const wrappedCallback = (exports, id) => {
+      try {
+        const match = findMatchInExports(exports, filter);
+        if (match)
+          callback(match, id);
+      } catch (e) {
+        logger2.error("waitFor callback error:", e);
+      }
+    };
+    let timeoutId = null;
+    const wrappedCallbackWithCleanup = (exports, id) => {
+      if (timeoutId)
+        clearTimeout(timeoutId);
+      wrappedCallback(exports, id);
+    };
+    addWaitForSubscription(wrappedFilter, wrappedCallbackWithCleanup);
+    const cancel = () => {
+      if (timeoutId)
+        clearTimeout(timeoutId);
+      removeWaitForSubscription(wrappedFilter);
+    };
+    if (timeout > 0) {
+      timeoutId = setTimeout(() => {
+        timeoutId = null;
+        if (!searchCache(filter)) {
+          logger2.warn(`waitFor timed out after ${timeout}ms:`, filter);
+          cancel();
+        }
+      }, timeout);
+    }
+    return cancel;
+  }
+
+  // src/turbopack/common/stores.ts
+  var ArtifactStore = findByPropsLazy("useArtifactStore", "useArtifactEdits");
+  var AssetStore = findByPropsLazy("useAssetStore");
+  var ChatPageStore = findByPropsLazy("useChatPageStore", "getLatestThreadMessageId");
+  var CodePageStore = findByPropsLazy("useCodePageStore");
+  var CommandMenuStore = findByPropsLazy("useCommandMenuStore", "createSelection");
+  var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
+  var DevModelsStore = findByPropsLazy("useDevModelsStore", "DRAFT_MODEL_ID");
+  var DictationStore = findByPropsLazy("useDictationStore");
+  var FeatureStore = findByPropsLazy("useFeatureStore");
+  var FilesPageStore = findByPropsLazy("useFilesPageStore", "useAssetsList");
+  var FileStore = findByPropsLazy("useFileStore");
+  var HighlightsStore = findByPropsLazy("useHighlightsStore");
+  var ImageEditorStore = findByPropsLazy("useImageEditorStore");
+  var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
+  var MentionMenuStore = findByPropsLazy("useMentionMenuStore");
+  var ModelsStore = findByPropsLazy("useModelsStore");
+  var ModesStore = findByPropsLazy("useModesStore");
+  var NotificationsStore = findByPropsLazy("useNotificationsStore", "useNotificationsStoreInit");
+  var PersonalityStore = findByPropsLazy("usePersonalityStore", "DEFAULT_CUSTOM_PERSONALITY");
+  var ReportStore = findByPropsLazy("useReportStore");
+  var ResponseStore = findByPropsLazy("useResponseStore", "createOptimisticResponse");
+  var RoutingStore = findByPropsLazy("useRoutingStore", "formatUrl");
+  var SessionStore = findByPropsLazy("useSession", "SessionStoreProvider");
+  var SettingsDialogStore = findByPropsLazy("useSettingsDialogStore");
+  var SettingsStore = findByPropsLazy("useSettingsStore", "TOOL_NAMES");
+  var ShareStore = findByPropsLazy("useShareStore");
+  var ShopStore = findByPropsLazy("useShopStore");
+  var SourcesSelectorStore = findByPropsLazy("useSourcesSelectorStore");
+  var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
+  var SuggestionStore = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");
+  var TabsManagerStore = findByPropsLazy("useTabsManagerStore");
+  var TasksStore = findByPropsLazy("useTasksStore");
+  var TextToSpeechStore = findByPropsLazy("useTextToSpeechStore");
+  var TourGuideStore = findByPropsLazy("useTourGuideStore", "useTourGuideTooltip");
+  var UpsellStore = findByPropsLazy("useUpsellStore", "useShouldShowUpgradeButton");
+  var WorkspaceCollectionsStore = findByPropsLazy("useWorkspaceCollectionsStore", "useWorkspaceActiveCollectionIds");
+  var WorkspaceConnectorsStore = findByPropsLazy("useWorkspaceConnectorsStore", "useWorkspaceActiveConnectorIds");
+  var WorkspaceStore = findByPropsLazy("useWorkspaceStore", "useWorkspacesList");
+
+  // src/utils/css.ts
+  var logger3 = new Logger("Styles", "#a6d189");
+  var styleRegistry = new Map;
+  var activeStyles = new Map;
+  var container = null;
+  var pendingStyles = [];
+  function getContainer() {
+    if (container)
+      return container;
+    if (!document.head)
+      return null;
+    container = document.createElement("void-styles");
+    document.head.appendChild(container);
+    return container;
+  }
+  function flushPending() {
+    const root = getContainer();
+    if (!root)
+      return;
+    for (const [name, css] of pendingStyles) {
+      inject(root, name, css);
+    }
+    pendingStyles = [];
+  }
+  function inject(root, name, css) {
+    const existing = activeStyles.get(name);
+    if (existing) {
+      if (existing.textContent !== css)
+        existing.textContent = css;
+      return;
+    }
+    const el = document.createElement("style");
+    el.dataset.void = name;
+    el.textContent = css;
+    root.appendChild(el);
+    activeStyles.set(name, el);
+  }
+  function registerStyle(name, css) {
+    styleRegistry.set(name, css);
+    const root = getContainer();
+    if (root) {
+      inject(root, name, css);
+    } else {
+      pendingStyles.push([name, css]);
+      if (pendingStyles.length === 1) {
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", flushPending, { once: true });
+        } else {
+          flushPending();
+        }
+      }
+    }
+  }
+  function enableStyle(name) {
+    const existing = activeStyles.get(name);
+    if (existing) {
+      if (existing.disabled) {
+        existing.disabled = false;
+        return true;
+      }
+      return false;
+    }
+    const css = styleRegistry.get(name);
+    if (!css) {
+      logger3.warn(`Style "${name}" not registered.`);
+      return false;
+    }
+    const root = getContainer();
+    if (!root)
+      return false;
+    inject(root, name, css);
+    return true;
+  }
+  function disableStyle(name) {
+    const el = activeStyles.get(name);
+    if (!el)
+      return false;
+    el.disabled = true;
+    return true;
+  }
+  var classNameFactory = (prefix = "") => (...args) => {
+    const classNames = new Set;
+    for (const arg of args) {
+      if (typeof arg === "string")
+        classNames.add(arg);
+      else if (Array.isArray(arg))
+        arg.forEach((name) => classNames.add(name));
+      else if (arg && typeof arg === "object")
+        Object.entries(arg).forEach(([name, value]) => value && classNames.add(name));
+    }
+    return Array.from(classNames, (name) => prefix + name).join(" ");
+  };
+  function classes(...names) {
+    return names.filter(Boolean).join(" ");
+  }
+
+  // src/utils/patches.ts
+  var iToken = "(?:[A-Za-z_$][\\w$]*)";
+  function canonicalizeMatch(match) {
+    const isString = typeof match === "string";
+    let canonSource = isString ? match : match.source;
+    canonSource = canonSource.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => isString ? `"${key}"` : `"${key.replaceAll(".", "\\.")}"`);
+    if (!isString) {
+      canonSource = canonSource.replaceAll(/(\\*)\\i/g, (m, leadingEscapes) => leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : m.slice(1));
+      canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],\\(\\)=>${iToken}`);
+    }
+    if (canonSource === (isString ? match : match.source))
+      return match;
+    if (isString)
+      return canonSource;
+    const canonRegex = new RegExp(canonSource, match.flags);
+    canonRegex.toString = match.toString.bind(match);
+    return canonRegex;
+  }
+  function canonicalizeReplace(replace, pluginPath) {
+    if (typeof replace !== "function")
+      return replace.replaceAll("$self", pluginPath);
+    return (match, ...groups) => replace(match, ...groups).replaceAll("$self", pluginPath);
+  }
+  function canonicalizeReplacement(replacement, pluginPath) {
+    replacement.match = canonicalizeMatch(replacement.match);
+    replacement.replace = canonicalizeReplace(replacement.replace, pluginPath);
+  }
+  function canonicalizeFind(patch) {
+    if (Array.isArray(patch.find)) {
+      patch.find = patch.find.map((f) => canonicalizeMatch(f));
+    } else {
+      patch.find = canonicalizeMatch(patch.find);
+    }
+  }
+
+  // src/utils/types.ts
+  function definePlugin(p) {
+    return p;
+  }
+  var StartAt;
+  ((StartAt2) => {
+    StartAt2["Init"] = "Init";
+    StartAt2["DOMContentLoaded"] = "DOMContentLoaded";
+    StartAt2["TurbopackReady"] = "TurbopackReady";
+  })(StartAt ||= {});
+  var OptionType;
+  ((OptionType2) => {
+    OptionType2[OptionType2["STRING"] = 0] = "STRING";
+    OptionType2[OptionType2["NUMBER"] = 1] = "NUMBER";
+    OptionType2[OptionType2["BIGINT"] = 2] = "BIGINT";
+    OptionType2[OptionType2["BOOLEAN"] = 3] = "BOOLEAN";
+    OptionType2[OptionType2["SELECT"] = 4] = "SELECT";
+    OptionType2[OptionType2["SLIDER"] = 5] = "SLIDER";
+    OptionType2[OptionType2["COMPONENT"] = 6] = "COMPONENT";
+    OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
+  })(OptionType ||= {});
+
+  // src/turbopack/common/react.tsx
+  var React;
+  var useState;
+  var useEffect;
+  var useLayoutEffect;
+  var useMemo;
+  var useRef;
+  var useReducer;
+  var useCallback;
+  var useContext;
+  var useId;
+  var useTransition;
+  var useDeferredValue;
+  var useSyncExternalStore;
+  var createElement;
+  var useReducedMotion;
+  waitFor(filters.byProps("useReducedMotion"), (mod) => {
+    ({ useReducedMotion } = mod);
+  });
+  waitFor(filters.byProps("useState", "createElement"), (mod) => {
+    const m = mod;
+    React = m;
+    ({ useState, useEffect, useLayoutEffect, useMemo, useRef, useReducer, useCallback, useContext, useId, useTransition, useDeferredValue, useSyncExternalStore, createElement } = m);
+    setCreateElement(m.createElement);
+  });
+  var Fragment = Symbol.for("react.fragment");
+  var ReactDOM = findByPropsLazy("createPortal", "flushSync");
+
+  // src/turbopack/common/components.ts
+  function createModuleLazy(...filterProps) {
+    let mod = null;
+    waitFor(filters.byProps(...filterProps), (m) => {
+      mod = m;
+    });
+    return (name) => LazyComponent(name, () => mod?.[name] ?? findExportedComponent(name));
+  }
+  var buttonModule = null;
+  waitFor(filters.byProps("Button", "ButtonWithTooltipOptimized"), (m) => {
+    buttonModule = m;
+  });
+  var buttonLazy = (name) => LazyComponent(name, () => buttonModule?.[name] ?? findExportedComponent(name));
+  var Button = buttonLazy("Button");
+  var ButtonWithTooltip = buttonLazy("ButtonWithTooltip");
+  var Card = LazyComponent("Card", () => findExportedComponent("Card"));
+  var dialogLazy = createModuleLazy("Dialog", "DialogContent", "DialogHeader");
+  var Dialog = dialogLazy("Dialog");
+  var DialogContent = dialogLazy("DialogContent");
+  var DialogHeader = dialogLazy("DialogHeader");
+  var DialogTitle = dialogLazy("DialogTitle");
+  var DialogDescription = dialogLazy("DialogDescription");
+  var DialogFooter = dialogLazy("DialogFooter");
+  var DialogClose = dialogLazy("DialogClose");
+  var dropdownMenuLazy = createModuleLazy("DropdownMenu", "DropdownMenuContent", "DropdownMenuTrigger");
+  var DropdownMenu = dropdownMenuLazy("DropdownMenu");
+  var DropdownMenuTrigger = dropdownMenuLazy("DropdownMenuTrigger");
+  var DropdownMenuContent = dropdownMenuLazy("DropdownMenuContent");
+  var DropdownMenuItem = dropdownMenuLazy("DropdownMenuItem");
+  var DropdownMenuCheckboxItem = dropdownMenuLazy("DropdownMenuCheckboxItem");
+  var DropdownMenuRadioGroup = dropdownMenuLazy("DropdownMenuRadioGroup");
+  var DropdownMenuRadioItem = dropdownMenuLazy("DropdownMenuRadioItem");
+  var DropdownMenuSeparator = dropdownMenuLazy("DropdownMenuSeparator");
+  var DropdownMenuSub = dropdownMenuLazy("DropdownMenuSub");
+  var DropdownMenuSubTrigger = dropdownMenuLazy("DropdownMenuSubTrigger");
+  var DropdownMenuSubContent = dropdownMenuLazy("DropdownMenuSubContent");
+  var contextMenuLazy = createModuleLazy("ContextMenu", "ContextMenuContent", "ContextMenuTrigger");
+  var ContextMenu = contextMenuLazy("ContextMenu");
+  var ContextMenuTrigger = contextMenuLazy("ContextMenuTrigger");
+  var ContextMenuContent = contextMenuLazy("ContextMenuContent");
+  var ContextMenuItem = contextMenuLazy("ContextMenuItem");
+  var ContextMenuSeparator = contextMenuLazy("ContextMenuSeparator");
+  var ContextMenuSub = contextMenuLazy("ContextMenuSub");
+  var ContextMenuSubTrigger = contextMenuLazy("ContextMenuSubTrigger");
+  var ContextMenuSubContent = contextMenuLazy("ContextMenuSubContent");
+  var Input = LazyComponent("Input", () => findExportedComponent("Input"));
+  var MotionDiv = LazyComponent("MotionDiv", () => findByProps("motion")?.motion?.div);
+  var Select = LazyComponent("Select", () => findExportedComponent("Select"));
+  var SelectTrigger = LazyComponent("SelectTrigger", () => findExportedComponent("SelectTrigger"));
+  var SelectContent = LazyComponent("SelectContent", () => findExportedComponent("SelectContent"));
+  var SelectItem = LazyComponent("SelectItem", () => findExportedComponent("SelectItem"));
+  var SelectValue = LazyComponent("SelectValue", () => findExportedComponent("SelectValue"));
+  var Separator = LazyComponent("Separator", () => findExportedComponent("Separator"));
+  var Skeleton = LazyComponent("Skeleton", () => findExportedComponent("Skeleton"));
+  var Slider = LazyComponent("Slider", () => findExportedComponent("Slider"));
+  var SettingsRow = LazyComponent("SettingsRow", () => findExportedComponent("SettingsRow"));
+  var SettingsTitle = LazyComponent("SettingsTitle", () => findExportedComponent("SettingsTitle"));
+  var SettingsDescription = LazyComponent("SettingsDescription", () => findExportedComponent("SettingsDescription"));
+  var Switch = LazyComponent("Switch", () => findExportedComponent("Switch"));
+  var Tooltip = LazyComponent("Tooltip", () => findExportedComponent("Tooltip"));
+  var TooltipTrigger = LazyComponent("TooltipTrigger", () => findExportedComponent("TooltipTrigger"));
+  var TooltipContent = LazyComponent("TooltipContent", () => findExportedComponent("TooltipContent"));
+  var Textarea = LazyComponent("Textarea", () => findExportedComponent("Textarea"));
+  var Checkbox = LazyComponent("Checkbox", () => findExportedComponent("Checkbox"));
+  var Spinner = LazyComponent("Spinner", () => findExportedComponent("Spinner"));
+  var Avatar = LazyComponent("Avatar", () => findExportedComponent("Avatar"));
+  var popoverLazy = createModuleLazy("Popover", "PopoverContent", "PopoverTrigger");
+  var Popover = popoverLazy("Popover");
+  var PopoverTrigger = popoverLazy("PopoverTrigger");
+  var PopoverContent = popoverLazy("PopoverContent");
+  var PopoverArrow = popoverLazy("PopoverArrow");
+  var tabsLazy = createModuleLazy("Tabs", "TabsList", "TabsTrigger", "TabsContent");
+  var Tabs = tabsLazy("Tabs");
+  var TabsList = tabsLazy("TabsList");
+  var TabsTrigger = tabsLazy("TabsTrigger");
+  var TabsContent = tabsLazy("TabsContent");
+  var accordionLazy = createModuleLazy("Accordion", "AccordionContent", "AccordionItem");
+  var Accordion = accordionLazy("Accordion");
+  var AccordionItem = accordionLazy("AccordionItem");
+  var AccordionTrigger = accordionLazy("AccordionTrigger");
+  var AccordionContent = accordionLazy("AccordionContent");
+  var commandLazy = createModuleLazy("Command", "CommandInput", "CommandList", "CommandItem");
+  var Command = commandLazy("Command");
+  var CommandInput = commandLazy("CommandInput");
+  var CommandList = commandLazy("CommandList");
+  var CommandItem = commandLazy("CommandItem");
+  var CommandGroup = commandLazy("CommandGroup");
+  var CommandEmpty = commandLazy("CommandEmpty");
+  var ResponsiveDialog = LazyComponent("ResponsiveDialog", () => findExportedComponent("ResponsiveDialog"));
+  var SidebarComponents = findByPropsLazy("Sidebar", "SidebarContent", "SidebarProvider");
+  var AnimatePresence = LazyComponent("AnimatePresence", () => findExportedComponent("AnimatePresence"));
+  // src/turbopack/common/utils.ts
+  var ApiClients = findByPropsLazy("chatApi", "modelsApi");
+  var Toaster = findByPropsLazy("Toaster", "toast");
+  var ClassNames = findByPropsLazy("cn", "middleTruncate");
+  var ReasoningModeUtils = findByPropsLazy("reasoningModeToRequestKind", "reasoningModeToDeepsearchPreset");
+  var zustandCreate = findByPropsLazy("create", "useStore");
+  var i18n = findByPropsLazy("useTranslation");
+  var EnvUtils = findByPropsLazy("getEnv", "useEnvironment");
+  var AssetUtils = findByPropsLazy("getCachedAssetUrl", "getAssetUrl");
+  var DownloadUtils = findByPropsLazy("downloadImage");
+  var FileUtils = findByPropsLazy("downloadBlob", "downloadUri");
+  var RateLimitUtils = findByPropsLazy("useRateLimits");
+  var NextRouter = findByPropsLazy("useRouter", "usePathname");
+  var TanStackQuery = findByPropsLazy("useQuery");
+  var CopyUtils = findByPropsLazy("copyAndToast");
+  var MonacoModule = findByPropsLazy("initMonaco");
+
+  // src/components/Chip.tsx
+  var BASE = "inline-flex items-center rounded-full border border-input-border px-2 py-0.5 text-[10px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
+  var variantClasses = {
+    default: "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+    secondary: "bg-popover border-border-l1 text-fg-secondary-foreground hover:bg-popover/80",
+    destructive: "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+    outline: "text-secondary"
+  };
+  function Chip({ variant = "secondary", className, children, ...props }) {
+    return /* @__PURE__ */ React.createElement("div", {
+      className: ClassNames.cn(BASE, variantClasses[variant], className),
+      ...props
+    }, children);
+  }
+  // src/components/ConfirmDialog.tsx
+  var cardClasses = "w-full max-w-md p-6 rounded-2xl border border-border-l1 flex flex-col gap-6";
+  function ConfirmDialog({ open, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
+    return /* @__PURE__ */ React.createElement(Dialog, {
+      open,
+      onOpenChange
+    }, /* @__PURE__ */ React.createElement(DialogContent, {
+      className: cardClasses
+    }, /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, title), /* @__PURE__ */ React.createElement(DialogDescription, null, description)), /* @__PURE__ */ React.createElement(DialogFooter, null, /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "md",
+      onClick: () => onOpenChange(false)
+    }, cancelText), /* @__PURE__ */ React.createElement(Button, {
+      variant: danger ? "danger" : "primary",
+      size: "md",
+      onClick: () => {
+        onOpenChange(false);
+        onConfirm();
+      }
+    }, confirmText))));
+  }
+  // src/components/ErrorBoundary.tsx
+  var ErrorBoundaryClass = null;
+  function getErrorBoundaryClass() {
+    if (ErrorBoundaryClass)
+      return ErrorBoundaryClass;
+    ErrorBoundaryClass = class VoidErrorBoundary extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+      }
+      static getDerivedStateFromError() {
+        return { hasError: true };
+      }
+      componentDidCatch(error) {
+        this.props.onError?.(error);
+      }
+      render() {
+        if (this.state.hasError)
+          return this.props.fallback ?? null;
+        return this.props.children ?? null;
+      }
+    };
+    return ErrorBoundaryClass;
+  }
+  function ErrorBoundaryWrapper(props) {
+    const Cls = getErrorBoundaryClass();
+    return /* @__PURE__ */ React.createElement(Cls, {
+      ...props
+    });
+  }
+  var ErrorBoundary = ErrorBoundaryWrapper;
+  Object.defineProperty(ErrorBoundary, "wrap", {
+    value(Component, fallback = null) {
+      const Wrapped = (props) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+        fallback
+      }, /* @__PURE__ */ React.createElement(Component, {
+        ...props
+      }));
+      Object.defineProperty(Wrapped, "name", { value: `ErrorBoundary(${Component.displayName ?? Component.name ?? "Unknown"})` });
+      return Wrapped;
+    },
+    configurable: true
+  });
+  // void-css:D:/Projects/Void/src/components/ErrorCard.css
+  registerStyle("ErrorCard", `.void-error-card-root {
     padding: 1rem;
     border-radius: var(--radius);
     background: hsl(var(--red-800) / 60%);
@@ -44,7 +1807,1371 @@ ${o}`;i.textContent=s,(document.head??document.documentElement).appendChild(i),i
     white-space: pre-wrap;
     overflow-wrap: break-word;
 }
-`);var ju=E("void-error-card-");function m({flexDirection:e,gap:t="1em",justifyContent:o,alignItems:n,flexWrap:i,children:s,style:a,ref:c,...l}){return r.createElement("div",{ref:c,style:{display:"flex",flexDirection:e,gap:t,justifyContent:o,alignItems:n,flexWrap:i,...a},...l},s)}function vt({columns:e,rows:t,gap:o="0.75rem",justifyItems:n,alignItems:i,children:s,style:a,...c}){return r.createElement("div",{style:{display:"grid",gridTemplateColumns:e,gridTemplateRows:t,gap:o,justifyItems:n,alignItems:i,...a},...c},s)}var H=(e,...t)=>r.createElement("svg",{width:e.size??"1em",height:e.size??"1em",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round",className:e.className,"aria-hidden":"true"},t),Vn=(e={})=>H(e,r.createElement("path",{d:"M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"}),r.createElement("path",{d:"M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"})),us=(e={})=>H(e,r.createElement("rect",{x:"3",y:"8",width:"13",height:"13",rx:"4",stroke:"currentColor"}),r.createElement("path",{fillRule:"evenodd",clipRule:"evenodd",d:"M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z",fill:"currentColor"})),Rn=(e={})=>H(e,r.createElement("path",{d:"M10.88 21.94 15.46 14"}),r.createElement("path",{d:"M21.17 8H12"}),r.createElement("path",{d:"M3.95 6.06 8.54 14"}),r.createElement("circle",{cx:"12",cy:"12",r:"10"}),r.createElement("circle",{cx:"12",cy:"12",r:"4"})),zn=(e={})=>H(e,r.createElement("circle",{cx:"12",cy:"12",r:"10"}),r.createElement("line",{x1:"12",x2:"12",y1:"8",y2:"12"}),r.createElement("line",{x1:"12",x2:"12.01",y1:"16",y2:"16"})),Gn=(e={})=>H(e,r.createElement("path",{d:"M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"}),r.createElement("circle",{cx:"13.5",cy:"6.5",r:".5",fill:"currentColor"}),r.createElement("circle",{cx:"17.5",cy:"10.5",r:".5",fill:"currentColor"}),r.createElement("circle",{cx:"6.5",cy:"12.5",r:".5",fill:"currentColor"}),r.createElement("circle",{cx:"8.5",cy:"7.5",r:".5",fill:"currentColor"})),_n=(e={})=>H(e,r.createElement("path",{d:"m12 14 4-4"}),r.createElement("path",{d:"M3.34 19a10 10 0 1 1 17.32 0"})),ps=(e={})=>H(e,r.createElement("path",{d:"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"}),r.createElement("path",{d:"M3 6h18"}),r.createElement("path",{d:"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"})),ds=(e={})=>H(e,r.createElement("path",{d:"M10 11v6"}),r.createElement("path",{d:"M14 11v6"}),r.createElement("path",{d:"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"}),r.createElement("path",{d:"M3 6h18"}),r.createElement("path",{d:"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"})),Un=(e={})=>H(e,r.createElement("path",{d:"M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01a2.83 2.83 0 0 1 0-4L17 3"}),r.createElement("path",{d:"m16 2 6 6"}),r.createElement("path",{d:"M12 16H4"})),ms=(e={})=>H(e,r.createElement("path",{d:"m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"}),r.createElement("path",{d:"m13.56 11.747 4.332-.924"}),r.createElement("path",{d:"m16 21-3.105-6.21"}),r.createElement("path",{d:"M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z"}),r.createElement("path",{d:"m6.158 8.633 1.114 4.456"}),r.createElement("path",{d:"m8 21 3.105-6.21"}),r.createElement("circle",{cx:"12",cy:"13",r:"2"})),Hn=(e={})=>H(e,r.createElement("circle",{cx:"12",cy:"12",r:"10"}),r.createElement("path",{d:"M12 6v6l4 2"})),Wn=(e={})=>H(e,r.createElement("path",{d:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}),r.createElement("polyline",{points:"7 10 12 15 17 10"}),r.createElement("line",{x1:"12",x2:"12",y1:"15",y2:"3"})),jn=(e={})=>H(e,r.createElement("path",{d:"m19 5 3-3"}),r.createElement("path",{d:"m2 22 3-3"}),r.createElement("path",{d:"M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"}),r.createElement("path",{d:"M7.5 13.5 10 11"}),r.createElement("path",{d:"M10.5 16.5 13 14"}),r.createElement("path",{d:"m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"})),fs=(e={})=>r.createElement("svg",{width:e.size??"1em",height:e.size??"1em",viewBox:"0 0 15 15",fill:"none",className:e.className,"aria-hidden":"true"},r.createElement("path",{d:"M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",fill:"currentColor",fillRule:"evenodd",clipRule:"evenodd"})),gs=(e={})=>H(e,r.createElement("circle",{cx:"12",cy:"12",r:"1"}),r.createElement("circle",{cx:"12",cy:"5",r:"1"}),r.createElement("circle",{cx:"12",cy:"19",r:"1"})),ys=(e={})=>r.createElement("svg",{width:e.size??"1em",height:e.size??"1em",viewBox:"0 0 24 24",fill:"currentColor",className:e.className,"aria-hidden":"true"},r.createElement("path",{fillRule:"evenodd",clipRule:"evenodd",d:"M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"})),hs=(e={})=>H(e,r.createElement("path",{d:"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}),r.createElement("path",{d:"M12 9v4"}),r.createElement("path",{d:"M12 17h.01"}));var _l={xs:"text-xs",sm:"text-sm",base:"text-base",lg:"text-lg",xl:"text-xl","2xl":"text-2xl"},Ul={normal:"font-normal",medium:"font-medium",semibold:"font-semibold",bold:"font-bold"},Xn={primary:"",secondary:"text-secondary",muted:"text-muted-foreground"};function f({size:e="sm",weight:t="normal",color:o="primary",as:n="div",className:i,...s}){return ae(n,{className:tt.cn(_l[e],Ul[t],Xn[o],i),...s})}function Ve({color:e="secondary",className:t,children:o,...n}){return r.createElement("p",{className:tt.cn("text-xs text-pretty",Xn[e],t),...n},o)}var Hl={width:"auto",opacity:1},Ss={width:0,opacity:0},Wl={duration:0.2,ease:"easeOut"},jl="h-10 relative rounded-full ring-1 ring-inset transition-colors duration-150 ease-out text-fg-primary ring-border-l1 hover:bg-surface-l3";function wt({icon:e,children:t,tooltip:o,onClick:n,className:i,iconOnly:s,"aria-label":a}){let c=typeof o==="string"?o:a,l=Ut(),u=me(!1),y=!s&&!!t;return O(()=>{if(y)u.current=!0},[y]),r.createElement(Ze,{variant:"none",size:"none",className:Z("group flex flex-col justify-center rounded-full","focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"),tooltipContent:o,tooltipProps:{delayDuration:600},tooltipContentProps:{side:"top"},onClick:n,"aria-label":c},r.createElement("div",{className:Z(jl,"flex items-center justify-center",y?"px-2.5 gap-1.5 text-xs font-medium tabular-nums":"aspect-square gap-0.5",i)},e,s!=null?r.createElement(Nn,null,y&&r.createElement(Do,{initial:l||!u.current?!1:Ss,animate:Hl,exit:Ss,transition:l?{duration:0}:Wl,className:"flex items-center overflow-hidden whitespace-nowrap"},t)):t))}function xs(e){return Boolean(e)}function Cs(e){return e!=null}function Pe(e){return typeof e==="object"&&e!==null&&!Array.isArray(e)}function nt(e,t){for(let o in t){if(o==="__proto__"||o==="constructor"||o==="prototype")continue;let n=e[o];if(Pe(n))nt(n,t[o]);else if(n===void 0)e[o]=t[o]}return e}function bs(e){return new Promise((t)=>setTimeout(t,e))}async function Fo(e){try{await navigator.clipboard.writeText(e)}catch{if(typeof GM_setClipboard==="function")GM_setClipboard(e)}}function No(e){let t,o=!1;return(...n)=>{if(o)return t;return o=!0,t=e(...n),t}}function Ps(e,t){let o,n=(...i)=>{clearTimeout(o),o=setTimeout(()=>e(...i),t)};return n.cancel=()=>clearTimeout(o),n}function Se(e){if(typeof GM_xmlhttpRequest>"u")return fetch(e);return new Promise((t,o)=>{GM_xmlhttpRequest({method:"GET",url:e,responseType:"blob",onload(n){let i=n.response;t(new Response(i,{status:n.status,statusText:n.statusText}))},ontimeout(){o(Error("fetch timeout"))},onerror(){o(Error("fetch error"))},onabort(){o(Error("fetch aborted"))}})})}function Re(){let e=new Set,t=0;return{notify(){t++;for(let o of e)o()},subscribe(o){return e.add(o),()=>{e.delete(o)}},getSnapshot(){return t}}}var qn=(e)=>String(e).padStart(2,"0");function Ao(e){let t=Math.floor(e/3600),o=Math.floor(e%3600/60),n=e%60;return t>0?`${t}:${qn(o)}:${qn(n)}`:`${o}:${qn(n)}`}function Bo(e){let t=Math.floor(e/3600),o=Math.floor(e%3600/60);if(t>0&&o>0)return`${t}h ${o}m`;return t>0?`${t}h`:`${o}m`}function Ts(e,t,o){return Math.min(Math.max(e,t),o)}function Oo(e){return e instanceof Error?e.message:String(e)}function $o(e,t="file"){return e.replace(/[^a-zA-Z0-9 ]/g,"").trim().replace(/\s+/g,"-")||t}var Xl=new h("Events"),Yn=new Map;function It(e,t){let o=Yn.get(e);if(!o)o=new Set,Yn.set(e,o);return o.add(t),()=>{o.delete(t)}}function Vo(e,t){let o=Yn.get(e);if(!o?.size)return;for(let n of[...o])try{n(t)}catch(i){Xl.error(`Event handler error (${e}):`,i)}}function Lt(e){return typeof e==="function"?e():e}function Et(e){_t(e.subscribe,e.getSnapshot)}function rt(){return Gt((e)=>e+1,0)[1]}function Zn(e,t){O(()=>It(e,t),[e,t])}function it(e,t,o){return F(()=>{let n=t.toLowerCase().trim();if(!n)return e;return e.filter((i)=>o(i).toLowerCase().includes(n))},[e,t,o])}function Ro(e){let[t,o]=M(e),n=me(e);if(n.current!==e)n.current=e,o(e);return O(()=>{if(t==null||t<=0)return;let i=setInterval(()=>o((s)=>s!=null&&s>1?s-1:null),1000);return()=>clearInterval(i)},[t!=null&&t>0]),t}var zo=new Map,Qn=Re();function Go(e,t){zo.set(e,t),Qn.notify()}function jt(e){zo.delete(e),Qn.notify()}function ql(e,t){if(e.render){let o=e.render;return r.createElement(o,{iconOnly:t})}return r.createElement(wt,{icon:Lt(e.icon),tooltip:Lt(e.tooltip),onClick:e.onClick,iconOnly:t})}function Ms({iconOnly:e}){if(Et(Qn),!zo.size)return null;let t=[...zo.entries()].sort(([,o],[,n])=>(o.order??0)-(n.order??0));return r.createElement(r.Fragment,null,t.map(([o,n])=>r.createElement(v,{key:o},ql(n,e))))}var Kn=new Map,Jn=Re();function Ds(e){let t=Kn.get(e);if(!t)t=new Map,Kn.set(e,t);return t}function vs(e,t,o){Ds(e).set(t,o),Jn.notify()}function er(e,t){Ds(e).delete(t),Jn.notify()}function Yl(e,t){if(e.render){let o=e.render;return r.createElement(o,{...t})}return r.createElement(bt,{onSelect:()=>e.onSelect?.(t)},Lt(e.icon),Lt(e.label))}function ws({location:e,...t}){Et(Jn);let o=Kn.get(e);if(!o?.size)return null;let n=[...o.entries()].sort(([,i],[,s])=>(i.order??0)-(s.order??0));return r.createElement(r.Fragment,null,n.map(([i,s])=>r.createElement(v,{key:i,fallback:null},Yl(s,t))))}var _o=null;function Is(){if(_o)return _o;let e=new Promise((t,o)=>{let n=indexedDB.open("Void",1);n.onupgradeneeded=()=>{if(!n.result.objectStoreNames.contains("kv"))n.result.createObjectStore("kv")},n.onsuccess=()=>t(n.result),n.onerror=()=>o(n.error)});return e.catch(()=>{_o=null}),_o=e,e}async function Ls(e){let t=await Is();return new Promise((o,n)=>{let s=t.transaction("kv","readonly").objectStore("kv").get(e);s.onsuccess=()=>o(s.result),s.onerror=()=>n(s.error)})}async function Uo(e,t){let o=await Is();return new Promise((n,i)=>{let a=o.transaction("kv","readwrite").objectStore("kv").put(t,e);a.onsuccess=()=>n(),a.onerror=()=>i(a.error)})}var Es=new h("SettingsStore"),ks="VoidSettings",Zl=100;function Fs(e,t){let o=e.get(t);if(!o)o=new Set,e.set(t,o);return o}class tr{globalListeners=new Set;pathListeners=new Map;prefixListeners=new Map;defaultGetters=new Map;saveTimer=null;constructor(e){this.plain=e,this.store=this.makeProxy(e),window.addEventListener("beforeunload",()=>this.flush())}flush(){if(this.saveTimer)clearTimeout(this.saveTimer),this.saveTimer=null,this.save()}setDefaultGetter(e,t){this.defaultGetters.set(e,t)}makeProxy(e,t=""){return new Proxy(e,{get:(o,n)=>{let i=o[n];if(i===void 0&&n!=="__proto__"){let s=t?`${t}.${n}`:n;for(let[a,c]of this.defaultGetters)if(s.startsWith(a)){let l=s.slice(a.length+1);if(l&&!l.includes(".")){let u=c(l);if(u!==void 0)o[n]=u,i=u}break}}if(Pe(i))return this.makeProxy(i,t?`${t}.${n}`:n);return i},set:(o,n,i)=>{if(o[n]===i)return!0;o[n]=i;let s=t?`${t}.${n}`:n;return this.notifyListeners(s),!0},deleteProperty:(o,n)=>{if(!(n in o))return!0;delete o[n];let i=t?`${t}.${n}`:n;return this.notifyListeners(i),!0}})}notifyListeners(e){for(let o of this.globalListeners)o(e);let t=this.pathListeners.get(e);if(t)for(let o of t)o(e);for(let[o,n]of this.prefixListeners)if(e.startsWith(o))for(let i of n)i(e);this.scheduleSave()}scheduleSave(){if(this.saveTimer)return;this.saveTimer=setTimeout(()=>{this.saveTimer=null,this.save()},Zl)}save(){try{let e=JSON.stringify(this.plain);if(typeof GM_setValue==="function")GM_setValue(ks,e);else Uo(ks,e).catch((t)=>Es.warn("Failed to save settings to IndexedDB:",t))}catch(e){Es.error("Failed to save settings:",e)}}markAsChanged(){this.notifyListeners("")}addGlobalChangeListener(e){this.globalListeners.add(e)}removeGlobalChangeListener(e){this.globalListeners.delete(e)}addChangeListener(e,t){Fs(this.pathListeners,e).add(t)}removeChangeListener(e,t){let o=this.pathListeners.get(e);if(o){if(o.delete(t),!o.size)this.pathListeners.delete(e)}}addPrefixChangeListener(e,t){Fs(this.prefixListeners,e).add(t)}removePrefixChangeListener(e,t){let o=this.prefixListeners.get(e);if(o){if(o.delete(t),!o.size)this.prefixListeners.delete(e)}}}var Te=new h("Settings"),Xt="VoidSettings",or={plugins:{},notifications:{timeout:5000,position:"bottom-right"}},st={};nt(st,or);var W=new tr(st),qt=st,L=W.store;async function Ho(){if(typeof GM_getValue==="function"){try{let t=GM_getValue(Xt,null);if(t){let o=JSON.parse(t);if(Pe(o))Object.assign(st,o)}}catch(t){Te.error("Failed to load settings:",t)}nt(st,or);return}let e=null;try{e=await Ls(Xt)}catch(t){Te.warn("Failed to read IndexedDB:",t)}if(!e){if(e=Ql(),e)Uo(Xt,e).catch((t)=>Te.debug("Failed to persist settings to IndexedDB:",t))}if(e)try{let t=JSON.parse(e);if(Pe(t))Object.assign(st,t)}catch(t){Te.error("Failed to parse settings:",t)}nt(st,or)}function Ql(){try{let e=localStorage.getItem(Xt);if(e)return localStorage.removeItem(Xt),Te.info("Migrated settings from localStorage to IndexedDB"),e}catch(e){Te.warn("Failed to read localStorage:",e)}return null}function Ns(e,...t){let{plugins:o}=W.plain;if(e in o)return;for(let n of t)if(n in o){Te.info(`Migrating settings from old name ${n} to ${e}`),o[e]=o[n],delete o[n],W.markAsChanged();break}}function As(e,t,o){let n=W.plain.plugins[e];if(!n||!(o in n)||t in n)return;Te.info(`Migrating setting ${o} -> ${t} in ${e}`),n[t]=n[o],delete n[o],W.markAsChanged()}function Bs(e,t,...o){let n=W.plain.plugins[t];if(!n)return;let i=W.plain.plugins[e]??={enabled:!1},s=!1;for(let a of o)if(a in n&&!(a in i))i[a]=n[a],delete n[a],s=!0;if(s)Te.info(`Migrated settings [${o.join(", ")}] from ${t} to ${e}`),W.markAsChanged()}function ze(){return L.plugins.Settings??{}}function Me(e){L.plugins.Settings={...L.plugins.Settings,...e}}function Wo(e){if("default"in e)return e.default;if(e.type===4)return e.options.find((t)=>t.default)?.value;return}function Y(e,t){let o="",n={get store(){if(!o)throw Error("Cannot access settings before plugin is initialized");return L.plugins[o]},get plain(){if(!o)throw Error("Cannot access settings before plugin is initialized");return qt.plugins[o]},def:e,checks:t??{},get pluginName(){return o},set pluginName(i){if(o=i,!i)return;if(!qt.plugins[i])qt.plugins[i]={enabled:!1};W.setDefaultGetter(`plugins.${i}`,(s)=>{let a=e[s];return a?Wo(a):void 0})},use(i){let s=rt();return O(()=>{let a=`plugins.${o}`;if(i?.length){let c=i.map((u)=>`${a}.${String(u)}`),l=(u)=>{if(c.some((y)=>u.startsWith(y)))s()};return W.addPrefixChangeListener(a,l),()=>W.removePrefixChangeListener(a,l)}return W.addPrefixChangeListener(a,s),()=>W.removePrefixChangeListener(a,s)},[]),n.store},withPrivateSettings(){return this}};return n}var De=new h("PluginManager","#b4befe"),w={},Yt=new Map,Os=!1,Kl=Tn;function $(e){let t=w[e];if(!t)return!1;if(t.required||t.isDependency)return!0;return L.plugins[e]?.enabled??t.enabledByDefault??!1}function nr(e,t){let o=e;if(o.plugin=t,o.predicate&&!o.predicate())return;if(is(o),!Array.isArray(o.replacement))o.replacement=[o.replacement];let n=`Void.plugins[${JSON.stringify(t)}]`;for(let i of o.replacement)rs(i,n);o.replacement=o.replacement.filter(({predicate:i})=>!i||i()),j.push(o)}function $s(e,t=new Set){if(!e.dependencies)return!0;for(let o of e.dependencies){let n=w[o];if(!n)return De.warn(`Missing dependency ${o} for ${e.name}`),!1;if(n.started)continue;if(t.has(o))return De.error(`Circular dependency detected: ${e.name} -> ${o}`),!1;if(n.isDependency=!0,L.plugins[o]={...L.plugins[o],enabled:!0},t.add(o),!$s(n,t))return!1;if(!ve(n))return!1}return!0}function Jl(e){let t=Kl[e];if(!t)return null;let o=`use${e}`,n=t[o];if(n&&typeof n.subscribe==="function")return n;for(let i in t){let s=t[i];if(s&&typeof s.subscribe==="function")return s}return null}function ve(e,t=!1){if(e.started)return!0;try{if(!$s(e))return De.error(`Failed to start dependencies for ${e.name}`),!1;if(e.managedStyle)qe(e.managedStyle);if(!e.hidden&&!t)De.info(`Starting plugin ${e.name}`);if(e.start?.(),e.chatBarButton)Go(e.name,e.chatBarButton);if(e.contextMenuItems)for(let[n,i]of Object.entries(e.contextMenuItems))vs(n,e.name,i);let o=[];if(e.events)for(let[n,i]of Object.entries(e.events))o.push(It(n,i));if(e.storeSubscriptions?.length)for(let n of e.storeSubscriptions)o.push(n.store.subscribe(n.callback,n.selector));if(e.zustand)for(let[n,i]of Object.entries(e.zustand)){let s=Jl(n);if(!s){De.warn(`Store "${n}" not found for plugin ${e.name}`);continue}let a=(l,u)=>{try{i.handler(l,u)}catch(y){De.error(`Zustand handler error in ${e.name} for ${n}:`,y)}},c=i.selector?s.subscribe(i.selector,a):s.subscribe(a);o.push(c)}if(e.eventListeners)for(let n of e.eventListeners){let i=n.target==="window"?window:document;i.addEventListener(n.event,n.handler,n.options),o.push(()=>i.removeEventListener(n.event,n.handler,n.options))}if(o.length)Yt.set(e.name,o);return e.started=!0,!0}catch(o){if(De.error(`Failed to start plugin ${e.name}:`,o),e.managedStyle)te(e.managedStyle);if(jt(e.name),e.contextMenuItems)for(let i of Object.keys(e.contextMenuItems))er(i,e.name);let n=Yt.get(e.name);if(n){for(let i of n)i();Yt.delete(e.name)}return!1}}function jo(e){if(!e.started)return!0;try{let t=Yt.get(e.name);if(t){for(let o of t)o();Yt.delete(e.name)}if(jt(e.name),e.contextMenuItems)for(let o of Object.keys(e.contextMenuItems))er(o,e.name);if(e.managedStyle)te(e.managedStyle);if(e.cleanupSelectors)for(let o of e.cleanupSelectors)document.querySelectorAll(o).forEach((n)=>n.remove());return e.stop?.(),e.started=!1,!0}catch(t){return e.started=!1,De.error(`Failed to stop plugin ${e.name}:`,t),!1}}function Zt(e){for(let t in w){let o=w[t];if(!$(t))continue;if((o.startAt??"Init")!==e)continue;ve(o)}}function Xo(e){if(w[e.name])return;if(w[e.name]=e,e.started=!1,e.settings)e.settings.pluginName=e.name}function Vs(){if(Os)return;Os=!0;let e=new Set;for(let t in w){if(!$(t))continue;let o=w[t];if(o.dependencies?.forEach((n)=>{let i=w[n];if(!i){De.warn(`Plugin ${t} has unresolved dependency ${n}`);return}L.plugins[n]={...L.plugins[n],enabled:!0},i.isDependency=!0}),o.chatBarButton)e.add("ChatBarButtonAPI");if(o.contextMenuItems)e.add("ContextMenuAPI")}for(let t of e){let o=w[t];if(!o)continue;L.plugins[t]={...L.plugins[t],enabled:!0},o.isDependency=!0}for(let t in w){if(!$(t))continue;let o=w[t];for(let n of Object.keys(o)){if(n==="start"||n==="stop")continue;let i=o[n];if(typeof i==="function"&&!i.$$voidBound){let s=i.bind(o);s.$$voidBound=!0,o[n]=s}}if(o.patches)for(let n of o.patches)nr(n,t)}}var zs=new h("Notices"),qo;((n)=>{n.INFO="log";n.WARNING="warn";n.ERROR="error"})(qo||={});var kt=null,at=null;function Rs(e){try{localStorage.removeItem(`banner-${e}`)}catch(t){zs.debug("Failed to clear banner dismissal:",t)}}function Yo(e){let t=`void-notice-${Date.now()}`;if(at)clearTimeout(at),at=null;if(kt)Rs(kt);Rs(t);let{config:o}=U.useFeatureStore.getState();if(U.useFeatureStore.setState({config:{...o,banner:{type:e.type??"log",message:e.message,sentAt:t}}}),kt=t,e.timeout)at=setTimeout(rr,e.timeout);return t}function rr(){if(!kt)return;if(at)clearTimeout(at),at=null;try{localStorage.setItem(`banner-${kt}`,"true")}catch(t){zs.debug("Failed to persist banner dismissal:",t)}let{config:e}=U.useFeatureStore.getState();U.useFeatureStore.setState({config:{...e,banner:{}}}),kt=null}var ir=new h("UpdateChecker","#85c1dc");function ec(e,t){let o=e.split(".").map(Number),n=t.split(".").map(Number);for(let i=0;i<Math.max(o.length,n.length);i++){let s=o[i]??0,a=n[i]??0;if(s>a)return!0;if(s<a)return!1}return!1}async function Gs(){try{let e=await Se("https://raw.githubusercontent.com/imjustprism/Void/main/package.json");if(!e.ok)return;let{version:t}=await e.json();if(!t||!ec(t,"0.2.6")){ir.info("Up to date (0.2.6)");return}ir.info(`Update available: ${"0.2.6"} → ${t}`),Yo({message:"Void is outdated, please update to the latest version to avoid potential bugs.",type:"warn"})}catch(e){ir.warn("Failed to check for updates",e)}}var x=Object.freeze({Prism:"Prism",adryd:"adryd"});var Qt=S({name:"FixChrome",description:"Fixes Chromium-specific performance issues like backdrop blur lag.",authors:[x.Prism],required:!0,patches:[{find:"bg-overlay backdrop-blur-[2px]",all:!0,replacement:{match:/backdrop-blur-\[2px\] /,replace:" "}}]});var sr=S({name:"NoTelemetry",description:"Disables all tracking, telemetry, and event logging.",authors:[x.Prism],required:!0,patches:[{find:"ingest.us.sentry.io",replacement:{match:/e\.s\(\["onRouterTransitionStart",\(\)=>\i\],(\d+)\);var/,replace:'e.s(["onRouterTransitionStart",()=>function(){}],$1);return;var'}},{find:'"after-init"),(0,',replacement:{match:/function (\i)\(\)\{if\(Object\.prototype\.hasOwnProperty[\s\S]{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}/,replace:"function $1(){}"}},{find:"sendBatchLogEvent",all:!0,replacement:[{match:/"sendBatchLogEvent",\i=>\{\i\(this\.address\+.{0,40},\i\)\}/,replace:'"sendBatchLogEvent",()=>{}'},{match:/"sendBatchLogExperimentExposure",\i=>\{\i\(this\.address\+.{0,50},\i\)\}/,replace:'"sendBatchLogExperimentExposure",()=>{}'},{match:/"\/api\/log_metric",\i\)/,replace:'"/api/log_metric",[])'}]},{find:"isEnvVarsSet(){return void 0!=",replacement:{match:/isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,replace:"isEnvVarsSet(){return false}"}}]});P("settings",`.void-settings-version,
+`);
+
+  // src/components/ErrorCard.tsx
+  var cl = classNameFactory("void-error-card-");
+  // src/components/Flex.tsx
+  function Flex({ flexDirection, gap = "1em", justifyContent, alignItems, flexWrap, children, style, ref, ...restProps }) {
+    return /* @__PURE__ */ React.createElement("div", {
+      ref,
+      style: {
+        display: "flex",
+        flexDirection,
+        gap,
+        justifyContent,
+        alignItems,
+        flexWrap,
+        ...style
+      },
+      ...restProps
+    }, children);
+  }
+  // src/components/Grid.tsx
+  function Grid({ columns, rows, gap = "0.75rem", justifyItems, alignItems, children, style, ...restProps }) {
+    return /* @__PURE__ */ React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns: columns,
+        gridTemplateRows: rows,
+        gap,
+        justifyItems,
+        alignItems,
+        ...style
+      },
+      ...restProps
+    }, children);
+  }
+  // src/components/icons/index.tsx
+  var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
+    width: props.size ?? "1em",
+    height: props.size ?? "1em",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className: props.className,
+    "aria-hidden": "true"
+  }, children);
+  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"
+  }));
+  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    x: "3",
+    y: "8",
+    width: "13",
+    height: "13",
+    rx: "4",
+    stroke: "currentColor"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z",
+    fill: "currentColor"
+  }));
+  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10.88 21.94 15.46 14"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21.17 8H12"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3.95 6.06 8.54 14"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "4"
+  }));
+  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12",
+    y1: "8",
+    y2: "12"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12.01",
+    y1: "16",
+    y2: "16"
+  }));
+  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "13.5",
+    cy: "6.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "17.5",
+    cy: "10.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "6.5",
+    cy: "12.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "8.5",
+    cy: "7.5",
+    r: ".5",
+    fill: "currentColor"
+  }));
+  var GaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m12 14 4-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3.34 19a10 10 0 1 1 17.32 0"
+  }));
+  var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 6h18"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+  }));
+  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10 11v6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 11v6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 6h18"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+  }));
+  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01a2.83 2.83 0 0 1 0-4L17 3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m16 2 6 6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 16H4"
+  }));
+  var TelescopeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m13.56 11.747 4.332-.924"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m16 21-3.105-6.21"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m6.158 8.633 1.114 4.456"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m8 21 3.105-6.21"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "13",
+    r: "2"
+  }));
+  var ClockIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 6v6l4 2"
+  }));
+  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+  }), /* @__PURE__ */ React.createElement("polyline", {
+    points: "7 10 12 15 17 10"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12",
+    y1: "15",
+    y2: "3"
+  }));
+  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m19 5 3-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m2 22 3-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M7.5 13.5 10 11"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M10.5 16.5 13 14"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"
+  }));
+  var Cross2Icon = (props = {}) => /* @__PURE__ */ React.createElement("svg", {
+    width: props.size ?? "1em",
+    height: props.size ?? "1em",
+    viewBox: "0 0 15 15",
+    fill: "none",
+    className: props.className,
+    "aria-hidden": "true"
+  }, /* @__PURE__ */ React.createElement("path", {
+    d: "M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",
+    fill: "currentColor",
+    fillRule: "evenodd",
+    clipRule: "evenodd"
+  }));
+  var EllipsisVertical = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "5",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "19",
+    r: "1"
+  }));
+  var GhostFilledIcon = (props = {}) => /* @__PURE__ */ React.createElement("svg", {
+    width: props.size ?? "1em",
+    height: props.size ?? "1em",
+    viewBox: "0 0 24 24",
+    fill: "currentColor",
+    className: props.className,
+    "aria-hidden": "true"
+  }, /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"
+  }));
+  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 9v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 17h.01"
+  }));
+  // src/components/Text.tsx
+  var sizeClasses = {
+    xs: "text-xs",
+    sm: "text-sm",
+    base: "text-base",
+    lg: "text-lg",
+    xl: "text-xl",
+    "2xl": "text-2xl"
+  };
+  var weightClasses = {
+    normal: "font-normal",
+    medium: "font-medium",
+    semibold: "font-semibold",
+    bold: "font-bold"
+  };
+  var colorClasses = {
+    primary: "",
+    secondary: "text-secondary",
+    muted: "text-muted-foreground"
+  };
+  function Text({ size = "sm", weight = "normal", color = "primary", as = "div", className, ...props }) {
+    return createElement(as, {
+      className: ClassNames.cn(sizeClasses[size], weightClasses[weight], colorClasses[color], className),
+      ...props
+    });
+  }
+
+  // src/components/Paragraph.tsx
+  function Paragraph({ color = "secondary", className, children, ...props }) {
+    return /* @__PURE__ */ React.createElement("p", {
+      className: ClassNames.cn("text-xs text-pretty", colorClasses[color], className),
+      ...props
+    }, children);
+  }
+  // src/components/ChatBarButton.tsx
+  var EXPAND = { width: "auto", opacity: 1 };
+  var COLLAPSE = { width: 0, opacity: 0 };
+  var TRANSITION = { duration: 0.2, ease: "easeOut" };
+  var QUERY_BAR_BUTTON = "h-10 relative rounded-full ring-1 ring-inset transition-colors duration-150 ease-out text-fg-primary ring-border-l1 hover:bg-surface-l3";
+  function ChatBarButton({ icon, children, tooltip, onClick, className, iconOnly, "aria-label": ariaLabel }) {
+    const label = typeof tooltip === "string" ? tooltip : ariaLabel;
+    const reducedMotion = useReducedMotion();
+    const hasShownText = useRef(false);
+    const showText = !iconOnly && !!children;
+    useEffect(() => {
+      if (showText)
+        hasShownText.current = true;
+    }, [showText]);
+    return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "none",
+      size: "none",
+      className: classes("group flex flex-col justify-center rounded-full", "focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"),
+      tooltipContent: tooltip,
+      tooltipProps: { delayDuration: 600 },
+      tooltipContentProps: { side: "top" },
+      onClick,
+      "aria-label": label
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: classes(QUERY_BAR_BUTTON, "flex items-center justify-center", showText ? "px-2.5 gap-1.5 text-xs font-medium tabular-nums" : "aspect-square gap-0.5", className)
+    }, icon, iconOnly != null ? /* @__PURE__ */ React.createElement(AnimatePresence, null, showText && /* @__PURE__ */ React.createElement(MotionDiv, {
+      initial: reducedMotion || !hasShownText.current ? false : COLLAPSE,
+      animate: EXPAND,
+      exit: COLLAPSE,
+      transition: reducedMotion ? { duration: 0 } : TRANSITION,
+      className: "flex items-center overflow-hidden whitespace-nowrap"
+    }, children)) : children));
+  }
+
+  // src/utils/guards.ts
+  function isTruthy(item) {
+    return Boolean(item);
+  }
+  function isNonNullish(item) {
+    return item != null;
+  }
+  function isObject(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
+  // src/utils/misc.ts
+  function mergeDefaults(target, defaults) {
+    for (const key in defaults) {
+      if (key === "__proto__" || key === "constructor" || key === "prototype")
+        continue;
+      const value = target[key];
+      if (isObject(value)) {
+        mergeDefaults(value, defaults[key]);
+      } else if (value === undefined) {
+        target[key] = defaults[key];
+      }
+    }
+    return target;
+  }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      if (typeof GM_setClipboard === "function") {
+        GM_setClipboard(text);
+      }
+    }
+  }
+  function onlyOnce(fn) {
+    let result;
+    let called = false;
+    return (...args) => {
+      if (called)
+        return result;
+      called = true;
+      result = fn(...args);
+      return result;
+    };
+  }
+  function debounce(fn, ms) {
+    let timer;
+    const debounced = (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), ms);
+    };
+    debounced.cancel = () => clearTimeout(timer);
+    return debounced;
+  }
+  function fetchExternal(url) {
+    if (typeof GM_xmlhttpRequest === "undefined")
+      return fetch(url);
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        responseType: "blob",
+        onload(resp) {
+          const blob = resp.response;
+          resolve(new Response(blob, {
+            status: resp.status,
+            statusText: resp.statusText
+          }));
+        },
+        ontimeout() {
+          reject(new Error("fetch timeout"));
+        },
+        onerror() {
+          reject(new Error("fetch error"));
+        },
+        onabort() {
+          reject(new Error("fetch aborted"));
+        }
+      });
+    });
+  }
+  function createExternalStore() {
+    const listeners = new Set;
+    let version = 0;
+    return {
+      notify() {
+        version++;
+        for (const fn of listeners)
+          fn();
+      },
+      subscribe(callback) {
+        listeners.add(callback);
+        return () => {
+          listeners.delete(callback);
+        };
+      },
+      getSnapshot() {
+        return version;
+      }
+    };
+  }
+  var pad = (n) => String(n).padStart(2, "0");
+  function formatCountdown(totalSeconds) {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor(totalSeconds % 3600 / 60);
+    const s = totalSeconds % 60;
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  }
+  function formatDuration(totalSeconds) {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor(totalSeconds % 3600 / 60);
+    if (h > 0 && m > 0)
+      return `${h}h ${m}m`;
+    return h > 0 ? `${h}h` : `${m}m`;
+  }
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+  function errorMessage(err) {
+    return err instanceof Error ? err.message : String(err);
+  }
+  function sanitizeFilename(title, fallback = "file") {
+    return title.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, "-") || fallback;
+  }
+
+  // src/api/Events.ts
+  var logger4 = new Logger("Events");
+  var listeners = new Map;
+  function subscribe(event, handler2) {
+    let set = listeners.get(event);
+    if (!set) {
+      set = new Set;
+      listeners.set(event, set);
+    }
+    set.add(handler2);
+    return () => {
+      set.delete(handler2);
+    };
+  }
+  function dispatch(event, data) {
+    const set = listeners.get(event);
+    if (!set?.size)
+      return;
+    for (const handler2 of [...set]) {
+      try {
+        handler2(data);
+      } catch (e) {
+        logger4.error(`Event handler error (${event}):`, e);
+      }
+    }
+  }
+
+  // src/utils/react.ts
+  function resolveLazyNode(node) {
+    return typeof node === "function" ? node() : node;
+  }
+  function useExternalStore(store) {
+    useSyncExternalStore(store.subscribe, store.getSnapshot);
+  }
+  function useForceUpdater() {
+    return useReducer((x) => x + 1, 0)[1];
+  }
+  function useEventSubscription(event, handler2) {
+    useEffect(() => subscribe(event, handler2), [event, handler2]);
+  }
+  function useFiltered(list, search2, getKey) {
+    return useMemo(() => {
+      const q = search2.toLowerCase().trim();
+      if (!q)
+        return list;
+      return list.filter((item) => getKey(item).toLowerCase().includes(q));
+    }, [list, search2, getKey]);
+  }
+  function useCountdown(seconds) {
+    const [value, setValue] = useState(seconds);
+    const prevRef = useRef(seconds);
+    if (prevRef.current !== seconds) {
+      prevRef.current = seconds;
+      setValue(seconds);
+    }
+    useEffect(() => {
+      if (value == null || value <= 0)
+        return;
+      const id = setInterval(() => setValue((p) => p != null && p > 1 ? p - 1 : null), 1000);
+      return () => clearInterval(id);
+    }, [value != null && value > 0]);
+    return value;
+  }
+
+  // src/api/ChatBarButtons.tsx
+  var buttons = new Map;
+  var store = createExternalStore();
+  function addChatBarButton(id, def) {
+    buttons.set(id, def);
+    store.notify();
+  }
+  function removeChatBarButton(id) {
+    buttons.delete(id);
+    store.notify();
+  }
+  function renderEntry(def, iconOnly) {
+    if (def.render) {
+      const Render = def.render;
+      return /* @__PURE__ */ React.createElement(Render, {
+        iconOnly
+      });
+    }
+    return /* @__PURE__ */ React.createElement(ChatBarButton, {
+      icon: resolveLazyNode(def.icon),
+      tooltip: resolveLazyNode(def.tooltip),
+      onClick: def.onClick,
+      iconOnly
+    });
+  }
+  function VoidChatBarButtons({ iconOnly }) {
+    useExternalStore(store);
+    if (!buttons.size)
+      return null;
+    const sorted = [...buttons.entries()].sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+      key: id
+    }, renderEntry(def, iconOnly))));
+  }
+
+  // src/api/ContextMenus.tsx
+  var items = new Map;
+  var store2 = createExternalStore();
+  function getItems(location2) {
+    let map = items.get(location2);
+    if (!map) {
+      map = new Map;
+      items.set(location2, map);
+    }
+    return map;
+  }
+  function addContextMenuItem(location2, id, def) {
+    getItems(location2).set(id, def);
+    store2.notify();
+  }
+  function removeContextMenuItem(location2, id) {
+    getItems(location2).delete(id);
+    store2.notify();
+  }
+  function renderEntry2(def, ctx) {
+    if (def.render) {
+      const Render = def.render;
+      return /* @__PURE__ */ React.createElement(Render, {
+        ...ctx
+      });
+    }
+    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: () => def.onSelect?.(ctx)
+    }, resolveLazyNode(def.icon), resolveLazyNode(def.label));
+  }
+  function VoidContextMenuItems({ location: location2, ...ctx }) {
+    useExternalStore(store2);
+    const map = items.get(location2);
+    if (!map?.size)
+      return null;
+    const sorted = [...map.entries()].sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+      key: id,
+      fallback: null
+    }, renderEntry2(def, ctx))));
+  }
+
+  // src/utils/idb.ts
+  var DB_NAME = "Void";
+  var STORE_NAME = "kv";
+  var DB_VERSION = 1;
+  var dbPromise = null;
+  function open() {
+    if (dbPromise)
+      return dbPromise;
+    const promise = new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = () => {
+        if (!req.result.objectStoreNames.contains(STORE_NAME)) {
+          req.result.createObjectStore(STORE_NAME);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    promise.catch(() => {
+      dbPromise = null;
+    });
+    dbPromise = promise;
+    return promise;
+  }
+  async function idbGet(key) {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const req = tx.objectStore(STORE_NAME).get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function idbSet(key, value) {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const req = tx.objectStore(STORE_NAME).put(value, key);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  // src/utils/SettingsStore.ts
+  var logger5 = new Logger("SettingsStore");
+  var STORAGE_KEY = "VoidSettings";
+  var SAVE_DEBOUNCE_MS = 100;
+  function getOrCreateSet(map, key) {
+    let set = map.get(key);
+    if (!set) {
+      set = new Set;
+      map.set(key, set);
+    }
+    return set;
+  }
+
+  class SettingsStore2 {
+    globalListeners = new Set;
+    pathListeners = new Map;
+    prefixListeners = new Map;
+    defaultGetters = new Map;
+    saveTimer = null;
+    constructor(plain) {
+      this.plain = plain;
+      this.store = this.makeProxy(plain);
+      window.addEventListener("beforeunload", () => this.flush());
+    }
+    flush() {
+      if (this.saveTimer) {
+        clearTimeout(this.saveTimer);
+        this.saveTimer = null;
+        this.save();
+      }
+    }
+    setDefaultGetter(prefix, getter) {
+      this.defaultGetters.set(prefix, getter);
+    }
+    makeProxy(target, path = "") {
+      return new Proxy(target, {
+        get: (t, key) => {
+          let value = t[key];
+          if (value === undefined && key !== "__proto__") {
+            const fullPath = path ? `${path}.${key}` : key;
+            for (const [prefix, getter] of this.defaultGetters) {
+              if (fullPath.startsWith(prefix)) {
+                const settingKey = fullPath.slice(prefix.length + 1);
+                if (settingKey && !settingKey.includes(".")) {
+                  const defaultVal = getter(settingKey);
+                  if (defaultVal !== undefined) {
+                    t[key] = defaultVal;
+                    value = defaultVal;
+                  }
+                }
+                break;
+              }
+            }
+          }
+          if (isObject(value)) {
+            return this.makeProxy(value, path ? `${path}.${key}` : key);
+          }
+          return value;
+        },
+        set: (t, key, value) => {
+          if (t[key] === value)
+            return true;
+          t[key] = value;
+          const fullPath = path ? `${path}.${key}` : key;
+          this.notifyListeners(fullPath);
+          return true;
+        },
+        deleteProperty: (t, key) => {
+          if (!(key in t))
+            return true;
+          delete t[key];
+          const fullPath = path ? `${path}.${key}` : key;
+          this.notifyListeners(fullPath);
+          return true;
+        }
+      });
+    }
+    notifyListeners(path) {
+      for (const l of this.globalListeners)
+        l(path);
+      const listeners2 = this.pathListeners.get(path);
+      if (listeners2)
+        for (const l of listeners2)
+          l(path);
+      for (const [prefix, set] of this.prefixListeners) {
+        if (path.startsWith(prefix))
+          for (const l of set)
+            l(path);
+      }
+      this.scheduleSave();
+    }
+    scheduleSave() {
+      if (this.saveTimer)
+        return;
+      this.saveTimer = setTimeout(() => {
+        this.saveTimer = null;
+        this.save();
+      }, SAVE_DEBOUNCE_MS);
+    }
+    save() {
+      try {
+        const json = JSON.stringify(this.plain);
+        if (typeof GM_setValue === "function") {
+          GM_setValue(STORAGE_KEY, json);
+        } else {
+          idbSet(STORAGE_KEY, json).catch((e) => logger5.warn("Failed to save settings to IndexedDB:", e));
+        }
+      } catch (e) {
+        logger5.error("Failed to save settings:", e);
+      }
+    }
+    markAsChanged() {
+      this.notifyListeners("");
+    }
+    addGlobalChangeListener(listener) {
+      this.globalListeners.add(listener);
+    }
+    removeGlobalChangeListener(listener) {
+      this.globalListeners.delete(listener);
+    }
+    addChangeListener(path, listener) {
+      getOrCreateSet(this.pathListeners, path).add(listener);
+    }
+    removeChangeListener(path, listener) {
+      const set = this.pathListeners.get(path);
+      if (set) {
+        set.delete(listener);
+        if (!set.size)
+          this.pathListeners.delete(path);
+      }
+    }
+    addPrefixChangeListener(prefix, listener) {
+      getOrCreateSet(this.prefixListeners, prefix).add(listener);
+    }
+    removePrefixChangeListener(prefix, listener) {
+      const set = this.prefixListeners.get(prefix);
+      if (set) {
+        set.delete(listener);
+        if (!set.size)
+          this.prefixListeners.delete(prefix);
+      }
+    }
+  }
+
+  // src/api/Settings.ts
+  var logger6 = new Logger("Settings");
+  var STORAGE_KEY2 = "VoidSettings";
+  var DefaultSettings = {
+    plugins: {},
+    notifications: {
+      timeout: 5000,
+      position: "bottom-right"
+    }
+  };
+  var settings = {};
+  mergeDefaults(settings, DefaultSettings);
+  var SettingsStore3 = new SettingsStore2(settings);
+  var PlainSettings = settings;
+  var Settings = SettingsStore3.store;
+  async function initSettings() {
+    if (typeof GM_getValue === "function") {
+      try {
+        const raw2 = GM_getValue(STORAGE_KEY2, null);
+        if (raw2) {
+          const parsed = JSON.parse(raw2);
+          if (isObject(parsed))
+            Object.assign(settings, parsed);
+        }
+      } catch (e) {
+        logger6.error("Failed to load settings:", e);
+      }
+      mergeDefaults(settings, DefaultSettings);
+      return;
+    }
+    let raw = null;
+    try {
+      raw = await idbGet(STORAGE_KEY2);
+    } catch (e) {
+      logger6.warn("Failed to read IndexedDB:", e);
+    }
+    if (!raw) {
+      raw = migrateFromLocalStorage();
+      if (raw)
+        idbSet(STORAGE_KEY2, raw).catch((e) => logger6.debug("Failed to persist settings to IndexedDB:", e));
+    }
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (isObject(parsed))
+          Object.assign(settings, parsed);
+      } catch (e) {
+        logger6.error("Failed to parse settings:", e);
+      }
+    }
+    mergeDefaults(settings, DefaultSettings);
+  }
+  function migrateFromLocalStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY2);
+      if (raw) {
+        localStorage.removeItem(STORAGE_KEY2);
+        logger6.info("Migrated settings from localStorage to IndexedDB");
+        return raw;
+      }
+    } catch (e) {
+      logger6.warn("Failed to read localStorage:", e);
+    }
+    return null;
+  }
+  function migratePluginSettings(name, ...oldNames) {
+    const { plugins } = SettingsStore3.plain;
+    if (name in plugins)
+      return;
+    for (const oldName of oldNames) {
+      if (oldName in plugins) {
+        logger6.info(`Migrating settings from old name ${oldName} to ${name}`);
+        plugins[name] = plugins[oldName];
+        delete plugins[oldName];
+        SettingsStore3.markAsChanged();
+        break;
+      }
+    }
+  }
+  function migratePluginSetting(pluginName, newKey, oldKey) {
+    const pluginSettings = SettingsStore3.plain.plugins[pluginName];
+    if (!pluginSettings || !(oldKey in pluginSettings) || newKey in pluginSettings)
+      return;
+    logger6.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
+    pluginSettings[newKey] = pluginSettings[oldKey];
+    delete pluginSettings[oldKey];
+    SettingsStore3.markAsChanged();
+  }
+  function migrateSettingsToPlugin(targetPlugin, sourcePlugin, ...settingKeys) {
+    const source = SettingsStore3.plain.plugins[sourcePlugin];
+    if (!source)
+      return;
+    const target = SettingsStore3.plain.plugins[targetPlugin] ??= { enabled: false };
+    let changed = false;
+    for (const key of settingKeys) {
+      if (key in source && !(key in target)) {
+        target[key] = source[key];
+        delete source[key];
+        changed = true;
+      }
+    }
+    if (changed) {
+      logger6.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
+      SettingsStore3.markAsChanged();
+    }
+  }
+  function getSettingsPluginData() {
+    return Settings.plugins.Settings ?? {};
+  }
+  function updateSettingsPluginData(patch) {
+    Settings.plugins.Settings = { ...Settings.plugins.Settings, ...patch };
+  }
+  function resolveDefault(setting) {
+    if ("default" in setting)
+      return setting.default;
+    if (setting.type === 4 /* SELECT */)
+      return setting.options.find((o) => o.default)?.value;
+    return;
+  }
+  function definePluginSettings(def, checks) {
+    let _pluginName = "";
+    const definedSettings = {
+      get store() {
+        if (!_pluginName)
+          throw new Error("Cannot access settings before plugin is initialized");
+        return Settings.plugins[_pluginName];
+      },
+      get plain() {
+        if (!_pluginName)
+          throw new Error("Cannot access settings before plugin is initialized");
+        return PlainSettings.plugins[_pluginName];
+      },
+      def,
+      checks: checks ?? {},
+      get pluginName() {
+        return _pluginName;
+      },
+      set pluginName(name) {
+        _pluginName = name;
+        if (!name)
+          return;
+        if (!PlainSettings.plugins[name])
+          PlainSettings.plugins[name] = { enabled: false };
+        SettingsStore3.setDefaultGetter(`plugins.${name}`, (key) => {
+          const setting = def[key];
+          return setting ? resolveDefault(setting) : undefined;
+        });
+      },
+      use(keys) {
+        const forceUpdate = useForceUpdater();
+        useEffect(() => {
+          const prefix = `plugins.${_pluginName}`;
+          if (keys?.length) {
+            const paths = keys.map((k) => `${prefix}.${String(k)}`);
+            const listener = (path) => {
+              if (paths.some((p) => path.startsWith(p)))
+                forceUpdate();
+            };
+            SettingsStore3.addPrefixChangeListener(prefix, listener);
+            return () => SettingsStore3.removePrefixChangeListener(prefix, listener);
+          }
+          SettingsStore3.addPrefixChangeListener(prefix, forceUpdate);
+          return () => SettingsStore3.removePrefixChangeListener(prefix, forceUpdate);
+        }, []);
+        return definedSettings.store;
+      },
+      withPrivateSettings() {
+        return this;
+      }
+    };
+    return definedSettings;
+  }
+
+  // src/api/PluginManager.ts
+  var logger7 = new Logger("PluginManager", "#b4befe");
+  var plugins = {};
+  var pluginUnsubscribers = new Map;
+  var initialized = false;
+  var storeRegistry = exports_stores;
+  function isPluginEnabled(pluginName) {
+    const plugin = plugins[pluginName];
+    if (!plugin)
+      return false;
+    if (plugin.required || plugin.isDependency)
+      return true;
+    return Settings.plugins[pluginName]?.enabled ?? plugin.enabledByDefault ?? false;
+  }
+  function addPatch(newPatch, pluginName) {
+    const patch = newPatch;
+    patch.plugin = pluginName;
+    if (patch.predicate && !patch.predicate())
+      return;
+    canonicalizeFind(patch);
+    if (!Array.isArray(patch.replacement)) {
+      patch.replacement = [patch.replacement];
+    }
+    const pluginPath = `Void.plugins[${JSON.stringify(pluginName)}]`;
+    for (const replacement of patch.replacement) {
+      canonicalizeReplacement(replacement, pluginPath);
+    }
+    patch.replacement = patch.replacement.filter(({ predicate }) => !predicate || predicate());
+    patches.push(patch);
+  }
+  function startDependenciesRecursive(plugin, visiting = new Set) {
+    if (!plugin.dependencies)
+      return true;
+    for (const depName of plugin.dependencies) {
+      const dep = plugins[depName];
+      if (!dep) {
+        logger7.warn(`Missing dependency ${depName} for ${plugin.name}`);
+        return false;
+      }
+      if (dep.started)
+        continue;
+      if (visiting.has(depName)) {
+        logger7.error(`Circular dependency detected: ${plugin.name} -> ${depName}`);
+        return false;
+      }
+      dep.isDependency = true;
+      Settings.plugins[depName] = { ...Settings.plugins[depName], enabled: true };
+      visiting.add(depName);
+      if (!startDependenciesRecursive(dep, visiting))
+        return false;
+      if (!startPlugin(dep))
+        return false;
+    }
+    return true;
+  }
+  function resolveStoreHook(storeName) {
+    const storeModule = storeRegistry[storeName];
+    if (!storeModule)
+      return null;
+    const hookName = `use${storeName}`;
+    const hook = storeModule[hookName];
+    if (hook && typeof hook.subscribe === "function")
+      return hook;
+    for (const key in storeModule) {
+      const val = storeModule[key];
+      if (val && typeof val.subscribe === "function")
+        return val;
+    }
+    return null;
+  }
+  function startPlugin(plugin, silent = false) {
+    if (plugin.started)
+      return true;
+    try {
+      if (!startDependenciesRecursive(plugin)) {
+        logger7.error(`Failed to start dependencies for ${plugin.name}`);
+        return false;
+      }
+      if (plugin.managedStyle)
+        enableStyle(plugin.managedStyle);
+      if (!plugin.hidden && !silent)
+        logger7.info(`Starting plugin ${plugin.name}`);
+      plugin.start?.();
+      if (plugin.chatBarButton) {
+        addChatBarButton(plugin.name, plugin.chatBarButton);
+      }
+      if (plugin.contextMenuItems) {
+        for (const [location2, def] of Object.entries(plugin.contextMenuItems)) {
+          addContextMenuItem(location2, plugin.name, def);
+        }
+      }
+      const unsubs = [];
+      if (plugin.events) {
+        for (const [event, handler2] of Object.entries(plugin.events)) {
+          unsubs.push(subscribe(event, handler2));
+        }
+      }
+      if (plugin.storeSubscriptions?.length) {
+        for (const sub of plugin.storeSubscriptions) {
+          unsubs.push(sub.store.subscribe(sub.callback, sub.selector));
+        }
+      }
+      if (plugin.zustand) {
+        for (const [storeName, sub] of Object.entries(plugin.zustand)) {
+          const store3 = resolveStoreHook(storeName);
+          if (!store3) {
+            logger7.warn(`Store "${storeName}" not found for plugin ${plugin.name}`);
+            continue;
+          }
+          const wrappedHandler = (current, prev) => {
+            try {
+              sub.handler(current, prev);
+            } catch (e) {
+              logger7.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
+            }
+          };
+          const unsub = sub.selector ? store3.subscribe(sub.selector, wrappedHandler) : store3.subscribe(wrappedHandler);
+          unsubs.push(unsub);
+        }
+      }
+      if (plugin.eventListeners) {
+        for (const el of plugin.eventListeners) {
+          const target = el.target === "window" ? window : document;
+          target.addEventListener(el.event, el.handler, el.options);
+          unsubs.push(() => target.removeEventListener(el.event, el.handler, el.options));
+        }
+      }
+      if (unsubs.length)
+        pluginUnsubscribers.set(plugin.name, unsubs);
+      plugin.started = true;
+      return true;
+    } catch (e) {
+      logger7.error(`Failed to start plugin ${plugin.name}:`, e);
+      if (plugin.managedStyle)
+        disableStyle(plugin.managedStyle);
+      removeChatBarButton(plugin.name);
+      if (plugin.contextMenuItems) {
+        for (const location2 of Object.keys(plugin.contextMenuItems)) {
+          removeContextMenuItem(location2, plugin.name);
+        }
+      }
+      const unsubs = pluginUnsubscribers.get(plugin.name);
+      if (unsubs) {
+        for (const unsub of unsubs)
+          unsub();
+        pluginUnsubscribers.delete(plugin.name);
+      }
+      return false;
+    }
+  }
+  function stopPlugin(plugin) {
+    if (!plugin.started)
+      return true;
+    try {
+      const unsubs = pluginUnsubscribers.get(plugin.name);
+      if (unsubs) {
+        for (const unsub of unsubs)
+          unsub();
+        pluginUnsubscribers.delete(plugin.name);
+      }
+      removeChatBarButton(plugin.name);
+      if (plugin.contextMenuItems) {
+        for (const location2 of Object.keys(plugin.contextMenuItems)) {
+          removeContextMenuItem(location2, plugin.name);
+        }
+      }
+      if (plugin.managedStyle)
+        disableStyle(plugin.managedStyle);
+      if (plugin.cleanupSelectors) {
+        for (const selector of plugin.cleanupSelectors) {
+          document.querySelectorAll(selector).forEach((el) => el.remove());
+        }
+      }
+      plugin.stop?.();
+      plugin.started = false;
+      return true;
+    } catch (e) {
+      plugin.started = false;
+      logger7.error(`Failed to stop plugin ${plugin.name}:`, e);
+      return false;
+    }
+  }
+  function startAllPlugins(target) {
+    for (const name in plugins) {
+      const plugin = plugins[name];
+      if (!isPluginEnabled(name))
+        continue;
+      if ((plugin.startAt ?? "Init" /* Init */) !== target)
+        continue;
+      startPlugin(plugin);
+    }
+  }
+  function registerPlugin(plugin) {
+    if (plugins[plugin.name])
+      return;
+    plugins[plugin.name] = plugin;
+    plugin.started = false;
+    if (plugin.settings) {
+      plugin.settings.pluginName = plugin.name;
+    }
+  }
+  function initPluginManager() {
+    if (initialized)
+      return;
+    initialized = true;
+    const neededApis = new Set;
+    for (const name in plugins) {
+      if (!isPluginEnabled(name))
+        continue;
+      const plugin = plugins[name];
+      plugin.dependencies?.forEach((d) => {
+        const dep = plugins[d];
+        if (!dep) {
+          logger7.warn(`Plugin ${name} has unresolved dependency ${d}`);
+          return;
+        }
+        Settings.plugins[d] = { ...Settings.plugins[d], enabled: true };
+        dep.isDependency = true;
+      });
+      if (plugin.chatBarButton)
+        neededApis.add("ChatBarButtonAPI");
+      if (plugin.contextMenuItems)
+        neededApis.add("ContextMenuAPI");
+    }
+    for (const api of neededApis) {
+      const dep = plugins[api];
+      if (!dep)
+        continue;
+      Settings.plugins[api] = { ...Settings.plugins[api], enabled: true };
+      dep.isDependency = true;
+    }
+    for (const name in plugins) {
+      if (!isPluginEnabled(name))
+        continue;
+      const plugin = plugins[name];
+      for (const key of Object.keys(plugin)) {
+        if (key === "start" || key === "stop")
+          continue;
+        const val = plugin[key];
+        if (typeof val === "function" && !val.$$voidBound) {
+          const bound = val.bind(plugin);
+          bound.$$voidBound = true;
+          plugin[key] = bound;
+        }
+      }
+      if (plugin.patches) {
+        for (const patch of plugin.patches)
+          addPatch(patch, name);
+      }
+    }
+  }
+
+  // src/api/Notices.ts
+  var logger8 = new Logger("Notices");
+  var NoticeType;
+  ((NoticeType2) => {
+    NoticeType2["INFO"] = "log";
+    NoticeType2["WARNING"] = "warn";
+    NoticeType2["ERROR"] = "error";
+  })(NoticeType ||= {});
+  var activeNoticeKey = null;
+  var dismissTimer = null;
+  function clearDismissal(sentAt) {
+    try {
+      localStorage.removeItem(`banner-${sentAt}`);
+    } catch (e) {
+      logger8.debug("Failed to clear banner dismissal:", e);
+    }
+  }
+  function showNotice(options) {
+    const sentAt = `void-notice-${Date.now()}`;
+    if (dismissTimer) {
+      clearTimeout(dismissTimer);
+      dismissTimer = null;
+    }
+    if (activeNoticeKey) {
+      clearDismissal(activeNoticeKey);
+    }
+    clearDismissal(sentAt);
+    const { config } = FeatureStore.useFeatureStore.getState();
+    FeatureStore.useFeatureStore.setState({
+      config: {
+        ...config,
+        banner: {
+          type: options.type ?? "log" /* INFO */,
+          message: options.message,
+          sentAt
+        }
+      }
+    });
+    activeNoticeKey = sentAt;
+    if (options.timeout) {
+      dismissTimer = setTimeout(closeNotice, options.timeout);
+    }
+    return sentAt;
+  }
+  function closeNotice() {
+    if (!activeNoticeKey)
+      return;
+    if (dismissTimer) {
+      clearTimeout(dismissTimer);
+      dismissTimer = null;
+    }
+    try {
+      localStorage.setItem(`banner-${activeNoticeKey}`, "true");
+    } catch (e) {
+      logger8.debug("Failed to persist banner dismissal:", e);
+    }
+    const { config } = FeatureStore.useFeatureStore.getState();
+    FeatureStore.useFeatureStore.setState({
+      config: {
+        ...config,
+        banner: {}
+      }
+    });
+    activeNoticeKey = null;
+  }
+
+  // src/utils/updateChecker.ts
+  var logger9 = new Logger("UpdateChecker", "#85c1dc");
+  function isNewer(remote, local) {
+    const r = remote.split(".").map(Number);
+    const l = local.split(".").map(Number);
+    for (let i = 0;i < Math.max(r.length, l.length); i++) {
+      const a = r[i] ?? 0, b = l[i] ?? 0;
+      if (a > b)
+        return true;
+      if (a < b)
+        return false;
+    }
+    return false;
+  }
+  async function checkForUpdates() {
+    try {
+      const resp = await fetchExternal(`${"https://raw.githubusercontent.com/imjustprism/Void"}/main/package.json`);
+      if (!resp.ok)
+        return;
+      const { version: latest } = await resp.json();
+      if (!latest || !isNewer(latest, "0.2.6")) {
+        logger9.info(`Up to date (${"0.2.6"})`);
+        return;
+      }
+      logger9.info(`Update available: ${"0.2.6"} → ${latest}`);
+      showNotice({
+        message: "Void is outdated, please update to the latest version to avoid potential bugs.",
+        type: "warn" /* WARNING */
+      });
+    } catch (e) {
+      logger9.warn("Failed to check for updates", e);
+    }
+  }
+
+  // src/utils/constants.ts
+  var Devs = Object.freeze({
+    Prism: "Prism",
+    adryd: "adryd"
+  });
+
+  // src/plugins/_core/fixChrome.chrome/index.ts
+  var fixChrome_default = definePlugin({
+    name: "FixChrome",
+    description: "Fixes Chromium-specific performance issues like backdrop blur lag.",
+    authors: [Devs.Prism],
+    required: true,
+    patches: [
+      {
+        find: "bg-overlay backdrop-blur-[2px]",
+        all: true,
+        replacement: {
+          match: /backdrop-blur-\[2px\] /,
+          replace: " "
+        }
+      }
+    ]
+  });
+
+  // src/plugins/_core/noTelemetry/index.ts
+  var noTelemetry_default = definePlugin({
+    name: "NoTelemetry",
+    description: "Disables all tracking, telemetry, and event logging.",
+    authors: [Devs.Prism],
+    required: true,
+    patches: [
+      {
+        find: "ingest.us.sentry.io",
+        replacement: {
+          match: /e\.s\(\["onRouterTransitionStart",\(\)=>\i\],(\d+)\);var/,
+          replace: 'e.s(["onRouterTransitionStart",()=>function(){}],$1);return;var'
+        }
+      },
+      {
+        find: '"after-init"),(0,',
+        replacement: {
+          match: /function (\i)\(\)\{if\(Object\.prototype\.hasOwnProperty[\s\S]{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}/,
+          replace: "function $1(){}"
+        }
+      },
+      {
+        find: "sendBatchLogEvent",
+        all: true,
+        replacement: [
+          {
+            match: /"sendBatchLogEvent",\i=>\{\i\(this\.address\+.{0,40},\i\)\}/,
+            replace: '"sendBatchLogEvent",()=>{}'
+          },
+          {
+            match: /"sendBatchLogExperimentExposure",\i=>\{\i\(this\.address\+.{0,50},\i\)\}/,
+            replace: '"sendBatchLogExperimentExposure",()=>{}'
+          },
+          {
+            match: /"\/api\/log_metric",\i\)/,
+            replace: '"/api/log_metric",[])'
+          }
+        ]
+      },
+      {
+        find: "isEnvVarsSet(){return void 0!=",
+        replacement: {
+          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
+          replace: "isEnvVarsSet(){return false}"
+        }
+      }
+    ]
+  });
+
+  // void-css:D:/Projects/Void/src/plugins/_core/settings/styles.css
+  registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
     font-size: 0.625rem !important;
@@ -59,7 +3186,132 @@ ${o}`;i.textContent=s,(document.head??document.documentElement).appendChild(i),i
 .void-settings-version-link:hover {
     text-decoration: underline;
 }
-`);var ar=new h("Themes","#c6a0f6");function Ge(e){let t=0;for(let o=0;o<e.length;o++)t=(t<<5)-t+e.charCodeAt(o)|0;return`void-theme-${(t>>>0).toString(36)}`}function tc(e){let t={name:"",author:"",description:""},o=e.match(/\/\*\*[\s\S]*?\*\//);if(!o)return t;let n=o[0].match(/@name\s+(.+)/),i=o[0].match(/@author\s+(.+)/),s=o[0].match(/@description\s+(.+)/);if(n)t.name=n[1].trim();if(i)t.author=i[1].trim();if(s)t.description=s[1].trim();return t}function Q(){let e=ze();return Array.isArray(e.themes)?e.themes:[]}function Ft(){return ze().themesEnabled!==!1}function Zo(e){Me({themesEnabled:e});for(let t of Q())if(t.enabled)if(e)qe(Ge(t.url));else te(Ge(t.url))}function oc(e){try{let t=new URL(e);if(t.protocol!=="https:"&&t.protocol!=="http:")throw 0}catch{throw Error("Enter a valid URL.")}if(!/\.css(?:[?#]|$)/i.test(e))throw Error("URL must point to a .css file.")}async function Qo(e){oc(e);let t=Q();if(t.some((a)=>a.url===e))throw Error("This theme is already added.");let o=await Se(e);if(!o.ok)throw Error(`Failed to fetch theme (${o.status}).`);let n=await o.text();if(!n.trim())throw Error("Theme file is empty.");let i=tc(n),s={url:e,name:i.name||(e.split("/").pop()??e).replace(/\.css$/i,"").replace(/[-_]/g," "),author:i.author,description:i.description,enabled:!1};return P(Ge(e),n),te(Ge(e)),Me({themes:[...t,s]}),ar.info(`Added theme "${s.name}" from ${e}`),s}function Ko(e){te(Ge(e)),Me({themes:Q().filter((t)=>t.url!==e)})}async function Jo(e){if(Me({themes:Q().map((i)=>i.url===e?{...i,enabled:!0}:i)}),!Ft())return;let t=Ge(e);if(qe(t))return;let o=await Se(e);if(!o.ok){ar.warn(`Failed to fetch theme CSS (${o.status}):`,e);return}let n=await o.text();P(t,n)}function en(e){Me({themes:Q().map((t)=>t.url===e?{...t,enabled:!1}:t)}),te(Ge(e))}async function _s(){if(!Ft())return;let e=Q().filter((o)=>o.enabled),t=await Promise.allSettled(e.map(async(o)=>{let n=await Se(o.url);if(!n.ok)throw Error(`HTTP ${n.status}`);let i=await n.text();P(Ge(o.url),i)}));for(let o=0;o<t.length;o++){let n=t[o];if(n.status==="rejected")ar.warn(`Failed to load theme "${e[o].name}":`,n.reason)}}P("CustomCSSTab",`.void-css-block {
+`);
+
+  // src/api/Themes.ts
+  var logger10 = new Logger("Themes", "#c6a0f6");
+  function themeStyleId(url) {
+    let hash = 0;
+    for (let i = 0;i < url.length; i++) {
+      hash = (hash << 5) - hash + url.charCodeAt(i) | 0;
+    }
+    return `void-theme-${(hash >>> 0).toString(36)}`;
+  }
+  function parseThemeMeta(css) {
+    const meta = { name: "", author: "", description: "" };
+    const header = css.match(/\/\*\*[\s\S]*?\*\//);
+    if (!header)
+      return meta;
+    const nameMatch = header[0].match(/@name\s+(.+)/);
+    const authorMatch = header[0].match(/@author\s+(.+)/);
+    const descMatch = header[0].match(/@description\s+(.+)/);
+    if (nameMatch)
+      meta.name = nameMatch[1].trim();
+    if (authorMatch)
+      meta.author = authorMatch[1].trim();
+    if (descMatch)
+      meta.description = descMatch[1].trim();
+    return meta;
+  }
+  function getThemes() {
+    const s = getSettingsPluginData();
+    return Array.isArray(s.themes) ? s.themes : [];
+  }
+  function isThemesEnabled() {
+    return getSettingsPluginData().themesEnabled !== false;
+  }
+  function setThemesEnabled(enabled) {
+    updateSettingsPluginData({ themesEnabled: enabled });
+    for (const theme of getThemes()) {
+      if (theme.enabled) {
+        if (enabled)
+          enableStyle(themeStyleId(theme.url));
+        else
+          disableStyle(themeStyleId(theme.url));
+      }
+    }
+  }
+  function validateThemeUrl(url) {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== "https:" && parsed.protocol !== "http:")
+        throw 0;
+    } catch {
+      throw new Error("Enter a valid URL.");
+    }
+    if (!/\.css(?:[?#]|$)/i.test(url))
+      throw new Error("URL must point to a .css file.");
+  }
+  async function addTheme(url) {
+    validateThemeUrl(url);
+    const existing = getThemes();
+    if (existing.some((t) => t.url === url)) {
+      throw new Error("This theme is already added.");
+    }
+    const resp = await fetchExternal(url);
+    if (!resp.ok)
+      throw new Error(`Failed to fetch theme (${resp.status}).`);
+    const css = await resp.text();
+    if (!css.trim())
+      throw new Error("Theme file is empty.");
+    const meta = parseThemeMeta(css);
+    const theme = {
+      url,
+      name: meta.name || (url.split("/").pop() ?? url).replace(/\.css$/i, "").replace(/[-_]/g, " "),
+      author: meta.author,
+      description: meta.description,
+      enabled: false
+    };
+    registerStyle(themeStyleId(url), css);
+    disableStyle(themeStyleId(url));
+    updateSettingsPluginData({ themes: [...existing, theme] });
+    logger10.info(`Added theme "${theme.name}" from ${url}`);
+    return theme;
+  }
+  function removeTheme(url) {
+    disableStyle(themeStyleId(url));
+    updateSettingsPluginData({ themes: getThemes().filter((t) => t.url !== url) });
+  }
+  async function enableTheme(url) {
+    updateSettingsPluginData({ themes: getThemes().map((t) => t.url === url ? { ...t, enabled: true } : t) });
+    if (!isThemesEnabled())
+      return;
+    const id = themeStyleId(url);
+    if (enableStyle(id))
+      return;
+    const resp = await fetchExternal(url);
+    if (!resp.ok) {
+      logger10.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+      return;
+    }
+    const css = await resp.text();
+    registerStyle(id, css);
+  }
+  function disableTheme(url) {
+    updateSettingsPluginData({ themes: getThemes().map((t) => t.url === url ? { ...t, enabled: false } : t) });
+    disableStyle(themeStyleId(url));
+  }
+  async function loadSavedThemes() {
+    if (!isThemesEnabled())
+      return;
+    const enabled = getThemes().filter((t) => t.enabled);
+    const results = await Promise.allSettled(enabled.map(async (t) => {
+      const resp = await fetchExternal(t.url);
+      if (!resp.ok)
+        throw new Error(`HTTP ${resp.status}`);
+      const css = await resp.text();
+      registerStyle(themeStyleId(t.url), css);
+    }));
+    for (let i = 0;i < results.length; i++) {
+      const result = results[i];
+      if (result.status === "rejected") {
+        logger10.warn(`Failed to load theme "${enabled[i].name}":`, result.reason);
+      }
+    }
+  }
+
+  // void-css:D:/Projects/Void/src/components/settings/tabs/CustomCSSTab.css
+  registerStyle("CustomCSSTab", `.void-css-block {
     display: flex;
     flex-direction: column;
     min-height: 400px;
@@ -119,14 +3371,136 @@ ${o}`;i.textContent=s,(document.head??document.documentElement).appendChild(i),i
 .void-css-editor .monaco-editor .current-line-margin-both {
     border: none !important;
 }
-`);var nc=new h("CustomCSS"),lr=E("void-css-"),tn="void-custom-css",rc=xn((e)=>e.darkTheme?.base==="vs-dark");function ic(e){if(Me({customCSSEnabled:e}),e){let t=ze().customCSS;if(typeof t==="string"&&t)P(tn,t)}else te(tn)}function Kt(){let e=ze(),t=e.customCSS;if(typeof t==="string"&&t&&e.customCSSEnabled!==!1)return P(tn,t),t;return typeof t==="string"?t:""}function sc(e){let t=ze().customCSSEnabled!==!1;if(Me({customCSS:e}),t)P(tn,e)}function cr(){let e=me(null),t=me(null),[o,n]=M(()=>ze().customCSSEnabled!==!1),i=(s)=>{n(s),ic(s)};return O(()=>{if(!e.current)return;let s=!1,a=null;return(async()=>{if(!Wt.monacoInstance)await Wt.initMonaco();if(s)return;let c=Wt.monacoInstance;c.editor.defineTheme("grok-dark",rc.darkTheme),a=c.editor.create(e.current,{value:Kt(),language:"css",theme:"grok-dark",minimap:{enabled:!1},scrollbar:{vertical:"hidden",horizontal:"hidden"},overviewRulerLanes:0,hideCursorInOverviewRuler:!0,overviewRulerBorder:!1,folding:!1,glyphMargin:!1,fontSize:13,lineNumbers:"off",scrollBeyondLastLine:!1,automaticLayout:!0,tabSize:4,wordWrap:"on",padding:{top:8},renderLineHighlight:"none",renderLineHighlightOnlyWhenFocus:!0,lineDecorationsWidth:0,readOnly:!o}),t.current=a,a.onDidChangeModelContent(()=>sc(a.getValue()))})().catch((c)=>nc.error("Failed to initialize editor:",c)),()=>{s=!0,a?.dispose(),t.current=null}},[]),O(()=>{t.current?.updateOptions({readOnly:!o})},[o]),r.createElement(m,{flexDirection:"column",gap:"1rem"},r.createElement(m,{alignItems:"center",justifyContent:"space-between",className:"px-3"},r.createElement(m,{flexDirection:"column",gap:"0"},r.createElement(f,{size:"sm",weight:"medium"},"Quick CSS"),r.createElement(f,{size:"xs",color:"secondary"},"Custom CSS applied live as you type.")),r.createElement(q,{checked:o,onCheckedChange:i})),r.createElement("div",{className:lr("block")},r.createElement("div",{className:lr("header")},r.createElement(f,{as:"span"},"CSS")),r.createElement("div",{ref:e,className:lr("editor")})))}P("PluginsTab",`.void-plugins-reload-banner {
+`);
+
+  // src/components/settings/tabs/CustomCSSTab.tsx
+  var logger11 = new Logger("CustomCSS");
+  var cl2 = classNameFactory("void-css-");
+  var STYLE_ID = "void-custom-css";
+  var ThemeModule = findLazy((m) => m.darkTheme?.base === "vs-dark");
+  function setCustomCSSEnabled(enabled) {
+    updateSettingsPluginData({ customCSSEnabled: enabled });
+    if (enabled) {
+      const css = getSettingsPluginData().customCSS;
+      if (typeof css === "string" && css)
+        registerStyle(STYLE_ID, css);
+    } else {
+      disableStyle(STYLE_ID);
+    }
+  }
+  function loadSavedCSS() {
+    const s = getSettingsPluginData();
+    const saved = s.customCSS;
+    if (typeof saved === "string" && saved && s.customCSSEnabled !== false) {
+      registerStyle(STYLE_ID, saved);
+      return saved;
+    }
+    return typeof saved === "string" ? saved : "";
+  }
+  function applyCSS(css) {
+    const enabled = getSettingsPluginData().customCSSEnabled !== false;
+    updateSettingsPluginData({ customCSS: css });
+    if (enabled)
+      registerStyle(STYLE_ID, css);
+  }
+  function CustomCSSTab() {
+    const containerRef = useRef(null);
+    const editorRef = useRef(null);
+    const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
+    const handleToggle = (checked) => {
+      setEnabled(checked);
+      setCustomCSSEnabled(checked);
+    };
+    useEffect(() => {
+      if (!containerRef.current)
+        return;
+      let disposed = false;
+      let editor = null;
+      (async () => {
+        if (!MonacoModule.monacoInstance)
+          await MonacoModule.initMonaco();
+        if (disposed)
+          return;
+        const monaco = MonacoModule.monacoInstance;
+        monaco.editor.defineTheme("grok-dark", ThemeModule.darkTheme);
+        editor = monaco.editor.create(containerRef.current, {
+          value: loadSavedCSS(),
+          language: "css",
+          theme: "grok-dark",
+          minimap: { enabled: false },
+          scrollbar: { vertical: "hidden", horizontal: "hidden" },
+          overviewRulerLanes: 0,
+          hideCursorInOverviewRuler: true,
+          overviewRulerBorder: false,
+          folding: false,
+          glyphMargin: false,
+          fontSize: 13,
+          lineNumbers: "off",
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          tabSize: 4,
+          wordWrap: "on",
+          padding: { top: 8 },
+          renderLineHighlight: "none",
+          renderLineHighlightOnlyWhenFocus: true,
+          lineDecorationsWidth: 0,
+          readOnly: !enabled
+        });
+        editorRef.current = editor;
+        editor.onDidChangeModelContent(() => applyCSS(editor.getValue()));
+      })().catch((e) => logger11.error("Failed to initialize editor:", e));
+      return () => {
+        disposed = true;
+        editor?.dispose();
+        editorRef.current = null;
+      };
+    }, []);
+    useEffect(() => {
+      editorRef.current?.updateOptions({ readOnly: !enabled });
+    }, [enabled]);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "1rem"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      className: "px-3"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Quick CSS"), /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, "Custom CSS applied live as you type.")), /* @__PURE__ */ React.createElement(Switch, {
+      checked: enabled,
+      onCheckedChange: handleToggle
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl2("block")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl2("header")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span"
+    }, "CSS")), /* @__PURE__ */ React.createElement("div", {
+      ref: containerRef,
+      className: cl2("editor")
+    })));
+  }
+
+  // void-css:D:/Projects/Void/src/components/settings/tabs/PluginsTab.css
+  registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
     background: hsl(var(--yellow-800) / 60%);
     border: 1px solid hsl(var(--yellow-700));
     color: hsl(var(--fg-warning));
 }
-`);P("PluginCard",`.void-plugin-card-root {
+`);
+
+  // void-css:D:/Projects/Void/src/components/settings/PluginCard.css
+  registerStyle("PluginCard", `.void-plugin-card-root {
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -223,7 +3597,104 @@ ${o}`;i.textContent=s,(document.head??document.documentElement).appendChild(i),i
     width: 1em;
     height: 1em;
 }
-`);var ac=[{key:"dev",icon:ys,tooltip:"Dev Only"},{key:"chrome",icon:Rn,tooltip:"Chromium Only"},{key:"preview",icon:ms,tooltip:"Preview plugin, may be removed once Grok ships this."}];function Us({plugin:e,className:t}){return ac.filter((o)=>e[o.key]).map((o)=>r.createElement(Ke,{key:o.key},r.createElement(Je,{asChild:!0},r.createElement("span",{className:t},r.createElement(o.icon,null))),r.createElement(et,null,o.tooltip)))}function ur([,e]){return e.type!==7&&!(("hidden"in e)&&e.hidden)}function Hs(e){return!!e.settings?.def&&Object.entries(e.settings.def).some(ur)}var K=E("void-plugin-card-");function on({name:e,onSettings:t,onReload:o}){let n=w[e],i=rt(),s=$(e),a=s&&!n.started&&!n.required,c=!!n.patches?.length,l=()=>{if(L.plugins[e]={...L.plugins[e],enabled:!s},!s)ve(n,!0);else jo(n);if(i(),Vo("pluginToggle"),c)o(e)};return r.createElement("div",{className:Z(K("root"),n.required&&K("required"),a&&K("crashed"))},r.createElement("div",{className:K("body")},r.createElement(m,{alignItems:"center",justifyContent:"space-between",gap:"0.5rem"},r.createElement(f,{as:"span",className:K("name")},e,a&&r.createElement(Ke,null,r.createElement(Je,{asChild:!0},r.createElement(f,{as:"span",className:K("crashed-icon")},r.createElement(hs,null))),r.createElement(et,null,"This plugin failed to start")),n.required&&r.createElement(Ke,null,r.createElement(Je,{asChild:!0},r.createElement(f,{as:"span",className:K("required-icon")},r.createElement(zn,null))),r.createElement(et,null,"This plugin is required for Void to work")),r.createElement(Us,{plugin:n,className:K("badge")})),r.createElement(m,{alignItems:"center",gap:"0.375rem",className:K("controls")},Hs(n)&&r.createElement(k,{variant:"tertiary",size:"xs",shape:"square","aria-label":"Plugin settings",onClick:()=>t(e)},r.createElement(gs,{size:16})),r.createElement(q,{checked:s,disabled:n.required,onCheckedChange:l}))),n.description&&r.createElement("div",{className:K("desc")},n.description)),r.createElement("div",{className:K("separator")}),r.createElement("div",{className:K("footer")},r.createElement("div",{className:K("authors")},n.authors?.length?n.authors.join(", "):" ")))}P("PluginDialog",`.void-plugin-dialog-content {
+`);
+
+  // src/components/settings/pluginBadges.tsx
+  var badges = [
+    { key: "dev", icon: GhostFilledIcon, tooltip: "Dev Only" },
+    { key: "chrome", icon: ChromiumIcon, tooltip: "Chromium Only" },
+    { key: "preview", icon: TelescopeIcon, tooltip: "Preview plugin, may be removed once Grok ships this." }
+  ];
+  function PluginBadges({ plugin, className }) {
+    return badges.filter((b) => plugin[b.key]).map((b) => /* @__PURE__ */ React.createElement(Tooltip, {
+      key: b.key
+    }, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement("span", {
+      className
+    }, /* @__PURE__ */ React.createElement(b.icon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, b.tooltip)));
+  }
+
+  // src/components/settings/utils.ts
+  function isVisibleSetting([, s]) {
+    return s.type !== 7 /* CUSTOM */ && !(("hidden" in s) && s.hidden);
+  }
+  function hasVisibleSettings(plugin) {
+    return !!plugin.settings?.def && Object.entries(plugin.settings.def).some(isVisibleSetting);
+  }
+
+  // src/components/settings/PluginCard.tsx
+  var cl3 = classNameFactory("void-plugin-card-");
+  function PluginCard({ name, onSettings, onReload }) {
+    const plugin = plugins[name];
+    const forceUpdate = useForceUpdater();
+    const enabled = isPluginEnabled(name);
+    const crashed = enabled && !plugin.started && !plugin.required;
+    const hasPatches = !!plugin.patches?.length;
+    const handleToggle = () => {
+      Settings.plugins[name] = { ...Settings.plugins[name], enabled: !enabled };
+      if (!enabled)
+        startPlugin(plugin, true);
+      else
+        stopPlugin(plugin);
+      forceUpdate();
+      dispatch("pluginToggle");
+      if (hasPatches)
+        onReload(name);
+    };
+    return /* @__PURE__ */ React.createElement("div", {
+      className: classes(cl3("root"), plugin.required && cl3("required"), crashed && cl3("crashed"))
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl3("body")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      className: cl3("name")
+    }, name, crashed && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      className: cl3("crashed-icon")
+    }, /* @__PURE__ */ React.createElement(TriangleAlert, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin failed to start")), plugin.required && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      className: cl3("required-icon")
+    }, /* @__PURE__ */ React.createElement(CircleAlertIcon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin is required for Void to work")), /* @__PURE__ */ React.createElement(PluginBadges, {
+      plugin,
+      className: cl3("badge")
+    })), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.375rem",
+      className: cl3("controls")
+    }, hasVisibleSettings(plugin) && /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      "aria-label": "Plugin settings",
+      onClick: () => onSettings(name)
+    }, /* @__PURE__ */ React.createElement(EllipsisVertical, {
+      size: 16
+    })), /* @__PURE__ */ React.createElement(Switch, {
+      checked: enabled,
+      disabled: plugin.required,
+      onCheckedChange: handleToggle
+    }))), plugin.description && /* @__PURE__ */ React.createElement("div", {
+      className: cl3("desc")
+    }, plugin.description)), /* @__PURE__ */ React.createElement("div", {
+      className: cl3("separator")
+    }), /* @__PURE__ */ React.createElement("div", {
+      className: cl3("footer")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl3("authors")
+    }, plugin.authors?.length ? plugin.authors.join(", ") : " ")));
+  }
+
+  // void-css:D:/Projects/Void/src/components/settings/tabs/PluginDialog.css
+  registerStyle("PluginDialog", `.void-plugin-dialog-content {
     width: 600px;
     min-height: 420px;
     padding: 1.5rem;
@@ -251,11 +3722,374 @@ ${o}`;i.textContent=s,(document.head??document.documentElement).appendChild(i),i
 .void-plugin-dialog-header {
     text-align: left;
 }
-`);function Nt(e,t,o){let[n,i]=M((L.plugins[e]??{})[t]??Wo(o)),s=X((a)=>{i(a),L.plugins[e]={...L.plugins[e],[t]:a},o.onChange?.(a)},[t,e,o]);return[n,s]}function Jt({id:e,setting:t}){return r.createElement(m,{flexDirection:"column",gap:"0"},r.createElement(Tt,null,pt(e)),"description"in t&&t.description&&r.createElement(Mt,null,t.description))}function lc({id:e,setting:t,pluginName:o}){let[n,i]=Nt(o,e,t);return r.createElement(Pt,{action:r.createElement(q,{checked:!!n,onCheckedChange:i})},r.createElement(Jt,{id:e,setting:t}))}function cc({id:e,setting:t,pluginName:o}){let[n,i]=Nt(o,e,t);if(!("options"in t))return null;let{options:s}=t,a=F(()=>new Map(s.map((c)=>[String(c.value),c.value])),[s]);return r.createElement(m,{flexDirection:"column",gap:"0.5rem"},r.createElement(Jt,{id:e,setting:t}),r.createElement(fe,{value:String(n??""),onValueChange:(c)=>i(a.get(c)??c)},r.createElement(ge,null,r.createElement(he,null)),r.createElement(ye,null,s.map((c)=>r.createElement(N,{key:String(c.value),value:String(c.value)},c.label)))))}function uc({id:e,setting:t,pluginName:o}){let[n,i]=Nt(o,e,t);if(!("min"in t))return null;let{min:s,max:a}=t;return r.createElement(m,{flexDirection:"column",gap:"0.5rem"},r.createElement(Jt,{id:e,setting:t}),r.createElement(m,{gap:"8px",className:"items-center"},r.createElement(vo,{value:[n??s],min:s,max:a,step:1,onValueChange:([c])=>i(c),className:"w-32"}),r.createElement(f,{size:"sm",color:"secondary",className:"tabular-nums w-6 text-right"},n)))}function pc({setting:e,pluginName:t}){let[,o]=Nt(t,"component",e);if(!("component"in e))return null;let n=e.component;return r.createElement(n,{setValue:o,option:e})}function Ws({id:e,setting:t,pluginName:o}){let[n,i]=Nt(o,e,t);return r.createElement(m,{flexDirection:"column",gap:"0.5rem"},r.createElement(Jt,{id:e,setting:t}),r.createElement(ne,{type:"number",value:n??"",onChange:(s)=>{let a=Number(s.target.value);if(!isNaN(a))i(a)},className:"w-24"}))}function dc({id:e,setting:t,pluginName:o}){let[n,i]=Nt(o,e,t);return r.createElement(m,{flexDirection:"column",gap:"0.5rem"},r.createElement(Jt,{id:e,setting:t}),r.createElement(ne,{type:"text",value:n??"",onChange:(s)=>i(s.target.value),placeholder:"placeholder"in t?t.placeholder:void 0,className:"w-full"}))}var mc={3:lc,4:cc,5:uc,6:pc,1:Ws,2:Ws,0:dc,7:null};function pr({id:e,setting:t,pluginName:o}){let n=mc[t.type];if(!n)return null;return r.createElement(n,{id:e,setting:t,pluginName:o})}var dr=E("void-plugin-dialog-");function mr({plugin:e,open:t,onClose:o}){let n=Object.entries(e.settings?.def??{}).filter(ur);return r.createElement(Fe,{open:t,onOpenChange:(i)=>{if(!i)o()}},r.createElement(Ne,{className:dr("content"),"aria-describedby":void 0},r.createElement(Mo,{asChild:!0},r.createElement(k,{variant:"tertiary",size:"sm",shape:"square","aria-label":"Close",className:dr("close")},r.createElement(fs,null))),r.createElement(Ae,{className:dr("header")},r.createElement(Be,null,e.name),e.description&&r.createElement(f,{size:"xs",color:"secondary"},e.description)),r.createElement($e,null),!!e.authors?.length&&r.createElement(m,{flexDirection:"column",gap:"0.25rem"},r.createElement(f,{size:"sm",weight:"medium"},"Authors"),r.createElement(f,{size:"xs",color:"secondary"},e.authors.join(", "))),r.createElement(m,{flexDirection:"column",gap:"0.25rem"},r.createElement(f,{size:"sm",weight:"medium"},"Settings"),n.length?r.createElement(m,{flexDirection:"column",gap:"0.75rem",className:"mt-2"},n.map(([i,s])=>r.createElement(pr,{key:i,id:i,setting:s,pluginName:e.name}))):r.createElement(f,{size:"xs",color:"secondary"},"No configurable settings."))))}var fc=E("void-plugins-"),js=(e)=>`${e} ${w[e].description??""}`;function fr(){let[e,t]=M(""),[o,n]=M("all"),[i,s]=M(null),[a,c]=M(!1),{userPlugins:l,requiredPlugins:u}=F(()=>{let d=[],C=[];for(let Le of Object.keys(w).sort((Xr,da)=>Xr.localeCompare(da))){if(w[Le].hidden)continue;if(w[Le].required)C.push(Le);else d.push(Le)}return{userPlugins:d,requiredPlugins:C}},[]),y=r.useRef(null),D=r.useRef(new Set),g=r.useRef(!1);O(()=>{if(y.current)return;let d=new Map;for(let C of l)d.set(C,$(C));for(let C of u)d.set(C,$(C));y.current=d},[l,u]);let I=F(()=>{if(o==="all")return l;let d=o==="enabled";return l.filter((C)=>$(C)===d)},[o,l]),z=F(()=>{if(o==="all")return u;let d=o==="enabled";return u.filter((C)=>$(C)===d)},[o,u]),A=it(I,e,js),re=it(z,e,js),V=i?w[i]:null,J=A.length>0||re.length>0,ie=D.current.size>0,Ie=X((d)=>{let C=y.current,Le=D.current;if(!C)return;if($(d)===C.get(d))Le.delete(d);else Le.add(d);if(Le.size){if(!g.current)c(!0)}else c(!1),g.current=!1},[]),ct=X(()=>{g.current=!0,c(!1)},[]);return r.createElement(m,{flexDirection:"column",gap:"1.5rem"},r.createElement(m,{flexDirection:"column",gap:"0",className:"px-3"},r.createElement(f,{size:"sm",weight:"medium"},"Plugins"),r.createElement(f,{size:"xs",color:"secondary"},"Pick which plugins to use. Some need a page reload to kick in.")),ie&&!a&&r.createElement(m,{alignItems:"center",className:Z(fc("reload-banner"),"mx-3")},r.createElement(f,{size:"xs",className:"text-inherit flex-1"},"Reload the page to apply plugin changes."),r.createElement(k,{variant:"secondary",size:"sm",onClick:()=>location.reload()},"Reload")),r.createElement(m,{alignItems:"center",gap:"0.75rem",className:"px-3"},r.createElement(ne,{type:"text",placeholder:`Search ${I.length+z.length} plugins...`,value:e,onChange:(d)=>t(d.target.value),className:"flex-1 min-w-0"}),r.createElement(fe,{value:o,onValueChange:(d)=>n(d)},r.createElement(ge,{className:"w-28"},r.createElement(he,null)),r.createElement(ye,null,r.createElement(N,{value:"all"},"All"),r.createElement(N,{value:"enabled"},"Enabled"),r.createElement(N,{value:"disabled"},"Disabled")))),A.length>0&&r.createElement(vt,{columns:"repeat(2, 1fr)",className:"px-3"},A.map((d)=>r.createElement(v,{key:d,fallback:null},r.createElement(on,{name:d,onSettings:s,onReload:Ie})))),re.length>0&&r.createElement(r.Fragment,null,r.createElement($e,{className:"mx-3 w-auto"}),r.createElement(vt,{columns:"repeat(2, 1fr)",className:"px-3"},re.map((d)=>r.createElement(v,{key:d,fallback:null},r.createElement(on,{name:d,onSettings:s,onReload:Ie}))))),!J&&r.createElement(Ve,{color:"secondary",className:"text-center py-8"},e?"No plugins match your search.":"No plugins available."),V&&r.createElement(mr,{plugin:V,open:!0,onClose:()=>s(null)}),r.createElement(ot,{open:a,onOpenChange:(d)=>{if(!d)ct()},title:"Reload required",description:"This plugin patches Grok's code, so you need to reload the page.",confirmText:"Reload",cancelText:"Later",onConfirm:()=>location.reload()}))}P("ThemesTab",`.void-themes-add-error {
+`);
+
+  // src/components/settings/SettingField.tsx
+  function usePluginSetting(pluginName, id, setting) {
+    const [value, setValue] = useState((Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting));
+    const update = useCallback((val) => {
+      setValue(val);
+      Settings.plugins[pluginName] = { ...Settings.plugins[pluginName], [id]: val };
+      setting.onChange?.(val);
+    }, [id, pluginName, setting]);
+    return [value, update];
+  }
+  function SettingLabel({ id, setting }) {
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, humanizeKey(id)), "description" in setting && setting.description && /* @__PURE__ */ React.createElement(SettingsDescription, null, setting.description));
+  }
+  function BooleanField({ id, setting, pluginName }) {
+    const [value, update] = usePluginSetting(pluginName, id, setting);
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Switch, {
+        checked: !!value,
+        onCheckedChange: update
+      })
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+      id,
+      setting
+    }));
+  }
+  function SelectField({ id, setting, pluginName }) {
+    const [value, update] = usePluginSetting(pluginName, id, setting);
+    if (!("options" in setting))
+      return null;
+    const { options } = setting;
+    const valueMap = useMemo(() => new Map(options.map((o) => [String(o.value), o.value])), [options]);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+      id,
+      setting
+    }), /* @__PURE__ */ React.createElement(Select, {
+      value: String(value ?? ""),
+      onValueChange: (v) => update(valueMap.get(v) ?? v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, null, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: String(o.value),
+      value: String(o.value)
+    }, o.label)))));
+  }
+  function SliderField({ id, setting, pluginName }) {
+    const [value, update] = usePluginSetting(pluginName, id, setting);
+    if (!("min" in setting))
+      return null;
+    const { min, max } = setting;
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+      id,
+      setting
+    }), /* @__PURE__ */ React.createElement(Flex, {
+      gap: "8px",
+      className: "items-center"
+    }, /* @__PURE__ */ React.createElement(Slider, {
+      value: [value ?? min],
+      min,
+      max,
+      step: 1,
+      onValueChange: ([v]) => update(v),
+      className: "w-32"
+    }), /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      color: "secondary",
+      className: "tabular-nums w-6 text-right"
+    }, value)));
+  }
+  function ComponentField({ setting, pluginName }) {
+    const [, update] = usePluginSetting(pluginName, "component", setting);
+    if (!("component" in setting))
+      return null;
+    const Comp = setting.component;
+    return /* @__PURE__ */ React.createElement(Comp, {
+      setValue: update,
+      option: setting
+    });
+  }
+  function NumberField({ id, setting, pluginName }) {
+    const [value, update] = usePluginSetting(pluginName, id, setting);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+      id,
+      setting
+    }), /* @__PURE__ */ React.createElement(Input, {
+      type: "number",
+      value: value ?? "",
+      onChange: (e) => {
+        const n = Number(e.target.value);
+        if (!isNaN(n))
+          update(n);
+      },
+      className: "w-24"
+    }));
+  }
+  function StringField({ id, setting, pluginName }) {
+    const [value, update] = usePluginSetting(pluginName, id, setting);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+      id,
+      setting
+    }), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      value: value ?? "",
+      onChange: (e) => update(e.target.value),
+      placeholder: "placeholder" in setting ? setting.placeholder : undefined,
+      className: "w-full"
+    }));
+  }
+  var FIELD_MAP = {
+    [3 /* BOOLEAN */]: BooleanField,
+    [4 /* SELECT */]: SelectField,
+    [5 /* SLIDER */]: SliderField,
+    [6 /* COMPONENT */]: ComponentField,
+    [1 /* NUMBER */]: NumberField,
+    [2 /* BIGINT */]: NumberField,
+    [0 /* STRING */]: StringField,
+    [7 /* CUSTOM */]: null
+  };
+  function SettingField({ id, setting, pluginName }) {
+    const Field = FIELD_MAP[setting.type];
+    if (!Field)
+      return null;
+    return /* @__PURE__ */ React.createElement(Field, {
+      id,
+      setting,
+      pluginName
+    });
+  }
+
+  // src/components/settings/tabs/PluginDialog.tsx
+  var cl4 = classNameFactory("void-plugin-dialog-");
+  function PluginDialog({ plugin, open: open2, onClose }) {
+    const entries = Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting);
+    return /* @__PURE__ */ React.createElement(Dialog, {
+      open: open2,
+      onOpenChange: (v) => {
+        if (!v)
+          onClose();
+      }
+    }, /* @__PURE__ */ React.createElement(DialogContent, {
+      className: cl4("content"),
+      "aria-describedby": undefined
+    }, /* @__PURE__ */ React.createElement(DialogClose, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Close",
+      className: cl4("close")
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
+      className: cl4("header")
+    }, /* @__PURE__ */ React.createElement(DialogTitle, null, plugin.name), plugin.description && /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, plugin.description)), /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.25rem"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Authors"), /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.25rem"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Settings"), entries.length ? /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.75rem",
+      className: "mt-2"
+    }, entries.map(([key, setting]) => /* @__PURE__ */ React.createElement(SettingField, {
+      key,
+      id: key,
+      setting,
+      pluginName: plugin.name
+    }))) : /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, "No configurable settings."))));
+  }
+
+  // src/components/settings/tabs/PluginsTab.tsx
+  var cl5 = classNameFactory("void-plugins-");
+  var getPluginKey = (name) => `${name} ${plugins[name].description ?? ""}`;
+  function PluginsTab() {
+    const [search2, setSearch] = useState("");
+    const [filter, setFilter] = useState("all");
+    const [dialogName, setDialogName] = useState(null);
+    const [showReload, setShowReload] = useState(false);
+    const { userPlugins, requiredPlugins } = useMemo(() => {
+      const user = [];
+      const required = [];
+      for (const n of Object.keys(plugins).sort((a, b) => a.localeCompare(b))) {
+        if (plugins[n].hidden)
+          continue;
+        if (plugins[n].required)
+          required.push(n);
+        else
+          user.push(n);
+      }
+      return { userPlugins: user, requiredPlugins: required };
+    }, []);
+    const initialStatesRef = React.useRef(null);
+    const changedPluginsRef = React.useRef(new Set);
+    const dismissedRef = React.useRef(false);
+    useEffect(() => {
+      if (initialStatesRef.current)
+        return;
+      const map = new Map;
+      for (const n of userPlugins)
+        map.set(n, isPluginEnabled(n));
+      for (const n of requiredPlugins)
+        map.set(n, isPluginEnabled(n));
+      initialStatesRef.current = map;
+    }, [userPlugins, requiredPlugins]);
+    const visibleUser = useMemo(() => {
+      if (filter === "all")
+        return userPlugins;
+      const enabled = filter === "enabled";
+      return userPlugins.filter((n) => isPluginEnabled(n) === enabled);
+    }, [filter, userPlugins]);
+    const visibleRequired = useMemo(() => {
+      if (filter === "all")
+        return requiredPlugins;
+      const enabled = filter === "enabled";
+      return requiredPlugins.filter((n) => isPluginEnabled(n) === enabled);
+    }, [filter, requiredPlugins]);
+    const filteredUser = useFiltered(visibleUser, search2, getPluginKey);
+    const filteredRequired = useFiltered(visibleRequired, search2, getPluginKey);
+    const dialogPlugin = dialogName ? plugins[dialogName] : null;
+    const hasResults = filteredUser.length > 0 || filteredRequired.length > 0;
+    const needsReload = changedPluginsRef.current.size > 0;
+    const onReload = useCallback((pluginName) => {
+      const initialStates = initialStatesRef.current;
+      const changedPlugins = changedPluginsRef.current;
+      if (!initialStates)
+        return;
+      const current = isPluginEnabled(pluginName);
+      if (current === initialStates.get(pluginName))
+        changedPlugins.delete(pluginName);
+      else
+        changedPlugins.add(pluginName);
+      if (changedPlugins.size) {
+        if (!dismissedRef.current)
+          setShowReload(true);
+      } else {
+        setShowReload(false);
+        dismissedRef.current = false;
+      }
+    }, []);
+    const onDismiss = useCallback(() => {
+      dismissedRef.current = true;
+      setShowReload(false);
+    }, []);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "1.5rem"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0",
+      className: "px-3"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Plugins"), /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, "Pick which plugins to use. Some need a page reload to kick in.")), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      className: classes(cl5("reload-banner"), "mx-3")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      className: "text-inherit flex-1"
+    }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      onClick: () => location.reload()
+    }, "Reload")), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.75rem",
+      className: "px-3"
+    }, /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: `Search ${visibleUser.length + visibleRequired.length} plugins...`,
+      value: search2,
+      onChange: (e) => setSearch(e.target.value),
+      className: "flex-1 min-w-0"
+    }), /* @__PURE__ */ React.createElement(Select, {
+      value: filter,
+      onValueChange: (v) => setFilter(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: "w-28"
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "all"
+    }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "enabled"
+    }, "Enabled"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "disabled"
+    }, "Disabled")))), filteredUser.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
+      columns: "repeat(2, 1fr)",
+      className: "px-3"
+    }, filteredUser.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+      key: n,
+      fallback: null
+    }, /* @__PURE__ */ React.createElement(PluginCard, {
+      name: n,
+      onSettings: setDialogName,
+      onReload
+    })))), filteredRequired.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Separator, {
+      className: "mx-3 w-auto"
+    }), /* @__PURE__ */ React.createElement(Grid, {
+      columns: "repeat(2, 1fr)",
+      className: "px-3"
+    }, filteredRequired.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+      key: n,
+      fallback: null
+    }, /* @__PURE__ */ React.createElement(PluginCard, {
+      name: n,
+      onSettings: setDialogName,
+      onReload
+    }))))), !hasResults && /* @__PURE__ */ React.createElement(Paragraph, {
+      color: "secondary",
+      className: "text-center py-8"
+    }, search2 ? "No plugins match your search." : "No plugins available."), dialogPlugin && /* @__PURE__ */ React.createElement(PluginDialog, {
+      plugin: dialogPlugin,
+      open: true,
+      onClose: () => setDialogName(null)
+    }), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: showReload,
+      onOpenChange: (v) => {
+        if (!v)
+          onDismiss();
+      },
+      title: "Reload required",
+      description: "This plugin patches Grok's code, so you need to reload the page.",
+      confirmText: "Reload",
+      cancelText: "Later",
+      onConfirm: () => location.reload()
+    }));
+  }
+
+  // void-css:D:/Projects/Void/src/components/settings/tabs/ThemesTab.css
+  registerStyle("ThemesTab", `.void-themes-add-error {
     font-size: 0.75rem;
     color: hsl(var(--fg-danger));
 }
-`);P("ThemeCard",`.void-theme-card-root {
+`);
+
+  // void-css:D:/Projects/Void/src/components/settings/ThemeCard.css
+  registerStyle("ThemeCard", `.void-theme-card-root {
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -316,7 +4150,236 @@ ${o}`;i.textContent=s,(document.head??document.documentElement).appendChild(i),i
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-`);var gc=new h("ThemeCard"),_e=E("void-theme-card-");function gr({theme:e,globalEnabled:t,onRemove:o,onToggle:n}){let i=()=>{if(e.enabled)en(e.url);else Jo(e.url).catch((s)=>gc.error("Failed to enable theme:",s));n()};return r.createElement("div",{className:_e("root")},r.createElement("div",{className:_e("body")},r.createElement(m,{alignItems:"center",justifyContent:"space-between",gap:"0.5rem"},r.createElement(f,{as:"span",className:_e("name")},e.name??e.url),r.createElement(m,{alignItems:"center",gap:"0.375rem",className:_e("controls")},r.createElement(Ze,{variant:"tertiary",size:"xs",shape:"square",tooltipContent:"Copy URL",onClick:()=>Fo(e.url)},r.createElement(us,{size:16})),r.createElement(Ze,{variant:"tertiary",size:"xs",shape:"square",tooltipContent:"Remove",onClick:()=>o(e.url)},r.createElement(ds,{size:16})),r.createElement(q,{checked:e.enabled,disabled:!t,onCheckedChange:i}))),e.description&&r.createElement("div",{className:_e("desc")},e.description)),r.createElement("div",{className:_e("separator")}),r.createElement("div",{className:_e("footer")},r.createElement("div",{className:_e("author")},e.author??" ")))}var yc=E("void-themes-"),hc=(e)=>`${e.name} ${e.description??""} ${e.author??""}`;function yr(){let[e,t]=M(""),[o,n]=M("all"),[i,s]=M(""),[a,c]=M(""),[l,u]=M(!1),[y,D]=M(Ft),[g,I]=M(Q),z=F(()=>{if(o==="all")return g;let d=o==="enabled";return g.filter((C)=>C.enabled===d)},[g,o]),A=it(z,e,hc),re=(d)=>{D(d),Zo(d)},V=async()=>{let d=i.trim();if(!d)return;c(""),u(!0);try{await Qo(d),s(""),I(Q())}catch(C){c(Oo(C))}finally{u(!1)}},[J,ie]=M(null),Ie=J?g.find((d)=>d.url===J):null,ct=()=>{if(!J)return;Ko(J),ie(null),I(Q())};return r.createElement(m,{flexDirection:"column",gap:"2rem"},r.createElement(m,{alignItems:"center",justifyContent:"space-between",className:"px-3"},r.createElement(m,{flexDirection:"column",gap:"0"},r.createElement(f,{size:"sm",weight:"medium"},"Themes"),r.createElement(f,{size:"xs",color:"secondary"},"Custom CSS themes for Grok. Paste a URL to a .css file to add one.")),r.createElement(q,{checked:y,onCheckedChange:re})),r.createElement(m,{flexDirection:"column",gap:"0.5rem",className:"px-3"},r.createElement(m,{alignItems:"center",gap:"0.5rem"},r.createElement(ne,{type:"text",placeholder:"https://raw.githubusercontent.com/...",value:i,onChange:(d)=>{s(d.target.value),c("")},onKeyDown:(d)=>{if(d.key==="Enter")V()},className:"flex-1 min-w-0"}),r.createElement(k,{variant:"primary",size:"sm",className:"h-9",onClick:V,disabled:l||!i.trim()},l?"Importing...":"Import")),a&&r.createElement(f,{size:"xs",className:yc("add-error")},a)),g.length>0&&r.createElement(m,{flexDirection:"column",gap:"0.375rem",className:"px-3"},r.createElement(m,{flexDirection:"column",gap:"0"},r.createElement(f,{size:"sm",weight:"medium"},"Installed Themes"),r.createElement(f,{size:"xs",color:"secondary"},"Re-fetched every page load. Use the switch above to disable all themes at once.")),r.createElement(f,{size:"xs",color:"secondary"},`${Ue(g.length,"theme")} installed · ${g.filter((d)=>d.enabled).length} enabled`)),g.length>0&&r.createElement(m,{alignItems:"center",gap:"0.75rem",className:"px-3"},r.createElement(ne,{type:"text",placeholder:`Search ${g.length} themes...`,value:e,onChange:(d)=>t(d.target.value),className:"flex-1 min-w-0"}),r.createElement(fe,{value:o,onValueChange:(d)=>n(d)},r.createElement(ge,{className:"w-28"},r.createElement(he,null)),r.createElement(ye,null,r.createElement(N,{value:"all"},"All"),r.createElement(N,{value:"enabled"},"Enabled"),r.createElement(N,{value:"disabled"},"Disabled")))),A.length>0&&r.createElement(vt,{columns:"repeat(2, 1fr)",className:"px-3"},A.map((d)=>r.createElement(v,{key:d.url,fallback:null},r.createElement(gr,{theme:d,globalEnabled:y,onRemove:ie,onToggle:()=>I(Q())})))),g.length>0&&!A.length&&r.createElement(Ve,{color:"secondary",className:"text-center py-8"},"No themes match your search."),!g.length&&r.createElement(Ve,{color:"secondary",className:"text-center py-8"},"No themes added yet. Paste a URL above to add one."),r.createElement(ot,{open:J!=null,onOpenChange:(d)=>{if(!d)ie(null)},title:"Remove theme",description:`Are you sure you want to remove "${Ie?.name??"this theme"}"?`,confirmText:"Remove",cancelText:"Cancel",danger:!0,onConfirm:ct}))}var Xs=v.wrap(cr),qs=v.wrap(fr),Ys=v.wrap(yr);P("experiments",`.void-experiments-section {
+`);
+
+  // src/components/settings/ThemeCard.tsx
+  var logger12 = new Logger("ThemeCard");
+  var cl6 = classNameFactory("void-theme-card-");
+  function ThemeCard({ theme, globalEnabled, onRemove, onToggle }) {
+    const handleToggle = () => {
+      if (theme.enabled)
+        disableTheme(theme.url);
+      else
+        enableTheme(theme.url).catch((e) => logger12.error("Failed to enable theme:", e));
+      onToggle();
+    };
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl6("root")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl6("body")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      className: cl6("name")
+    }, theme.name ?? theme.url), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.375rem",
+      className: cl6("controls")
+    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Copy URL",
+      onClick: () => copyToClipboard(theme.url)
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      size: 16
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Remove",
+      onClick: () => onRemove(theme.url)
+    }, /* @__PURE__ */ React.createElement(Trash2Icon, {
+      size: 16
+    })), /* @__PURE__ */ React.createElement(Switch, {
+      checked: theme.enabled,
+      disabled: !globalEnabled,
+      onCheckedChange: handleToggle
+    }))), theme.description && /* @__PURE__ */ React.createElement("div", {
+      className: cl6("desc")
+    }, theme.description)), /* @__PURE__ */ React.createElement("div", {
+      className: cl6("separator")
+    }), /* @__PURE__ */ React.createElement("div", {
+      className: cl6("footer")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl6("author")
+    }, theme.author ?? " ")));
+  }
+
+  // src/components/settings/tabs/ThemesTab.tsx
+  var cl7 = classNameFactory("void-themes-");
+  var getThemeKey = (t) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
+  function ThemesTab() {
+    const [search2, setSearch] = useState("");
+    const [filter, setFilter] = useState("all");
+    const [url, setUrl] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [enabled, setEnabled] = useState(isThemesEnabled);
+    const [themes, setThemes] = useState(getThemes);
+    const visible = useMemo(() => {
+      if (filter === "all")
+        return themes;
+      const enabled2 = filter === "enabled";
+      return themes.filter((t) => t.enabled === enabled2);
+    }, [themes, filter]);
+    const filtered = useFiltered(visible, search2, getThemeKey);
+    const handleToggle = (checked) => {
+      setEnabled(checked);
+      setThemesEnabled(checked);
+    };
+    const handleAdd = async () => {
+      const trimmed = url.trim();
+      if (!trimmed)
+        return;
+      setError("");
+      setLoading(true);
+      try {
+        await addTheme(trimmed);
+        setUrl("");
+        setThemes(getThemes());
+      } catch (e) {
+        setError(errorMessage(e));
+      } finally {
+        setLoading(false);
+      }
+    };
+    const [removeUrl, setRemoveUrl] = useState(null);
+    const removeTarget = removeUrl ? themes.find((t) => t.url === removeUrl) : null;
+    const handleRemove = () => {
+      if (!removeUrl)
+        return;
+      removeTheme(removeUrl);
+      setRemoveUrl(null);
+      setThemes(getThemes());
+    };
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "2rem"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      className: "px-3"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Themes"), /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, "Custom CSS themes for Grok. Paste a URL to a .css file to add one.")), /* @__PURE__ */ React.createElement(Switch, {
+      checked: enabled,
+      onCheckedChange: handleToggle
+    })), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem",
+      className: "px-3"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "https://raw.githubusercontent.com/...",
+      value: url,
+      onChange: (e) => {
+        setUrl(e.target.value);
+        setError("");
+      },
+      onKeyDown: (e) => {
+        if (e.key === "Enter")
+          handleAdd();
+      },
+      className: "flex-1 min-w-0"
+    }), /* @__PURE__ */ React.createElement(Button, {
+      variant: "primary",
+      size: "sm",
+      className: "h-9",
+      onClick: handleAdd,
+      disabled: loading || !url.trim()
+    }, loading ? "Importing..." : "Import")), error && /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      className: cl7("add-error")
+    }, error)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.375rem",
+      className: "px-3"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Installed Themes"), /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, "Re-fetched every page load. Use the switch above to disable all themes at once.")), /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, `${pluralize(themes.length, "theme")} installed · ${themes.filter((t) => t.enabled).length} enabled`)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.75rem",
+      className: "px-3"
+    }, /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: `Search ${themes.length} themes...`,
+      value: search2,
+      onChange: (e) => setSearch(e.target.value),
+      className: "flex-1 min-w-0"
+    }), /* @__PURE__ */ React.createElement(Select, {
+      value: filter,
+      onValueChange: (v) => setFilter(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: "w-28"
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "all"
+    }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "enabled"
+    }, "Enabled"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "disabled"
+    }, "Disabled")))), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
+      columns: "repeat(2, 1fr)",
+      className: "px-3"
+    }, filtered.map((t) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+      key: t.url,
+      fallback: null
+    }, /* @__PURE__ */ React.createElement(ThemeCard, {
+      theme: t,
+      globalEnabled: enabled,
+      onRemove: setRemoveUrl,
+      onToggle: () => setThemes(getThemes())
+    })))), themes.length > 0 && !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
+      color: "secondary",
+      className: "text-center py-8"
+    }, "No themes match your search."), !themes.length && /* @__PURE__ */ React.createElement(Paragraph, {
+      color: "secondary",
+      className: "text-center py-8"
+    }, "No themes added yet. Paste a URL above to add one."), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: removeUrl != null,
+      onOpenChange: (v) => {
+        if (!v)
+          setRemoveUrl(null);
+      },
+      title: "Remove theme",
+      description: `Are you sure you want to remove "${removeTarget?.name ?? "this theme"}"?`,
+      confirmText: "Remove",
+      cancelText: "Cancel",
+      danger: true,
+      onConfirm: handleRemove
+    }));
+  }
+
+  // src/components/settings/tabs/index.ts
+  var CustomCSSTab2 = ErrorBoundary.wrap(CustomCSSTab);
+  var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
+  var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
+
+  // void-css:D:/Projects/Void/src/plugins/experiments/styles.css
+  registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
 
@@ -361,4 +4424,1400 @@ ${o}`;i.textContent=s,(document.head??document.documentElement).appendChild(i),i
     text-align: center;
     padding: 2rem;
 }
-`);var nn;((a)=>{a[a.MESSAGE=0]="MESSAGE";a[a.SUCCESS=1]="SUCCESS";a[a.ERROR=2]="ERROR";a[a.INFO=3]="INFO";a[a.WARNING=4]="WARNING";a[a.LOADING=5]="LOADING"})(nn||={});function rn(e,t=0,o){let{toast:n}=An;[n,n.success,n.error,n.info,n.warning,n.loading][t](e,o)}var we=E("void-experiments-"),Sc=86400000,eo=Y({notifyNewFlags:{type:3,description:"Show a notification when new experiment flags are added.",default:!0}}).withPrivateSettings();function Ks(e){return Object.keys(e).filter((t)=>typeof e[t]==="boolean")}function Zs(e){let t=Ks(e);if(!t.length)return;let o=eo.plain.knownFlags,n=o==null,i={...o??{}},s=Date.now(),a=n,c=[];for(let u of t)if(!(u in i)){if(i[u]=n?0:s,!n)c.push(u);a=!0}let l=new Set(t);for(let u of Object.keys(i))if(!l.has(u))delete i[u],a=!0;if(a)eo.store.knownFlags={...i};if(c.length&&eo.store.notifyNewFlags)rn(`${Ue(c.length,"new experiment flag")} added`,3)}function Qs(e){let t=eo.plain.knownFlags?.[e];if(t==null)return!1;return Date.now()-t<Sc}var xc={Mcp:"MCP",Ui:"UI",Api:"API",Url:"URL",Gcal:"GCal",Mie:"MIE",Xlsx:"XLSX",Nux:"NUX",Xai:"xAI",Grok:"Grok",Id:"ID"};function Sr(e){if(e.includes("_")||e.includes("-")||e.length<10)return null;if(!/^[A-Za-z0-9+/=]+$/.test(e))return null;try{let t=atob(e);if(/^[a-z][a-z0-9_]+$/.test(t))return t}catch{return null}return null}var hr=(e)=>pt(Sr(e)??e,xc);function Cc({flagKey:e,isNew:t}){let o=U.useFeatureStore((l)=>l.config[e]),n=U.useFeatureStore((l)=>l.overrides[e]),i=n!==void 0,s=i?!!n:!!o,a=F(()=>Sr(e),[e]),c=X((l)=>{let{setOverride:u,clearOverride:y,config:D}=U.useFeatureStore.getState();if(l===!!D[e])y(e);else u(e,l)},[e]);return r.createElement(Pt,{action:r.createElement(q,{checked:s,onCheckedChange:c})},r.createElement(Tt,null,hr(e),t&&r.createElement(Eo,{className:we("new-chip")},"NEW"),a&&r.createElement(Eo,{className:we("obfuscated-chip")},"OBFUSCATED"),i&&r.createElement(f,{size:"xs",as:"span",className:we("modified")},"(modified)")),r.createElement(Mt,null,a??e))}function bc(){let[e,t]=M(""),[o,n]=M("all"),i=U.useFeatureStore((g)=>g.config),s=U.useFeatureStore((g)=>g.overrides),a=F(()=>Ks(i).sort(),[i]),c=X((g)=>{let I=Sr(g);return I?`${g} ${I} ${hr(g)}`:`${g} ${hr(g)}`},[]),l=X((g)=>{if(o==="all")return!0;let I=s[g],z=I!==void 0?!!I:!!i[g];if(o==="enabled")return z;if(o==="disabled")return!z;if(o==="new")return Qs(g);return I!==void 0},[o,i,s]),u=F(()=>a.filter(l),[a,l]),y=it(u,e,c),D=Object.keys(s).length;return r.createElement(m,{flexDirection:"column",gap:"1rem"},r.createElement(m,{flexDirection:"column",gap:"0",className:we("section")},r.createElement(f,{size:"sm",weight:"medium"},"Experiments"),r.createElement(f,{size:"xs",color:"secondary"},"Toggle unreleased Grok features. These are experimental and may break things.")),r.createElement(To,{variant:"ghost",className:we("warning")},r.createElement(m,{alignItems:"center",justifyContent:"space-between",gap:"0.75rem"},r.createElement(f,{size:"xs",className:we("warning-text")},"Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."),D>0&&r.createElement(k,{variant:"secondary",size:"sm",className:we("clear-btn"),onClick:()=>U.useFeatureStore.getState().clearAllOverrides()},"Clear ",Ue(D,"override")))),r.createElement(m,{alignItems:"center",gap:"0.5rem",className:we("section")},r.createElement(ne,{placeholder:`Search ${u.length} flags...`,value:e,onChange:(g)=>t(g.target.value),className:"flex-1"}),r.createElement(fe,{value:o,onValueChange:(g)=>n(g)},r.createElement(ge,{className:"w-28"},r.createElement(he,null)),r.createElement(ye,null,r.createElement(N,{value:"all"},"All"),r.createElement(N,{value:"enabled"},"Enabled"),r.createElement(N,{value:"disabled"},"Disabled"),r.createElement(N,{value:"new"},"New"),r.createElement(N,{value:"modified"},"Modified")))),y.map((g)=>r.createElement(v,{key:g,fallback:null},r.createElement(Cc,{flagKey:g,isNew:Qs(g)}))),!y.length&&r.createElement(Ve,{color:"muted",className:we("empty")},e?`No flags matching "${e}"`:`No ${o} flags`))}var Js=v.wrap(bc),xr=S({name:"Experiments",description:"Unlock and toggle unreleased Grok features.",authors:[x.Prism],settings:eo,startAt:"TurbopackReady",start(){let e=U.useFeatureStore.getState();if(e.status==="ready")Zs(e.config)},zustand:{FeatureStore:{selector:(e)=>e.status==="ready"?e.config:null,handler(e){if(e)Zs(e)}}},patches:[{find:'ENABLE_SCREEN_SHARING:"enable_screen_sharing"',all:!0,replacement:{match:/\i&&(void 0!==\i\[\i\])/,replace:"$1"}},{find:"Feature flag overrides active",replacement:{match:/\i\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,replace:"void 0"}}]});var Cr=new h("Settings"),ta=E("void-settings-"),br=Y({hideUserId:{type:3,description:"Hide your user ID from the account settings page.",default:!0},fixDialogFlash:{type:3,description:"Fix the white border flash when clicking inside dialogs.",default:!0}}),Pc=[{id:"void_plugins_tab",name:"Plugins",icon:jn,component:qs},{id:"void_themes_tab",name:"Themes",icon:Gn,component:Ys},{id:"void_css_tab",name:"Quick CSS",icon:Vn,component:Xs},{id:"void_experiments_tab",name:"Experiments",icon:Un,component:Js,plugin:"Experiments"}];function oa(){return Pc.filter((e)=>!e.plugin||$(e.plugin))}function Pr(){return r.createElement(f,{as:"span",color:"secondary"},"•")}function ea({href:e,children:t}){return r.createElement("a",{href:e,target:"_blank",rel:"noreferrer",className:Z(ta("version-link"),"pointer-events-auto")},r.createElement(f,{as:"span",color:"secondary"},t))}function Tc(){return r.createElement(m,{flexDirection:"column",gap:"0",className:Z(ta("version"),"absolute bottom-0 left-0 right-0 p-3 opacity-30 text-secondary pointer-events-none")},r.createElement(m,{alignItems:"center",gap:"0.25rem"},r.createElement(ea,{href:"https://github.com/imjustprism/Void"},"Void"),r.createElement(Pr,null),r.createElement(f,{as:"span",color:"secondary"},"v0.2.6"),r.createElement(Pr,null),r.createElement(ea,{href:"https://github.com/imjustprism/Void/commit/187c3fd"},"(187c3fd)")),r.createElement(m,{alignItems:"center",gap:"0.25rem"},r.createElement(f,{as:"span",color:"secondary"},"Production"),r.createElement(Pr,null),r.createElement(f,{as:"span",color:"secondary"},"Userscript")))}function Mc({jsx:e,TabButton:t}){let o=rt();return Zn("pluginToggle",o),r.createElement(ke,null,oa().map((n)=>e(t,{key:n.id,icon:n.icon,text:n.name,tab:n.id})))}function Dc({jsx:e,activeTab:t,Wrapper:o}){let n=rt();Zn("pluginToggle",n);let i=oa().find((s)=>s.id===t);if(!i)return null;return e(o,{key:i.id,children:e(i.component,{})})}var Tr=S({name:"Settings",description:"Adds Void settings UI.",authors:[x.Prism],required:!0,settings:br,_hideUserId(){return br.store.hideUserId},_fixDialogFlash(){return br.store.fixDialogFlash},renderTabs(e,t){try{return[r.createElement(Mc,{key:"void-tabs",jsx:e,TabButton:t}),r.createElement(Tc,{key:"void-version"})]}catch(o){return Cr.error("Failed to render tabs:",o),[]}},renderPanels(e,t,o){try{return[r.createElement(Dc,{key:"void-panels",jsx:e,activeTab:t,Wrapper:o})]}catch(n){return Cr.error("Failed to render panels:",n),[]}},start(){if(P("void-global","[data-sonner-toast] [data-title]{font-weight:400}"),document.head)Kt();else document.addEventListener("DOMContentLoaded",Kt,{once:!0});_s().catch((e)=>Cr.error("Failed to load saved themes:",e))},patches:[{find:'DialogOverlay",()=>',all:!0,replacement:{match:/dark:border-border-l1 duration-200/,replace:'dark:border-border-l1 "+($self._fixDialogFlash()?"outline-none ":"")+"duration-200'}},{find:"pressed_cmd_settings",replacement:[{match:/(\i\.jsx)\)\((\i),\{icon:\i\.DatabaseIcon,.{0,80}tab:"data"\}\)/,replace:"$&,...$self.renderTabs($1,$2)"},{match:/"data"===(\i)&&\i\.user&&\(0,(\i\.jsx)\)\((\i),\{children:/,replace:"...$self.renderPanels($2,$1,$3),$&"},{match:/\i\.user&&\(0,\i\.jsx\)\("div",.{0,120}:\i\.userId\}\)/,replace:"!$self._hideUserId()&&$&"}]}]});var vc=0,lt=[],to=Re();function Mr(e,t){let o=t?.modalKey??`void-modal-${vc++}`;return lt.push({key:o,render:e}),to.notify(),o}function Dr(e){let t=lt.findIndex((o)=>o.key===e);if(t!==-1)lt.splice(t,1),to.notify()}function na(){lt.length=0,to.notify()}function ra(e){return new Promise((t)=>{let o=!1,n=(a)=>{if(o)return;o=!0,s(),t(a)},i=Mr(({onClose:a})=>r.createElement(Ae,null,r.createElement(Be,null,e.title),r.createElement(xt,null,e.body),r.createElement(Ct,null,r.createElement(k,{variant:"secondary",size:"md",onClick:()=>{n(!1),a()}},e.cancelText??"Cancel"),r.createElement(k,{variant:e.danger?"danger":"primary",size:"md",onClick:()=>{n(!0),a()}},e.confirmText??"Confirm")))),s=to.subscribe(()=>{if(!lt.some((a)=>a.key===i))n(!1)})})}function wc({entry:e}){let t=X(()=>Dr(e.key),[e.key]);return r.createElement(Fe,{open:!0,onOpenChange:(o)=>{if(!o)t()}},r.createElement(Ne,{"aria-describedby":void 0},e.render({onClose:t})))}function ia(){if(Et(to),!lt.length)return null;return r.createElement(r.Fragment,null,lt.map((e)=>r.createElement(wc,{key:e.key,entry:e})))}var vr=S({name:"ChatBarButtonAPI",description:"Adds buttons to the chat input bar.",authors:[x.Prism],required:!0,hidden:!0,renderButtons(e){try{return ae(ke,null,ae(Ms,{iconOnly:e}),ae(ia,null))}catch{return null}},patches:[{find:"ImagineSelector,{iconOnlyTrigger",all:!0,replacement:[{match:/ModelModeSelect,\{iconOnlyTrigger:(\i)\}\)\}\),/,replace:"$&$self.renderButtons($1),"},{match:/paddingInlineEnd:\i\?void 0:(\i)\?/,replace:"paddingInlineEnd:$1?"}]}]});var wr=S({name:"ContextMenuAPI",description:"Adds items to context menus.",authors:[x.Prism],required:!0,hidden:!0,renderItems(e,t){try{return ae(ws,{location:e,...t})}catch{return null}},patches:[{find:'"Editing actions","Editing actions"',all:!0,group:!0,replacement:[{match:/onSaveEdit:(\i)\}\)/,replace:"onSaveEdit:$1,id:arguments[0].id})"},{match:/onEditClick:(\i)\}\)/,replace:"onEditClick:$1,...arguments[0]})"},{match:/"Delete","Delete"\)\]\}\)/,replace:'$&,$self.renderItems("conversation",{conversationId:arguments[0].id})'}]},{find:'"more-actions-dropdown"',all:!0,replacement:{match:/"more-action\.copy-model-hash".{0,80}slice\(0,5\)\}\}\)\}\)\]\}\)\]\}\)/,replace:'$&,$self.renderItems("message",{response:arguments[0].response})'}},{find:'"AvatarDropdownMenu",()=>',all:!0,replacement:{match:/"Sign Out"\)\]\}\)/,replace:'$&,$self.renderItems("user")'}}]});var sn=S({name:"BackgroundThinking",description:"Lets Grok think in the background while you are away.",authors:[x.Prism],patches:[{find:'"bgThinkingDefaultOptinSet"',replacement:{match:/\.success\?(\i)\.data:null/,replace:".success?$1.data:{enabled:!0,maxConcurrentRequests:3}"}}]});var sa=new h("BetterFiles"),Ic=Y({skipDeleteConfirm:{type:3,description:"Skip the delete confirmation when deleting files from the list.",default:!1}});function Lc(){let[e,t]=M(!1),o=ht.useFilesPageStore((s)=>s.list),n=ht.useFilesPageStore((s)=>s.deleteAsset);if(!o.length)return null;let i=async()=>{let s=[...o];for(let a of s)try{await n(a)}catch(c){sa.error("Failed to delete asset",a,c)}};return r.createElement(ke,null,r.createElement(k,{variant:"tertiary",shape:"square",size:"sm",onClick:()=>t(!0)},r.createElement(ps,{size:18,className:"text-fg-secondary"})),r.createElement(ot,{open:e,onOpenChange:t,title:"Delete all files",description:`Are you sure you want to delete all ${o.length} files? This cannot be undone.`,confirmText:"Delete all",danger:!0,onConfirm:i}))}var Ir=S({name:"BetterFiles",description:"Adds bulk delete and optional skip of delete confirmation on the files page.",authors:[x.Prism],settings:Ic,renderDeleteAllButton:v.wrap(Lc),_deleteFile(e){Promise.resolve(ht.useFilesPageStore.getState().deleteAsset(e)).catch((t)=>sa.error("Failed to delete asset",e,t))},patches:[{find:"title-and-button",noWarn:!0,replacement:[{match:/"files-search-open-button.label".{0,25}\)\}\)\]\}\)/,replace:"$&,$self.renderDeleteAllButton()"},{match:/(\i)\(\{type:"delete",assetId:(\i)\.assetId\}\)/,replace:'$self.settings.store.skipDeleteConfirm?$self._deleteFile($2.assetId):$1({type:"delete",assetId:$2.assetId})'}]}]});var Ec={SUBSCRIPTION_TIER_INVALID:"Free",SUBSCRIPTION_TIER_X_BASIC:"Basic",SUBSCRIPTION_TIER_X_PREMIUM:"Premium",SUBSCRIPTION_TIER_X_PREMIUM_PLUS:"Premium+",SUBSCRIPTION_TIER_GROK_PRO:"SuperGrok",SUBSCRIPTION_TIER_SUPER_GROK_PRO:"SuperGrok Pro"},kc={"0":"Free","1":"X Premium","2":"X Premium+"};function Fc(e,t){if(e)return Ec[e]??e;return kc[t??"0"]??"Free"}function Nc(){let{open:e}=Fn.useSidebar(),{user:t}=xo.useSession(),o=Co.useSubscriptionsStore((n)=>n.bestSubscription);if(!e||!t)return null;return r.createElement(m,{flexDirection:"column",justifyContent:"center",gap:"0",className:"min-w-0 overflow-hidden"},r.createElement(f,{as:"span",size:"sm",weight:"medium",className:"truncate"},t.givenName||t.email?.split("@")[0]||"User"),r.createElement(f,{as:"span",size:"xs",color:"secondary",className:"truncate"},Fc(o,t.sessionTierId)))}var Lr=S({name:"BetterSidebar",description:"Shows your name and plan in the sidebar footer.",authors:[x.Prism],renderUserInfo:v.wrap(Nc),patches:[{find:"AvatarDropdownMenu,{}),",replacement:{match:/AvatarDropdownMenu,\{\}\)/,replace:"$&,$self.renderUserInfo()"}}]});var Er=S({name:"Cleaner",description:"Hides upgrade nags and upsell banners.",authors:[x.Prism],patches:[{find:'"user-dropdown.upgrade","Upgrade plan"',all:!0,replacement:{match:/\i(?:\|\|\i)+(?=\?null:.{0,160}"user-dropdown\.upgrade")/,replace:"true"}},{find:'"UpsellCard",()=>',all:!0,replacement:{match:/"UpsellCard",\(\)=>\i/,replace:'"UpsellCard",()=>()=>null'}},{find:'"UpsellSuperGrokSmall",()=>',all:!0,replacement:{match:/"UpsellSuperGrokSmall",\(\)=>\i/,replace:'"UpsellSuperGrokSmall",()=>()=>null'}},{find:"group/model-mode-select-upsell",replacement:{match:/(?<=useCheckSubscriptionOffer\)\(\);).{0,30}return null;/,replace:"return null;"}}]});var kr=S({name:"ConsoleJanitor",description:"Silences noisy warnings and info logs in the browser console.",authors:[x.Prism],patches:[{find:"x.ai/careers",replacement:{match:/console\.info\("[^"]{0,2000}"\)/,replace:"void 0"}},{find:"DialogDescriptionWarning",all:!0,replacement:{match:/console\.warn\(\i\)/,replace:"void 0"}},{find:"pressure_observer",replacement:{match:/"PressureObserver"in window/,replace:"false"}}]});var Ac=new h("ExportChat");function Bc(e){return{id:e.responseId,sender:e.sender,message:e.message,query:e.query,createTime:e.createTime,model:e.requestMetadata?.model??e.model,...e.thinkingTrace&&{thinkingTrace:e.thinkingTrace},...e.webSearchResults?.length&&{webSearchResults:e.webSearchResults},...e.generatedImageUrls?.length&&{generatedImageUrls:e.generatedImageUrls},...e.fileAttachments?.length&&{fileAttachments:e.fileAttachments},...e.steps?.length&&{steps:e.steps}}}async function Oc(e){let{responses:t}=await Ht.chatApi.chatListResponses({conversationId:e})??{};if(!t?.length)return;let n=Rt.useConversationStore.getState().byId[e]?.title??"Untitled Chat";await On.downloadBlob(new Blob([JSON.stringify({conversationId:e,title:n,exportedAt:new Date().toISOString(),messages:t.map(Bc)},null,2)],{type:"application/json"}),`${$o(n,"chat")}.json`)}function $c({conversationId:e}){let t=de.useChatPageStore((o)=>o.conversationId===e&&!!o.streamedMessageId);return r.createElement(bt,{onSelect:()=>Oc(e).catch((o)=>Ac.error("Failed to export chat",o)),disabled:t},r.createElement(Wn,{size:16,className:"me-2"}),"Export")}var Fr=S({name:"ExportChat",description:"Export conversations as JSON from the right-click menu.",authors:[x.Prism],contextMenuItems:{conversation:{label:"Export",render:v.wrap($c)}}});function Vc(e){let o=e.target.closest("[id^='response-']");if(!o)return;o.querySelector("[aria-label='Edit']")?.click()}var Nr=S({name:"MessageClickActions",description:"Double-click your own messages to edit them.",authors:[x.Prism],eventListeners:[{event:"dblclick",handler:Vc}]});var Ar=Y({showDate:{type:3,description:"Show the full date for messages older than today.",default:!0},hideOwnMessages:{type:3,description:"Hide timestamps on your own messages.",default:!1}});function Rc(e,t){let o=new Date(e),n=new Date,i=o.getFullYear()===n.getFullYear()&&o.getMonth()===n.getMonth()&&o.getDate()===n.getDate(),s=o.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});if(!t||i)return s;return o.toLocaleDateString([],{month:"short",day:"numeric"})+" "+s}var Br=S({name:"MessageTimestamps",description:"Shows timestamps on chat messages.",authors:[x.Prism],settings:Ar,_renderTimestamp(e){try{if(!e?.createTime)return null;if(Ar.store.hideOwnMessages&&e.sender==="human")return null;return r.createElement(f,{as:"span",size:"xs",color:"muted",className:"mb-0.5 print:hidden"},Rc(e.createTime,Ar.store.showDate))}catch{return null}},patches:[{find:'displayName="ResponseFamily"',replacement:{match:/(\i)\.parentQuotedText(.{0,10})\(0,(\i)\.jsx\)\((\i)\.MessageBubble/,replace:"$1.parentQuotedText$2$self._renderTimestamp($1),(0,$3.jsx)($4.MessageBubble"}}]});var la=new h("NoAutoplay"),aa=Y({playOnHover:{type:3,description:"Play video thumbnails when hovered.",default:!0}}),an=new WeakMap;function zc(e){let t=an.get(e);if(an.delete(e),t)t.then(()=>{if(an.has(e))return;e.pause(),e.currentTime=0}).catch((o)=>la.warn("Failed to pause video:",o));else e.pause(),e.currentTime=0}var Gc=(e)=>{let t=e.currentTarget.querySelector("video");if(t)an.set(t,t.play().catch((o)=>la.error("Failed to play video",o)))},_c=(e)=>{let t=e.currentTarget.querySelector("video");if(t)zc(t)},Or=S({name:"NoAutoplay",description:"Stops video thumbnails from autoplaying on the Imagine page.",authors:[x.Prism],settings:aa,_hoverProps(){if(!aa.store.playOnHover)return{};return{onMouseEnter:Gc,onMouseLeave:_c}},patches:[{find:"group/media-post-masonry-card",group:!0,replacement:[{match:/muted:!0,autoPlay:!0/,replace:"muted:!0,autoPlay:!1"},{match:/onMouseOver:\i\?\(\)=>\i\(!0\):void 0,onMouseLeave:\i\?\(\)=>\i\(!1\):void 0/,replace:"$&,...$self._hoverProps()"}]}]});var Uc=new h("Oneko"),Hc="https://raw.githubusercontent.com/adryd325/oneko.js/c4ee66353b11a44e4a5b7e914a81f8d33111555e/oneko.js",Wc="https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif",$r=!1,Vr=S({name:"Oneko",description:"Cat follows your mouse cursor.",authors:[x.adryd],cleanupSelectors:["#oneko"],start(){$r=!1,Se(Hc).then((e)=>e.text()).then((e)=>e.replace("./oneko.gif",Wc).replace("(isReducedMotion)","(false)")).then((e)=>{if($r)return;let t=new Blob([e],{type:"text/javascript"}),o=document.createElement("script");o.src=URL.createObjectURL(t),document.head.appendChild(o),o.addEventListener("load",()=>{o.remove(),URL.revokeObjectURL(o.src)})}).catch((e)=>Uc.error("Failed to load oneko script",e))},stop(){$r=!0}});var ca=Y({showMaxCount:{type:3,description:"Show the maximum count alongside remaining.",default:!0}}),xe={remaining:-1,total:-1,waitSeconds:null};function Rr(e){return e!=null&&e>0?Math.ceil(e):null}function jc(e,t){let o=e.windowSizeSeconds,n=e.totalTokens??0;if(n>0){let s=e.lowEffortRateLimits?{remaining:e.lowEffortRateLimits.remainingQueries,total:Math.floor(n/e.lowEffortRateLimits.cost),waitSeconds:Rr(e.lowEffortRateLimits.waitTimeSeconds)}:xe,a=e.highEffortRateLimits?{remaining:e.highEffortRateLimits.remainingQueries,total:Math.floor(n/e.highEffortRateLimits.cost),waitSeconds:Rr(e.highEffortRateLimits.waitTimeSeconds)}:xe;return{single:t==="fast"?s:a,fast:s,expert:a,windowSeconds:o}}return{single:e.totalQueries>0?{remaining:e.remainingQueries,total:e.totalQueries,waitSeconds:Rr(e.waitTimeSeconds)}:xe,fast:xe,expert:xe,windowSeconds:o}}function oo(e,t,o){if(t!=null&&t>0)return Ao(t);if(e.total<0)return"...";if(e.total===0)return"∞";return o||!ca.store.showMaxCount?String(e.remaining):`${e.remaining}/${e.total}`}function Xc(e){let t=de.useChatPageStore((C)=>C.modelMode),o=de.useChatPageStore((C)=>C.reasoningMode),n=de.useChatPageStore((C)=>C.conversationId),i=de.useChatPageStore((C)=>C.lastMessageId),s=de.useChatPageStore((C)=>!!C.streamedMessageId),a=So.useModelsStore((C)=>C.modelByMode),c=Bn.reasoningModeToRequestKind?.(o)??"DEFAULT",l=a?.[t==="auto"?"expert":t]?.modelId,{data:u,refetch:y}=$n.useQuery({queryKey:["void-rate-limits"],queryFn:()=>Ht.rateLimitsApi.rateLimitsGetRateLimits({body:{modelName:l,requestKind:c}}),enabled:!!l&&!s,staleTime:1e4,placeholderData:(C)=>C});O(()=>{if(l&&!s)y().catch(()=>{})},[l,c,n,i,s]);let{single:D,fast:g,expert:I,windowSeconds:z}=F(()=>u?jc(u,t):{single:xe,fast:xe,expert:xe,windowSeconds:0},[u,t]),A=Ro(D.waitSeconds),re=Ro(g.waitSeconds),V=Ro(I.waitSeconds),J=t==="auto"&&g!==xe&&I!==xe,ie=J?(re??0)>0||(V??0)>0:(A??0)>0,Ie=ie?r.createElement(Hn,{size:18}):r.createElement(_n,{size:18}),ct=ie?"text-fg-danger":void 0,d=z>0?Bo(z):"";if(J){let C=`Fast ${oo(g,re)} · Expert ${oo(I,V)}${d?` · resets every ${d}`:""}`;return r.createElement(wt,{icon:Ie,tooltip:C,className:ct},oo(g,re,!0),r.createElement($e,{orientation:"vertical",className:"mx-1 h-3 w-0.5"}),oo(I,V,!0))}return r.createElement(wt,{icon:Ie,tooltip:d?`Resets every ${d}`:void 0,className:ct},oo(D,A))}var zr=S({name:"RateLimitDisplay",description:"Shows rate limit usage next to the chat input.",authors:[x.Prism],settings:ca,chatBarButton:{render:Xc}});var Gr=S({name:"Starry",description:"Enables Grok's native starry idle background with shooting stars.",authors:[x.Prism],patches:[{find:"inactivityDelay:1e4,fadeInDuration:1e4",replacement:[{match:/\i\.SHOW_STARRY_IDLE&&!\i&&\i&&"main"===\i\.page&&/,replace:"true&&"},{match:/inactivityDelay:1e4,fadeInDuration:1e4/,replace:"inactivityDelay:0,fadeInDuration:0"}]}]});Qt.chrome=!0;Qt.hidden=!window.chrome;sn.preview=!0;var _r={[Qt.name]:Qt,[sr.name]:sr,[Tr.name]:Tr,[vr.name]:vr,[wr.name]:wr,[sn.name]:sn,[Ir.name]:Ir,[Lr.name]:Lr,[Er.name]:Er,[kr.name]:kr,[xr.name]:xr,[Fr.name]:Fr,[Nr.name]:Nr,[Br.name]:Br,[Or.name]:Or,[Vr.name]:Vr,[zr.name]:zr,[Gr.name]:Gr};var Ur={};ln(Ur,{zustandCreate:()=>Ll,useTransition:()=>En,useSyncExternalStore:()=>_t,useState:()=>M,useRef:()=>me,useReducer:()=>Gt,useReducedMotion:()=>Ut,useMemo:()=>F,useLayoutEffect:()=>wn,useId:()=>Ln,useEffect:()=>O,useDeferredValue:()=>kn,useContext:()=>In,useCallback:()=>X,onceReady:()=>mo,i18n:()=>El,createElement:()=>ae,WorkspaceStore:()=>ts,WorkspaceConnectorsStore:()=>es,WorkspaceCollectionsStore:()=>Ji,UpsellStore:()=>Ki,TourGuideStore:()=>Qi,TooltipTrigger:()=>Je,TooltipContent:()=>et,Tooltip:()=>Ke,Toaster:()=>An,Textarea:()=>sl,TextToSpeechStore:()=>Zi,TasksStore:()=>Yi,TanStackQuery:()=>$n,TabsTrigger:()=>yl,TabsManagerStore:()=>qi,TabsList:()=>gl,TabsContent:()=>hl,Tabs:()=>fl,Switch:()=>q,SuggestionStore:()=>Xi,SubscriptionsStore:()=>Co,Spinner:()=>ll,SourcesSelectorStore:()=>ji,Slider:()=>vo,Skeleton:()=>cs,SidebarComponents:()=>Fn,ShopStore:()=>Wi,ShareStore:()=>Hi,SettingsTitle:()=>Tt,SettingsStore:()=>Ui,SettingsRow:()=>Pt,SettingsDialogStore:()=>_i,SettingsDescription:()=>Mt,SessionStore:()=>xo,Separator:()=>$e,SelectValue:()=>he,SelectTrigger:()=>ge,SelectItem:()=>N,SelectContent:()=>ye,Select:()=>fe,RoutingStore:()=>Gi,ResponsiveDialog:()=>Il,ResponseStore:()=>zi,ReportStore:()=>Ri,ReasoningModeUtils:()=>Bn,ReactDOM:()=>ss,React:()=>r,RateLimitUtils:()=>Al,PopoverTrigger:()=>pl,PopoverContent:()=>dl,PopoverArrow:()=>ml,Popover:()=>ul,PersonalityStore:()=>Vi,NotificationsStore:()=>$i,NextRouter:()=>Bl,MotionDiv:()=>Do,MonacoModule:()=>Wt,ModesStore:()=>Oi,ModelsStore:()=>So,MentionMenuStore:()=>Bi,MediaStore:()=>Ai,LazyComponent:()=>b,Input:()=>ne,ImageEditorStore:()=>Ni,HighlightsStore:()=>Fi,Fragment:()=>ke,FilesPageStore:()=>ht,FileUtils:()=>On,FileStore:()=>ki,FeatureStore:()=>U,EnvUtils:()=>kl,DropdownMenuTrigger:()=>Ua,DropdownMenuSubTrigger:()=>Za,DropdownMenuSubContent:()=>Qa,DropdownMenuSub:()=>Ya,DropdownMenuSeparator:()=>qa,DropdownMenuRadioItem:()=>Xa,DropdownMenuRadioGroup:()=>ja,DropdownMenuItem:()=>bt,DropdownMenuContent:()=>Ha,DropdownMenuCheckboxItem:()=>Wa,DropdownMenu:()=>_a,DownloadUtils:()=>Nl,DictationStore:()=>Ei,DialogTitle:()=>Be,DialogHeader:()=>Ae,DialogFooter:()=>Ct,DialogDescription:()=>xt,DialogContent:()=>Ne,DialogClose:()=>Mo,Dialog:()=>Fe,DevModelsStore:()=>Li,CopyUtils:()=>Ol,ConversationStore:()=>Rt,ContextMenuTrigger:()=>Ja,ContextMenuSubTrigger:()=>rl,ContextMenuSubContent:()=>il,ContextMenuSub:()=>nl,ContextMenuSeparator:()=>ol,ContextMenuItem:()=>tl,ContextMenuContent:()=>el,ContextMenu:()=>Ka,CommandMenuStore:()=>Ii,CommandList:()=>Ml,CommandItem:()=>Dl,CommandInput:()=>Tl,CommandGroup:()=>vl,CommandEmpty:()=>wl,Command:()=>Pl,CodePageStore:()=>wi,ClassNames:()=>tt,Checkbox:()=>al,ChatPageStore:()=>de,Card:()=>To,ButtonWithTooltip:()=>Ze,Button:()=>k,Avatar:()=>cl,AssetUtils:()=>Fl,AssetStore:()=>vi,ArtifactStore:()=>Di,ApiClients:()=>Ht,AnimatePresence:()=>Nn,AccordionTrigger:()=>Cl,AccordionItem:()=>xl,AccordionContent:()=>bl,Accordion:()=>Sl});var Hr=new h("TurbopackPatcher","#e78284"),ua=500,qc=0.4,Yc=15000,Zc=15000,Qc=5000;function Kc(){if(!j.some((n)=>!n.all))return;let t=yt(()=>{if(!j.some((n)=>!n.all))t(),clearTimeout(o)}),o=setTimeout(()=>{t(),ii()},Qc)}function Jc(){let e=()=>Object.values(w).filter((s)=>!s.started&&$(s.name)&&(s.startAt??"Init")==="TurbopackReady");if(!e().length)return;let t=null,n=yt(()=>{if(t)clearTimeout(t);t=setTimeout(()=>{t=null,fo();for(let s of e())ve(s,!0);if(!e().length)n(),clearTimeout(i),Hr.info("All previously failed plugins started after late module load")},200)}),i=setTimeout(()=>{if(n(),t)clearTimeout(t);fo();let s=e();for(let c of s)ve(c,!0);let a=e();if(a.length)Hr.warn(`${a.length} plugin(s) still failed after retry window: ${a.map((c)=>c.name).join(", ")}`)},Zc)}function eu(){let e=He();if(!e)return!1;return B().size/e.size>=qc}function tu(){let e=null,t=null,o=null,n=null,i=!1,s=No(()=>{if(i=!0,e)clearTimeout(e);if(t)clearTimeout(t);if(o)o();if(n)n();fo(),oi(),yn(),Zt("TurbopackReady"),Hr.info(`${B().size} modules loaded, ready`),Jc(),Kc(),Gs()}),a=()=>{if(e)clearTimeout(e);if(eu()){s();return}e=setTimeout(a,ua)};n=be(R.byProps("useRoutingStore","formatUrl"),()=>{n=null,a()}),o=yt(()=>{if(!i&&!n&&e)clearTimeout(e),e=setTimeout(a,ua)}),t=setTimeout(s,Yc)}function Wr(){li();for(let e in _r)Xo(_r[e]);if(Vs(),Zt("Init"),document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>Zt("DOMContentLoaded"),{once:!0});else Zt("DOMContentLoaded");tu()}var pa=typeof unsafeWindow<"u"?unsafeWindow:window;if(!pa.Void)Object.defineProperty(pa,"Void",{value:jr,writable:!1,configurable:!0}),Ho().then(()=>Wr());})();
+`);
+
+  // src/api/Notifications.ts
+  var ToastType;
+  ((ToastType2) => {
+    ToastType2[ToastType2["MESSAGE"] = 0] = "MESSAGE";
+    ToastType2[ToastType2["SUCCESS"] = 1] = "SUCCESS";
+    ToastType2[ToastType2["ERROR"] = 2] = "ERROR";
+    ToastType2[ToastType2["INFO"] = 3] = "INFO";
+    ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
+    ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
+  })(ToastType ||= {});
+  function showToast(message, type = 0 /* MESSAGE */, options) {
+    const { toast } = Toaster;
+    const fns = [toast, toast.success, toast.error, toast.info, toast.warning, toast.loading];
+    fns[type](message, options);
+  }
+
+  // src/plugins/experiments/index.tsx
+  var cl8 = classNameFactory("void-experiments-");
+  var NEW_FLAG_TTL = 24 * 60 * 60 * 1000;
+  var settings2 = definePluginSettings({
+    notifyNewFlags: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a notification when new experiment flags are added.",
+      default: true
+    }
+  }).withPrivateSettings();
+  function getBooleanKeys(config) {
+    return Object.keys(config).filter((k) => typeof config[k] === "boolean");
+  }
+  function syncKnownFlags(config) {
+    const booleanKeys = getBooleanKeys(config);
+    if (!booleanKeys.length)
+      return;
+    const existing = settings2.plain.knownFlags;
+    const firstRun = existing == null;
+    const known = { ...existing ?? {} };
+    const now = Date.now();
+    let changed = firstRun;
+    const newFlags = [];
+    for (const key of booleanKeys) {
+      if (!(key in known)) {
+        known[key] = firstRun ? 0 : now;
+        if (!firstRun)
+          newFlags.push(key);
+        changed = true;
+      }
+    }
+    const currentSet = new Set(booleanKeys);
+    for (const key of Object.keys(known)) {
+      if (!currentSet.has(key)) {
+        delete known[key];
+        changed = true;
+      }
+    }
+    if (changed) {
+      settings2.store.knownFlags = { ...known };
+    }
+    if (newFlags.length && settings2.store.notifyNewFlags) {
+      showToast(`${pluralize(newFlags.length, "new experiment flag")} added`, 3 /* INFO */);
+    }
+  }
+  function isNewFlag(key) {
+    const seen = settings2.plain.knownFlags?.[key];
+    if (seen == null)
+      return false;
+    return Date.now() - seen < NEW_FLAG_TTL;
+  }
+  var FLAG_ACRONYMS = {
+    Mcp: "MCP",
+    Ui: "UI",
+    Api: "API",
+    Url: "URL",
+    Gcal: "GCal",
+    Mie: "MIE",
+    Xlsx: "XLSX",
+    Nux: "NUX",
+    Xai: "xAI",
+    Grok: "Grok",
+    Id: "ID"
+  };
+  function tryDecodeBase64Key(key) {
+    if (key.includes("_") || key.includes("-") || key.length < 10)
+      return null;
+    if (!/^[A-Za-z0-9+/=]+$/.test(key))
+      return null;
+    try {
+      const decoded = atob(key);
+      if (/^[a-z][a-z0-9_]+$/.test(decoded))
+        return decoded;
+    } catch {
+      return null;
+    }
+    return null;
+  }
+  var prettifyKey = (key) => humanizeKey(tryDecodeBase64Key(key) ?? key, FLAG_ACRONYMS);
+  function ExperimentRow({ flagKey, isNew }) {
+    const config = FeatureStore.useFeatureStore((s) => s.config[flagKey]);
+    const override = FeatureStore.useFeatureStore((s) => s.overrides[flagKey]);
+    const isOverridden = override !== undefined;
+    const checked = isOverridden ? !!override : !!config;
+    const decodedKey = useMemo(() => tryDecodeBase64Key(flagKey), [flagKey]);
+    const handleToggle = useCallback((value) => {
+      const { setOverride, clearOverride, config: c } = FeatureStore.useFeatureStore.getState();
+      if (value === !!c[flagKey])
+        clearOverride(flagKey);
+      else
+        setOverride(flagKey, value);
+    }, [flagKey]);
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Switch, {
+        checked,
+        onCheckedChange: handleToggle
+      })
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React.createElement(Chip, {
+      className: cl8("new-chip")
+    }, "NEW"), decodedKey && /* @__PURE__ */ React.createElement(Chip, {
+      className: cl8("obfuscated-chip")
+    }, "OBFUSCATED"), isOverridden && /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      as: "span",
+      className: cl8("modified")
+    }, "(modified)")), /* @__PURE__ */ React.createElement(SettingsDescription, null, decodedKey ?? flagKey));
+  }
+  function ExperimentsTab() {
+    const [search2, setSearch] = useState("");
+    const [filter, setFilter] = useState("all");
+    const config = FeatureStore.useFeatureStore((s) => s.config);
+    const overrides = FeatureStore.useFeatureStore((s) => s.overrides);
+    const booleanKeys = useMemo(() => getBooleanKeys(config).sort(), [config]);
+    const getFlagSearchText = useCallback((k) => {
+      const decoded = tryDecodeBase64Key(k);
+      return decoded ? `${k} ${decoded} ${prettifyKey(k)}` : `${k} ${prettifyKey(k)}`;
+    }, []);
+    const filterFn = useCallback((k) => {
+      if (filter === "all")
+        return true;
+      const override = overrides[k];
+      const enabled = override !== undefined ? !!override : !!config[k];
+      if (filter === "enabled")
+        return enabled;
+      if (filter === "disabled")
+        return !enabled;
+      if (filter === "new")
+        return isNewFlag(k);
+      return override !== undefined;
+    }, [filter, config, overrides]);
+    const prefiltered = useMemo(() => booleanKeys.filter(filterFn), [booleanKeys, filterFn]);
+    const filtered = useFiltered(prefiltered, search2, getFlagSearchText);
+    const overrideCount = Object.keys(overrides).length;
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "1rem"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0",
+      className: cl8("section")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Experiments"), /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, "Toggle unreleased Grok features. These are experimental and may break things.")), /* @__PURE__ */ React.createElement(Card, {
+      variant: "ghost",
+      className: cl8("warning")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      className: cl8("warning-text")
+    }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      className: cl8("clear-btn"),
+      onClick: () => FeatureStore.useFeatureStore.getState().clearAllOverrides()
+    }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.5rem",
+      className: cl8("section")
+    }, /* @__PURE__ */ React.createElement(Input, {
+      placeholder: `Search ${prefiltered.length} flags...`,
+      value: search2,
+      onChange: (e) => setSearch(e.target.value),
+      className: "flex-1"
+    }), /* @__PURE__ */ React.createElement(Select, {
+      value: filter,
+      onValueChange: (v) => setFilter(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: "w-28"
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "all"
+    }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "enabled"
+    }, "Enabled"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "disabled"
+    }, "Disabled"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "new"
+    }, "New"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "modified"
+    }, "Modified")))), filtered.map((key) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+      key,
+      fallback: null
+    }, /* @__PURE__ */ React.createElement(ExperimentRow, {
+      flagKey: key,
+      isNew: isNewFlag(key)
+    }))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
+      color: "muted",
+      className: cl8("empty")
+    }, search2 ? `No flags matching "${search2}"` : `No ${filter} flags`));
+  }
+  var Tab = ErrorBoundary.wrap(ExperimentsTab);
+  var experiments_default = definePlugin({
+    name: "Experiments",
+    description: "Unlock and toggle unreleased Grok features.",
+    authors: [Devs.Prism],
+    settings: settings2,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      const state = FeatureStore.useFeatureStore.getState();
+      if (state.status === "ready")
+        syncKnownFlags(state.config);
+    },
+    zustand: {
+      FeatureStore: {
+        selector: (s) => s.status === "ready" ? s.config : null,
+        handler(config) {
+          if (config)
+            syncKnownFlags(config);
+        }
+      }
+    },
+    patches: [
+      {
+        find: 'ENABLE_SCREEN_SHARING:"enable_screen_sharing"',
+        all: true,
+        replacement: {
+          match: /\i&&(void 0!==\i\[\i\])/,
+          replace: "$1"
+        }
+      },
+      {
+        find: "Feature flag overrides active",
+        replacement: {
+          match: /\i\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
+          replace: "void 0"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/_core/settings/index.tsx
+  var logger13 = new Logger("Settings");
+  var cl9 = classNameFactory("void-settings-");
+  var settings3 = definePluginSettings({
+    hideUserId: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide your user ID from the account settings page.",
+      default: true
+    },
+    fixDialogFlash: {
+      type: 3 /* BOOLEAN */,
+      description: "Fix the white border flash when clicking inside dialogs.",
+      default: true
+    }
+  });
+  var allTabs = [
+    { id: "void_plugins_tab", name: "Plugins", icon: UnplugIcon, component: PluginsTab2 },
+    { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
+    { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
+    { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
+  ];
+  function getVisibleTabs() {
+    return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
+  }
+  function Dot() {
+    return /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      color: "secondary"
+    }, "•");
+  }
+  function VersionLink({ href, children }) {
+    return /* @__PURE__ */ React.createElement("a", {
+      href,
+      target: "_blank",
+      rel: "noreferrer",
+      className: classes(cl9("version-link"), "pointer-events-auto")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      color: "secondary"
+    }, children));
+  }
+  function VersionInfo() {
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0",
+      className: classes(cl9("version"), "absolute bottom-0 left-0 right-0 p-3 opacity-30 text-secondary pointer-events-none")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.25rem"
+    }, /* @__PURE__ */ React.createElement(VersionLink, {
+      href: "https://github.com/imjustprism/Void"
+    }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      color: "secondary"
+    }, `v${"0.2.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"e26e93e"}`
+    }, `(${"e26e93e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.25rem"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      color: "secondary"
+    }, "Production"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      color: "secondary"
+    }, "Userscript")));
+  }
+  function VoidTabs({ jsx, TabButton }) {
+    const forceUpdate = useForceUpdater();
+    useEventSubscription("pluginToggle", forceUpdate);
+    return /* @__PURE__ */ React.createElement(Fragment, null, getVisibleTabs().map((t) => jsx(TabButton, { key: t.id, icon: t.icon, text: t.name, tab: t.id })));
+  }
+  function VoidPanels({ jsx, activeTab, Wrapper }) {
+    const forceUpdate = useForceUpdater();
+    useEventSubscription("pluginToggle", forceUpdate);
+    const tab = getVisibleTabs().find((t) => t.id === activeTab);
+    if (!tab)
+      return null;
+    return jsx(Wrapper, { key: tab.id, children: jsx(tab.component, {}) });
+  }
+  var settings_default = definePlugin({
+    name: "Settings",
+    description: "Adds Void settings UI.",
+    authors: [Devs.Prism],
+    required: true,
+    settings: settings3,
+    _hideUserId() {
+      return settings3.store.hideUserId;
+    },
+    _fixDialogFlash() {
+      return settings3.store.fixDialogFlash;
+    },
+    renderTabs(jsx, TabButton) {
+      try {
+        return [/* @__PURE__ */ React.createElement(VoidTabs, {
+          key: "void-tabs",
+          jsx,
+          TabButton
+        }), /* @__PURE__ */ React.createElement(VersionInfo, {
+          key: "void-version"
+        })];
+      } catch (e) {
+        logger13.error("Failed to render tabs:", e);
+        return [];
+      }
+    },
+    renderPanels(jsx, activeTab, Wrapper) {
+      try {
+        return [/* @__PURE__ */ React.createElement(VoidPanels, {
+          key: "void-panels",
+          jsx,
+          activeTab,
+          Wrapper
+        })];
+      } catch (e) {
+        logger13.error("Failed to render panels:", e);
+        return [];
+      }
+    },
+    start() {
+      registerStyle("void-global", "[data-sonner-toast] [data-title]{font-weight:400}");
+      if (document.head)
+        loadSavedCSS();
+      else
+        document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
+      loadSavedThemes().catch((e) => logger13.error("Failed to load saved themes:", e));
+    },
+    patches: [
+      {
+        find: 'DialogOverlay",()=>',
+        all: true,
+        replacement: {
+          match: /dark:border-border-l1 duration-200/,
+          replace: 'dark:border-border-l1 "+($self._fixDialogFlash()?"outline-none ":"")+"duration-200'
+        }
+      },
+      {
+        find: "pressed_cmd_settings",
+        replacement: [
+          {
+            match: /(\i\.jsx)\)\((\i),\{icon:\i\.DatabaseIcon,.{0,80}tab:"data"\}\)/,
+            replace: "$&,...$self.renderTabs($1,$2)"
+          },
+          {
+            match: /"data"===(\i)&&\i\.user&&\(0,(\i\.jsx)\)\((\i),\{children:/,
+            replace: "...$self.renderPanels($2,$1,$3),$&"
+          },
+          {
+            match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,120}:\i\.userId\}\)/,
+            replace: "!$self._hideUserId()&&$&"
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/api/Modals.tsx
+  var nextId = 0;
+  var modalStack = [];
+  var store3 = createExternalStore();
+  function openModal(render, options) {
+    const key = options?.modalKey ?? `void-modal-${nextId++}`;
+    modalStack.push({ key, render });
+    store3.notify();
+    return key;
+  }
+  function closeModal(key) {
+    const idx = modalStack.findIndex((m) => m.key === key);
+    if (idx !== -1) {
+      modalStack.splice(idx, 1);
+      store3.notify();
+    }
+  }
+  function closeAllModals() {
+    modalStack.length = 0;
+    store3.notify();
+  }
+  function confirm(options) {
+    return new Promise((resolve) => {
+      let resolved = false;
+      const settle = (value) => {
+        if (resolved)
+          return;
+        resolved = true;
+        unsub();
+        resolve(value);
+      };
+      const key = openModal(({ onClose }) => /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, options.title), /* @__PURE__ */ React.createElement(DialogDescription, null, options.body), /* @__PURE__ */ React.createElement(DialogFooter, null, /* @__PURE__ */ React.createElement(Button, {
+        variant: "secondary",
+        size: "md",
+        onClick: () => {
+          settle(false);
+          onClose();
+        }
+      }, options.cancelText ?? "Cancel"), /* @__PURE__ */ React.createElement(Button, {
+        variant: options.danger ? "danger" : "primary",
+        size: "md",
+        onClick: () => {
+          settle(true);
+          onClose();
+        }
+      }, options.confirmText ?? "Confirm"))));
+      const unsub = store3.subscribe(() => {
+        if (!modalStack.some((m) => m.key === key))
+          settle(false);
+      });
+    });
+  }
+  function ModalInstance({ entry }) {
+    const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
+    return /* @__PURE__ */ React.createElement(Dialog, {
+      open: true,
+      onOpenChange: (open2) => {
+        if (!open2)
+          onClose();
+      }
+    }, /* @__PURE__ */ React.createElement(DialogContent, {
+      "aria-describedby": undefined
+    }, entry.render({ onClose })));
+  }
+  function ModalContainer() {
+    useExternalStore(store3);
+    if (!modalStack.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, modalStack.map((entry) => /* @__PURE__ */ React.createElement(ModalInstance, {
+      key: entry.key,
+      entry
+    })));
+  }
+
+  // src/plugins/_api/chatBarButtons/index.ts
+  var chatBarButtons_default = definePlugin({
+    name: "ChatBarButtonAPI",
+    description: "Adds buttons to the chat input bar.",
+    authors: [Devs.Prism],
+    required: true,
+    hidden: true,
+    renderButtons(iconOnly) {
+      try {
+        return createElement(Fragment, null, createElement(VoidChatBarButtons, { iconOnly }), createElement(ModalContainer, null));
+      } catch {
+        return null;
+      }
+    },
+    patches: [
+      {
+        find: "ImagineSelector,{iconOnlyTrigger",
+        all: true,
+        replacement: [
+          {
+            match: /ModelModeSelect,\{iconOnlyTrigger:(\i)\}\)\}\),/,
+            replace: "$&$self.renderButtons($1),"
+          },
+          {
+            match: /paddingInlineEnd:\i\?void 0:(\i)\?/,
+            replace: "paddingInlineEnd:$1?"
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/_api/contextMenu/index.tsx
+  var contextMenu_default = definePlugin({
+    name: "ContextMenuAPI",
+    description: "Adds items to context menus.",
+    authors: [Devs.Prism],
+    required: true,
+    hidden: true,
+    renderItems(location2, ctx) {
+      try {
+        return createElement(VoidContextMenuItems, { location: location2, ...ctx });
+      } catch {
+        return null;
+      }
+    },
+    patches: [
+      {
+        find: '"Editing actions","Editing actions"',
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /onSaveEdit:(\i)\}\)/,
+            replace: "onSaveEdit:$1,id:arguments[0].id})"
+          },
+          {
+            match: /onEditClick:(\i)\}\)/,
+            replace: "onEditClick:$1,...arguments[0]})"
+          },
+          {
+            match: /"Delete","Delete"\)\]\}\)/,
+            replace: '$&,$self.renderItems("conversation",{conversationId:arguments[0].id})'
+          }
+        ]
+      },
+      {
+        find: '"more-actions-dropdown"',
+        all: true,
+        replacement: {
+          match: /"more-action\.copy-model-hash".{0,80}slice\(0,5\)\}\}\)\}\)\]\}\)\]\}\)/,
+          replace: '$&,$self.renderItems("message",{response:arguments[0].response})'
+        }
+      },
+      {
+        find: '"AvatarDropdownMenu",()=>',
+        all: true,
+        replacement: {
+          match: /"Sign Out"\)\]\}\)/,
+          replace: '$&,$self.renderItems("user")'
+        }
+      }
+    ]
+  });
+
+  // src/plugins/backgroundThinking.preview/index.ts
+  var backgroundThinking_default = definePlugin({
+    name: "BackgroundThinking",
+    description: "Lets Grok think in the background while you are away.",
+    authors: [Devs.Prism],
+    patches: [
+      {
+        find: '"bgThinkingDefaultOptinSet"',
+        replacement: {
+          match: /\.success\?(\i)\.data:null/,
+          replace: ".success?$1.data:{enabled:!0,maxConcurrentRequests:3}"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/betterFiles/index.tsx
+  var logger14 = new Logger("BetterFiles");
+  var settings4 = definePluginSettings({
+    skipDeleteConfirm: {
+      type: 3 /* BOOLEAN */,
+      description: "Skip the delete confirmation when deleting files from the list.",
+      default: false
+    }
+  });
+  function DeleteAllButton() {
+    const [open2, setOpen] = useState(false);
+    const list = FilesPageStore.useFilesPageStore((s) => s.list);
+    const deleteAsset = FilesPageStore.useFilesPageStore((s) => s.deleteAsset);
+    if (!list.length)
+      return null;
+    const handleConfirm = async () => {
+      const ids = [...list];
+      for (const id of ids) {
+        try {
+          await deleteAsset(id);
+        } catch (e) {
+          logger14.error("Failed to delete asset", id, e);
+        }
+      }
+    };
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      shape: "square",
+      size: "sm",
+      onClick: () => setOpen(true)
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
+      size: 18,
+      className: "text-fg-secondary"
+    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title: "Delete all files",
+      description: `Are you sure you want to delete all ${list.length} files? This cannot be undone.`,
+      confirmText: "Delete all",
+      danger: true,
+      onConfirm: handleConfirm
+    }));
+  }
+  var betterFiles_default = definePlugin({
+    name: "BetterFiles",
+    description: "Adds bulk delete and optional skip of delete confirmation on the files page.",
+    authors: [Devs.Prism],
+    settings: settings4,
+    renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
+    _deleteFile(assetId) {
+      Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId)).catch((e) => logger14.error("Failed to delete asset", assetId, e));
+    },
+    patches: [
+      {
+        find: "title-and-button",
+        noWarn: true,
+        replacement: [
+          {
+            match: /"files-search-open-button.label".{0,25}\)\}\)\]\}\)/,
+            replace: "$&,$self.renderDeleteAllButton()"
+          },
+          {
+            match: /(\i)\(\{type:"delete",assetId:(\i)\.assetId\}\)/,
+            replace: '$self.settings.store.skipDeleteConfirm?$self._deleteFile($2.assetId):$1({type:"delete",assetId:$2.assetId})'
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/betterSidebar/index.tsx
+  var TIER_DISPLAY = {
+    SUBSCRIPTION_TIER_INVALID: "Free",
+    SUBSCRIPTION_TIER_X_BASIC: "Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "Premium+",
+    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
+    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
+  };
+  var SESSION_TIER_DISPLAY = {
+    "0": "Free",
+    "1": "X Premium",
+    "2": "X Premium+"
+  };
+  function getPlanName(bestSubscription, sessionTierId) {
+    if (bestSubscription)
+      return TIER_DISPLAY[bestSubscription] ?? bestSubscription;
+    return SESSION_TIER_DISPLAY[sessionTierId ?? "0"] ?? "Free";
+  }
+  function UserInfo() {
+    const { open: open2 } = SidebarComponents.useSidebar();
+    const { user } = SessionStore.useSession();
+    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
+    if (!open2 || !user)
+      return null;
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      justifyContent: "center",
+      gap: "0",
+      className: "min-w-0 overflow-hidden"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      size: "sm",
+      weight: "medium",
+      className: "truncate"
+    }, user.givenName || user.email?.split("@")[0] || "User"), /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      size: "xs",
+      color: "secondary",
+      className: "truncate"
+    }, getPlanName(bestSubscription, user.sessionTierId)));
+  }
+  var betterSidebar_default = definePlugin({
+    name: "BetterSidebar",
+    description: "Shows your name and plan in the sidebar footer.",
+    authors: [Devs.Prism],
+    renderUserInfo: ErrorBoundary.wrap(UserInfo),
+    patches: [
+      {
+        find: "AvatarDropdownMenu,{}),",
+        replacement: {
+          match: /AvatarDropdownMenu,\{\}\)/,
+          replace: "$&,$self.renderUserInfo()"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/cleaner/index.ts
+  var cleaner_default = definePlugin({
+    name: "Cleaner",
+    description: "Hides upgrade nags and upsell banners.",
+    authors: [Devs.Prism],
+    patches: [
+      {
+        find: '"user-dropdown.upgrade","Upgrade plan"',
+        all: true,
+        replacement: {
+          match: /\i(?:\|\|\i)+(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          replace: "true"
+        }
+      },
+      {
+        find: '"UpsellCard",()=>',
+        all: true,
+        replacement: {
+          match: /"UpsellCard",\(\)=>\i/,
+          replace: '"UpsellCard",()=>()=>null'
+        }
+      },
+      {
+        find: '"UpsellSuperGrokSmall",()=>',
+        all: true,
+        replacement: {
+          match: /"UpsellSuperGrokSmall",\(\)=>\i/,
+          replace: '"UpsellSuperGrokSmall",()=>()=>null'
+        }
+      },
+      {
+        find: "group/model-mode-select-upsell",
+        replacement: {
+          match: /(?<=useCheckSubscriptionOffer\)\(\);).{0,30}return null;/,
+          replace: "return null;"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/consoleJanitor/index.ts
+  var consoleJanitor_default = definePlugin({
+    name: "ConsoleJanitor",
+    description: "Silences noisy warnings and info logs in the browser console.",
+    authors: [Devs.Prism],
+    patches: [
+      {
+        find: "x.ai/careers",
+        replacement: {
+          match: /console\.info\("[^"]{0,2000}"\)/,
+          replace: "void 0"
+        }
+      },
+      {
+        find: "DialogDescriptionWarning",
+        all: true,
+        replacement: {
+          match: /console\.warn\(\i\)/,
+          replace: "void 0"
+        }
+      },
+      {
+        find: "pressure_observer",
+        replacement: {
+          match: /"PressureObserver"in window/,
+          replace: "false"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/exportChat/index.tsx
+  var logger15 = new Logger("ExportChat");
+  function buildExportMessage(r) {
+    return {
+      id: r.responseId,
+      sender: r.sender,
+      message: r.message,
+      query: r.query,
+      createTime: r.createTime,
+      model: r.requestMetadata?.model ?? r.model,
+      ...r.thinkingTrace && { thinkingTrace: r.thinkingTrace },
+      ...r.webSearchResults?.length && { webSearchResults: r.webSearchResults },
+      ...r.generatedImageUrls?.length && { generatedImageUrls: r.generatedImageUrls },
+      ...r.fileAttachments?.length && { fileAttachments: r.fileAttachments },
+      ...r.steps?.length && { steps: r.steps }
+    };
+  }
+  async function exportChat(conversationId) {
+    const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
+    if (!responses?.length)
+      return;
+    const conversation = ConversationStore.useConversationStore.getState().byId[conversationId];
+    const title = conversation?.title ?? "Untitled Chat";
+    await FileUtils.downloadBlob(new Blob([JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages: responses.map(buildExportMessage) }, null, 2)], { type: "application/json" }), `${sanitizeFilename(title, "chat")}.json`);
+  }
+  function ExportItem({ conversationId }) {
+    const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
+    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: () => exportChat(conversationId).catch((e) => logger15.error("Failed to export chat", e)),
+      disabled: streaming
+    }, /* @__PURE__ */ React.createElement(DownloadIcon, {
+      size: 16,
+      className: "me-2"
+    }), "Export");
+  }
+  var exportChat_default = definePlugin({
+    name: "ExportChat",
+    description: "Export conversations as JSON from the right-click menu.",
+    authors: [Devs.Prism],
+    contextMenuItems: {
+      conversation: {
+        label: "Export",
+        render: ErrorBoundary.wrap(ExportItem)
+      }
+    }
+  });
+
+  // src/plugins/messageClickActions/index.ts
+  function onDblClick(e) {
+    const target = e.target;
+    const response = target.closest("[id^='response-']");
+    if (!response)
+      return;
+    const editBtn = response.querySelector("[aria-label='Edit']");
+    editBtn?.click();
+  }
+  var messageClickActions_default = definePlugin({
+    name: "MessageClickActions",
+    description: "Double-click your own messages to edit them.",
+    authors: [Devs.Prism],
+    eventListeners: [
+      { event: "dblclick", handler: onDblClick }
+    ]
+  });
+
+  // src/plugins/messageTimestamps/index.tsx
+  var settings5 = definePluginSettings({
+    showDate: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the full date for messages older than today.",
+      default: true
+    },
+    hideOwnMessages: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide timestamps on your own messages.",
+      default: false
+    }
+  });
+  function formatTimestamp(iso, showDate) {
+    const date = new Date(iso);
+    const now = new Date;
+    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (!showDate || today)
+      return time;
+    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
+  }
+  var messageTimestamps_default = definePlugin({
+    name: "MessageTimestamps",
+    description: "Shows timestamps on chat messages.",
+    authors: [Devs.Prism],
+    settings: settings5,
+    _renderTimestamp(response) {
+      try {
+        if (!response?.createTime)
+          return null;
+        if (settings5.store.hideOwnMessages && response.sender === "human")
+          return null;
+        return /* @__PURE__ */ React.createElement(Text, {
+          as: "span",
+          size: "xs",
+          color: "muted",
+          className: "mb-0.5 print:hidden"
+        }, formatTimestamp(response.createTime, settings5.store.showDate));
+      } catch {
+        return null;
+      }
+    },
+    patches: [
+      {
+        find: 'displayName="ResponseFamily"',
+        replacement: {
+          match: /(\i)\.parentQuotedText(.{0,10})\(0,(\i)\.jsx\)\((\i)\.MessageBubble/,
+          replace: "$1.parentQuotedText$2$self._renderTimestamp($1),(0,$3.jsx)($4.MessageBubble"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/noAutoplay/index.ts
+  var logger16 = new Logger("NoAutoplay");
+  var settings6 = definePluginSettings({
+    playOnHover: {
+      type: 3 /* BOOLEAN */,
+      description: "Play video thumbnails when hovered.",
+      default: true
+    }
+  });
+  var pending = new WeakMap;
+  function pauseVideo(video) {
+    const promise = pending.get(video);
+    pending.delete(video);
+    if (promise) {
+      promise.then(() => {
+        if (pending.has(video))
+          return;
+        video.pause();
+        video.currentTime = 0;
+      }).catch((e) => logger16.warn("Failed to pause video:", e));
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }
+  var onMouseEnter = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pending.set(video, video.play().catch((e2) => logger16.error("Failed to play video", e2)));
+  };
+  var onMouseLeave = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pauseVideo(video);
+  };
+  var noAutoplay_default = definePlugin({
+    name: "NoAutoplay",
+    description: "Stops video thumbnails from autoplaying on the Imagine page.",
+    authors: [Devs.Prism],
+    settings: settings6,
+    _hoverProps() {
+      if (!settings6.store.playOnHover)
+        return {};
+      return { onMouseEnter, onMouseLeave };
+    },
+    patches: [
+      {
+        find: "group/media-post-masonry-card",
+        group: true,
+        replacement: [
+          {
+            match: /muted:!0,autoPlay:!0/,
+            replace: "muted:!0,autoPlay:!1"
+          },
+          {
+            match: /onMouseOver:\i\?\(\)=>\i\(!0\):void 0,onMouseLeave:\i\?\(\)=>\i\(!1\):void 0/,
+            replace: "$&,...$self._hoverProps()"
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/oneko/index.ts
+  var logger17 = new Logger("Oneko");
+  var ONEKO_SCRIPT = "https://raw.githubusercontent.com/adryd325/oneko.js/c4ee66353b11a44e4a5b7e914a81f8d33111555e/oneko.js";
+  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
+  var stopped = false;
+  var oneko_default = definePlugin({
+    name: "Oneko",
+    description: "Cat follows your mouse cursor.",
+    authors: [Devs.adryd],
+    cleanupSelectors: ["#oneko"],
+    start() {
+      stopped = false;
+      fetchExternal(ONEKO_SCRIPT).then((r) => r.text()).then((s) => s.replace("./oneko.gif", ONEKO_GIF).replace("(isReducedMotion)", "(false)")).then((s) => {
+        if (stopped)
+          return;
+        const blob = new Blob([s], { type: "text/javascript" });
+        const el = document.createElement("script");
+        el.src = URL.createObjectURL(blob);
+        document.head.appendChild(el);
+        el.addEventListener("load", () => {
+          el.remove();
+          URL.revokeObjectURL(el.src);
+        });
+      }).catch((e) => logger17.error("Failed to load oneko script", e));
+    },
+    stop() {
+      stopped = true;
+    }
+  });
+
+  // src/plugins/rateLimitDisplay/index.tsx
+  var settings7 = definePluginSettings({
+    showMaxCount: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the maximum count alongside remaining.",
+      default: true
+    }
+  });
+  var EMPTY = { remaining: -1, total: -1, waitSeconds: null };
+  function ceilWait(seconds) {
+    return seconds != null && seconds > 0 ? Math.ceil(seconds) : null;
+  }
+  function parse(data, mode) {
+    const windowSeconds = data.windowSizeSeconds;
+    const tokenBudget = data.totalTokens ?? 0;
+    if (tokenBudget > 0) {
+      const fast = data.lowEffortRateLimits ? { remaining: data.lowEffortRateLimits.remainingQueries, total: Math.floor(tokenBudget / data.lowEffortRateLimits.cost), waitSeconds: ceilWait(data.lowEffortRateLimits.waitTimeSeconds) } : EMPTY;
+      const expert = data.highEffortRateLimits ? { remaining: data.highEffortRateLimits.remainingQueries, total: Math.floor(tokenBudget / data.highEffortRateLimits.cost), waitSeconds: ceilWait(data.highEffortRateLimits.waitTimeSeconds) } : EMPTY;
+      const single2 = mode === "fast" ? fast : expert;
+      return { single: single2, fast, expert, windowSeconds };
+    }
+    const single = data.totalQueries > 0 ? { remaining: data.remainingQueries, total: data.totalQueries, waitSeconds: ceilWait(data.waitTimeSeconds) } : EMPTY;
+    return { single, fast: EMPTY, expert: EMPTY, windowSeconds };
+  }
+  function formatLabel(u, wait, short) {
+    if (wait != null && wait > 0)
+      return formatCountdown(wait);
+    if (u.total < 0)
+      return "...";
+    if (u.total === 0)
+      return "∞";
+    return short || !settings7.store.showMaxCount ? String(u.remaining) : `${u.remaining}/${u.total}`;
+  }
+  function RateLimitIndicator(_props) {
+    const modelMode = ChatPageStore.useChatPageStore((s) => s.modelMode);
+    const reasoningMode = ChatPageStore.useChatPageStore((s) => s.reasoningMode);
+    const conversationId = ChatPageStore.useChatPageStore((s) => s.conversationId);
+    const lastMessageId = ChatPageStore.useChatPageStore((s) => s.lastMessageId);
+    const streaming = ChatPageStore.useChatPageStore((s) => !!s.streamedMessageId);
+    const modelByMode = ModelsStore.useModelsStore((s) => s.modelByMode);
+    const requestKind = ReasoningModeUtils.reasoningModeToRequestKind?.(reasoningMode) ?? "DEFAULT";
+    const modelId = modelByMode?.[modelMode === "auto" ? "expert" : modelMode]?.modelId;
+    const { data, refetch } = TanStackQuery.useQuery({
+      queryKey: ["void-rate-limits"],
+      queryFn: () => ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: modelId, requestKind } }),
+      enabled: !!modelId && !streaming,
+      staleTime: 1e4,
+      placeholderData: (prev) => prev
+    });
+    useEffect(() => {
+      if (modelId && !streaming)
+        refetch().catch(() => {});
+    }, [modelId, requestKind, conversationId, lastMessageId, streaming]);
+    const { single, fast, expert, windowSeconds } = useMemo(() => data ? parse(data, modelMode) : { single: EMPTY, fast: EMPTY, expert: EMPTY, windowSeconds: 0 }, [data, modelMode]);
+    const singleWait = useCountdown(single.waitSeconds);
+    const fastWait = useCountdown(fast.waitSeconds);
+    const expertWait = useCountdown(expert.waitSeconds);
+    const isAuto = modelMode === "auto" && fast !== EMPTY && expert !== EMPTY;
+    const limited = isAuto ? (fastWait ?? 0) > 0 || (expertWait ?? 0) > 0 : (singleWait ?? 0) > 0;
+    const icon = limited ? /* @__PURE__ */ React.createElement(ClockIcon, {
+      size: 18
+    }) : /* @__PURE__ */ React.createElement(GaugeIcon, {
+      size: 18
+    });
+    const className = limited ? "text-fg-danger" : undefined;
+    const reset = windowSeconds > 0 ? formatDuration(windowSeconds) : "";
+    if (isAuto) {
+      const tooltip = `Fast ${formatLabel(fast, fastWait)} · Expert ${formatLabel(expert, expertWait)}${reset ? ` · resets every ${reset}` : ""}`;
+      return /* @__PURE__ */ React.createElement(ChatBarButton, {
+        icon,
+        tooltip,
+        className
+      }, formatLabel(fast, fastWait, true), /* @__PURE__ */ React.createElement(Separator, {
+        orientation: "vertical",
+        className: "mx-1 h-3 w-0.5"
+      }), formatLabel(expert, expertWait, true));
+    }
+    return /* @__PURE__ */ React.createElement(ChatBarButton, {
+      icon,
+      tooltip: reset ? `Resets every ${reset}` : undefined,
+      className
+    }, formatLabel(single, singleWait));
+  }
+  var rateLimitDisplay_default = definePlugin({
+    name: "RateLimitDisplay",
+    description: "Shows rate limit usage next to the chat input.",
+    authors: [Devs.Prism],
+    settings: settings7,
+    chatBarButton: { render: RateLimitIndicator }
+  });
+
+  // src/plugins/starry/index.ts
+  var starry_default = definePlugin({
+    name: "Starry",
+    description: "Enables Grok's native starry idle background with shooting stars.",
+    authors: [Devs.Prism],
+    patches: [
+      {
+        find: "inactivityDelay:1e4,fadeInDuration:1e4",
+        replacement: [
+          {
+            match: /\i\.SHOW_STARRY_IDLE&&!\i&&\i&&"main"===\i\.page&&/,
+            replace: "true&&"
+          },
+          {
+            match: /inactivityDelay:1e4,fadeInDuration:1e4/,
+            replace: "inactivityDelay:0,fadeInDuration:0"
+          }
+        ]
+      }
+    ]
+  });
+
+  // virtual:~plugins
+  fixChrome_default.chrome = true;
+  fixChrome_default.hidden = !window.chrome;
+  backgroundThinking_default.preview = true;
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [backgroundThinking_default.name]: backgroundThinking_default, [betterFiles_default.name]: betterFiles_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageClickActions_default.name]: messageClickActions_default, [messageTimestamps_default.name]: messageTimestamps_default, [noAutoplay_default.name]: noAutoplay_default, [oneko_default.name]: oneko_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [starry_default.name]: starry_default };
+  // src/turbopack/common/index.ts
+  var exports_common = {};
+  __export(exports_common, {
+    zustandCreate: () => zustandCreate,
+    useTransition: () => useTransition,
+    useSyncExternalStore: () => useSyncExternalStore,
+    useState: () => useState,
+    useRef: () => useRef,
+    useReducer: () => useReducer,
+    useReducedMotion: () => useReducedMotion,
+    useMemo: () => useMemo,
+    useLayoutEffect: () => useLayoutEffect,
+    useId: () => useId,
+    useEffect: () => useEffect,
+    useDeferredValue: () => useDeferredValue,
+    useContext: () => useContext,
+    useCallback: () => useCallback,
+    onceReady: () => onceReady,
+    i18n: () => i18n,
+    createElement: () => createElement,
+    WorkspaceStore: () => WorkspaceStore,
+    WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
+    WorkspaceCollectionsStore: () => WorkspaceCollectionsStore,
+    UpsellStore: () => UpsellStore,
+    TourGuideStore: () => TourGuideStore,
+    TooltipTrigger: () => TooltipTrigger,
+    TooltipContent: () => TooltipContent,
+    Tooltip: () => Tooltip,
+    Toaster: () => Toaster,
+    Textarea: () => Textarea,
+    TextToSpeechStore: () => TextToSpeechStore,
+    TasksStore: () => TasksStore,
+    TanStackQuery: () => TanStackQuery,
+    TabsTrigger: () => TabsTrigger,
+    TabsManagerStore: () => TabsManagerStore,
+    TabsList: () => TabsList,
+    TabsContent: () => TabsContent,
+    Tabs: () => Tabs,
+    Switch: () => Switch,
+    SuggestionStore: () => SuggestionStore,
+    SubscriptionsStore: () => SubscriptionsStore,
+    Spinner: () => Spinner,
+    SourcesSelectorStore: () => SourcesSelectorStore,
+    Slider: () => Slider,
+    Skeleton: () => Skeleton,
+    SidebarComponents: () => SidebarComponents,
+    ShopStore: () => ShopStore,
+    ShareStore: () => ShareStore,
+    SettingsTitle: () => SettingsTitle,
+    SettingsStore: () => SettingsStore,
+    SettingsRow: () => SettingsRow,
+    SettingsDialogStore: () => SettingsDialogStore,
+    SettingsDescription: () => SettingsDescription,
+    SessionStore: () => SessionStore,
+    Separator: () => Separator,
+    SelectValue: () => SelectValue,
+    SelectTrigger: () => SelectTrigger,
+    SelectItem: () => SelectItem,
+    SelectContent: () => SelectContent,
+    Select: () => Select,
+    RoutingStore: () => RoutingStore,
+    ResponsiveDialog: () => ResponsiveDialog,
+    ResponseStore: () => ResponseStore,
+    ReportStore: () => ReportStore,
+    ReasoningModeUtils: () => ReasoningModeUtils,
+    ReactDOM: () => ReactDOM,
+    React: () => React,
+    RateLimitUtils: () => RateLimitUtils,
+    PopoverTrigger: () => PopoverTrigger,
+    PopoverContent: () => PopoverContent,
+    PopoverArrow: () => PopoverArrow,
+    Popover: () => Popover,
+    PersonalityStore: () => PersonalityStore,
+    NotificationsStore: () => NotificationsStore,
+    NextRouter: () => NextRouter,
+    MotionDiv: () => MotionDiv,
+    MonacoModule: () => MonacoModule,
+    ModesStore: () => ModesStore,
+    ModelsStore: () => ModelsStore,
+    MentionMenuStore: () => MentionMenuStore,
+    MediaStore: () => MediaStore,
+    LazyComponent: () => LazyComponent,
+    Input: () => Input,
+    ImageEditorStore: () => ImageEditorStore,
+    HighlightsStore: () => HighlightsStore,
+    Fragment: () => Fragment,
+    FilesPageStore: () => FilesPageStore,
+    FileUtils: () => FileUtils,
+    FileStore: () => FileStore,
+    FeatureStore: () => FeatureStore,
+    EnvUtils: () => EnvUtils,
+    DropdownMenuTrigger: () => DropdownMenuTrigger,
+    DropdownMenuSubTrigger: () => DropdownMenuSubTrigger,
+    DropdownMenuSubContent: () => DropdownMenuSubContent,
+    DropdownMenuSub: () => DropdownMenuSub,
+    DropdownMenuSeparator: () => DropdownMenuSeparator,
+    DropdownMenuRadioItem: () => DropdownMenuRadioItem,
+    DropdownMenuRadioGroup: () => DropdownMenuRadioGroup,
+    DropdownMenuItem: () => DropdownMenuItem,
+    DropdownMenuContent: () => DropdownMenuContent,
+    DropdownMenuCheckboxItem: () => DropdownMenuCheckboxItem,
+    DropdownMenu: () => DropdownMenu,
+    DownloadUtils: () => DownloadUtils,
+    DictationStore: () => DictationStore,
+    DialogTitle: () => DialogTitle,
+    DialogHeader: () => DialogHeader,
+    DialogFooter: () => DialogFooter,
+    DialogDescription: () => DialogDescription,
+    DialogContent: () => DialogContent,
+    DialogClose: () => DialogClose,
+    Dialog: () => Dialog,
+    DevModelsStore: () => DevModelsStore,
+    CopyUtils: () => CopyUtils,
+    ConversationStore: () => ConversationStore,
+    ContextMenuTrigger: () => ContextMenuTrigger,
+    ContextMenuSubTrigger: () => ContextMenuSubTrigger,
+    ContextMenuSubContent: () => ContextMenuSubContent,
+    ContextMenuSub: () => ContextMenuSub,
+    ContextMenuSeparator: () => ContextMenuSeparator,
+    ContextMenuItem: () => ContextMenuItem,
+    ContextMenuContent: () => ContextMenuContent,
+    ContextMenu: () => ContextMenu,
+    CommandMenuStore: () => CommandMenuStore,
+    CommandList: () => CommandList,
+    CommandItem: () => CommandItem,
+    CommandInput: () => CommandInput,
+    CommandGroup: () => CommandGroup,
+    CommandEmpty: () => CommandEmpty,
+    Command: () => Command,
+    CodePageStore: () => CodePageStore,
+    ClassNames: () => ClassNames,
+    Checkbox: () => Checkbox,
+    ChatPageStore: () => ChatPageStore,
+    Card: () => Card,
+    ButtonWithTooltip: () => ButtonWithTooltip,
+    Button: () => Button,
+    Avatar: () => Avatar,
+    AssetUtils: () => AssetUtils,
+    AssetStore: () => AssetStore,
+    ArtifactStore: () => ArtifactStore,
+    ApiClients: () => ApiClients,
+    AnimatePresence: () => AnimatePresence,
+    AccordionTrigger: () => AccordionTrigger,
+    AccordionItem: () => AccordionItem,
+    AccordionContent: () => AccordionContent,
+    Accordion: () => Accordion
+  });
+
+  // src/Void.ts
+  var logger18 = new Logger("TurbopackPatcher", "#e78284");
+  var APP_READY_SETTLE_MS = 500;
+  var MIN_FACTORY_RATIO = 0.4;
+  var FALLBACK_MS = 15000;
+  var RETRY_TIMEOUT_MS = 15000;
+  var ORPHAN_REPORT_DELAY_MS = 5000;
+  function deferOrphanReport() {
+    const hasNonGlobal = patches.some((p) => !p.all);
+    if (!hasNonGlobal)
+      return;
+    const unsub = onModuleLoad(() => {
+      if (!patches.some((p) => !p.all)) {
+        unsub();
+        clearTimeout(timeout);
+      }
+    });
+    const timeout = setTimeout(() => {
+      unsub();
+      reportOrphanedPatches();
+    }, ORPHAN_REPORT_DELAY_MS);
+  }
+  function retryFailedPlugins() {
+    const getFailed = () => Object.values(plugins).filter((p) => !p.started && isPluginEnabled(p.name) && (p.startAt ?? "Init" /* Init */) === "TurbopackReady" /* TurbopackReady */);
+    if (!getFailed().length)
+      return;
+    let retryTimer = null;
+    const tryRetry = () => {
+      if (retryTimer)
+        clearTimeout(retryTimer);
+      retryTimer = setTimeout(() => {
+        retryTimer = null;
+        rescanRuntimeModules();
+        for (const p of getFailed())
+          startPlugin(p, true);
+        if (!getFailed().length) {
+          unsub();
+          clearTimeout(timeout);
+          logger18.info("All previously failed plugins started after late module load");
+        }
+      }, 200);
+    };
+    const unsub = onModuleLoad(tryRetry);
+    const timeout = setTimeout(() => {
+      unsub();
+      if (retryTimer)
+        clearTimeout(retryTimer);
+      rescanRuntimeModules();
+      const remaining = getFailed();
+      for (const p of remaining)
+        startPlugin(p, true);
+      const stillFailed = getFailed();
+      if (stillFailed.length) {
+        logger18.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+      }
+    }, RETRY_TIMEOUT_MS);
+  }
+  function hasEnoughModules() {
+    const registry = getRuntimeFactoryRegistry();
+    if (!registry)
+      return false;
+    return getModuleCache().size / registry.size >= MIN_FACTORY_RATIO;
+  }
+  function waitForModulesStable() {
+    let settleTimer = null;
+    let fallbackTimer = null;
+    let unsubLoad = null;
+    let cancelWaitFor = null;
+    let fired = false;
+    const fire = onlyOnce(() => {
+      fired = true;
+      if (settleTimer)
+        clearTimeout(settleTimer);
+      if (fallbackTimer)
+        clearTimeout(fallbackTimer);
+      if (unsubLoad)
+        unsubLoad();
+      if (cancelWaitFor)
+        cancelWaitFor();
+      rescanRuntimeModules();
+      blacklistBadModules();
+      _resolveReady();
+      startAllPlugins("TurbopackReady" /* TurbopackReady */);
+      logger18.info(`${getModuleCache().size} modules loaded, ready`);
+      retryFailedPlugins();
+      deferOrphanReport();
+      checkForUpdates();
+    });
+    const settleUntilReady = () => {
+      if (settleTimer)
+        clearTimeout(settleTimer);
+      if (hasEnoughModules()) {
+        fire();
+        return;
+      }
+      settleTimer = setTimeout(settleUntilReady, APP_READY_SETTLE_MS);
+    };
+    cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), () => {
+      cancelWaitFor = null;
+      settleUntilReady();
+    });
+    unsubLoad = onModuleLoad(() => {
+      if (!fired && !cancelWaitFor && settleTimer) {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(settleUntilReady, APP_READY_SETTLE_MS);
+      }
+    });
+    fallbackTimer = setTimeout(fire, FALLBACK_MS);
+  }
+  function init() {
+    patchTurbopack();
+    for (const name in __plugins_default) {
+      registerPlugin(__plugins_default[name]);
+    }
+    initPluginManager();
+    startAllPlugins("Init" /* Init */);
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */), { once: true });
+    } else {
+      startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */);
+    }
+    waitForModulesStable();
+  }
+
+  // src/index.ts
+  var target = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  if (!target.Void) {
+    Object.defineProperty(target, "Void", {
+      value: exports_Void,
+      writable: false,
+      configurable: true
+    });
+    initSettings().then(() => init());
+  }
+})();

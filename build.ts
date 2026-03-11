@@ -13,6 +13,13 @@ const repoRawUrl = repoUrl.replace("github.com", "raw.githubusercontent.com");
 
 const environment = isDev ? "Development" : "Production";
 
+const LICENSE_BANNER = `/**
+ * Void v${pkg.version} — A modification for grok.com
+ * (c) ${new Date().getFullYear()} ${pkg.author} & Void Contributors
+ * Licensed under GPL-3.0-or-later
+ * Source: ${repoUrl}
+ */`;
+
 const USERSCRIPT_HEADER = `// ==UserScript==
 // @name         Void
 // @namespace    ${repoUrl}
@@ -125,13 +132,13 @@ function cssPlugin(): import("bun").BunPlugin {
     };
 }
 
-async function buildCore(outfile: string, isExt: boolean) {
+async function buildCore(outfile: string, isExt: boolean, minify = !isDev) {
     const result = await Bun.build({
         entrypoints: ["src/index.ts"],
         outdir: "dist",
         target: "browser",
         format: "iife",
-        minify: true,
+        minify,
         sourcemap: isDev ? "inline" : "none",
         define: {
             IS_DEV: JSON.stringify(isDev),
@@ -162,9 +169,9 @@ async function buildCore(outfile: string, isExt: boolean) {
 }
 
 async function buildUserscript() {
-    const output = await buildCore("Void.user.js", false);
+    const output = await buildCore("Void.user.js", false, false);
     const code = await output.text();
-    const content = USERSCRIPT_HEADER + "\n" + code;
+    const content = USERSCRIPT_HEADER + "\n" + LICENSE_BANNER + "\n" + code;
     await Bun.write("dist/Void.user.js", content);
     mkdirSync("userscript", { recursive: true });
     await Bun.write("userscript/Void.user.js", content);
@@ -173,7 +180,9 @@ async function buildUserscript() {
 
 async function buildExtensions() {
     const output = await buildCore("Void.js", true);
-    const size = (output.size / 1024).toFixed(1);
+    const code = LICENSE_BANNER + "\n" + await output.text();
+    await Bun.write("dist/Void.js", code);
+    const size = (code.length / 1024).toFixed(1);
     logger.info(`Built dist/Void.js (${size} KB)`);
 
     const targets = [
