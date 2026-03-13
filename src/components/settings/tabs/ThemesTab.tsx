@@ -86,7 +86,7 @@ export default function ThemesTab() {
 
     return (
         <Flex flexDirection="column" gap="2rem">
-            <Flex alignItems="center" justifyContent="space-between" className="px-3">
+            <Flex alignItems="center" justifyContent="space-between" className={cl("section")}>
                 <Flex flexDirection="column" gap="0">
                     <Text size="sm" weight="medium">
                         Themes
@@ -97,7 +97,7 @@ export default function ThemesTab() {
                 </Flex>
                 <Switch checked={enabled} onCheckedChange={handleToggle} />
             </Flex>
-            <Flex flexDirection="column" gap="0.5rem" className="px-3">
+            <Flex flexDirection="column" gap="0.5rem" className={cl("section")}>
                 <Flex alignItems="center" gap="0.5rem">
                     <Input
                         type="text"
@@ -105,16 +105,16 @@ export default function ThemesTab() {
                         value={url}
                         onChange={(e: InputChangeEvent) => { setUrl(e.target.value); setError(""); }}
                         onKeyDown={(e: { key: string }) => { if (e.key === "Enter") handleAdd(); }}
-                        className="flex-1 min-w-0"
+                        className={cl("search-input")}
                     />
-                    <Button variant="primary" size="sm" className="h-9" onClick={handleAdd} disabled={loading || !url.trim()}>
+                    <Button variant="primary" size="sm" className={cl("import-btn")} onClick={handleAdd} disabled={loading || !url.trim()}>
                         {loading ? "Importing..." : "Import"}
                     </Button>
                 </Flex>
                 {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
             </Flex>
             {themes.length > 0 && (
-                <Flex flexDirection="column" gap="0.375rem" className="px-3">
+                <Flex flexDirection="column" gap="0.375rem" className={cl("section")}>
                     <Flex flexDirection="column" gap="0">
                         <Text size="sm" weight="medium">Installed Themes</Text>
                         <Text size="xs" color="secondary">
@@ -127,16 +127,16 @@ export default function ThemesTab() {
                 </Flex>
             )}
             {themes.length > 0 && (
-                <Flex alignItems="center" gap="0.75rem" className="px-3">
+                <Flex alignItems="center" gap="0.75rem" className={cl("section")}>
                     <Input
                         type="text"
                         placeholder={`Search ${themes.length} themes...`}
                         value={search}
                         onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
-                        className="flex-1 min-w-0"
+                        className={cl("search-input")}
                     />
                     <Select value={filter} onValueChange={(v: string) => setFilter(v as ListFilter)}>
-                        <SelectTrigger className="w-28">
+                        <SelectTrigger className={cl("filter-select")}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -148,7 +148,7 @@ export default function ThemesTab() {
                 </Flex>
             )}
             {filtered.length > 0 && (
-                <Grid columns="repeat(2, 1fr)" className="px-3">
+                <Grid columns="repeat(2, 1fr)" className={cl("section")}>
                     {filtered.map(t => (
                         <ErrorBoundary key={t.url} fallback={null}>
                             <ThemeCard theme={t} globalEnabled={enabled} onRemove={setRemoveUrl} onToggle={() => setThemes(getThemes())} />
@@ -157,12 +157,12 @@ export default function ThemesTab() {
                 </Grid>
             )}
             {themes.length > 0 && !filtered.length && (
-                <Paragraph color="secondary" className="text-center py-8">
+                <Paragraph color="secondary" className={cl("empty")}>
                     No themes match your search.
                 </Paragraph>
             )}
             {!themes.length && (
-                <Paragraph color="secondary" className="text-center py-8">
+                <Paragraph color="secondary" className={cl("empty")}>
                     No themes added yet. Paste a URL above to add one.
                 </Paragraph>
             )}

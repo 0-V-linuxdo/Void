@@ -63,7 +63,7 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
                         Settings
                     </Text>
                     {entries.length ? (
-                        <Flex flexDirection="column" gap="0.75rem" className="mt-2">
+                        <Flex flexDirection="column" gap="0.75rem" className={cl("settings-list")}>
                             {entries.map(([key, setting]) => (
                                 <SettingField key={key} id={key} setting={setting} pluginName={plugin.name} />
                             ))}

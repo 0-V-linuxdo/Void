@@ -164,8 +164,8 @@ export default function CustomCSSTab() {
     }, [css]);
 
     return (
-        <Flex flexDirection="column" gap="0.75rem" className="h-full min-h-0">
-            <Flex alignItems="center" justifyContent="space-between" className="px-3 shrink-0">
+        <Flex flexDirection="column" gap="0.75rem" className={cl("root")}>
+            <Flex alignItems="center" justifyContent="space-between" className={cl("header")}>
                 <Flex flexDirection="column" gap="0">
                     <Text size="sm" weight="medium">
                         Quick CSS

@@ -36,8 +36,12 @@ export async function checkForUpdates() {
         logger.info(`Update available: ${VERSION} → ${latest}`);
 
         showNotice({
-            message: "Void is outdated, please update to the latest version to avoid potential bugs.",
+            message: "Void has been updated to a newer version. Please update from",
             type: NoticeType.WARNING,
+            link: IS_EXTENSION
+                ? { url: REPO_URL, label: "GitHub" }
+                : { url: "https://greasyfork.org/en/scripts/567871-void", label: "Greasy Fork" },
+            suffix: "to the new version.",
         });
     } catch (e) {
         logger.warn("Failed to check for updates", e);

@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./styles.css";
+
 import { definePluginSettings } from "@api/Settings";
 import { Text } from "@components/Text";
 import type { GrokResponse } from "@grok-types";
@@ -44,7 +46,7 @@ export default definePlugin({
             if (!response?.createTime) return null;
             if (settings.store.hideOwnMessages && response.sender === "human") return null;
             return (
-                <Text as="span" size="xs" color="muted" className="mb-0.5 print:hidden">
+                <Text as="span" size="xs" color="muted" className="void-timestamp">
                     {formatTimestamp(response.createTime, settings.store.showDate)}
                 </Text>
             );

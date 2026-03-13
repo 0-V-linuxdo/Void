@@ -109,8 +109,8 @@ Button, ButtonWithTooltip, Dialog/DialogContent/DialogHeader/DialogTitle/DialogF
 ## CSS
 
 - `classNameFactory("void-foo-")` — prefix must end with `-`. Use `cl("bar")` not `cl("-bar")`.
-- Only use `cl()` for our own CSS class names. Use Grok's Tailwind classes directly (e.g. `"text-fg-danger"`).
-- `classes(cl("foo"), "tailwind-class")` to combine. Never template strings like `` `${a} ${b}` ``.
+- Only use `cl()` for our own CSS class names. Never use Tailwind utility classes in Void code — always write proper CSS in `styles.css`.
+- `classes(cl("foo"), cl("bar"))` to combine. Never template strings like `` `${a} ${b}` ``.
 - Plugin CSS files are always named `styles.css`.
 - `registerStyle(name, css)` for runtime CSS injection.
 

@@ -4,13 +4,18 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./SettingField.css";
+
 import { Settings } from "@api/Settings";
 import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Slider, Switch, Text } from "@components";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
+import { classNameFactory } from "@utils/css";
 import { humanizeKey } from "@utils/text";
 import { OptionType, type PluginSettingDef, type PluginSettingSelectOption } from "@utils/types";
 
 import { type InputChangeEvent, resolveDefault } from "./utils";
+
+const cl = classNameFactory("void-setting-");
 
 interface SettingFieldProps {
     id: string;
@@ -86,16 +91,16 @@ function SliderField({ id, setting, pluginName }: SettingFieldProps) {
     return (
         <Flex flexDirection="column" gap="0.5rem">
             <SettingLabel id={id} setting={setting} />
-            <Flex gap="8px" className="items-center">
+            <Flex gap="8px" className={cl("slider-row")}>
                 <Slider
                     value={[(value as number) ?? min]}
                     min={min}
                     max={max}
                     step={1}
                     onValueChange={([v]: number[]) => update(v)}
-                    className="w-32"
+                    className={cl("slider")}
                 />
-                <Text size="sm" color="secondary" className="tabular-nums w-6 text-right">{value as number}</Text>
+                <Text size="sm" color="secondary" className={cl("slider-value")}>{value as number}</Text>
             </Flex>
         </Flex>
     );
@@ -121,7 +126,7 @@ function NumberField({ id, setting, pluginName }: SettingFieldProps) {
                     const n = Number(e.target.value);
                     if (!isNaN(n)) update(n);
                 }}
-                className="w-24"
+                className={cl("number-input")}
             />
         </Flex>
     );
@@ -137,7 +142,7 @@ function StringField({ id, setting, pluginName }: SettingFieldProps) {
                 value={(value as string) ?? ""}
                 onChange={(e: InputChangeEvent) => update(e.target.value)}
                 placeholder={"placeholder" in setting ? (setting as { placeholder?: string }).placeholder : undefined}
-                className="w-full"
+                className={cl("string-input")}
             />
         </Flex>
     );

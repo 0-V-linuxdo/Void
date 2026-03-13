@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./styles.css";
+
 import type { ContextMenuLocationMap } from "@api/ContextMenus";
 import { DropdownMenuItem } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
@@ -53,7 +55,7 @@ function ExportItem({ conversationId }: ContextMenuLocationMap["conversation"]) 
 
     return (
         <DropdownMenuItem onSelect={() => exportChat(conversationId).catch(e => logger.error("Failed to export chat", e))} disabled={streaming}>
-            <DownloadIcon size={16} className="me-2" />
+            <DownloadIcon size={16} className="void-export-icon" />
             Export
         </DropdownMenuItem>
     );

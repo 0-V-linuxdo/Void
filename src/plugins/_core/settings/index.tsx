@@ -6,16 +6,25 @@
 
 import "./styles.css";
 
-import { isPluginEnabled } from "@api/PluginManager";
+import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
 import { Flex, Text } from "@components";
-import { BracesIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
+import { BracesIcon, GhostFilledIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, ThemesTab } from "@components/settings/tabs";
+import PluginDialog from "@components/settings/tabs/PluginDialog";
+import { hasVisibleSettings } from "@components/settings/utils";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
-import { createElement, Fragment, React } from "@turbopack/common/react";
+import {
+    DropdownMenuItem,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+} from "@turbopack/common/components";
+import { createElement, Fragment, React, useState } from "@turbopack/common/react";
+import { SettingsDialogStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
-import { classes, classNameFactory, registerStyle } from "@utils/css";
+import { classNameFactory, registerStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { useEventSubscription, useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
@@ -33,6 +42,11 @@ const settings = definePluginSettings({
     fixDialogFlash: {
         type: OptionType.BOOLEAN,
         description: "Fix the white border flash when clicking inside dialogs.",
+        default: true,
+    },
+    showVoidMenu: {
+        type: OptionType.BOOLEAN,
+        description: "Show the Void sub-menu in the avatar dropdown.",
         default: true,
     },
 });
@@ -66,7 +80,7 @@ function Dot() {
 
 function VersionLink({ href, children }: { href: string; children: ReactNode }) {
     return (
-        <a href={href} target="_blank" rel="noreferrer" className={classes(cl("version-link"), "pointer-events-auto")}>
+        <a href={href} target="_blank" rel="noreferrer" className={cl("version-link")}>
             <Text as="span" color="secondary">
                 {children}
             </Text>
@@ -76,7 +90,7 @@ function VersionLink({ href, children }: { href: string; children: ReactNode }) 
 
 function VersionInfo() {
     return (
-        <Flex flexDirection="column" gap="0" className={classes(cl("version"), "absolute bottom-0 left-0 right-0 p-3 opacity-30 text-secondary pointer-events-none")}>
+        <Flex flexDirection="column" gap="0" className={cl("version")}>
             <Flex alignItems="center" gap="0.25rem">
                 <VersionLink href={REPO_URL}>Void</VersionLink>
                 <Dot />
@@ -127,6 +141,67 @@ function VoidPanels({ jsx, activeTab, Wrapper }: { jsx: typeof createElement; ac
     return jsx(Wrapper, { key: tab.id, children: jsx(tab.component, {}) });
 }
 
+function openSettingsTab(tab: string) {
+    const store = SettingsDialogStore.useSettingsDialogStore.getState();
+    store.setTab(tab);
+    store.setOpen(true);
+}
+
+function VoidMenu() {
+    const [dialogName, setDialogName] = useState<string | null>(null);
+    const forceUpdate = useForceUpdater();
+    useEventSubscription("pluginToggle", forceUpdate);
+
+    if (!settings.store.showVoidMenu) return null;
+
+    const settingsPlugins = Object.keys(plugins)
+        .filter(n => !plugins[n].hidden && hasVisibleSettings(plugins[n]))
+        .sort((a, b) => a.localeCompare(b));
+
+    const dialogPlugin = dialogName ? plugins[dialogName] : null;
+
+    return (
+        <>
+            <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                    <GhostFilledIcon className={cl("menu-icon")} />
+                    Void
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                            <UnplugIcon className={cl("menu-icon")} />
+                            Plugins
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                            {settingsPlugins.map(name => (
+                                <DropdownMenuItem key={name} onSelect={() => setDialogName(name)}>
+                                    {name}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                    <DropdownMenuItem onSelect={() => openSettingsTab("void_themes_tab")}>
+                        <PaletteIcon className={cl("menu-icon")} />
+                        Themes
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => openSettingsTab("void_css_tab")}>
+                        <BracesIcon className={cl("menu-icon")} />
+                        Quick CSS
+                    </DropdownMenuItem>
+                    {isPluginEnabled("Experiments") && (
+                        <DropdownMenuItem onSelect={() => openSettingsTab("void_experiments_tab")}>
+                            <TestTubeIcon className={cl("menu-icon")} />
+                            Experiments
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            {dialogPlugin && <PluginDialog plugin={dialogPlugin} open={true} onClose={() => setDialogName(null)} />}
+        </>
+    );
+}
+
 export default definePlugin({
     name: "Settings",
     description: "Adds Void settings UI.",
@@ -141,6 +216,8 @@ export default definePlugin({
     _fixDialogFlash() {
         return settings.store.fixDialogFlash;
     },
+
+    _VoidMenu: VoidMenu,
 
     renderTabs(jsx: typeof createElement, TabButton: ComponentType<TabButtonProps>) {
         try {
@@ -168,6 +245,13 @@ export default definePlugin({
     },
 
     patches: [
+        {
+            find: "avatar_menu_click",
+            replacement: {
+                match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{children:\[.{0,100}"user-dropdown\.help"/,
+                replace: "(0,$1.jsx)($self._VoidMenu,{}),$&",
+            },
+        },
         {
             find: 'DialogOverlay",()=>',
             all: true,

@@ -19,7 +19,7 @@ const TRANSITION = { duration: 0.2, ease: "easeOut" as const };
  * Grok doesn't use its Button component here, these are just hardcoded in the query bar.
  * To find the source, search for `DictationButton`.
  */
-const QUERY_BAR_BUTTON = "h-10 relative rounded-full ring-1 ring-inset transition-colors duration-150 ease-out text-fg-primary ring-border-l1 hover:bg-surface-l3";
+const QUERY_BAR_BUTTON = "h-10 relative rounded-full ring-1 ring-inset transition-colors duration-150 ease-out ring-border-l1 hover:bg-surface-l3";
 
 export interface ChatBarButtonProps {
     icon: ReactNode;
@@ -60,7 +60,7 @@ export function ChatBarButton({ icon, children, tooltip, onClick, className, ico
                     QUERY_BAR_BUTTON,
                     "flex items-center justify-center",
                     showText ? "px-2.5 gap-1.5 text-xs font-medium tabular-nums" : "aspect-square gap-0.5",
-                    className,
+                    className ?? "text-fg-primary",
                 )}
             >
                 {icon}

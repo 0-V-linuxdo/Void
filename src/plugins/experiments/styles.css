@@ -39,6 +39,14 @@
     color: hsl(var(--fg-warning));
 }
 
+.void-experiments-search-input {
+    flex: 1;
+}
+
+.void-experiments-filter-select {
+    width: 7rem;
+}
+
 .void-experiments-empty {
     text-align: center;
     padding: 2rem;
