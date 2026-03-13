@@ -48,13 +48,14 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
 
     if (!open || !user) return <AvatarMenu />;
 
-    const forward = (type: string) => {
+    const forward = (e: React.PointerEvent, type: string) => {
+        if (!e.isTrusted) return;
         cardRef.current?.querySelector<HTMLElement>("button[data-state]")
             ?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
     };
 
     return (
-        <div ref={cardRef} className={cl("card")} onPointerDown={() => forward("pointerdown")} onPointerUp={() => forward("pointerup")}>
+        <div ref={cardRef} className={cl("card")} onPointerDown={e => forward(e, "pointerdown")} onPointerUp={e => forward(e, "pointerup")}>
             <AvatarMenu />
             <Flex flexDirection="column" justifyContent="center" gap="0" className={cl("info")}>
                 <Text as="span" size="sm" weight="medium" className={cl("name")}>
