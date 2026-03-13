@@ -39,10 +39,16 @@ export default definePlugin({
         },
         {
             find: "group/model-mode-select-upsell",
-            replacement: {
-                match: /(?<=useCheckSubscriptionOffer\)\(\);).{0,30}return null;/,
-                replace: "return null;",
-            },
+            replacement: [
+                {
+                    match: /(?<=useCheckSubscriptionOffer\)\(\);).{0,30}return null;/,
+                    replace: "return null;",
+                },
+                {
+                    match: /upgradeRequiredModes:(\i)\}=(\i)\(\)/,
+                    replace: "upgradeRequiredModes:$1}=function(){let r=$2();r.upgradeRequiredModes=[];return r}()",
+                },
+            ],
         },
     ],
 });
