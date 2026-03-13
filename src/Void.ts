@@ -18,7 +18,7 @@ export { addChatBarButton, removeChatBarButton } from "@api/ChatBarButtons";
 export { dispatch, subscribe } from "@api/Events";
 export { closeAllModals, closeModal, confirm, openModal } from "@api/Modals";
 export { closeNotice, NoticeType, showNotice } from "@api/Notices";
-export { showToast, ToastType } from "@api/Notifications";
+export { dismissToast, showToast, ToastType } from "@api/Notifications";
 export { addPatch, isPluginEnabled, plugins, registerPlugin, startPlugin, stopPlugin } from "@api/PluginManager";
 export { definePluginSettings, initSettings, migratePluginSetting, migratePluginSettings, migrateSettingsToPlugin, PlainSettings, Settings, SettingsStore } from "@api/Settings";
 export { addTheme, disableTheme, enableTheme, getThemes, isThemesEnabled, removeTheme, setThemesEnabled } from "@api/Themes";
