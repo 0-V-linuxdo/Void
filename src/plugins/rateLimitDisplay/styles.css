@@ -1,0 +1,10 @@
+.void-ratelimit-danger {
+    color: hsl(var(--fg-danger));
+}
+
+.void-ratelimit-separator {
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+    height: 0.75rem;
+    width: 0.125rem;
+}
