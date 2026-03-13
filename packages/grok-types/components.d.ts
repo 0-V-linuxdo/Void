@@ -1,4 +1,4 @@
-import type { ComponentType, CSSProperties, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactElement, ReactNode } from "react";
 
 // #region Common Radix props
 
@@ -9,6 +9,10 @@ export interface RadixContentProps {
     side?: Side;
     align?: Align;
     sideOffset?: number;
+    alignOffset?: number;
+    avoidCollisions?: boolean;
+    collisionBoundary?: Element | Element[] | null;
+    collisionPadding?: number | Partial<Record<Side, number>>;
     className?: string;
     children?: ReactNode;
     [key: string]: any;
@@ -46,12 +50,15 @@ export type ButtonVariant =
 	| "ghostSecondary"
 	| "text"
 	| "textSecondary"
+	| "textsecondary"
 	| "sticky"
 	| "none"
 	| "primary"
 	| "secondary"
+	| "tertiary"
 	| "accent"
 	| "card"
+	| "danger"
 	| "destructive"
 	| "link"
 	| (string & {});
@@ -62,6 +69,7 @@ export type ButtonSize =
 	| "sm"
 	| "md"
 	| "lg"
+	| "xl"
 	| "iconXs"
 	| "iconSm"
 	| "iconMd"
@@ -77,15 +85,22 @@ export type ButtonSize =
 
 export type ButtonShape = "rectangle" | "pill" | "square" | "circle";
 
+export type ButtonColor = "default" | "danger";
+
 export interface ButtonProps {
     variant?: ButtonVariant;
     size?: ButtonSize;
     shape?: ButtonShape;
+    btnColor?: ButtonColor;
+    rounded?: boolean;
     asChild?: boolean;
+    overideIconStyle?: boolean;
     disabled?: boolean;
     className?: string;
     title?: string;
     tabIndex?: number;
+    type?: "button" | "submit" | "reset";
+    "aria-label"?: string;
     onClick?: (e: React.MouseEvent) => void;
     children?: ReactNode;
     [key: string]: any;
@@ -113,6 +128,7 @@ export interface DialogContentProps {
     className?: string;
     overlayClassname?: string;
     analyticsName?: string;
+    forceMount?: boolean;
     children?: ReactNode;
     onInteractOutside?: (e: Event) => void;
     onEscapeKeyDown?: (e: KeyboardEvent) => void;
@@ -120,19 +136,35 @@ export interface DialogContentProps {
     [key: string]: any;
 }
 
+export interface DialogOverlayProps {
+    className?: string;
+    forceMount?: boolean;
+    [key: string]: any;
+}
+
+export interface DialogPortalProps {
+    forceMount?: boolean;
+    container?: HTMLElement | null;
+    children?: ReactNode;
+}
+
 export interface DialogHeaderProps extends RadixSubProps {}
 export interface DialogFooterProps extends RadixSubProps {}
 export interface DialogTitleProps extends RadixSubProps {}
 export interface DialogDescriptionProps extends RadixSubProps {}
-export interface DialogCloseProps extends RadixSubProps {}
+export interface DialogCloseProps extends RadixTriggerProps {}
+export interface DialogTriggerProps extends RadixTriggerProps {}
 
 export type Dialog = ComponentType<DialogProps>;
 export type DialogContent = ComponentType<DialogContentProps>;
+export type DialogOverlay = ComponentType<DialogOverlayProps>;
+export type DialogPortal = ComponentType<DialogPortalProps>;
 export type DialogHeader = ComponentType<DialogHeaderProps>;
 export type DialogFooter = ComponentType<DialogFooterProps>;
 export type DialogTitle = ComponentType<DialogTitleProps>;
 export type DialogDescription = ComponentType<DialogDescriptionProps>;
 export type DialogClose = ComponentType<DialogCloseProps>;
+export type DialogTrigger = ComponentType<DialogTriggerProps>;
 
 // #endregion
 
@@ -142,7 +174,12 @@ export interface SelectProps {
     value?: string;
     defaultValue?: string;
     onValueChange?: (value: string) => void;
+    open?: boolean;
+    defaultOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
     disabled?: boolean;
+    required?: boolean;
+    name?: string;
     dir?: "ltr" | "rtl";
     children?: ReactNode;
     [key: string]: any;
@@ -160,18 +197,16 @@ export interface SelectTriggerProps {
 
 export type SelectContentPosition = "popper" | "item-aligned";
 
-export interface SelectContentProps {
-    className?: string;
+export interface SelectContentProps extends RadixContentProps {
     position?: SelectContentPosition;
     showScrollButtons?: boolean;
-    children?: ReactNode;
-    [key: string]: any;
 }
 
 export interface SelectItemProps {
     value: string;
     disabled?: boolean;
     asChild?: boolean;
+    textValue?: string;
     className?: string;
     children?: ReactNode;
     [key: string]: any;
@@ -203,6 +238,7 @@ export interface SwitchProps {
     required?: boolean;
     name?: string;
     value?: string;
+    form?: string;
     size?: SwitchSize;
     className?: string;
     [key: string]: any;
@@ -214,8 +250,16 @@ export type Switch = ComponentType<SwitchProps>;
 
 // #region Tooltip (Radix Tooltip)
 
+export interface TooltipProviderProps {
+    delayDuration?: number;
+    skipDelayDuration?: number;
+    disableHoverableContent?: boolean;
+    children?: ReactNode;
+}
+
 export interface TooltipProps extends RadixRootProps {
     delayDuration?: number;
+    disableHoverableContent?: boolean;
 }
 
 export interface TooltipTriggerProps extends RadixTriggerProps {}
@@ -225,6 +269,7 @@ export interface TooltipContentProps extends RadixContentProps {
     container?: HTMLElement | null;
 }
 
+export type TooltipProvider = ComponentType<TooltipProviderProps>;
 export type Tooltip = ComponentType<TooltipProps>;
 export type TooltipTrigger = ComponentType<TooltipTriggerProps>;
 export type TooltipContent = ComponentType<TooltipContentProps>;
@@ -235,9 +280,16 @@ export type TooltipContent = ComponentType<TooltipContentProps>;
 
 export interface DropdownMenuProps extends RadixRootProps {
     dir?: "ltr" | "rtl";
+    modal?: boolean;
 }
 
 export interface DropdownMenuTriggerProps extends RadixTriggerProps {}
+
+export interface DropdownMenuPortalProps {
+    forceMount?: boolean;
+    container?: HTMLElement | null;
+    children?: ReactNode;
+}
 
 export interface DropdownMenuContentProps extends RadixContentProps {
     loop?: boolean;
@@ -249,14 +301,18 @@ export interface DropdownMenuItemProps {
     onSelect?: (e: Event) => void;
     disabled?: boolean;
     inset?: boolean;
+    textValue?: string;
     className?: string;
     children?: ReactNode;
     [key: string]: any;
 }
 
+export type IndicatorPosition = "start" | "end";
+
 export interface DropdownMenuCheckboxItemProps extends DropdownMenuItemProps {
     checked?: boolean | "indeterminate";
     onCheckedChange?: (checked: boolean) => void;
+    indicatorPosition?: IndicatorPosition;
 }
 
 export interface DropdownMenuRadioGroupProps {
@@ -269,6 +325,8 @@ export interface DropdownMenuRadioGroupProps {
 
 export interface DropdownMenuRadioItemProps extends DropdownMenuItemProps {
     value?: string;
+    indicatorPosition?: IndicatorPosition;
+    indicatorType?: "circle" | "check";
 }
 
 export interface DropdownMenuSubProps {
@@ -284,6 +342,7 @@ export interface DropdownMenuSeparatorProps extends RadixSubProps {}
 
 export type DropdownMenu = ComponentType<DropdownMenuProps>;
 export type DropdownMenuTrigger = ComponentType<DropdownMenuTriggerProps>;
+export type DropdownMenuPortal = ComponentType<DropdownMenuPortalProps>;
 export type DropdownMenuContent = ComponentType<DropdownMenuContentProps>;
 export type DropdownMenuItem = ComponentType<DropdownMenuItemProps>;
 export type DropdownMenuCheckboxItem = ComponentType<DropdownMenuCheckboxItemProps>;
@@ -307,7 +366,18 @@ export interface CardProps {
     [key: string]: any;
 }
 
+export interface CardHeaderProps extends RadixSubProps {}
+export interface CardTitleProps extends RadixSubProps {}
+export interface CardDescriptionProps extends RadixSubProps {}
+export interface CardContentProps extends RadixSubProps {}
+export interface CardFooterProps extends RadixSubProps {}
+
 export type Card = ComponentType<CardProps>;
+export type CardHeader = ComponentType<CardHeaderProps>;
+export type CardTitle = ComponentType<CardTitleProps>;
+export type CardDescription = ComponentType<CardDescriptionProps>;
+export type CardContent = ComponentType<CardContentProps>;
+export type CardFooter = ComponentType<CardFooterProps>;
 
 // #endregion
 
@@ -323,6 +393,7 @@ export interface InputProps {
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     [key: string]: any;
 }
 
@@ -463,20 +534,44 @@ export type SidebarTrigger = ComponentType<SidebarTriggerProps>;
 
 // #region Toast (sonner)
 
+export interface ToastAction {
+    label: string;
+    onClick: (e: React.MouseEvent) => void;
+}
+
 export interface ToastOptions {
     id?: string | number;
     description?: ReactNode;
     duration?: number;
     icon?: ReactNode;
-    action?: { label: string; onClick: () => void };
-    cancel?: { label: string; onClick?: () => void };
+    action?: ToastAction | ReactElement;
+    cancel?: ToastAction | ReactElement;
     dismissible?: boolean;
+    closeButton?: boolean;
     onDismiss?: (toast: any) => void;
     onAutoClose?: (toast: any) => void;
     className?: string;
+    classNames?: {
+        toast?: string;
+        title?: string;
+        description?: string;
+        icon?: string;
+        actionButton?: string;
+        cancelButton?: string;
+        closeButton?: string;
+        content?: string;
+    };
     style?: CSSProperties;
+    unstyled?: boolean;
     position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "top-center" | "bottom-center";
+    richColors?: boolean;
     [key: string]: any;
+}
+
+export interface ToastPromiseOptions<T = any> {
+    loading?: ReactNode;
+    success?: ReactNode | ((data: T) => ReactNode);
+    error?: ReactNode | ((error: any) => ReactNode);
 }
 
 export interface ToastFn {
@@ -486,9 +581,12 @@ export interface ToastFn {
     warning(message: ReactNode, options?: ToastOptions): string | number;
     info(message: ReactNode, options?: ToastOptions): string | number;
     loading(message: ReactNode, options?: ToastOptions): string | number;
-    promise<T>(promise: Promise<T> | (() => Promise<T>), options?: { loading?: ReactNode; success?: ReactNode | ((data: T) => ReactNode); error?: ReactNode | ((error: any) => ReactNode) }): string | number;
+    message(message: ReactNode, options?: ToastOptions): string | number;
+    promise<T>(promise: Promise<T> | (() => Promise<T>), options?: ToastPromiseOptions<T>): string | number;
     dismiss(id?: string | number): void;
     custom(jsx: (id: string | number) => ReactNode, options?: ToastOptions): string | number;
+    getHistory(): any[];
+    getToasts(): any[];
 }
 
 // #endregion
@@ -499,11 +597,18 @@ export interface MotionProps {
     whileHover?: Record<string, any>;
     whileTap?: Record<string, any>;
     whileFocus?: Record<string, any>;
-    initial?: Record<string, any> | false;
-    animate?: Record<string, any>;
-    exit?: Record<string, any>;
+    whileInView?: Record<string, any>;
+    initial?: Record<string, any> | string | false;
+    animate?: Record<string, any> | string;
+    exit?: Record<string, any> | string;
     transition?: Record<string, any>;
-    variants?: Record<string, any>;
+    variants?: Record<string, Record<string, any>>;
+    layout?: boolean | "position" | "size" | "preserve-aspect";
+    layoutId?: string;
+    drag?: boolean | "x" | "y";
+    dragConstraints?: { top?: number; right?: number; bottom?: number; left?: number } | React.RefObject<Element>;
+    onAnimationStart?: () => void;
+    onAnimationComplete?: () => void;
     className?: string;
     style?: CSSProperties;
     onClick?: (e: React.MouseEvent) => void;
@@ -519,10 +624,17 @@ export interface SliderProps {
     value?: number[];
     defaultValue?: number[];
     onValueChange?: (value: number[]) => void;
+    onValueCommit?: (value: number[]) => void;
     min?: number;
     max?: number;
     step?: number;
+    orientation?: "horizontal" | "vertical";
     disabled?: boolean;
+    inverted?: boolean;
+    minStepsBetweenThumbs?: number;
+    name?: string;
+    form?: string;
+    dir?: "ltr" | "rtl";
     className?: string;
     [key: string]: any;
 }
@@ -549,6 +661,8 @@ export interface AnimatePresenceProps {
     initial?: boolean;
     mode?: "sync" | "wait" | "popLayout";
     onExitComplete?: () => void;
+    custom?: any;
+    presenceAffectsLayout?: boolean;
     children?: ReactNode;
 }
 
@@ -562,7 +676,9 @@ export interface PopoverProps extends RadixRootProps {
     modal?: boolean;
 }
 
-export interface PopoverTriggerProps extends RadixTriggerProps {}
+export interface PopoverTriggerProps extends RadixTriggerProps {
+    hoverOpen?: boolean;
+}
 
 export interface PopoverContentProps extends RadixContentProps {
     onOpenAutoFocus?: (e: Event) => void;
@@ -570,6 +686,8 @@ export interface PopoverContentProps extends RadixContentProps {
     onInteractOutside?: (e: Event) => void;
     onEscapeKeyDown?: (e: KeyboardEvent) => void;
     forceMount?: boolean;
+    hoverOpen?: boolean;
+    closeOnClick?: boolean;
 }
 
 export interface PopoverArrowProps {
@@ -593,6 +711,7 @@ export interface TabsProps {
     defaultValue?: string;
     onValueChange?: (value: string) => void;
     orientation?: "horizontal" | "vertical";
+    activationMode?: "automatic" | "manual";
     dir?: "ltr" | "rtl";
     className?: string;
     children?: ReactNode;
@@ -606,8 +725,11 @@ export interface TabsListProps {
     [key: string]: any;
 }
 
+export type TabsTriggerVariant = "default" | "underline";
+
 export interface TabsTriggerProps {
     value?: string;
+    variant?: TabsTriggerVariant;
     disabled?: boolean;
     className?: string;
     children?: ReactNode;
@@ -639,6 +761,7 @@ export interface AccordionProps {
     collapsible?: boolean;
     disabled?: boolean;
     dir?: "ltr" | "rtl";
+    orientation?: "horizontal" | "vertical";
     className?: string;
     children?: ReactNode;
     [key: string]: any;
@@ -652,12 +775,16 @@ export interface AccordionItemProps {
     [key: string]: any;
 }
 
+export type AccordionChevronPosition = "before" | "after";
+
 export interface AccordionTriggerProps {
     className?: string;
-    chevronPosition?: "left" | "right";
+    chevronPosition?: AccordionChevronPosition;
+    chevronClassName?: string;
     icon?: ReactNode;
     showIconOnly?: boolean;
     disabled?: boolean;
+    align?: "start";
     children?: ReactNode;
     [key: string]: any;
 }
@@ -686,6 +813,7 @@ export interface CheckboxProps {
     required?: boolean;
     name?: string;
     value?: string;
+    form?: string;
     className?: string;
     [key: string]: any;
 }
@@ -707,6 +835,7 @@ export interface TextareaProps {
     onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onFocus?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
     [key: string]: any;
 }
 
@@ -716,10 +845,11 @@ export type Textarea = ComponentType<TextareaProps>;
 
 // #region Spinner
 
-export type SpinnerSize = "xs" | "sm" | "md" | "lg" | "xl";
+export type SpinnerSize = "xxs" | "xs" | "sm" | "default" | "lg";
 
 export interface SpinnerProps {
     size?: SpinnerSize;
+    testId?: string;
     className?: string;
     [key: string]: any;
 }
@@ -730,11 +860,17 @@ export type Spinner = ComponentType<SpinnerProps>;
 
 // #region Avatar
 
+export interface AvatarUser {
+    givenName?: string;
+    familyName?: string;
+    profileImageUrl?: string;
+}
+
 export interface AvatarProps {
-    src?: string;
-    alt?: string;
-    fallback?: ReactNode;
+    user?: AvatarUser;
+    fallbackText?: string;
     className?: string;
+    textClassName?: string;
     [key: string]: any;
 }
 
@@ -748,7 +884,9 @@ export interface CommandProps {
     value?: string;
     onValueChange?: (value: string) => void;
     filter?: (value: string, search: string) => number;
+    shouldFilter?: boolean;
     loop?: boolean;
+    label?: string;
     className?: string;
     children?: ReactNode;
     [key: string]: any;
@@ -770,8 +908,10 @@ export interface CommandListProps {
 
 export interface CommandItemProps {
     value?: string;
+    keywords?: string[];
     onSelect?: (value: string) => void;
     disabled?: boolean;
+    forceMount?: boolean;
     className?: string;
     children?: ReactNode;
     [key: string]: any;
@@ -779,6 +919,8 @@ export interface CommandItemProps {
 
 export interface CommandGroupProps {
     heading?: ReactNode;
+    value?: string;
+    forceMount?: boolean;
     className?: string;
     children?: ReactNode;
     [key: string]: any;
