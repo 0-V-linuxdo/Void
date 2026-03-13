@@ -1,0 +1,21 @@
+.void-setting-slider-row {
+    align-items: center;
+}
+
+.void-setting-slider {
+    width: 8rem;
+}
+
+.void-setting-slider-value {
+    font-variant-numeric: tabular-nums;
+    width: 1.5rem;
+    text-align: right;
+}
+
+.void-setting-number-input {
+    width: 6rem;
+}
+
+.void-setting-string-input {
+    width: 100%;
+}

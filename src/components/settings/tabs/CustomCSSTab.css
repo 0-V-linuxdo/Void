@@ -1,3 +1,13 @@
+.void-css-root {
+    height: 100%;
+    min-height: 0;
+}
+
+.void-css-header {
+    padding: 0 0.75rem;
+    flex-shrink: 0;
+}
+
 .void-css-wrap {
     flex: 1;
     min-height: 0;

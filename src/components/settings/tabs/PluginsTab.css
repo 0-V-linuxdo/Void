@@ -1,7 +1,36 @@
+.void-plugins-section {
+    padding: 0 0.75rem;
+}
+
 .void-plugins-reload-banner {
+    margin: 0 0.75rem;
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
     background: hsl(var(--yellow-800) / 60%);
     border: 1px solid hsl(var(--yellow-700));
     color: hsl(var(--fg-warning));
+}
+
+.void-plugins-reload-text {
+    color: inherit;
+    flex: 1;
+}
+
+.void-plugins-search-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.void-plugins-filter-select {
+    width: 7rem;
+}
+
+.void-plugins-divider {
+    margin: 0 0.75rem;
+    width: auto;
+}
+
+.void-plugins-empty {
+    text-align: center;
+    padding: 2rem 0;
 }

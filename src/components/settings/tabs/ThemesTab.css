@@ -2,3 +2,25 @@
     font-size: 0.75rem;
     color: hsl(var(--fg-danger));
 }
+
+.void-themes-section {
+    padding: 0 0.75rem;
+}
+
+.void-themes-search-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.void-themes-import-btn {
+    height: 2.25rem;
+}
+
+.void-themes-filter-select {
+    width: 7rem;
+}
+
+.void-themes-empty {
+    text-align: center;
+    padding: 2rem 0;
+}

@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./ConfirmDialog.css";
+
 import {
 	Button,
 	Dialog,
@@ -27,12 +29,10 @@ export interface ConfirmDialogProps {
 	onConfirm: () => void;
 }
 
-const cardClasses = "w-full max-w-md p-6 rounded-2xl border border-border-l1 flex flex-col gap-6";
-
 export function ConfirmDialog({ open, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }: ConfirmDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className={cardClasses}>
+			<DialogContent className="void-confirm-dialog">
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>{description}</DialogDescription>

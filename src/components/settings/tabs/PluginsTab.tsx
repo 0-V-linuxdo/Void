@@ -24,7 +24,7 @@ import {
     Text,
 } from "@components";
 import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
-import { classes, classNameFactory } from "@utils/css";
+import { classNameFactory } from "@utils/css";
 import { useFiltered } from "@utils/react";
 
 import PluginCard from "../PluginCard";
@@ -106,7 +106,7 @@ export default function PluginsTab() {
 
     return (
         <Flex flexDirection="column" gap="1.5rem">
-            <Flex flexDirection="column" gap="0" className="px-3">
+            <Flex flexDirection="column" gap="0" className={cl("section")}>
                 <Text size="sm" weight="medium">
                     Plugins
                 </Text>
@@ -115,8 +115,8 @@ export default function PluginsTab() {
                 </Text>
             </Flex>
             {needsReload && !showReload && (
-                <Flex alignItems="center" className={classes(cl("reload-banner"), "mx-3")}>
-                    <Text size="xs" className="text-inherit flex-1">
+                <Flex alignItems="center" className={cl("reload-banner")}>
+                    <Text size="xs" className={cl("reload-text")}>
                         Reload the page to apply plugin changes.
                     </Text>
                     <Button variant="secondary" size="sm" onClick={() => location.reload()}>
@@ -124,16 +124,16 @@ export default function PluginsTab() {
                     </Button>
                 </Flex>
             )}
-            <Flex alignItems="center" gap="0.75rem" className="px-3">
+            <Flex alignItems="center" gap="0.75rem" className={cl("section")}>
                 <Input
                     type="text"
                     placeholder={`Search ${visibleUser.length + visibleRequired.length} plugins...`}
                     value={search}
                     onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
-                    className="flex-1 min-w-0"
+                    className={cl("search-input")}
                 />
                 <Select value={filter} onValueChange={(v: string) => setFilter(v as ListFilter)}>
-                    <SelectTrigger className="w-28">
+                    <SelectTrigger className={cl("filter-select")}>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -144,7 +144,7 @@ export default function PluginsTab() {
                 </Select>
             </Flex>
             {filteredUser.length > 0 && (
-                <Grid columns="repeat(2, 1fr)" className="px-3">
+                <Grid columns="repeat(2, 1fr)" className={cl("section")}>
                     {filteredUser.map(n => (
                         <ErrorBoundary key={n} fallback={null}>
                             <PluginCard name={n} onSettings={setDialogName} onReload={onReload} />
@@ -154,8 +154,8 @@ export default function PluginsTab() {
             )}
             {filteredRequired.length > 0 && (
                 <>
-                    <Separator className="mx-3 w-auto" />
-                    <Grid columns="repeat(2, 1fr)" className="px-3">
+                    <Separator className={cl("divider")} />
+                    <Grid columns="repeat(2, 1fr)" className={cl("section")}>
                         {filteredRequired.map(n => (
                             <ErrorBoundary key={n} fallback={null}>
                                 <PluginCard name={n} onSettings={setDialogName} onReload={onReload} />
@@ -165,7 +165,7 @@ export default function PluginsTab() {
                 </>
             )}
             {!hasResults && (
-                <Paragraph color="secondary" className="text-center py-8">
+                <Paragraph color="secondary" className={cl("empty")}>
                     {search ? "No plugins match your search." : "No plugins available."}
                 </Paragraph>
             )}

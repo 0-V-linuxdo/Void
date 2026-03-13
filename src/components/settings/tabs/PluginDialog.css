@@ -26,3 +26,7 @@
 .void-plugin-dialog-header {
     text-align: left;
 }
+
+.void-plugin-dialog-settings-list {
+    margin-top: 0.5rem;
+}
