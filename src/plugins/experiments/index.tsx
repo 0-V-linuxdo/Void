@@ -133,7 +133,7 @@ function ExperimentRow({ flagKey, isNew }: { flagKey: string; isNew: boolean }) 
     );
 }
 
-type Filter = "all" | "enabled" | "disabled" | "new" | "modified";
+type Filter = "all" | "enabled" | "disabled" | "new" | "modified" | "obfuscated";
 
 function ExperimentsTab() {
     const [search, setSearch] = useState("");
@@ -154,6 +154,7 @@ function ExperimentsTab() {
         if (filter === "enabled") return enabled;
         if (filter === "disabled") return !enabled;
         if (filter === "new") return isNewFlag(k);
+        if (filter === "obfuscated") return tryDecodeBase64Key(k) != null;
         return override !== undefined;
     }, [filter, config, overrides]);
 
@@ -185,9 +186,9 @@ function ExperimentsTab() {
                 </Flex>
             </Card>
             <Flex alignItems="center" gap="0.5rem" className={cl("section")}>
-                <Input placeholder={`Search ${prefiltered.length} flags...`} value={search} onChange={e => setSearch(e.target.value)} className="flex-1" />
+                <Input placeholder={`Search ${prefiltered.length} flags...`} value={search} onChange={e => setSearch(e.target.value)} className={cl("search-input")} />
                 <Select value={filter} onValueChange={(v: string) => setFilter(v as Filter)}>
-                    <SelectTrigger className="w-28">
+                    <SelectTrigger className={cl("filter-select")}>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -196,6 +197,7 @@ function ExperimentsTab() {
                         <SelectItem value="disabled">Disabled</SelectItem>
                         <SelectItem value="new">New</SelectItem>
                         <SelectItem value="modified">Modified</SelectItem>
+                        <SelectItem value="obfuscated">Obfuscated</SelectItem>
                     </SelectContent>
                 </Select>
             </Flex>
