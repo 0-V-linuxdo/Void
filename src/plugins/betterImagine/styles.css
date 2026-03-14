@@ -51,6 +51,7 @@
     background: rgb(255 255 255 / 10%);
 }
 
+/* stylelint-disable-next-line selector-class-pattern -- Grok's class name */
 .group\/media-post-masonry-card:hover .void-imagine-card-btn {
     opacity: 1;
 }

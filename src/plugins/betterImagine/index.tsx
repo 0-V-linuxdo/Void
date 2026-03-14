@@ -9,12 +9,13 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import { Button, ButtonWithTooltip } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { DownloadIcon, HeartCrackIcon } from "@components/icons";
+import { HeartCrackIcon } from "@components/icons";
 import type { MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
 import { Fragment, React, useState } from "@turbopack/common/react";
 import { MediaStore } from "@turbopack/common/stores";
 import { Toaster } from "@turbopack/common/utils";
+import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -22,6 +23,7 @@ import { createExternalStore, fetchExternal, sanitizeFilename } from "@utils/mis
 import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 
+const DownloadIcon = findExportedComponentLazy("DownloadIcon");
 const logger = new Logger("BetterImagine");
 const cl = classNameFactory("void-imagine-");
 
@@ -157,7 +159,7 @@ function DownloadAllButton() {
 
     return (
         <Button variant="secondary" shape="pill" size="md" disabled={loading} onClick={onClick}>
-            <DownloadIcon size={16} />
+            <DownloadIcon size="16" />
             <span className="font-semibold">{loading ? "Downloading..." : "Download all"}</span>
         </Button>
     );
@@ -228,7 +230,7 @@ function CardActions({ postId }: { postId: string }) {
                 variant="none"
                 onClick={onDownload}
             >
-                <DownloadIcon size={16} className="text-white" />
+                <DownloadIcon size="16" className="text-white" />
             </ButtonWithTooltip>
             <ButtonWithTooltip
                 tooltipContent="Unsave"
