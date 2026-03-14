@@ -40,3 +40,17 @@
     background: hsl(var(--fg-primary));
     color: var(--background);
 }
+
+.void-imagine-card-btn {
+    background: rgb(0 0 0 / 25%);
+    border: 1px solid rgb(255 255 255 / 15%);
+    opacity: 0;
+}
+
+.void-imagine-card-btn:hover {
+    background: rgb(255 255 255 / 10%);
+}
+
+.group\/media-post-masonry-card:hover .void-imagine-card-btn {
+    opacity: 1;
+}

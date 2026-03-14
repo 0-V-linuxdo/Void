@@ -7,9 +7,9 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { Button } from "@components";
+import { Button, ButtonWithTooltip } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { DownloadIcon } from "@components/icons";
+import { DownloadIcon, HeartCrackIcon } from "@components/icons";
 import type { MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
 import { Fragment, React, useState } from "@turbopack/common/react";
@@ -194,8 +194,59 @@ function useFilteredFavorites(): MediaItem[] {
     return filterItems(favorites);
 }
 
+function CardActions({ postId }: { postId: string }) {
+    const item = MediaStore.useMediaStore(s => s.byId[postId]);
+    const unlike = MediaStore.useMediaStore(s => s.unlike);
+
+    const onDownload = async () => {
+        if (!item?.mediaUrl) return;
+        try {
+            const res = await fetchExternal(item.mediaUrl);
+            const blob = await res.blob();
+            const ext = item.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        } catch (e) {
+            logger.error("Failed to download:", e);
+        }
+    };
+
+    const onUnfavorite = () => {
+        unlike(postId);
+    };
+
+    return (
+        <Fragment>
+            <ButtonWithTooltip
+                tooltipContent="Download"
+                className={cl("card-btn")}
+                shape="circle"
+                size="md"
+                variant="none"
+                onClick={onDownload}
+            >
+                <DownloadIcon size={16} className="text-white" />
+            </ButtonWithTooltip>
+            <ButtonWithTooltip
+                tooltipContent="Unsave"
+                className={cl("card-btn")}
+                shape="circle"
+                size="md"
+                variant="none"
+                onClick={onUnfavorite}
+            >
+                <HeartCrackIcon size={16} className="text-white" />
+            </ButtonWithTooltip>
+        </Fragment>
+    );
+}
+
 const WrappedDownloadAll = ErrorBoundary.wrap(DownloadAllButton);
 const WrappedFilterButtons = ErrorBoundary.wrap(FilterButtons);
+const WrappedCardActions = ErrorBoundary.wrap(CardActions);
 
 export default definePlugin({
     name: "BetterImagine",
@@ -218,6 +269,7 @@ export default definePlugin({
 
     _renderDownloadAll: WrappedDownloadAll,
     _renderFilterButtons: WrappedFilterButtons,
+    _renderCardActions: WrappedCardActions,
 
     _useFilteredFavorites() {
         return useFilteredFavorites();
@@ -244,19 +296,6 @@ export default definePlugin({
                     match: /(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\2\.useMediaStore\)\(\i=>\i\.list\)/,
                     replace: "$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)",
                 },
-            ],
-        },
-        {
-            find: 'imagine-folder.all","All"',
-            replacement: {
-                match: /"imagine-folder.all","All"\)}\)]\}\)/,
-                replace: "$&,$self._renderFilterButtons({})",
-            },
-        },
-        {
-            find: "group/media-post-masonry-card",
-            group: true,
-            replacement: [
                 {
                     match: /muted:!0,autoPlay:!0/,
                     replace: "muted:!0,autoPlay:$self._autoPlay()",
@@ -266,6 +305,13 @@ export default definePlugin({
                     replace: "$&,...$self._hoverProps()",
                 },
             ],
+        },
+        {
+            find: 'imagine-folder.all","All"',
+            replacement: {
+                match: /"imagine-folder.all","All"\)}\)]\}\)/,
+                replace: "$&,$self._renderFilterButtons({})",
+            },
         },
     ],
 });
