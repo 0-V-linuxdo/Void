@@ -11,19 +11,16 @@ import { definePluginSettings } from "@api/Settings";
 import { ChatBarButton, Separator } from "@components";
 import { GaugeIcon } from "@components/icons";
 import type { RateLimitResponse } from "@grok-types";
-import { React, useCallback, useEffect, useRef, useState } from "@turbopack/common/react";
+import { React, useMemo } from "@turbopack/common/react";
 import { ChatPageStore, ModelsStore } from "@turbopack/common/stores";
 import { ApiClients, TanStackQuery } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
-import { Logger } from "@utils/Logger";
 import { createExternalStore, formatCountdown, formatDuration } from "@utils/misc";
 import { useCountdown, useExternalStore } from "@utils/react";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 
 const cl = classNameFactory("void-ratelimit-");
-
-const logger = new Logger("RateLimitDisplay");
 
 const settings = definePluginSettings({
     showMaxCount: {
@@ -40,74 +37,55 @@ interface Usage {
     windowSeconds: number;
 }
 
-interface ModelUsage {
-    model: string;
-    count: number;
-    oldestTs: number;
-}
-
 const EMPTY: Usage = { remaining: -1, total: -1, waitSeconds: null, windowSeconds: 0 };
 
 const usageStore = createExternalStore();
 
-const usageCache = new Map<string, ModelUsage>();
+const sendTimestamps = new Map<string, number[]>();
 
-async function fetchUsageFromHistory(modelId: string, windowSeconds: number): Promise<number> {
-    const cached = usageCache.get(modelId);
-    const windowMs = windowSeconds * 1000;
-    const cutoff = Date.now() - windowMs;
+function recordSend(modelId: string) {
+    const list = sendTimestamps.get(modelId) ?? [];
+    list.push(Date.now());
+    sendTimestamps.set(modelId, list);
+    usageStore.notify();
+}
 
-    if (cached && cached.oldestTs > cutoff) return cached.count;
+function getUsedCount(modelId: string, windowSeconds: number): number {
+    const list = sendTimestamps.get(modelId);
+    if (!list?.length) return 0;
+    const cutoff = Date.now() - windowSeconds * 1000;
+    const fresh = list.filter(ts => ts > cutoff);
+    if (fresh.length !== list.length) sendTimestamps.set(modelId, fresh);
+    return fresh.length;
+}
 
-    try {
-        const { conversations } = await ApiClients.chatApi.chatListConversations({});
-        let count = 0;
-        let oldestTs = Date.now();
-
-        const recentConvos = conversations.filter(
-            (c: any) => new Date(c.modifyTime ?? c.createTime).getTime() > cutoff
-        );
-
-        const responses = await Promise.all(
-            recentConvos.map((c: any) =>
-                ApiClients.chatApi.chatListResponses({ conversationId: c.conversationId }).catch(() => ({ responses: [] }))
-            )
-        );
-
-        for (const resp of responses) {
-            for (const r of resp.responses ?? []) {
-                if (r.sender !== "assistant" || r.model !== modelId) continue;
-                const ts = new Date(r.createTime).getTime();
-                if (ts <= cutoff) continue;
-                count++;
-                if (ts < oldestTs) oldestTs = ts;
-            }
-        }
-
-        usageCache.set(modelId, { model: modelId, count, oldestTs });
-        return count;
-    } catch (e) {
-        logger.error("Failed to fetch usage history:", e);
-        return usageCache.get(modelId)?.count ?? 0;
+function getOldestSendTs(modelId: string, windowSeconds: number): number | null {
+    const list = sendTimestamps.get(modelId);
+    if (!list?.length) return null;
+    const cutoff = Date.now() - windowSeconds * 1000;
+    for (const ts of list) {
+        if (ts > cutoff) return ts;
     }
+    return null;
 }
 
-function computeWait(modelId: string, windowSeconds: number): number | null {
-    const cached = usageCache.get(modelId);
-    if (!cached) return null;
-    const resetAt = cached.oldestTs + windowSeconds * 1000;
-    const seconds = Math.ceil((resetAt - Date.now()) / 1000);
-    return seconds > 0 ? seconds : null;
-}
-
-function toUsage(data: RateLimitResponse | undefined, used: number, modelId?: string): Usage {
+function toUsage(data: RateLimitResponse | undefined, modelId?: string): Usage {
     if (!data || data.totalQueries <= 0) return EMPTY;
+    const windowSeconds = data.windowSizeSeconds;
+    const used = modelId ? getUsedCount(modelId, windowSeconds) : 0;
     const remaining = Math.max(0, data.totalQueries - used);
     const apiWait = data.waitTimeSeconds;
-    const waitSeconds = apiWait != null && apiWait > 0
-        ? Math.ceil(apiWait)
-        : remaining === 0 && modelId ? computeWait(modelId, data.windowSizeSeconds) : null;
-    return { remaining, total: data.totalQueries, waitSeconds, windowSeconds: data.windowSizeSeconds };
+    let waitSeconds: number | null = null;
+    if (apiWait != null && apiWait > 0) {
+        waitSeconds = Math.ceil(apiWait);
+    } else if (remaining === 0 && modelId) {
+        const oldest = getOldestSendTs(modelId, windowSeconds);
+        if (oldest) {
+            const seconds = Math.ceil((oldest + windowSeconds * 1000 - Date.now()) / 1000);
+            waitSeconds = seconds > 0 ? seconds : null;
+        }
+    }
+    return { remaining, total: data.totalQueries, waitSeconds, windowSeconds };
 }
 
 function formatLabel(u: Usage, wait: number | null, short?: boolean): string {
@@ -124,8 +102,6 @@ function Label({ usage, wait, short }: { usage: Usage; wait: number | null; shor
 }
 
 function useLimits(modelId: string | undefined, key: string, enabled: boolean) {
-    const conversationId = ChatPageStore.useChatPageStore(s => s.conversationId);
-    const lastMessageId = ChatPageStore.useChatPageStore(s => s.lastMessageId);
     const streaming = ChatPageStore.useChatPageStore(s => !!s.streamedMessageId);
 
     const { data } = TanStackQuery.useQuery<RateLimitResponse>({
@@ -135,20 +111,7 @@ function useLimits(modelId: string | undefined, key: string, enabled: boolean) {
         staleTime: 10_000,
     });
 
-    const [used, setUsed] = useState(0);
-    const fetchRef = useRef(0);
-
-    const refreshUsage = useCallback(() => {
-        if (!enabled || !modelId || !data || streaming) return;
-        const id = ++fetchRef.current;
-        fetchUsageFromHistory(modelId, data.windowSizeSeconds).then(count => {
-            if (id === fetchRef.current) setUsed(count);
-        }).catch(() => {});
-    }, [enabled, modelId, data?.windowSizeSeconds, streaming]);
-
-    useEffect(refreshUsage, [refreshUsage, conversationId, lastMessageId]);
-
-    return { data, used };
+    return data;
 }
 
 function RateLimitIndicator(_props: ChatBarButtonRenderProps) {
@@ -157,20 +120,19 @@ function RateLimitIndicator(_props: ChatBarButtonRenderProps) {
     const modelMode = ChatPageStore.useChatPageStore(s => s.modelMode);
     const activeModelId = ChatPageStore.useChatPageStore(s => s.activeModelId);
     const modelByMode = ModelsStore.useModelsStore(s => s.modelByMode);
-    const rateLimited = ChatPageStore.useChatPageStore(s => s.isRateLimited === "user");
 
     const isAuto = modelMode === "auto";
     const singleModelId = modelByMode?.[modelMode]?.modelId || activeModelId;
     const fastModelId = modelByMode?.fast?.modelId;
     const expertModelId = modelByMode?.expert?.modelId;
 
-    const singleLimits = useLimits(singleModelId, "single", !isAuto);
-    const fastLimits = useLimits(fastModelId, "fast", isAuto);
-    const expertLimits = useLimits(expertModelId, "expert", isAuto);
+    const singleData = useLimits(singleModelId, "single", !isAuto);
+    const fastData = useLimits(fastModelId, "fast", isAuto);
+    const expertData = useLimits(expertModelId, "expert", isAuto);
 
-    const single = toUsage(singleLimits.data, singleLimits.used, singleModelId);
-    const fast = toUsage(fastLimits.data, fastLimits.used, fastModelId);
-    const expert = toUsage(expertLimits.data, expertLimits.used, expertModelId);
+    const single = useMemo(() => toUsage(singleData, singleModelId), [singleData, singleModelId]);
+    const fast = useMemo(() => toUsage(fastData, fastModelId), [fastData, fastModelId]);
+    const expert = useMemo(() => toUsage(expertData, expertModelId), [expertData, expertModelId]);
 
     const singleWait = useCountdown(single.waitSeconds);
     const fastWait = useCountdown(fast.waitSeconds);
@@ -200,7 +162,7 @@ function RateLimitIndicator(_props: ChatBarButtonRenderProps) {
     );
 }
 
-let unsubRateLimited: (() => void) | undefined;
+let unsubStreaming: (() => void) | undefined;
 
 export default definePlugin({
     name: "RateLimitDisplay",
@@ -210,16 +172,20 @@ export default definePlugin({
     startAt: StartAt.TurbopackReady,
     chatBarButton: { render: RateLimitIndicator },
     start() {
-        let prev = ChatPageStore.useChatPageStore.getState().isRateLimited === "user";
-        unsubRateLimited = ChatPageStore.useChatPageStore.subscribe(s => {
-            const limited = s.isRateLimited === "user";
-            if (limited && !prev) usageStore.notify();
-            prev = limited;
+        let prevStreaming = false;
+        let prevModelId: string | undefined;
+        unsubStreaming = ChatPageStore.useChatPageStore.subscribe(s => {
+            const streaming = !!s.streamedMessageId;
+            if (prevStreaming && !streaming && prevModelId) {
+                recordSend(prevModelId);
+            }
+            prevStreaming = streaming;
+            prevModelId = s.activeModelId;
         });
     },
     stop() {
-        unsubRateLimited?.();
-        usageCache.clear();
+        unsubStreaming?.();
+        sendTimestamps.clear();
     },
     patches: [{
         find: "chat-page-store:checkRateLimits",
@@ -229,8 +195,7 @@ export default definePlugin({
         },
         all: true,
     }],
-    _onRateLimitCheck(res: RateLimitResponse, req: { modelName: string }) {
-        usageCache.delete(req.modelName);
-        usageStore.notify();
+    _onRateLimitCheck(res: RateLimitResponse, _req: { modelName: string }) {
+        if (res.waitTimeSeconds && res.waitTimeSeconds > 0) usageStore.notify();
     },
 });
