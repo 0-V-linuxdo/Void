@@ -1,5 +1,4 @@
 .void-themes-add-error {
-    font-size: 0.75rem;
     color: hsl(var(--fg-danger));
 }
 
