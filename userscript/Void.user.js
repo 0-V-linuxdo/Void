@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.2.8
+// @version      0.2.9
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.2.8 — A modification for grok.com
+ * Void v0.2.9 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -129,6 +129,7 @@
     enableTheme: () => enableTheme,
     enableStyle: () => enableStyle,
     dispatch: () => dispatch,
+    dismissToast: () => dismissToast,
     disableTheme: () => disableTheme,
     disableStyle: () => disableStyle,
     definePluginSettings: () => definePluginSettings,
@@ -810,8 +811,16 @@ ${sourceUrl}`;
   function wrapExistingFactories() {
     runtimeFactoryRegistry = captureFactoryRegistry();
     if (runtimeFactoryRegistry) {
+      const wrapped = new Map;
       for (const [id, factory] of runtimeFactoryRegistry) {
-        runtimeFactoryRegistry.set(id, wrapFactory(id, factory));
+        const existing = wrapped.get(factory);
+        if (existing) {
+          runtimeFactoryRegistry.set(id, existing);
+        } else {
+          const w = wrapFactory(id, factory);
+          wrapped.set(factory, w);
+          runtimeFactoryRegistry.set(id, w);
+        }
       }
     }
     if (!runtimeModuleCache && runtimeFactoryRegistry) {
@@ -1569,6 +1578,59 @@ ${sourceUrl}`;
     OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
   })(OptionType ||= {});
 
+  // void-css:D:/Projects/Void/src/components/ChatBarButton.css
+  registerStyle("ChatBarButton", `.void-chatbar-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.void-chatbar-wrapper:focus,
+.void-chatbar-wrapper:focus-visible {
+    outline: none;
+}
+
+.void-chatbar-wrapper:focus-visible {
+    box-shadow: 0 0 0 1px hsl(var(--ring));
+}
+
+.void-chatbar-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    border-radius: 9999px;
+    box-shadow: inset 0 0 0 1px oklch(99.24% 0 none / 8%);
+    color: hsl(var(--fg-primary));
+    transition: background-color 0.15s ease-out;
+}
+
+.void-chatbar-button:hover {
+    background-color: hsl(var(--surface-l3));
+}
+
+.void-chatbar-button-icon-only {
+    aspect-ratio: 1;
+    gap: 0.125rem;
+}
+
+.void-chatbar-button-with-text {
+    padding: 0 0.625rem;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.void-chatbar-motion {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+`);
+
   // src/turbopack/common/react.tsx
   var React;
   var useState;
@@ -2088,10 +2150,10 @@ ${sourceUrl}`;
     }, children);
   }
   // src/components/ChatBarButton.tsx
+  var cl2 = classNameFactory("void-chatbar-");
   var EXPAND = { width: "auto", opacity: 1 };
   var COLLAPSE = { width: 0, opacity: 0 };
   var TRANSITION = { duration: 0.2, ease: "easeOut" };
-  var QUERY_BAR_BUTTON = "h-10 relative rounded-full ring-1 ring-inset transition-colors duration-150 ease-out ring-border-l1 hover:bg-surface-l3";
   function ChatBarButton({ icon, children, tooltip, onClick, className, iconOnly, "aria-label": ariaLabel }) {
     const label = typeof tooltip === "string" ? tooltip : ariaLabel;
     const reducedMotion = useReducedMotion();
@@ -2104,20 +2166,20 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "none",
       size: "none",
-      className: classes("group flex flex-col justify-center rounded-full", "focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"),
+      className: cl2("wrapper"),
       tooltipContent: tooltip,
       tooltipProps: { delayDuration: 600 },
       tooltipContentProps: { side: "top" },
       onClick,
       "aria-label": label
     }, /* @__PURE__ */ React.createElement("div", {
-      className: classes(QUERY_BAR_BUTTON, "flex items-center justify-center", showText ? "px-2.5 gap-1.5 text-xs font-medium tabular-nums" : "aspect-square gap-0.5", className ?? "text-fg-primary")
+      className: classes(cl2("button"), showText ? cl2("button-with-text") : cl2("button-icon-only"), className)
     }, icon, iconOnly != null ? /* @__PURE__ */ React.createElement(AnimatePresence, null, showText && /* @__PURE__ */ React.createElement(MotionDiv, {
       initial: reducedMotion || !hasShownText.current ? false : COLLAPSE,
       animate: EXPAND,
       exit: COLLAPSE,
       transition: reducedMotion ? { duration: 0 } : TRANSITION,
-      className: "flex items-center overflow-hidden whitespace-nowrap"
+      className: cl2("motion")
     }, children)) : children));
   }
 
@@ -3002,75 +3064,128 @@ ${sourceUrl}`;
     }
   }
 
-  // src/api/Notices.ts
+  // void-css:D:/Projects/Void/src/api/Notices.css
+  registerStyle("Notices", `.void-notice-root {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.void-notice-icon {
+    flex-shrink: 0;
+    display: flex;
+    color: hsl(var(--fg-secondary));
+}
+
+.void-notice-message {
+    flex: 1;
+    min-width: 0;
+    color: hsl(var(--fg-primary));
+}
+
+.void-notice-close {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: hsl(var(--fg-secondary));
+    background: none;
+    border: none;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+}
+
+.void-notice-close:hover {
+    opacity: 1;
+}
+`);
+
+  // src/api/Notices.tsx
   var NoticeType;
   ((NoticeType2) => {
-    NoticeType2["INFO"] = "log";
-    NoticeType2["WARNING"] = "warn";
+    NoticeType2["INFO"] = "info";
+    NoticeType2["WARNING"] = "warning";
     NoticeType2["ERROR"] = "error";
+    NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var activeElement = null;
-  var dismissTimer = null;
-  var ICON_PATHS = {
-    ["log" /* INFO */]: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
-    ["warn" /* WARNING */]: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-    ["error" /* ERROR */]: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'
+  var cl3 = classNameFactory("void-notice-");
+  var ICONS = {
+    ["info" /* INFO */]: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+    ["warning" /* WARNING */]: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    ["error" /* ERROR */]: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+    ["success" /* SUCCESS */]: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'
   };
-  function icon(type) {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">${ICON_PATHS[type]}</svg>`;
+  var activeNoticeId = null;
+  function Notice({ message, type, action, onClose }) {
+    const iconSvg = ICONS[type ?? "info" /* INFO */];
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl3("root")
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: cl3("icon"),
+      dangerouslySetInnerHTML: {
+        __html: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg>`
+      }
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: cl3("message")
+    }, message), action && /* @__PURE__ */ React.createElement(Button, {
+      variant: "primary",
+      size: "md",
+      shape: "pill",
+      onClick: (e) => {
+        e.stopPropagation();
+        action.onClick();
+      }
+    }, action.icon, action.label), /* @__PURE__ */ React.createElement("button", {
+      className: cl3("close"),
+      onClick: (e) => {
+        e.stopPropagation();
+        onClose();
+      }
+    }, /* @__PURE__ */ React.createElement("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "16",
+      height: "16",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /* @__PURE__ */ React.createElement("line", {
+      x1: "18",
+      y1: "6",
+      x2: "6",
+      y2: "18"
+    }), /* @__PURE__ */ React.createElement("line", {
+      x1: "6",
+      y1: "6",
+      x2: "18",
+      y2: "18"
+    }))));
   }
   function showNotice(options) {
-    const id = `void-notice-${Date.now()}`;
     closeNotice();
-    const type = options.type ?? "log" /* INFO */;
-    const el = document.createElement("div");
-    el.id = id;
-    el.className = [
-      "fixed top-4 left-1/2 -translate-x-1/2 z-[9999]",
-      "flex items-center gap-3",
-      "bg-popover rounded-2xl ring-1 ring-inset ring-toggle-border",
-      "py-3 pl-4 pr-3 min-w-[300px] w-max max-w-[90vw]",
-      "text-sm animate-in fade-in slide-in-from-top-2"
-    ].join(" ");
-    el.innerHTML = icon(type);
-    const content = document.createElement("span");
-    content.append(options.message);
-    if (options.link) {
-      const a = document.createElement("a");
-      a.href = options.link.url;
-      a.target = "_blank";
-      a.rel = "noreferrer";
-      a.textContent = options.link.label;
-      a.className = "font-medium underline underline-offset-2";
-      content.append(" ", a);
-    }
-    if (options.suffix)
-      content.append(" ", options.suffix);
-    el.appendChild(content);
-    const btn = document.createElement("button");
-    btn.className = "ms-auto flex-shrink-0 cursor-pointer rounded-md p-1 hover:bg-surface-hover";
-    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-    btn.onclick = closeNotice;
-    el.appendChild(btn);
-    document.body.appendChild(el);
-    activeElement = el;
-    if (options.timeout)
-      dismissTimer = setTimeout(closeNotice, options.timeout);
-    return id;
+    const { toast } = Toaster;
+    activeNoticeId = toast.custom((id) => createElement(Notice, {
+      ...options,
+      onClose: () => toast.dismiss(id)
+    }), { duration: options.duration ?? Infinity });
+    return activeNoticeId;
   }
   function closeNotice() {
-    if (dismissTimer) {
-      clearTimeout(dismissTimer);
-      dismissTimer = null;
-    }
-    if (activeElement) {
-      activeElement.remove();
-      activeElement = null;
+    if (activeNoticeId != null) {
+      Toaster.toast.dismiss(activeNoticeId);
+      activeNoticeId = null;
     }
   }
 
   // src/utils/updateChecker.ts
   var logger8 = new Logger("UpdateChecker", "#85c1dc");
+  var UPDATE_URL = "https://greasyfork.org/en/scripts/567871-void";
   function isNewer(remote, local) {
     const r = remote.split(".").map(Number);
     const l = local.split(".").map(Number);
@@ -3089,16 +3204,15 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.2.8")) {
-        logger8.info(`Up to date (${"0.2.8"})`);
+      if (!latest || !isNewer(latest, "0.2.9")) {
+        logger8.info(`Up to date (${"0.2.9"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.2.8"} → ${latest}`);
+      logger8.info(`Update available: ${"0.2.9"} → ${latest}`);
       showNotice({
-        message: "Void has been updated to a newer version. Please update from",
-        type: "warn" /* WARNING */,
-        link: { url: "https://greasyfork.org/en/scripts/567871-void", label: "Greasy Fork" },
-        suffix: "to the new version."
+        message: "Void is outdated, please update to the new version.",
+        type: "warning" /* WARNING */,
+        action: { label: "Update", onClick: () => window.open(UPDATE_URL, "_blank") }
       });
     } catch (e) {
       logger8.warn("Failed to check for updates", e);
@@ -3401,7 +3515,7 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/tabs/CustomCSSTab.tsx
-  var cl2 = classNameFactory("void-css-");
+  var cl4 = classNameFactory("void-css-");
   var STYLE_ID = "void-custom-css";
   function setCustomCSSEnabled(enabled) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
@@ -3507,7 +3621,7 @@ ${sourceUrl}`;
     return result;
   }
   function span(cls, text) {
-    return `<span class="${cl2(cls)}">${esc(text)}</span>`;
+    return `<span class="${cl4(cls)}">${esc(text)}</span>`;
   }
   function esc(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -3552,11 +3666,11 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl2("root")
+      className: cl4("root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
-      className: cl2("header")
+      className: cl4("header")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -3570,13 +3684,13 @@ ${sourceUrl}`;
       checked: enabled,
       onCheckedChange: handleToggle
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl2("wrap")
+      className: cl4("wrap")
     }, /* @__PURE__ */ React.createElement("pre", {
       ref: highlightRef,
-      className: cl2("highlight"),
+      className: cl4("highlight"),
       "aria-hidden": "true"
     }), /* @__PURE__ */ React.createElement("textarea", {
-      className: cl2("input"),
+      className: cl4("input"),
       value: css,
       onChange: (e) => apply(e.target.value),
       onPaste: handlePaste,
@@ -3752,7 +3866,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/PluginCard.tsx
-  var cl3 = classNameFactory("void-plugin-card-");
+  var cl5 = classNameFactory("void-plugin-card-");
   function PluginCard({ name, onSettings, onReload }) {
     const plugin = plugins[name];
     const forceUpdate = useForceUpdater();
@@ -3771,33 +3885,33 @@ ${sourceUrl}`;
         onReload(name);
     };
     return /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl3("root"), plugin.required && cl3("required"), crashed && cl3("crashed"))
+      className: classes(cl5("root"), plugin.required && cl5("required"), crashed && cl5("crashed"))
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl3("body")
+      className: cl5("body")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
-      className: cl3("name")
+      className: cl5("name")
     }, name, crashed && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
-      className: cl3("crashed-icon")
+      className: cl5("crashed-icon")
     }, /* @__PURE__ */ React.createElement(TriangleAlert, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin failed to start")), plugin.required && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
-      className: cl3("required-icon")
+      className: cl5("required-icon")
     }, /* @__PURE__ */ React.createElement(CircleAlertIcon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin is required for Void to work")), /* @__PURE__ */ React.createElement(PluginBadges, {
       plugin,
-      className: cl3("badge")
+      className: cl5("badge")
     })), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
-      className: cl3("controls")
+      className: cl5("controls")
     }, hasVisibleSettings(plugin) && /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "xs",
@@ -3811,13 +3925,13 @@ ${sourceUrl}`;
       disabled: plugin.required,
       onCheckedChange: handleToggle
     }))), plugin.description && /* @__PURE__ */ React.createElement("div", {
-      className: cl3("desc")
+      className: cl5("desc")
     }, plugin.description)), /* @__PURE__ */ React.createElement("div", {
-      className: cl3("separator")
+      className: cl5("separator")
     }), /* @__PURE__ */ React.createElement("div", {
-      className: cl3("footer")
+      className: cl5("footer")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl3("authors")
+      className: cl5("authors")
     }, plugin.authors?.length ? plugin.authors.join(", ") : " ")));
   }
 
@@ -3881,7 +3995,7 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/SettingField.tsx
-  var cl4 = classNameFactory("void-setting-");
+  var cl6 = classNameFactory("void-setting-");
   function usePluginSetting(pluginName, id, setting) {
     const [value, setValue] = useState((Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting));
     const update = useCallback((val) => {
@@ -3942,18 +4056,18 @@ ${sourceUrl}`;
       setting
     }), /* @__PURE__ */ React.createElement(Flex, {
       gap: "8px",
-      className: cl4("slider-row")
+      className: cl6("slider-row")
     }, /* @__PURE__ */ React.createElement(Slider, {
       value: [value ?? min],
       min,
       max,
       step: 1,
       onValueChange: ([v]) => update(v),
-      className: cl4("slider")
+      className: cl6("slider")
     }), /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       color: "secondary",
-      className: cl4("slider-value")
+      className: cl6("slider-value")
     }, value)));
   }
   function ComponentField({ setting, pluginName }) {
@@ -3982,7 +4096,7 @@ ${sourceUrl}`;
         if (!isNaN(n))
           update(n);
       },
-      className: cl4("number-input")
+      className: cl6("number-input")
     }));
   }
   function StringField({ id, setting, pluginName }) {
@@ -3998,7 +4112,7 @@ ${sourceUrl}`;
       value: value ?? "",
       onChange: (e) => update(e.target.value),
       placeholder: "placeholder" in setting ? setting.placeholder : undefined,
-      className: cl4("string-input")
+      className: cl6("string-input")
     }));
   }
   var FIELD_MAP = {
@@ -4023,7 +4137,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/PluginDialog.tsx
-  var cl5 = classNameFactory("void-plugin-dialog-");
+  var cl7 = classNameFactory("void-plugin-dialog-");
   function PluginDialog({ plugin, open: open2, onClose }) {
     const entries = Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting);
     return /* @__PURE__ */ React.createElement(Dialog, {
@@ -4033,7 +4147,7 @@ ${sourceUrl}`;
           onClose();
       }
     }, /* @__PURE__ */ React.createElement(DialogContent, {
-      className: cl5("content"),
+      className: cl7("content"),
       "aria-describedby": undefined
     }, /* @__PURE__ */ React.createElement(DialogClose, {
       asChild: true
@@ -4042,9 +4156,9 @@ ${sourceUrl}`;
       size: "sm",
       shape: "square",
       "aria-label": "Close",
-      className: cl5("close")
+      className: cl7("close")
     }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
-      className: cl5("header")
+      className: cl7("header")
     }, /* @__PURE__ */ React.createElement(DialogTitle, null, plugin.name), plugin.description && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       color: "secondary"
@@ -4066,7 +4180,7 @@ ${sourceUrl}`;
     }, "Settings"), entries.length ? /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl5("settings-list")
+      className: cl7("settings-list")
     }, entries.map(([key, setting]) => /* @__PURE__ */ React.createElement(SettingField, {
       key,
       id: key,
@@ -4079,7 +4193,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/PluginsTab.tsx
-  var cl6 = classNameFactory("void-plugins-");
+  var cl8 = classNameFactory("void-plugins-");
   var getPluginKey = (name) => `${name} ${plugins[name].description ?? ""}`;
   function PluginsTab() {
     const [search2, setSearch] = useState("");
@@ -4157,7 +4271,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: cl6("section")
+      className: cl8("section")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
@@ -4166,10 +4280,10 @@ ${sourceUrl}`;
       color: "secondary"
     }, "Pick which plugins to use. Some need a page reload to kick in.")), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
-      className: cl6("reload-banner")
+      className: cl8("reload-banner")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl6("reload-text")
+      className: cl8("reload-text")
     }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
@@ -4177,18 +4291,18 @@ ${sourceUrl}`;
     }, "Reload")), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem",
-      className: cl6("section")
+      className: cl8("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: `Search ${visibleUser.length + visibleRequired.length} plugins...`,
       value: search2,
       onChange: (e) => setSearch(e.target.value),
-      className: cl6("search-input")
+      className: cl8("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl6("filter-select")
+      className: cl8("filter-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
     }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
@@ -4197,7 +4311,7 @@ ${sourceUrl}`;
       value: "disabled"
     }, "Disabled")))), filteredUser.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)",
-      className: cl6("section")
+      className: cl8("section")
     }, filteredUser.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: n,
       fallback: null
@@ -4206,10 +4320,10 @@ ${sourceUrl}`;
       onSettings: setDialogName,
       onReload
     })))), filteredRequired.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Separator, {
-      className: cl6("divider")
+      className: cl8("divider")
     }), /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)",
-      className: cl6("section")
+      className: cl8("section")
     }, filteredRequired.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: n,
       fallback: null
@@ -4219,7 +4333,7 @@ ${sourceUrl}`;
       onReload
     }))))), !hasResults && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
-      className: cl6("empty")
+      className: cl8("empty")
     }, search2 ? "No plugins match your search." : "No plugins available."), dialogPlugin && /* @__PURE__ */ React.createElement(PluginDialog, {
       plugin: dialogPlugin,
       open: true,
@@ -4333,7 +4447,7 @@ ${sourceUrl}`;
 
   // src/components/settings/ThemeCard.tsx
   var logger10 = new Logger("ThemeCard");
-  var cl7 = classNameFactory("void-theme-card-");
+  var cl9 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, globalEnabled, onRemove, onToggle }) {
     const handleToggle = () => {
       if (theme.enabled)
@@ -4343,20 +4457,20 @@ ${sourceUrl}`;
       onToggle();
     };
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl7("root")
+      className: cl9("root")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl7("body")
+      className: cl9("body")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
-      className: cl7("name")
+      className: cl9("name")
     }, theme.name ?? theme.url), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
-      className: cl7("controls")
+      className: cl9("controls")
     }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "tertiary",
       size: "xs",
@@ -4378,18 +4492,18 @@ ${sourceUrl}`;
       disabled: !globalEnabled,
       onCheckedChange: handleToggle
     }))), theme.description && /* @__PURE__ */ React.createElement("div", {
-      className: cl7("desc")
+      className: cl9("desc")
     }, theme.description)), /* @__PURE__ */ React.createElement("div", {
-      className: cl7("separator")
+      className: cl9("separator")
     }), /* @__PURE__ */ React.createElement("div", {
-      className: cl7("footer")
+      className: cl9("footer")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl7("author")
+      className: cl9("author")
     }, theme.author ?? " ")));
   }
 
   // src/components/settings/tabs/ThemesTab.tsx
-  var cl8 = classNameFactory("void-themes-");
+  var cl10 = classNameFactory("void-themes-");
   var getThemeKey = (t) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
   function ThemesTab() {
     const [search2, setSearch] = useState("");
@@ -4441,7 +4555,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
-      className: cl8("section")
+      className: cl10("section")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -4457,7 +4571,7 @@ ${sourceUrl}`;
     })), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
-      className: cl8("section")
+      className: cl10("section")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem"
@@ -4473,20 +4587,20 @@ ${sourceUrl}`;
         if (e.key === "Enter")
           handleAdd();
       },
-      className: cl8("search-input")
+      className: cl10("search-input")
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
-      className: cl8("import-btn"),
+      className: cl10("import-btn"),
       onClick: handleAdd,
       disabled: loading || !url.trim()
     }, loading ? "Importing..." : "Import")), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl8("add-error")
+      className: cl10("add-error")
     }, error)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.375rem",
-      className: cl8("section")
+      className: cl10("section")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -4502,18 +4616,18 @@ ${sourceUrl}`;
     }, `${pluralize(themes.length, "theme")} installed · ${themes.filter((t) => t.enabled).length} enabled`)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem",
-      className: cl8("section")
+      className: cl10("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: `Search ${themes.length} themes...`,
       value: search2,
       onChange: (e) => setSearch(e.target.value),
-      className: cl8("search-input")
+      className: cl10("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl8("filter-select")
+      className: cl10("filter-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
     }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
@@ -4522,7 +4636,7 @@ ${sourceUrl}`;
       value: "disabled"
     }, "Disabled")))), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)",
-      className: cl8("section")
+      className: cl10("section")
     }, filtered.map((t) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: t.url,
       fallback: null
@@ -4533,10 +4647,10 @@ ${sourceUrl}`;
       onToggle: () => setThemes(getThemes())
     })))), themes.length > 0 && !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
-      className: cl8("empty")
+      className: cl10("empty")
     }, "No themes match your search."), !themes.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
-      className: cl8("empty")
+      className: cl10("empty")
     }, "No themes added yet. Paste a URL above to add one."), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: removeUrl != null,
       onOpenChange: (v) => {
@@ -4623,14 +4737,18 @@ ${sourceUrl}`;
     ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
     ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
   })(ToastType ||= {});
+  var TOAST_FNS = ["", "success", "error", "info", "warning", "loading"];
   function showToast(message, type = 0 /* MESSAGE */, options) {
     const { toast } = Toaster;
-    const fns = [toast, toast.success, toast.error, toast.info, toast.warning, toast.loading];
-    fns[type](message, options);
+    const fn = type === 0 /* MESSAGE */ ? toast : toast[TOAST_FNS[type]];
+    return fn(message, options);
+  }
+  function dismissToast(id) {
+    Toaster.toast.dismiss(id);
   }
 
   // src/plugins/experiments/index.tsx
-  var cl9 = classNameFactory("void-experiments-");
+  var cl11 = classNameFactory("void-experiments-");
   var NEW_FLAG_TTL = 24 * 60 * 60 * 1000;
   var settings2 = definePluginSettings({
     notifyNewFlags: {
@@ -4727,13 +4845,13 @@ ${sourceUrl}`;
         onCheckedChange: handleToggle
       })
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React.createElement(Chip, {
-      className: cl9("new-chip")
+      className: cl11("new-chip")
     }, "NEW"), decodedKey && /* @__PURE__ */ React.createElement(Chip, {
-      className: cl9("obfuscated-chip")
+      className: cl11("obfuscated-chip")
     }, "OBFUSCATED"), isOverridden && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       as: "span",
-      className: cl9("modified")
+      className: cl11("modified")
     }, "(modified)")), /* @__PURE__ */ React.createElement(SettingsDescription, null, decodedKey ?? flagKey));
   }
   function ExperimentsTab() {
@@ -4770,7 +4888,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: cl9("section")
+      className: cl11("section")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
@@ -4779,33 +4897,33 @@ ${sourceUrl}`;
       color: "secondary"
     }, "Toggle unreleased Grok features. These are experimental and may break things.")), /* @__PURE__ */ React.createElement(Card, {
       variant: "ghost",
-      className: cl9("warning")
+      className: cl11("warning")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl9("warning-text")
+      className: cl11("warning-text")
     }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
-      className: cl9("clear-btn"),
+      className: cl11("clear-btn"),
       onClick: () => FeatureStore.useFeatureStore.getState().clearAllOverrides()
     }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem",
-      className: cl9("section")
+      className: cl11("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       placeholder: `Search ${prefiltered.length} flags...`,
       value: search2,
       onChange: (e) => setSearch(e.target.value),
-      className: cl9("search-input")
+      className: cl11("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl9("filter-select")
+      className: cl11("filter-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
     }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
@@ -4826,7 +4944,7 @@ ${sourceUrl}`;
       isNew: isNewFlag(key)
     }))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "muted",
-      className: cl9("empty")
+      className: cl11("empty")
     }, search2 ? `No flags matching "${search2}"` : `No ${filter} flags`));
   }
   var Tab = ErrorBoundary.wrap(ExperimentsTab);
@@ -4871,7 +4989,7 @@ ${sourceUrl}`;
 
   // src/plugins/_core/settings/index.tsx
   var logger11 = new Logger("Settings");
-  var cl10 = classNameFactory("void-settings-");
+  var cl12 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     hideUserId: {
       type: 3 /* BOOLEAN */,
@@ -4909,7 +5027,7 @@ ${sourceUrl}`;
       href,
       target: "_blank",
       rel: "noreferrer",
-      className: cl10("version-link")
+      className: cl12("version-link")
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
@@ -4919,7 +5037,7 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: cl10("version")
+      className: cl12("version")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
@@ -4928,9 +5046,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.2.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"b33da5e"}`
-    }, `(${"b33da5e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.2.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"eabd47b"}`
+    }, `(${"eabd47b"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -4968,24 +5086,24 @@ ${sourceUrl}`;
     const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).sort((a, b) => a.localeCompare(b));
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(GhostFilledIcon, {
-      className: cl10("menu-icon")
+      className: cl12("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
-      className: cl10("menu-icon")
+      className: cl12("menu-icon")
     }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       key: name,
       onSelect: () => setDialogName(name)
     }, name)))), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => openSettingsTab("void_themes_tab")
     }, /* @__PURE__ */ React.createElement(PaletteIcon, {
-      className: cl10("menu-icon")
+      className: cl12("menu-icon")
     }), "Themes"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => openSettingsTab("void_css_tab")
     }, /* @__PURE__ */ React.createElement(BracesIcon, {
-      className: cl10("menu-icon")
+      className: cl12("menu-icon")
     }), "Quick CSS"), isPluginEnabled("Experiments") && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => openSettingsTab("void_experiments_tab")
     }, /* @__PURE__ */ React.createElement(TestTubeIcon, {
-      className: cl10("menu-icon")
+      className: cl12("menu-icon")
     }), "Experiments"))), dialogPlugin && /* @__PURE__ */ React.createElement(PluginDialog, {
       plugin: dialogPlugin,
       open: true,
@@ -5235,22 +5353,6 @@ ${sourceUrl}`;
     ]
   });
 
-  // src/plugins/backgroundThinking.preview/index.ts
-  var backgroundThinking_default = definePlugin({
-    name: "BackgroundThinking",
-    description: "Lets Grok think in the background while you are away.",
-    authors: [Devs.Prism],
-    patches: [
-      {
-        find: '"bgThinkingDefaultOptinSet"',
-        replacement: {
-          match: /\.success\?(\i)\.data:null/,
-          replace: ".success?$1.data:{enabled:!0,maxConcurrentRequests:3}"
-        }
-      }
-    ]
-  });
-
   // src/plugins/betterFiles/index.tsx
   var logger12 = new Logger("BetterFiles");
   var settings4 = definePluginSettings({
@@ -5357,7 +5459,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/betterSidebar/index.tsx
-  var cl11 = classNameFactory("void-sidebar-");
+  var cl13 = classNameFactory("void-sidebar-");
   var TIER_DISPLAY = {
     SUBSCRIPTION_TIER_INVALID: "Free",
     SUBSCRIPTION_TIER_X_BASIC: "Basic",
@@ -5383,29 +5485,31 @@ ${sourceUrl}`;
     const cardRef = useRef(null);
     if (!open2 || !user)
       return /* @__PURE__ */ React.createElement(AvatarMenu, null);
-    const forward = (type) => {
+    const forward = (e, type) => {
+      if (!e.isTrusted)
+        return;
       cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
     };
     return /* @__PURE__ */ React.createElement("div", {
       ref: cardRef,
-      className: cl11("card"),
-      onPointerDown: () => forward("pointerdown"),
-      onPointerUp: () => forward("pointerup")
+      className: cl13("card"),
+      onPointerDown: (e) => forward(e, "pointerdown"),
+      onPointerUp: (e) => forward(e, "pointerup")
     }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       justifyContent: "center",
       gap: "0",
-      className: cl11("info")
+      className: cl13("info")
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "sm",
       weight: "medium",
-      className: cl11("name")
+      className: cl13("name")
     }, user.givenName || user.email?.split("@")[0] || "User"), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "xs",
       color: "secondary",
-      className: cl11("plan")
+      className: cl13("plan")
     }, getPlanName(bestSubscription, user.sessionTierId))));
   }
   var betterSidebar_default = definePlugin({
@@ -5745,7 +5849,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
-  var cl12 = classNameFactory("void-ratelimit-");
+  var cl14 = classNameFactory("void-ratelimit-");
   var logger16 = new Logger("RateLimitDisplay");
   var settings7 = definePluginSettings({
     showMaxCount: {
@@ -5817,7 +5921,7 @@ ${sourceUrl}`;
     const text = formatLabel(usage, wait, short);
     const danger = wait != null && wait > 0;
     return danger ? /* @__PURE__ */ React.createElement("span", {
-      className: cl12("danger")
+      className: cl14("danger")
     }, text) : /* @__PURE__ */ React.createElement(React.Fragment, null, text);
   }
   function useLimits(modelId, key, enabled) {
@@ -5878,7 +5982,7 @@ ${sourceUrl}`;
         short: true
       }), /* @__PURE__ */ React.createElement(Separator, {
         orientation: "vertical",
-        className: cl12("separator")
+        className: cl14("separator")
       }), /* @__PURE__ */ React.createElement(Label, {
         usage: expert,
         wait: expertWait,
@@ -5891,7 +5995,7 @@ ${sourceUrl}`;
         size: 18
       }),
       tooltip: reset ? `Resets every ${reset}` : undefined,
-      className: limited ? cl12("danger") : undefined
+      className: limited ? cl14("danger") : undefined
     }, /* @__PURE__ */ React.createElement(Label, {
       usage: single,
       wait: singleWait
@@ -5957,8 +6061,7 @@ ${sourceUrl}`;
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  backgroundThinking_default.preview = true;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [backgroundThinking_default.name]: backgroundThinking_default, [betterFiles_default.name]: betterFiles_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageClickActions_default.name]: messageClickActions_default, [messageTimestamps_default.name]: messageTimestamps_default, [noAutoplay_default.name]: noAutoplay_default, [oneko_default.name]: oneko_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [starry_default.name]: starry_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageClickActions_default.name]: messageClickActions_default, [messageTimestamps_default.name]: messageTimestamps_default, [noAutoplay_default.name]: noAutoplay_default, [oneko_default.name]: oneko_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [starry_default.name]: starry_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -6217,11 +6320,11 @@ ${sourceUrl}`;
     fallbackTimer = setTimeout(fire, FALLBACK_MS);
   }
   function init() {
-    patchTurbopack();
     for (const name in __plugins_default) {
       registerPlugin(__plugins_default[name]);
     }
     initPluginManager();
+    patchTurbopack();
     startAllPlugins("Init" /* Init */);
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */), { once: true });

@@ -18,10 +18,18 @@ export const enum ToastType {
 export interface ToastOptions {
     duration?: number;
     id?: string | number;
+    description?: string;
+    action?: { label: string; onClick: () => void };
 }
 
-export function showToast(message: string, type: ToastType = ToastType.MESSAGE, options?: ToastOptions) {
+const TOAST_FNS = ["", "success", "error", "info", "warning", "loading"] as const;
+
+export function showToast(message: string, type: ToastType = ToastType.MESSAGE, options?: ToastOptions): string | number {
     const { toast } = Toaster;
-    const fns = [toast, toast.success, toast.error, toast.info, toast.warning, toast.loading] as const;
-    fns[type](message, options);
+    const fn = type === ToastType.MESSAGE ? toast : toast[TOAST_FNS[type] as "success"];
+    return fn(message, options);
+}
+
+export function dismissToast(id?: string | number) {
+    Toaster.toast.dismiss(id);
 }
