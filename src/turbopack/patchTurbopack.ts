@@ -395,10 +395,11 @@ export function patchReport(): PatchReport {
 
 export function reportOrphanedPatches(): void {
     const orphaned = patches.filter(p => !p.all);
-    if (orphaned.length)
+    const warnOrphaned = orphaned.filter(p => !p.noWarn);
+    if (warnOrphaned.length)
         logger.warn(
-            `${orphaned.length} patch(es) found no module:`,
-            orphaned.map(p => `${p.plugin}: ${String(p.find)}`),
+            `${warnOrphaned.length} patch(es) found no module:`,
+            warnOrphaned.map(p => `${p.plugin}: ${String(p.find)}`),
         );
 
     if (patchStats.noEffect || patchStats.errors) {
