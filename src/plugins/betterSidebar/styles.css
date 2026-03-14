@@ -1,3 +1,12 @@
+.group.peer [data-sidebar="sidebar"] + div,
+.group.peer [data-sidebar="content"] > .grow {
+    cursor: default !important;
+}
+
+.group.peer [data-sidebar="sidebar"] + div::after {
+    background-color: transparent !important;
+}
+
 .void-sidebar-card {
     display: flex;
     align-items: center;
