@@ -7,7 +7,7 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { Button, ButtonWithTooltip } from "@components";
+import { ButtonWithTooltip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { HeartCrackIcon } from "@components/icons";
 import type { MediaPostType } from "@grok-types/enums";
@@ -22,6 +22,7 @@ import { Logger } from "@utils/Logger";
 import { createExternalStore, fetchExternal, sanitizeFilename } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
+import { createZip } from "@utils/zip";
 
 const DownloadIcon = findExportedComponentLazy("DownloadIcon");
 const logger = new Logger("BetterImagine");
@@ -54,9 +55,18 @@ const FILTER_MAP: Record<Exclude<MediaFilter, "all">, MediaPostType> = {
 };
 
 type MediaFilter = "all" | "image" | "video";
+type DateFilter = "all" | "today" | "week" | "month";
+
+const DATE_LABELS: Record<DateFilter, string> = {
+    all: "Any time",
+    today: "Today",
+    week: "This week",
+    month: "This month",
+};
 
 let currentFilter: MediaFilter = "all";
 let currentSearch = "";
+let currentDate: DateFilter = "all";
 const filterStore = createExternalStore();
 
 function setFilter(f: MediaFilter) {
@@ -69,13 +79,29 @@ function setSearch(s: string) {
     filterStore.notify();
 }
 
+function setDate(d: DateFilter) {
+    currentDate = d;
+    filterStore.notify();
+}
+
+function getDateCutoff(d: DateFilter): number {
+    const now = Date.now();
+    const DAY = 86_400_000;
+    if (d === "today") return now - DAY;
+    if (d === "week") return now - 7 * DAY;
+    if (d === "month") return now - 30 * DAY;
+    return 0;
+}
+
 function filterItems(items: MediaItem[]): MediaItem[] {
-    if (currentFilter === "all" && !currentSearch) return items;
+    if (currentFilter === "all" && !currentSearch && currentDate === "all") return items;
     const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
     const q = currentSearch.toLowerCase();
+    const cutoff = getDateCutoff(currentDate);
     return items.filter(p => {
         if (!p) return false;
         if (target && p.mediaType !== target) return false;
+        if (cutoff && new Date(p.createTime).getTime() < cutoff) return false;
         if (q && !(p.prompt ?? "").toLowerCase().includes(q) && !(p.originalPrompt ?? "").toLowerCase().includes(q)) return false;
         return true;
     });
@@ -113,39 +139,76 @@ function resolveItem(post: MediaItem | string): MediaItem | undefined {
     return post;
 }
 
+function dedupeNames(names: string[]): string[] {
+    const counts = new Map<string, number>();
+    return names.map(name => {
+        const count = counts.get(name) ?? 0;
+        counts.set(name, count + 1);
+        if (!count) return name;
+        const dot = name.lastIndexOf(".");
+        return dot > 0 ? `${name.slice(0, dot)} (${count})${name.slice(dot)}` : `${name} (${count})`;
+    });
+}
+
 async function downloadAllFavorites() {
     const { favoritesList } = MediaStore.useMediaStore.getState();
-    const downloads: { url: string; name: string }[] = [];
+    const entries: { url: string; name: string }[] = [];
 
     for (const post of favoritesList) {
         const item = resolveItem(post);
         if (!item?.mediaUrl) continue;
         const ext = item.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
-        downloads.push({ url: item.mediaUrl, name: `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
+        entries.push({ url: item.mediaUrl, name: `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
     }
 
-    if (!downloads.length) {
+    if (!entries.length) {
         Toaster.toast.error("No favorites to download.");
         return;
     }
 
-    let done = 0;
-    for (const { url, name } of downloads) {
+    if (entries.length === 1) {
         try {
-            const res = await fetchExternal(url);
+            const res = await fetchExternal(entries[0].url);
             const blob = await res.blob();
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
-            a.download = name;
+            a.download = entries[0].name;
             a.click();
             URL.revokeObjectURL(a.href);
-            done++;
+            Toaster.toast.success("Downloaded 1 image.");
         } catch (e) {
-            logger.error("Failed to download image:", url, e);
+            logger.error("Failed to download image:", entries[0].url, e);
         }
+        return;
     }
 
-    Toaster.toast.success(`Downloaded ${done} image${done > 1 ? "s" : ""}.`);
+    const names = dedupeNames(entries.map(e => e.name));
+    const files: Record<string, Uint8Array> = {};
+    let done = 0;
+
+    await Promise.all(entries.map(async (entry, i) => {
+        try {
+            const res = await fetchExternal(entry.url);
+            const buf = await res.arrayBuffer();
+            files[names[i]] = new Uint8Array(buf);
+            done++;
+        } catch (e) {
+            logger.error("Failed to fetch:", entry.url, e);
+        }
+    }));
+
+    if (!done) {
+        Toaster.toast.error("Failed to download any files.");
+        return;
+    }
+
+    const blob = createZip(files);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "favorites.zip";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    Toaster.toast.success(`Downloaded ${done} file${done > 1 ? "s" : ""} as zip.`);
 }
 
 function DownloadAllButton() {
@@ -158,10 +221,17 @@ function DownloadAllButton() {
     };
 
     return (
-        <Button variant="secondary" shape="pill" size="md" disabled={loading} onClick={onClick}>
-            <DownloadIcon size="16" />
+        <ButtonWithTooltip
+            tooltipContent="Download all favorites"
+            variant="secondary"
+            shape="pill"
+            size="md"
+            disabled={loading}
+            onClick={onClick}
+        >
+            <DownloadIcon size="20" />
             <span className="font-semibold">{loading ? "Downloading..." : "Download all"}</span>
-        </Button>
+        </ButtonWithTooltip>
     );
 }
 
@@ -170,6 +240,16 @@ function FilterButtons() {
 
     return (
         <Fragment>
+            <Select value={currentDate} onValueChange={(v: string) => setDate(v as DateFilter)}>
+                <SelectTrigger className={cl("date-select")}>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {(Object.keys(DATE_LABELS) as DateFilter[]).map(d => (
+                        <SelectItem key={d} value={d}>{DATE_LABELS[d]}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
             <input
                 type="text"
                 placeholder="Search..."
