@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.2.9
+// @version      0.3.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.2.9 — A modification for grok.com
+ * Void v0.3.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -199,8 +199,7 @@
     CommandMenuStore: () => CommandMenuStore,
     CodePageStore: () => CodePageStore,
     ChatPageStore: () => ChatPageStore,
-    AssetStore: () => AssetStore,
-    ArtifactStore: () => ArtifactStore
+    AssetStore: () => AssetStore
   });
 
   // src/utils/lazy.ts
@@ -401,7 +400,6 @@ ${sourceUrl}`;
       throw new Error("Factory compilation failed (CSP?)");
     return fn;
   };
-  var cacheDiscoveryListeners = new Set;
   var patches = [];
   var moduleCache = new Map;
   var waitForSubscriptions = new Map;
@@ -624,14 +622,19 @@ ${sourceUrl}`;
           }
         }
       }
-      patchResults.push(result);
       if (patch.group && !allSucceeded) {
         code = previousCode;
         patchedBy.delete(patch.plugin);
+        for (const r of result.replacements) {
+          if (r.status === "applied")
+            r.status = "reverted";
+        }
+        patchResults.push(result);
         if (!patch.noWarn)
           logger.warn(`Group patch by ${patch.plugin} failed, reverting`);
         continue;
       }
+      patchResults.push(result);
       patchStats.applied += groupApplied;
       patchStats.noEffect += groupNoEffect;
       patchStats.errors += groupErrors;
@@ -726,8 +729,9 @@ ${sourceUrl}`;
   }
   function reportOrphanedPatches() {
     const orphaned = patches.filter((p) => !p.all);
-    if (orphaned.length)
-      logger.warn(`${orphaned.length} patch(es) found no module:`, orphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
+    const warnOrphaned = orphaned.filter((p) => !p.noWarn);
+    if (warnOrphaned.length)
+      logger.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
     if (patchStats.noEffect || patchStats.errors) {
       for (const result of patchResults) {
         for (const rep of result.replacements) {
@@ -790,14 +794,6 @@ ${sourceUrl}`;
     if (!runtimeModuleCache && helpers.c) {
       runtimeModuleCache = helpers.c;
       scanExistingModules(runtimeModuleCache);
-      for (const cb of cacheDiscoveryListeners) {
-        try {
-          cb();
-        } catch (e) {
-          logger.error("Cache discovery listener error:", e);
-        }
-      }
-      cacheDiscoveryListeners.clear();
     }
     if (!runtimeFactoryRegistry && helpers.M)
       runtimeFactoryRegistry = helpers.M;
@@ -1351,23 +1347,24 @@ ${sourceUrl}`;
       callback(cached, -1);
       return () => {};
     }
-    const wrappedFilter = (exports) => findMatchInExports(exports, filter) != null;
-    const wrappedCallback = (exports, id) => {
+    let lastMatch = null;
+    const wrappedFilter = (exports) => {
+      lastMatch = findMatchInExports(exports, filter);
+      return lastMatch != null;
+    };
+    let timeoutId = null;
+    const wrappedCallback = (_exports, id) => {
+      if (timeoutId)
+        clearTimeout(timeoutId);
       try {
-        const match = findMatchInExports(exports, filter);
-        if (match)
-          callback(match, id);
+        if (lastMatch)
+          callback(lastMatch, id);
+        lastMatch = null;
       } catch (e) {
         logger2.error("waitFor callback error:", e);
       }
     };
-    let timeoutId = null;
-    const wrappedCallbackWithCleanup = (exports, id) => {
-      if (timeoutId)
-        clearTimeout(timeoutId);
-      wrappedCallback(exports, id);
-    };
-    addWaitForSubscription(wrappedFilter, wrappedCallbackWithCleanup);
+    addWaitForSubscription(wrappedFilter, wrappedCallback);
     const cancel = () => {
       if (timeoutId)
         clearTimeout(timeoutId);
@@ -1386,7 +1383,6 @@ ${sourceUrl}`;
   }
 
   // src/turbopack/common/stores.ts
-  var ArtifactStore = findByPropsLazy("useArtifactStore", "useArtifactEdits");
   var AssetStore = findByPropsLazy("useAssetStore");
   var ChatPageStore = findByPropsLazy("useChatPageStore", "getLatestThreadMessageId");
   var CodePageStore = findByPropsLazy("useCodePageStore");
@@ -1667,11 +1663,7 @@ ${sourceUrl}`;
     });
     return (name) => LazyComponent(name, () => mod?.[name] ?? findExportedComponent(name));
   }
-  var buttonModule = null;
-  waitFor(filters.byProps("Button", "ButtonWithTooltipOptimized"), (m) => {
-    buttonModule = m;
-  });
-  var buttonLazy = (name) => LazyComponent(name, () => buttonModule?.[name] ?? findExportedComponent(name));
+  var buttonLazy = createModuleLazy("Button", "ButtonWithTooltipOptimized");
   var Button = buttonLazy("Button");
   var ButtonWithTooltip = buttonLazy("ButtonWithTooltip");
   var Card = LazyComponent("Card", () => findExportedComponent("Card"));
@@ -1695,15 +1687,6 @@ ${sourceUrl}`;
   var DropdownMenuSub = dropdownMenuLazy("DropdownMenuSub");
   var DropdownMenuSubTrigger = dropdownMenuLazy("DropdownMenuSubTrigger");
   var DropdownMenuSubContent = dropdownMenuLazy("DropdownMenuSubContent");
-  var contextMenuLazy = createModuleLazy("ContextMenu", "ContextMenuContent", "ContextMenuTrigger");
-  var ContextMenu = contextMenuLazy("ContextMenu");
-  var ContextMenuTrigger = contextMenuLazy("ContextMenuTrigger");
-  var ContextMenuContent = contextMenuLazy("ContextMenuContent");
-  var ContextMenuItem = contextMenuLazy("ContextMenuItem");
-  var ContextMenuSeparator = contextMenuLazy("ContextMenuSeparator");
-  var ContextMenuSub = contextMenuLazy("ContextMenuSub");
-  var ContextMenuSubTrigger = contextMenuLazy("ContextMenuSubTrigger");
-  var ContextMenuSubContent = contextMenuLazy("ContextMenuSubContent");
   var Input = LazyComponent("Input", () => findExportedComponent("Input"));
   var MotionDiv = LazyComponent("MotionDiv", () => findByProps("motion")?.motion?.div);
   var Select = LazyComponent("Select", () => findExportedComponent("Select"));
@@ -2000,11 +1983,6 @@ ${sourceUrl}`;
     r: ".5",
     fill: "currentColor"
   }));
-  var GaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m12 14 4-4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3.34 19a10 10 0 1 1 17.32 0"
-  }));
   var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -2056,6 +2034,11 @@ ${sourceUrl}`;
     x2: "12",
     y1: "15",
     y2: "3"
+  }));
+  var HeartCrackIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12.409 5.824c-.702.792-1.15 1.496-1.415 2.166l2.153 2.156a.5.5 0 0 1 0 .707l-2.293 2.293a.5.5 0 0 0 0 .707L12 15"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M13.508 20.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.677.6.6 0 0 0 .818.001A5.5 5.5 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5z"
   }));
   var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m19 5 3-3"
@@ -2358,21 +2341,6 @@ ${sourceUrl}`;
         return list;
       return list.filter((item) => getKey(item).toLowerCase().includes(q));
     }, [list, search2, getKey]);
-  }
-  function useCountdown(seconds) {
-    const [value, setValue] = useState(seconds);
-    const prevRef = useRef(seconds);
-    if (prevRef.current !== seconds) {
-      prevRef.current = seconds;
-      setValue(seconds);
-    }
-    useEffect(() => {
-      if (value == null || value <= 0)
-        return;
-      const id = setInterval(() => setValue((p) => p != null && p > 1 ? p - 1 : null), 1000);
-      return () => clearInterval(id);
-    }, [value != null && value > 0]);
-    return value;
   }
 
   // src/api/ChatBarButtons.tsx
@@ -3204,11 +3172,11 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.2.9")) {
-        logger8.info(`Up to date (${"0.2.9"})`);
+      if (!latest || !isNewer(latest, "0.3.0")) {
+        logger8.info(`Up to date (${"0.3.0"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.2.9"} → ${latest}`);
+      logger8.info(`Update available: ${"0.3.0"} → ${latest}`);
       showNotice({
         message: "Void is outdated, please update to the new version.",
         type: "warning" /* WARNING */,
@@ -3761,8 +3729,6 @@ ${sourceUrl}`;
 }
 
 .void-plugin-card-name {
-    font-size: 0.875rem;
-    font-weight: 400;
     display: flex;
     align-items: center;
     gap: 0.375rem;
@@ -4226,6 +4192,11 @@ ${sourceUrl}`;
         map.set(n, isPluginEnabled(n));
       initialStatesRef.current = map;
     }, [userPlugins, requiredPlugins]);
+    useEffect(() => {
+      const pending = consumePendingPluginDialog();
+      if (pending)
+        setDialogName(pending);
+    }, []);
     const visibleUser = useMemo(() => {
       if (filter === "all")
         return userPlugins;
@@ -4354,7 +4325,6 @@ ${sourceUrl}`;
 
   // void-css:D:/Projects/Void/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
-    font-size: 0.75rem;
     color: hsl(var(--fg-danger));
 }
 
@@ -4400,8 +4370,6 @@ ${sourceUrl}`;
 }
 
 .void-theme-card-name {
-    font-size: 0.875rem;
-    font-weight: 400;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5046,9 +5014,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.2.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"eabd47b"}`
-    }, `(${"eabd47b"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.3.0"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"73ec6ce"}`
+    }, `(${"73ec6ce"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5077,21 +5045,29 @@ ${sourceUrl}`;
     store3.setTab(tab);
     store3.setOpen(true);
   }
+  var pendingPluginDialog = null;
+  function consumePendingPluginDialog() {
+    const name = pendingPluginDialog;
+    pendingPluginDialog = null;
+    return name;
+  }
+  function openPluginSettings(name) {
+    pendingPluginDialog = name;
+    openSettingsTab("void_plugins_tab");
+  }
   function VoidMenu() {
-    const [dialogName, setDialogName] = useState(null);
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
     if (!settings3.store.showVoidMenu)
       return null;
     const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).sort((a, b) => a.localeCompare(b));
-    const dialogPlugin = dialogName ? plugins[dialogName] : null;
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(GhostFilledIcon, {
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(GhostFilledIcon, {
       className: cl12("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl12("menu-icon")
     }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       key: name,
-      onSelect: () => setDialogName(name)
+      onSelect: () => openPluginSettings(name)
     }, name)))), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => openSettingsTab("void_themes_tab")
     }, /* @__PURE__ */ React.createElement(PaletteIcon, {
@@ -5104,11 +5080,7 @@ ${sourceUrl}`;
       onSelect: () => openSettingsTab("void_experiments_tab")
     }, /* @__PURE__ */ React.createElement(TestTubeIcon, {
       className: cl12("menu-icon")
-    }), "Experiments"))), dialogPlugin && /* @__PURE__ */ React.createElement(PluginDialog, {
-      plugin: dialogPlugin,
-      open: true,
-      onClose: () => setDialogName(null)
-    }));
+    }), "Experiments")));
   }
   var settings_default = definePlugin({
     name: "Settings",
@@ -5384,8 +5356,7 @@ ${sourceUrl}`;
       size: "sm",
       onClick: () => setOpen(true)
     }, /* @__PURE__ */ React.createElement(TrashIcon, {
-      size: 18,
-      className: "text-fg-secondary"
+      size: 18
     })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: open2,
       onOpenChange: setOpen,
@@ -5423,8 +5394,541 @@ ${sourceUrl}`;
     ]
   });
 
+  // void-css:D:/Projects/Void/src/plugins/betterImagine/styles.css
+  registerStyle("betterImagine", `.void-imagine-filter-btn,
+.void-imagine-search {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    padding: 0.375rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: color 0.15s, background-color 0.15s;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+}
+
+.void-imagine-search {
+    width: 10rem;
+}
+
+.void-imagine-search::placeholder {
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-imagine-search:focus {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-filter-btn:hover {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-filter-btn-active,
+.void-imagine-filter-btn-active:hover {
+    background: hsl(var(--fg-primary));
+    color: var(--background);
+}
+
+.void-imagine-date-select {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+    border: none;
+}
+
+.void-imagine-card-btn {
+    background: rgb(0 0 0 / 25%);
+    border: 1px solid rgb(255 255 255 / 15%);
+    opacity: 0;
+}
+
+.void-imagine-card-btn:hover {
+    background: rgb(255 255 255 / 10%);
+}
+
+/* stylelint-disable-next-line selector-class-pattern -- Grok's class name */
+.group\\/media-post-masonry-card:hover .void-imagine-card-btn {
+    opacity: 1;
+}
+`);
+
+  // src/utils/zip.ts
+  var encoder = new TextEncoder;
+  function crc32(data) {
+    let crc = 4294967295;
+    for (let i = 0;i < data.length; i++) {
+      crc ^= data[i];
+      for (let j = 0;j < 8; j++)
+        crc = crc >>> 1 ^ (crc & 1 ? 3988292384 : 0);
+    }
+    return (crc ^ 4294967295) >>> 0;
+  }
+  function u16(n) {
+    return [n & 255, n >> 8 & 255];
+  }
+  function u32(n) {
+    return [n & 255, n >> 8 & 255, n >> 16 & 255, n >> 24 & 255];
+  }
+  function createZip(files) {
+    const entries = Object.entries(files);
+    const localHeaders = [];
+    const centralHeaders = [];
+    let offset = 0;
+    for (const [name, data] of entries) {
+      const nameBytes = encoder.encode(name);
+      const crc = crc32(data);
+      const local = new Uint8Array([
+        80,
+        75,
+        3,
+        4,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        ...u32(crc),
+        ...u32(data.length),
+        ...u32(data.length),
+        ...u16(nameBytes.length),
+        ...u16(0),
+        ...nameBytes
+      ]);
+      const central = new Uint8Array([
+        80,
+        75,
+        1,
+        2,
+        20,
+        0,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        ...u32(crc),
+        ...u32(data.length),
+        ...u32(data.length),
+        ...u16(nameBytes.length),
+        ...u16(0),
+        ...u16(0),
+        ...u16(0),
+        ...u16(0),
+        ...u32(0),
+        ...u32(offset),
+        ...nameBytes
+      ]);
+      localHeaders.push(local, data);
+      centralHeaders.push(central);
+      offset += local.length + data.length;
+    }
+    const centralSize = centralHeaders.reduce((s, h) => s + h.length, 0);
+    const eocd = new Uint8Array([
+      80,
+      75,
+      5,
+      6,
+      ...u16(0),
+      ...u16(0),
+      ...u16(entries.length),
+      ...u16(entries.length),
+      ...u32(centralSize),
+      ...u32(offset),
+      ...u16(0)
+    ]);
+    const parts = [...localHeaders, ...centralHeaders, eocd];
+    return new Blob(parts, { type: "application/zip" });
+  }
+
+  // src/plugins/betterImagine/index.tsx
+  var CopyIcon2 = findExportedComponentLazy("CopyIcon");
+  var DownloadIcon2 = findExportedComponentLazy("DownloadIcon");
+  var logger13 = new Logger("BetterImagine");
+  var cl13 = classNameFactory("void-imagine-");
+  var settings5 = definePluginSettings({
+    hideDefaultPreviews: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the community image grid and templates on the Imagine home page.",
+      default: true
+    },
+    noAutoplay: {
+      type: 3 /* BOOLEAN */,
+      description: "Stop video thumbnails from autoplaying.",
+      default: true
+    },
+    playOnHover: {
+      type: 3 /* BOOLEAN */,
+      description: "Play video thumbnails when hovered.",
+      default: true
+    }
+  });
+  var MEDIA_TYPE_IMAGE = "MEDIA_POST_TYPE_IMAGE";
+  var MEDIA_TYPE_VIDEO = "MEDIA_POST_TYPE_VIDEO";
+  var FILTER_MAP = {
+    image: MEDIA_TYPE_IMAGE,
+    video: MEDIA_TYPE_VIDEO
+  };
+  var DATE_LABELS = {
+    all: "Any time",
+    today: "Today",
+    week: "This week",
+    month: "This month"
+  };
+  var currentFilter = "all";
+  var currentSearch = "";
+  var currentDate = "all";
+  var filterStore = createExternalStore();
+  function setFilter(f) {
+    currentFilter = f;
+    filterStore.notify();
+  }
+  function setSearch(s) {
+    currentSearch = s;
+    filterStore.notify();
+  }
+  function setDate(d) {
+    currentDate = d;
+    filterStore.notify();
+  }
+  function getDateCutoff(d) {
+    const now = Date.now();
+    const DAY = 86400000;
+    if (d === "today")
+      return now - DAY;
+    if (d === "week")
+      return now - 7 * DAY;
+    if (d === "month")
+      return now - 30 * DAY;
+    return 0;
+  }
+  function filterItems(items2) {
+    if (currentFilter === "all" && !currentSearch && currentDate === "all")
+      return items2;
+    const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
+    const q = currentSearch.toLowerCase();
+    const cutoff = getDateCutoff(currentDate);
+    return items2.filter((p) => {
+      if (!p)
+        return false;
+      if (target && p.mediaType !== target)
+        return false;
+      if (cutoff && new Date(p.createTime).getTime() < cutoff)
+        return false;
+      if (q && !(p.prompt ?? "").toLowerCase().includes(q) && !(p.originalPrompt ?? "").toLowerCase().includes(q))
+        return false;
+      return true;
+    });
+  }
+  var pending = new WeakMap;
+  function pauseVideo(video) {
+    const promise = pending.get(video);
+    pending.delete(video);
+    if (promise) {
+      promise.then(() => {
+        if (pending.has(video))
+          return;
+        video.pause();
+        video.currentTime = 0;
+      }).catch((e) => logger13.warn("Failed to pause video:", e));
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }
+  var onMouseEnter = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pending.set(video, video.play().catch((e2) => logger13.error("Failed to play video", e2)));
+  };
+  var onMouseLeave = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pauseVideo(video);
+  };
+  function resolveItem(post) {
+    if (typeof post === "string")
+      return MediaStore.useMediaStore.getState().byId[post];
+    return post;
+  }
+  function dedupeNames(names) {
+    const counts = new Map;
+    return names.map((name) => {
+      const count = counts.get(name) ?? 0;
+      counts.set(name, count + 1);
+      if (!count)
+        return name;
+      const dot = name.lastIndexOf(".");
+      return dot > 0 ? `${name.slice(0, dot)} (${count})${name.slice(dot)}` : `${name} (${count})`;
+    });
+  }
+  async function downloadAllFavorites() {
+    const { favoritesList } = MediaStore.useMediaStore.getState();
+    const entries = [];
+    for (const post of favoritesList) {
+      const item = resolveItem(post);
+      if (!item?.mediaUrl)
+        continue;
+      const ext = item.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
+      entries.push({ url: item.mediaUrl, name: `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
+    }
+    if (!entries.length) {
+      Toaster.toast.error("No favorites to download.");
+      return;
+    }
+    if (entries.length === 1) {
+      try {
+        const res = await fetchExternal(entries[0].url);
+        const blob2 = await res.blob();
+        const a2 = document.createElement("a");
+        a2.href = URL.createObjectURL(blob2);
+        a2.download = entries[0].name;
+        a2.click();
+        URL.revokeObjectURL(a2.href);
+        Toaster.toast.success("Downloaded 1 image.");
+      } catch (e) {
+        logger13.error("Failed to download image:", entries[0].url, e);
+      }
+      return;
+    }
+    const names = dedupeNames(entries.map((e) => e.name));
+    const files = {};
+    let done = 0;
+    await Promise.all(entries.map(async (entry, i) => {
+      try {
+        const res = await fetchExternal(entry.url);
+        const buf = await res.arrayBuffer();
+        files[names[i]] = new Uint8Array(buf);
+        done++;
+      } catch (e) {
+        logger13.error("Failed to fetch:", entry.url, e);
+      }
+    }));
+    if (!done) {
+      Toaster.toast.error("Failed to download any files.");
+      return;
+    }
+    const blob = createZip(files);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "favorites.zip";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    Toaster.toast.success(`Downloaded ${done} file${done > 1 ? "s" : ""} as zip.`);
+  }
+  function DownloadAllButton() {
+    const [loading, setLoading] = useState(false);
+    const onClick = async () => {
+      setLoading(true);
+      try {
+        await downloadAllFavorites();
+      } finally {
+        setLoading(false);
+      }
+    };
+    return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: "Download all favorites",
+      variant: "secondary",
+      shape: "pill",
+      size: "md",
+      disabled: loading,
+      onClick
+    }, /* @__PURE__ */ React.createElement(DownloadIcon2, {
+      size: "20"
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: "font-semibold"
+    }, loading ? "Downloading..." : "Download all"));
+  }
+  function FilterButtons() {
+    useExternalStore(filterStore);
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
+      value: currentDate,
+      onValueChange: (v) => setDate(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: cl13("date-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: d,
+      value: d
+    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement("input", {
+      type: "text",
+      placeholder: "Search...",
+      value: currentSearch,
+      onChange: (e) => setSearch(e.target.value),
+      className: cl13("search")
+    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement("button", {
+      key: f,
+      className: cl13("filter-btn") + (currentFilter === f ? " " + cl13("filter-btn-active") : ""),
+      onClick: () => setFilter(currentFilter === f ? "all" : f)
+    }, f === "image" ? "Images" : "Videos")));
+  }
+  function useFilteredFavorites() {
+    const favorites = MediaStore.useMediaStore((s) => s.favoritesList);
+    useExternalStore(filterStore);
+    return filterItems(favorites);
+  }
+  function CardActions({ postId }) {
+    const item = MediaStore.useMediaStore((s) => s.byId[postId]);
+    const unlike = MediaStore.useMediaStore((s) => s.unlike);
+    const onDownload = async () => {
+      if (!item?.mediaUrl)
+        return;
+      try {
+        const res = await fetchExternal(item.mediaUrl);
+        const blob = await res.blob();
+        const ext = item.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (e) {
+        logger13.error("Failed to download:", e);
+      }
+    };
+    const onCopyPrompt = async () => {
+      const prompt = item?.prompt ?? item?.originalPrompt;
+      if (!prompt)
+        return;
+      await copyToClipboard(prompt);
+      Toaster.toast.success("Copied prompt.");
+    };
+    const onUnfavorite = () => {
+      unlike(postId);
+    };
+    const hasPrompt = !!(item?.prompt || item?.originalPrompt);
+    return /* @__PURE__ */ React.createElement(Fragment, null, hasPrompt && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: "Copy prompt",
+      className: cl13("card-btn"),
+      shape: "circle",
+      size: "md",
+      variant: "none",
+      onClick: onCopyPrompt
+    }, /* @__PURE__ */ React.createElement(CopyIcon2, {
+      size: "16",
+      className: "text-white"
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: "Download",
+      className: cl13("card-btn"),
+      shape: "circle",
+      size: "md",
+      variant: "none",
+      onClick: onDownload
+    }, /* @__PURE__ */ React.createElement(DownloadIcon2, {
+      size: "16",
+      className: "text-white"
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: "Unsave",
+      className: cl13("card-btn"),
+      shape: "circle",
+      size: "md",
+      variant: "none",
+      onClick: onUnfavorite
+    }, /* @__PURE__ */ React.createElement(HeartCrackIcon, {
+      size: 16,
+      className: "text-white"
+    })));
+  }
+  var WrappedDownloadAll = ErrorBoundary.wrap(DownloadAllButton);
+  var WrappedFilterButtons = ErrorBoundary.wrap(FilterButtons);
+  var WrappedCardActions = ErrorBoundary.wrap(CardActions);
+  var betterImagine_default = definePlugin({
+    name: "BetterImagine",
+    description: "Quality of life improvements and features for the Imagine page.",
+    authors: [Devs.Prism],
+    settings: settings5,
+    _hideDefault() {
+      return settings5.store.hideDefaultPreviews;
+    },
+    _autoPlay() {
+      return !settings5.store.noAutoplay;
+    },
+    _hoverProps() {
+      if (!settings5.store.playOnHover)
+        return {};
+      return { onMouseEnter, onMouseLeave };
+    },
+    _renderDownloadAll: WrappedDownloadAll,
+    _renderFilterButtons: WrappedFilterButtons,
+    _renderCardActions: WrappedCardActions,
+    _useFilteredFavorites() {
+      return useFilteredFavorites();
+    },
+    patches: [
+      {
+        find: "image_feed_opened",
+        group: true,
+        replacement: [
+          {
+            match: /"default"===(\i)&&\(0,(\i)\.jsx\)\((\i),\{containerWidth:/,
+            replace: '"default"===$1&&!$self._hideDefault()&&(0,$2.jsx)($3,{containerWidth:'
+          },
+          {
+            match: /}\):\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),/,
+            replace: '}):(0,$1)($self._hideDefault()&&"favorites"!==$4?()=>null:$2,{containerRef:$3,variant:$4,'
+          },
+          {
+            match: /"imagine-upload-image-button.label","Upload image"\)}\)]\}\)/,
+            replace: "$&,$self._renderDownloadAll({})"
+          },
+          {
+            match: /(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\2\.useMediaStore\)\(\i=>\i\.list\)/,
+            replace: "$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)"
+          },
+          {
+            match: /muted:!0,autoPlay:!0/,
+            replace: "muted:!0,autoPlay:$self._autoPlay()"
+          },
+          {
+            match: /onMouseOver:\i\?\(\)=>\i\(!0\):void 0,onMouseLeave:\i\?\(\)=>\i\(!1\):void 0/,
+            replace: "$&,...$self._hoverProps()"
+          },
+          {
+            match: /children:\(0,(\i)\.jsx\)\((\i),\{postId:(\i),mediaType:(\i),onOpenChange:(\i)\}\)\}\)/,
+            replace: "children:[(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})"
+          }
+        ]
+      },
+      {
+        find: 'imagine-folder.all","All"',
+        replacement: {
+          match: /"imagine-folder.all","All"\)}\)]\}\)/,
+          replace: "$&,$self._renderFilterButtons({})"
+        }
+      }
+    ]
+  });
+
   // void-css:D:/Projects/Void/src/plugins/betterSidebar/styles.css
-  registerStyle("betterSidebar", `.void-sidebar-card {
+  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
+.group.peer [data-sidebar="content"] > .grow {
+    cursor: default !important;
+}
+
+.group.peer [data-sidebar="sidebar"] + div::after {
+    background-color: transparent !important;
+}
+
+.void-sidebar-card {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -5459,24 +5963,27 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/betterSidebar/index.tsx
-  var cl13 = classNameFactory("void-sidebar-");
-  var TIER_DISPLAY = {
-    SUBSCRIPTION_TIER_INVALID: "Free",
-    SUBSCRIPTION_TIER_X_BASIC: "Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "Premium+",
+  var cl14 = classNameFactory("void-sidebar-");
+  var settings6 = definePluginSettings({
+    clickToToggle: {
+      type: 3 /* BOOLEAN */,
+      description: "Click anywhere on the sidebar to toggle it.",
+      default: true
+    },
+    defaultCollapsed: {
+      type: 3 /* BOOLEAN */,
+      description: "Start with the sidebar collapsed on page load.",
+      default: false
+    }
+  });
+  var PLAN_NAMES = {
     SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
     SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
   };
-  var SESSION_TIER_DISPLAY = {
-    "0": "Free",
-    "1": "X Premium",
-    "2": "X Premium+"
-  };
-  function getPlanName(bestSubscription, sessionTierId) {
-    if (bestSubscription)
-      return TIER_DISPLAY[bestSubscription] ?? bestSubscription;
-    return SESSION_TIER_DISPLAY[sessionTierId ?? "0"] ?? "Free";
+  function getPlanName(bestSubscription) {
+    if (!bestSubscription)
+      return "Free";
+    return PLAN_NAMES[bestSubscription] ?? "Free";
   }
   function UserCard({ AvatarMenu }) {
     const { open: open2 } = SidebarComponents.useSidebar();
@@ -5492,31 +5999,45 @@ ${sourceUrl}`;
     };
     return /* @__PURE__ */ React.createElement("div", {
       ref: cardRef,
-      className: cl13("card"),
+      className: cl14("card"),
       onPointerDown: (e) => forward(e, "pointerdown"),
       onPointerUp: (e) => forward(e, "pointerup")
     }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       justifyContent: "center",
       gap: "0",
-      className: cl13("info")
+      className: cl14("info")
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "sm",
       weight: "medium",
-      className: cl13("name")
+      className: cl14("name")
     }, user.givenName || user.email?.split("@")[0] || "User"), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "xs",
       color: "secondary",
-      className: cl13("plan")
-    }, getPlanName(bestSubscription, user.sessionTierId))));
+      className: cl14("plan")
+    }, getPlanName(bestSubscription))));
   }
   var betterSidebar_default = definePlugin({
     name: "BetterSidebar",
-    description: "Shows your name and plan in the sidebar footer.",
+    description: "Various sidebar improvements.",
     authors: [Devs.Prism],
+    settings: settings6,
     _UserCard: ErrorBoundary.wrap(UserCard),
+    _defaultOpen() {
+      return !settings6.store.defaultCollapsed;
+    },
+    _onSidebarClick() {
+      if (!settings6.store.clickToToggle)
+        return;
+      return (e) => {
+        const target = e.target;
+        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger]"))
+          return;
+        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
+      };
+    },
     patches: [
       {
         find: "AvatarDropdownMenu,{}),",
@@ -5524,6 +6045,21 @@ ${sourceUrl}`;
           match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{\}\)/,
           replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu})"
         }
+      },
+      {
+        find: "useSidebar must be used within a SidebarProvider",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /defaultOpen:\i=!0/,
+            replace: "defaultOpen:_=$self._defaultOpen()"
+          },
+          {
+            match: /data-sidebar":"sidebar",className:/,
+            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
+          }
+        ]
       }
     ]
   });
@@ -5612,7 +6148,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger13 = new Logger("ExportChat");
+  var logger14 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -5639,7 +6175,7 @@ ${sourceUrl}`;
   function ExportItem({ conversationId }) {
     const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
     return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => exportChat(conversationId).catch((e) => logger13.error("Failed to export chat", e)),
+      onSelect: () => exportChat(conversationId).catch((e) => logger14.error("Failed to export chat", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
@@ -5658,24 +6194,6 @@ ${sourceUrl}`;
     }
   });
 
-  // src/plugins/messageClickActions/index.ts
-  function onDblClick(e) {
-    const target = e.target;
-    const response = target.closest("[id^='response-']");
-    if (!response)
-      return;
-    const editBtn = response.querySelector("[aria-label='Edit']");
-    editBtn?.click();
-  }
-  var messageClickActions_default = definePlugin({
-    name: "MessageClickActions",
-    description: "Double-click your own messages to edit them.",
-    authors: [Devs.Prism],
-    eventListeners: [
-      { event: "dblclick", handler: onDblClick }
-    ]
-  });
-
   // void-css:D:/Projects/Void/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
@@ -5689,7 +6207,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings5 = definePluginSettings({
+  var settings7 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -5714,19 +6232,19 @@ ${sourceUrl}`;
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings5,
+    settings: settings7,
     _renderTimestamp(response) {
       try {
         if (!response?.createTime)
           return null;
-        if (settings5.store.hideOwnMessages && response.sender === "human")
+        if (settings7.store.hideOwnMessages && response.sender === "human")
           return null;
         return /* @__PURE__ */ React.createElement(Text, {
           as: "span",
           size: "xs",
           color: "muted",
           className: "void-timestamp"
-        }, formatTimestamp(response.createTime, settings5.store.showDate));
+        }, formatTimestamp(response.createTime, settings7.store.showDate));
       } catch {
         return null;
       }
@@ -5738,69 +6256,6 @@ ${sourceUrl}`;
           match: /(\i)\.parentQuotedText(.{0,10})\(0,(\i)\.jsx\)\((\i)\.MessageBubble/,
           replace: "$1.parentQuotedText$2$self._renderTimestamp($1),(0,$3.jsx)($4.MessageBubble"
         }
-      }
-    ]
-  });
-
-  // src/plugins/noAutoplay/index.ts
-  var logger14 = new Logger("NoAutoplay");
-  var settings6 = definePluginSettings({
-    playOnHover: {
-      type: 3 /* BOOLEAN */,
-      description: "Play video thumbnails when hovered.",
-      default: true
-    }
-  });
-  var pending = new WeakMap;
-  function pauseVideo(video) {
-    const promise = pending.get(video);
-    pending.delete(video);
-    if (promise) {
-      promise.then(() => {
-        if (pending.has(video))
-          return;
-        video.pause();
-        video.currentTime = 0;
-      }).catch((e) => logger14.warn("Failed to pause video:", e));
-    } else {
-      video.pause();
-      video.currentTime = 0;
-    }
-  }
-  var onMouseEnter = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pending.set(video, video.play().catch((e2) => logger14.error("Failed to play video", e2)));
-  };
-  var onMouseLeave = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pauseVideo(video);
-  };
-  var noAutoplay_default = definePlugin({
-    name: "NoAutoplay",
-    description: "Stops video thumbnails from autoplaying on the Imagine page.",
-    authors: [Devs.Prism],
-    settings: settings6,
-    _hoverProps() {
-      if (!settings6.store.playOnHover)
-        return {};
-      return { onMouseEnter, onMouseLeave };
-    },
-    patches: [
-      {
-        find: "group/media-post-masonry-card",
-        group: true,
-        replacement: [
-          {
-            match: /muted:!0,autoPlay:!0/,
-            replace: "muted:!0,autoPlay:!1"
-          },
-          {
-            match: /onMouseOver:\i\?\(\)=>\i\(!0\):void 0,onMouseLeave:\i\?\(\)=>\i\(!1\):void 0/,
-            replace: "$&,...$self._hoverProps()"
-          }
-        ]
       }
     ]
   });
@@ -5835,207 +6290,6 @@ ${sourceUrl}`;
     }
   });
 
-  // void-css:D:/Projects/Void/src/plugins/rateLimitDisplay/styles.css
-  registerStyle("rateLimitDisplay", `.void-ratelimit-danger {
-    color: hsl(var(--fg-danger));
-}
-
-.void-ratelimit-separator {
-    margin-left: 0.25rem;
-    margin-right: 0.25rem;
-    height: 0.75rem;
-    width: 0.125rem;
-}
-`);
-
-  // src/plugins/rateLimitDisplay/index.tsx
-  var cl14 = classNameFactory("void-ratelimit-");
-  var logger16 = new Logger("RateLimitDisplay");
-  var settings7 = definePluginSettings({
-    showMaxCount: {
-      type: 3 /* BOOLEAN */,
-      description: "Show the maximum count alongside remaining.",
-      default: true
-    }
-  });
-  var EMPTY = { remaining: -1, total: -1, waitSeconds: null, windowSeconds: 0 };
-  var usageStore = createExternalStore();
-  var usageCache = new Map;
-  async function fetchUsageFromHistory(modelId, windowSeconds) {
-    const cached = usageCache.get(modelId);
-    const windowMs = windowSeconds * 1000;
-    const cutoff = Date.now() - windowMs;
-    if (cached && cached.oldestTs > cutoff)
-      return cached.count;
-    try {
-      const { conversations } = await ApiClients.chatApi.chatListConversations({});
-      let count = 0;
-      let oldestTs = Date.now();
-      const recentConvos = conversations.filter((c) => new Date(c.modifyTime ?? c.createTime).getTime() > cutoff);
-      const responses = await Promise.all(recentConvos.map((c) => ApiClients.chatApi.chatListResponses({ conversationId: c.conversationId }).catch(() => ({ responses: [] }))));
-      for (const resp of responses) {
-        for (const r of resp.responses ?? []) {
-          if (r.sender !== "assistant" || r.model !== modelId)
-            continue;
-          const ts = new Date(r.createTime).getTime();
-          if (ts <= cutoff)
-            continue;
-          count++;
-          if (ts < oldestTs)
-            oldestTs = ts;
-        }
-      }
-      usageCache.set(modelId, { model: modelId, count, oldestTs });
-      return count;
-    } catch (e) {
-      logger16.error("Failed to fetch usage history:", e);
-      return usageCache.get(modelId)?.count ?? 0;
-    }
-  }
-  function computeWait(modelId, windowSeconds) {
-    const cached = usageCache.get(modelId);
-    if (!cached)
-      return null;
-    const resetAt = cached.oldestTs + windowSeconds * 1000;
-    const seconds = Math.ceil((resetAt - Date.now()) / 1000);
-    return seconds > 0 ? seconds : null;
-  }
-  function toUsage(data, used, modelId) {
-    if (!data || data.totalQueries <= 0)
-      return EMPTY;
-    const remaining = Math.max(0, data.totalQueries - used);
-    const apiWait = data.waitTimeSeconds;
-    const waitSeconds = apiWait != null && apiWait > 0 ? Math.ceil(apiWait) : remaining === 0 && modelId ? computeWait(modelId, data.windowSizeSeconds) : null;
-    return { remaining, total: data.totalQueries, waitSeconds, windowSeconds: data.windowSizeSeconds };
-  }
-  function formatLabel(u, wait, short) {
-    if (u.total < 0)
-      return "...";
-    if (u.total === 0)
-      return "∞";
-    if (wait != null && wait > 0)
-      return formatCountdown(wait);
-    return short || !settings7.store.showMaxCount ? String(u.remaining) : `${u.remaining}/${u.total}`;
-  }
-  function Label({ usage, wait, short }) {
-    const text = formatLabel(usage, wait, short);
-    const danger = wait != null && wait > 0;
-    return danger ? /* @__PURE__ */ React.createElement("span", {
-      className: cl14("danger")
-    }, text) : /* @__PURE__ */ React.createElement(React.Fragment, null, text);
-  }
-  function useLimits(modelId, key, enabled) {
-    const conversationId = ChatPageStore.useChatPageStore((s) => s.conversationId);
-    const lastMessageId = ChatPageStore.useChatPageStore((s) => s.lastMessageId);
-    const streaming = ChatPageStore.useChatPageStore((s) => !!s.streamedMessageId);
-    const { data } = TanStackQuery.useQuery({
-      queryKey: ["void-rate-limits", key, modelId],
-      queryFn: () => ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: modelId, requestKind: "DEFAULT" } }),
-      enabled: enabled && !!modelId && !streaming,
-      staleTime: 1e4
-    });
-    const [used, setUsed] = useState(0);
-    const fetchRef = useRef(0);
-    const refreshUsage = useCallback(() => {
-      if (!enabled || !modelId || !data || streaming)
-        return;
-      const id = ++fetchRef.current;
-      fetchUsageFromHistory(modelId, data.windowSizeSeconds).then((count) => {
-        if (id === fetchRef.current)
-          setUsed(count);
-      }).catch(() => {});
-    }, [enabled, modelId, data?.windowSizeSeconds, streaming]);
-    useEffect(refreshUsage, [refreshUsage, conversationId, lastMessageId]);
-    return { data, used };
-  }
-  function RateLimitIndicator(_props) {
-    useExternalStore(usageStore);
-    const modelMode = ChatPageStore.useChatPageStore((s) => s.modelMode);
-    const activeModelId = ChatPageStore.useChatPageStore((s) => s.activeModelId);
-    const modelByMode = ModelsStore.useModelsStore((s) => s.modelByMode);
-    const rateLimited = ChatPageStore.useChatPageStore((s) => s.isRateLimited === "user");
-    const isAuto = modelMode === "auto";
-    const singleModelId = modelByMode?.[modelMode]?.modelId || activeModelId;
-    const fastModelId = modelByMode?.fast?.modelId;
-    const expertModelId = modelByMode?.expert?.modelId;
-    const singleLimits = useLimits(singleModelId, "single", !isAuto);
-    const fastLimits = useLimits(fastModelId, "fast", isAuto);
-    const expertLimits = useLimits(expertModelId, "expert", isAuto);
-    const single = toUsage(singleLimits.data, singleLimits.used, singleModelId);
-    const fast = toUsage(fastLimits.data, fastLimits.used, fastModelId);
-    const expert = toUsage(expertLimits.data, expertLimits.used, expertModelId);
-    const singleWait = useCountdown(single.waitSeconds);
-    const fastWait = useCountdown(fast.waitSeconds);
-    const expertWait = useCountdown(expert.waitSeconds);
-    const windowSeconds = single.windowSeconds || fast.windowSeconds || expert.windowSeconds;
-    const reset = windowSeconds > 0 ? formatDuration(windowSeconds) : "";
-    if (isAuto && fast !== EMPTY && expert !== EMPTY) {
-      const tooltip = `Fast ${formatLabel(fast, fastWait)} · Expert ${formatLabel(expert, expertWait)}${reset ? ` · resets every ${reset}` : ""}`;
-      return /* @__PURE__ */ React.createElement(ChatBarButton, {
-        icon: /* @__PURE__ */ React.createElement(GaugeIcon, {
-          size: 18
-        }),
-        tooltip
-      }, /* @__PURE__ */ React.createElement(Label, {
-        usage: fast,
-        wait: fastWait,
-        short: true
-      }), /* @__PURE__ */ React.createElement(Separator, {
-        orientation: "vertical",
-        className: cl14("separator")
-      }), /* @__PURE__ */ React.createElement(Label, {
-        usage: expert,
-        wait: expertWait,
-        short: true
-      }));
-    }
-    const limited = (singleWait ?? 0) > 0;
-    return /* @__PURE__ */ React.createElement(ChatBarButton, {
-      icon: /* @__PURE__ */ React.createElement(GaugeIcon, {
-        size: 18
-      }),
-      tooltip: reset ? `Resets every ${reset}` : undefined,
-      className: limited ? cl14("danger") : undefined
-    }, /* @__PURE__ */ React.createElement(Label, {
-      usage: single,
-      wait: singleWait
-    }));
-  }
-  var unsubRateLimited;
-  var rateLimitDisplay_default = definePlugin({
-    name: "RateLimitDisplay",
-    description: "Shows rate limit usage next to the chat input.",
-    authors: [Devs.Prism],
-    settings: settings7,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    chatBarButton: { render: RateLimitIndicator },
-    start() {
-      let prev = ChatPageStore.useChatPageStore.getState().isRateLimited === "user";
-      unsubRateLimited = ChatPageStore.useChatPageStore.subscribe((s) => {
-        const limited = s.isRateLimited === "user";
-        if (limited && !prev)
-          usageStore.notify();
-        prev = limited;
-      });
-    },
-    stop() {
-      unsubRateLimited?.();
-      usageCache.clear();
-    },
-    patches: [{
-      find: "chat-page-store:checkRateLimits",
-      replacement: {
-        match: /rateLimitsGetRateLimits\(\{body:(\i)\}\)\.then\((\i)=>\{/,
-        replace: "rateLimitsGetRateLimits({body:$1}).then($2=>{$self._onRateLimitCheck($2,$1);"
-      },
-      all: true
-    }],
-    _onRateLimitCheck(res, req) {
-      usageCache.delete(req.modelName);
-      usageStore.notify();
-    }
-  });
-
   // src/plugins/starry/index.ts
   var starry_default = definePlugin({
     name: "Starry",
@@ -6061,7 +6315,7 @@ ${sourceUrl}`;
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageClickActions_default.name]: messageClickActions_default, [messageTimestamps_default.name]: messageTimestamps_default, [noAutoplay_default.name]: noAutoplay_default, [oneko_default.name]: oneko_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [starry_default.name]: starry_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -6176,14 +6430,6 @@ ${sourceUrl}`;
     DevModelsStore: () => DevModelsStore,
     CopyUtils: () => CopyUtils,
     ConversationStore: () => ConversationStore,
-    ContextMenuTrigger: () => ContextMenuTrigger,
-    ContextMenuSubTrigger: () => ContextMenuSubTrigger,
-    ContextMenuSubContent: () => ContextMenuSubContent,
-    ContextMenuSub: () => ContextMenuSub,
-    ContextMenuSeparator: () => ContextMenuSeparator,
-    ContextMenuItem: () => ContextMenuItem,
-    ContextMenuContent: () => ContextMenuContent,
-    ContextMenu: () => ContextMenu,
     CommandMenuStore: () => CommandMenuStore,
     CommandList: () => CommandList,
     CommandItem: () => CommandItem,
@@ -6201,7 +6447,6 @@ ${sourceUrl}`;
     Avatar: () => Avatar,
     AssetUtils: () => AssetUtils,
     AssetStore: () => AssetStore,
-    ArtifactStore: () => ArtifactStore,
     ApiClients: () => ApiClients,
     AnimatePresence: () => AnimatePresence,
     AccordionTrigger: () => AccordionTrigger,
@@ -6211,9 +6456,7 @@ ${sourceUrl}`;
   });
 
   // src/Void.ts
-  var logger17 = new Logger("TurbopackPatcher", "#e78284");
-  var APP_READY_SETTLE_MS = 500;
-  var MIN_FACTORY_RATIO = 0.4;
+  var logger16 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
@@ -6248,7 +6491,7 @@ ${sourceUrl}`;
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger17.info("All previously failed plugins started after late module load");
+          logger16.info("All previously failed plugins started after late module load");
         }
       }, 200);
     };
@@ -6263,61 +6506,26 @@ ${sourceUrl}`;
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger17.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger16.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
-  function hasEnoughModules() {
-    const registry = getRuntimeFactoryRegistry();
-    if (!registry)
-      return false;
-    return getModuleCache().size / registry.size >= MIN_FACTORY_RATIO;
-  }
   function waitForModulesStable() {
-    let settleTimer = null;
-    let fallbackTimer = null;
-    let unsubLoad = null;
-    let cancelWaitFor = null;
-    let fired = false;
     const fire = onlyOnce(() => {
-      fired = true;
-      if (settleTimer)
-        clearTimeout(settleTimer);
-      if (fallbackTimer)
-        clearTimeout(fallbackTimer);
-      if (unsubLoad)
-        unsubLoad();
       if (cancelWaitFor)
         cancelWaitFor();
+      clearTimeout(fallbackTimer);
       rescanRuntimeModules();
       blacklistBadModules();
       _resolveReady();
       startAllPlugins("TurbopackReady" /* TurbopackReady */);
-      logger17.info(`${getModuleCache().size} modules loaded, ready`);
+      logger16.info(`${getModuleCache().size} modules loaded, ready`);
       retryFailedPlugins();
       deferOrphanReport();
       checkForUpdates();
     });
-    const settleUntilReady = () => {
-      if (settleTimer)
-        clearTimeout(settleTimer);
-      if (hasEnoughModules()) {
-        fire();
-        return;
-      }
-      settleTimer = setTimeout(settleUntilReady, APP_READY_SETTLE_MS);
-    };
-    cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), () => {
-      cancelWaitFor = null;
-      settleUntilReady();
-    });
-    unsubLoad = onModuleLoad(() => {
-      if (!fired && !cancelWaitFor && settleTimer) {
-        clearTimeout(settleTimer);
-        settleTimer = setTimeout(settleUntilReady, APP_READY_SETTLE_MS);
-      }
-    });
-    fallbackTimer = setTimeout(fire, FALLBACK_MS);
+    const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
+    const fallbackTimer = setTimeout(fire, FALLBACK_MS);
   }
   function init() {
     for (const name in __plugins_default) {
