@@ -487,8 +487,16 @@ function captureModuleCache(factoryRegistry: Map<number, ModuleFactory>): void {
 function wrapExistingFactories() {
     runtimeFactoryRegistry = captureFactoryRegistry();
     if (runtimeFactoryRegistry) {
+        const wrapped = new Map<ModuleFactory, ModuleFactory>();
         for (const [id, factory] of runtimeFactoryRegistry) {
-            runtimeFactoryRegistry.set(id, wrapFactory(id, factory));
+            const existing = wrapped.get(factory);
+            if (existing) {
+                runtimeFactoryRegistry.set(id, existing);
+            } else {
+                const w = wrapFactory(id, factory);
+                wrapped.set(factory, w);
+                runtimeFactoryRegistry.set(id, w);
+            }
         }
     }
     if (!runtimeModuleCache && runtimeFactoryRegistry) {

@@ -151,13 +151,13 @@ function waitForModulesStable() {
 }
 
 export function init() {
-    patchTurbopack();
-
     for (const name in Plugins) {
         registerPlugin(Plugins[name] as Plugin);
     }
 
     initPluginManager();
+
+    patchTurbopack();
 
     startAllPlugins(StartAt.Init);
 
