@@ -85,8 +85,8 @@ export default definePlugin({
                     replace: '"default"===$1&&!$self._hideDefault()&&(0,$2.jsx)($3,{containerWidth:',
                 },
                 {
-                    match: /MediaPostSourcePublic,(\i)="favorites"!==(\i)/,
-                    replace: 'MediaPostSourcePublic;if("favorites"!==$2&&$self._hideDefault())return null;$1="favorites"!==$2',
+                    match: /\.jsx\)\((\i),(\{containerRef:\i,variant:(\i))/,
+                    replace: '.jsx)("favorites"!==$3&&$self._hideDefault()?()=>null:$1,$2',
                 },
             ],
         },
