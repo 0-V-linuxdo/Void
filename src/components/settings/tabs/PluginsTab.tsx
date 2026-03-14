@@ -23,6 +23,7 @@ import {
     Separator,
     Text,
 } from "@components";
+import { consumePendingPluginDialog } from "@plugins/_core/settings";
 import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { useFiltered } from "@utils/react";
@@ -63,6 +64,11 @@ export default function PluginsTab() {
         for (const n of requiredPlugins) map.set(n, isPluginEnabled(n));
         initialStatesRef.current = map;
     }, [userPlugins, requiredPlugins]);
+
+    useEffect(() => {
+        const pending = consumePendingPluginDialog();
+        if (pending) setDialogName(pending);
+    }, []);
 
     const visibleUser = useMemo(() => {
         if (filter === "all") return userPlugins;
