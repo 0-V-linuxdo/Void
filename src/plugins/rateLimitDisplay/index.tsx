@@ -173,14 +173,14 @@ export default definePlugin({
     chatBarButton: { render: RateLimitIndicator },
     start() {
         let prevStreaming = false;
-        let prevModelId: string | undefined;
         unsubStreaming = ChatPageStore.useChatPageStore.subscribe(s => {
             const streaming = !!s.streamedMessageId;
-            if (prevStreaming && !streaming && prevModelId) {
-                recordSend(prevModelId);
+            if (prevStreaming && !streaming) {
+                const { modelByMode } = ModelsStore.useModelsStore.getState();
+                const modelId = modelByMode?.[s.modelMode]?.modelId || s.activeModelId;
+                if (modelId) recordSend(modelId);
             }
             prevStreaming = streaming;
-            prevModelId = s.activeModelId;
         });
     },
     stop() {
