@@ -50,6 +50,8 @@ export const MODULE = {
     MAX_UNLOADED_LIMIT: 50,
     UNLOADED_PREVIEW_LENGTH: 80,
     MAX_SHARED_WITH: 5,
+    DEFAULT_NAMED_EXPORTS: 30,
+    MAX_NAMED_EXPORTS: 100,
 } as const;
 
 export const PATCH = {
@@ -100,7 +102,7 @@ export const STORE = {
     MAX_CAPTURES: 200,
     KEYS_PREVIEW: 8,
     SIMILAR_LIMIT: 5,
-    LIST_KEYS_PREVIEW: 5,
+    LIST_KEYS_PREVIEW: 8,
     METHODS_PREVIEW: 8,
     MAX_DEPTH: 4,
     DEFAULT_DEPTH: 2,
@@ -129,6 +131,13 @@ export const MCP = {
     REQUEST_TIMEOUT: 65_000,
     WS_OPEN: 1,
     PORT: 7890,
+} as const;
+
+export const GROK = {
+    SEND_TIMEOUT: 120_000,
+    MAX_RESPONSE_LENGTH: 30_000,
+    MAX_THINKING_LENGTH: 10_000,
+    SERIALIZE_DEPTH: 2,
 } as const;
 
 export const EVAL = {

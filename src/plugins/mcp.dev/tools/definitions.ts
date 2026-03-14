@@ -126,16 +126,34 @@ export const TOOL_DEFINITIONS = [
     },
     {
         name: "intercept",
-        description: "Capture function calls. set: start. get: read captures. stop: restore. list: active. Auto-expires.",
+        description: "Intercept function calls on module exports. set: start capturing (only configurable properties). get: read captures. stop: restore original and return last captures. stopAll: clear all intercepts. list: active. exportKey supports nested paths like 'default.functionName'. Auto-expires after duration (default 30s, max 120s). maxCaptures limits stored calls (default 30, max 200).",
         inputSchema: {
             type: "object",
             properties: {
-                action: { type: "string", enum: ["set", "get", "stop", "list"] },
+                action: { type: "string", enum: ["set", "get", "stop", "stopAll", "list"] },
                 moduleId: { type: "number" },
                 exportKey: { type: "string", default: "default" },
                 id: { type: "number" },
                 duration: { type: "number", default: 30000 },
                 maxCaptures: { type: "number", default: 30 },
+            },
+            required: ["action"],
+        },
+    },
+    {
+        name: "grok",
+        description: "Chat with Grok AI. send: create conversation or send message, get response. read: load response/conversation history. models: list available models with rate limits.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                action: { type: "string", enum: ["send", "read", "models"] },
+                message: { type: "string", description: "Message to send (send action)." },
+                model: { type: "string", description: "Model ID e.g. grok-3, grok-4. Default: current active model." },
+                conversationId: { type: "string", description: "Existing conversation ID (send: follow-up, read: load history)." },
+                responseId: { type: "string", description: "Response ID to read (read action)." },
+                temporary: { type: "boolean", default: true, description: "If true, conversation hidden from sidebar." },
+                reasoningMode: { type: "string", enum: ["none", "think", "deepsearch"], default: "none" },
+                parentResponseId: { type: "string", description: "Parent response ID for follow-up (send action with conversationId)." },
             },
             required: ["action"],
         },

@@ -230,12 +230,14 @@ const FILTER_BUILDERS: Record<string, (v: unknown) => boolean> = {
     component: v => typeof v === "function" || (v != null && typeof v === "object" && (v as Record<string, unknown>).$$typeof != null),
 };
 
-function buildFilter(filterType: string): FilterFn {
+const VALID_FILTER_TYPES = "fn, string, number, boolean, object, array, component, hasProps:a,b, code:pattern";
+
+function buildFilter(filterType: string): FilterFn | string {
     const builtin = FILTER_BUILDERS[filterType];
     if (builtin) return builtin;
     if (filterType.startsWith("hasProps:")) return filters.byProps(...filterType.slice(9).split(","));
     if (filterType.startsWith("code:")) return filters.byCode(filterType.slice(5));
-    return () => false;
+    return `Unknown filter type "${filterType}". Valid types: ${VALID_FILTER_TYPES}`;
 }
 
 function findDiffs(orig: string, patched: string, budget: number): DiffChunk[] {
@@ -483,7 +485,7 @@ export function handleModule(args: ModuleArgs): unknown {
         const target = (typeof exports === "object" ? exports : { default: exports }) as Record<string, unknown>;
         const keys = Object.keys(target);
         const result: Record<string, string> = {};
-        const cap = clampDefault(args.limit, MODULE.DEFAULT_EXPORT_KEYS, MODULE.MAX_EXPORT_KEYS);
+        const cap = clampDefault(args.limit && args.limit > 0 ? args.limit : undefined, MODULE.DEFAULT_EXPORT_KEYS, MODULE.MAX_EXPORT_KEYS);
         for (let i = 0, l = Math.min(keys.length, cap); i < l; i++) {
             try {
                 result[keys[i]] = describeValue(target[keys[i]]);
@@ -501,7 +503,9 @@ export function handleModule(args: ModuleArgs): unknown {
         const src = patchedCode ?? getFactorySource(id);
         if (!src) return { error: `Module ${id} not found.` };
         const cap = clampDefault(args.limit, MODULE.DEFAULT_SOURCE_LIMIT, MODULE.MAX_SOURCE_LIMIT);
-        let start = Math.max(0, Math.floor(args.offset ?? 0));
+        const rawOffset = Math.floor(args.offset ?? 0);
+        const offsetClamped = rawOffset < 0 || rawOffset > src.length;
+        let start = Math.max(0, Math.min(rawOffset, src.length));
         let searchIdx = -1;
         if (args.search) {
             searchIdx = src.indexOf(args.search, start);
@@ -509,6 +513,7 @@ export function handleModule(args: ModuleArgs): unknown {
             start = Math.max(0, searchIdx - MODULE.SEARCH_CONTEXT_PAD);
         }
         const result: Record<string, unknown> = { len: src.length, at: start, src: src.slice(start, start + cap) };
+        if (offsetClamped) result.offsetClamped = true;
         if (src.length > cap) result.hint = `Showing ${cap}/${src.length} chars. Use offset/search to paginate, or increase limit.`;
         if (args.search) {
             result.searchAt = searchIdx - start;
@@ -570,7 +575,9 @@ export function handleModule(args: ModuleArgs): unknown {
                 named.push(mid !== undefined ? { name: nm[1], mid } : { name: nm[1] });
             }
         }
-        return { id, named };
+        const cap = clampDefault(args.limit, MODULE.DEFAULT_NAMED_EXPORTS, MODULE.MAX_NAMED_EXPORTS);
+        if (named.length <= cap) return { id, named };
+        return { id, named: named.slice(0, cap), total: named.length };
     }
 
     if (action === "load") {
@@ -630,7 +637,9 @@ export function handleModule(args: ModuleArgs): unknown {
         const builtFilters: Record<string, FilterFn> = {};
         for (const [name, filterType] of Object.entries(mapperDefs)) {
             if (typeof filterType !== "string") return { error: `Mapper "${name}" must be a string filter type, got ${typeof filterType}` };
-            builtFilters[name] = buildFilter(filterType);
+            const filter = buildFilter(filterType);
+            if (typeof filter === "string") return { error: filter };
+            builtFilters[name] = filter;
         }
 
         const mapped: Record<string, unknown> = {};
@@ -736,7 +745,7 @@ export function handleModule(args: ModuleArgs): unknown {
             start: fn.start,
             len: fn.end - fn.start,
             truncated: fnSrc.length > maxLen,
-            ...(fnSrc.length > maxLen && { hint: `Function is ${fn.end - fn.start} chars, showing first ${maxLen}. Increase limit to see more.` }),
+            ...(fnSrc.length > maxLen && { hint: `Function is ${fn.end - fn.start} chars, showing first ${maxLen} (maximum). Use source action with search/offset for full access.` }),
             src: fnSrc.slice(0, maxLen),
         };
     }

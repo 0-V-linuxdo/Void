@@ -5,7 +5,6 @@
  */
 
 import type {
-    ArtifactStoreModule,
     AssetStoreModule,
     ChatPageStoreModule,
     CodePageStoreModule,
@@ -47,8 +46,6 @@ import type {
 
 import { findByPropsLazy } from "../turbopack";
 
-// Order alphabetically
-export const ArtifactStore: ArtifactStoreModule = findByPropsLazy("useArtifactStore", "useArtifactEdits");
 export const AssetStore: AssetStoreModule = findByPropsLazy("useAssetStore");
 export const ChatPageStore: ChatPageStoreModule = findByPropsLazy("useChatPageStore", "getLatestThreadMessageId");
 export const CodePageStore: CodePageStoreModule = findByPropsLazy("useCodePageStore");

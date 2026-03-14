@@ -16,8 +16,6 @@
 }
 
 .void-theme-card-name {
-    font-size: 0.875rem;
-    font-weight: 400;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;

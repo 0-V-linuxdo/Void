@@ -118,6 +118,12 @@ export const DownloadIcon = (props: IconProps = {}) =>
         <line x1="12" x2="12" y1="15" y2="3" />,
     );
 
+export const HeartCrackIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M12.409 5.824c-.702.792-1.15 1.496-1.415 2.166l2.153 2.156a.5.5 0 0 1 0 .707l-2.293 2.293a.5.5 0 0 0 0 .707L12 15" />,
+        <path d="M13.508 20.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.677.6.6 0 0 0 .818.001A5.5 5.5 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5z" />,
+    );
+
 export const UnplugIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="m19 5 3-3" />,
@@ -152,4 +158,11 @@ export const TriangleAlert = (props: IconProps = {}) =>
         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />,
         <path d="M12 9v4" />,
         <path d="M12 17h.01" />,
+    );
+
+export const ShapesIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z" />,
+        <rect x="3" y="14" width="7" height="7" rx="1" />,
+        <circle cx="17.5" cy="17.5" r="3.5" />,
     );

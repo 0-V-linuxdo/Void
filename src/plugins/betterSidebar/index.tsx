@@ -6,38 +6,42 @@
 
 import "./styles.css";
 
+import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
-import type { SessionTierId, SubscriptionTier } from "@grok-types/enums";
+import type { SubscriptionTier } from "@grok-types/enums";
 import { SidebarComponents } from "@turbopack/common/components";
 import { React, useRef } from "@turbopack/common/react";
 import { SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
-import definePlugin from "@utils/types";
+import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType } from "react";
 
 const cl = classNameFactory("void-sidebar-");
 
-const TIER_DISPLAY: Record<SubscriptionTier, string> = {
-    SUBSCRIPTION_TIER_INVALID: "Free",
-    SUBSCRIPTION_TIER_X_BASIC: "Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "Premium+",
+const settings = definePluginSettings({
+    clickToToggle: {
+        type: OptionType.BOOLEAN,
+        description: "Click anywhere on the sidebar to toggle it.",
+        default: true,
+    },
+    defaultCollapsed: {
+        type: OptionType.BOOLEAN,
+        description: "Start with the sidebar collapsed on page load.",
+        default: false,
+    },
+});
+
+const PLAN_NAMES: Partial<Record<SubscriptionTier, string>> = {
     SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
     SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro",
 };
 
-const SESSION_TIER_DISPLAY: Record<SessionTierId, string> = {
-    "0": "Free",
-    "1": "X Premium",
-    "2": "X Premium+",
-};
-
-function getPlanName(bestSubscription?: SubscriptionTier, sessionTierId?: SessionTierId) {
-    if (bestSubscription) return TIER_DISPLAY[bestSubscription] ?? bestSubscription;
-    return SESSION_TIER_DISPLAY[sessionTierId ?? "0"] ?? "Free";
+function getPlanName(bestSubscription?: SubscriptionTier): string {
+    if (!bestSubscription) return "Free";
+    return PLAN_NAMES[bestSubscription] ?? "Free";
 }
 
 function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
@@ -62,7 +66,7 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
                     {user.givenName || user.email?.split("@")[0] || "User"}
                 </Text>
                 <Text as="span" size="xs" color="secondary" className={cl("plan")}>
-                    {getPlanName(bestSubscription, user.sessionTierId)}
+                    {getPlanName(bestSubscription)}
                 </Text>
             </Flex>
         </div>
@@ -71,10 +75,25 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
 
 export default definePlugin({
     name: "BetterSidebar",
-    description: "Shows your name and plan in the sidebar footer.",
+    description: "Various sidebar improvements.",
     authors: [Devs.Prism],
+    settings,
 
     _UserCard: ErrorBoundary.wrap(UserCard),
+
+    _defaultOpen() {
+        return !settings.store.defaultCollapsed;
+    },
+
+    _onSidebarClick() {
+        if (!settings.store.clickToToggle) return undefined;
+        return (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.closest("button,a,input,[role=button],[data-sidebar=trigger]")) return;
+            (e.currentTarget as HTMLElement).closest("[data-state]")
+                ?.querySelector<HTMLElement>("[data-sidebar=trigger]")?.click();
+        };
+    },
 
     patches: [
         {
@@ -83,6 +102,21 @@ export default definePlugin({
                 match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{\}\)/,
                 replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu})",
             },
+        },
+        {
+            find: "useSidebar must be used within a SidebarProvider",
+            all: true,
+            group: true,
+            replacement: [
+                {
+                    match: /defaultOpen:\i=!0/,
+                    replace: "defaultOpen:_=$self._defaultOpen()",
+                },
+                {
+                    match: /data-sidebar":"sidebar",className:/,
+                    replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:',
+                },
+            ],
         },
     ],
 });

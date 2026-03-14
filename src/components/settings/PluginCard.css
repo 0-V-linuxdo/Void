@@ -17,8 +17,6 @@
 }
 
 .void-plugin-card-name {
-    font-size: 0.875rem;
-    font-weight: 400;
     display: flex;
     align-items: center;
     gap: 0.375rem;

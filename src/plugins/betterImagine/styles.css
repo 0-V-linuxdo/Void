@@ -1,0 +1,66 @@
+.void-imagine-filter-btn,
+.void-imagine-search {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    padding: 0.375rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: color 0.15s, background-color 0.15s;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+}
+
+.void-imagine-search {
+    width: 10rem;
+}
+
+.void-imagine-search::placeholder {
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-imagine-search:focus {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-filter-btn:hover {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-filter-btn-active,
+.void-imagine-filter-btn-active:hover {
+    background: hsl(var(--fg-primary));
+    color: var(--background);
+}
+
+.void-imagine-date-select {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+    border: none;
+}
+
+.void-imagine-card-btn {
+    background: rgb(0 0 0 / 25%);
+    border: 1px solid rgb(255 255 255 / 15%);
+    opacity: 0;
+}
+
+.void-imagine-card-btn:hover {
+    background: rgb(255 255 255 / 10%);
+}
+
+/* stylelint-disable-next-line selector-class-pattern -- Grok's class name */
+.group\/media-post-masonry-card:hover .void-imagine-card-btn {
+    opacity: 1;
+}

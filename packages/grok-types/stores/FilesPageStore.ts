@@ -120,10 +120,6 @@ export interface FilesPageStoreState {
 	cloneAsset: (assetId: string) => Promise<any>;
 	/** Handle artifact selection from the chat panel. */
 	handleArtifactSelect: (artifact: ArtifactSelectParams) => void;
-	/** Get cached content for an asset by type. */
-	getContent: (assetId: string, type: "binary" | "string") => string | ArrayBuffer | null;
-	/** Clean up store subscriptions. */
-	destroy: () => void;
 
 	/** Internal: debounced setter for the search query. */
 	_setQueryDebounced: () => void;

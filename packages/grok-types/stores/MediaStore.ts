@@ -149,8 +149,8 @@ export interface MediaStoreState {
 	promiseById: Record<string, Promise<any>>;
 	/** Cached media items keyed by ID. */
 	byId: Record<string, MediaItem>;
-	/** Favorited media items keyed by ID. */
-	favoritesById: Record<string, MediaItem>;
+	/** Liked post IDs. */
+	likedPostIds: Record<string, boolean>;
 	/** Derived list of feed media items. */
 	list: MediaItem[];
 	/** Derived list of favorited items. */
@@ -209,12 +209,20 @@ export interface MediaStoreState {
 	generalError: any;
 	/** Timeout handle for clearing general error state. */
 	generalErrorTimeout: ReturnType<typeof setTimeout> | null;
+	/** Whether storage is exhausted. */
+	storageExhausted: boolean;
+	/** Timeout handle for storage exhausted state. */
+	storageExhaustedTimeout: ReturnType<typeof setTimeout> | null;
+	/** Optimistic video generation pending state keyed by ID. */
+	optimisticVideoGenPending: Record<string, boolean>;
+	/** Whether background videos are paused. */
+	pauseBackgroundVideos: boolean;
+	/** Whether this is a business session. */
+	isBusinessSession: boolean;
 	/** Disliked media IDs. */
 	dislikedIds: Record<string, boolean>;
 	/** Liked media IDs. */
 	likedIds: Record<string, boolean>;
-	/** Pending unlike action awaiting commit or undo. */
-	_pendingUnlike: any;
 	/** In-flight video generation requests keyed by image ID. */
 	inflightGenerateVideoForImage: Record<string, any>;
 	/** Canceled in-flight video generation IDs. */
@@ -291,12 +299,12 @@ export interface MediaStoreState {
 	clearFeedbackEligibility: () => void;
 	setPendingImport: (data: any) => void;
 	clearPendingImport: () => void;
-	setLoggedIn: (loggedIn: boolean, userId: string | null) => void;
+	setLoggedIn: (loggedIn: boolean, userId: string | null, isBusinessSession?: boolean) => void;
 	setRequestingLogin: (requesting: boolean) => void;
 	setLastUsedPromptById: (id: string, prompt: string) => void;
 	clearLastUsedPromptById: (id: string) => void;
-	setDisliked: (id: string, value?: boolean) => void;
-	setLiked: (id: string, value?: boolean) => void;
+	setDisliked: (id: string) => void;
+	setLiked: (id: string) => void;
 	setImageDimensions: (containerId: string, itemId: string, width: number, height: number) => void;
 	setExternalPrompt: (prompt: string, source: string) => void;
 
@@ -324,10 +332,10 @@ export interface MediaStoreState {
 	/** Generate images via chat API (non-websocket). */
 	fetchGenerateImages: (params: any) => Promise<any>;
 	/** Generate image edits with retry logic. */
-	fetchGenerateImageEdits: (params: any, maxRetries?: number, retryDelay?: number) => Promise<any>;
+	fetchGenerateImageEdits: (params: any) => Promise<any>;
 
 	/** Generate a video from an image. */
-	generateVideoForImage: (imageId: string, ...args: any[]) => Promise<any>;
+	generateVideoForImage: (imageId: string) => Promise<any>;
 	/** Cancel an in-flight video generation. */
 	cancelGenerateVideoForImage: (imageId: string) => void;
 	/** Upscale a video to HD. */
@@ -365,10 +373,10 @@ export interface MediaStoreState {
 	like: (id: string) => Promise<void>;
 	/** Unlike a media post. */
 	unlike: (id: string) => Promise<void>;
-	/** Undo a pending unlike before it is committed. */
-	undoUnlike: () => void;
-	/** Commit the pending unlike action. */
-	commitPendingUnlike: () => void;
+	/** Show a toast when storage is exhausted. */
+	showStorageExhaustedToast: () => void;
+	/** Handle a storage exhausted error if applicable. */
+	maybeHandleStorageExhaustedError: (error: any) => void;
 	/** Delete a media post. */
 	deletePost: (id: string, containerId: string) => Promise<void>;
 

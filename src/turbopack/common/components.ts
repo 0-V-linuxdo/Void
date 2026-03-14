@@ -20,14 +20,6 @@ import type {
     CommandItemProps,
     CommandListProps,
     CommandProps,
-    ContextMenuContentProps,
-    ContextMenuItemProps,
-    ContextMenuProps,
-    ContextMenuSeparatorProps,
-    ContextMenuSubContentProps,
-    ContextMenuSubProps,
-    ContextMenuSubTriggerProps,
-    ContextMenuTriggerProps,
     DialogContentProps,
     DialogHeaderProps,
     DialogProps,
@@ -103,14 +95,6 @@ export type {
     CommandItemProps,
     CommandListProps,
     CommandProps,
-    ContextMenuContentProps,
-    ContextMenuItemProps,
-    ContextMenuProps,
-    ContextMenuSeparatorProps,
-    ContextMenuSubContentProps,
-    ContextMenuSubProps,
-    ContextMenuSubTriggerProps,
-    ContextMenuTriggerProps,
     DialogCloseProps,
     DialogContentProps,
     DialogDescriptionProps,
@@ -164,17 +148,10 @@ export type {
     TooltipTriggerProps,
 } from "@grok-types";
 
-let buttonModule: Record<string, ComponentType> | null = null;
+const buttonLazy = createModuleLazy("Button", "ButtonWithTooltipOptimized");
 
-waitFor(filters.byProps("Button", "ButtonWithTooltipOptimized"), m => {
-    buttonModule = m;
-});
-
-const buttonLazy = <T extends ComponentType<any>>(name: string) =>
-    LazyComponent(name, () => (buttonModule?.[name] ?? findExportedComponent(name)) as any) as T;
-
-export const Button = buttonLazy<ComponentType<ButtonProps>>("Button");
-export const ButtonWithTooltip = buttonLazy<ComponentType<ButtonWithTooltipProps>>("ButtonWithTooltip");
+export const Button: ComponentType<ButtonProps> = buttonLazy("Button");
+export const ButtonWithTooltip: ComponentType<ButtonWithTooltipProps> = buttonLazy("ButtonWithTooltip");
 
 export const Card: ComponentType<CardProps> = LazyComponent("Card", () => findExportedComponent("Card"));
 
@@ -202,17 +179,6 @@ export const DropdownMenuSeparator: ComponentType<DropdownMenuSeparatorProps> = 
 export const DropdownMenuSub: ComponentType<DropdownMenuSubProps> = dropdownMenuLazy("DropdownMenuSub");
 export const DropdownMenuSubTrigger: ComponentType<DropdownMenuSubTriggerProps> = dropdownMenuLazy("DropdownMenuSubTrigger");
 export const DropdownMenuSubContent: ComponentType<DropdownMenuSubContentProps> = dropdownMenuLazy("DropdownMenuSubContent");
-
-const contextMenuLazy = createModuleLazy("ContextMenu", "ContextMenuContent", "ContextMenuTrigger");
-
-export const ContextMenu: ComponentType<ContextMenuProps> = contextMenuLazy("ContextMenu");
-export const ContextMenuTrigger: ComponentType<ContextMenuTriggerProps> = contextMenuLazy("ContextMenuTrigger");
-export const ContextMenuContent: ComponentType<ContextMenuContentProps> = contextMenuLazy("ContextMenuContent");
-export const ContextMenuItem: ComponentType<ContextMenuItemProps> = contextMenuLazy("ContextMenuItem");
-export const ContextMenuSeparator: ComponentType<ContextMenuSeparatorProps> = contextMenuLazy("ContextMenuSeparator");
-export const ContextMenuSub: ComponentType<ContextMenuSubProps> = contextMenuLazy("ContextMenuSub");
-export const ContextMenuSubTrigger: ComponentType<ContextMenuSubTriggerProps> = contextMenuLazy("ContextMenuSubTrigger");
-export const ContextMenuSubContent: ComponentType<ContextMenuSubContentProps> = contextMenuLazy("ContextMenuSubContent");
 
 export const Input: ComponentType<InputProps> = LazyComponent("Input", () => findExportedComponent("Input"));
 

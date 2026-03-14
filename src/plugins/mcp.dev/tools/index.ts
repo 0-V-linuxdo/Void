@@ -5,6 +5,7 @@
  */
 
 import { handleEval } from "./evaluate";
+import { handleGrok } from "./grok";
 import { handleIntercept } from "./intercept";
 import { handleModule } from "./module";
 import { handlePatch } from "./patch";
@@ -25,4 +26,5 @@ export const toolHandlers: Record<string, ToolHandler> = {
     react: handleReact,
     store: handleStore,
     intercept: handleIntercept,
+    grok: handleGrok,
 };

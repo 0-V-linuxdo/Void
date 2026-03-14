@@ -12,7 +12,6 @@ import { loadSavedThemes } from "@api/Themes";
 import { Flex, Text } from "@components";
 import { BracesIcon, GhostFilledIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, ThemesTab } from "@components/settings/tabs";
-import PluginDialog from "@components/settings/tabs/PluginDialog";
 import { hasVisibleSettings } from "@components/settings/utils";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import {
@@ -21,7 +20,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@turbopack/common/components";
-import { createElement, Fragment, React, useState } from "@turbopack/common/react";
+import { createElement, Fragment, React } from "@turbopack/common/react";
 import { SettingsDialogStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle } from "@utils/css";
@@ -51,7 +50,7 @@ const settings = definePluginSettings({
     },
 });
 
-interface SettingsTab {
+export interface SettingsTab {
     id: string;
     name: string;
     icon: ComponentType;
@@ -59,7 +58,7 @@ interface SettingsTab {
     plugin?: string;
 }
 
-const allTabs: SettingsTab[] = [
+export const allTabs: SettingsTab[] = [
     { id: "void_plugins_tab", name: "Plugins", icon: UnplugIcon, component: PluginsTab },
     { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
     { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
@@ -147,8 +146,21 @@ function openSettingsTab(tab: string) {
     store.setOpen(true);
 }
 
+let pendingPluginDialog: string | null = null;
+
+/** Called by PluginsTab on mount to consume any pending dialog request. */
+export function consumePendingPluginDialog(): string | null {
+    const name = pendingPluginDialog;
+    pendingPluginDialog = null;
+    return name;
+}
+
+function openPluginSettings(name: string) {
+    pendingPluginDialog = name;
+    openSettingsTab("void_plugins_tab");
+}
+
 function VoidMenu() {
-    const [dialogName, setDialogName] = useState<string | null>(null);
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
 
@@ -158,47 +170,42 @@ function VoidMenu() {
         .filter(n => !plugins[n].hidden && hasVisibleSettings(plugins[n]))
         .sort((a, b) => a.localeCompare(b));
 
-    const dialogPlugin = dialogName ? plugins[dialogName] : null;
-
     return (
-        <>
-            <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                    <GhostFilledIcon className={cl("menu-icon")} />
-                    Void
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            <UnplugIcon className={cl("menu-icon")} />
-                            Plugins
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                            {settingsPlugins.map(name => (
-                                <DropdownMenuItem key={name} onSelect={() => setDialogName(name)}>
-                                    {name}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuItem onSelect={() => openSettingsTab("void_themes_tab")}>
-                        <PaletteIcon className={cl("menu-icon")} />
-                        Themes
+        <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+                <GhostFilledIcon className={cl("menu-icon")} />
+                Void
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+                <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                        <UnplugIcon className={cl("menu-icon")} />
+                        Plugins
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                        {settingsPlugins.map(name => (
+                            <DropdownMenuItem key={name} onSelect={() => openPluginSettings(name)}>
+                                {name}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem onSelect={() => openSettingsTab("void_themes_tab")}>
+                    <PaletteIcon className={cl("menu-icon")} />
+                    Themes
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => openSettingsTab("void_css_tab")}>
+                    <BracesIcon className={cl("menu-icon")} />
+                    Quick CSS
+                </DropdownMenuItem>
+                {isPluginEnabled("Experiments") && (
+                    <DropdownMenuItem onSelect={() => openSettingsTab("void_experiments_tab")}>
+                        <TestTubeIcon className={cl("menu-icon")} />
+                        Experiments
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => openSettingsTab("void_css_tab")}>
-                        <BracesIcon className={cl("menu-icon")} />
-                        Quick CSS
-                    </DropdownMenuItem>
-                    {isPluginEnabled("Experiments") && (
-                        <DropdownMenuItem onSelect={() => openSettingsTab("void_experiments_tab")}>
-                            <TestTubeIcon className={cl("menu-icon")} />
-                            Experiments
-                        </DropdownMenuItem>
-                    )}
-                </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            {dialogPlugin && <PluginDialog plugin={dialogPlugin} open={true} onClose={() => setDialogName(null)} />}
-        </>
+                )}
+            </DropdownMenuSubContent>
+        </DropdownMenuSub>
     );
 }
 

@@ -71,10 +71,13 @@ function getStoreFromModule(moduleId: number, exportName?: string | null): Zusta
     return null;
 }
 
-function findStoreByQuery(query: string | number): ZustandLike | null {
+function findStoreByQuery(query: string | number): { store: ZustandLike; resolvedName: string } | null {
     const stores = findStores();
     const numQuery = typeof query === "number" ? query : (String(query).trim().length > 0 ? Number(query) : NaN);
-    if (!Number.isNaN(numQuery) && Number.isFinite(numQuery)) return getStoreFromModule(numQuery);
+    if (!Number.isNaN(numQuery) && Number.isFinite(numQuery)) {
+        const store = getStoreFromModule(numQuery);
+        return store ? { store, resolvedName: `module:${numQuery}` } : null;
+    }
 
     const lower = String(query).toLowerCase();
 
@@ -85,17 +88,24 @@ function findStoreByQuery(query: string | number): ZustandLike | null {
         if (!entry.name) continue;
         const nameLower = entry.name.toLowerCase();
         if (nameLower === lower || nameLower === `use${lower}store` || nameLower === `use${lower}`) {
-            return getStoreFromModule(entry.id, entry.name);
+            const store = getStoreFromModule(entry.id, entry.name);
+            return store ? { store, resolvedName: entry.name } : null;
         }
         if (nameLower.includes(lower) && entry.name.length < bestLen) {
             bestMatch = entry;
             bestLen = entry.name.length;
         }
     }
-    if (bestMatch) return getStoreFromModule(bestMatch.id, bestMatch.name);
+    if (bestMatch) {
+        const store = getStoreFromModule(bestMatch.id, bestMatch.name);
+        return store ? { store, resolvedName: bestMatch.name ?? `module:${bestMatch.id}` } : null;
+    }
 
     for (const entry of stores) {
-        if (entry.keys.some(k => k.toLowerCase().includes(lower))) return getStoreFromModule(entry.id, entry.name);
+        if (entry.keys.some(k => k.toLowerCase().includes(lower))) {
+            const store = getStoreFromModule(entry.id, entry.name);
+            return store ? { store, resolvedName: entry.name ?? `module:${entry.id}` } : null;
+        }
     }
     return null;
 }
@@ -110,7 +120,7 @@ function storeNotFound(query: string | number): { error: string; similar?: strin
     return similar.length ? { error: `No store "${query}"`, similar } : { error: `No store "${query}". Use list action.` };
 }
 
-const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "clearAll", "deleteUser", "signOut", "clearSession", "__proto__", "constructor", "prototype"]);
+const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "resetAll", "clearAll", "clearAllOverrides", "deleteUser", "signOut", "clearSession", "refreshSession", "__proto__", "constructor", "prototype"]);
 
 export function handleStore(args: StoreArgs): unknown {
     const { action, query, path } = args;
@@ -123,41 +133,42 @@ export function handleStore(args: StoreArgs): unknown {
 
     if (action === "get") {
         if (!query) return { error: "Provide query (store name or module ID)" };
-        const store = findStoreByQuery(query);
-        if (!store) return storeNotFound(query);
-        const state = store.getState();
-        if (path) return serialize(getPath(state, path), Math.min(depth, STORE.MAX_DEPTH));
-        return serialize(state, Math.min(depth, STORE.DEFAULT_DEPTH));
+        const result = findStoreByQuery(query);
+        if (!result) return storeNotFound(query);
+        const state = result.store.getState();
+        const maxDepth = path || args.depth != null ? STORE.MAX_DEPTH : STORE.DEFAULT_DEPTH;
+        const value = path ? getPath(state, path) : state;
+        return { _store: result.resolvedName, value: serialize(value, Math.min(depth, maxDepth)) };
     }
 
     if (action === "keys") {
         if (!query) return { error: "Provide query (store name or module ID)" };
-        const store = findStoreByQuery(query);
-        if (!store) return storeNotFound(query);
-        const state = store.getState();
-        if (!isObject(state)) return [];
-        const result: Record<string, string> = {};
+        const result = findStoreByQuery(query);
+        if (!result) return storeNotFound(query);
+        const state = result.store.getState();
+        if (!isObject(state)) return { _store: result.resolvedName, keys: [] };
+        const keys: Record<string, string> = {};
         for (const k of Object.keys(state)) {
             try {
-                result[k] = describeValue(state[k]);
+                keys[k] = describeValue(state[k]);
             } catch {
-                result[k] = "!";
+                keys[k] = "!";
             }
         }
-        return result;
+        return { _store: result.resolvedName, keys };
     }
 
     if (action === "methods") {
         if (!query) return { error: "Provide query (store name or module ID)" };
-        const store = findStoreByQuery(query);
-        if (!store) return storeNotFound(query);
-        const state = store.getState();
-        if (!isObject(state)) return [];
+        const result = findStoreByQuery(query);
+        if (!result) return storeNotFound(query);
+        const state = result.store.getState();
+        if (!isObject(state)) return { _store: result.resolvedName, methods: {} };
         const methods: Record<string, number> = {};
         for (const k of Object.keys(state)) {
             if (typeof state[k] === "function") methods[k] = (state[k] as Function).length;
         }
-        return methods;
+        return { _store: result.resolvedName, methods };
     }
 
     if (action === "call") {
@@ -165,9 +176,9 @@ export function handleStore(args: StoreArgs): unknown {
         const { method, callArgs } = args;
         if (!method) return { error: "Provide method name. Use methods action to list available methods." };
         if (DESTRUCTIVE_METHODS.has(method)) return { error: `Method "${method}" is potentially destructive and blocked via MCP. Use evaluateCode if you really need to call it.` };
-        const store = findStoreByQuery(query);
-        if (!store) return storeNotFound(query);
-        const state = store.getState();
+        const found = findStoreByQuery(query);
+        if (!found) return storeNotFound(query);
+        const state = found.store.getState();
         if (!state || typeof state[method] !== "function") {
             const available = state ? Object.keys(state).filter(k => typeof state[k] === "function").slice(0, STORE.METHODS_PREVIEW) : [];
             return available.length
@@ -175,14 +186,14 @@ export function handleStore(args: StoreArgs): unknown {
                 : { error: `No method "${method}". Store has no callable methods.` };
         }
         try {
-            const result = (state[method] as Function)(...(callArgs ?? []));
-            if (result != null && typeof (result as Promise<unknown>).then === "function") {
-                return (result as Promise<unknown>).then(
-                    v => serialize(v, Math.min(depth, STORE.MAX_DEPTH)),
+            const callResult = (state[method] as Function)(...(callArgs ?? []));
+            if (callResult != null && typeof (callResult as Promise<unknown>).then === "function") {
+                return (callResult as Promise<unknown>).then(
+                    v => ({ _store: found.resolvedName, result: serialize(v, Math.min(depth, STORE.MAX_DEPTH)) }),
                     (e: unknown) => ({ error: errorMessage(e) }),
                 );
             }
-            return serialize(result, Math.min(depth, STORE.MAX_DEPTH));
+            return { _store: found.resolvedName, result: serialize(callResult, Math.min(depth, STORE.MAX_DEPTH)) };
         } catch (e: unknown) {
             return { error: errorMessage(e) };
         }
@@ -190,8 +201,8 @@ export function handleStore(args: StoreArgs): unknown {
 
     if (action === "subscribe") {
         if (!query) return { error: "Provide query (store name or module ID)" };
-        const store = findStoreByQuery(query);
-        if (!store) return storeNotFound(query);
+        const found = findStoreByQuery(query);
+        if (!found) return storeNotFound(query);
         const rawDuration = Number(args.duration);
         const duration = clamp(Number.isFinite(rawDuration) ? rawDuration : STORE.DEFAULT_DURATION, STORE.MIN_DURATION, STORE.MAX_DURATION);
         const rawCaptures = Number(args.maxCaptures);
@@ -201,7 +212,7 @@ export function handleStore(args: StoreArgs): unknown {
         return new Promise<unknown>(resolve => {
             const changes: Array<{ t: number; p?: string; from: unknown; to: unknown }> = [];
             const startTime = Date.now();
-            let prev = watchPath ? getPath(store.getState(), watchPath) : store.getState();
+            let prev = watchPath ? getPath(found.store.getState(), watchPath) : found.store.getState();
             let done = false;
 
             const finish = (capped: boolean) => {
@@ -209,10 +220,10 @@ export function handleStore(args: StoreArgs): unknown {
                 done = true;
                 clearTimeout(timer);
                 unsub();
-                resolve({ changes, ...(capped ? { capped: true } : {}), ms: Date.now() - startTime });
+                resolve({ _store: found.resolvedName, changes, ...(capped ? { capped: true } : {}), ms: Date.now() - startTime });
             };
 
-            const unsub = store.subscribe((state: Record<string, unknown>) => {
+            const unsub = found.store.subscribe((state: Record<string, unknown>) => {
                 if (done) return;
                 const cur = watchPath ? getPath(state, watchPath) : state;
                 if (cur === prev) return;

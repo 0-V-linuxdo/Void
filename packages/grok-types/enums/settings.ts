@@ -12,7 +12,7 @@ export type SettingsDialogTab =
 	| "dev"
 	| "dev-flags"
 	| "behavior"
-	| "build"
+	| "connectors"
 	| "connected-apps"
 	| "grok-business-connected-apps"
 	| (string & {});
