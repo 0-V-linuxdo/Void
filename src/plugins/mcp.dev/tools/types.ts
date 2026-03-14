@@ -103,7 +103,18 @@ export interface InterceptArgs {
     maxCaptures?: number;
 }
 
-export type ToolArgs = ModuleArgs | SearchArgs | EvalArgs | PatchArgs | PluginArgs | ReactArgs | StoreArgs | InterceptArgs;
+export interface GrokArgs {
+    action: "send" | "read" | "models";
+    message?: string;
+    model?: string;
+    conversationId?: string;
+    responseId?: string;
+    temporary?: boolean;
+    reasoningMode?: string;
+    parentResponseId?: string;
+}
+
+export type ToolArgs = ModuleArgs | SearchArgs | EvalArgs | PatchArgs | PluginArgs | ReactArgs | StoreArgs | InterceptArgs | GrokArgs;
 
 export type ToolHandler = (args: any) => unknown;
 

@@ -133,6 +133,13 @@ export const MCP = {
     PORT: 7890,
 } as const;
 
+export const GROK = {
+    SEND_TIMEOUT: 120_000,
+    MAX_RESPONSE_LENGTH: 30_000,
+    MAX_THINKING_LENGTH: 10_000,
+    SERIALIZE_DEPTH: 2,
+} as const;
+
 export const EVAL = {
     MAX_CODE_LENGTH: 10_000,
     SERIALIZE_DEPTH: 3,
