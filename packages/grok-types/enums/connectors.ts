@@ -16,8 +16,9 @@
  * | `8`   | Google Calendar    |
  * | `9`   | Outlook            |
  * | `10`  | Microsoft Teams    |
+ * | `11`  | Outlook Calendar   |
  */
-export type ConnectorType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+export type ConnectorType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
 /**
  * Connector type name string used in analytics events.
@@ -35,4 +36,5 @@ export type ConnectorTypeName =
 	| "google_calendar"
 	| "outlook"
 	| "microsoft_teams"
+	| "outlook_calendar"
 	| (string & {});

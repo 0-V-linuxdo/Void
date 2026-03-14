@@ -10,6 +10,8 @@ export type ModelId =
     | "grok-4-mini-thinking-1216"
     | "grok-420"
     | "grok-420-0204"
+    | "grok-4-1-non-thinking-companion"
+    | "grok-4-heavy"
     | "grok-2-1212"
     | "grok-2-mini"
     | (string & {});
@@ -56,6 +58,7 @@ export type ModelConfigModelMode =
     | "MODEL_MODE_GROK_4_1_THINKING"
     | "MODEL_MODE_GROK_4_1_NIGHTLY"
     | "MODEL_MODE_GROK_420"
+    | "MODEL_MODE_IMAGINE"
     | (string & {});
 
 /**
