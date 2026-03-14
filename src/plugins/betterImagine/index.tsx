@@ -19,11 +19,12 @@ import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { createExternalStore, fetchExternal, sanitizeFilename } from "@utils/misc";
+import { copyToClipboard, createExternalStore, fetchExternal, sanitizeFilename } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 import { createZip } from "@utils/zip";
 
+const CopyIcon = findExportedComponentLazy("CopyIcon");
 const DownloadIcon = findExportedComponentLazy("DownloadIcon");
 const logger = new Logger("BetterImagine");
 const cl = classNameFactory("void-imagine-");
@@ -296,12 +297,33 @@ function CardActions({ postId }: { postId: string }) {
         }
     };
 
+    const onCopyPrompt = async () => {
+        const prompt = item?.prompt ?? item?.originalPrompt;
+        if (!prompt) return;
+        await copyToClipboard(prompt);
+        Toaster.toast.success("Copied prompt.");
+    };
+
     const onUnfavorite = () => {
         unlike(postId);
     };
 
+    const hasPrompt = !!(item?.prompt || item?.originalPrompt);
+
     return (
         <Fragment>
+            {hasPrompt && (
+                <ButtonWithTooltip
+                    tooltipContent="Copy prompt"
+                    className={cl("card-btn")}
+                    shape="circle"
+                    size="md"
+                    variant="none"
+                    onClick={onCopyPrompt}
+                >
+                    <CopyIcon size="16" className="text-white" />
+                </ButtonWithTooltip>
+            )}
             <ButtonWithTooltip
                 tooltipContent="Download"
                 className={cl("card-btn")}
@@ -385,6 +407,10 @@ export default definePlugin({
                 {
                     match: /onMouseOver:\i\?\(\)=>\i\(!0\):void 0,onMouseLeave:\i\?\(\)=>\i\(!1\):void 0/,
                     replace: "$&,...$self._hoverProps()",
+                },
+                {
+                    match: /children:\(0,(\i)\.jsx\)\((\i),\{postId:(\i),mediaType:(\i),onOpenChange:(\i)\}\)\}\)/,
+                    replace: "children:[(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})",
                 },
             ],
         },
