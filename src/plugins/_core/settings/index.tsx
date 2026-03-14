@@ -50,7 +50,7 @@ const settings = definePluginSettings({
     },
 });
 
-interface SettingsTab {
+export interface SettingsTab {
     id: string;
     name: string;
     icon: ComponentType;
@@ -58,7 +58,7 @@ interface SettingsTab {
     plugin?: string;
 }
 
-const allTabs: SettingsTab[] = [
+export const allTabs: SettingsTab[] = [
     { id: "void_plugins_tab", name: "Plugins", icon: UnplugIcon, component: PluginsTab },
     { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
     { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
