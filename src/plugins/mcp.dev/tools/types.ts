@@ -95,7 +95,7 @@ export interface StoreArgs {
 }
 
 export interface InterceptArgs {
-    action: "set" | "get" | "stop" | "list";
+    action: "set" | "get" | "stop" | "stopAll" | "list";
     moduleId?: number;
     exportKey?: string;
     id?: number;

@@ -12,7 +12,7 @@ import type { Anchor, SuggestCandidate } from "./types";
 
 export { clamp, errorMessage } from "@utils/misc";
 
-const INTERNAL_FRAME_RE = /tryEval|handleEval|ws\.onmessage|<anonymous>:\d+:\d+\)$/;
+const INTERNAL_FRAME_RE = /tryEval|evalAsync|handleEval|ws\.onmessage|<anonymous>:\d+:\d+\)$/;
 
 export function formatError(err: unknown): string {
     if (!(err instanceof Error)) return `Error: ${String(err)}`;

@@ -105,7 +105,23 @@ export function handleSearch(args: SearchArgs): unknown {
         }
         const result: { matches: SearchMatch[]; totalModules?: number; hint?: string } = { matches };
         if (moduleHits > matches.length) result.totalModules = moduleHits;
-        if (wasCapped) result.hint = `Results capped at ${SEARCH.MAX_RESULTS_CAP} (requested ${max}).`;
+        if (!matches.length && !moduleHits) {
+            const hints: string[] = [`No modules matched all ${rawPatterns.length} patterns. Try fewer constraints.`];
+            for (const raw of rawPatterns) {
+                const { regex: r } = parseRegexPattern(raw);
+                let count = 0;
+                for (const [id, src] of sources) {
+                    if (targetId != null && id !== targetId) continue;
+                    if (shouldSkipModule(id, filter, loadedCache)) continue;
+                    if (r ? r.test(src) : src.includes(raw)) count++;
+                    if (r) r.lastIndex = 0;
+                }
+                if (!count) hints.push(`Pattern '${raw}' had 0 matches individually.`);
+            }
+            if (filter) hints.push("Try without filter.");
+            result.hint = hints.join(" ");
+        }
+        if (wasCapped) result.hint = (result.hint ? result.hint + " " : "") + `Results capped at ${SEARCH.MAX_RESULTS_CAP} (requested ${max}).`;
         return result;
     }
 
@@ -172,6 +188,7 @@ export function handleSearch(args: SearchArgs): unknown {
         else if (targetId != null) result.hint = `Pattern not found in module ${targetId}. Use without id to search all modules.`;
         else if (regex) result.hint = "No regex matches. Check syntax or try a simpler literal pattern.";
     }
+    if (total >= SEARCH.MAX_TOTAL) result.hint = (result.hint ? result.hint + " " : "") + "Stopped early due to output size limit.";
     if (wasCapped && matches.length >= cappedMax) result.hint = (result.hint ? result.hint + " " : "") + `Results capped at ${SEARCH.MAX_RESULTS_CAP} (requested ${max}).`;
     return result;
 }

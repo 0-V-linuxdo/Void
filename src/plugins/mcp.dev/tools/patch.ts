@@ -71,6 +71,12 @@ function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
 
     if (matchStr.length > PATCH.MATCH_LONG_LENGTH) warnings.push({ severity: "warn", message: `Long regex (${PATCH.MATCH_LONG_LENGTH}+ chars)`, fix: "Split into multiple patches" });
 
+    const unnecessaryEscapeRe = /\\([/:!@#%=<>,;])/g;
+    let ue;
+    while ((ue = unnecessaryEscapeRe.exec(matchStr)) !== null) {
+        warnings.push({ severity: "info", message: `Unnecessary escape: \\${ue[1]} (${ue[1]} doesn't need escaping in regex)` });
+    }
+
     return warnings;
 }
 
@@ -395,6 +401,7 @@ export function handlePatch(args: PatchArgs): unknown {
         const anchors = extractContextAnchors(ctx, getAllFactorySources(), PATCH.CONTEXT_MAX_ANCHORS);
         const findRelative = findIdx - ctxStart;
         for (const anchor of anchors) anchor.dist = Math.abs(anchor.at - findRelative);
+        anchors.sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0));
 
         const result: Record<string, unknown> = {
             id,

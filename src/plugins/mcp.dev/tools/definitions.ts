@@ -126,11 +126,11 @@ export const TOOL_DEFINITIONS = [
     },
     {
         name: "intercept",
-        description: "Capture function calls. set: start. get: read captures. stop: restore. list: active. Auto-expires.",
+        description: "Intercept function calls on module exports. set: start capturing (only configurable properties). get: read captures. stop: restore original and return last captures. stopAll: clear all intercepts. list: active. exportKey supports nested paths like 'default.functionName'. Auto-expires after duration (default 30s, max 120s). maxCaptures limits stored calls (default 30, max 200).",
         inputSchema: {
             type: "object",
             properties: {
-                action: { type: "string", enum: ["set", "get", "stop", "list"] },
+                action: { type: "string", enum: ["set", "get", "stop", "stopAll", "list"] },
                 moduleId: { type: "number" },
                 exportKey: { type: "string", default: "default" },
                 id: { type: "number" },

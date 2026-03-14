@@ -13,7 +13,7 @@ import { clamp, errorMessage, serialize } from "./utils";
 
 const logger = new Logger("MCP:Intercept");
 
-const INTERCEPT_ACTIONS = ["set", "get", "stop", "list"] as const;
+const INTERCEPT_ACTIONS = ["set", "get", "stop", "stopAll", "list"] as const;
 let nextId = 1;
 const active = new Map<number, InterceptState>();
 
@@ -55,7 +55,7 @@ export function handleIntercept(args: InterceptArgs): unknown {
         if (typeof original !== "function") return { error: `${exportKey} is not a function (${typeof original})` };
 
         for (const existing of active.values()) {
-            if (existing.moduleId === Number(moduleId) && existing.finalKey === finalKey) {
+            if (existing.moduleId === Number(moduleId) && existing.exportKey === exportKey) {
                 return { error: `Intercept already active on module ${moduleId}.${exportKey} (id: ${existing.id}). Stop it first with stop action.` };
             }
         }
@@ -145,9 +145,18 @@ export function handleIntercept(args: InterceptArgs): unknown {
         if (id == null) return { error: "Provide intercept id" };
         const state = active.get(id);
         if (!state) return { error: `Intercept ${id} not found (expired or stopped)` };
-        const captureCount = state.captures.length;
+        const lastCaptures = state.captures.length > INTERCEPT.GET_CAPTURES_LIMIT
+            ? state.captures.slice(-INTERCEPT.GET_CAPTURES_LIMIT)
+            : state.captures;
+        const totalCaptures = state.captures.length;
         restoreIntercept(state);
-        return { id, captures: captureCount, restored: true };
+        return { id, totalCaptures, captures: lastCaptures, restored: true };
+    }
+
+    if (action === "stopAll") {
+        const count = active.size;
+        clearAllIntercepts();
+        return { cleared: count };
     }
 
     if (action === "list") {
