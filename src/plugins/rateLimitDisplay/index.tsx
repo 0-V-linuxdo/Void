@@ -11,7 +11,7 @@ import { definePluginSettings } from "@api/Settings";
 import { ChatBarButton, Separator } from "@components";
 import { GaugeIcon } from "@components/icons";
 import type { RateLimitResponse } from "@grok-types";
-import { React, useMemo } from "@turbopack/common/react";
+import { React } from "@turbopack/common/react";
 import { ChatPageStore, ModelsStore } from "@turbopack/common/stores";
 import { ApiClients, TanStackQuery } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
@@ -130,9 +130,9 @@ function RateLimitIndicator(_props: ChatBarButtonRenderProps) {
     const fastData = useLimits(fastModelId, "fast", isAuto);
     const expertData = useLimits(expertModelId, "expert", isAuto);
 
-    const single = useMemo(() => toUsage(singleData, singleModelId), [singleData, singleModelId]);
-    const fast = useMemo(() => toUsage(fastData, fastModelId), [fastData, fastModelId]);
-    const expert = useMemo(() => toUsage(expertData, expertModelId), [expertData, expertModelId]);
+    const single = toUsage(singleData, singleModelId);
+    const fast = toUsage(fastData, fastModelId);
+    const expert = toUsage(expertData, expertModelId);
 
     const singleWait = useCountdown(single.waitSeconds);
     const fastWait = useCountdown(fast.waitSeconds);
