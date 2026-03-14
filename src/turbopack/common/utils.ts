@@ -98,7 +98,7 @@ export const NextRouter: {
 
 export const TanStackQuery: {
     useQuery: <T = unknown>(options: { queryKey: any[]; queryFn: () => Promise<T>; enabled?: boolean; refetchInterval?: number; staleTime?: number; gcTime?: number; retry?: boolean | number; refetchOnWindowFocus?: boolean; placeholderData?: T | ((prev: T | undefined) => T | undefined) }) => { data: T | undefined; error: Error | null; isPending: boolean; isError: boolean; isSuccess: boolean; refetch: () => Promise<any> };
-} = findByPropsLazy("useQuery", "useInfiniteQuery");
+} = findByPropsLazy("useQuery");
 
 export const CopyUtils: {
     copyAndToast: (text: string, successMessage?: string) => void;
