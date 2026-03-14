@@ -8,11 +8,11 @@ import "./styles.css";
 
 import type { ChatBarButtonRenderProps } from "@api/ChatBarButtons";
 import { definePluginSettings } from "@api/Settings";
-import { ChatBarButton, Separator } from "@components";
+import { ChatBarButton } from "@components";
 import { GaugeIcon } from "@components/icons";
 import type { RateLimitResponse } from "@grok-types";
 import { React } from "@turbopack/common/react";
-import { ChatPageStore, ModelsStore } from "@turbopack/common/stores";
+import { ChatPageStore } from "@turbopack/common/stores";
 import { ApiClients, TanStackQuery } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -88,76 +88,34 @@ function toUsage(data: RateLimitResponse | undefined, modelId?: string): Usage {
     return { remaining, total: data.totalQueries, waitSeconds, windowSeconds };
 }
 
-function formatLabel(u: Usage, wait: number | null, short?: boolean): string {
+function formatLabel(u: Usage, wait: number | null): string {
     if (u.total < 0) return "...";
     if (u.total === 0) return "\u221e";
     if (wait != null && wait > 0) return formatCountdown(wait);
-    return short || !settings.store.showMaxCount ? String(u.remaining) : `${u.remaining}/${u.total}`;
-}
-
-function Label({ usage, wait, short }: { usage: Usage; wait: number | null; short?: boolean }) {
-    const text = formatLabel(usage, wait, short);
-    const danger = wait != null && wait > 0;
-    return danger ? <span className={cl("danger")}>{text}</span> : <>{text}</>;
-}
-
-function useLimits(modelId: string | undefined, key: string, enabled: boolean) {
-    const streaming = ChatPageStore.useChatPageStore(s => !!s.streamedMessageId);
-
-    const { data } = TanStackQuery.useQuery<RateLimitResponse>({
-        queryKey: ["void-rate-limits", key, modelId],
-        queryFn: () => ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: modelId!, requestKind: "DEFAULT" } }),
-        enabled: enabled && !!modelId && !streaming,
-        staleTime: 10_000,
-    });
-
-    return data;
+    return settings.store.showMaxCount ? `${u.remaining}/${u.total}` : String(u.remaining);
 }
 
 function RateLimitIndicator(_props: ChatBarButtonRenderProps) {
     useExternalStore(usageStore);
 
-    const modelMode = ChatPageStore.useChatPageStore(s => s.modelMode);
     const activeModelId = ChatPageStore.useChatPageStore(s => s.activeModelId);
-    const modelByMode = ModelsStore.useModelsStore(s => s.modelByMode);
+    const streaming = ChatPageStore.useChatPageStore(s => !!s.streamedMessageId);
 
-    const isAuto = modelMode === "auto";
-    const singleModelId = modelByMode?.[modelMode]?.modelId || activeModelId;
-    const fastModelId = modelByMode?.fast?.modelId;
-    const expertModelId = modelByMode?.expert?.modelId;
+    const { data } = TanStackQuery.useQuery<RateLimitResponse>({
+        queryKey: ["void-rate-limits", activeModelId],
+        queryFn: () => ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: activeModelId!, requestKind: "DEFAULT" } }),
+        enabled: !!activeModelId && !streaming,
+        staleTime: 10_000,
+    });
 
-    const singleData = useLimits(singleModelId, "single", !isAuto);
-    const fastData = useLimits(fastModelId, "fast", isAuto);
-    const expertData = useLimits(expertModelId, "expert", isAuto);
-
-    const single = toUsage(singleData, singleModelId);
-    const fast = toUsage(fastData, fastModelId);
-    const expert = toUsage(expertData, expertModelId);
-
-    const singleWait = useCountdown(single.waitSeconds);
-    const fastWait = useCountdown(fast.waitSeconds);
-    const expertWait = useCountdown(expert.waitSeconds);
-
-    const windowSeconds = single.windowSeconds || fast.windowSeconds || expert.windowSeconds;
-    const reset = windowSeconds > 0 ? formatDuration(windowSeconds) : "";
-
-    if (isAuto && fast !== EMPTY && expert !== EMPTY) {
-        const tooltip = `Fast ${formatLabel(fast, fastWait)} \u00b7 Expert ${formatLabel(expert, expertWait)}${reset ? ` \u00b7 resets every ${reset}` : ""}`;
-
-        return (
-            <ChatBarButton icon={<GaugeIcon size={18} />} tooltip={tooltip}>
-                <Label usage={fast} wait={fastWait} short />
-                <Separator orientation="vertical" className={cl("separator")} />
-                <Label usage={expert} wait={expertWait} short />
-            </ChatBarButton>
-        );
-    }
-
-    const limited = (singleWait ?? 0) > 0;
+    const usage = toUsage(data, activeModelId);
+    const wait = useCountdown(usage.waitSeconds);
+    const reset = usage.windowSeconds > 0 ? formatDuration(usage.windowSeconds) : "";
+    const limited = (wait ?? 0) > 0;
 
     return (
         <ChatBarButton icon={<GaugeIcon size={18} />} tooltip={reset ? `Resets every ${reset}` : undefined} className={limited ? cl("danger") : undefined}>
-            <Label usage={single} wait={singleWait} />
+            <span className={limited ? cl("danger") : undefined}>{formatLabel(usage, wait)}</span>
         </ChatBarButton>
     );
 }
@@ -175,10 +133,8 @@ export default definePlugin({
         let prevStreaming = false;
         unsubStreaming = ChatPageStore.useChatPageStore.subscribe(s => {
             const streaming = !!s.streamedMessageId;
-            if (prevStreaming && !streaming) {
-                const { modelByMode } = ModelsStore.useModelsStore.getState();
-                const modelId = modelByMode?.[s.modelMode]?.modelId || s.activeModelId;
-                if (modelId) recordSend(modelId);
+            if (prevStreaming && !streaming && s.activeModelId) {
+                recordSend(s.activeModelId);
             }
             prevStreaming = streaming;
         });
