@@ -513,25 +513,26 @@ export function waitFor(filter: FilterFn, callback: (mod: any, id: number) => vo
         return () => {};
     }
 
-    const wrappedFilter = (exports: any) => findMatchInExports(exports, filter) != null;
+    let lastMatch: any = null;
 
-    const wrappedCallback = (exports: any, id: number) => {
+    const wrappedFilter = (exports: any) => {
+        lastMatch = findMatchInExports(exports, filter);
+        return lastMatch != null;
+    };
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const wrappedCallback = (_exports: any, id: number) => {
+        if (timeoutId) clearTimeout(timeoutId);
         try {
-            const match = findMatchInExports(exports, filter);
-            if (match) callback(match, id);
+            if (lastMatch) callback(lastMatch, id);
+            lastMatch = null;
         } catch (e) {
             logger.error("waitFor callback error:", e);
         }
     };
 
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    const wrappedCallbackWithCleanup = (exports: any, id: number) => {
-        if (timeoutId) clearTimeout(timeoutId);
-        wrappedCallback(exports, id);
-    };
-
-    addWaitForSubscription(wrappedFilter, wrappedCallbackWithCleanup);
+    addWaitForSubscription(wrappedFilter, wrappedCallback);
 
     const cancel = () => {
         if (timeoutId) clearTimeout(timeoutId);

@@ -41,8 +41,6 @@ const compileFactory: (code: string, header?: string, sourceUrl?: string) => Mod
         return fn;
     };
 
-const cacheDiscoveryListeners = new Set<() => void>();
-
 export const patches: Patch[] = [];
 const moduleCache = new Map<number, any>();
 const waitForSubscriptions = new Map<(mod: any) => boolean, (mod: any, id: number) => void>();
@@ -278,14 +276,18 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
             }
         }
 
-        patchResults.push(result);
-
         if (patch.group && !allSucceeded) {
             code = previousCode;
             patchedBy.delete(patch.plugin);
+            for (const r of result.replacements) {
+                if (r.status === "applied") r.status = "reverted";
+            }
+            patchResults.push(result);
             if (!patch.noWarn) logger.warn(`Group patch by ${patch.plugin} failed, reverting`);
             continue;
         }
+
+        patchResults.push(result);
 
         patchStats.applied += groupApplied;
         patchStats.noEffect += groupNoEffect;
@@ -467,10 +469,6 @@ function captureRuntimeState(helpers: TurbopackHelpers) {
     if (!runtimeModuleCache && helpers.c) {
         runtimeModuleCache = helpers.c;
         scanExistingModules(runtimeModuleCache);
-        for (const cb of cacheDiscoveryListeners) {
-            try { cb(); } catch (e) { logger.error("Cache discovery listener error:", e); }
-        }
-        cacheDiscoveryListeners.clear();
     }
     if (!runtimeFactoryRegistry && helpers.M) runtimeFactoryRegistry = helpers.M;
 }
@@ -481,7 +479,7 @@ function captureModuleCache(factoryRegistry: Map<number, ModuleFactory>): void {
 
     originalPush!(["void-cache-probe", { otherChunks: [], runtimeModuleIds: [PROBE_ID] }]);
 
-    Promise.resolve().then(() => factoryRegistry.delete(PROBE_ID));
+    factoryRegistry.delete(PROBE_ID);
 }
 
 function wrapExistingFactories() {
