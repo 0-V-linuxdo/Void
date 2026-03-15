@@ -75,38 +75,65 @@ function submitEditor() {
     pm.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, bubbles: true, cancelable: true }));
 }
 
+function findLatestAssistantResponse(responses: any[], afterIndex: number): any | null {
+    for (let i = responses.length - 1; i > afterIndex; i--) {
+        const r = responses[i];
+        if (r.sender === "assistant" && !r.responseId?.startsWith("optimistic_")) return r;
+    }
+    return null;
+}
+
 function waitForResponse(conversationId: string | undefined, beforeCount: number, timeoutMs: number): Promise<{ conversationId: string; responseId: string; message: string; thinkingTrace?: string }> {
     return new Promise((resolve, reject) => {
+        const state = { done: false };
+
         const timer = setTimeout(() => {
-            unsub?.();
+            if (state.done) return;
+            state.done = true;
+            unsub();
             reject(new Error("Timeout waiting for response"));
         }, timeoutMs);
 
+        const finish = (result: { conversationId: string; responseId: string; message: string; thinkingTrace?: string }) => {
+            state.done = true;
+            clearTimeout(timer);
+            unsub();
+            resolve(result);
+        };
+
+        const fail = (error: string) => {
+            state.done = true;
+            clearTimeout(timer);
+            unsub();
+            reject(new Error(error));
+        };
+
         const check = () => {
+            if (state.done) return;
+
             const convId = conversationId || ChatPageStore.useChatPageStore.getState().conversationId;
-            if (!convId) return false;
+            if (!convId) return;
+
+            const { isRateLimited, isUnauthenticated } = ChatPageStore.useChatPageStore.getState();
+            if (isRateLimited) return fail(typeof isRateLimited === "string" ? isRateLimited : "Rate limited");
+            if (isUnauthenticated) return fail("Authentication required");
 
             const responses = ResponseStore.useResponseStore.getState().byConversationId?.[convId] as any[] | undefined;
-            if (!responses || responses.length <= beforeCount) return false;
+            if (!responses || responses.length <= beforeCount) return;
 
-            const lastResp = responses[responses.length - 1];
-            if (lastResp.sender !== "assistant") return false;
-            if (lastResp.state === "streaming" || lastResp.partial) return false;
+            const lastResp = findLatestAssistantResponse(responses, beforeCount - 1);
+            if (!lastResp || lastResp.state === "streaming" || lastResp.partial) return;
 
-            clearTimeout(timer);
-            unsub?.();
-            resolve({
+            finish({
                 conversationId: convId,
                 responseId: lastResp.responseId,
                 message: (lastResp.message || "").slice(0, GROK.MAX_RESPONSE_LENGTH),
                 thinkingTrace: lastResp.thinkingTrace ? lastResp.thinkingTrace.slice(0, GROK.MAX_THINKING_LENGTH) : undefined,
             });
-            return true;
         };
 
-        if (check()) return;
-
-        const unsub = ResponseStore.useResponseStore.subscribe(() => { check(); });
+        const unsub = ResponseStore.useResponseStore.subscribe(check);
+        check();
     });
 }
 
@@ -122,6 +149,9 @@ async function handleSend(args: GrokArgs): Promise<unknown> {
         }
 
         const chatPageState = ChatPageStore.useChatPageStore.getState();
+
+        if (chatPageState.isRateLimited) return { error: typeof chatPageState.isRateLimited === "string" ? chatPageState.isRateLimited : "Rate limited" };
+        if (chatPageState.isUnauthenticated) return { error: "Authentication required" };
 
         if (model) chatPageState.setActiveModelId(model);
         if (reasoningMode === "think") chatPageState.setReasoningMode("think");
@@ -150,21 +180,30 @@ async function handleSend(args: GrokArgs): Promise<unknown> {
     }
 }
 
+function formatResponse(r: any, maxLength = GROK.MAX_RESPONSE_LENGTH) {
+    return {
+        responseId: r.responseId,
+        sender: r.sender,
+        model: r.model,
+        message: r.message?.slice(0, maxLength),
+        thinkingTrace: r.thinkingTrace?.slice(0, GROK.MAX_THINKING_LENGTH) || undefined,
+        state: r.state,
+        ...(r.partial && { partial: true }),
+        ...(r.createTime && { createdAt: r.createTime }),
+    };
+}
+
+function isRealResponse(r: any): boolean {
+    return r.responseId && !r.responseId.startsWith("optimistic_");
+}
+
 async function handleRead(args: GrokArgs): Promise<unknown> {
     const { conversationId, responseId } = args;
     if (!conversationId && !responseId) return { error: "Provide conversationId or responseId." };
 
     if (responseId) {
         const cached = ResponseStore.useResponseStore.getState().byId?.[responseId];
-        if (cached) {
-            return {
-                responseId: cached.responseId,
-                sender: cached.sender,
-                model: cached.model,
-                message: cached.message?.slice(0, GROK.MAX_RESPONSE_LENGTH),
-                thinkingTrace: cached.thinkingTrace?.slice(0, GROK.MAX_THINKING_LENGTH) || undefined,
-            };
-        }
+        if (cached) return formatResponse(cached);
     }
 
     if (conversationId && responseId) {
@@ -172,33 +211,31 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
             const data = await ApiClients.chatApi.chatLoadResponses({ conversationId, body: { responseIds: [responseId] } });
             const resp = data.responses?.[0];
             if (!resp) return { error: "Response not found." };
-            return {
-                responseId: resp.responseId,
-                sender: resp.sender,
-                model: resp.model,
-                message: resp.message?.slice(0, GROK.MAX_RESPONSE_LENGTH),
-            };
+            return formatResponse(resp);
         } catch (err: any) {
             return { error: err?.message ?? String(err) };
         }
     }
 
-    if (conversationId) {
-        const responses = ResponseStore.useResponseStore.getState().byConversationId?.[conversationId];
-        if (responses?.length) {
-            return {
-                conversationId,
-                responses: responses.map((r: any) => ({
-                    responseId: r.responseId,
-                    sender: r.sender,
-                    model: r.model,
-                    message: r.message?.slice(0, 500),
-                })),
-            };
-        }
-    }
+    if (!conversationId) return { error: "Provide conversationId to list responses or get latest." };
 
-    return { error: "Could not load responses. Provide both conversationId and responseId for API lookup." };
+    const responses = ResponseStore.useResponseStore.getState().byConversationId?.[conversationId] as any[] | undefined;
+    if (!responses?.length) return { error: "No responses found. Is the conversation loaded?" };
+
+    const real = responses.filter(isRealResponse);
+
+    const latest = findLatestAssistantResponse(real, -1);
+
+    return {
+        conversationId,
+        latest: latest ? formatResponse(latest) : undefined,
+        responses: real.map((r: any) => ({
+            responseId: r.responseId,
+            sender: r.sender,
+            model: r.model,
+            message: r.message?.slice(0, 500),
+        })),
+    };
 }
 
 async function handleModels(): Promise<unknown> {
