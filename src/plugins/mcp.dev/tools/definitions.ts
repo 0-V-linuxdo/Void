@@ -142,18 +142,16 @@ export const TOOL_DEFINITIONS = [
     },
     {
         name: "grok",
-        description: "Chat with Grok AI. send: create conversation or send message, get response. read: load response/conversation history. models: list available models with rate limits.",
+        description: "Chat with Grok AI via native UI. send: type message and submit through Grok's chat input (real-time, visible in UI). read: load response/conversation history. models: list available models with rate limits.",
         inputSchema: {
             type: "object",
             properties: {
                 action: { type: "string", enum: ["send", "read", "models"] },
                 message: { type: "string", description: "Message to send (send action)." },
                 model: { type: "string", description: "Model ID e.g. grok-3, grok-4. Default: current active model." },
-                conversationId: { type: "string", description: "Existing conversation ID (send: follow-up, read: load history)." },
+                conversationId: { type: "string", description: "Existing conversation ID (send: follow-up, read: load history). Navigates to the conversation before sending." },
                 responseId: { type: "string", description: "Response ID to read (read action)." },
-                temporary: { type: "boolean", default: true, description: "If true, conversation hidden from sidebar." },
                 reasoningMode: { type: "string", enum: ["none", "think", "deepsearch"], default: "none" },
-                parentResponseId: { type: "string", description: "Parent response ID for follow-up (send action with conversationId)." },
             },
             required: ["action"],
         },

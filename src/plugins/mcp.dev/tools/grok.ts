@@ -4,108 +4,146 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { findByProps } from "@turbopack/turbopack";
+import { ChatPageStore, ModelsStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
+import { ApiClients } from "@turbopack/common/utils";
 
 import { GROK } from "./constants";
 import type { GrokArgs } from "./types";
 import { serialize } from "./utils";
 
-function getClients() {
-    const api = findByProps("rateLimitsApi", "chatApi");
-    if (!api) return null;
-    return { chat: api.chatApi, rateLimits: api.rateLimitsApi };
+function getEditor(): any {
+    return (document.querySelector(".ProseMirror") as any)?.editor ?? null;
 }
 
-async function readStream(raw: Response, isNewConversation: boolean): Promise<{
-    conversationId: string;
-    responseId: string;
-    message: string;
-    thinkingTrace: string;
-}> {
-    const reader = (raw as any).body.getReader();
-    const decoder = new TextDecoder();
-    let buf = "";
-    let message = "";
-    let thinkingTrace = "";
-    let conversationId = "";
-    let responseId = "";
+function getCurrentConversationId(): string | undefined {
+    return RoutingStore.useRoutingStore.getState().route?.conversationId ?? undefined;
+}
 
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split("\n");
-        buf = lines.pop() || "";
-        for (const line of lines) {
-            if (!line.trim()) continue;
-            try {
-                const { result } = JSON.parse(line);
-                if (!result) continue;
-                if (result.conversation?.conversationId) conversationId = result.conversation.conversationId;
-                const resp = isNewConversation ? (result.response ?? result) : result;
-                if (resp.token) {
-                    if (resp.isThinking) thinkingTrace += resp.token;
-                    else if (!resp.messageTag || resp.messageTag === "FINAL") message += resp.token;
-                }
-                if (resp.responseId) responseId = resp.responseId;
-            } catch { /* malformed chunk */ }
-        }
+function clickInternalLink(path: string): boolean {
+    const link = document.querySelector(`a[href="${path}"]`) as HTMLElement | null;
+    if (link) {
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+        return true;
     }
 
-    return { conversationId, responseId, message, thinkingTrace };
+    const fallback = document.querySelector('a[href*="/c/"]') ?? document.querySelector('a[href="/"]');
+    if (!fallback) return false;
+
+    const orig = fallback.getAttribute("href")!;
+    fallback.setAttribute("href", path);
+    fallback.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+    fallback.setAttribute("href", orig);
+    return true;
+}
+
+async function navigateToChat(conversationId?: string): Promise<void> {
+    const currentConvId = getCurrentConversationId();
+
+    if (conversationId) {
+        if (currentConvId === conversationId) return;
+    } else {
+        if (!currentConvId) return;
+    }
+
+    const target = conversationId ? `/c/${conversationId}` : "/";
+    if (!clickInternalLink(target)) return;
+    await new Promise(r => setTimeout(r, 500));
+}
+
+function waitForEditor(timeoutMs = 5000): Promise<any> {
+    const editor = getEditor();
+    if (editor) return Promise.resolve(editor);
+
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
+        const interval = setInterval(() => {
+            const ed = getEditor();
+            if (ed) {
+                clearInterval(interval);
+                resolve(ed);
+            } else if (Date.now() - start > timeoutMs) {
+                clearInterval(interval);
+                reject(new Error("Editor not ready"));
+            }
+        }, 200);
+    });
+}
+
+function submitEditor() {
+    const pm = document.querySelector(".ProseMirror");
+    if (!pm) throw new Error("ProseMirror element not found");
+    pm.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, bubbles: true, cancelable: true }));
+}
+
+function waitForResponse(conversationId: string | undefined, beforeCount: number, timeoutMs: number): Promise<{ conversationId: string; responseId: string; message: string; thinkingTrace?: string }> {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            unsub?.();
+            reject(new Error("Timeout waiting for response"));
+        }, timeoutMs);
+
+        const check = () => {
+            const convId = conversationId || ChatPageStore.useChatPageStore.getState().conversationId;
+            if (!convId) return false;
+
+            const responses = ResponseStore.useResponseStore.getState().byConversationId?.[convId] as any[] | undefined;
+            if (!responses || responses.length <= beforeCount) return false;
+
+            const lastResp = responses[responses.length - 1];
+            if (lastResp.sender !== "assistant") return false;
+            if (lastResp.state === "streaming" || lastResp.partial) return false;
+
+            clearTimeout(timer);
+            unsub?.();
+            resolve({
+                conversationId: convId,
+                responseId: lastResp.responseId,
+                message: (lastResp.message || "").slice(0, GROK.MAX_RESPONSE_LENGTH),
+                thinkingTrace: lastResp.thinkingTrace ? lastResp.thinkingTrace.slice(0, GROK.MAX_THINKING_LENGTH) : undefined,
+            });
+            return true;
+        };
+
+        if (check()) return;
+
+        const unsub = ResponseStore.useResponseStore.subscribe(() => { check(); });
+    });
 }
 
 async function handleSend(args: GrokArgs): Promise<unknown> {
-    const { message, model, conversationId, temporary = true, reasoningMode = "none", parentResponseId } = args;
+    const { message, model, conversationId, reasoningMode = "none" } = args;
     if (!message) return { error: "Provide a message to send." };
 
-    const clients = getClients();
-    if (!clients) return { error: "API clients not available." };
-
-    const isNew = !conversationId;
-    const modelName = model || findByProps("useChatPageStore", "getLatestThreadMessageId")?.useChatPageStore.getState().activeModelId;
-
-    const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for response")), GROK.SEND_TIMEOUT));
-
     try {
-        let raw: any;
-        if (isNew) {
-            raw = await Promise.race([
-                clients.chat.chatCreateConversationAndRespondRaw({
-                    body: {
-                        message,
-                        modelName,
-                        temporary,
-                        isReasoning: reasoningMode === "think",
-                        deepsearchPreset: reasoningMode === "deepsearch" ? "default" : undefined,
-                    },
-                }),
-                timeoutPromise,
-            ]);
-        } else {
-            if (!parentResponseId) return { error: "Provide parentResponseId for follow-up messages." };
-            raw = await Promise.race([
-                clients.chat.chatAddResponseRaw({
-                    conversationId,
-                    body: {
-                        message,
-                        parentResponseId,
-                        modelName,
-                        isReasoning: reasoningMode === "think",
-                        deepsearchPreset: reasoningMode === "deepsearch" ? "default" : undefined,
-                    },
-                }),
-                timeoutPromise,
-            ]);
+        if (conversationId) {
+            await navigateToChat(conversationId);
+        } else if (getCurrentConversationId()) {
+            await navigateToChat();
         }
 
-        const result = await readStream(raw.raw, isNew);
+        const chatPageState = ChatPageStore.useChatPageStore.getState();
+
+        if (model) chatPageState.setActiveModelId(model);
+        if (reasoningMode === "think") chatPageState.setReasoningMode("think");
+        else if (reasoningMode === "deepsearch") chatPageState.setReasoningMode("deepsearch");
+
+        const editor = await waitForEditor();
+
+        const convId = conversationId || chatPageState.conversationId;
+        const beforeCount = convId ? (ResponseStore.useResponseStore.getState().byConversationId?.[convId]?.length ?? 0) : 0;
+
+        editor.commands.setContent(message);
+        editor.commands.focus();
+        await new Promise(r => setTimeout(r, 100));
+        submitEditor();
+
+        const result = await waitForResponse(convId, beforeCount, GROK.SEND_TIMEOUT);
         return {
-            conversationId: result.conversationId || conversationId,
+            conversationId: result.conversationId,
             responseId: result.responseId,
-            model: modelName,
-            message: result.message.slice(0, GROK.MAX_RESPONSE_LENGTH),
-            thinkingTrace: result.thinkingTrace ? result.thinkingTrace.slice(0, GROK.MAX_THINKING_LENGTH) : undefined,
+            model: model || chatPageState.activeModelId,
+            message: result.message,
+            thinkingTrace: result.thinkingTrace,
         };
     } catch (err: any) {
         return { error: err?.message ?? String(err) };
@@ -116,13 +154,8 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
     const { conversationId, responseId } = args;
     if (!conversationId && !responseId) return { error: "Provide conversationId or responseId." };
 
-    const clients = getClients();
-    if (!clients) return { error: "API clients not available." };
-
-    const respStore = findByProps("useResponseStore", "createOptimisticResponse");
-
-    if (responseId && respStore) {
-        const cached = respStore.useResponseStore.getState().byId?.[responseId];
+    if (responseId) {
+        const cached = ResponseStore.useResponseStore.getState().byId?.[responseId];
         if (cached) {
             return {
                 responseId: cached.responseId,
@@ -136,7 +169,7 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
 
     if (conversationId && responseId) {
         try {
-            const data = await clients.chat.chatLoadResponses({ conversationId, body: { responseIds: [responseId] } });
+            const data = await ApiClients.chatApi.chatLoadResponses({ conversationId, body: { responseIds: [responseId] } });
             const resp = data.responses?.[0];
             if (!resp) return { error: "Response not found." };
             return {
@@ -150,8 +183,8 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
         }
     }
 
-    if (conversationId && respStore) {
-        const responses = respStore.useResponseStore.getState().byConversationId?.[conversationId];
+    if (conversationId) {
+        const responses = ResponseStore.useResponseStore.getState().byConversationId?.[conversationId];
         if (responses?.length) {
             return {
                 conversationId,
@@ -169,16 +202,12 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
 }
 
 async function handleModels(): Promise<unknown> {
-    const modelsStore = findByProps("useModelsStore");
-    const clients = getClients();
-    if (!modelsStore || !clients) return { error: "Stores not available." };
-
-    const { models, unavailableModels } = modelsStore.useModelsStore.getState();
+    const { models, unavailableModels } = ModelsStore.useModelsStore.getState();
     const allModels = [...(models || []), ...(unavailableModels || [])];
 
     const results = await Promise.all(allModels.map(async (m: any) => {
         try {
-            const rl = await clients.rateLimits.rateLimitsGetRateLimits({ body: { modelName: m.modelId, requestKind: "DEFAULT" } });
+            const rl = await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: m.modelId, requestKind: "DEFAULT" } });
             return {
                 modelId: m.modelId,
                 name: m.name,
