@@ -113,12 +113,8 @@ export default function PluginsTab() {
     return (
         <Flex flexDirection="column" gap="1.5rem">
             <Flex flexDirection="column" gap="0" className={cl("section")}>
-                <Text size="sm" weight="medium">
-                    Plugins
-                </Text>
-                <Text size="xs" color="secondary">
-                    Pick which plugins to use. Some need a page reload to kick in.
-                </Text>
+                <Text size="sm" weight="medium">Plugins</Text>
+                <Paragraph>Pick which plugins to use. Some need a page reload to kick in.</Paragraph>
             </Flex>
             {needsReload && !showReload && (
                 <Flex alignItems="center" className={cl("reload-banner")}>

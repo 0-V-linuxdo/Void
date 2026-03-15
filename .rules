@@ -96,11 +96,24 @@ Always use centralized imports. Never create per-file finders for things that ex
 ### When to use what
 
 - **Flex/Grid** for layout containers. Plain `<div>` is fine for simple wrappers.
-- **Text** for any text that needs size/weight/color control. Use `as="span"` for inline.
-- **Paragraph** for description text under headings or in settings.
+- **Text** for titles, labels, and inline text that needs size/weight/color control. Use `as="span"` for inline.
+- **Paragraph** for ALL description/helper text — under section headings, empty states, settings descriptions, plugin info. Never use `<Text size="xs" color="secondary">` for descriptions — use `<Paragraph>` instead.
 - **Chip** for small labels/badges.
 - Plain `<span>`/`<div>` with Tailwind classes are fine for trivial cases.
 - No inline `style={{}}` unless dynamic computed values or layout component internals.
+
+### Section header pattern
+
+Use this pattern for section titles with descriptions in settings/tabs:
+
+```tsx
+<Flex flexDirection="column" gap="0">
+    <Text size="sm" weight="medium">Section Title</Text>
+    <Paragraph>Description text explaining what this section does.</Paragraph>
+</Flex>
+```
+
+Never use `<Text size="xs" color="secondary">` for the description line. Always `<Paragraph>`.
 
 ### Grok Components (from `@turbopack/common/components`)
 
