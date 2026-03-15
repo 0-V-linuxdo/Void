@@ -428,7 +428,7 @@ export function reportOrphanedPatches(): void {
     }
 
     if (IS_DEV) {
-        const slow = patchTimings.filter(([, , , t]) => t > 5);
+        const slow = patchTimings.filter(([, , , t]) => t > 10);
         for (const [plugin, moduleId, match, time] of slow) logger.warn(`Slow patch: ${plugin} on ${moduleId} took ${time.toFixed(2)}ms (${String(match)})`);
     }
 
