@@ -35,5 +35,13 @@ export default definePlugin({
                 replace: "false",
             },
         },
+        {
+            find: "NO_I18NEXT_INSTANCE",
+            all: true,
+            replacement: {
+                match: /console\.warn\(\.\.\.\i\)/,
+                replace: "void 0",
+            },
+        },
     ],
 });
