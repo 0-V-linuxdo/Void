@@ -65,19 +65,21 @@ export default definePlugin({
                 replace: '"UpsellSuperGrokSmall",()=>$self.settings.store.hideUpsellSmall?()=>null:$1',
             },
         },
+        // hides upsell card and locked modes in the mode selector
         {
-            find: "model-mode-select-upsell",
+            find: "mode-select.search-placeholder",
+            all: true,
             group: true,
             replacement: [
-                // hides the upsell card inside the model selector dropdown
+                // hides the upsell card
                 {
                     match: /(?<=useCheckSubscriptionOffer\)\(\);)(.{0,30}return null;)/,
                     replace: "if($self.settings.store.hideModelUpsell)return null;$1",
                 },
-                // clears locked modes so they don't show as greyed out
+                // empties the locked modes list so they don't render greyed out
                 {
-                    match: /upgradeRequiredModes:(\i)\}=(\i)\(\)/,
-                    replace: "upgradeRequiredModes:$1}=function(){let r=$2();if($self.settings.store.hideModelUpsell)r.upgradeRequiredModes=[];return r}()",
+                    match: /(\i)(\.map\(\i=>\(0,\i\.jsx\).{0,60}"text-secondary opacity-75)/,
+                    replace: "($self.settings.store.hideModelUpsell?[]:$1)$2",
                 },
             ],
         },
