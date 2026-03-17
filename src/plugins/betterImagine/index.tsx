@@ -7,17 +7,17 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { ButtonWithTooltip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
+import { ButtonWithTooltip, ConfirmDialog, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { HeartCrackIcon } from "@components/icons";
-import type { MediaPostType } from "@grok-types/enums";
+import { HeartCrackIcon, ScalingIcon, SquareMousePointerIcon, TrashIcon } from "@components/icons";
+import type { GrokPage, MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
-import { Fragment, React, useState } from "@turbopack/common/react";
-import { MediaStore } from "@turbopack/common/stores";
+import { Fragment, React, useCallback, useEffect, useMemo, useRef, useState } from "@turbopack/common/react";
+import { MediaStore, RoutingStore } from "@turbopack/common/stores";
 import { Toaster } from "@turbopack/common/utils";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
-import { classNameFactory } from "@utils/css";
+import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { copyToClipboard, createExternalStore, fetchExternal, sanitizeFilename } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
@@ -27,6 +27,7 @@ import { createZip } from "@utils/zip";
 const CopyIcon = findExportedComponentLazy("CopyIcon");
 const DownloadIcon = findExportedComponentLazy("DownloadIcon");
 const logger = new Logger("BetterImagine");
+
 const cl = classNameFactory("void-imagine-");
 
 const settings = definePluginSettings({
@@ -49,6 +50,7 @@ const settings = definePluginSettings({
 
 const MEDIA_TYPE_IMAGE: MediaPostType = "MEDIA_POST_TYPE_IMAGE";
 const MEDIA_TYPE_VIDEO: MediaPostType = "MEDIA_POST_TYPE_VIDEO";
+const PAGE_FAVORITES: GrokPage = "imagine-favorites";
 
 const FILTER_MAP: Record<Exclude<MediaFilter, "all">, MediaPostType> = {
     image: MEDIA_TYPE_IMAGE,
@@ -108,6 +110,72 @@ function filterItems(items: MediaItem[]): MediaItem[] {
     });
 }
 
+const selectedIds = new Set<string>();
+let selectMode = false;
+const selectionStore = createExternalStore();
+
+function toggleSelectMode() {
+    selectMode = !selectMode;
+    if (!selectMode) selectedIds.clear();
+    selectionStore.notify();
+}
+
+function toggleSelected(id: string) {
+    if (selectedIds.has(id)) selectedIds.delete(id);
+    else selectedIds.add(id);
+    selectionStore.notify();
+}
+
+function clearSelection() {
+    selectedIds.clear();
+    selectMode = false;
+    selectionStore.notify();
+}
+
+async function bulkDeletePosts(ids: string[]) {
+    const { deletePost } = MediaStore.useMediaStore.getState();
+    let deleted = 0;
+    for (const id of ids) {
+        try {
+            await deletePost(id, id);
+            deleted++;
+        } catch (e) {
+            logger.error("Failed to delete post:", id, e);
+        }
+    }
+    clearSelection();
+    Toaster.toast.success(`Deleted ${deleted} item${deleted !== 1 ? "s" : ""}.`);
+}
+
+async function bulkUpscaleVideos(ids: string[]) {
+    const state = MediaStore.useMediaStore.getState();
+    let upscaled = 0;
+    let alreadyHd = 0;
+    let inProgress = 0;
+    for (const id of ids) {
+        const item = state.byId[id];
+        if (!item) continue;
+        const videos = state.videoByMediaId[id];
+        if (!videos?.length) continue;
+        for (const video of videos) {
+            if (video.hdMediaUrl) { alreadyHd++; continue; }
+            if (video.upscalingInProgress) { inProgress++; continue; }
+            try {
+                await state.upscaleVideo(id, video.id);
+                upscaled++;
+            } catch (e) {
+                logger.error("Failed to upscale video:", id, video.id, e);
+            }
+        }
+    }
+    if (upscaled > 0) Toaster.toast.success(`Upscaling ${upscaled} video${upscaled !== 1 ? "s" : ""}.`);
+    else if (alreadyHd > 0) Toaster.toast.info(`${alreadyHd} video${alreadyHd !== 1 ? "s" : ""} already in HD.`);
+    else if (inProgress > 0) Toaster.toast.info(`${inProgress} video${inProgress !== 1 ? "s" : ""} already upscaling.`);
+    else Toaster.toast.info("No videos to upscale.");
+}
+
+const CARD_SELECTOR = ".group\\/media-post-masonry-card";
+
 const pending = new WeakMap<HTMLVideoElement, Promise<void>>();
 
 function pauseVideo(video: HTMLVideoElement) {
@@ -135,8 +203,8 @@ const onMouseLeave = (e: { currentTarget: HTMLElement }) => {
     if (video) pauseVideo(video);
 };
 
-function resolveItem(post: MediaItem | string): MediaItem | undefined {
-    if (typeof post === "string") return MediaStore.useMediaStore.getState().byId[post];
+function resolveItem(post: MediaItem): MediaItem | undefined {
+    if (!post?.id) return undefined;
     return post;
 }
 
@@ -212,14 +280,21 @@ async function downloadAllFavorites() {
     Toaster.toast.success(`Downloaded ${done} file${done > 1 ? "s" : ""} as zip.`);
 }
 
+function useFavoritesPage() {
+    return RoutingStore.useRoutingStore(s => s.route.page) === PAGE_FAVORITES;
+}
+
 function DownloadAllButton() {
+    const isFavorites = useFavoritesPage();
     const [loading, setLoading] = useState(false);
 
-    const onClick = async () => {
+    const onClick = useCallback(async () => {
         setLoading(true);
         try { await downloadAllFavorites(); }
         finally { setLoading(false); }
-    };
+    }, []);
+
+    if (!isFavorites) return null;
 
     return (
         <ButtonWithTooltip
@@ -234,6 +309,189 @@ function DownloadAllButton() {
             <span className="font-semibold">{loading ? "Downloading..." : "Download all"}</span>
         </ButtonWithTooltip>
     );
+}
+
+function getVisibleIds(favorites: MediaItem[]): string[] {
+    return filterItems(favorites).map(i => i.id);
+}
+
+function ActionToolbar() {
+    const isFavorites = useFavoritesPage();
+    useExternalStore(selectionStore);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+    const [upscaleOpen, setUpscaleOpen] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const favorites = MediaStore.useMediaStore(s => s.favoritesList);
+    const videoByMediaId = MediaStore.useMediaStore(s => s.videoByMediaId);
+
+    const count = selectedIds.size;
+    const videoCount = useMemo(() => {
+        const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
+        return ids.filter(id => videoByMediaId[id]?.length).length;
+    }, [count, favorites, videoByMediaId]);
+
+    useEffect(() => {
+        if (!isFavorites && selectMode) clearSelection();
+    }, [isFavorites]);
+
+    const onDeleteSelected = useCallback(async () => {
+        setBusy(true);
+        try { await bulkDeletePosts([...selectedIds]); }
+        finally { setBusy(false); }
+    }, []);
+
+    const onDeleteAll = useCallback(async () => {
+        setBusy(true);
+        try { await bulkDeletePosts(getVisibleIds(favorites)); }
+        finally { setBusy(false); }
+    }, [favorites]);
+
+    const onUpscale = useCallback(async () => {
+        setBusy(true);
+        const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
+        try { await bulkUpscaleVideos(ids); }
+        finally { setBusy(false); }
+    }, [favorites, count]);
+
+    const onSelectAll = useCallback(() => {
+        for (const id of getVisibleIds(favorites)) selectedIds.add(id);
+        selectionStore.notify();
+    }, [favorites]);
+
+    if (!isFavorites) return null;
+
+    return (
+        <div className={cl("action-toolbar")}>
+            <ButtonWithTooltip
+                tooltipContent={selectMode ? "Exit select mode" : "Select items"}
+                variant={selectMode ? "primary" : "secondary"}
+                shape="pill"
+                size="md"
+                onClick={toggleSelectMode}
+            >
+                <SquareMousePointerIcon size={18} />
+                <span className="font-semibold">{selectMode ? "Cancel" : "Select"}</span>
+            </ButtonWithTooltip>
+            {selectMode && (
+                <ButtonWithTooltip
+                    tooltipContent="Select all visible items"
+                    variant="secondary"
+                    shape="pill"
+                    size="md"
+                    onClick={onSelectAll}
+                >
+                    <span className="font-semibold">Select all</span>
+                </ButtonWithTooltip>
+            )}
+            <ButtonWithTooltip
+                tooltipContent={videoCount > 0 ? `Upscale ${videoCount} video${videoCount !== 1 ? "s" : ""}` : "No videos to upscale"}
+                variant="secondary"
+                shape="pill"
+                size="md"
+                disabled={busy || videoCount === 0}
+                onClick={() => setUpscaleOpen(true)}
+            >
+                <ScalingIcon size={18} />
+                <span className="font-semibold">{videoCount > 1 ? `Upscale ${videoCount}` : "Upscale"}</span>
+            </ButtonWithTooltip>
+            {selectMode && count > 0 ? (
+                <ButtonWithTooltip
+                    tooltipContent={`Delete ${count} selected`}
+                    variant="danger"
+                    shape="pill"
+                    size="md"
+                    disabled={busy}
+                    onClick={() => setConfirmOpen(true)}
+                >
+                    <TrashIcon size={18} />
+                    <span className="font-semibold">{busy ? "Deleting..." : count > 1 ? `Delete ${count}` : "Delete"}</span>
+                </ButtonWithTooltip>
+            ) : !selectMode && (
+                <ButtonWithTooltip
+                    tooltipContent="Delete all visible items"
+                    variant="secondary"
+                    shape="pill"
+                    size="md"
+                    disabled={busy}
+                    onClick={() => setDeleteAllOpen(true)}
+                >
+                    <TrashIcon size={18} />
+                    <span className="font-semibold">{busy ? "Deleting..." : "Delete all"}</span>
+                </ButtonWithTooltip>
+            )}
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete selected items"
+                description={`Are you sure you want to permanently delete ${count} item${count !== 1 ? "s" : ""}? This cannot be undone.`}
+                confirmText={`Delete ${count}`}
+                danger
+                onConfirm={onDeleteSelected}
+            />
+            <ConfirmDialog
+                open={deleteAllOpen}
+                onOpenChange={setDeleteAllOpen}
+                title="Delete all items"
+                description="Are you sure you want to permanently delete all visible items? This cannot be undone."
+                confirmText="Delete all"
+                danger
+                onConfirm={onDeleteAll}
+            />
+            <ConfirmDialog
+                open={upscaleOpen}
+                onOpenChange={setUpscaleOpen}
+                title={`Upscale ${videoCount} video${videoCount !== 1 ? "s" : ""}`}
+                description={`This will start HD upscaling for ${videoCount} video${videoCount !== 1 ? "s" : ""}. Already upscaled videos will be skipped.`}
+                confirmText="Upscale"
+                onConfirm={onUpscale}
+            />
+        </div>
+    );
+}
+
+function SelectOverlay({ postId }: { postId: string }) {
+    const isFavorites = useFavoritesPage();
+    const ref = useRef<HTMLSpanElement>(null);
+    useExternalStore(selectionStore);
+
+    const isSelected = selectMode && selectedIds.has(postId);
+
+    useEffect(() => {
+        const card = ref.current?.closest(CARD_SELECTOR) as HTMLElement | null;
+        if (!card) return;
+        const selected = isFavorites && isSelected;
+        card.classList.toggle(cl("card-selected"), selected);
+        return () => { card.classList.remove(cl("card-selected")); };
+    }, [isFavorites, isSelected]);
+
+    useEffect(() => {
+        if (!isFavorites) return;
+        const card = ref.current?.closest(CARD_SELECTOR) as HTMLElement | null;
+        if (!card) return;
+
+        const handler = (e: MouseEvent) => {
+            if (selectMode) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSelected(postId);
+                return;
+            }
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                selectMode = true;
+                selectedIds.add(postId);
+                selectionStore.notify();
+            }
+        };
+
+        card.addEventListener("click", handler, { capture: true });
+        return () => card.removeEventListener("click", handler, { capture: true });
+    }, [isFavorites, postId]);
+
+    if (!isFavorites) return null;
+    return <span ref={ref} className={cl("select-marker")} />;
 }
 
 function FilterButtons() {
@@ -261,7 +519,7 @@ function FilterButtons() {
             {(["image", "video"] as const).map(f => (
                 <button
                     key={f}
-                    className={cl("filter-btn") + (currentFilter === f ? " " + cl("filter-btn-active") : "")}
+                    className={classes(cl("filter-btn"), currentFilter === f && cl("filter-btn-active"))}
                     onClick={() => setFilter(currentFilter === f ? "all" : f)}
                 >
                     {f === "image" ? "Images" : "Videos"}
@@ -278,8 +536,9 @@ function useFilteredFavorites(): MediaItem[] {
 }
 
 function CardActions({ postId }: { postId: string }) {
+    const isFavorites = useFavoritesPage();
     const item = MediaStore.useMediaStore(s => s.byId[postId]);
-    const unlike = MediaStore.useMediaStore(s => s.unlike);
+    const [confirmDelete, setConfirmDelete] = useState(false);
 
     const onDownload = async () => {
         if (!item?.mediaUrl) return;
@@ -305,7 +564,12 @@ function CardActions({ postId }: { postId: string }) {
     };
 
     const onUnfavorite = () => {
-        unlike(postId);
+        MediaStore.useMediaStore.getState().unlike(postId);
+    };
+
+    const onDelete = () => {
+        MediaStore.useMediaStore.getState().deletePost(postId, postId);
+        Toaster.toast.success("Deleted.");
     };
 
     const hasPrompt = !!(item?.prompt || item?.originalPrompt);
@@ -334,23 +598,50 @@ function CardActions({ postId }: { postId: string }) {
             >
                 <DownloadIcon size="16" className="text-white" />
             </ButtonWithTooltip>
-            <ButtonWithTooltip
-                tooltipContent="Unsave"
-                className={cl("card-btn")}
-                shape="circle"
-                size="md"
-                variant="none"
-                onClick={onUnfavorite}
-            >
-                <HeartCrackIcon size={16} className="text-white" />
-            </ButtonWithTooltip>
+            {isFavorites && (
+                <ButtonWithTooltip
+                    tooltipContent="Unsave"
+                    className={cl("card-btn")}
+                    shape="circle"
+                    size="md"
+                    variant="none"
+                    onClick={onUnfavorite}
+                >
+                    <HeartCrackIcon size={16} className="text-white" />
+                </ButtonWithTooltip>
+            )}
+            {isFavorites && (
+                <ButtonWithTooltip
+                    tooltipContent="Delete permanently"
+                    className={classes(cl("card-btn"), cl("card-btn-danger"))}
+                    shape="circle"
+                    size="md"
+                    variant="none"
+                    onClick={() => setConfirmDelete(true)}
+                >
+                    <TrashIcon size={16} className="text-white" />
+                </ButtonWithTooltip>
+            )}
+            {isFavorites && (
+                <ConfirmDialog
+                    open={confirmDelete}
+                    onOpenChange={setConfirmDelete}
+                    title="Delete this item"
+                    description="Are you sure you want to permanently delete this item? This cannot be undone."
+                    confirmText="Delete"
+                    danger
+                    onConfirm={onDelete}
+                />
+            )}
         </Fragment>
     );
 }
 
 const WrappedDownloadAll = ErrorBoundary.wrap(DownloadAllButton);
+const WrappedActionToolbar = ErrorBoundary.wrap(ActionToolbar);
 const WrappedFilterButtons = ErrorBoundary.wrap(FilterButtons);
 const WrappedCardActions = ErrorBoundary.wrap(CardActions);
+const WrappedSelectOverlay = ErrorBoundary.wrap(SelectOverlay);
 
 export default definePlugin({
     name: "BetterImagine",
@@ -372,8 +663,10 @@ export default definePlugin({
     },
 
     _renderDownloadAll: WrappedDownloadAll,
+    _renderActionToolbar: WrappedActionToolbar,
     _renderFilterButtons: WrappedFilterButtons,
     _renderCardActions: WrappedCardActions,
+    _renderSelectOverlay: WrappedSelectOverlay,
 
     _useFilteredFavorites() {
         return useFilteredFavorites();
@@ -394,7 +687,7 @@ export default definePlugin({
                 },
                 {
                     match: /"imagine-upload-image-button.label","Upload image"\)}\)]\}\)/,
-                    replace: "$&,$self._renderDownloadAll({})",
+                    replace: "$&,$self._renderActionToolbar({}),$self._renderDownloadAll({})",
                 },
                 {
                     match: /(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\2\.useMediaStore\)\(\i=>\i\.list\)/,
@@ -410,7 +703,15 @@ export default definePlugin({
                 },
                 {
                     match: /children:\(0,(\i)\.jsx\)\((\i),\{postId:(\i),mediaType:(\i),onOpenChange:(\i)\}\)\}\)/,
-                    replace: "children:[(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})",
+                    replace: "children:[$self._renderSelectOverlay({postId:$3}),(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})",
+                },
+                {
+                    match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/,
+                    replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})",
+                },
+                {
+                    match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/,
+                    replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})",
                 },
             ],
         },

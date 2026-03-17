@@ -6,7 +6,7 @@
 
 import "./PluginDialog.css";
 
-import { Button, Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, Flex, Separator, Text } from "@components";
+import { Button, Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, Flex, Paragraph, Separator, Text } from "@components";
 import { Cross2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
@@ -41,27 +41,17 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
                 </DialogClose>
                 <DialogHeader className={cl("header")}>
                     <DialogTitle>{plugin.name}</DialogTitle>
-                    {plugin.description && (
-                        <Text size="xs" color="secondary">
-                            {plugin.description}
-                        </Text>
-                    )}
+                    {plugin.description && <Paragraph>{plugin.description}</Paragraph>}
                 </DialogHeader>
                 <Separator />
                 {!!plugin.authors?.length && (
                     <Flex flexDirection="column" gap="0.25rem">
-                        <Text size="sm" weight="medium">
-                            Authors
-                        </Text>
-                        <Text size="xs" color="secondary">
-                            {plugin.authors.join(", ")}
-                        </Text>
+                        <Text size="sm" weight="medium">Authors</Text>
+                        <Paragraph>{plugin.authors.join(", ")}</Paragraph>
                     </Flex>
                 )}
                 <Flex flexDirection="column" gap="0.25rem">
-                    <Text size="sm" weight="medium">
-                        Settings
-                    </Text>
+                    <Text size="sm" weight="medium">Settings</Text>
                     {entries.length ? (
                         <Flex flexDirection="column" gap="0.75rem" className={cl("settings-list")}>
                             {entries.map(([key, setting]) => (
@@ -69,9 +59,7 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
                             ))}
                         </Flex>
                     ) : (
-                        <Text size="xs" color="secondary">
-                            No configurable settings.
-                        </Text>
+                        <Paragraph>No configurable settings.</Paragraph>
                     )}
                 </Flex>
             </DialogContent>

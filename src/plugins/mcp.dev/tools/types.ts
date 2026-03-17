@@ -109,9 +109,7 @@ export interface GrokArgs {
     model?: string;
     conversationId?: string;
     responseId?: string;
-    temporary?: boolean;
     reasoningMode?: string;
-    parentResponseId?: string;
 }
 
 export type ToolArgs = ModuleArgs | SearchArgs | EvalArgs | PatchArgs | PluginArgs | ReactArgs | StoreArgs | InterceptArgs | GrokArgs;

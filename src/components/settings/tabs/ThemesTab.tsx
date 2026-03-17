@@ -88,12 +88,8 @@ export default function ThemesTab() {
         <Flex flexDirection="column" gap="2rem">
             <Flex alignItems="center" justifyContent="space-between" className={cl("section")}>
                 <Flex flexDirection="column" gap="0">
-                    <Text size="sm" weight="medium">
-                        Themes
-                    </Text>
-                    <Text size="xs" color="secondary">
-                        Custom CSS themes for Grok. Paste a URL to a .css file to add one.
-                    </Text>
+                    <Text size="sm" weight="medium">Themes</Text>
+                    <Paragraph>Custom CSS themes for Grok. Paste a URL to a .css file to add one.</Paragraph>
                 </Flex>
                 <Switch checked={enabled} onCheckedChange={handleToggle} />
             </Flex>
@@ -117,13 +113,11 @@ export default function ThemesTab() {
                 <Flex flexDirection="column" gap="0.375rem" className={cl("section")}>
                     <Flex flexDirection="column" gap="0">
                         <Text size="sm" weight="medium">Installed Themes</Text>
-                        <Text size="xs" color="secondary">
-                            Re-fetched every page load. Use the switch above to disable all themes at once.
-                        </Text>
+                        <Paragraph>Re-fetched every page load. Use the switch above to disable all themes at once.</Paragraph>
                     </Flex>
-                    <Text size="xs" color="secondary">
+                    <Paragraph>
                         {`${pluralize(themes.length, "theme")} installed \u00B7 ${themes.filter(t => t.enabled).length} enabled`}
-                    </Text>
+                    </Paragraph>
                 </Flex>
             )}
             {themes.length > 0 && (

@@ -7,7 +7,7 @@
 import "./CustomCSSTab.css";
 
 import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
-import { Flex, Switch, Text } from "@components";
+import { Flex, Paragraph, Switch, Text } from "@components";
 import { React, useCallback, useEffect, useRef, useState } from "@turbopack/common/react";
 import { classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
 
@@ -167,12 +167,8 @@ export default function CustomCSSTab() {
         <Flex flexDirection="column" gap="0.75rem" className={cl("root")}>
             <Flex alignItems="center" justifyContent="space-between" className={cl("header")}>
                 <Flex flexDirection="column" gap="0">
-                    <Text size="sm" weight="medium">
-                        Quick CSS
-                    </Text>
-                    <Text size="xs" color="secondary">
-                        Custom CSS applied live as you type.
-                    </Text>
+                    <Text size="sm" weight="medium">Quick CSS</Text>
+                    <Paragraph>Custom CSS applied live as you type.</Paragraph>
                 </Flex>
                 <Switch checked={enabled} onCheckedChange={handleToggle} />
             </Flex>

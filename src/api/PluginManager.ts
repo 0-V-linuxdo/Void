@@ -14,7 +14,7 @@ import { type Patch, type Plugin, StartAt } from "@utils/types";
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
 import { addContextMenuItem, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
 import { subscribe as subscribeEvent } from "./Events";
-import { Settings } from "./Settings";
+import { PlainSettings, Settings, SettingsStore } from "./Settings";
 
 const logger = new Logger("PluginManager", "#b4befe");
 
@@ -242,9 +242,26 @@ export function registerPlugin(plugin: Plugin) {
     }
 }
 
+function pruneOrphanedPluginSettings() {
+    const stored = PlainSettings.plugins;
+    let pruned = false;
+
+    for (const name in stored) {
+        if (!plugins[name]) {
+            logger.info(`Pruning settings for removed plugin: ${name}`);
+            delete stored[name];
+            pruned = true;
+        }
+    }
+
+    if (pruned) SettingsStore.markAsChanged();
+}
+
 export function initPluginManager() {
     if (initialized) return;
     initialized = true;
+
+    pruneOrphanedPluginSettings();
 
     const neededApis = new Set<string>();
 

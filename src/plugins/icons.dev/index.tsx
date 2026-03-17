@@ -6,7 +6,7 @@
 
 import "./styles.css";
 
-import { ErrorBoundary, Flex, Grid, Input, Text } from "@components";
+import { ErrorBoundary, Flex, Grid, Input, Paragraph, Text } from "@components";
 import { TelescopeIcon } from "@components/icons";
 import { allTabs } from "@plugins/_core/settings";
 import { React, useMemo, useState } from "@turbopack/common/react";
@@ -93,12 +93,8 @@ function IconsTab() {
     return (
         <Flex flexDirection="column" gap="1.5rem">
             <Flex flexDirection="column" gap="0">
-                <Text size="sm" weight="medium">
-                    Icons
-                </Text>
-                <Text size="xs" color="secondary">
-                    {`Browse ${icons.length} Grok icons. Click to copy the finder code.`}
-                </Text>
+                <Text size="sm" weight="medium">Icons</Text>
+                <Paragraph>{`Browse ${icons.length} Grok icons. Click to copy the finder code.`}</Paragraph>
             </Flex>
             <Input
                 type="text"
@@ -114,9 +110,9 @@ function IconsTab() {
                     ))}
                 </Grid>
             ) : (
-                <Text size="xs" color="secondary">
+                <Paragraph>
                     {search ? "No icons match your search." : "No icons found."}
-                </Text>
+                </Paragraph>
             )}
         </Flex>
     );

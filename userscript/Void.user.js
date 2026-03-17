@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.3.0
+// @version      0.3.1
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.3.0 — A modification for grok.com
+ * Void v0.3.1 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -560,6 +560,17 @@ ${sourceUrl}`;
       }
     }
   }
+  function extractAnchor(match) {
+    const source = match instanceof RegExp ? match.source : match;
+    const literals = source.match(/(?:[A-Za-z_]{3,}(?:\.[A-Za-z_]+)*|"[^"]{2,}"|'[^']{2,}')/g);
+    return literals?.[0]?.replace(/^["']|["']$/g, "") ?? null;
+  }
+  function codeSnippetAround(code, anchor, radius = 60) {
+    const idx = code.indexOf(anchor);
+    if (idx === -1)
+      return "";
+    return code.slice(Math.max(0, idx - radius), idx + anchor.length + radius).replace(/\n/g, "\\n");
+  }
   function patchFactory(moduleId, factory) {
     if (!patches.length)
       return factory;
@@ -599,8 +610,12 @@ ${sourceUrl}`;
           if (newCode === code) {
             groupNoEffect++;
             result.replacements.push({ match: String(match), status: "noEffect" });
-            if (!patch.noWarn && !replacement.noWarn)
-              logger.error(`Patch by ${patch.plugin} had no effect: ${String(match)}`);
+            if (!patch.noWarn && !replacement.noWarn) {
+              const anchor = extractAnchor(match);
+              const snippet = anchor ? codeSnippetAround(code, anchor) : "";
+              logger.error(`Patch by ${patch.plugin} had no effect: ${String(match)}${snippet ? `
+Near: …${snippet}…` : ""}`);
+            }
             if (patch.group) {
               allSucceeded = false;
               break;
@@ -2098,6 +2113,20 @@ ${sourceUrl}`;
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 17h.01"
   }));
+  var SquareMousePointerIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"
+  }));
+  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 15H9v-5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 3h5v5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21 3 9 15"
+  }));
   // src/components/Text.tsx
   var sizeClasses = {
     xs: "text-xs",
@@ -2981,10 +3010,24 @@ ${sourceUrl}`;
       plugin.settings.pluginName = plugin.name;
     }
   }
+  function pruneOrphanedPluginSettings() {
+    const stored = PlainSettings.plugins;
+    let pruned = false;
+    for (const name in stored) {
+      if (!plugins[name]) {
+        logger7.info(`Pruning settings for removed plugin: ${name}`);
+        delete stored[name];
+        pruned = true;
+      }
+    }
+    if (pruned)
+      SettingsStore3.markAsChanged();
+  }
   function initPluginManager() {
     if (initialized)
       return;
     initialized = true;
+    pruneOrphanedPluginSettings();
     const neededApis = new Set;
     for (const name in plugins) {
       if (!isPluginEnabled(name))
@@ -3172,11 +3215,11 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.3.0")) {
-        logger8.info(`Up to date (${"0.3.0"})`);
+      if (!latest || !isNewer(latest, "0.3.1")) {
+        logger8.info(`Up to date (${"0.3.1"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.3.0"} → ${latest}`);
+      logger8.info(`Update available: ${"0.3.1"} → ${latest}`);
       showNotice({
         message: "Void is outdated, please update to the new version.",
         type: "warning" /* WARNING */,
@@ -3645,10 +3688,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
-    }, "Quick CSS"), /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, "Custom CSS applied live as you type.")), /* @__PURE__ */ React.createElement(Switch, {
+    }, "Quick CSS"), /* @__PURE__ */ React.createElement(Paragraph, null, "Custom CSS applied live as you type.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: enabled,
       onCheckedChange: handleToggle
     })), /* @__PURE__ */ React.createElement("div", {
@@ -4125,19 +4165,13 @@ ${sourceUrl}`;
       className: cl7("close")
     }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
       className: cl7("header")
-    }, /* @__PURE__ */ React.createElement(DialogTitle, null, plugin.name), plugin.description && /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, plugin.description)), /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(DialogTitle, null, plugin.name), plugin.description && /* @__PURE__ */ React.createElement(Paragraph, null, plugin.description)), /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
-    }, "Authors"), /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(Flex, {
+    }, "Authors"), /* @__PURE__ */ React.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -4152,10 +4186,7 @@ ${sourceUrl}`;
       id: key,
       setting,
       pluginName: plugin.name
-    }))) : /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, "No configurable settings."))));
+    }))) : /* @__PURE__ */ React.createElement(Paragraph, null, "No configurable settings."))));
   }
 
   // src/components/settings/tabs/PluginsTab.tsx
@@ -4246,10 +4277,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
-    }, "Plugins"), /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, "Pick which plugins to use. Some need a page reload to kick in.")), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
+    }, "Plugins"), /* @__PURE__ */ React.createElement(Paragraph, null, "Pick which plugins to use. Some need a page reload to kick in.")), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       className: cl8("reload-banner")
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -4530,10 +4558,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
-    }, "Themes"), /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, "Custom CSS themes for Grok. Paste a URL to a .css file to add one.")), /* @__PURE__ */ React.createElement(Switch, {
+    }, "Themes"), /* @__PURE__ */ React.createElement(Paragraph, null, "Custom CSS themes for Grok. Paste a URL to a .css file to add one.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: enabled,
       onCheckedChange: handleToggle
     })), /* @__PURE__ */ React.createElement(Flex, {
@@ -4575,13 +4600,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
-    }, "Installed Themes"), /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, "Re-fetched every page load. Use the switch above to disable all themes at once.")), /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, `${pluralize(themes.length, "theme")} installed · ${themes.filter((t) => t.enabled).length} enabled`)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
+    }, "Installed Themes"), /* @__PURE__ */ React.createElement(Paragraph, null, "Re-fetched every page load. Use the switch above to disable all themes at once.")), /* @__PURE__ */ React.createElement(Paragraph, null, `${pluralize(themes.length, "theme")} installed · ${themes.filter((t) => t.enabled).length} enabled`)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem",
       className: cl10("section")
@@ -4860,10 +4879,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
-    }, "Experiments"), /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, "Toggle unreleased Grok features. These are experimental and may break things.")), /* @__PURE__ */ React.createElement(Card, {
+    }, "Experiments"), /* @__PURE__ */ React.createElement(Paragraph, null, "Toggle unreleased Grok features. These are experimental and may break things.")), /* @__PURE__ */ React.createElement(Card, {
       variant: "ghost",
       className: cl11("warning")
     }, /* @__PURE__ */ React.createElement(Flex, {
@@ -5014,9 +5030,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.3.0"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"73ec6ce"}`
-    }, `(${"73ec6ce"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.3.1"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"f3bab5c"}`
+    }, `(${"f3bab5c"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5461,6 +5477,31 @@ ${sourceUrl}`;
 .group\\/media-post-masonry-card:hover .void-imagine-card-btn {
     opacity: 1;
 }
+
+.void-imagine-card-btn-danger:hover {
+    background: rgb(220 38 38 / 60%) !important;
+}
+
+.void-imagine-action-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.void-imagine-select-marker {
+    display: none;
+}
+
+.void-imagine-card-selected::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 3px solid hsl(217deg 91% 60%);
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 20;
+}
 `);
 
   // src/utils/zip.ts
@@ -5585,6 +5626,7 @@ ${sourceUrl}`;
   });
   var MEDIA_TYPE_IMAGE = "MEDIA_POST_TYPE_IMAGE";
   var MEDIA_TYPE_VIDEO = "MEDIA_POST_TYPE_VIDEO";
+  var PAGE_FAVORITES = "imagine-favorites";
   var FILTER_MAP = {
     image: MEDIA_TYPE_IMAGE,
     video: MEDIA_TYPE_VIDEO
@@ -5640,6 +5682,80 @@ ${sourceUrl}`;
       return true;
     });
   }
+  var selectedIds = new Set;
+  var selectMode = false;
+  var selectionStore = createExternalStore();
+  function toggleSelectMode() {
+    selectMode = !selectMode;
+    if (!selectMode)
+      selectedIds.clear();
+    selectionStore.notify();
+  }
+  function toggleSelected(id) {
+    if (selectedIds.has(id))
+      selectedIds.delete(id);
+    else
+      selectedIds.add(id);
+    selectionStore.notify();
+  }
+  function clearSelection() {
+    selectedIds.clear();
+    selectMode = false;
+    selectionStore.notify();
+  }
+  async function bulkDeletePosts(ids) {
+    const { deletePost } = MediaStore.useMediaStore.getState();
+    let deleted = 0;
+    for (const id of ids) {
+      try {
+        await deletePost(id, id);
+        deleted++;
+      } catch (e) {
+        logger13.error("Failed to delete post:", id, e);
+      }
+    }
+    clearSelection();
+    Toaster.toast.success(`Deleted ${deleted} item${deleted !== 1 ? "s" : ""}.`);
+  }
+  async function bulkUpscaleVideos(ids) {
+    const state = MediaStore.useMediaStore.getState();
+    let upscaled = 0;
+    let alreadyHd = 0;
+    let inProgress = 0;
+    for (const id of ids) {
+      const item = state.byId[id];
+      if (!item)
+        continue;
+      const videos = state.videoByMediaId[id];
+      if (!videos?.length)
+        continue;
+      for (const video of videos) {
+        if (video.hdMediaUrl) {
+          alreadyHd++;
+          continue;
+        }
+        if (video.upscalingInProgress) {
+          inProgress++;
+          continue;
+        }
+        try {
+          await state.upscaleVideo(id, video.id);
+          upscaled++;
+        } catch (e) {
+          logger13.error("Failed to upscale video:", id, video.id, e);
+        }
+      }
+    }
+    if (upscaled > 0)
+      Toaster.toast.success(`Upscaling ${upscaled} video${upscaled !== 1 ? "s" : ""}.`);
+    else if (alreadyHd > 0)
+      Toaster.toast.info(`${alreadyHd} video${alreadyHd !== 1 ? "s" : ""} already in HD.`);
+    else if (inProgress > 0)
+      Toaster.toast.info(`${inProgress} video${inProgress !== 1 ? "s" : ""} already upscaling.`);
+    else
+      Toaster.toast.info("No videos to upscale.");
+  }
+  var CARD_SELECTOR = ".group\\/media-post-masonry-card";
   var pending = new WeakMap;
   function pauseVideo(video) {
     const promise = pending.get(video);
@@ -5667,8 +5783,8 @@ ${sourceUrl}`;
       pauseVideo(video);
   };
   function resolveItem(post) {
-    if (typeof post === "string")
-      return MediaStore.useMediaStore.getState().byId[post];
+    if (!post?.id)
+      return;
     return post;
   }
   function dedupeNames(names) {
@@ -5736,16 +5852,22 @@ ${sourceUrl}`;
     URL.revokeObjectURL(a.href);
     Toaster.toast.success(`Downloaded ${done} file${done > 1 ? "s" : ""} as zip.`);
   }
+  function useFavoritesPage() {
+    return RoutingStore.useRoutingStore((s) => s.route.page) === PAGE_FAVORITES;
+  }
   function DownloadAllButton() {
+    const isFavorites = useFavoritesPage();
     const [loading, setLoading] = useState(false);
-    const onClick = async () => {
+    const onClick = useCallback(async () => {
       setLoading(true);
       try {
         await downloadAllFavorites();
       } finally {
         setLoading(false);
       }
-    };
+    }, []);
+    if (!isFavorites)
+      return null;
     return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: "Download all favorites",
       variant: "secondary",
@@ -5758,6 +5880,183 @@ ${sourceUrl}`;
     }), /* @__PURE__ */ React.createElement("span", {
       className: "font-semibold"
     }, loading ? "Downloading..." : "Download all"));
+  }
+  function getVisibleIds(favorites) {
+    return filterItems(favorites).map((i) => i.id);
+  }
+  function ActionToolbar() {
+    const isFavorites = useFavoritesPage();
+    useExternalStore(selectionStore);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+    const [upscaleOpen, setUpscaleOpen] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const favorites = MediaStore.useMediaStore((s) => s.favoritesList);
+    const videoByMediaId = MediaStore.useMediaStore((s) => s.videoByMediaId);
+    const count = selectedIds.size;
+    const videoCount = useMemo(() => {
+      const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
+      return ids.filter((id) => videoByMediaId[id]?.length).length;
+    }, [count, favorites, videoByMediaId]);
+    useEffect(() => {
+      if (!isFavorites && selectMode)
+        clearSelection();
+    }, [isFavorites]);
+    const onDeleteSelected = useCallback(async () => {
+      setBusy(true);
+      try {
+        await bulkDeletePosts([...selectedIds]);
+      } finally {
+        setBusy(false);
+      }
+    }, []);
+    const onDeleteAll = useCallback(async () => {
+      setBusy(true);
+      try {
+        await bulkDeletePosts(getVisibleIds(favorites));
+      } finally {
+        setBusy(false);
+      }
+    }, [favorites]);
+    const onUpscale = useCallback(async () => {
+      setBusy(true);
+      const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
+      try {
+        await bulkUpscaleVideos(ids);
+      } finally {
+        setBusy(false);
+      }
+    }, [favorites, count]);
+    const onSelectAll = useCallback(() => {
+      for (const id of getVisibleIds(favorites))
+        selectedIds.add(id);
+      selectionStore.notify();
+    }, [favorites]);
+    if (!isFavorites)
+      return null;
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl13("action-toolbar")
+    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: selectMode ? "Exit select mode" : "Select items",
+      variant: selectMode ? "primary" : "secondary",
+      shape: "pill",
+      size: "md",
+      onClick: toggleSelectMode
+    }, /* @__PURE__ */ React.createElement(SquareMousePointerIcon, {
+      size: 18
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: "font-semibold"
+    }, selectMode ? "Cancel" : "Select")), selectMode && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: "Select all visible items",
+      variant: "secondary",
+      shape: "pill",
+      size: "md",
+      onClick: onSelectAll
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: "font-semibold"
+    }, "Select all")), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: videoCount > 0 ? `Upscale ${videoCount} video${videoCount !== 1 ? "s" : ""}` : "No videos to upscale",
+      variant: "secondary",
+      shape: "pill",
+      size: "md",
+      disabled: busy || videoCount === 0,
+      onClick: () => setUpscaleOpen(true)
+    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
+      size: 18
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: "font-semibold"
+    }, videoCount > 1 ? `Upscale ${videoCount}` : "Upscale")), selectMode && count > 0 ? /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: `Delete ${count} selected`,
+      variant: "danger",
+      shape: "pill",
+      size: "md",
+      disabled: busy,
+      onClick: () => setConfirmOpen(true)
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
+      size: 18
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: "font-semibold"
+    }, busy ? "Deleting..." : count > 1 ? `Delete ${count}` : "Delete")) : !selectMode && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: "Delete all visible items",
+      variant: "secondary",
+      shape: "pill",
+      size: "md",
+      disabled: busy,
+      onClick: () => setDeleteAllOpen(true)
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
+      size: 18
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: "font-semibold"
+    }, busy ? "Deleting..." : "Delete all")), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: confirmOpen,
+      onOpenChange: setConfirmOpen,
+      title: "Delete selected items",
+      description: `Are you sure you want to permanently delete ${count} item${count !== 1 ? "s" : ""}? This cannot be undone.`,
+      confirmText: `Delete ${count}`,
+      danger: true,
+      onConfirm: onDeleteSelected
+    }), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: deleteAllOpen,
+      onOpenChange: setDeleteAllOpen,
+      title: "Delete all items",
+      description: "Are you sure you want to permanently delete all visible items? This cannot be undone.",
+      confirmText: "Delete all",
+      danger: true,
+      onConfirm: onDeleteAll
+    }), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: upscaleOpen,
+      onOpenChange: setUpscaleOpen,
+      title: `Upscale ${videoCount} video${videoCount !== 1 ? "s" : ""}`,
+      description: `This will start HD upscaling for ${videoCount} video${videoCount !== 1 ? "s" : ""}. Already upscaled videos will be skipped.`,
+      confirmText: "Upscale",
+      onConfirm: onUpscale
+    }));
+  }
+  function SelectOverlay({ postId }) {
+    const isFavorites = useFavoritesPage();
+    const ref = useRef(null);
+    useExternalStore(selectionStore);
+    const isSelected = selectMode && selectedIds.has(postId);
+    useEffect(() => {
+      const card = ref.current?.closest(CARD_SELECTOR);
+      if (!card)
+        return;
+      const selected = isFavorites && isSelected;
+      card.classList.toggle(cl13("card-selected"), selected);
+      return () => {
+        card.classList.remove(cl13("card-selected"));
+      };
+    }, [isFavorites, isSelected]);
+    useEffect(() => {
+      if (!isFavorites)
+        return;
+      const card = ref.current?.closest(CARD_SELECTOR);
+      if (!card)
+        return;
+      const handler2 = (e) => {
+        if (selectMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleSelected(postId);
+          return;
+        }
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          selectMode = true;
+          selectedIds.add(postId);
+          selectionStore.notify();
+        }
+      };
+      card.addEventListener("click", handler2, { capture: true });
+      return () => card.removeEventListener("click", handler2, { capture: true });
+    }, [isFavorites, postId]);
+    if (!isFavorites)
+      return null;
+    return /* @__PURE__ */ React.createElement("span", {
+      ref,
+      className: cl13("select-marker")
+    });
   }
   function FilterButtons() {
     useExternalStore(filterStore);
@@ -5777,7 +6076,7 @@ ${sourceUrl}`;
       className: cl13("search")
     }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement("button", {
       key: f,
-      className: cl13("filter-btn") + (currentFilter === f ? " " + cl13("filter-btn-active") : ""),
+      className: classes(cl13("filter-btn"), currentFilter === f && cl13("filter-btn-active")),
       onClick: () => setFilter(currentFilter === f ? "all" : f)
     }, f === "image" ? "Images" : "Videos")));
   }
@@ -5787,8 +6086,9 @@ ${sourceUrl}`;
     return filterItems(favorites);
   }
   function CardActions({ postId }) {
+    const isFavorites = useFavoritesPage();
     const item = MediaStore.useMediaStore((s) => s.byId[postId]);
-    const unlike = MediaStore.useMediaStore((s) => s.unlike);
+    const [confirmDelete, setConfirmDelete] = useState(false);
     const onDownload = async () => {
       if (!item?.mediaUrl)
         return;
@@ -5813,7 +6113,11 @@ ${sourceUrl}`;
       Toaster.toast.success("Copied prompt.");
     };
     const onUnfavorite = () => {
-      unlike(postId);
+      MediaStore.useMediaStore.getState().unlike(postId);
+    };
+    const onDelete = () => {
+      MediaStore.useMediaStore.getState().deletePost(postId, postId);
+      Toaster.toast.success("Deleted.");
     };
     const hasPrompt = !!(item?.prompt || item?.originalPrompt);
     return /* @__PURE__ */ React.createElement(Fragment, null, hasPrompt && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
@@ -5836,7 +6140,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(DownloadIcon2, {
       size: "16",
       className: "text-white"
-    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+    })), isFavorites && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: "Unsave",
       className: cl13("card-btn"),
       shape: "circle",
@@ -5846,11 +6150,31 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(HeartCrackIcon, {
       size: 16,
       className: "text-white"
-    })));
+    })), isFavorites && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      tooltipContent: "Delete permanently",
+      className: classes(cl13("card-btn"), cl13("card-btn-danger")),
+      shape: "circle",
+      size: "md",
+      variant: "none",
+      onClick: () => setConfirmDelete(true)
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
+      size: 16,
+      className: "text-white"
+    })), isFavorites && /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: confirmDelete,
+      onOpenChange: setConfirmDelete,
+      title: "Delete this item",
+      description: "Are you sure you want to permanently delete this item? This cannot be undone.",
+      confirmText: "Delete",
+      danger: true,
+      onConfirm: onDelete
+    }));
   }
   var WrappedDownloadAll = ErrorBoundary.wrap(DownloadAllButton);
+  var WrappedActionToolbar = ErrorBoundary.wrap(ActionToolbar);
   var WrappedFilterButtons = ErrorBoundary.wrap(FilterButtons);
   var WrappedCardActions = ErrorBoundary.wrap(CardActions);
+  var WrappedSelectOverlay = ErrorBoundary.wrap(SelectOverlay);
   var betterImagine_default = definePlugin({
     name: "BetterImagine",
     description: "Quality of life improvements and features for the Imagine page.",
@@ -5868,8 +6192,10 @@ ${sourceUrl}`;
       return { onMouseEnter, onMouseLeave };
     },
     _renderDownloadAll: WrappedDownloadAll,
+    _renderActionToolbar: WrappedActionToolbar,
     _renderFilterButtons: WrappedFilterButtons,
     _renderCardActions: WrappedCardActions,
+    _renderSelectOverlay: WrappedSelectOverlay,
     _useFilteredFavorites() {
       return useFilteredFavorites();
     },
@@ -5888,7 +6214,7 @@ ${sourceUrl}`;
           },
           {
             match: /"imagine-upload-image-button.label","Upload image"\)}\)]\}\)/,
-            replace: "$&,$self._renderDownloadAll({})"
+            replace: "$&,$self._renderActionToolbar({}),$self._renderDownloadAll({})"
           },
           {
             match: /(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\2\.useMediaStore\)\(\i=>\i\.list\)/,
@@ -5904,7 +6230,15 @@ ${sourceUrl}`;
           },
           {
             match: /children:\(0,(\i)\.jsx\)\((\i),\{postId:(\i),mediaType:(\i),onOpenChange:(\i)\}\)\}\)/,
-            replace: "children:[(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})"
+            replace: "children:[$self._renderSelectOverlay({postId:$3}),(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})"
+          },
+          {
+            match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/,
+            replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})"
+          },
+          {
+            match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/,
+            replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})"
           }
         ]
       },
@@ -6041,10 +6375,17 @@ ${sourceUrl}`;
     patches: [
       {
         find: "AvatarDropdownMenu,{}),",
-        replacement: {
-          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{\}\)/,
-          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu})"
-        }
+        group: true,
+        replacement: [
+          {
+            match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{\}\)/,
+            replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu})"
+          },
+          {
+            match: /className:"min-w-0 flex-1",children:\(0,\i\.jsx\)\(\i,\{\}\)\},"sidebar-footer-details"/,
+            replace: 'className:"hidden",children:null},"sidebar-footer-details"'
+          }
+        ]
       },
       {
         find: "useSidebar must be used within a SidebarProvider",
@@ -6065,45 +6406,77 @@ ${sourceUrl}`;
   });
 
   // src/plugins/cleaner/index.ts
+  var settings7 = definePluginSettings({
+    hideUpgradePlan: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade plan button in the user menu.",
+      default: true
+    },
+    hideUpsellCard: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upsell card banner.",
+      default: true
+    },
+    hideUpsellSmall: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the small SuperGrok upsell banner.",
+      default: true
+    },
+    hideModelUpsell: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide upgrade prompts and locked modes in the model selector.",
+      default: true
+    }
+  });
   var cleaner_default = definePlugin({
     name: "Cleaner",
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
+    settings: settings7,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
         all: true,
         replacement: {
-          match: /\i(?:\|\|\i)+(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
-          replace: "true"
+          match: /(\i(?:\|\|\i)+)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          replace: "$self.settings.store.hideUpgradePlan||$1"
         }
       },
       {
         find: '"UpsellCard",()=>',
         all: true,
         replacement: {
-          match: /"UpsellCard",\(\)=>\i/,
-          replace: '"UpsellCard",()=>()=>null'
+          match: /"UpsellCard",\(\)=>(\i)/,
+          replace: '"UpsellCard",()=>$self.settings.store.hideUpsellCard?()=>null:$1'
         }
       },
       {
         find: '"UpsellSuperGrokSmall",()=>',
         all: true,
         replacement: {
-          match: /"UpsellSuperGrokSmall",\(\)=>\i/,
-          replace: '"UpsellSuperGrokSmall",()=>()=>null'
+          match: /"UpsellSuperGrokSmall",\(\)=>(\i)/,
+          replace: '"UpsellSuperGrokSmall",()=>$self.settings.store.hideUpsellSmall?()=>null:$1'
         }
       },
       {
-        find: "group/model-mode-select-upsell",
+        find: '"UpsellButton",()=>',
+        replacement: {
+          match: /"UpsellButton",\(\)=>(\i)/,
+          replace: '"UpsellButton",()=>$self.settings.store.hideUpsellSmall?()=>null:$1'
+        }
+      },
+      {
+        find: "mode-select.search-placeholder",
+        all: true,
+        group: true,
         replacement: [
           {
-            match: /(?<=useCheckSubscriptionOffer\)\(\);).{0,30}return null;/,
-            replace: "return null;"
+            match: /(?<=useCheckSubscriptionOffer\)\(\);)(.{0,30}return null;)/,
+            replace: "if($self.settings.store.hideModelUpsell)return null;$1"
           },
           {
-            match: /upgradeRequiredModes:(\i)\}=(\i)\(\)/,
-            replace: "upgradeRequiredModes:$1}=function(){let r=$2();r.upgradeRequiredModes=[];return r}()"
+            match: /(\i)(\.map\(\i=>\(0,\i\.jsx\).{0,60}"text-secondary opacity-75)/,
+            replace: "($self.settings.store.hideModelUpsell?[]:$1)$2"
           }
         ]
       }
@@ -6136,6 +6509,14 @@ ${sourceUrl}`;
         replacement: {
           match: /"PressureObserver"in window/,
           replace: "false"
+        }
+      },
+      {
+        find: "NO_I18NEXT_INSTANCE",
+        all: true,
+        replacement: {
+          match: /console\.warn\(\.\.\.\i\)/,
+          replace: "void 0"
         }
       }
     ]
@@ -6207,7 +6588,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings7 = definePluginSettings({
+  var settings8 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -6232,19 +6613,19 @@ ${sourceUrl}`;
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings7,
+    settings: settings8,
     _renderTimestamp(response) {
       try {
         if (!response?.createTime)
           return null;
-        if (settings7.store.hideOwnMessages && response.sender === "human")
+        if (settings8.store.hideOwnMessages && response.sender === "human")
           return null;
         return /* @__PURE__ */ React.createElement(Text, {
           as: "span",
           size: "xs",
           color: "muted",
           className: "void-timestamp"
-        }, formatTimestamp(response.createTime, settings7.store.showDate));
+        }, formatTimestamp(response.createTime, settings8.store.showDate));
       } catch {
         return null;
       }
@@ -6290,6 +6671,191 @@ ${sourceUrl}`;
     }
   });
 
+  // void-css:D:/Projects/Void/src/plugins/queryTracker/styles.css
+  registerStyle("queryTracker", `.void-query-tracker-chip-wrapper {
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 0.375rem;
+}
+`);
+
+  // src/plugins/queryTracker/index.tsx
+  var cl15 = classNameFactory("void-query-tracker-");
+  var logger16 = new Logger("QueryTracker");
+  var STORAGE_KEY3 = "void-query-tracker";
+  var REFETCH_COOLDOWN = 5 * 60000;
+  var trackedModels = {};
+  var lastFetchTime = 0;
+  var store4 = createExternalStore();
+  function formatWindow(seconds) {
+    const hours = seconds / 3600;
+    if (hours >= 1)
+      return `${hours}h`;
+    return `${Math.round(seconds / 60)}m`;
+  }
+  function getEffectiveQueries(quota) {
+    if (quota.totalTokens && quota.highEffortQueries)
+      return quota.highEffortQueries;
+    return quota.totalQueries;
+  }
+  function parseQuota(res) {
+    return {
+      totalQueries: res.totalQueries,
+      totalTokens: res.totalTokens,
+      windowSizeSeconds: res.windowSizeSeconds,
+      lowEffortQueries: res.lowEffortRateLimits && res.totalTokens ? Math.floor(res.totalTokens / res.lowEffortRateLimits.cost) : undefined,
+      highEffortQueries: res.highEffortRateLimits && res.totalTokens ? Math.floor(res.totalTokens / res.highEffortRateLimits.cost) : undefined
+    };
+  }
+  async function fetchRateLimit(modelName, requestKind = "DEFAULT") {
+    try {
+      return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName, requestKind } });
+    } catch (e) {
+      logger16.warn("Failed to fetch rate limit for", modelName, e);
+      return null;
+    }
+  }
+  function loadPreviousSnapshot() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY3);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+  function saveSnapshot(snapshot) {
+    try {
+      localStorage.setItem(STORAGE_KEY3, JSON.stringify(snapshot));
+    } catch (e) {
+      logger16.warn("Failed to save snapshot:", e);
+    }
+  }
+  function diffSnapshots(prev, curr) {
+    for (const id of Object.keys(curr)) {
+      if (!prev[id]) {
+        Toaster.toast.info(`New model: ${curr[id].model.name}`);
+        continue;
+      }
+      const pq = prev[id].quota;
+      const cq = curr[id].quota;
+      if (!pq || !cq)
+        continue;
+      const pEff = getEffectiveQueries(pq);
+      const cEff = getEffectiveQueries(cq);
+      if (pEff !== cEff || pq.windowSizeSeconds !== cq.windowSizeSeconds) {
+        Toaster.toast.info(`${curr[id].model.name} quota: ${pEff}/${formatWindow(pq.windowSizeSeconds)} → ${cEff}/${formatWindow(cq.windowSizeSeconds)}`);
+      }
+    }
+    for (const id of Object.keys(prev)) {
+      if (!curr[id])
+        Toaster.toast.info(`Model removed: ${prev[id].model.name}`);
+    }
+  }
+  async function fetchAllModels() {
+    const now = Date.now();
+    if (now - lastFetchTime < REFETCH_COOLDOWN)
+      return;
+    lastFetchTime = now;
+    try {
+      const res = await ApiClients.modelsApi.modelsGetModels({ body: { locale: "en" } });
+      const allModels = [...res.models ?? [], ...res.unavailableModels ?? []];
+      const prev = loadPreviousSnapshot();
+      const next = {};
+      const quotas = await Promise.all(allModels.map((m) => fetchRateLimit(m.modelId)));
+      for (let i = 0;i < allModels.length; i++) {
+        const m = allModels[i];
+        next[m.modelId] = {
+          model: {
+            modelId: m.modelId,
+            name: m.name ?? m.modelId,
+            description: m.description,
+            modelMode: m.modelMode,
+            promptingBackend: m.promptingBackend,
+            tags: m.tags
+          },
+          quota: quotas[i] ? parseQuota(quotas[i]) : null
+        };
+      }
+      if (Object.keys(prev).length > 0)
+        diffSnapshots(prev, next);
+      trackedModels = next;
+      saveSnapshot(next);
+      store4.notify();
+    } catch (e) {
+      logger16.error("Failed to fetch models:", e);
+    }
+  }
+  function onVisibilityChange() {
+    if (document.visibilityState === "visible")
+      fetchAllModels();
+  }
+  var MODE_TO_CONFIG = {
+    fast: "MODEL_MODE_FAST",
+    expert: "MODEL_MODE_EXPERT",
+    heavy: "MODEL_MODE_HEAVY",
+    auto: "MODEL_MODE_AUTO",
+    "grok-4-mini-thinking": "MODEL_MODE_GROK_4_MINI_THINKING",
+    "grok-4-1": "MODEL_MODE_GROK_4_1",
+    "grok-4-1-thinking": "MODEL_MODE_GROK_4_1_THINKING",
+    "grok-4-1-nightly": "MODEL_MODE_GROK_4_1_NIGHTLY",
+    "grok-420": "MODEL_MODE_GROK_420"
+  };
+  function resolveTracked(id) {
+    const configMode = MODE_TO_CONFIG[id];
+    if (configMode)
+      return Object.values(trackedModels).find((t) => t.model.modelMode === configMode);
+    return trackedModels[id] ?? Object.values(trackedModels).find((t) => t.model.modelId === id);
+  }
+  function QuotaChip({ modelId }) {
+    useExternalStore(store4);
+    const tracked = resolveTracked(modelId);
+    if (!tracked?.quota)
+      return null;
+    if (tracked.model.modelMode === "MODEL_MODE_AUTO")
+      return null;
+    const eff = getEffectiveQueries(tracked.quota);
+    if (!eff)
+      return null;
+    return /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl15("chip-wrapper")
+    }, /* @__PURE__ */ React.createElement(Chip, null, eff, "/", formatWindow(tracked.quota.windowSizeSeconds)))), /* @__PURE__ */ React.createElement(TooltipContent, null, /* @__PURE__ */ React.createElement("div", null, eff, " queries / ", formatWindow(tracked.quota.windowSizeSeconds)), !!tracked.quota.totalTokens && /* @__PURE__ */ React.createElement("div", null, "Token budget: ", tracked.quota.totalTokens), !!tracked.quota.lowEffortQueries && /* @__PURE__ */ React.createElement("div", null, "Fast: ", tracked.quota.lowEffortQueries, " queries"), !!tracked.quota.highEffortQueries && /* @__PURE__ */ React.createElement("div", null, "Expert: ", tracked.quota.highEffortQueries, " queries")));
+  }
+  var queryTracker_default = definePlugin({
+    name: "QueryTracker",
+    description: "Show query quotas in the model selector and notify on changes.",
+    authors: [Devs.Prism],
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      fetchAllModels();
+      document.addEventListener("visibilitychange", onVisibilityChange);
+    },
+    stop() {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      trackedModels = {};
+      lastFetchTime = 0;
+    },
+    _renderQuotaChip: ErrorBoundary.wrap(QuotaChip),
+    patches: [
+      {
+        find: "model-mode-select-upsell",
+        replacement: {
+          match: /label:(\i)\.prettyModeName/,
+          replace: "label:[$1.prettyModeName,$self._renderQuotaChip({modelId:$1.mode})]"
+        }
+      },
+      {
+        find: "mode-select.search-placeholder",
+        all: true,
+        replacement: {
+          match: /"font-semibold text-sm",children:null!=\((\i)=(\i)\.title\)\?\1:""\}/,
+          replace: '"font-semibold text-sm",children:[null!=($1=$2.title)?$1:"",$self._renderQuotaChip({modelId:$2.id})]}'
+        }
+      }
+    ]
+  });
+
   // src/plugins/starry/index.ts
   var starry_default = definePlugin({
     name: "Starry",
@@ -6315,7 +6881,7 @@ ${sourceUrl}`;
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [queryTracker_default.name]: queryTracker_default, [starry_default.name]: starry_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -6456,7 +7022,7 @@ ${sourceUrl}`;
   });
 
   // src/Void.ts
-  var logger16 = new Logger("TurbopackPatcher", "#e78284");
+  var logger17 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
@@ -6491,7 +7057,7 @@ ${sourceUrl}`;
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger16.info("All previously failed plugins started after late module load");
+          logger17.info("All previously failed plugins started after late module load");
         }
       }, 200);
     };
@@ -6506,7 +7072,7 @@ ${sourceUrl}`;
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger16.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger17.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -6519,7 +7085,7 @@ ${sourceUrl}`;
       blacklistBadModules();
       _resolveReady();
       startAllPlugins("TurbopackReady" /* TurbopackReady */);
-      logger16.info(`${getModuleCache().size} modules loaded, ready`);
+      logger17.info(`${getModuleCache().size} modules loaded, ready`);
       retryFailedPlugins();
       deferOrphanReport();
       checkForUpdates();
