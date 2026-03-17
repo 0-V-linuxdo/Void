@@ -64,3 +64,28 @@
 .group\/media-post-masonry-card:hover .void-imagine-card-btn {
     opacity: 1;
 }
+
+.void-imagine-card-btn-danger:hover {
+    background: rgb(220 38 38 / 60%) !important;
+}
+
+.void-imagine-action-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.void-imagine-select-marker {
+    display: none;
+}
+
+.void-imagine-card-selected::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 3px solid hsl(217deg 91% 60%);
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 20;
+}
