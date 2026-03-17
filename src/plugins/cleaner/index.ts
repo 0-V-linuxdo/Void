@@ -65,6 +65,14 @@ export default definePlugin({
                 replace: '"UpsellSuperGrokSmall",()=>$self.settings.store.hideUpsellSmall?()=>null:$1',
             },
         },
+        // replaces upgrade/try free button (imagine page, sidebar, new chat)
+        {
+            find: '"UpsellButton",()=>',
+            replacement: {
+                match: /"UpsellButton",\(\)=>(\i)/,
+                replace: '"UpsellButton",()=>$self.settings.store.hideUpsellSmall?()=>null:$1',
+            },
+        },
         // hides upsell card and locked modes in the mode selector
         {
             find: "mode-select.search-placeholder",
