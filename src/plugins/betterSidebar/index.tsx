@@ -98,10 +98,17 @@ export default definePlugin({
     patches: [
         {
             find: "AvatarDropdownMenu,{}),",
-            replacement: {
-                match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{\}\)/,
-                replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu})",
-            },
+            group: true,
+            replacement: [
+                {
+                    match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{\}\)/,
+                    replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu})",
+                },
+                {
+                    match: /className:"min-w-0 flex-1",children:\(0,\i\.jsx\)\(\i,\{\}\)\},"sidebar-footer-details"/,
+                    replace: 'className:"hidden",children:null},"sidebar-footer-details"',
+                },
+            ],
         },
         {
             find: "useSidebar must be used within a SidebarProvider",
