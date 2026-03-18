@@ -29,7 +29,7 @@ export { classes, classNameFactory, disableStyle, enableStyle, registerStyle } f
 export { isNonNullish, isObject, isTruthy } from "@utils/guards";
 export { makeLazy, proxyLazy } from "@utils/lazy";
 export { Logger } from "@utils/Logger";
-export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, fetchExternal, formatCountdown, formatDuration, mergeDefaults, onlyOnce, sanitizeFilename, sleep } from "@utils/misc";
+export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, fetchExternal, formatCountdown, formatDuration, mergeDefaults, onlyOnce, sanitizeFilename, sendBrowserNotification, sleep } from "@utils/misc";
 export { escapeRegExp, humanizeKey, pluralize } from "@utils/text";
 export { default as definePlugin, OptionType, StartAt } from "@utils/types";
 

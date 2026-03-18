@@ -133,3 +133,11 @@ export function errorMessage(err: any): string {
 export function sanitizeFilename(title: string, fallback = "file"): string {
     return title.replace(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replace(/\s+/g, "-") || fallback;
 }
+
+export function sendBrowserNotification(title: string, body: string, icon = "/favicon.ico"): void {
+    if (Notification.permission === "granted") {
+        new Notification(title, { body, icon });
+    } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(p => { if (p === "granted") new Notification(title, { body, icon }); });
+    }
+}
