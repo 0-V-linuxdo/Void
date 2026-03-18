@@ -230,8 +230,8 @@ export interface ResponseStoreModule {
     buildToolUsageAndTraceFromSteps: () => any;
     /** Create an optimistic response object before the server responds. */
     createOptimisticResponse: (params: any) => GrokResponse;
-    /** Check if a response is in a thinking/reasoning state. */
-    isThinkingOrReasoning: (response: GrokResponse) => boolean;
+    /** Create a streaming response object for real-time updates. */
+    createStreamingResponse: (params: any) => GrokResponse;
     /** Handle a soft stop event during streaming. */
     maybeHandleSoftStop: (a: any, b: any, c: any) => void;
     /** Process a chunk of response data during streaming. */

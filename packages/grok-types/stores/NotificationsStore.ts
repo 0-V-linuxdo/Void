@@ -49,6 +49,8 @@ export interface NotificationsStoreState {
     listNextPageToken: string;
     /** Whether the user has been exposed to the notifications feature. */
     userExposedToNotifications: boolean;
+    /** Current team ID for team-scoped notifications. */
+    currentTeamId: string | null;
 
     /** Fetch the first page of notifications from the API. */
     loadFirstPage: () => Promise<void>;

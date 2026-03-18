@@ -10,8 +10,6 @@ export interface CodePageStoreState {
     sandboxSessionId: string | undefined;
     /** Git metadata for the current sandbox session. */
     gitMetadata: any;
-    /** Pending user messages keyed by session ID. */
-    pendingUserMessageBySessionId: Record<string, string>;
     /** Saved prompts keyed by session ID. */
     savedPromptBySessionId: Record<string, string>;
     /** Whether the side panel (files/edits) is open. */
@@ -50,10 +48,12 @@ export interface CodePageStoreState {
     debugCurrentSessionId: string | undefined;
     /** Debug panel's currently selected model ID. */
     debugCurrentModelId: string | undefined;
+    /** Debug panel's active tab. */
+    debugPanelTab: string;
+    /** Debug panel's active store sub-tab. */
+    debugPanelStoreSubTab: string;
 
     reset: () => void;
-    setPendingUserMessage: (sessionId: string, message: string) => void;
-    removePendingUserMessage: (sessionId: string) => void;
     setSavedPrompt: (sessionId: string, prompt: string) => void;
     clearSavedPrompt: (sessionId: string) => void;
     getSavedPrompt: (sessionId: string) => string | undefined;
@@ -82,6 +82,8 @@ export interface CodePageStoreState {
     upsertPendingWorktreeCreation: (sessionId: string, creation: any) => void;
     removePendingWorktreeCreation: (sessionId: string) => void;
     setDebugCurrentSession: (sessionId: string | undefined, modelId: string | undefined) => void;
+    setDebugPanelTab: (tab: string) => void;
+    setDebugPanelStoreSubTab: (tab: string) => void;
     toggleShowAdvanced: () => void;
     toggleLocalConfigDialog: () => void;
 }

@@ -1,3 +1,4 @@
+import type { RefinementLevel } from "../enums/dictation";
 import type { ZustandStore } from "../zustand";
 
 /** Dictation recording lifecycle status. */
@@ -39,7 +40,11 @@ export interface DictationStoreState {
     session: DictationSession | null;
     /** Callback invoked with transcribed text on completion, or null. */
     onTranscript: ((text: string) => void) | null;
+    /** Current refinement level for speech processing. */
+    refinementLevel: RefinementLevel;
 
+    /** Set the refinement level for speech processing. */
+    setRefinementLevel: (level: RefinementLevel) => void;
     /** Start a voice recording session with a transcript callback. */
     startRecording: (onTranscript: (text: string) => void) => void;
     /** Start the waveform visualizer for the given audio stream and session. */
@@ -56,4 +61,6 @@ export interface DictationStoreState {
 export interface DictationStoreModule {
     /** Zustand store hook for dictation/voice recording. */
     useDictationStore: ZustandStore<DictationStoreState>;
+    /** Available refinement level values. */
+    REFINEMENT_LEVELS: RefinementLevel[];
 }

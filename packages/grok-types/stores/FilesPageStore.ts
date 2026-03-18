@@ -32,14 +32,6 @@ export interface FilesPageLoadOptions {
 	search?: string;
 }
 
-/** Artifact selection event data from the chat panel. */
-export interface ArtifactSelectParams {
-	id: string;
-	versionId: string;
-	content?: string;
-	incomplete?: boolean;
-}
-
 /**
  * Zustand state for the files page, managing asset listing, filtering,
  * content editing, and file CRUD operations. Built on createImmerStore.
@@ -118,9 +110,6 @@ export interface FilesPageStoreState {
 	shareAsset: (assetId: string) => Promise<any>;
 	/** Clone an asset and return the clone response. */
 	cloneAsset: (assetId: string) => Promise<any>;
-	/** Handle artifact selection from the chat panel. */
-	handleArtifactSelect: (artifact: ArtifactSelectParams) => void;
-
 	/** Internal: debounced setter for the search query. */
 	_setQueryDebounced: () => void;
 	/** Internal: insert or update a single asset in the cache. */
