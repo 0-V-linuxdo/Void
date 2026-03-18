@@ -48,8 +48,6 @@ export function addPatch(newPatch: Omit<Patch, "plugin">, pluginName: string) {
         canonicalizeReplacement(replacement, pluginPath);
     }
 
-    patch.replacement = patch.replacement.filter(({ predicate }) => !predicate || predicate());
-
     patches.push(patch);
 }
 
@@ -97,6 +95,18 @@ function resolveStoreHook(storeName: string): { subscribe: (...args: any[]) => a
     return null;
 }
 
+function ensureMethodsBound(plugin: Plugin) {
+    for (const key of Object.keys(plugin)) {
+        if (key === "start" || key === "stop") continue;
+        const val = (plugin as any)[key];
+        if (typeof val === "function" && !val.$$voidBound) {
+            const bound = val.bind(plugin);
+            bound.$$voidBound = true;
+            (plugin as any)[key] = bound;
+        }
+    }
+}
+
 export function startPlugin(plugin: Plugin, silent = false): boolean {
     if (plugin.started) return true;
 
@@ -105,6 +115,8 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
             logger.error(`Failed to start dependencies for ${plugin.name}`);
             return false;
         }
+
+        ensureMethodsBound(plugin);
 
         if (plugin.managedStyle) enableStyle(plugin.managedStyle);
 
@@ -190,6 +202,12 @@ export function stopPlugin(plugin: Plugin): boolean {
     if (!plugin.started) return true;
 
     try {
+        plugin.stop?.();
+    } catch (e) {
+        logger.error(`Error in ${plugin.name}.stop():`, e);
+    }
+
+    try {
         const unsubs = pluginUnsubscribers.get(plugin.name);
         if (unsubs) {
             for (const unsub of unsubs) unsub();
@@ -212,7 +230,6 @@ export function stopPlugin(plugin: Plugin): boolean {
             }
         }
 
-        plugin.stop?.();
         plugin.started = false;
         return true;
     } catch (e) {
@@ -294,15 +311,7 @@ export function initPluginManager() {
         if (!isPluginEnabled(name)) continue;
         const plugin = plugins[name];
 
-        for (const key of Object.keys(plugin)) {
-            if (key === "start" || key === "stop") continue;
-            const val = (plugin as any)[key];
-            if (typeof val === "function" && !val.$$voidBound) {
-                const bound = val.bind(plugin);
-                bound.$$voidBound = true;
-                (plugin as any)[key] = bound;
-            }
-        }
+        ensureMethodsBound(plugin);
 
         if (plugin.patches) {
             for (const patch of plugin.patches) addPatch(patch, name);
