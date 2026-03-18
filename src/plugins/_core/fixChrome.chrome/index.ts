@@ -5,6 +5,7 @@
  */
 
 import { Devs } from "@utils/constants";
+import { registerStyle } from "@utils/css";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
@@ -12,15 +13,12 @@ export default definePlugin({
     description: "Fixes Chromium-specific performance issues like backdrop blur lag.",
     authors: [Devs.Prism],
     required: true,
+    managedStyle: "void-fix-chrome",
 
-    patches: [
-        {
-            find: "bg-overlay backdrop-blur-[2px]",
-            all: true,
-            replacement: {
-                match: /backdrop-blur-\[2px\] /,
-                replace: " ",
-            },
-        },
-    ],
+    start() {
+        registerStyle("void-fix-chrome", `[class*="backdrop-blur"] {
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+        }`);
+    },
 });
