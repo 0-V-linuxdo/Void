@@ -22,7 +22,8 @@
         "lint:styles": "stylelint \"src/**/*.css\"",
         "lint:styles:fix": "stylelint \"src/**/*.css\" --fix",
         "tsc": "tsc --noEmit",
-        "mcp": "bun run src/plugins/mcp.dev/server.ts"
+        "mcp": "bun run src/plugins/mcp.dev/server.ts",
+        "reporter": "bun run reporter.ts"
     },
     "devDependencies": {
         "@stylistic/eslint-plugin": "latest",
