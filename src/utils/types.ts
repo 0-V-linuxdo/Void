@@ -25,6 +25,7 @@ export interface Patch {
     noWarn?: boolean;
     group?: boolean;
     predicate?(): boolean;
+    validateOnly?: boolean;
 }
 
 export interface Plugin extends PluginDef {

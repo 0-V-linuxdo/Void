@@ -236,6 +236,22 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
         if (!findMatches) continue;
 
         const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
+
+        if (patch.validateOnly) {
+            for (const replacement of replacements) {
+                if (replacement.predicate && !replacement.predicate()) continue;
+                const { match } = replacement;
+                const matches = match instanceof RegExp ? match.test(originalCode) : originalCode.includes(match as string);
+                if (!matches && !patch.noWarn && !replacement.noWarn) {
+                    const anchor = extractAnchor(match);
+                    const snippet = anchor ? codeSnippetAround(originalCode, anchor) : "";
+                    logger.warn(`[validate] Patch by ${patch.plugin} would have no effect: ${String(match)}${snippet ? `\nNear: …${snippet}…` : ""}`);
+                }
+            }
+            if (!patch.all) patches.splice(i--, 1);
+            continue;
+        }
+
         const previousCode = code;
         let allSucceeded = true;
         let groupApplied = 0;

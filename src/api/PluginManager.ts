@@ -308,13 +308,16 @@ export function initPluginManager() {
     }
 
     for (const name in plugins) {
-        if (!isPluginEnabled(name)) continue;
+        const enabled = isPluginEnabled(name);
         const plugin = plugins[name];
 
-        ensureMethodsBound(plugin);
+        if (enabled) ensureMethodsBound(plugin);
 
         if (plugin.patches) {
-            for (const patch of plugin.patches) addPatch(patch, name);
+            for (const patch of plugin.patches) {
+                if (enabled) addPatch(patch, name);
+                else if (IS_DEV) addPatch({ ...patch, validateOnly: true }, name);
+            }
         }
     }
 
