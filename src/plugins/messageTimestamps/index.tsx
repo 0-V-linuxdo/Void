@@ -58,9 +58,10 @@ export default definePlugin({
     patches: [
         {
             find: 'displayName="ResponseFamily"',
+            all: true,
             replacement: {
-                match: /(\i)\.parentQuotedText(.{0,10})\(0,(\i)\.jsx\)\((\i)\.MessageBubble/,
-                replace: "$1.parentQuotedText$2$self._renderTimestamp($1),(0,$3.jsx)($4.MessageBubble",
+                match: /:null,\(0,(\i)\.jsx\)\((\i)\.MessageBubble,\{isUser:(\i),isIncognito:(\i),children:!(\i)&&(\i)\?\(0,\1\.jsx\)\((\i)\.Editor,\{initialMessage:(\i)\./,
+                replace: ":null,$self._renderTimestamp($8),(0,$1.jsx)($2.MessageBubble,{isUser:$3,isIncognito:$4,children:!$5&&$6?(0,$1.jsx)($7.Editor,{initialMessage:$8.",
             },
         },
     ],
