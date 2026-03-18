@@ -315,16 +315,21 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
 
     if (patchedBy.size) {
         const plugins = [...patchedBy].join(", ");
-        const patchedFactory = compileFactory(
-            code,
-            `// Turbopack Module ${moduleId} - Patched by ${plugins}`,
-            `//# sourceURL=file:///TurbopackModule${moduleId}`,
-        ) as PatchedModuleFactory;
-        patchedFactory[SYM_ORIGINAL] = factory;
-        patchedFactory[SYM_PATCHED] = true;
-        patchedFactory[SYM_PATCHED_CODE] = code;
-        patchedFactory[SYM_PATCHED_BY] = [...patchedBy];
-        return patchedFactory;
+        try {
+            const patchedFactory = compileFactory(
+                code,
+                `// Turbopack Module ${moduleId} - Patched by ${plugins}`,
+                `//# sourceURL=file:///TurbopackModule${moduleId}`,
+            ) as PatchedModuleFactory;
+            patchedFactory[SYM_ORIGINAL] = factory;
+            patchedFactory[SYM_PATCHED] = true;
+            patchedFactory[SYM_PATCHED_CODE] = code;
+            patchedFactory[SYM_PATCHED_BY] = [...patchedBy];
+            return patchedFactory;
+        } catch (err) {
+            logger.error(`Failed to compile patched module ${moduleId} (${plugins}), using original:`, err);
+            patchStats.errors++;
+        }
     }
 
     return factory as PatchedModuleFactory;
@@ -370,6 +375,9 @@ function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
     return wrapped;
 }
 
+let chunksWithFactories = 0;
+let chunksWithoutFactories = 0;
+
 function patchChunkEntry(entry: any[]): any[] {
     let patchedEntry: any[] | null = null;
     const wrappedInChunk = new Map<ModuleFactory, ModuleFactory>();
@@ -391,6 +399,15 @@ function patchChunkEntry(entry: any[]): any[] {
             patchedEntry[i] = wrapped;
         }
     }
+
+    if (entry.length > 2) {
+        if (wrappedInChunk.size) chunksWithFactories++;
+        else chunksWithoutFactories++;
+
+        if (IS_DEV && !chunksWithFactories && chunksWithoutFactories >= 5)
+            logger.warn("No [id, factory] pairs found in first chunks — Turbopack format may have changed");
+    }
+
     return patchedEntry ?? entry;
 }
 
@@ -401,16 +418,28 @@ function handleChunkPush(...args: any[]) {
     return originalPush!(...args);
 }
 
+function isFactoryPending(patch: Patch): boolean {
+    if (!runtimeFactoryRegistry) return false;
+    const find = Array.isArray(patch.find) ? patch.find : [patch.find];
+    for (const [, factory] of runtimeFactoryRegistry) {
+        if (matchesAllPatterns(String(factory), find)) return true;
+    }
+    return false;
+}
+
 export function patchReport(): PatchReport {
+    const unmatched = patches.filter(p => !p.all);
     return {
         stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] },
         results: patchResults,
-        orphaned: patches.filter(p => !p.all).map(p => ({ plugin: p.plugin, find: String(p.find) })),
+        orphaned: unmatched.filter(p => !isFactoryPending(p)).map(p => ({ plugin: p.plugin, find: String(p.find) })),
+        pending: unmatched.filter(p => isFactoryPending(p)).map(p => ({ plugin: p.plugin, find: String(p.find) })),
     };
 }
 
 export function reportOrphanedPatches(): void {
-    const orphaned = patches.filter(p => !p.all);
+    const unmatched = patches.filter(p => !p.all);
+    const orphaned = unmatched.filter(p => !isFactoryPending(p));
     const warnOrphaned = orphaned.filter(p => !p.noWarn);
     if (warnOrphaned.length)
         logger.warn(
@@ -432,7 +461,6 @@ export function reportOrphanedPatches(): void {
         for (const [plugin, moduleId, match, time] of slow) logger.warn(`Slow patch: ${plugin} on ${moduleId} took ${time.toFixed(2)}ms (${String(match)})`);
     }
 
-    logger.info(`Patches: ${patchStats.applied} applied, ${patchStats.noEffect} no-effect, ${patchStats.errors} errors, ${patchStats.runtimeFallbacks} fallbacks, ${orphaned.length} orphaned`);
 }
 
 function scanCache(cache: Record<number, TurbopackModule>): number {
@@ -478,6 +506,18 @@ function captureFactoryRegistry(): Map<number, ModuleFactory> | null {
     }
 
     (captured as Map<number, any> | null)?.delete(FACTORY_PROBE_ID);
+
+    if (captured) {
+        let valid = 0;
+        for (const [k, v] of captured as Map<number, any>) {
+            if (typeof k === "number" && typeof v === "function" && ++valid >= 3) break;
+        }
+        if (valid < 3) {
+            logger.warn("Captured Map doesn't look like a factory registry, discarding");
+            return null;
+        }
+    }
+
     return captured as Map<number, ModuleFactory> | null;
 }
 

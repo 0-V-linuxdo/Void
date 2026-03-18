@@ -469,6 +469,10 @@ export interface MediaStoreState {
 	_runGenerateVideoForImage: (params: any) => Promise<any>;
 	/** Fetch image edits (internal, single attempt). */
 	_fetchGenerateImageEdits: (params: any) => Promise<any>;
+	/** Clear rate limit error state. */
+	clearRateLimitErrors: () => void;
+	/** Redo a pipeline from an existing post. */
+	pipelineRedoFromPost: (post: any) => Promise<any>;
 }
 
 /**
@@ -613,6 +617,28 @@ export interface ScrollStoreState {
 	reset: () => void;
 }
 
+/** Zustand state for pipeline execution (imagine templates). */
+export interface PipelineExecutionStoreState {
+	stage: import("../enums/media").PipelineExecutionStage;
+	templateId: string | null;
+	templateName: string | null;
+	templateInputs: Record<string, any> | null;
+	inputUrls: string[];
+	progress: number;
+	steps: any[];
+	postId: string | null;
+	error: string | null;
+	_abortController: AbortController | null;
+
+	setTemplate: (templateId: string, templateName: string, inputs: Record<string, any>) => void;
+	run: (inputUrls: string[]) => Promise<void>;
+	runRedo: (post: any) => Promise<void>;
+	_processStream: (stream: any) => Promise<void>;
+	cancel: () => void;
+	reset: () => void;
+	_setError: (error: string | null) => void;
+}
+
 /** Module exports for the Media store. */
 export interface MediaStoreModule {
 	/** Zustand store hook for media state. */
@@ -631,12 +657,14 @@ export interface MediaStoreModule {
 	DEFAULT_RESOLUTION: VideoResolution;
 	/** Available resolution options (`["480p", "720p"]`). */
 	RESOLUTION_OPTIONS: VideoResolution[];
-	/** Maximum duration for video edits in seconds (`8`). */
-	VIDEO_EDIT_MAX_DURATION: number;
 	/** Maximum duration for video upscaling in seconds (`12`). */
 	VIDEO_UPSCALE_MAX_DURATION: number;
 	/** Normalize aspect ratio to max-1 scale. */
 	getNormalizedPercentages: (aspectRatio: [number, number]) => [number, number];
 	/** Noise image generator singleton. */
 	noiseMaker: any;
+	/** Zustand store hook for pipeline execution state. */
+	usePipelineExecutionStore: ZustandStore<PipelineExecutionStoreState>;
+	/** Initialize media store subscriptions. */
+	useMediaStoreInit: () => void;
 }

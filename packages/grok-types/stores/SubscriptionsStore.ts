@@ -14,6 +14,8 @@ export interface SubscriptionsStoreState {
     activeSubscriptions: GrokSubscription[];
     /** Highest-tier active subscription tier string, or undefined if free. */
     bestSubscription: SubscriptionTier | undefined;
+    /** Whether the user subscribes through Braintree. */
+    isBraintreeSubscriber: boolean;
 }
 
 /** Module exports for the Subscriptions store. */

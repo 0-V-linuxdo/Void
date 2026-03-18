@@ -54,12 +54,17 @@ handler.get = (target, p, receiver) => {
     throw new Error("proxyLazy: factory returned a primitive value");
 };
 
+const MAX_RETRIES = 50;
+
 export function makeLazy<T>(factory: () => T): () => T {
     let cache: T;
     let resolved = false;
+    let attempts = 0;
     return () => {
         if (!resolved) {
+            if (attempts >= MAX_RETRIES) return cache;
             cache = factory();
+            attempts++;
             if (cache != null) resolved = true;
         }
         return cache;

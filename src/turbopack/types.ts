@@ -156,4 +156,5 @@ export interface PatchReport {
     stats: Omit<PatchStats, "patchedModules"> & { patchedModules: number[] };
     results: PatchResult[];
     orphaned: Array<{ plugin: string; find: string }>;
+    pending: Array<{ plugin: string; find: string }>;
 }

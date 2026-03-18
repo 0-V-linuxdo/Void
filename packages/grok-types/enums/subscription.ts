@@ -92,3 +92,10 @@ export type SubscriptionUpdateStatus =
 	| "SUBSCRIPTION_UPDATE_STATUS_NOT_SUPPORTED"
 	| "SUBSCRIPTION_UPDATE_STATUS_NO_UPDATEABLE_SUBSCRIPTION"
 	| (string & {});
+
+/** Requested subscription tier for upgrade flows. */
+export type RequestedTier =
+    | "REQUESTED_TIER_INVALID"
+    | "REQUESTED_TIER_GROK_PRO"
+    | "REQUESTED_TIER_SUPER_GROK_PRO"
+    | (string & {});

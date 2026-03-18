@@ -37,8 +37,13 @@ export interface SourcesSelectorStoreState {
     setIsGmailSearchEnabled: (enabled: boolean) => void;
     /** Toggle Google Calendar search enabled. */
     setIsGoogleCalendarSearchEnabled: (enabled: boolean) => void;
+    /** Whether Outlook Calendar search is enabled. */
+    isOutlookCalendarSearchEnabled: boolean;
+
     /** Toggle Outlook search enabled. */
     setIsOutlookSearchEnabled: (enabled: boolean) => void;
+    /** Toggle Outlook Calendar search enabled. */
+    setIsOutlookCalendarSearchEnabled: (enabled: boolean) => void;
     /** Toggle a connector ID in the active set. */
     toggleActiveConnectorId: (id: string) => void;
     /** Replace the active connector IDs. */
@@ -57,4 +62,6 @@ export interface SourcesSelectorStoreState {
 export interface SourcesSelectorStoreModule {
     /** Zustand store hook for sources selector state. */
     useSourcesSelectorStore: ZustandStore<SourcesSelectorStoreState>;
+    /** Get persisted source preferences from storage. */
+    getPersistedSourcePreferences: () => Record<string, any>;
 }

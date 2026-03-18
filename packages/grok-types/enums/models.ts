@@ -71,4 +71,28 @@ export type PromptingBackend = "GIX" | "CHAT" | (string & {});
 export type ReasoningMode = "none" | "think" | "deepsearch" | "deepersearch" | "unknown" | (string & {});
 
 /** Request kind sent to the rate limits API, determines processing pipeline. */
-export type RequestKind = "DEFAULT" | "REASONING" | "DEEPSEARCH" | "DEEPERSEARCH" | (string & {});
+export type RequestKind = "DEFAULT" | "REASONING" | "DEEPSEARCH" | "DEEPERSEARCH" | "IMAGE_GENERATION" | "VIDEO_GENERATION" | (string & {});
+
+/** UI layout effort level from the API, controls response rendering mode. */
+export type UiLayoutEffort =
+    | "UNSPECIFIED"
+    | "LOW"
+    | "HIGH"
+    | "AUTO"
+    | (string & {});
+
+/** Reasoning UI layout variant from the API. */
+export type ReasoningUiLayout =
+    | "UNSPECIFIED"
+    | "UNIFIED"
+    | "SPLIT"
+    | "HEAVY"
+    | "FUNCTION_CALL"
+    | (string & {});
+
+/** Subscription tier gating for model modes. */
+export type ModeSubscriptionTier =
+    | "TIER_UNSPECIFIED"
+    | "TIER_SUPERGROK"
+    | "TIER_SUPERGROK_HEAVY"
+    | (string & {});

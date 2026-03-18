@@ -53,3 +53,17 @@ export type MediaPostActionType =
  * - `2` = unmounted, pending cleanup
  */
 export type GridPermitState = 0 | 1 | 2;
+
+/** Pipeline execution stage. */
+export type PipelineExecutionStage = "idle" | "running" | "complete" | (string & {});
+
+/** Pipeline step status from the API. */
+export type PipelineStepStatus =
+    | "PIPELINE_STEP_STATUS_PENDING"
+    | "PIPELINE_STEP_STATUS_RUNNING"
+    | "PIPELINE_STEP_STATUS_COMPLETED"
+    | "PIPELINE_STEP_STATUS_FAILED"
+    | (string & {});
+
+/** Image generation model identifier. */
+export type ImageModel = "aurora" | "flux" | "imagine" | (string & {});

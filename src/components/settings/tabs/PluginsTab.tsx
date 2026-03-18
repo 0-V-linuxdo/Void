@@ -6,6 +6,7 @@
 
 import "./PluginsTab.css";
 
+import { subscribe } from "@api/Events";
 import { isPluginEnabled, plugins } from "@api/PluginManager";
 import {
     Button,
@@ -69,6 +70,11 @@ export default function PluginsTab() {
         const pending = consumePendingPluginDialog();
         if (pending) setDialogName(pending);
     }, []);
+
+    useEffect(() => subscribe("reloadNeeded", () => {
+        changedPluginsRef.current.add("__settings__");
+        if (!dismissedRef.current) setShowReload(true);
+    }), []);
 
     const visibleUser = useMemo(() => {
         if (filter === "all") return userPlugins;

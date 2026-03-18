@@ -94,8 +94,8 @@ export interface RoutingStoreModule {
     formatUrl: (urlObject: { pathname?: string; query?: Record<string, any>; hash?: string }) => string;
     /** Convert a GrokRoute into a URL object relative to a base route. */
     routeToUrlObject: (route: GrokRoute, baseRoute: GrokRoute) => { pathname?: string; query?: Record<string, any>; hash?: string };
-    /** Project ID for the deep search workspace feature. */
-    DEEP_SEARCH_PROJECT_ID: string;
+    /** Parse a URL string into a GrokRoute. */
+    urlToRoute: (url: string) => GrokRoute;
     /** Valid tab identifiers for the workspace main page (e.g. "own", "shared", "examples"). */
     workspaceMainPageTabs: WorkspaceTab[];
 }
