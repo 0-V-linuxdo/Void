@@ -14,7 +14,7 @@ let container: HTMLElement | null = null;
 let pendingStyles: Array<[string, string]> = [];
 
 function getContainer(): HTMLElement | null {
-    if (container) return container;
+    if (container?.isConnected) return container;
     if (!document.head) return null;
 
     container = document.createElement("void-styles") as HTMLElement;

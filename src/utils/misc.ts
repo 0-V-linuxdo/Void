@@ -35,22 +35,25 @@ export async function copyToClipboard(text: string): Promise<void> {
 
 export function onlyOnce<T extends (...args: never[]) => any>(fn: T): T {
     let result: any;
-    let called = false;
+    let f: T | null = fn;
     return ((...args: any[]) => {
-        if (called) return result;
-        called = true;
-        result = fn(...(args as never[]));
+        if (!f) return result;
+        result = f(...(args as never[]));
+        f = null;
         return result;
     }) as unknown as T;
 }
 
-export function debounce<T extends (...args: never[]) => void>(fn: T, ms: number): T & { cancel(): void } {
+export function debounce<T extends (...args: never[]) => void>(fn: T, ms: number): T & { cancel(): void; flush(): void } {
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let lastArgs: any[] | undefined;
     const debounced = ((...args: any[]) => {
+        lastArgs = args;
         clearTimeout(timer);
-        timer = setTimeout(() => fn(...(args as never[])), ms);
-    }) as any as T & { cancel(): void };
-    debounced.cancel = () => clearTimeout(timer);
+        timer = setTimeout(() => { lastArgs = undefined; fn(...(args as never[])); }, ms);
+    }) as any as T & { cancel(): void; flush(): void };
+    debounced.cancel = () => { clearTimeout(timer); lastArgs = undefined; };
+    debounced.flush = () => { if (lastArgs) { clearTimeout(timer); const a = lastArgs; lastArgs = undefined; fn(...(a as never[])); } };
     return debounced;
 }
 
@@ -104,6 +107,7 @@ export function createExternalStore(): ExternalStore {
 const pad = (n: number) => String(n).padStart(2, "0");
 
 export function formatCountdown(totalSeconds: number): string {
+    if (totalSeconds <= 0) return "0:00";
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = totalSeconds % 60;
@@ -111,6 +115,7 @@ export function formatCountdown(totalSeconds: number): string {
 }
 
 export function formatDuration(totalSeconds: number): string {
+    if (totalSeconds <= 0) return "0m";
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     if (h > 0 && m > 0) return `${h}h ${m}m`;
@@ -126,5 +131,5 @@ export function errorMessage(err: any): string {
 }
 
 export function sanitizeFilename(title: string, fallback = "file"): string {
-    return title.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, "-") || fallback;
+    return title.replace(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replace(/\s+/g, "-") || fallback;
 }
