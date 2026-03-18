@@ -6,6 +6,7 @@
 
 import "./SettingField.css";
 
+import { dispatch } from "@api/Events";
 import { Settings } from "@api/Settings";
 import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Slider, Switch, Text } from "@components";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
@@ -31,6 +32,7 @@ function usePluginSetting(pluginName: string, id: string, setting: PluginSetting
             setValue(val);
             Settings.plugins[pluginName] = { ...Settings.plugins[pluginName], [id]: val };
             setting.onChange?.(val);
+            if ("restartNeeded" in setting && setting.restartNeeded) dispatch("reloadNeeded");
         },
         [id, pluginName, setting],
     );
