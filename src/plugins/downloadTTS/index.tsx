@@ -63,7 +63,7 @@ function DownloadButton() {
         >
             {loading
                 ? <Spinner size="xs" className="pointer-events-none" />
-                : <DownloadIcon size={20} strokeWidth={2.2} />}
+                : <DownloadIcon size={19} strokeWidth={2.5} />}
         </Button>
     );
 }
