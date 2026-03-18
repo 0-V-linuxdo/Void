@@ -15,6 +15,7 @@ import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
 import { FeatureStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { sendBrowserNotification } from "@utils/misc";
 import { useFiltered } from "@utils/react";
 import { humanizeKey, pluralize } from "@utils/text";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
@@ -28,15 +29,34 @@ interface PrivateSettings {
 }
 
 const settings = definePluginSettings({
-    notifyNewFlags: {
+    toastNotifications: {
         type: OptionType.BOOLEAN,
-        description: "Show a notification when new experiment flags are added.",
+        description: "Show a toast when experiment flags change.",
+        default: true,
+    },
+    browserNotifications: {
+        type: OptionType.BOOLEAN,
+        description: "Show a browser notification when experiment flags change.",
         default: true,
     },
 }).withPrivateSettings<PrivateSettings>();
 
 function getBooleanKeys(config: FeatureStoreState["config"]) {
     return Object.keys(config).filter(k => typeof config[k] === "boolean");
+}
+
+let lastConfigSnapshot: Record<string, boolean> = {};
+
+function notifyChanges(newFlags: string[], removedFlags: string[], flipped: string[]) {
+    const parts: string[] = [];
+    if (newFlags.length) parts.push(`${pluralize(newFlags.length, "new flag")} added`);
+    if (removedFlags.length) parts.push(`${pluralize(removedFlags.length, "flag")} removed`);
+    if (flipped.length) parts.push(`${pluralize(flipped.length, "flag")} changed`);
+    if (!parts.length) return;
+
+    const message = parts.join(", ");
+    if (settings.store.toastNotifications) showToast(message, ToastType.INFO);
+    if (settings.store.browserNotifications) sendBrowserNotification("Grok Experiments", message);
 }
 
 function syncKnownFlags(config: FeatureStoreState["config"]) {
@@ -58,21 +78,30 @@ function syncKnownFlags(config: FeatureStoreState["config"]) {
         }
     }
 
+    const removedFlags: string[] = [];
     const currentSet = new Set(booleanKeys);
     for (const key of Object.keys(known)) {
         if (!currentSet.has(key)) {
+            removedFlags.push(key);
             delete known[key];
             changed = true;
         }
     }
 
+    const flipped: string[] = [];
+    if (!firstRun && Object.keys(lastConfigSnapshot).length) {
+        for (const key of booleanKeys) {
+            if (key in lastConfigSnapshot && config[key] !== lastConfigSnapshot[key]) flipped.push(key);
+        }
+    }
+
+    lastConfigSnapshot = Object.fromEntries(booleanKeys.map(k => [k, !!config[k]]));
+
     if (changed) {
         settings.store.knownFlags = { ...known };
     }
 
-    if (newFlags.length && settings.store.notifyNewFlags) {
-        showToast(`${pluralize(newFlags.length, "new experiment flag")} added`, ToastType.INFO);
-    }
+    if (!firstRun) notifyChanges(newFlags, removedFlags, flipped);
 }
 
 function isNewFlag(key: string) {
@@ -221,6 +250,7 @@ export default definePlugin({
     startAt: StartAt.TurbopackReady,
 
     start() {
+        if (settings.store.browserNotifications && Notification.permission === "default") Notification.requestPermission();
         const state = FeatureStore.useFeatureStore.getState();
         if (state.status === "ready") syncKnownFlags(state.config);
     },

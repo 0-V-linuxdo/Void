@@ -6,22 +6,42 @@
 
 import "./styles.css";
 
+import { showToast, ToastType } from "@api/Notifications";
+import { definePluginSettings } from "@api/Settings";
 import { Chip } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import type { RateLimitResponse } from "@grok-types/common/RateLimit";
 import type { ModelConfigModelMode, RequestKind } from "@grok-types/enums";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@turbopack/common/components";
 import { React } from "@turbopack/common/react";
-import { ApiClients, Toaster } from "@turbopack/common/utils";
+import { ApiClients } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { createExternalStore } from "@utils/misc";
+import { createExternalStore, sendBrowserNotification } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
-import definePlugin, { StartAt } from "@utils/types";
+import definePlugin, { OptionType, StartAt } from "@utils/types";
 
 const cl = classNameFactory("void-query-tracker-");
 const logger = new Logger("QueryTracker");
+
+const settings = definePluginSettings({
+    toastNotifications: {
+        type: OptionType.BOOLEAN,
+        description: "Show a toast when model quotas or availability change.",
+        default: true,
+    },
+    browserNotifications: {
+        type: OptionType.BOOLEAN,
+        description: "Show a browser notification when model quotas or availability change.",
+        default: true,
+    },
+});
+
+function notify(message: string) {
+    if (settings.store.toastNotifications) showToast(message, ToastType.INFO);
+    if (settings.store.browserNotifications) sendBrowserNotification("Grok Query Tracker", message);
+}
 
 interface ModelSnapshot {
     modelId: string;
@@ -106,7 +126,7 @@ function saveSnapshot(snapshot: Record<string, TrackedModel>): void {
 function diffSnapshots(prev: Record<string, TrackedModel>, curr: Record<string, TrackedModel>): void {
     for (const id of Object.keys(curr)) {
         if (!prev[id]) {
-            Toaster.toast.info(`New model: ${curr[id].model.name}`);
+            notify(`New model: ${curr[id].model.name}`);
             continue;
         }
         const pq = prev[id].quota;
@@ -115,11 +135,11 @@ function diffSnapshots(prev: Record<string, TrackedModel>, curr: Record<string, 
         const pEff = getEffectiveQueries(pq);
         const cEff = getEffectiveQueries(cq);
         if (pEff !== cEff || pq.windowSizeSeconds !== cq.windowSizeSeconds) {
-            Toaster.toast.info(`${curr[id].model.name} quota: ${pEff}/${formatWindow(pq.windowSizeSeconds)} \u2192 ${cEff}/${formatWindow(cq.windowSizeSeconds)}`);
+            notify(`${curr[id].model.name} quota: ${pEff}/${formatWindow(pq.windowSizeSeconds)} \u2192 ${cEff}/${formatWindow(cq.windowSizeSeconds)}`);
         }
     }
     for (const id of Object.keys(prev)) {
-        if (!curr[id]) Toaster.toast.info(`Model removed: ${prev[id].model.name}`);
+        if (!curr[id]) notify(`Model removed: ${prev[id].model.name}`);
     }
 }
 
@@ -210,9 +230,11 @@ export default definePlugin({
     name: "QueryTracker",
     description: "Show query quotas in the model selector and notify on changes.",
     authors: [Devs.Prism],
+    settings,
     startAt: StartAt.TurbopackReady,
 
     start() {
+        if (settings.store.browserNotifications && Notification.permission === "default") Notification.requestPermission();
         fetchAllModels();
         document.addEventListener("visibilitychange", onVisibilityChange);
     },
