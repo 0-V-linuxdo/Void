@@ -6,7 +6,7 @@
 
 import { initPluginManager, isPluginEnabled, plugins, registerPlugin, startAllPlugins, startPlugin } from "@api/PluginManager";
 import { _resolveReady, blacklistBadModules, getModuleCache, onModuleLoad, patches, patchTurbopack, reportOrphanedPatches, rescanRuntimeModules } from "@turbopack/patchTurbopack";
-import { filters, waitFor } from "@turbopack/turbopack";
+import { filters, reportFailedFinders, waitFor } from "@turbopack/turbopack";
 import { Logger } from "@utils/Logger";
 import { onlyOnce } from "@utils/misc";
 import { type Plugin, StartAt } from "@utils/types";
@@ -52,6 +52,7 @@ function deferOrphanReport() {
     const timeout = setTimeout(() => {
         unsub();
         reportOrphanedPatches();
+        reportFailedFinders();
     }, ORPHAN_REPORT_DELAY_MS);
 }
 

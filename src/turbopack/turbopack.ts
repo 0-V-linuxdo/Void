@@ -21,6 +21,36 @@ const logger = new Logger("TurbopackFinder", "#a6d189");
 const fnSourceCache = new WeakMap<Function, string>();
 const zustandStoreCache = new Map<string, any>();
 
+interface FinderRecord {
+    type: string;
+    args: string[];
+    resolve: () => any;
+}
+
+const finderRegistry: FinderRecord[] | null = IS_DEV ? [] : null;
+
+function trackFinder(type: string, args: string[], resolve: () => any): void {
+    finderRegistry?.push({ type, args, resolve });
+}
+
+function isEmptyResult(value: any): boolean {
+    if (value == null) return true;
+    return typeof value === "object" && Object.keys(value).length === 0;
+}
+
+export function reportFailedFinders(): void {
+    if (!finderRegistry?.length) return;
+
+    const failed: string[] = [];
+    for (const record of finderRegistry) {
+        try {
+            if (isEmptyResult(record.resolve())) failed.push(`${record.type}(${record.args.map(a => JSON.stringify(a)).join(", ")})`);
+        } catch {}
+    }
+
+    if (failed.length) logger.warn(`${failed.length} finder(s) resolved to nothing:`, failed);
+}
+
 function getFnSource(fn: Function): string {
     let src = fnSourceCache.get(fn);
     if (src === undefined) {
@@ -156,6 +186,7 @@ export function findAll(filter: FilterFn): any[] {
 export function findLazy(filter: FilterFn): any {
     const cached = searchCache(filter);
     if (cached) return cached;
+    trackFinder("find", [String(filter)], () => searchCache(filter));
     return proxyLazy(() => searchCache(filter));
 }
 
@@ -164,7 +195,9 @@ export function findByProps(...props: string[]): any {
 }
 
 export function findByPropsLazy(...props: string[]): any {
-    return proxyLazy(() => findByProps(...props));
+    const resolve = () => findByProps(...props);
+    trackFinder("findByProps", props, resolve);
+    return proxyLazy(resolve);
 }
 
 export function findByCode(...code: (string | RegExp)[]): any {
@@ -172,7 +205,9 @@ export function findByCode(...code: (string | RegExp)[]): any {
 }
 
 export function findByCodeLazy(...code: (string | RegExp)[]): any {
-    return proxyLazy(() => findByCode(...code));
+    const resolve = () => findByCode(...code);
+    trackFinder("findByCode", code.map(String), resolve);
+    return proxyLazy(resolve);
 }
 
 export function findByDisplayName(name: string): any {
@@ -180,7 +215,9 @@ export function findByDisplayName(name: string): any {
 }
 
 export function findByDisplayNameLazy(name: string): any {
-    return proxyLazy(() => findByDisplayName(name));
+    const resolve = () => findByDisplayName(name);
+    trackFinder("findByDisplayName", [name], resolve);
+    return proxyLazy(resolve);
 }
 
 export function findComponentByCode(...code: (string | RegExp)[]): any {
@@ -188,7 +225,9 @@ export function findComponentByCode(...code: (string | RegExp)[]): any {
 }
 
 export function findComponentByCodeLazy(...code: (string | RegExp)[]): any {
-    return LazyComponent("findComponentByCode", () => findComponentByCode(...code));
+    const resolve = () => findComponentByCode(...code);
+    trackFinder("findComponentByCode", code.map(String), resolve);
+    return LazyComponent("findComponentByCode", resolve);
 }
 
 export function findExportedComponent(...props: string[]): any {
@@ -211,7 +250,9 @@ function scanExportedComponent(props: string[]): any {
 }
 
 export function findExportedComponentLazy(...props: string[]): any {
-    return LazyComponent(props[0], () => findExportedComponent(...props));
+    const resolve = () => findExportedComponent(...props);
+    trackFinder("findExportedComponent", props, resolve);
+    return LazyComponent(props[0], resolve);
 }
 
 function collectStores(): void {
@@ -249,7 +290,9 @@ export function findStore(name: string): any {
 }
 
 export function findStoreLazy(name: string): any {
-    return proxyLazy(() => findStore(name));
+    const resolve = () => findStore(name);
+    trackFinder("findStore", [name], resolve);
+    return proxyLazy(resolve);
 }
 
 export function getAllStores(): Map<string, any> {
@@ -264,7 +307,9 @@ export function findCssClasses(...classes: string[]): Record<string, string> {
 }
 
 export function findCssClassesLazy(...classes: string[]): Record<string, string> {
-    return proxyLazy(() => findCssClasses(...classes));
+    const resolve = () => findCssClasses(...classes);
+    trackFinder("findCssClasses", classes, resolve);
+    return proxyLazy(resolve);
 }
 
 export function mapMangledCssClasses<S extends string>(mod: Record<string, string>, classes: S[] | readonly S[]): Record<S, string> {
@@ -393,7 +438,9 @@ export function mapMangledModule<S extends string>(code: (string | RegExp)[], ma
 }
 
 export function mapMangledModuleLazy<S extends string>(code: (string | RegExp)[], mappers: Record<S, FilterFn>): Record<S, any> {
-    return proxyLazy(() => mapMangledModule(code, mappers));
+    const resolve = () => mapMangledModule(code, mappers);
+    trackFinder("mapMangledModule", code.map(String), resolve);
+    return proxyLazy(resolve);
 }
 
 const IDENT = "[A-Za-z_$][\\w$]*";

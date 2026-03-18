@@ -10,7 +10,6 @@ import type {
     CodePageStoreModule,
     CommandMenuStoreModule,
     ConversationStoreModule,
-    DevModelsStoreModule,
     DictationStoreModule,
     FeatureStoreModule,
     FilesPageStoreModule,
@@ -51,7 +50,6 @@ export const ChatPageStore: ChatPageStoreModule = findByPropsLazy("useChatPageSt
 export const CodePageStore: CodePageStoreModule = findByPropsLazy("useCodePageStore");
 export const CommandMenuStore: CommandMenuStoreModule = findByPropsLazy("useCommandMenuStore", "createSelection");
 export const ConversationStore: ConversationStoreModule = findByPropsLazy("useConversationStore", "createOptimisticConversation");
-export const DevModelsStore: DevModelsStoreModule = findByPropsLazy("useDevModelsStore", "DRAFT_MODEL_ID");
 export const DictationStore: DictationStoreModule = findByPropsLazy("useDictationStore");
 export const FeatureStore: FeatureStoreModule = findByPropsLazy("useFeatureStore");
 export const FilesPageStore: FilesPageStoreModule = findByPropsLazy("useFilesPageStore", "useAssetsList");
