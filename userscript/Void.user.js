@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.3.1
+// @version      0.4.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.3.1 — A modification for grok.com
+ * Void v0.4.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -56,6 +56,7 @@
     search: () => search,
     sanitizeFilename: () => sanitizeFilename,
     requireModule: () => requireModule,
+    reportFailedFinders: () => reportFailedFinders,
     removeTheme: () => removeTheme,
     removeChatBarButton: () => removeChatBarButton,
     registerStyle: () => registerStyle,
@@ -194,7 +195,6 @@
     FileStore: () => FileStore,
     FeatureStore: () => FeatureStore,
     DictationStore: () => DictationStore,
-    DevModelsStore: () => DevModelsStore,
     ConversationStore: () => ConversationStore,
     CommandMenuStore: () => CommandMenuStore,
     CodePageStore: () => CodePageStore,
@@ -249,12 +249,17 @@
       return Reflect.get(value, p, receiver);
     throw new Error("proxyLazy: factory returned a primitive value");
   };
+  var MAX_RETRIES = 50;
   function makeLazy(factory) {
     let cache;
     let resolved = false;
+    let attempts = 0;
     return () => {
       if (!resolved) {
+        if (attempts >= MAX_RETRIES)
+          return cache;
         cache = factory();
+        attempts++;
         if (cache != null)
           resolved = true;
       }
@@ -660,12 +665,17 @@ Near: …${snippet}…` : ""}`);
     }
     if (patchedBy.size) {
       const plugins = [...patchedBy].join(", ");
-      const patchedFactory = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
-      patchedFactory[SYM_ORIGINAL] = factory;
-      patchedFactory[SYM_PATCHED] = true;
-      patchedFactory[SYM_PATCHED_CODE] = code;
-      patchedFactory[SYM_PATCHED_BY] = [...patchedBy];
-      return patchedFactory;
+      try {
+        const patchedFactory = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
+        patchedFactory[SYM_ORIGINAL] = factory;
+        patchedFactory[SYM_PATCHED] = true;
+        patchedFactory[SYM_PATCHED_CODE] = code;
+        patchedFactory[SYM_PATCHED_BY] = [...patchedBy];
+        return patchedFactory;
+      } catch (err) {
+        logger.error(`Failed to compile patched module ${moduleId} (${plugins}), using original:`, err);
+        patchStats.errors++;
+      }
     }
     return factory;
   }
@@ -705,6 +715,8 @@ Near: …${snippet}…` : ""}`);
     }
     return wrapped;
   }
+  var chunksWithFactories = 0;
+  var chunksWithoutFactories = 0;
   function patchChunkEntry(entry) {
     let patchedEntry = null;
     const wrappedInChunk = new Map;
@@ -726,6 +738,14 @@ Near: …${snippet}…` : ""}`);
         patchedEntry[i] = wrapped;
       }
     }
+    if (entry.length > 2) {
+      if (wrappedInChunk.size)
+        chunksWithFactories++;
+      else
+        chunksWithoutFactories++;
+      if (false)
+        ;
+    }
     return patchedEntry ?? entry;
   }
   function handleChunkPush(...args) {
@@ -735,15 +755,28 @@ Near: …${snippet}…` : ""}`);
     }
     return originalPush(...args);
   }
+  function isFactoryPending(patch) {
+    if (!runtimeFactoryRegistry)
+      return false;
+    const find = Array.isArray(patch.find) ? patch.find : [patch.find];
+    for (const [, factory] of runtimeFactoryRegistry) {
+      if (matchesAllPatterns(String(factory), find))
+        return true;
+    }
+    return false;
+  }
   function patchReport() {
+    const unmatched = patches.filter((p) => !p.all);
     return {
       stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] },
       results: patchResults,
-      orphaned: patches.filter((p) => !p.all).map((p) => ({ plugin: p.plugin, find: String(p.find) }))
+      orphaned: unmatched.filter((p) => !isFactoryPending(p)).map((p) => ({ plugin: p.plugin, find: String(p.find) })),
+      pending: unmatched.filter((p) => isFactoryPending(p)).map((p) => ({ plugin: p.plugin, find: String(p.find) }))
     };
   }
   function reportOrphanedPatches() {
-    const orphaned = patches.filter((p) => !p.all);
+    const unmatched = patches.filter((p) => !p.all);
+    const orphaned = unmatched.filter((p) => !isFactoryPending(p));
     const warnOrphaned = orphaned.filter((p) => !p.noWarn);
     if (warnOrphaned.length)
       logger.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
@@ -758,7 +791,6 @@ Near: …${snippet}…` : ""}`);
       }
     }
     if (false) {}
-    logger.info(`Patches: ${patchStats.applied} applied, ${patchStats.noEffect} no-effect, ${patchStats.errors} errors, ${patchStats.runtimeFallbacks} fallbacks, ${orphaned.length} orphaned`);
   }
   function scanCache(cache) {
     let count = 0;
@@ -801,6 +833,17 @@ Near: …${snippet}…` : ""}`);
       Map.prototype.set = origMapSet;
     }
     captured?.delete(FACTORY_PROBE_ID);
+    if (captured) {
+      let valid = 0;
+      for (const [k, v] of captured) {
+        if (typeof k === "number" && typeof v === "function" && ++valid >= 3)
+          break;
+      }
+      if (valid < 3) {
+        logger.warn("Captured Map doesn't look like a factory registry, discarding");
+        return null;
+      }
+    }
     return captured;
   }
   function captureRuntimeState(helpers) {
@@ -888,6 +931,28 @@ Near: …${snippet}…` : ""}`);
   var logger2 = new Logger("TurbopackFinder", "#a6d189");
   var fnSourceCache = new WeakMap;
   var zustandStoreCache = new Map;
+  var finderRegistry = null;
+  function trackFinder(type, args, resolve) {
+    finderRegistry?.push({ type, args, resolve });
+  }
+  function isEmptyResult(value) {
+    if (value == null)
+      return true;
+    return typeof value === "object" && Object.keys(value).length === 0;
+  }
+  function reportFailedFinders() {
+    if (!finderRegistry?.length)
+      return;
+    const failed = [];
+    for (const record of finderRegistry) {
+      try {
+        if (isEmptyResult(record.resolve()))
+          failed.push(`${record.type}(${record.args.map((a) => JSON.stringify(a)).join(", ")})`);
+      } catch {}
+    }
+    if (failed.length)
+      logger2.warn(`${failed.length} finder(s) resolved to nothing:`, failed);
+  }
   function getFnSource(fn) {
     let src = fnSourceCache.get(fn);
     if (src === undefined) {
@@ -1012,31 +1077,40 @@ Near: …${snippet}…` : ""}`);
     const cached = searchCache(filter);
     if (cached)
       return cached;
+    trackFinder("find", [String(filter)], () => searchCache(filter));
     return proxyLazy(() => searchCache(filter));
   }
   function findByProps(...props) {
     return find(filters.byProps(...props));
   }
   function findByPropsLazy(...props) {
-    return proxyLazy(() => findByProps(...props));
+    const resolve = () => findByProps(...props);
+    trackFinder("findByProps", props, resolve);
+    return proxyLazy(resolve);
   }
   function findByCode(...code) {
     return find(filters.byCode(...code));
   }
   function findByCodeLazy(...code) {
-    return proxyLazy(() => findByCode(...code));
+    const resolve = () => findByCode(...code);
+    trackFinder("findByCode", code.map(String), resolve);
+    return proxyLazy(resolve);
   }
   function findByDisplayName(name) {
     return find(filters.byDisplayName(name));
   }
   function findByDisplayNameLazy(name) {
-    return proxyLazy(() => findByDisplayName(name));
+    const resolve = () => findByDisplayName(name);
+    trackFinder("findByDisplayName", [name], resolve);
+    return proxyLazy(resolve);
   }
   function findComponentByCode(...code) {
     return find(filters.componentByCode(...code));
   }
   function findComponentByCodeLazy(...code) {
-    return LazyComponent("findComponentByCode", () => findComponentByCode(...code));
+    const resolve = () => findComponentByCode(...code);
+    trackFinder("findComponentByCode", code.map(String), resolve);
+    return LazyComponent("findComponentByCode", resolve);
   }
   function findExportedComponent(...props) {
     return withLazySync(() => scanExportedComponent(props), (result) => !result);
@@ -1059,7 +1133,9 @@ Near: …${snippet}…` : ""}`);
     return null;
   }
   function findExportedComponentLazy(...props) {
-    return LazyComponent(props[0], () => findExportedComponent(...props));
+    const resolve = () => findExportedComponent(...props);
+    trackFinder("findExportedComponent", props, resolve);
+    return LazyComponent(props[0], resolve);
   }
   function collectStores() {
     for (const [, exports] of getModuleCache()) {
@@ -1101,7 +1177,9 @@ Near: …${snippet}…` : ""}`);
     return hook;
   }
   function findStoreLazy(name) {
-    return proxyLazy(() => findStore(name));
+    const resolve = () => findStore(name);
+    trackFinder("findStore", [name], resolve);
+    return proxyLazy(resolve);
   }
   function getAllStores() {
     if (!zustandStoreCache.size)
@@ -1115,7 +1193,9 @@ Near: …${snippet}…` : ""}`);
     return mapMangledCssClasses(mod, classes);
   }
   function findCssClassesLazy(...classes) {
-    return proxyLazy(() => findCssClasses(...classes));
+    const resolve = () => findCssClasses(...classes);
+    trackFinder("findCssClasses", classes, resolve);
+    return proxyLazy(resolve);
   }
   function mapMangledCssClasses(mod, classes) {
     const result = {};
@@ -1244,7 +1324,9 @@ Near: …${snippet}…` : ""}`);
     });
   }
   function mapMangledModuleLazy(code, mappers) {
-    return proxyLazy(() => mapMangledModule(code, mappers));
+    const resolve = () => mapMangledModule(code, mappers);
+    trackFinder("mapMangledModule", code.map(String), resolve);
+    return proxyLazy(resolve);
   }
   var IDENT = "[A-Za-z_$][\\w$]*";
   var DefaultChunkLoadRegex = new RegExp(`Promise\\.all\\(\\[([^\\]]+)\\]\\.map\\(${IDENT}=>${IDENT}\\.l\\(${IDENT}\\)\\)\\)\\.then\\(\\(\\)=>${IDENT}\\((\\d+)\\)\\)`);
@@ -1403,7 +1485,6 @@ Near: …${snippet}…` : ""}`);
   var CodePageStore = findByPropsLazy("useCodePageStore");
   var CommandMenuStore = findByPropsLazy("useCommandMenuStore", "createSelection");
   var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
-  var DevModelsStore = findByPropsLazy("useDevModelsStore", "DRAFT_MODEL_ID");
   var DictationStore = findByPropsLazy("useDictationStore");
   var FeatureStore = findByPropsLazy("useFeatureStore");
   var FilesPageStore = findByPropsLazy("useFilesPageStore", "useAssetsList");
@@ -1443,7 +1524,7 @@ Near: …${snippet}…` : ""}`);
   var container = null;
   var pendingStyles = [];
   function getContainer() {
-    if (container)
+    if (container?.isConnected)
       return container;
     if (!document.head)
       return null;
@@ -1921,7 +2002,7 @@ Near: …${snippet}…` : ""}`);
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 2,
+    strokeWidth: props.strokeWidth ?? 2,
     strokeLinecap: "round",
     strokeLinejoin: "round",
     className: props.className,
@@ -2234,22 +2315,38 @@ Near: …${snippet}…` : ""}`);
   }
   function onlyOnce(fn) {
     let result;
-    let called = false;
+    let f = fn;
     return (...args) => {
-      if (called)
+      if (!f)
         return result;
-      called = true;
-      result = fn(...args);
+      result = f(...args);
+      f = null;
       return result;
     };
   }
   function debounce(fn, ms) {
     let timer;
+    let lastArgs;
     const debounced = (...args) => {
+      lastArgs = args;
       clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), ms);
+      timer = setTimeout(() => {
+        lastArgs = undefined;
+        fn(...args);
+      }, ms);
     };
-    debounced.cancel = () => clearTimeout(timer);
+    debounced.cancel = () => {
+      clearTimeout(timer);
+      lastArgs = undefined;
+    };
+    debounced.flush = () => {
+      if (lastArgs) {
+        clearTimeout(timer);
+        const a = lastArgs;
+        lastArgs = undefined;
+        fn(...a);
+      }
+    };
     return debounced;
   }
   function fetchExternal(url) {
@@ -2301,12 +2398,16 @@ Near: …${snippet}…` : ""}`);
   }
   var pad = (n) => String(n).padStart(2, "0");
   function formatCountdown(totalSeconds) {
+    if (totalSeconds <= 0)
+      return "0:00";
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor(totalSeconds % 3600 / 60);
     const s = totalSeconds % 60;
     return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
   }
   function formatDuration(totalSeconds) {
+    if (totalSeconds <= 0)
+      return "0m";
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor(totalSeconds % 3600 / 60);
     if (h > 0 && m > 0)
@@ -2320,7 +2421,7 @@ Near: …${snippet}…` : ""}`);
     return err instanceof Error ? err.message : String(err);
   }
   function sanitizeFilename(title, fallback = "file") {
-    return title.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, "-") || fallback;
+    return title.replace(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replace(/\s+/g, "-") || fallback;
   }
 
   // src/api/Events.ts
@@ -2836,7 +2937,6 @@ Near: …${snippet}…` : ""}`);
     for (const replacement of patch.replacement) {
       canonicalizeReplacement(replacement, pluginPath);
     }
-    patch.replacement = patch.replacement.filter(({ predicate }) => !predicate || predicate());
     patches.push(patch);
   }
   function startDependenciesRecursive(plugin, visiting = new Set) {
@@ -2879,6 +2979,18 @@ Near: …${snippet}…` : ""}`);
     }
     return null;
   }
+  function ensureMethodsBound(plugin) {
+    for (const key of Object.keys(plugin)) {
+      if (key === "start" || key === "stop")
+        continue;
+      const val = plugin[key];
+      if (typeof val === "function" && !val.$$voidBound) {
+        const bound = val.bind(plugin);
+        bound.$$voidBound = true;
+        plugin[key] = bound;
+      }
+    }
+  }
   function startPlugin(plugin, silent = false) {
     if (plugin.started)
       return true;
@@ -2887,6 +2999,7 @@ Near: …${snippet}…` : ""}`);
         logger7.error(`Failed to start dependencies for ${plugin.name}`);
         return false;
       }
+      ensureMethodsBound(plugin);
       if (plugin.managedStyle)
         enableStyle(plugin.managedStyle);
       if (!plugin.hidden && !silent)
@@ -2963,6 +3076,11 @@ Near: …${snippet}…` : ""}`);
     if (!plugin.started)
       return true;
     try {
+      plugin.stop?.();
+    } catch (e) {
+      logger7.error(`Error in ${plugin.name}.stop():`, e);
+    }
+    try {
       const unsubs = pluginUnsubscribers.get(plugin.name);
       if (unsubs) {
         for (const unsub of unsubs)
@@ -2982,7 +3100,6 @@ Near: …${snippet}…` : ""}`);
           document.querySelectorAll(selector).forEach((el) => el.remove());
         }
       }
-      plugin.stop?.();
       plugin.started = false;
       return true;
     } catch (e) {
@@ -3058,16 +3175,7 @@ Near: …${snippet}…` : ""}`);
       if (!isPluginEnabled(name))
         continue;
       const plugin = plugins[name];
-      for (const key of Object.keys(plugin)) {
-        if (key === "start" || key === "stop")
-          continue;
-        const val = plugin[key];
-        if (typeof val === "function" && !val.$$voidBound) {
-          const bound = val.bind(plugin);
-          bound.$$voidBound = true;
-          plugin[key] = bound;
-        }
-      }
+      ensureMethodsBound(plugin);
       if (plugin.patches) {
         for (const patch of plugin.patches)
           addPatch(patch, name);
@@ -3215,11 +3323,11 @@ Near: …${snippet}…` : ""}`);
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.3.1")) {
-        logger8.info(`Up to date (${"0.3.1"})`);
+      if (!latest || !isNewer(latest, "0.4.0")) {
+        logger8.info(`Up to date (${"0.4.0"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.3.1"} → ${latest}`);
+      logger8.info(`Update available: ${"0.4.0"} → ${latest}`);
       showNotice({
         message: "Void is outdated, please update to the new version.",
         type: "warning" /* WARNING */,
@@ -4008,6 +4116,8 @@ Near: …${snippet}…` : ""}`);
       setValue(val);
       Settings.plugins[pluginName] = { ...Settings.plugins[pluginName], [id]: val };
       setting.onChange?.(val);
+      if ("restartNeeded" in setting && setting.restartNeeded)
+        dispatch("reloadNeeded");
     }, [id, pluginName, setting]);
     return [value, update];
   }
@@ -4228,6 +4338,11 @@ Near: …${snippet}…` : ""}`);
       if (pending)
         setDialogName(pending);
     }, []);
+    useEffect(() => subscribe("reloadNeeded", () => {
+      changedPluginsRef.current.add("__settings__");
+      if (!dismissedRef.current)
+        setShowReload(true);
+    }), []);
     const visibleUser = useMemo(() => {
       if (filter === "all")
         return userPlugins;
@@ -5030,9 +5145,9 @@ Near: …${snippet}…` : ""}`);
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.3.1"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"f3bab5c"}`
-    }, `(${"f3bab5c"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.4.0"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"33376f3"}`
+    }, `(${"33376f3"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6522,6 +6637,72 @@ Near: …${snippet}…` : ""}`);
     ]
   });
 
+  // src/plugins/downloadTTS/index.tsx
+  var logger14 = new Logger("DownloadTTS");
+  async function fetchAndDownload() {
+    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
+    if (!currentStreamId)
+      return;
+    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
+    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
+    if (voiceId)
+      url += `?voiceId=${encodeURIComponent(voiceId)}`;
+    const res = await fetch(url);
+    if (!res.ok)
+      throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = `tts-${currentStreamId.slice(0, 8)}.wav`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 5000);
+  }
+  function DownloadButton() {
+    const [loading, setLoading] = useState(false);
+    const onClick = useCallback(async () => {
+      if (loading)
+        return;
+      setLoading(true);
+      try {
+        await fetchAndDownload();
+      } catch (e) {
+        logger14.error("Failed to download TTS audio:", e);
+      } finally {
+        setLoading(false);
+      }
+    }, [loading]);
+    return /* @__PURE__ */ React.createElement(Button, {
+      "aria-label": "Download audio",
+      onClick,
+      shape: "circle",
+      size: "md",
+      variant: "tertiary"
+    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
+      size: "xs",
+      className: "pointer-events-none"
+    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
+      size: 19,
+      strokeWidth: 2.5
+    }));
+  }
+  var downloadTTS_default = definePlugin({
+    name: "DownloadTTS",
+    description: "Add a download button to the TTS playback controls.",
+    authors: [Devs.Prism],
+    patches: [{
+      find: 'tts-controls.play.label","Play"),onClick',
+      all: true,
+      replacement: {
+        match: /\(0,\i\.jsx\)\(\i\.Button,\{"aria-label":\i\("tts-controls\.stop\.label","Stop"\)/,
+        replace: "$self._renderDownloadButton(),$&"
+      }
+    }],
+    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
+  });
+
   // void-css:D:/Projects/Void/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
@@ -6529,7 +6710,7 @@ Near: …${snippet}…` : ""}`);
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger14 = new Logger("ExportChat");
+  var logger15 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -6556,7 +6737,7 @@ Near: …${snippet}…` : ""}`);
   function ExportItem({ conversationId }) {
     const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
     return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => exportChat(conversationId).catch((e) => logger14.error("Failed to export chat", e)),
+      onSelect: () => exportChat(conversationId).catch((e) => logger15.error("Failed to export chat", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
@@ -6642,7 +6823,7 @@ Near: …${snippet}…` : ""}`);
   });
 
   // src/plugins/oneko/index.ts
-  var logger15 = new Logger("Oneko");
+  var logger16 = new Logger("Oneko");
   var ONEKO_SCRIPT = "https://raw.githubusercontent.com/adryd325/oneko.js/c4ee66353b11a44e4a5b7e914a81f8d33111555e/oneko.js";
   var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
   var stopped = false;
@@ -6664,7 +6845,7 @@ Near: …${snippet}…` : ""}`);
           el.remove();
           URL.revokeObjectURL(el.src);
         });
-      }).catch((e) => logger15.error("Failed to load oneko script", e));
+      }).catch((e) => logger16.error("Failed to load oneko script", e));
     },
     stop() {
       stopped = true;
@@ -6681,7 +6862,7 @@ Near: …${snippet}…` : ""}`);
 
   // src/plugins/queryTracker/index.tsx
   var cl15 = classNameFactory("void-query-tracker-");
-  var logger16 = new Logger("QueryTracker");
+  var logger17 = new Logger("QueryTracker");
   var STORAGE_KEY3 = "void-query-tracker";
   var REFETCH_COOLDOWN = 5 * 60000;
   var trackedModels = {};
@@ -6711,7 +6892,7 @@ Near: …${snippet}…` : ""}`);
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName, requestKind } });
     } catch (e) {
-      logger16.warn("Failed to fetch rate limit for", modelName, e);
+      logger17.warn("Failed to fetch rate limit for", modelName, e);
       return null;
     }
   }
@@ -6727,7 +6908,7 @@ Near: …${snippet}…` : ""}`);
     try {
       localStorage.setItem(STORAGE_KEY3, JSON.stringify(snapshot));
     } catch (e) {
-      logger16.warn("Failed to save snapshot:", e);
+      logger17.warn("Failed to save snapshot:", e);
     }
   }
   function diffSnapshots(prev, curr) {
@@ -6782,7 +6963,7 @@ Near: …${snippet}…` : ""}`);
       saveSnapshot(next);
       store4.notify();
     } catch (e) {
-      logger16.error("Failed to fetch models:", e);
+      logger17.error("Failed to fetch models:", e);
     }
   }
   function onVisibilityChange() {
@@ -6881,7 +7062,7 @@ Near: …${snippet}…` : ""}`);
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [queryTracker_default.name]: queryTracker_default, [starry_default.name]: starry_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [queryTracker_default.name]: queryTracker_default, [starry_default.name]: starry_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -6993,7 +7174,6 @@ Near: …${snippet}…` : ""}`);
     DialogContent: () => DialogContent,
     DialogClose: () => DialogClose,
     Dialog: () => Dialog,
-    DevModelsStore: () => DevModelsStore,
     CopyUtils: () => CopyUtils,
     ConversationStore: () => ConversationStore,
     CommandMenuStore: () => CommandMenuStore,
@@ -7022,7 +7202,7 @@ Near: …${snippet}…` : ""}`);
   });
 
   // src/Void.ts
-  var logger17 = new Logger("TurbopackPatcher", "#e78284");
+  var logger18 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
@@ -7039,6 +7219,7 @@ Near: …${snippet}…` : ""}`);
     const timeout = setTimeout(() => {
       unsub();
       reportOrphanedPatches();
+      reportFailedFinders();
     }, ORPHAN_REPORT_DELAY_MS);
   }
   function retryFailedPlugins() {
@@ -7057,7 +7238,7 @@ Near: …${snippet}…` : ""}`);
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger17.info("All previously failed plugins started after late module load");
+          logger18.info("All previously failed plugins started after late module load");
         }
       }, 200);
     };
@@ -7072,7 +7253,7 @@ Near: …${snippet}…` : ""}`);
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger17.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger18.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -7085,7 +7266,7 @@ Near: …${snippet}…` : ""}`);
       blacklistBadModules();
       _resolveReady();
       startAllPlugins("TurbopackReady" /* TurbopackReady */);
-      logger17.info(`${getModuleCache().size} modules loaded, ready`);
+      logger18.info(`${getModuleCache().size} modules loaded, ready`);
       retryFailedPlugins();
       deferOrphanReport();
       checkForUpdates();
