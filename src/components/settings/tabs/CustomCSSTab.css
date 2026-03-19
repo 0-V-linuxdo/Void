@@ -13,7 +13,8 @@
     min-height: 0;
     margin: 0 0.75rem;
     border: 1px solid var(--border-l1);
-    background: hsl(var(--surface-l2));
+    border-radius: 0.75rem;
+    background: transparent;
     overflow: auto;
     display: grid;
 }
@@ -45,16 +46,39 @@
     overflow: hidden;
 }
 
-.void-css-sel { color: hsl(215deg 50% 68%); }
-.void-css-prop { color: hsl(195deg 35% 64%); }
-.void-css-val { color: hsl(28deg 45% 68%); }
-.void-css-str { color: hsl(155deg 30% 64%); }
-.void-css-num { color: hsl(265deg 30% 74%); }
+.void-css-sel {
+    color: hsl(215deg 50% 68%);
+}
+
+.void-css-prop {
+    color: hsl(195deg 35% 64%);
+}
+
+.void-css-val {
+    color: hsl(28deg 45% 68%);
+}
+
+.void-css-str {
+    color: hsl(155deg 30% 64%);
+}
+
+.void-css-num {
+    color: hsl(265deg 30% 74%);
+}
 
 .void-css-com {
     color: hsl(var(--fg-tertiary));
     font-style: italic;
 }
-.void-css-at { color: hsl(335deg 35% 70%); }
-.void-css-brace { color: hsl(var(--fg-secondary)); }
-.void-css-punct { color: hsl(var(--fg-tertiary)); }
+
+.void-css-at {
+    color: hsl(335deg 35% 70%);
+}
+
+.void-css-brace {
+    color: hsl(var(--fg-secondary));
+}
+
+.void-css-punct {
+    color: hsl(var(--fg-tertiary));
+}
