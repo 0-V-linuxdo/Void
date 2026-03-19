@@ -253,9 +253,18 @@ async function main() {
         else { finderFailed++; console.log(red("FAIL") + ` ${bold(f.source + ":")} ${f.args}`); }
     }
 
+    const sriCount = (html.match(/integrity="sha/g) ?? []).length;
+    const rscCount = (allChunkText.match(/createServerReference\(/g) ?? []).length;
+
     console.log(bold("\nResults:"));
     console.log(`Patches: ${green(`${patchPassed} passed`)}, ${patchFailed ? red(`${patchFailed} failed`) : dim("0 failed")}${skipped.length ? `, ${yellow(`${skipped.length} skipped`)}` : ""}`);
-    console.log(`Finders: ${green(`${finderPassed} passed`)}, ${finderFailed ? red(`${finderFailed} failed`) : dim("0 failed")}\n`);
+    console.log(`Finders: ${green(`${finderPassed} passed`)}, ${finderFailed ? red(`${finderFailed} failed`) : dim("0 failed")}`);
+
+    if (sriCount) console.log(yellow("WARN") + ` SRI detected on ${sriCount} script tag(s) — runtime patching may break`);
+    else console.log(dim("SRI: not enforced"));
+
+    console.log(dim(`RSC: ${rscCount} server reference(s) found`));
+    console.log();
 
     if (patchFailed || finderFailed) process.exit(1);
 }
