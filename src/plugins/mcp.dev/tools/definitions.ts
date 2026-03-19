@@ -32,7 +32,7 @@ export const TOOL_DEFINITIONS = [
     },
     {
         name: "search",
-        description: "Search factory source across all modules. Plain text or /regex/flags. With id: all matches in one module. Use this for factory code — module find+code only checks exported fn toString().",
+        description: "Search factory source across all modules. Plain text or /regex/flags. With id: all matches in one module. Use this for factory code — module find+code only checks exported fn toString(). filter: loaded/unloaded/patched.",
         inputSchema: {
             type: "object",
             properties: {
@@ -108,7 +108,7 @@ export const TOOL_DEFINITIONS = [
     },
     {
         name: "store",
-        description: "Zustand store inspector. list/get/keys/methods/call/subscribe. Query by name (partial match) or module ID.",
+        description: "Zustand store inspector. list/get/keys/methods/call/subscribe. Query by name (partial match, shows alternatives) or module ID. call returns stateChanged diff.",
         inputSchema: {
             type: "object",
             properties: {

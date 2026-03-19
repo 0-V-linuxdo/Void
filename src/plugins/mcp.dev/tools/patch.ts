@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { isPluginEnabled } from "@api/PluginManager";
 import { getRuntimeFactoryRegistry, patches, patchResults, patchStats } from "@turbopack/patchTurbopack";
 import { search } from "@turbopack/turbopack";
 import { type PatchedModuleFactory, SYM_PATCHED_BY } from "@turbopack/types";
@@ -11,7 +12,7 @@ import { canonicalizeMatch } from "@utils/patches";
 
 import { PATCH } from "./constants";
 import type { LintWarning, PatchArgs } from "./types";
-import { clampDefault, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources } from "./utils";
+import { clampDefault, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources, getFactorySourceCache } from "./utils";
 
 function findModulesByFind(findStr: string): { ids: number[]; results: Record<number, unknown>; canonFind: string | RegExp } {
     const canonFind = canonicalizeMatch(findStr);
@@ -210,7 +211,15 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
     const replacements = Array.isArray(p.replacement) ? p.replacement : [p.replacement];
     const findLabel = String(p.find).slice(0, PATCH.FIND_SLICE);
 
-    if (!ids.length) return { plugin: p.plugin, find: findLabel, n: replacements.length, reason: "find matched 0 modules" };
+    if (!ids.length) {
+        const findStr = String(p.find);
+        let inUnloaded = 0;
+        for (const [, src] of getFactorySourceCache()) {
+            if (src.includes(findStr)) inUnloaded++;
+        }
+        const reason = inUnloaded ? `find matched 0 loaded modules (found in ${inUnloaded} unloaded factory sources — likely lazy chunk)` : "find matched 0 modules";
+        return { plugin: p.plugin, find: findLabel, n: replacements.length, reason };
+    }
 
     const sources = p.all ? ids.map(id => String(results[id])) : [String(results[ids[0]])];
     const failed = replacements.filter(r => {
@@ -267,6 +276,7 @@ export function handlePatch(args: PatchArgs): unknown {
             };
             if (p.group) entry.group = true;
             if (result) entry.moduleId = result.moduleId;
+            else entry.status = isPluginEnabled(p.plugin) ? "unmatched" : "disabled";
             return entry;
         });
     }

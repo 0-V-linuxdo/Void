@@ -9,10 +9,31 @@ import { ApiClients } from "@turbopack/common/utils";
 
 import { GROK } from "./constants";
 import type { GrokArgs } from "./types";
-import { serialize } from "./utils";
+import { errorMessage, serialize } from "./utils";
 
-function getEditor(): any {
-    return (document.querySelector(".ProseMirror") as any)?.editor ?? null;
+interface TiptapEditor {
+    commands: { setContent(content: string): void; focus(): void };
+}
+
+interface GrokResponse {
+    responseId: string;
+    sender: string;
+    model?: string;
+    message?: string;
+    thinkingTrace?: string;
+    state?: string;
+    partial?: boolean;
+    createTime?: string;
+}
+
+interface GrokModel {
+    modelId: string;
+    name: string;
+    description?: string;
+}
+
+function getEditor(): TiptapEditor | null {
+    return (document.querySelector(".ProseMirror") as HTMLElement & { editor?: TiptapEditor })?.editor ?? null;
 }
 
 function getCurrentConversationId(): string | undefined {
@@ -29,7 +50,7 @@ function clickInternalLink(path: string): boolean {
     const fallback = document.querySelector('a[href*="/c/"]') ?? document.querySelector('a[href="/"]');
     if (!fallback) return false;
 
-    const orig = fallback.getAttribute("href")!;
+    const orig = fallback.getAttribute("href") ?? "/";
     fallback.setAttribute("href", path);
     fallback.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
     fallback.setAttribute("href", orig);
@@ -50,7 +71,7 @@ async function navigateToChat(conversationId?: string): Promise<void> {
     await new Promise(r => setTimeout(r, 500));
 }
 
-function waitForEditor(timeoutMs = 5000): Promise<any> {
+function waitForEditor(timeoutMs = 5000): Promise<TiptapEditor> {
     const editor = getEditor();
     if (editor) return Promise.resolve(editor);
 
@@ -75,7 +96,7 @@ function submitEditor() {
     pm.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, bubbles: true, cancelable: true }));
 }
 
-function findLatestAssistantResponse(responses: any[], afterIndex: number): any | null {
+function findLatestAssistantResponse(responses: GrokResponse[], afterIndex: number): GrokResponse | null {
     for (let i = responses.length - 1; i > afterIndex; i--) {
         const r = responses[i];
         if (r.sender === "assistant" && !r.responseId?.startsWith("optimistic_")) return r;
@@ -175,12 +196,12 @@ async function handleSend(args: GrokArgs): Promise<unknown> {
             message: result.message,
             thinkingTrace: result.thinkingTrace,
         };
-    } catch (err: any) {
-        return { error: err?.message ?? String(err) };
+    } catch (err: unknown) {
+        return { error: errorMessage(err) };
     }
 }
 
-function formatResponse(r: any, maxLength = GROK.MAX_RESPONSE_LENGTH) {
+function formatResponse(r: GrokResponse, maxLength = GROK.MAX_RESPONSE_LENGTH) {
     return {
         responseId: r.responseId,
         sender: r.sender,
@@ -193,8 +214,8 @@ function formatResponse(r: any, maxLength = GROK.MAX_RESPONSE_LENGTH) {
     };
 }
 
-function isRealResponse(r: any): boolean {
-    return r.responseId && !r.responseId.startsWith("optimistic_");
+function isRealResponse(r: GrokResponse): boolean {
+    return !!r.responseId && !r.responseId.startsWith("optimistic_");
 }
 
 async function handleRead(args: GrokArgs): Promise<unknown> {
@@ -212,8 +233,8 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
             const resp = data.responses?.[0];
             if (!resp) return { error: "Response not found." };
             return formatResponse(resp);
-        } catch (err: any) {
-            return { error: err?.message ?? String(err) };
+        } catch (err: unknown) {
+            return { error: errorMessage(err) };
         }
     }
 
@@ -229,7 +250,7 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
     return {
         conversationId,
         latest: latest ? formatResponse(latest) : undefined,
-        responses: real.map((r: any) => ({
+        responses: real.map(r => ({
             responseId: r.responseId,
             sender: r.sender,
             model: r.model,
@@ -242,18 +263,18 @@ async function handleModels(): Promise<unknown> {
     const { models, unavailableModels } = ModelsStore.useModelsStore.getState();
     const allModels = [...(models || []), ...(unavailableModels || [])];
 
-    const results = await Promise.all(allModels.map(async (m: any) => {
+    const results = await Promise.all(allModels.map(async (m: GrokModel) => {
         try {
             const rl = await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: m.modelId, requestKind: "DEFAULT" } });
             return {
                 modelId: m.modelId,
                 name: m.name,
                 description: m.description,
-                available: (models || []).some((am: any) => am.modelId === m.modelId),
+                available: (models || []).some((am: GrokModel) => am.modelId === m.modelId),
                 rateLimit: { remaining: rl.remainingQueries, total: rl.totalQueries, windowSeconds: rl.windowSizeSeconds },
             };
         } catch {
-            return { modelId: m.modelId, name: m.name, available: (models || []).some((am: any) => am.modelId === m.modelId) };
+            return { modelId: m.modelId, name: m.name, available: (models || []).some((am: GrokModel) => am.modelId === m.modelId) };
         }
     }));
 

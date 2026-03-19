@@ -9,7 +9,7 @@ import { matchesAllPatterns } from "@turbopack/turbopack";
 
 import { SEARCH } from "./constants";
 import type { SearchArgs, SearchMatch } from "./types";
-import { getFactorySourceCache, isModulePatched, parseRegexPattern } from "./utils";
+import { clampDefault, getFactorySourceCache, isModulePatched, parseRegexPattern } from "./utils";
 
 function findMatch(src: string, pattern: string, regex: RegExp | null, startFrom = 0): { idx: number; len: number } | null {
     if (regex) {
@@ -42,10 +42,8 @@ function shouldSkipModule(id: number, filter: string | undefined, loadedCache: M
 
 export function handleSearch(args: SearchArgs): unknown {
     const { pattern, id: targetId, and: andPatterns, filter } = args;
-    const max = Number.isFinite(args.max) && args.max! > 0 ? args.max! : SEARCH.DEFAULT_MAX;
-    const context = Number.isFinite(args.context) && args.context! >= 0 ? args.context! : SEARCH.DEFAULT_CONTEXT;
-    const cappedMax = Math.min(max, SEARCH.MAX_RESULTS_CAP);
-    const wasCapped = max > SEARCH.MAX_RESULTS_CAP;
+    const max = clampDefault(args.max, SEARCH.DEFAULT_MAX, SEARCH.MAX_RESULTS_CAP);
+    const context = clampDefault(args.context, SEARCH.DEFAULT_CONTEXT, SEARCH.MAX_CONTEXT);
 
     if (filter && filter !== "loaded" && filter !== "unloaded" && filter !== "patched") return { error: `Invalid filter: "${filter}". Use "loaded", "unloaded", or "patched".` };
     if (!pattern && !andPatterns?.length)
@@ -55,7 +53,7 @@ export function handleSearch(args: SearchArgs): unknown {
     if (!sources.size) return { error: "Factory registry not available" };
 
     const loadedCache = filter ? getModuleCache() : null;
-    const ctx = Math.min(context, SEARCH.MAX_CONTEXT);
+    const ctx = context;
 
     if (andPatterns?.length) {
         const rawPatterns = pattern ? [pattern, ...andPatterns] : andPatterns;
@@ -81,7 +79,7 @@ export function handleSearch(args: SearchArgs): unknown {
             if (shouldSkipModule(id, filter, loadedCache)) continue;
             if (!matchesAllPatterns(src, allPatterns)) continue;
             moduleHits++;
-            if (matches.length >= cappedMax) continue;
+            if (matches.length >= max) continue;
 
             let idx = 0;
             let matchLen = 0;
@@ -123,7 +121,6 @@ export function handleSearch(args: SearchArgs): unknown {
             if (filter) hints.push("Try without filter.");
             result.hint = hints.join(" ");
         }
-        if (wasCapped) result.hint = (result.hint ? result.hint + " " : "") + `Results capped at ${SEARCH.MAX_RESULTS_CAP} (requested ${max}).`;
         return result;
     }
 
@@ -155,7 +152,7 @@ export function handleSearch(args: SearchArgs): unknown {
         if (targetId != null) {
             const patched = isModulePatched(id);
             let startFrom = 0;
-            while (matches.length < cappedMax && total < SEARCH.MAX_TOTAL) {
+            while (matches.length < max && total < SEARCH.MAX_TOTAL) {
                 const hit = findMatch(src, pattern, regex, startFrom);
                 if (!hit) break;
                 const { snippet, truncatedMatch } = buildSnippet(src, hit.idx, hit.len, ctx);
@@ -171,7 +168,7 @@ export function handleSearch(args: SearchArgs): unknown {
             if (!hit) continue;
             moduleHits++;
             if (capped) continue;
-            if (matches.length >= cappedMax || total >= SEARCH.MAX_TOTAL) {
+            if (matches.length >= max || total >= SEARCH.MAX_TOTAL) {
                 capped = true;
                 continue;
             }
@@ -191,6 +188,5 @@ export function handleSearch(args: SearchArgs): unknown {
         else if (regex) result.hint = "No regex matches. Check syntax or try a simpler literal pattern.";
     }
     if (total >= SEARCH.MAX_TOTAL) result.hint = (result.hint ? result.hint + " " : "") + "Stopped early due to output size limit.";
-    if (wasCapped && matches.length >= cappedMax) result.hint = (result.hint ? result.hint + " " : "") + `Results capped at ${SEARCH.MAX_RESULTS_CAP} (requested ${max}).`;
     return result;
 }
