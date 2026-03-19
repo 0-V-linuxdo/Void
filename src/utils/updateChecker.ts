@@ -5,7 +5,7 @@
  */
 
 import { NoticeType, showNotice } from "@api/Notices";
-import { fetchExternal } from "@utils/misc";
+import { fetchExternal, sleep } from "@utils/misc";
 
 import { Logger } from "./Logger";
 
@@ -36,6 +36,9 @@ export async function checkForUpdates() {
         }
 
         logger.info(`Update available: ${VERSION} → ${latest}`);
+
+        // wait for sonner to mount
+        await sleep(3000);
 
         showNotice({
             message: "Void is outdated, please update to the new version.",
