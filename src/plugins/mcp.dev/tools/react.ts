@@ -82,7 +82,7 @@ export function handleReact(args: ReactArgs): unknown {
         if (!root) return { error: "No React root found. Is grok.com loaded?" };
 
         const lower = componentName.toLowerCase();
-        const found: Array<{ name: string; d: number; props?: string[]; s?: boolean }> = [];
+        const found: Array<{ name: string; d: number; props?: string[]; s?: boolean; count?: number }> = [];
         const queue: Array<{ f: Fiber; d: number }> = [{ f: root, d: 0 }];
         const visited = new WeakSet<Fiber>();
         visited.add(root);
@@ -92,13 +92,15 @@ export function handleReact(args: ReactArgs): unknown {
             const { f, d } = queue[qi++];
             const nm = fiberName(f);
             if (nm?.toLowerCase().includes(lower)) {
-                const entry: { name: string; d: number; props?: string[]; s?: boolean } = { name: nm, d };
-                if (f.memoizedProps) {
+                const entry: { name: string; d: number; props?: string[]; s?: boolean; count?: number } = { name: nm, d };
+                if (args.includeProps && f.memoizedProps) {
                     const pk = Object.keys(f.memoizedProps).filter(k => k !== "children");
                     if (pk.length) entry.props = pk.slice(0, REACT.PROP_KEYS_PREVIEW);
                 }
                 if (f.memoizedState) entry.s = true;
-                found.push(entry);
+                const existing = found.find(e => e.name === nm && e.d === d && !args.includeProps);
+                if (existing) { existing.count = (existing.count ?? 1) + 1; }
+                else found.push(entry);
             }
             if (f.child && !visited.has(f.child)) { visited.add(f.child); queue.push({ f: f.child, d: d + 1 }); }
             if (f.sibling && !visited.has(f.sibling)) { visited.add(f.sibling); queue.push({ f: f.sibling, d }); }

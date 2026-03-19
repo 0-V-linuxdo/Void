@@ -230,7 +230,7 @@ const FILTER_BUILDERS: Record<string, (v: unknown) => boolean> = {
     component: v => typeof v === "function" || (v != null && typeof v === "object" && (v as Record<string, unknown>).$$typeof != null),
 };
 
-const VALID_FILTER_TYPES = "fn, string, number, boolean, object, array, component, hasProps:a,b, code:pattern";
+const VALID_FILTER_TYPES = `${Object.keys(FILTER_BUILDERS).join(", ")}, hasProps:a,b, code:pattern`;
 
 function buildFilter(filterType: string): FilterFn | string {
     const builtin = FILTER_BUILDERS[filterType];
@@ -691,7 +691,8 @@ export function handleModule(args: ModuleArgs): unknown {
         }
         unloaded.sort((a, b) => (sources.get(b)?.length ?? 0) - (sources.get(a)?.length ?? 0));
         const maxPreview = clampDefault(args.limit, MODULE.DEFAULT_UNLOADED_LIMIT, MODULE.MAX_UNLOADED_LIMIT);
-        const previewed = unloaded.slice(0, maxPreview).map(uid => {
+        const off = Math.max(0, Math.floor(args.offset ?? 0));
+        const previewed = unloaded.slice(off, off + maxPreview).map(uid => {
             const src = sources.get(uid);
             if (!src) return { id: uid };
             return { id: uid, len: src.length, preview: src.slice(0, MODULE.UNLOADED_PREVIEW_LENGTH) };
@@ -717,8 +718,9 @@ export function handleModule(args: ModuleArgs): unknown {
         const index = buildWhereUsedIndex();
         const importers = index.get(id) ?? [];
         const cap = clampDefault(args.limit, MODULE.DEFAULT_WHERE_USED, MODULE.MAX_WHERE_USED);
+        const off = Math.max(0, Math.floor(args.offset ?? 0));
         const cache = getModuleCache();
-        return { id, total: importers.length, importers: importers.slice(0, cap).map(i => ({ ...i, l: cache.has(i.id) })) };
+        return { id, total: importers.length, importers: importers.slice(off, off + cap).map(i => ({ ...i, l: cache.has(i.id) })) };
     }
 
     if (action === "suggest") {
