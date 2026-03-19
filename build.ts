@@ -211,6 +211,7 @@ async function buildExtensions() {
         mkdirSync(resolve(outDir, "dist"), { recursive: true });
 
         cpSync("dist/Void.js", resolve(outDir, "dist/Void.js"));
+        cpSync("browser/icons", resolve(outDir, "icons"), { recursive: true });
 
         for (const file of target.files) {
             const destName = file === "manifestv2.json" ? "manifest.json" : file;
