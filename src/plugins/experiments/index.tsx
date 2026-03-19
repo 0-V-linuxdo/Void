@@ -281,7 +281,7 @@ export default definePlugin({
             },
         },
         {
-            find: "Feature flag overrides active",
+            find: "pressed_cmd_settings",
             replacement: {
                 match: /\i\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
                 replace: "void 0",

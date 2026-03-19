@@ -46,7 +46,7 @@ function DeleteAllButton() {
                 size="sm"
                 onClick={() => setOpen(true)}
             >
-                <TrashIcon size={18} />
+                <TrashIcon size={18} className="text-fg-secondary" />
             </Button>
             <ConfirmDialog
                 open={open}

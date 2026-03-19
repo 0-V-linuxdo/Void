@@ -694,7 +694,7 @@ export default definePlugin({
                     replace: "$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)",
                 },
                 {
-                    match: /muted:!0,autoPlay:!0/,
+                    match: /muted:!0,autoPlay:!0/g,
                     replace: "muted:!0,autoPlay:$self._autoPlay()",
                 },
                 {
