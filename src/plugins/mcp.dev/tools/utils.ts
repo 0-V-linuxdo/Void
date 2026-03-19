@@ -316,7 +316,7 @@ export function extractI18nKeys(ctx: string): Array<{ key: string; default: stri
     return keys;
 }
 
-const ANCHOR_TYPE_ORDER = ["i18n", "i18n-ns", "flag", "displayName", "export", "testid", "string", "template", "jsx", "prop"] as const;
+const ANCHOR_TYPE_ORDER = ["i18n", "i18n-ns", "flag", "displayName", "export", "testid", "codegen", "string", "template", "jsx", "prop"] as const;
 
 function sortAnchors<T extends { unique: boolean; type: string }>(items: T[]): T[] {
     items.sort((a, b) => {
@@ -390,6 +390,9 @@ function collectRawAnchors(
         const jsxRe = re.jsxComponent();
         while ((m = jsxRe.exec(src)) !== null) collect(m[1], "jsx", m.index);
     }
+
+    const codegenRe = /\b(idsert\w+|idsertAndCache\w+)\b/g;
+    while ((m = codegenRe.exec(src)) !== null) collect(m[1], "codegen", m.index);
 
     const propRe = re.propAccess(propMinLen);
     while ((m = propRe.exec(src)) !== null) collect(m[1], "prop", m.index);

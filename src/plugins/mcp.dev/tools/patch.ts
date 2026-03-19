@@ -233,7 +233,16 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
             ? `find matched ${ids.length} module(s) but all ${replacements.length} match regex(es) failed`
             : `find matched ${ids.length} module(s), ${failed.length}/${replacements.length} match regex(es) failed`;
 
-    return { plugin: p.plugin, find: findLabel, n: replacements.length, reason };
+    const result: Record<string, unknown> = { plugin: p.plugin, find: findLabel, n: replacements.length, reason, moduleId: ids[0] };
+    const src = String(results[ids[0]]);
+    const canonFind = canonParts[0];
+    const findIdx = typeof canonFind === "string" ? src.indexOf(canonFind) : src.search(canonFind);
+    if (findIdx >= 0) {
+        const neighborhood = src.slice(Math.max(0, findIdx - 200), Math.min(src.length, findIdx + 400));
+        const nearbyI18n = extractI18nKeys(neighborhood);
+        if (nearbyI18n.length) result.nearbyI18n = nearbyI18n;
+    }
+    return result;
 }
 
 export function handlePatch(args: PatchArgs): unknown {
