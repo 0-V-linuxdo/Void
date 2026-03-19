@@ -27,14 +27,24 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @description  A modification for grok.com
 // @author       ${pkg.author} & Void Contributors
 // @environment  ${environment}
+// @homepageURL  ${repoUrl}
+// @icon         ${repoRawUrl}/main/assets/logo.jpg
 // @match        *://grok.com/*
 // @run-at       document-start
+// @noframes
 // @grant        unsafeWindow
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
 // @grant        GM_listValues
+// @connect      self
+// @connect      raw.githubusercontent.com
+// @connect      *
+// @compatible   chrome
+// @compatible   firefox
+// @compatible   edge
+// @compatible   opera
 // @license      GPL-3.0-or-later
 // @supportURL   https://discord.gg/4Rx3qUCR5Y
 // @downloadURL  ${repoRawUrl}/main/userscript/Void.user.js
