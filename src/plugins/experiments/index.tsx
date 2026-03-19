@@ -47,14 +47,21 @@ function getBooleanKeys(config: FeatureStoreState["config"]) {
 
 let lastConfigSnapshot: Record<string, boolean> = {};
 
+function formatFlagList(label: string, flags: string[]) {
+    if (!flags.length) return "";
+    const names = flags.map(prettifyKey).join(", ");
+    return `${pluralize(flags.length, "flag")} ${label}: ${names}`;
+}
+
 function notifyChanges(newFlags: string[], removedFlags: string[], flipped: string[]) {
-    const parts: string[] = [];
-    if (newFlags.length) parts.push(`${pluralize(newFlags.length, "new flag")} added`);
-    if (removedFlags.length) parts.push(`${pluralize(removedFlags.length, "flag")} removed`);
-    if (flipped.length) parts.push(`${pluralize(flipped.length, "flag")} changed`);
+    const parts = [
+        formatFlagList("added", newFlags),
+        formatFlagList("removed", removedFlags),
+        formatFlagList("changed", flipped),
+    ].filter(Boolean);
     if (!parts.length) return;
 
-    const message = parts.join(", ");
+    const message = parts.join("\n");
     if (settings.store.toastNotifications) showToast(message, ToastType.INFO);
     if (settings.store.browserNotifications) sendBrowserNotification("Grok Experiments", message);
 }
