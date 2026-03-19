@@ -1,18 +1,28 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.4.0
+// @version      0.4.5
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
+// @homepageURL  https://github.com/imjustprism/Void
+// @icon         https://raw.githubusercontent.com/imjustprism/Void/main/assets/logo.jpg
 // @match        *://grok.com/*
 // @run-at       document-start
+// @noframes
 // @grant        unsafeWindow
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
 // @grant        GM_listValues
+// @connect      self
+// @connect      raw.githubusercontent.com
+// @connect      *
+// @compatible   chrome
+// @compatible   firefox
+// @compatible   edge
+// @compatible   opera
 // @license      GPL-3.0-or-later
 // @supportURL   https://discord.gg/4Rx3qUCR5Y
 // @downloadURL  https://raw.githubusercontent.com/imjustprism/Void/main/userscript/Void.user.js
@@ -20,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.4.0 — A modification for grok.com
+ * Void v0.4.5 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -53,6 +63,7 @@
     showToast: () => showToast,
     showNotice: () => showNotice,
     setThemesEnabled: () => setThemesEnabled,
+    sendBrowserNotification: () => sendBrowserNotification,
     search: () => search,
     sanitizeFilename: () => sanitizeFilename,
     requireModule: () => requireModule,
@@ -590,6 +601,23 @@ ${sourceUrl}`;
       if (!findMatches)
         continue;
       const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
+      if (patch.validateOnly) {
+        for (const replacement of replacements) {
+          if (replacement.predicate && !replacement.predicate())
+            continue;
+          const { match } = replacement;
+          const matches = match instanceof RegExp ? match.test(originalCode) : originalCode.includes(match);
+          if (!matches && !patch.noWarn && !replacement.noWarn) {
+            const anchor = extractAnchor(match);
+            const snippet = anchor ? codeSnippetAround(originalCode, anchor) : "";
+            logger.warn(`[validate] Patch by ${patch.plugin} would have no effect: ${String(match)}${snippet ? `
+Near: …${snippet}…` : ""}`);
+          }
+        }
+        if (!patch.all)
+          patches.splice(i--, 1);
+        continue;
+      }
       const previousCode = code;
       let allSucceeded = true;
       let groupApplied = 0;
@@ -2423,6 +2451,16 @@ Near: …${snippet}…` : ""}`);
   function sanitizeFilename(title, fallback = "file") {
     return title.replace(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replace(/\s+/g, "-") || fallback;
   }
+  function sendBrowserNotification(title, body, icon = "/favicon.ico") {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body, icon });
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then((p) => {
+        if (p === "granted")
+          new Notification(title, { body, icon });
+      });
+    }
+  }
 
   // src/api/Events.ts
   var logger4 = new Logger("Events");
@@ -3172,13 +3210,17 @@ Near: …${snippet}…` : ""}`);
       dep.isDependency = true;
     }
     for (const name in plugins) {
-      if (!isPluginEnabled(name))
-        continue;
+      const enabled = isPluginEnabled(name);
       const plugin = plugins[name];
-      ensureMethodsBound(plugin);
+      if (enabled)
+        ensureMethodsBound(plugin);
       if (plugin.patches) {
-        for (const patch of plugin.patches)
-          addPatch(patch, name);
+        for (const patch of plugin.patches) {
+          if (enabled)
+            addPatch(patch, name);
+          else if (false)
+            ;
+        }
       }
     }
   }
@@ -3323,11 +3365,11 @@ Near: …${snippet}…` : ""}`);
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.4.0")) {
-        logger8.info(`Up to date (${"0.4.0"})`);
+      if (!latest || !isNewer(latest, "0.4.5")) {
+        logger8.info(`Up to date (${"0.4.5"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.4.0"} → ${latest}`);
+      logger8.info(`Update available: ${"0.4.5"} → ${latest}`);
       showNotice({
         message: "Void is outdated, please update to the new version.",
         type: "warning" /* WARNING */,
@@ -3352,11 +3394,11 @@ Near: …${snippet}…` : ""}`);
     required: true,
     patches: [
       {
-        find: "bg-overlay backdrop-blur-[2px]",
+        find: "backdrop-blur-",
         all: true,
         replacement: {
-          match: /backdrop-blur-\[2px\] /,
-          replace: " "
+          match: /backdrop-blur-(?:sm|md|lg|2?xl|\[\w+\]) ?/g,
+          replace: ""
         }
       }
     ]
@@ -3586,7 +3628,8 @@ Near: …${snippet}…` : ""}`);
     min-height: 0;
     margin: 0 0.75rem;
     border: 1px solid var(--border-l1);
-    background: hsl(var(--surface-l2));
+    border-radius: 0.75rem;
+    background: transparent;
     overflow: auto;
     display: grid;
 }
@@ -3618,19 +3661,42 @@ Near: …${snippet}…` : ""}`);
     overflow: hidden;
 }
 
-.void-css-sel { color: hsl(215deg 50% 68%); }
-.void-css-prop { color: hsl(195deg 35% 64%); }
-.void-css-val { color: hsl(28deg 45% 68%); }
-.void-css-str { color: hsl(155deg 30% 64%); }
-.void-css-num { color: hsl(265deg 30% 74%); }
+.void-css-sel {
+    color: hsl(215deg 50% 68%);
+}
+
+.void-css-prop {
+    color: hsl(195deg 35% 64%);
+}
+
+.void-css-val {
+    color: hsl(28deg 45% 68%);
+}
+
+.void-css-str {
+    color: hsl(155deg 30% 64%);
+}
+
+.void-css-num {
+    color: hsl(265deg 30% 74%);
+}
 
 .void-css-com {
     color: hsl(var(--fg-tertiary));
     font-style: italic;
 }
-.void-css-at { color: hsl(335deg 35% 70%); }
-.void-css-brace { color: hsl(var(--fg-secondary)); }
-.void-css-punct { color: hsl(var(--fg-tertiary)); }
+
+.void-css-at {
+    color: hsl(335deg 35% 70%);
+}
+
+.void-css-brace {
+    color: hsl(var(--fg-secondary));
+}
+
+.void-css-punct {
+    color: hsl(var(--fg-tertiary));
+}
 `);
 
   // src/components/settings/tabs/CustomCSSTab.tsx
@@ -4853,14 +4919,41 @@ Near: …${snippet}…` : ""}`);
   var cl11 = classNameFactory("void-experiments-");
   var NEW_FLAG_TTL = 24 * 60 * 60 * 1000;
   var settings2 = definePluginSettings({
-    notifyNewFlags: {
+    toastNotifications: {
       type: 3 /* BOOLEAN */,
-      description: "Show a notification when new experiment flags are added.",
+      description: "Show a toast when experiment flags change.",
+      default: true
+    },
+    browserNotifications: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a browser notification when experiment flags change.",
       default: true
     }
   }).withPrivateSettings();
   function getBooleanKeys(config) {
     return Object.keys(config).filter((k) => typeof config[k] === "boolean");
+  }
+  var lastConfigSnapshot = {};
+  function formatFlagList(label, flags) {
+    if (!flags.length)
+      return "";
+    const names = flags.map(prettifyKey).join(", ");
+    return `${pluralize(flags.length, "flag")} ${label}: ${names}`;
+  }
+  function notifyChanges(newFlags, removedFlags, flipped) {
+    const parts = [
+      formatFlagList("added", newFlags),
+      formatFlagList("removed", removedFlags),
+      formatFlagList("changed", flipped)
+    ].filter(Boolean);
+    if (!parts.length)
+      return;
+    const message = parts.join(`
+`);
+    if (settings2.store.toastNotifications)
+      showToast(message, 3 /* INFO */);
+    if (settings2.store.browserNotifications)
+      sendBrowserNotification("Grok Experiments", message);
   }
   function syncKnownFlags(config) {
     const booleanKeys = getBooleanKeys(config);
@@ -4880,19 +4973,28 @@ Near: …${snippet}…` : ""}`);
         changed = true;
       }
     }
+    const removedFlags = [];
     const currentSet = new Set(booleanKeys);
     for (const key of Object.keys(known)) {
       if (!currentSet.has(key)) {
+        removedFlags.push(key);
         delete known[key];
         changed = true;
       }
     }
+    const flipped = [];
+    if (!firstRun && Object.keys(lastConfigSnapshot).length) {
+      for (const key of booleanKeys) {
+        if (key in lastConfigSnapshot && config[key] !== lastConfigSnapshot[key])
+          flipped.push(key);
+      }
+    }
+    lastConfigSnapshot = Object.fromEntries(booleanKeys.map((k) => [k, !!config[k]]));
     if (changed) {
       settings2.store.knownFlags = { ...known };
     }
-    if (newFlags.length && settings2.store.notifyNewFlags) {
-      showToast(`${pluralize(newFlags.length, "new experiment flag")} added`, 3 /* INFO */);
-    }
+    if (!firstRun)
+      notifyChanges(newFlags, removedFlags, flipped);
   }
   function isNewFlag(key) {
     const seen = settings2.plain.knownFlags?.[key];
@@ -5054,6 +5156,8 @@ Near: …${snippet}…` : ""}`);
     settings: settings2,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
+      if (settings2.store.browserNotifications && Notification.permission === "default")
+        Notification.requestPermission();
       const state = FeatureStore.useFeatureStore.getState();
       if (state.status === "ready")
         syncKnownFlags(state.config);
@@ -5145,9 +5249,9 @@ Near: …${snippet}…` : ""}`);
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.4.0"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"33376f3"}`
-    }, `(${"33376f3"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.4.5"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"1405369"}`
+    }, `(${"1405369"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6814,9 +6918,10 @@ Near: …${snippet}…` : ""}`);
     patches: [
       {
         find: 'displayName="ResponseFamily"',
+        all: true,
         replacement: {
-          match: /(\i)\.parentQuotedText(.{0,10})\(0,(\i)\.jsx\)\((\i)\.MessageBubble/,
-          replace: "$1.parentQuotedText$2$self._renderTimestamp($1),(0,$3.jsx)($4.MessageBubble"
+          match: /:null,\(0,(\i)\.jsx\)\((\i)\.MessageBubble,\{isUser:(\i),isIncognito:(\i),children:!(\i)&&(\i)\?\(0,\1\.jsx\)\((\i)\.Editor,\{initialMessage:(\i)\./,
+          replace: ":null,$self._renderTimestamp($8),(0,$1.jsx)($2.MessageBubble,{isUser:$3,isIncognito:$4,children:!$5&&$6?(0,$1.jsx)($7.Editor,{initialMessage:$8."
         }
       }
     ]
@@ -6863,6 +6968,24 @@ Near: …${snippet}…` : ""}`);
   // src/plugins/queryTracker/index.tsx
   var cl15 = classNameFactory("void-query-tracker-");
   var logger17 = new Logger("QueryTracker");
+  var settings9 = definePluginSettings({
+    toastNotifications: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a toast when model quotas or availability change.",
+      default: true
+    },
+    browserNotifications: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a browser notification when model quotas or availability change.",
+      default: true
+    }
+  });
+  function notify(message) {
+    if (settings9.store.toastNotifications)
+      showToast(message, 3 /* INFO */);
+    if (settings9.store.browserNotifications)
+      sendBrowserNotification("Grok Query Tracker", message);
+  }
   var STORAGE_KEY3 = "void-query-tracker";
   var REFETCH_COOLDOWN = 5 * 60000;
   var trackedModels = {};
@@ -6914,7 +7037,7 @@ Near: …${snippet}…` : ""}`);
   function diffSnapshots(prev, curr) {
     for (const id of Object.keys(curr)) {
       if (!prev[id]) {
-        Toaster.toast.info(`New model: ${curr[id].model.name}`);
+        notify(`New model: ${curr[id].model.name}`);
         continue;
       }
       const pq = prev[id].quota;
@@ -6924,12 +7047,12 @@ Near: …${snippet}…` : ""}`);
       const pEff = getEffectiveQueries(pq);
       const cEff = getEffectiveQueries(cq);
       if (pEff !== cEff || pq.windowSizeSeconds !== cq.windowSizeSeconds) {
-        Toaster.toast.info(`${curr[id].model.name} quota: ${pEff}/${formatWindow(pq.windowSizeSeconds)} → ${cEff}/${formatWindow(cq.windowSizeSeconds)}`);
+        notify(`${curr[id].model.name} quota: ${pEff}/${formatWindow(pq.windowSizeSeconds)} → ${cEff}/${formatWindow(cq.windowSizeSeconds)}`);
       }
     }
     for (const id of Object.keys(prev)) {
       if (!curr[id])
-        Toaster.toast.info(`Model removed: ${prev[id].model.name}`);
+        notify(`Model removed: ${prev[id].model.name}`);
     }
   }
   async function fetchAllModels() {
@@ -7007,8 +7130,11 @@ Near: …${snippet}…` : ""}`);
     name: "QueryTracker",
     description: "Show query quotas in the model selector and notify on changes.",
     authors: [Devs.Prism],
+    settings: settings9,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
+      if (settings9.store.browserNotifications && Notification.permission === "default")
+        Notification.requestPermission();
       fetchAllModels();
       document.addEventListener("visibilitychange", onVisibilityChange);
     },
