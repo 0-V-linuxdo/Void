@@ -41,7 +41,7 @@ export const TOOL_DEFINITIONS = [
                 id: { type: "number", description: "Single module." },
                 max: { type: "number", default: 10 },
                 context: { type: "number", default: 50 },
-                filter: { type: "string", enum: ["loaded", "unloaded"] },
+                filter: { type: "string", enum: ["loaded", "unloaded", "patched"] },
                 count: { type: "boolean", default: false },
             },
             required: [],

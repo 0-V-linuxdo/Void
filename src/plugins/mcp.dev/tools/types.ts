@@ -48,7 +48,7 @@ export interface SearchArgs {
     id?: number;
     max?: number;
     context?: number;
-    filter?: "loaded" | "unloaded";
+    filter?: "loaded" | "unloaded" | "patched";
     count?: boolean;
 }
 

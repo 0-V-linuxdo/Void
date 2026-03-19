@@ -186,14 +186,31 @@ export function handleStore(args: StoreArgs): unknown {
                 : { error: `No method "${method}". Store has no callable methods.` };
         }
         try {
+            const stateBefore = found.store.getState();
             const callResult = (state[method] as Function)(...(callArgs ?? []));
+
+            const buildResult = (v: unknown) => {
+                const stateAfter = found.store.getState();
+                const result: Record<string, unknown> = { _store: found.resolvedName, result: serialize(v, Math.min(depth, STORE.MAX_DEPTH)) };
+                if (isObject(stateBefore) && isObject(stateAfter)) {
+                    const changed: Record<string, { from: unknown; to: unknown }> = {};
+                    const before = stateBefore as Record<string, unknown>;
+                    const after = stateAfter as Record<string, unknown>;
+                    for (const k of new Set([...Object.keys(before), ...Object.keys(after)])) {
+                        if (before[k] !== after[k]) changed[k] = { from: serialize(before[k], STORE.SUBSCRIBE_DEPTH), to: serialize(after[k], STORE.SUBSCRIBE_DEPTH) };
+                    }
+                    if (Object.keys(changed).length) result.stateChanged = changed;
+                }
+                return result;
+            };
+
             if (callResult != null && typeof (callResult as Promise<unknown>).then === "function") {
                 return (callResult as Promise<unknown>).then(
-                    v => ({ _store: found.resolvedName, result: serialize(v, Math.min(depth, STORE.MAX_DEPTH)) }),
+                    v => buildResult(v),
                     (e: unknown) => ({ error: errorMessage(e) }),
                 );
             }
-            return { _store: found.resolvedName, result: serialize(callResult, Math.min(depth, STORE.MAX_DEPTH)) };
+            return buildResult(callResult);
         } catch (e: unknown) {
             return { error: errorMessage(e) };
         }

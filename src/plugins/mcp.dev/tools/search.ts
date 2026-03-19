@@ -32,7 +32,9 @@ function buildSnippet(src: string, idx: number, matchLen: number, ctx: number): 
 }
 
 function shouldSkipModule(id: number, filter: string | undefined, loadedCache: Map<number, unknown> | null): boolean {
-    if (!filter || !loadedCache) return false;
+    if (!filter) return false;
+    if (filter === "patched") return !isModulePatched(id);
+    if (!loadedCache) return false;
     if (filter === "loaded") return !loadedCache.has(id);
     if (filter === "unloaded") return loadedCache.has(id);
     return false;
@@ -45,7 +47,7 @@ export function handleSearch(args: SearchArgs): unknown {
     const cappedMax = Math.min(max, SEARCH.MAX_RESULTS_CAP);
     const wasCapped = max > SEARCH.MAX_RESULTS_CAP;
 
-    if (filter && filter !== "loaded" && filter !== "unloaded") return { error: `Invalid filter: "${filter}". Use "loaded" or "unloaded".` };
+    if (filter && filter !== "loaded" && filter !== "unloaded" && filter !== "patched") return { error: `Invalid filter: "${filter}". Use "loaded", "unloaded", or "patched".` };
     if (!pattern && !andPatterns?.length)
         return { error: 'Provide pattern (string or /regex/) or and[] (array of strings). Use count:true for count-only, filter:"loaded"/"unloaded" to narrow scope.' };
 
