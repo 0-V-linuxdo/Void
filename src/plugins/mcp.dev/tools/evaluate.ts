@@ -6,7 +6,7 @@
 
 import { EVAL } from "./constants";
 import type { EvalArgs, EvalError, EvalResult } from "./types";
-import { formatError, serialize } from "./utils";
+import { formatError, isThenable, serialize } from "./utils";
 
 function evalAsync(code: string): Promise<unknown> {
     return (0, eval)(`(async()=>{${autoReturn(code)}})()`);
@@ -17,7 +17,8 @@ function needsIIFE(code: string): boolean {
     return /^return\s/.test(trimmed) || /^(let|const|var|class)\s/.test(trimmed);
 }
 
-const STATEMENT_RE = /^(return|throw|break|continue|if|for|while|switch|try|class|function|const|let|var)\b/;
+const STATEMENT_RE = /^(return|throw|break|continue|if|for|while|switch|try|class|function|const|let|var|await)\b/;
+const NON_RETURNABLE_RE = /^(return|throw|break|continue|if|for|while|switch|try|class|function|const|let|var)\b/;
 
 function stripTrailingComment(line: string): string {
     let inStr: string | null = null;
@@ -59,7 +60,7 @@ function autoReturn(code: string): string {
         }
         if (lastSemi < trimmedCode.length - 1 && trimmedCode[lastSemi] === ";") {
             const afterSemi = stripTrailingComment(trimmedCode.slice(lastSemi + 1)).trim();
-            if (afterSemi && !STATEMENT_RE.test(afterSemi)) {
+            if (afterSemi && !NON_RETURNABLE_RE.test(afterSemi)) {
                 return `${trimmedCode.slice(0, lastSemi + 1)}\nreturn ${afterSemi};`;
             }
         }
@@ -112,8 +113,8 @@ export function handleEval(args: EvalArgs): unknown {
 
     if (!r.ok) return { error: formatError(r.error) };
 
-    if (r.value != null && typeof (r.value as Promise<unknown>).then === "function") {
-        return (r.value as Promise<unknown>).then(
+    if (isThenable(r.value)) {
+        return r.value.then(
             val => serialize(val, EVAL.SERIALIZE_DEPTH),
             (err: unknown) => ({ error: formatError(err) }),
         );

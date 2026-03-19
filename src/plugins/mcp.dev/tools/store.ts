@@ -9,7 +9,7 @@ import { isObject } from "@utils/guards";
 
 import { SERIALIZE, STORE } from "./constants";
 import type { StoreArgs, StoreEntry, ZustandLike } from "./types";
-import { clamp, describeValue, errorMessage, getPath, serialize } from "./utils";
+import { clamp, describeValue, errorMessage, getPath, isThenable, serialize } from "./utils";
 
 const STORE_ACTIONS = ["list", "get", "keys", "methods", "call", "subscribe"] as const;
 
@@ -71,7 +71,7 @@ function getStoreFromModule(moduleId: number, exportName?: string | null): Zusta
     return null;
 }
 
-function findStoreByQuery(query: string | number): { store: ZustandLike; resolvedName: string } | null {
+function findStoreByQuery(query: string | number): { store: ZustandLike; resolvedName: string; also?: string[] } | null {
     const stores = findStores();
     const numQuery = typeof query === "number" ? query : (String(query).trim().length > 0 ? Number(query) : NaN);
     if (!Number.isNaN(numQuery) && Number.isFinite(numQuery)) {
@@ -83,6 +83,7 @@ function findStoreByQuery(query: string | number): { store: ZustandLike; resolve
 
     let bestMatch: StoreEntry | null = null;
     let bestLen = Infinity;
+    const partialMatches: string[] = [];
 
     for (const entry of stores) {
         if (!entry.name) continue;
@@ -91,14 +92,19 @@ function findStoreByQuery(query: string | number): { store: ZustandLike; resolve
             const store = getStoreFromModule(entry.id, entry.name);
             return store ? { store, resolvedName: entry.name } : null;
         }
-        if (nameLower.includes(lower) && entry.name.length < bestLen) {
-            bestMatch = entry;
-            bestLen = entry.name.length;
+        if (nameLower.includes(lower)) {
+            partialMatches.push(entry.name);
+            if (entry.name.length < bestLen) {
+                bestMatch = entry;
+                bestLen = entry.name.length;
+            }
         }
     }
     if (bestMatch) {
         const store = getStoreFromModule(bestMatch.id, bestMatch.name);
-        return store ? { store, resolvedName: bestMatch.name ?? `module:${bestMatch.id}` } : null;
+        if (!store) return null;
+        const also = partialMatches.filter(n => n !== bestMatch!.name);
+        return { store, resolvedName: bestMatch.name ?? `module:${bestMatch.id}`, ...(also.length && { also }) };
     }
 
     for (const entry of stores) {
@@ -138,7 +144,9 @@ export function handleStore(args: StoreArgs): unknown {
         const state = result.store.getState();
         const maxDepth = path || args.depth != null ? STORE.MAX_DEPTH : STORE.DEFAULT_DEPTH;
         const value = path ? getPath(state, path) : state;
-        return { _store: result.resolvedName, value: serialize(value, Math.min(depth, maxDepth)) };
+        const out: Record<string, unknown> = { _store: result.resolvedName, value: serialize(value, Math.min(depth, maxDepth)) };
+        if (result.also?.length) out._also = result.also;
+        return out;
     }
 
     if (action === "keys") {
@@ -146,16 +154,17 @@ export function handleStore(args: StoreArgs): unknown {
         const result = findStoreByQuery(query);
         if (!result) return storeNotFound(query);
         const state = result.store.getState();
-        if (!isObject(state)) return { _store: result.resolvedName, keys: [] };
+        const target = path ? getPath(state, path) : state;
+        if (!isObject(target)) return { _store: result.resolvedName, ...(path && { path }), keys: [] };
         const keys: Record<string, string> = {};
-        for (const k of Object.keys(state)) {
+        for (const k of Object.keys(target as Record<string, unknown>)) {
             try {
-                keys[k] = describeValue(state[k]);
+                keys[k] = describeValue((target as Record<string, unknown>)[k]);
             } catch {
                 keys[k] = "!";
             }
         }
-        return { _store: result.resolvedName, keys };
+        return { _store: result.resolvedName, ...(path && { path }), keys };
     }
 
     if (action === "methods") {
@@ -204,8 +213,8 @@ export function handleStore(args: StoreArgs): unknown {
                 return result;
             };
 
-            if (callResult != null && typeof (callResult as Promise<unknown>).then === "function") {
-                return (callResult as Promise<unknown>).then(
+            if (isThenable(callResult)) {
+                return callResult.then(
                     v => buildResult(v),
                     (e: unknown) => ({ error: errorMessage(e) }),
                 );

@@ -12,6 +12,10 @@ import type { Anchor, SuggestCandidate } from "./types";
 
 export { clamp, errorMessage } from "@utils/misc";
 
+export function isThenable(value: unknown): value is PromiseLike<unknown> {
+    return value != null && typeof (value as PromiseLike<unknown>).then === "function";
+}
+
 const INTERNAL_FRAME_RE = /tryEval|evalAsync|handleEval|ws\.onmessage|<anonymous>:\d+:\d+\)$/;
 
 export function formatError(err: unknown): string {
@@ -391,8 +395,8 @@ function collectRawAnchors(
         while ((m = jsxRe.exec(src)) !== null) collect(m[1], "jsx", m.index);
     }
 
-    const codegenRe = /\b(idsert\w+|idsertAndCache\w+)\b/g;
-    while ((m = codegenRe.exec(src)) !== null) collect(m[1], "codegen", m.index);
+    const codegenRe = /"(idsert\w*|lisert\w*)"/g;
+    while ((m = codegenRe.exec(src)) !== null) collect(`"${m[1]}"`, "codegen", m.index);
 
     const propRe = re.propAccess(propMinLen);
     while ((m = propRe.exec(src)) !== null) collect(m[1], "prop", m.index);

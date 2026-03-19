@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { getModuleCache } from "@turbopack/patchTurbopack";
+import { getModuleCache, getRuntimeFactoryRegistry } from "@turbopack/patchTurbopack";
 import { Logger } from "@utils/Logger";
 
 import { INTERCEPT } from "./constants";
 import type { Capture, InterceptArgs, InterceptState } from "./types";
-import { clamp, errorMessage, serialize } from "./utils";
+import { clamp, errorMessage, isThenable, serialize } from "./utils";
 
 const logger = new Logger("MCP:Intercept");
 
@@ -40,7 +40,10 @@ export function handleIntercept(args: InterceptArgs): unknown {
         if (moduleId == null) return { error: "Provide moduleId" };
 
         const exports = getModuleCache().get(Number(moduleId));
-        if (!exports || typeof exports !== "object") return { error: `Module ${moduleId} not found or not an object` };
+        if (!exports || typeof exports !== "object") {
+            const hasFactory = getRuntimeFactoryRegistry()?.has(Number(moduleId));
+            return { error: hasFactory ? `Module ${moduleId} exists but is not loaded. Use module load action first.` : `Module ${moduleId} not found.` };
+        }
 
         const parts = exportKey.split(".");
         let holder = exports as Record<string, unknown>;
@@ -85,10 +88,10 @@ export function handleIntercept(args: InterceptArgs): unknown {
                 const ret = original.apply(this, callArgs);
                 const d = Math.round((performance.now() - callStart) * 100) / 100;
                 if (state.captures.length < maxCaptures) {
-                    if (ret != null && typeof (ret as Promise<unknown>).then === "function") {
+                    if (isThenable(ret)) {
                         const capture: Capture = { t: elapsed, d, args: serialize(callArgs, INTERCEPT.SERIALIZE_DEPTH), ret: "[Promise:pending]" };
                         state.captures.push(capture);
-                        (ret as Promise<unknown>).then(
+                        ret.then(
                             v => { capture.ret = serialize(v, INTERCEPT.SERIALIZE_DEPTH); },
                             e => { capture.ret = null; capture.err = errorMessage(e); },
                         );

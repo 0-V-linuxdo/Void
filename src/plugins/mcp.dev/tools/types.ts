@@ -112,8 +112,6 @@ export interface GrokArgs {
     reasoningMode?: string;
 }
 
-export type ToolArgs = ModuleArgs | SearchArgs | EvalArgs | PatchArgs | PluginArgs | ReactArgs | StoreArgs | InterceptArgs | GrokArgs;
-
 export type ToolHandler = (args: any) => unknown;
 
 export interface SuggestCandidate {
