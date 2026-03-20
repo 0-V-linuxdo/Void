@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.4.6
+// @version      0.4.7
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.4.6 — A modification for grok.com
+ * Void v0.4.7 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -3345,11 +3345,11 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.4.6")) {
-        logger8.info(`Up to date (${"0.4.6"})`);
+      if (!latest || !isNewer(latest, "0.4.7")) {
+        logger8.info(`Up to date (${"0.4.7"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.4.6"} → ${latest}`);
+      logger8.info(`Update available: ${"0.4.7"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3402,7 +3402,7 @@ ${sourceUrl}`;
       {
         find: '"after-init"),(0,',
         replacement: {
-          match: /function (\i)\(\)\{if\(!Object\.prototype\.hasOwnProperty.{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}/,
+          match: /function (\i)\(\)\{if\(!Object\.prototype\.hasOwnProperty.{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}catch\(\i\)\{.{0,80}\}\}/,
           replace: "function $1(){}"
         }
       },
@@ -5230,9 +5230,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.4.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"a6c689e"}`
-    }, `(${"a6c689e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.4.7"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"a797a67"}`
+    }, `(${"a797a67"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
