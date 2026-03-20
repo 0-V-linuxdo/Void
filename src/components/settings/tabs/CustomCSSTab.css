@@ -24,8 +24,11 @@
     grid-area: 1 / 1;
     margin: 0;
     padding: 12px;
+    font-family: var(--font-ibm-plex-mono), ui-monospace, Consolas, monospace;
     font-size: 13px;
     line-height: 1.5;
+    letter-spacing: normal;
+    word-spacing: normal;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     tab-size: 4;
