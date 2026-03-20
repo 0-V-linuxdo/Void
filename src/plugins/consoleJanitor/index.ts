@@ -21,7 +21,15 @@ export default definePlugin({
             },
         },
         {
-            find: "DialogDescriptionWarning",
+            find: "useDrawerContext must be used within a Drawer.Root",
+            all: true,
+            replacement: {
+                match: /console\.warn\(\i\)/,
+                replace: "void 0",
+            },
+        },
+        {
+            find: 'displayName="DialogFooter"',
             all: true,
             replacement: {
                 match: /console\.warn\(\i\)/,

@@ -57,11 +57,11 @@ export default definePlugin({
 
     patches: [
         {
-            find: 'displayName="ResponseFamily"',
+            find: "response-family:handleEditSave",
             all: true,
             replacement: {
-                match: /:null,\(0,(\i)\.jsx\)\((\i)\.MessageBubble,\{isUser:(\i),isIncognito:(\i),children:!(\i)&&(\i)\?\(0,\1\.jsx\)\((\i)\.Editor,\{initialMessage:(\i)\./,
-                replace: ":null,$self._renderTimestamp($8),(0,$1.jsx)($2.MessageBubble,{isUser:$3,isIncognito:$4,children:!$5&&$6?(0,$1.jsx)($7.Editor,{initialMessage:$8.",
+                match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,children:!\i&&\i\?\(0,\i\.jsx\)\(\i\.Editor,\{initialMessage:(\i)\./,
+                replace: "$self._renderTimestamp($1),$&",
             },
         },
     ],

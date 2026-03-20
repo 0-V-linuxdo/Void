@@ -53,7 +53,7 @@ export default definePlugin({
             },
         },
         {
-            find: '"AvatarDropdownMenu",()=>',
+            find: '"user-dropdown.upgrade","Upgrade plan"',
             all: true,
             replacement: {
                 match: /"Sign Out"\)\]\}\)/,

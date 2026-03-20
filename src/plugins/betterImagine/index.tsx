@@ -699,9 +699,15 @@ export default definePlugin({
                     replace: "$&,$self._renderActionToolbar({}),$self._renderDownloadAll({})",
                 },
                 {
-                    match: /(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\2\.useMediaStore\)\(\i=>\i\.list\)/,
-                    replace: "$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)",
+                    match: /(?<=(\i))=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\2\.useMediaStore\)\(\i=>\i\.list\)/,
+                    replace: "=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)",
                 },
+            ],
+        },
+        {
+            find: "image_feed_image_selected",
+            group: true,
+            replacement: [
                 {
                     match: /muted:!0,autoPlay:!0/g,
                     replace: "muted:!0,autoPlay:$self._autoPlay()",
@@ -715,11 +721,7 @@ export default definePlugin({
                     replace: "children:[$self._renderSelectOverlay({postId:$3}),(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})",
                 },
                 {
-                    match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/,
-                    replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})",
-                },
-                {
-                    match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/,
+                    match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/g,
                     replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})",
                 },
             ],

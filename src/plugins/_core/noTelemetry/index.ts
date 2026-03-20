@@ -15,17 +15,17 @@ export default definePlugin({
 
     patches: [
         {
-            find: "ingest.us.sentry.io",
+            find: '"opentelemetry.js.api."',
             replacement: {
-                match: /e\.s\(\["onRouterTransitionStart",\(\)=>\i\],(\d+)\);var/,
-                replace: 'e.s(["onRouterTransitionStart",()=>function(){}],$1);return;var',
+                match: /(\i\.s\(\["onRouterTransitionStart",\(\)=>)\i\],(\d+)\);var/,
+                replace: "$1function(){}],$2);return;var",
             },
         },
         {
             find: '"after-init"),(0,',
             replacement: {
-                match: /function (\i)\(\)\{if\(!Object\.prototype\.hasOwnProperty.{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}catch\(\i\)\{.{0,80}\}\}/,
-                replace: "function $1(){}",
+                match: /(function \i\(\)\{)if\(!Object\.prototype\.hasOwnProperty\.call\(\i\.\i,"get_distinct_id"\)\)try\{/,
+                replace: "$1return}function _ignore(){try{",
             },
         },
         {

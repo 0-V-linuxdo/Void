@@ -254,6 +254,7 @@ export default definePlugin({
     patches: [
         {
             find: "avatar_menu_click",
+            all: true,
             replacement: {
                 match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{children:\[.{0,100}"user-dropdown\.help"/,
                 replace: "(0,$1.jsx)($self._VoidMenu,{}),$&",
@@ -271,18 +272,21 @@ export default definePlugin({
             find: "pressed_cmd_settings",
             replacement: [
                 {
-                    match: /(\i\.jsx)\)\((\i),\{icon:\i\.DatabaseIcon,.{0,80}tab:"data"\}\)/,
+                    match: /(?<=(\i\.jsx)\)\((\i),\{icon:\i\.)DatabaseIcon,.{0,80}tab:"data"\}\)/,
                     replace: "$&,...$self.renderTabs($1,$2)",
                 },
                 {
                     match: /"data"===(\i)&&\i\.user&&\(0,(\i\.jsx)\)\((\i),\{children:/,
                     replace: "...$self.renderPanels($2,$1,$3),$&",
                 },
-                {
-                    match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,120}:\i\.userId\}\)/,
-                    replace: "!$self._hideUserId()&&$&",
-                },
             ],
+        },
+        {
+            find: "settings-account-card",
+            replacement: {
+                match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,120}:\i\.userId\}\)/,
+                replace: "!$self._hideUserId()&&$&",
+            },
         },
     ],
 });
