@@ -8,7 +8,7 @@ import { Button } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { DownloadIcon } from "@components/icons";
 import { Spinner } from "@turbopack/common/components";
-import { React, useCallback, useState } from "@turbopack/common/react";
+import { React, useCallback, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, TextToSpeechStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
@@ -40,18 +40,21 @@ async function fetchAndDownload() {
 
 function DownloadButton() {
     const [loading, setLoading] = useState(false);
+    const busyRef = useRef(false);
 
     const onClick = useCallback(async () => {
-        if (loading) return;
+        if (busyRef.current) return;
+        busyRef.current = true;
         setLoading(true);
         try {
             await fetchAndDownload();
         } catch (e) {
             logger.error("Failed to download TTS audio:", e);
         } finally {
+            busyRef.current = false;
             setLoading(false);
         }
-    }, [loading]);
+    }, []);
 
     return (
         <Button
