@@ -63,12 +63,18 @@ function forwardToPage(id: string | number, tool: string, args: Record<string, u
     });
 }
 
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Private-Network": "true",
-} as const;
+function corsFor(req: Request) {
+    const origin = req.headers.get("origin") ?? "";
+    const allowed = origin === "https://grok.com" || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")
+        ? origin
+        : "https://grok.com";
+    return {
+        "Access-Control-Allow-Origin": allowed,
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Private-Network": "true",
+    } as const;
+}
 
 const server = Bun.serve({
     port: MCP.PORT,
@@ -78,33 +84,35 @@ const server = Bun.serve({
             return new Response("Upgrade failed", { status: 400 });
         }
 
-        if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-        if (req.method !== "POST") return Response.json(jsonRpc(null, undefined, { code: -32600, message: "POST only" }), { headers: corsHeaders });
+        const headers = corsFor(req);
+
+        if (req.method === "OPTIONS") return new Response(null, { headers });
+        if (req.method !== "POST") return Response.json(jsonRpc(null, undefined, { code: -32600, message: "POST only" }), { headers });
 
         let body: JsonRpcRequest;
         try {
             const parsed = await req.json();
             if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-                return Response.json(jsonRpc(null, undefined, { code: -32600, message: "Request must be a JSON object" }), { headers: corsHeaders });
+                return Response.json(jsonRpc(null, undefined, { code: -32600, message: "Request must be a JSON object" }), { headers });
             }
             body = parsed;
         } catch {
-            return Response.json(jsonRpc(null, undefined, { code: -32700, message: "Parse error" }), { headers: corsHeaders });
+            return Response.json(jsonRpc(null, undefined, { code: -32700, message: "Parse error" }), { headers });
         }
 
         const { id, method, params } = body;
 
         if (method === "initialize")
-            return Response.json(jsonRpc(id, { protocolVersion: "2024-11-05", serverInfo: { name: "void-mcp", version: pkg.version }, capabilities: { tools: {} } }), { headers: corsHeaders });
+            return Response.json(jsonRpc(id, { protocolVersion: "2024-11-05", serverInfo: { name: "void-mcp", version: pkg.version }, capabilities: { tools: {} } }), { headers });
 
-        if (method === "notifications/initialized" || method === "ping") return Response.json(jsonRpc(id, {}), { headers: corsHeaders });
+        if (method === "notifications/initialized" || method === "ping") return Response.json(jsonRpc(id, {}), { headers });
 
-        if (method === "tools/list") return Response.json(jsonRpc(id, { tools: TOOL_DEFINITIONS }), { headers: corsHeaders });
+        if (method === "tools/list") return Response.json(jsonRpc(id, { tools: TOOL_DEFINITIONS }), { headers });
 
         if (method === "tools/call") {
             const tool = params?.name;
-            if (!tool) return Response.json(jsonRpc(id, undefined, { code: -32602, message: "Missing tool name" }), { headers: corsHeaders });
-            if (id == null) return Response.json(jsonRpc(null, undefined, { code: -32600, message: "Missing request id" }), { headers: corsHeaders });
+            if (!tool) return Response.json(jsonRpc(id, undefined, { code: -32602, message: "Missing tool name" }), { headers });
+            if (id == null) return Response.json(jsonRpc(null, undefined, { code: -32600, message: "Missing request id" }), { headers });
 
             totalCalls++;
             const start = performance.now();
@@ -116,15 +124,15 @@ const server = Bun.serve({
                 const ms = Number(elapsed);
                 if (ms > SLOW_THRESHOLD) logger.warn(`${tool} ${elapsed} ms (${text.length} chars)`);
                 else logger.info(`${tool} ${elapsed} ms (${text.length} chars)`);
-                return Response.json(jsonRpc(id, { content: [{ type: "text", text }] }), { headers: corsHeaders });
+                return Response.json(jsonRpc(id, { content: [{ type: "text", text }] }), { headers });
             } catch (err: unknown) {
                 const message = errorMessage(err);
                 logger.error(`${tool} FAILED: ${message}`);
-                return Response.json(jsonRpc(id, { content: [{ type: "text", text: message }], isError: true }), { headers: corsHeaders });
+                return Response.json(jsonRpc(id, { content: [{ type: "text", text: message }], isError: true }), { headers });
             }
         }
 
-        return Response.json(jsonRpc(id, undefined, { code: -32601, message: `Unknown method: ${method}` }), { headers: corsHeaders });
+        return Response.json(jsonRpc(id, undefined, { code: -32601, message: `Unknown method: ${method}` }), { headers });
     },
 
     websocket: {

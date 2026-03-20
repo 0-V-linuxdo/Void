@@ -41,7 +41,7 @@ function getCurrentConversationId(): string | undefined {
 }
 
 function clickInternalLink(path: string): boolean {
-    const link = document.querySelector(`a[href="${path}"]`) as HTMLElement | null;
+    const link = document.querySelector(`a[href="${CSS.escape(path)}"]`) as HTMLElement | null;
     if (link) {
         link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
         return true;
@@ -132,12 +132,12 @@ function waitForResponse(conversationId: string | undefined, beforeCount: number
         const check = () => {
             if (state.done) return;
 
-            const convId = conversationId || ChatPageStore.useChatPageStore.getState().conversationId;
+            const chatState = ChatPageStore.useChatPageStore.getState();
+            const convId = conversationId || chatState.conversationId;
             if (!convId) return;
 
-            const { isRateLimited, isUnauthenticated } = ChatPageStore.useChatPageStore.getState();
-            if (isRateLimited) return fail(typeof isRateLimited === "string" ? isRateLimited : "Rate limited");
-            if (isUnauthenticated) return fail("Authentication required");
+            if (chatState.isRateLimited) return fail(typeof chatState.isRateLimited === "string" ? chatState.isRateLimited : "Rate limited");
+            if (chatState.isUnauthenticated) return fail("Authentication required");
 
             const responses = ResponseStore.useResponseStore.getState().byConversationId?.[convId] as any[] | undefined;
             if (!responses || responses.length <= beforeCount) return;
@@ -153,7 +153,9 @@ function waitForResponse(conversationId: string | undefined, beforeCount: number
             });
         };
 
-        const unsub = ResponseStore.useResponseStore.subscribe(check);
+        const unsub1 = ResponseStore.useResponseStore.subscribe(check);
+        const unsub2 = ChatPageStore.useChatPageStore.subscribe(check);
+        const unsub = () => { unsub1(); unsub2(); };
         check();
     });
 }

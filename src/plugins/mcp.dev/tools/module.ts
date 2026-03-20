@@ -482,7 +482,7 @@ export function handleModule(args: ModuleArgs): unknown {
             return { error: hasFactory ? `Module ${id} not loaded, use load action first.` : `Module ${id} not found.` };
         }
         const exports = exportCache.get(id);
-        const target = (typeof exports === "object" ? exports : { default: exports }) as Record<string, unknown>;
+        const target = (exports != null && typeof exports === "object" ? exports : { default: exports }) as Record<string, unknown>;
         const keys = Object.keys(target);
         const result: Record<string, string> = {};
         const cap = clampDefault(args.limit && args.limit > 0 ? args.limit : undefined, MODULE.DEFAULT_EXPORT_KEYS, MODULE.MAX_EXPORT_KEYS);

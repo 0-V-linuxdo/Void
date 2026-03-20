@@ -196,7 +196,7 @@ export function handleStore(args: StoreArgs): unknown {
         }
         try {
             const stateBefore = found.store.getState();
-            const callResult = (state[method] as Function)(...(callArgs ?? []));
+            const callResult = (state[method] as Function)(...(Array.isArray(callArgs) ? callArgs : []));
 
             const buildResult = (v: unknown) => {
                 const stateAfter = found.store.getState();

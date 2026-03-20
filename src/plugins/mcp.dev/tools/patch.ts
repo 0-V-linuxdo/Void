@@ -93,15 +93,15 @@ function longestLiteral(matchStr: string): string {
                     if (current.length > best.length) best = current;
                     current = "";
                     i++;
-                    if (next === "e" && matchStr[i + 1] === "{") {
-                        const close = matchStr.indexOf("}", i + 2);
+                    if (next === "e" && i < matchStr.length && matchStr[i] === "{") {
+                        const close = matchStr.indexOf("}", i + 1);
                         if (close !== -1) i = close;
-                    } else if ((next === "u" || next === "p" || next === "P" || next === "k") && i + 1 < matchStr.length && matchStr[i + 1] === "{") {
-                        const close = matchStr.indexOf("}", i + 2);
+                    } else if ((next === "u" || next === "p" || next === "P" || next === "k") && i < matchStr.length && matchStr[i] === "{") {
+                        const close = matchStr.indexOf("}", i + 1);
                         if (close !== -1) i = close;
                     } else if (next === "x") {
                         i += 2;
-                    } else if (next === "u" && i + 1 < matchStr.length && matchStr[i + 1] !== "{") {
+                    } else if (next === "u" && i < matchStr.length && matchStr[i] !== "{") {
                         i += 4;
                     }
                 } else {
