@@ -191,7 +191,7 @@ Types: `BOOLEAN`, `STRING`, `NUMBER`, `SELECT`, `SLIDER`, `COMPONENT`.
 ### Rules
 
 - Every `find` must match exactly 1 module (or shared factory group). Verify with MCP.
-- Good `find` anchors: i18n keys, displayName strings, feature flags, prop names.
+- Good `find` anchors: i18n keys, displayName strings, feature flags, prop names. Pick something unique and semantically related to the feature being patched — not a generic string that happens to be in the same module.
 - Every `match` regex must contain a stable string literal. Pure `\i` chains break on updates.
 - Use `$&` to append/prepend. Only use capture groups when reusing content.
 - Use `group: true` for multi-step transforms instead of one massive regex.
