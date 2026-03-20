@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.4.5
+// @version      0.4.6
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.4.5 — A modification for grok.com
+ * Void v0.4.6 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -576,17 +576,6 @@ ${sourceUrl}`;
       }
     }
   }
-  function extractAnchor(match) {
-    const source = match instanceof RegExp ? match.source : match;
-    const literals = source.match(/(?:[A-Za-z_]{3,}(?:\.[A-Za-z_]+)*|"[^"]{2,}"|'[^']{2,}')/g);
-    return literals?.[0]?.replace(/^["']|["']$/g, "") ?? null;
-  }
-  function codeSnippetAround(code, anchor, radius = 60) {
-    const idx = code.indexOf(anchor);
-    if (idx === -1)
-      return "";
-    return code.slice(Math.max(0, idx - radius), idx + anchor.length + radius).replace(/\n/g, "\\n");
-  }
   function patchFactory(moduleId, factory) {
     if (!patches.length)
       return factory;
@@ -608,10 +597,7 @@ ${sourceUrl}`;
           const { match } = replacement;
           const matches = match instanceof RegExp ? match.test(originalCode) : originalCode.includes(match);
           if (!matches && !patch.noWarn && !replacement.noWarn) {
-            const anchor = extractAnchor(match);
-            const snippet = anchor ? codeSnippetAround(originalCode, anchor) : "";
-            logger.warn(`[validate] Patch by ${patch.plugin} would have no effect: ${String(match)}${snippet ? `
-Near: …${snippet}…` : ""}`);
+            logger.warn(`[validate] ${patch.plugin}: ${String(match)}`);
           }
         }
         if (!patch.all)
@@ -643,12 +629,6 @@ Near: …${snippet}…` : ""}`);
           if (newCode === code) {
             groupNoEffect++;
             result.replacements.push({ match: String(match), status: "noEffect" });
-            if (!patch.noWarn && !replacement.noWarn) {
-              const anchor = extractAnchor(match);
-              const snippet = anchor ? codeSnippetAround(code, anchor) : "";
-              logger.error(`Patch by ${patch.plugin} had no effect: ${String(match)}${snippet ? `
-Near: …${snippet}…` : ""}`);
-            }
             if (patch.group) {
               allSucceeded = false;
               break;
@@ -812,9 +792,9 @@ Near: …${snippet}…` : ""}`);
       for (const result of patchResults) {
         for (const rep of result.replacements) {
           if (rep.status === "noEffect")
-            logger.error(`[no effect] ${result.plugin} on ${result.moduleId}: ${rep.match}`);
+            logger.error(`[no effect] ${result.plugin}: ${rep.match}`);
           else if (rep.status === "error")
-            logger.error(`[error] ${result.plugin} on ${result.moduleId}: ${rep.match}`);
+            logger.error(`[error] ${result.plugin}: ${rep.match}`);
         }
       }
     }
@@ -3365,11 +3345,12 @@ Near: …${snippet}…` : ""}`);
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.4.5")) {
-        logger8.info(`Up to date (${"0.4.5"})`);
+      if (!latest || !isNewer(latest, "0.4.6")) {
+        logger8.info(`Up to date (${"0.4.6"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.4.5"} → ${latest}`);
+      logger8.info(`Update available: ${"0.4.6"} → ${latest}`);
+      await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
         type: "warning" /* WARNING */,
@@ -3421,7 +3402,7 @@ Near: …${snippet}…` : ""}`);
       {
         find: '"after-init"),(0,',
         replacement: {
-          match: /function (\i)\(\)\{if\(Object\.prototype\.hasOwnProperty[\s\S]{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}/,
+          match: /function (\i)\(\)\{if\(!Object\.prototype\.hasOwnProperty.{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}/,
           replace: "function $1(){}"
         }
       },
@@ -5181,7 +5162,7 @@ Near: …${snippet}…` : ""}`);
         }
       },
       {
-        find: "Feature flag overrides active",
+        find: "pressed_cmd_settings",
         replacement: {
           match: /\i\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
           replace: "void 0"
@@ -5249,9 +5230,9 @@ Near: …${snippet}…` : ""}`);
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.4.5"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"1405369"}`
-    }, `(${"1405369"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.4.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"a6c689e"}`
+    }, `(${"a6c689e"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5591,7 +5572,8 @@ Near: …${snippet}…` : ""}`);
       size: "sm",
       onClick: () => setOpen(true)
     }, /* @__PURE__ */ React.createElement(TrashIcon, {
-      size: 18
+      size: 18,
+      className: "text-fg-secondary"
     })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: open2,
       onOpenChange: setOpen,
@@ -6440,7 +6422,7 @@ Near: …${snippet}…` : ""}`);
             replace: "$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)"
           },
           {
-            match: /muted:!0,autoPlay:!0/,
+            match: /muted:!0,autoPlay:!0/g,
             replace: "muted:!0,autoPlay:$self._autoPlay()"
           },
           {
@@ -6957,212 +6939,6 @@ Near: …${snippet}…` : ""}`);
     }
   });
 
-  // void-css:D:/Projects/Void/src/plugins/queryTracker/styles.css
-  registerStyle("queryTracker", `.void-query-tracker-chip-wrapper {
-    display: inline-flex;
-    vertical-align: middle;
-    margin-left: 0.375rem;
-}
-`);
-
-  // src/plugins/queryTracker/index.tsx
-  var cl15 = classNameFactory("void-query-tracker-");
-  var logger17 = new Logger("QueryTracker");
-  var settings9 = definePluginSettings({
-    toastNotifications: {
-      type: 3 /* BOOLEAN */,
-      description: "Show a toast when model quotas or availability change.",
-      default: true
-    },
-    browserNotifications: {
-      type: 3 /* BOOLEAN */,
-      description: "Show a browser notification when model quotas or availability change.",
-      default: true
-    }
-  });
-  function notify(message) {
-    if (settings9.store.toastNotifications)
-      showToast(message, 3 /* INFO */);
-    if (settings9.store.browserNotifications)
-      sendBrowserNotification("Grok Query Tracker", message);
-  }
-  var STORAGE_KEY3 = "void-query-tracker";
-  var REFETCH_COOLDOWN = 5 * 60000;
-  var trackedModels = {};
-  var lastFetchTime = 0;
-  var store4 = createExternalStore();
-  function formatWindow(seconds) {
-    const hours = seconds / 3600;
-    if (hours >= 1)
-      return `${hours}h`;
-    return `${Math.round(seconds / 60)}m`;
-  }
-  function getEffectiveQueries(quota) {
-    if (quota.totalTokens && quota.highEffortQueries)
-      return quota.highEffortQueries;
-    return quota.totalQueries;
-  }
-  function parseQuota(res) {
-    return {
-      totalQueries: res.totalQueries,
-      totalTokens: res.totalTokens,
-      windowSizeSeconds: res.windowSizeSeconds,
-      lowEffortQueries: res.lowEffortRateLimits && res.totalTokens ? Math.floor(res.totalTokens / res.lowEffortRateLimits.cost) : undefined,
-      highEffortQueries: res.highEffortRateLimits && res.totalTokens ? Math.floor(res.totalTokens / res.highEffortRateLimits.cost) : undefined
-    };
-  }
-  async function fetchRateLimit(modelName, requestKind = "DEFAULT") {
-    try {
-      return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName, requestKind } });
-    } catch (e) {
-      logger17.warn("Failed to fetch rate limit for", modelName, e);
-      return null;
-    }
-  }
-  function loadPreviousSnapshot() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY3);
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  }
-  function saveSnapshot(snapshot) {
-    try {
-      localStorage.setItem(STORAGE_KEY3, JSON.stringify(snapshot));
-    } catch (e) {
-      logger17.warn("Failed to save snapshot:", e);
-    }
-  }
-  function diffSnapshots(prev, curr) {
-    for (const id of Object.keys(curr)) {
-      if (!prev[id]) {
-        notify(`New model: ${curr[id].model.name}`);
-        continue;
-      }
-      const pq = prev[id].quota;
-      const cq = curr[id].quota;
-      if (!pq || !cq)
-        continue;
-      const pEff = getEffectiveQueries(pq);
-      const cEff = getEffectiveQueries(cq);
-      if (pEff !== cEff || pq.windowSizeSeconds !== cq.windowSizeSeconds) {
-        notify(`${curr[id].model.name} quota: ${pEff}/${formatWindow(pq.windowSizeSeconds)} → ${cEff}/${formatWindow(cq.windowSizeSeconds)}`);
-      }
-    }
-    for (const id of Object.keys(prev)) {
-      if (!curr[id])
-        notify(`Model removed: ${prev[id].model.name}`);
-    }
-  }
-  async function fetchAllModels() {
-    const now = Date.now();
-    if (now - lastFetchTime < REFETCH_COOLDOWN)
-      return;
-    lastFetchTime = now;
-    try {
-      const res = await ApiClients.modelsApi.modelsGetModels({ body: { locale: "en" } });
-      const allModels = [...res.models ?? [], ...res.unavailableModels ?? []];
-      const prev = loadPreviousSnapshot();
-      const next = {};
-      const quotas = await Promise.all(allModels.map((m) => fetchRateLimit(m.modelId)));
-      for (let i = 0;i < allModels.length; i++) {
-        const m = allModels[i];
-        next[m.modelId] = {
-          model: {
-            modelId: m.modelId,
-            name: m.name ?? m.modelId,
-            description: m.description,
-            modelMode: m.modelMode,
-            promptingBackend: m.promptingBackend,
-            tags: m.tags
-          },
-          quota: quotas[i] ? parseQuota(quotas[i]) : null
-        };
-      }
-      if (Object.keys(prev).length > 0)
-        diffSnapshots(prev, next);
-      trackedModels = next;
-      saveSnapshot(next);
-      store4.notify();
-    } catch (e) {
-      logger17.error("Failed to fetch models:", e);
-    }
-  }
-  function onVisibilityChange() {
-    if (document.visibilityState === "visible")
-      fetchAllModels();
-  }
-  var MODE_TO_CONFIG = {
-    fast: "MODEL_MODE_FAST",
-    expert: "MODEL_MODE_EXPERT",
-    heavy: "MODEL_MODE_HEAVY",
-    auto: "MODEL_MODE_AUTO",
-    "grok-4-mini-thinking": "MODEL_MODE_GROK_4_MINI_THINKING",
-    "grok-4-1": "MODEL_MODE_GROK_4_1",
-    "grok-4-1-thinking": "MODEL_MODE_GROK_4_1_THINKING",
-    "grok-4-1-nightly": "MODEL_MODE_GROK_4_1_NIGHTLY",
-    "grok-420": "MODEL_MODE_GROK_420"
-  };
-  function resolveTracked(id) {
-    const configMode = MODE_TO_CONFIG[id];
-    if (configMode)
-      return Object.values(trackedModels).find((t) => t.model.modelMode === configMode);
-    return trackedModels[id] ?? Object.values(trackedModels).find((t) => t.model.modelId === id);
-  }
-  function QuotaChip({ modelId }) {
-    useExternalStore(store4);
-    const tracked = resolveTracked(modelId);
-    if (!tracked?.quota)
-      return null;
-    if (tracked.model.modelMode === "MODEL_MODE_AUTO")
-      return null;
-    const eff = getEffectiveQueries(tracked.quota);
-    if (!eff)
-      return null;
-    return /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
-      asChild: true
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl15("chip-wrapper")
-    }, /* @__PURE__ */ React.createElement(Chip, null, eff, "/", formatWindow(tracked.quota.windowSizeSeconds)))), /* @__PURE__ */ React.createElement(TooltipContent, null, /* @__PURE__ */ React.createElement("div", null, eff, " queries / ", formatWindow(tracked.quota.windowSizeSeconds)), !!tracked.quota.totalTokens && /* @__PURE__ */ React.createElement("div", null, "Token budget: ", tracked.quota.totalTokens), !!tracked.quota.lowEffortQueries && /* @__PURE__ */ React.createElement("div", null, "Fast: ", tracked.quota.lowEffortQueries, " queries"), !!tracked.quota.highEffortQueries && /* @__PURE__ */ React.createElement("div", null, "Expert: ", tracked.quota.highEffortQueries, " queries")));
-  }
-  var queryTracker_default = definePlugin({
-    name: "QueryTracker",
-    description: "Show query quotas in the model selector and notify on changes.",
-    authors: [Devs.Prism],
-    settings: settings9,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      if (settings9.store.browserNotifications && Notification.permission === "default")
-        Notification.requestPermission();
-      fetchAllModels();
-      document.addEventListener("visibilitychange", onVisibilityChange);
-    },
-    stop() {
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      trackedModels = {};
-      lastFetchTime = 0;
-    },
-    _renderQuotaChip: ErrorBoundary.wrap(QuotaChip),
-    patches: [
-      {
-        find: "model-mode-select-upsell",
-        replacement: {
-          match: /label:(\i)\.prettyModeName/,
-          replace: "label:[$1.prettyModeName,$self._renderQuotaChip({modelId:$1.mode})]"
-        }
-      },
-      {
-        find: "mode-select.search-placeholder",
-        all: true,
-        replacement: {
-          match: /"font-semibold text-sm",children:null!=\((\i)=(\i)\.title\)\?\1:""\}/,
-          replace: '"font-semibold text-sm",children:[null!=($1=$2.title)?$1:"",$self._renderQuotaChip({modelId:$2.id})]}'
-        }
-      }
-    ]
-  });
-
   // src/plugins/starry/index.ts
   var starry_default = definePlugin({
     name: "Starry",
@@ -7185,10 +6961,161 @@ Near: …${snippet}…` : ""}`);
     ]
   });
 
+  // void-css:D:/Projects/Void/src/plugins/streamerMode/styles.css
+  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
+
+/* Sidebar avatar */
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] img,
+html.void-streamer-sidebar-avatar .void-sidebar-card button[data-state]>div {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] img:hover,
+html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
+    filter: none;
+}
+
+/* Sidebar username */
+html.void-streamer-sidebar-name .void-sidebar-name {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-name {
+    filter: none;
+}
+
+/* Account tab avatar (inside settings dialog) */
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
+    filter: none;
+}
+
+/* Account tab username */
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
+    filter: none;
+}
+
+/* Account tab email */
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
+    filter: none;
+}
+
+/* Conversation titles in sidebar (pinned + recent buckets) */
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
+    filter: none;
+}
+
+/* Project names in sidebar */
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
+    filter: none;
+}
+`);
+
+  // src/plugins/streamerMode/index.ts
+  var CSS_CLASSES = {
+    sidebarAvatar: "void-streamer-sidebar-avatar",
+    sidebarName: "void-streamer-sidebar-name",
+    accountAvatar: "void-streamer-account-avatar",
+    accountName: "void-streamer-account-name",
+    accountEmail: "void-streamer-account-email",
+    projects: "void-streamer-projects",
+    conversations: "void-streamer-conversations"
+  };
+  var settings9 = definePluginSettings({
+    sidebarAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the sidebar.",
+      default: true
+    },
+    sidebarName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your username in the sidebar.",
+      default: true
+    },
+    accountAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the account settings tab.",
+      default: true
+    },
+    accountName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your name in the account settings tab.",
+      default: true
+    },
+    accountEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your email in the account settings tab.",
+      default: true
+    },
+    projects: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur project names in the sidebar.",
+      default: true
+    },
+    conversations: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur conversation titles in the sidebar.",
+      default: true
+    }
+  });
+  function syncClasses() {
+    const { classList } = document.documentElement;
+    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
+      classList.toggle(cls, !!settings9.store[key]);
+    }
+  }
+  var unsubscribe = null;
+  var streamerMode_default = definePlugin({
+    name: "StreamerMode",
+    description: "Blurs personal information for privacy while streaming.",
+    authors: [Devs.Prism],
+    settings: settings9,
+    start() {
+      syncClasses();
+      const prefix = `plugins.${settings9.pluginName}`;
+      SettingsStore3.addPrefixChangeListener(prefix, syncClasses);
+      unsubscribe = () => SettingsStore3.removePrefixChangeListener(prefix, syncClasses);
+    },
+    stop() {
+      unsubscribe?.();
+      unsubscribe = null;
+      const { classList } = document.documentElement;
+      for (const cls of Object.values(CSS_CLASSES)) {
+        classList.remove(cls);
+      }
+    }
+  });
+
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [queryTracker_default.name]: queryTracker_default, [starry_default.name]: starry_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -7328,7 +7255,7 @@ Near: …${snippet}…` : ""}`);
   });
 
   // src/Void.ts
-  var logger18 = new Logger("TurbopackPatcher", "#e78284");
+  var logger17 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
@@ -7364,7 +7291,7 @@ Near: …${snippet}…` : ""}`);
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger18.info("All previously failed plugins started after late module load");
+          logger17.info("All previously failed plugins started after late module load");
         }
       }, 200);
     };
@@ -7379,7 +7306,7 @@ Near: …${snippet}…` : ""}`);
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger18.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger17.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -7392,7 +7319,7 @@ Near: …${snippet}…` : ""}`);
       blacklistBadModules();
       _resolveReady();
       startAllPlugins("TurbopackReady" /* TurbopackReady */);
-      logger18.info(`${getModuleCache().size} modules loaded, ready`);
+      logger17.info(`${getModuleCache().size} modules loaded, ready`);
       retryFailedPlugins();
       deferOrphanReport();
       checkForUpdates();
