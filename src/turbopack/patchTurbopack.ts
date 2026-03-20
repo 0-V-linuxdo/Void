@@ -647,7 +647,6 @@ function wrapExistingFactories() {
             return w;
         } as any;
 
-        // Also eagerly wrap everything currently in the registry
         for (const [id, factory] of registry) {
             if ((factory as PatchedModuleFactory)[SYM_ORIGINAL]) continue;
             const existing = wrapped.get(factory);
