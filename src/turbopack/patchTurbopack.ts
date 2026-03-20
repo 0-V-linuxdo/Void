@@ -625,15 +625,38 @@ function captureModuleCache(factoryRegistry: Map<number, ModuleFactory>): void {
 function wrapExistingFactories() {
     runtimeFactoryRegistry = captureFactoryRegistry();
     if (runtimeFactoryRegistry) {
+        const registry = runtimeFactoryRegistry;
         const wrapped = new Map<ModuleFactory, ModuleFactory>();
-        for (const [id, factory] of runtimeFactoryRegistry) {
+
+        // Hook Map.get so any factory read by the runtime during or after
+        // iteration is guaranteed to be wrapped before execution. This closes
+        // the race where Turbopack instantiates a module from the registry
+        // before our iteration reaches it (common on soft-reload / F5).
+        const origGet = registry.get.bind(registry);
+        registry.get = function (id: number) {
+            const factory = origGet(id);
+            if (factory == null || (factory as PatchedModuleFactory)[SYM_ORIGINAL]) return factory;
             const existing = wrapped.get(factory);
             if (existing) {
-                runtimeFactoryRegistry.set(id, existing);
+                registry.set(id, existing);
+                return existing;
+            }
+            const w = wrapFactory(id, factory);
+            wrapped.set(factory, w);
+            registry.set(id, w);
+            return w;
+        } as any;
+
+        // Also eagerly wrap everything currently in the registry
+        for (const [id, factory] of registry) {
+            if ((factory as PatchedModuleFactory)[SYM_ORIGINAL]) continue;
+            const existing = wrapped.get(factory);
+            if (existing) {
+                registry.set(id, existing);
             } else {
                 const w = wrapFactory(id, factory);
                 wrapped.set(factory, w);
-                runtimeFactoryRegistry.set(id, w);
+                registry.set(id, w);
             }
         }
     }
