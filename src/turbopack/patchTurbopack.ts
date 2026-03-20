@@ -53,7 +53,16 @@ let turbopackHelpers: TurbopackHelpers | null = null;
 export let _resolveReady: () => void;
 export const onceReady = new Promise<void>(r => (_resolveReady = r));
 
-const patchTimings: Array<[plugin: string, moduleId: number, match: PatchReplacement["match"], totalTime: number]> = [];
+interface PatchTiming {
+    plugin: string;
+    moduleId: number;
+    match: PatchReplacement["match"];
+    findTime: number;
+    replaceTime: number;
+    compileTime: number;
+}
+
+const patchTimings: PatchTiming[] = [];
 
 export const patchResults: PatchResult[] = [];
 
@@ -64,6 +73,27 @@ export const patchStats: PatchStats = {
     runtimeFallbacks: 0,
     patchedModules: new Set<number>(),
 };
+
+const factoryStringCache = new WeakMap<ModuleFactory, string>();
+
+function getFactorySource(factory: ModuleFactory): string {
+    let source = factoryStringCache.get(factory);
+    if (source === undefined) {
+        source = String(factory);
+        factoryStringCache.set(factory, source);
+    }
+    return source;
+}
+
+function getMinFindLength(patch: Patch): number {
+    const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
+    let max = 0;
+    for (const f of finds) {
+        const len = typeof f === "string" ? f.length : 0;
+        if (len > max) max = len;
+    }
+    return max;
+}
 
 export function getModuleCache(): Map<number, any> {
     return moduleCache;
@@ -210,17 +240,29 @@ function notifyModuleLoaded(exports: any, id: number) {
     }
 }
 
-function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFactory {
-    if (!patches.length) return factory as PatchedModuleFactory;
+interface LazyPatchResult {
+    code: string;
+    plugins: string[];
+}
 
-    const originalCode = String(factory);
+function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult | null {
+    if (!patches.length) return null;
+
+    const originalCode = getFactorySource(factory);
+    const codeLen = originalCode.length;
     let code = originalCode;
     const patchedBy = new Set<string>();
 
     for (let i = 0; i < patches.length; i++) {
         const patch = patches[i];
         if (patch.predicate && !patch.predicate()) continue;
+
+        const minLen = getMinFindLength(patch);
+        if (minLen > codeLen) continue;
+
+        const findStart = IS_DEV ? performance.now() : 0;
         const findMatches = Array.isArray(patch.find) ? matchesAllPatterns(originalCode, patch.find) : matchesPattern(originalCode, patch.find);
+        const findElapsed = IS_DEV ? performance.now() - findStart : 0;
         if (!findMatches) continue;
 
         const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
@@ -258,9 +300,9 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
                 const { match } = replacement;
                 const start = performance.now();
                 const newCode = code.replace(match, replacement.replace as string);
-                const elapsed = performance.now() - start;
+                const replaceElapsed = performance.now() - start;
 
-                if (IS_DEV) patchTimings.push([patch.plugin, moduleId, match, elapsed]);
+                if (IS_DEV) patchTimings.push({ plugin: patch.plugin, moduleId, match, findTime: findElapsed, replaceTime: replaceElapsed, compileTime: 0 });
 
                 if (newCode === code) {
                     groupNoEffect++;
@@ -310,31 +352,54 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
         if (!patch.all) patches.splice(i--, 1);
     }
 
-    if (patchedBy.size) {
-        const plugins = [...patchedBy].join(", ");
-        try {
-            const patchedFactory = compileFactory(
-                code,
-                `// Turbopack Module ${moduleId} - Patched by ${plugins}`,
-                `//# sourceURL=file:///TurbopackModule${moduleId}`,
-            ) as PatchedModuleFactory;
-            patchedFactory[SYM_ORIGINAL] = factory;
-            patchedFactory[SYM_PATCHED] = true;
-            patchedFactory[SYM_PATCHED_CODE] = code;
-            patchedFactory[SYM_PATCHED_BY] = [...patchedBy];
-            return patchedFactory;
-        } catch (err) {
-            logger.error(`Failed to compile patched module ${moduleId} (${plugins}), using original:`, err);
-            patchStats.errors++;
-        }
-    }
+    if (!patchedBy.size) return null;
+    return { code, plugins: [...patchedBy] };
+}
 
-    return factory as PatchedModuleFactory;
+function createLazyFactory(moduleId: number, patchResult: LazyPatchResult, original: ModuleFactory): PatchedModuleFactory {
+    const { code, plugins } = patchResult;
+    let compiled: ModuleFactory | null = null;
+
+    const lazy: PatchedModuleFactory = function (this: any, helpers: TurbopackHelpers, mod?: TurbopackModule, exports?: Record<string, any>) {
+        if (!compiled) {
+            const compileStart = IS_DEV ? performance.now() : 0;
+            try {
+                compiled = compileFactory(
+                    code,
+                    `// Turbopack Module ${moduleId} - Patched by ${plugins.join(", ")}`,
+                    `//# sourceURL=file:///TurbopackModule${moduleId}`,
+                );
+            } catch (err) {
+                logger.error(`Failed to compile patched module ${moduleId} (${plugins.join(", ")}), using original:`, err);
+                patchStats.errors++;
+                compiled = original;
+            }
+            if (IS_DEV) {
+                const compileElapsed = performance.now() - compileStart;
+                for (let i = patchTimings.length - 1; i >= 0; i--) {
+                    if (patchTimings[i].moduleId === moduleId) {
+                        patchTimings[i].compileTime = compileElapsed;
+                        break;
+                    }
+                }
+            }
+        }
+        compiled.call(this, helpers, mod, exports);
+    };
+
+    lazy.toString = () => getFactorySource(original);
+    lazy[SYM_ORIGINAL] = original;
+    lazy[SYM_PATCHED] = true;
+    lazy[SYM_PATCHED_BY] = plugins;
+    lazy[SYM_PATCHED_CODE] = code;
+    return lazy;
 }
 
 function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
-    const patched = patchFactory(moduleId, factory);
+    const patchResult = patchFactory(moduleId, factory);
+    const patched = patchResult ? createLazyFactory(moduleId, patchResult, factory) : factory;
     const original = (patched as PatchedModuleFactory)[SYM_ORIGINAL] ?? factory;
+    const isPatched = !!(patched as PatchedModuleFactory)[SYM_PATCHED];
 
     const wrapped: PatchedModuleFactory = function (this: any, helpers: TurbopackHelpers, mod?: TurbopackModule, exports?: Record<string, any>) {
         captureRuntimeState(helpers);
@@ -342,7 +407,7 @@ function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
         try {
             patched.call(this, helpers, mod, exports);
         } catch (err) {
-            if (patched === factory) throw err;
+            if (!isPatched) throw err;
             patchStats.runtimeFallbacks++;
             logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
             try {
@@ -359,11 +424,13 @@ function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
         } catch (e) {
             logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
         }
+
+        factoryStringCache.delete(factory);
     };
 
-    wrapped.toString = () => String(factory);
+    wrapped.toString = () => getFactorySource(factory);
     wrapped[SYM_ORIGINAL] = original;
-    if ((patched as PatchedModuleFactory)[SYM_PATCHED]) {
+    if (isPatched) {
         wrapped[SYM_PATCHED] = true;
         wrapped[SYM_PATCHED_BY] = (patched as PatchedModuleFactory)[SYM_PATCHED_BY];
         wrapped[SYM_PATCHED_CODE] = (patched as PatchedModuleFactory)[SYM_PATCHED_CODE];
@@ -376,6 +443,7 @@ let chunksWithFactories = 0;
 let chunksWithoutFactories = 0;
 
 function patchChunkEntry(entry: any[]): any[] {
+    const hasPatches = patches.length > 0;
     let patchedEntry: any[] | null = null;
     const wrappedInChunk = new Map<ModuleFactory, ModuleFactory>();
 
@@ -391,7 +459,7 @@ function patchChunkEntry(entry: any[]): any[] {
         if (existing) {
             patchedEntry[i] = existing;
         } else {
-            const wrapped = wrapFactory(prev, factory);
+            const wrapped = hasPatches ? wrapFactory(prev, factory) : wrapNotifyOnly(prev, factory);
             wrappedInChunk.set(factory, wrapped);
             patchedEntry[i] = wrapped;
         }
@@ -408,6 +476,21 @@ function patchChunkEntry(entry: any[]): any[] {
     return patchedEntry ?? entry;
 }
 
+function wrapNotifyOnly(moduleId: number, factory: ModuleFactory): ModuleFactory {
+    const wrapped = function (this: any, helpers: TurbopackHelpers, mod?: TurbopackModule, exports?: Record<string, any>) {
+        captureRuntimeState(helpers);
+        factory.call(this, helpers, mod, exports);
+        try {
+            const actualId = mod?.id ?? moduleId;
+            if (mod?.exports != null) notifyModuleLoaded(mod.exports, actualId);
+        } catch (e) {
+            logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+        }
+    };
+    wrapped.toString = () => getFactorySource(factory);
+    return wrapped;
+}
+
 function handleChunkPush(...args: any[]) {
     for (let i = 0; i < args.length; i++) {
         if (Array.isArray(args[i])) args[i] = patchChunkEntry(args[i]);
@@ -419,7 +502,7 @@ function isFactoryPending(patch: Patch): boolean {
     if (!runtimeFactoryRegistry) return false;
     const find = Array.isArray(patch.find) ? patch.find : [patch.find];
     for (const [, factory] of runtimeFactoryRegistry) {
-        if (matchesAllPatterns(String(factory), find)) return true;
+        if (matchesAllPatterns(getFactorySource(factory), find)) return true;
     }
     return false;
 }
@@ -454,8 +537,11 @@ export function reportOrphanedPatches(): void {
     }
 
     if (IS_DEV) {
-        const slow = patchTimings.filter(([, , , t]) => t > 10);
-        for (const [plugin, moduleId, match, time] of slow) logger.warn(`Slow patch: ${plugin} on ${moduleId} took ${time.toFixed(2)}ms (${String(match)})`);
+        for (const t of patchTimings) {
+            const patchTime = t.findTime + t.replaceTime;
+            if (patchTime <= 10) continue;
+            logger.warn(`Slow patch: ${t.plugin} on ${t.moduleId} (find: ${t.findTime.toFixed(1)}ms, replace: ${t.replaceTime.toFixed(1)}ms) ${String(t.match)}`);
+        }
     }
 
 }
