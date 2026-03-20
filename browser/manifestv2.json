@@ -25,7 +25,7 @@
             "js": [
                 "content.js"
             ],
-            "all_frames": true,
+            "all_frames": false,
             "world": "ISOLATED"
         },
         {
@@ -36,7 +36,7 @@
             "js": [
                 "dist/Void.js"
             ],
-            "all_frames": true,
+            "all_frames": false,
             "world": "MAIN"
         }
     ],
