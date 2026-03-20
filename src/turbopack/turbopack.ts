@@ -45,7 +45,9 @@ export function reportFailedFinders(): void {
     for (const record of finderRegistry) {
         try {
             if (isEmptyResult(record.resolve())) failed.push(`${record.type}(${record.args.map(a => JSON.stringify(a)).join(", ")})`);
-        } catch {}
+        } catch (e) {
+            logger.warn("Finder resolution error:", e);
+        }
     }
 
     if (failed.length) logger.warn(`${failed.length} finder(s) resolved to nothing:`, failed);
@@ -524,7 +526,8 @@ export function requireModule(moduleId: number): any {
 
     try {
         return helpers.i(moduleId);
-    } catch {
+    } catch (e) {
+        logger.warn(`Failed to require module ${moduleId}:`, e);
         return null;
     }
 }
@@ -571,6 +574,7 @@ export function waitFor(filter: FilterFn, callback: (mod: any, id: number) => vo
 
     const wrappedCallback = (_exports: any, id: number) => {
         if (timeoutId) clearTimeout(timeoutId);
+        removeWaitForSubscription(wrappedFilter);
         try {
             if (lastMatch) callback(lastMatch, id);
             lastMatch = null;
@@ -589,9 +593,9 @@ export function waitFor(filter: FilterFn, callback: (mod: any, id: number) => vo
     if (timeout > 0) {
         timeoutId = setTimeout(() => {
             timeoutId = null;
+            cancel();
             if (!searchCache(filter)) {
                 logger.warn(`waitFor timed out after ${timeout}ms:`, filter);
-                cancel();
             }
         }, timeout);
     }
