@@ -78,6 +78,7 @@ export default definePlugin({
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
     settings,
+    managedStyle: "betterSidebar",
 
     _UserCard: ErrorBoundary.wrap(UserCard),
 
@@ -89,7 +90,7 @@ export default definePlugin({
         if (!settings.store.clickToToggle) return undefined;
         return (e: MouseEvent) => {
             const target = e.target as HTMLElement;
-            if (target.closest("button,a,input,[role=button],[data-sidebar=trigger]")) return;
+            if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]")) return;
             (e.currentTarget as HTMLElement).closest("[data-state]")
                 ?.querySelector<HTMLElement>("[data-sidebar=trigger]")?.click();
         };

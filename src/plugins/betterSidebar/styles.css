@@ -26,6 +26,8 @@
 .void-sidebar-card button[data-state] {
     pointer-events: none;
     background-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .void-sidebar-info {
@@ -38,4 +40,5 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    user-select: none;
 }
