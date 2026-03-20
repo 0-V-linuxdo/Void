@@ -17,7 +17,7 @@ export default definePlugin({
             find: "fadeOutDuration:200",
             replacement: [
                 {
-                    match: /\.SHOW_STARRY_IDLE&&.{0,30}\.page&&/,
+                    match: /\.SHOW_STARRY_IDLE&&.{0,11}"main"===.{0,3}\.page&&/,
                     replace: "&&",
                 },
                 {
