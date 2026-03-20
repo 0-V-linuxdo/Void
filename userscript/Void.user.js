@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.4.7
+// @version      0.4.8
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.4.7 — A modification for grok.com
+ * Void v0.4.8 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -433,6 +433,25 @@ ${sourceUrl}`;
     runtimeFallbacks: 0,
     patchedModules: new Set
   };
+  var factoryStringCache = new WeakMap;
+  function getFactorySource(factory) {
+    let source = factoryStringCache.get(factory);
+    if (source === undefined) {
+      source = String(factory);
+      factoryStringCache.set(factory, source);
+    }
+    return source;
+  }
+  function getMinFindLength(patch) {
+    const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
+    let max = 0;
+    for (const f of finds) {
+      const len = typeof f === "string" ? f.length : 0;
+      if (len > max)
+        max = len;
+    }
+    return max;
+  }
   function getModuleCache() {
     return moduleCache;
   }
@@ -578,15 +597,21 @@ ${sourceUrl}`;
   }
   function patchFactory(moduleId, factory) {
     if (!patches.length)
-      return factory;
-    const originalCode = String(factory);
+      return null;
+    const originalCode = getFactorySource(factory);
+    const codeLen = originalCode.length;
     let code = originalCode;
     const patchedBy = new Set;
     for (let i = 0;i < patches.length; i++) {
       const patch = patches[i];
       if (patch.predicate && !patch.predicate())
         continue;
+      const minLen = getMinFindLength(patch);
+      if (minLen > codeLen)
+        continue;
+      const findStart = 0;
       const findMatches = Array.isArray(patch.find) ? matchesAllPatterns(originalCode, patch.find) : matchesPattern(originalCode, patch.find);
+      const findElapsed = 0;
       if (!findMatches)
         continue;
       const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
@@ -623,7 +648,7 @@ ${sourceUrl}`;
           const { match } = replacement;
           const start = performance.now();
           const newCode = code.replace(match, replacement.replace);
-          const elapsed = performance.now() - start;
+          const replaceElapsed = performance.now() - start;
           if (false)
             ;
           if (newCode === code) {
@@ -671,31 +696,45 @@ ${sourceUrl}`;
       if (!patch.all)
         patches.splice(i--, 1);
     }
-    if (patchedBy.size) {
-      const plugins = [...patchedBy].join(", ");
-      try {
-        const patchedFactory = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
-        patchedFactory[SYM_ORIGINAL] = factory;
-        patchedFactory[SYM_PATCHED] = true;
-        patchedFactory[SYM_PATCHED_CODE] = code;
-        patchedFactory[SYM_PATCHED_BY] = [...patchedBy];
-        return patchedFactory;
-      } catch (err) {
-        logger.error(`Failed to compile patched module ${moduleId} (${plugins}), using original:`, err);
-        patchStats.errors++;
+    if (!patchedBy.size)
+      return null;
+    return { code, plugins: [...patchedBy] };
+  }
+  function createLazyFactory(moduleId, patchResult, original) {
+    const { code, plugins } = patchResult;
+    let compiled = null;
+    const lazy = function(helpers, mod, exports) {
+      if (!compiled) {
+        const compileStart = 0;
+        try {
+          compiled = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins.join(", ")}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
+        } catch (err) {
+          logger.error(`Failed to compile patched module ${moduleId} (${plugins.join(", ")}), using original:`, err);
+          patchStats.errors++;
+          compiled = original;
+        }
+        if (false) {}
       }
-    }
-    return factory;
+      compiled.call(this, helpers, mod, exports);
+    };
+    lazy.toString = () => getFactorySource(original);
+    lazy[SYM_ORIGINAL] = original;
+    lazy[SYM_PATCHED] = true;
+    lazy[SYM_PATCHED_BY] = plugins;
+    lazy[SYM_PATCHED_CODE] = code;
+    return lazy;
   }
   function wrapFactory(moduleId, factory) {
-    const patched = patchFactory(moduleId, factory);
+    const patchResult = patchFactory(moduleId, factory);
+    const patched = patchResult ? createLazyFactory(moduleId, patchResult, factory) : factory;
     const original = patched[SYM_ORIGINAL] ?? factory;
+    const isPatched = !!patched[SYM_PATCHED];
     const wrapped = function(helpers, mod, exports) {
       captureRuntimeState(helpers);
       try {
         patched.call(this, helpers, mod, exports);
       } catch (err) {
-        if (patched === factory)
+        if (!isPatched)
           throw err;
         patchStats.runtimeFallbacks++;
         logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
@@ -713,10 +752,11 @@ ${sourceUrl}`;
       } catch (e) {
         logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
       }
+      factoryStringCache.delete(factory);
     };
-    wrapped.toString = () => String(factory);
+    wrapped.toString = () => getFactorySource(factory);
     wrapped[SYM_ORIGINAL] = original;
-    if (patched[SYM_PATCHED]) {
+    if (isPatched) {
       wrapped[SYM_PATCHED] = true;
       wrapped[SYM_PATCHED_BY] = patched[SYM_PATCHED_BY];
       wrapped[SYM_PATCHED_CODE] = patched[SYM_PATCHED_CODE];
@@ -726,6 +766,7 @@ ${sourceUrl}`;
   var chunksWithFactories = 0;
   var chunksWithoutFactories = 0;
   function patchChunkEntry(entry) {
+    const hasPatches = patches.length > 0;
     let patchedEntry = null;
     const wrappedInChunk = new Map;
     for (let i = 1;i < entry.length; i++) {
@@ -741,7 +782,7 @@ ${sourceUrl}`;
       if (existing) {
         patchedEntry[i] = existing;
       } else {
-        const wrapped = wrapFactory(prev, factory);
+        const wrapped = hasPatches ? wrapFactory(prev, factory) : wrapNotifyOnly(prev, factory);
         wrappedInChunk.set(factory, wrapped);
         patchedEntry[i] = wrapped;
       }
@@ -756,6 +797,21 @@ ${sourceUrl}`;
     }
     return patchedEntry ?? entry;
   }
+  function wrapNotifyOnly(moduleId, factory) {
+    const wrapped = function(helpers, mod, exports) {
+      captureRuntimeState(helpers);
+      factory.call(this, helpers, mod, exports);
+      try {
+        const actualId = mod?.id ?? moduleId;
+        if (mod?.exports != null)
+          notifyModuleLoaded(mod.exports, actualId);
+      } catch (e) {
+        logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+      }
+    };
+    wrapped.toString = () => getFactorySource(factory);
+    return wrapped;
+  }
   function handleChunkPush(...args) {
     for (let i = 0;i < args.length; i++) {
       if (Array.isArray(args[i]))
@@ -768,7 +824,7 @@ ${sourceUrl}`;
       return false;
     const find = Array.isArray(patch.find) ? patch.find : [patch.find];
     for (const [, factory] of runtimeFactoryRegistry) {
-      if (matchesAllPatterns(String(factory), find))
+      if (matchesAllPatterns(getFactorySource(factory), find))
         return true;
     }
     return false;
@@ -873,15 +929,33 @@ ${sourceUrl}`;
   function wrapExistingFactories() {
     runtimeFactoryRegistry = captureFactoryRegistry();
     if (runtimeFactoryRegistry) {
+      const registry = runtimeFactoryRegistry;
       const wrapped = new Map;
-      for (const [id, factory] of runtimeFactoryRegistry) {
+      const origGet = registry.get.bind(registry);
+      registry.get = function(id) {
+        const factory = origGet(id);
+        if (factory == null || factory[SYM_ORIGINAL])
+          return factory;
         const existing = wrapped.get(factory);
         if (existing) {
-          runtimeFactoryRegistry.set(id, existing);
+          registry.set(id, existing);
+          return existing;
+        }
+        const w = wrapFactory(id, factory);
+        wrapped.set(factory, w);
+        registry.set(id, w);
+        return w;
+      };
+      for (const [id, factory] of registry) {
+        if (factory[SYM_ORIGINAL])
+          continue;
+        const existing = wrapped.get(factory);
+        if (existing) {
+          registry.set(id, existing);
         } else {
           const w = wrapFactory(id, factory);
           wrapped.set(factory, w);
-          runtimeFactoryRegistry.set(id, w);
+          registry.set(id, w);
         }
       }
     }
@@ -956,7 +1030,9 @@ ${sourceUrl}`;
       try {
         if (isEmptyResult(record.resolve()))
           failed.push(`${record.type}(${record.args.map((a) => JSON.stringify(a)).join(", ")})`);
-      } catch {}
+      } catch (e) {
+        logger2.warn("Finder resolution error:", e);
+      }
     }
     if (failed.length)
       logger2.warn(`${failed.length} finder(s) resolved to nothing:`, failed);
@@ -1416,7 +1492,8 @@ ${sourceUrl}`;
       return null;
     try {
       return helpers.i(moduleId);
-    } catch {
+    } catch (e) {
+      logger2.warn(`Failed to require module ${moduleId}:`, e);
       return null;
     }
   }
@@ -1461,6 +1538,7 @@ ${sourceUrl}`;
     const wrappedCallback = (_exports, id) => {
       if (timeoutId)
         clearTimeout(timeoutId);
+      removeWaitForSubscription(wrappedFilter);
       try {
         if (lastMatch)
           callback(lastMatch, id);
@@ -1478,9 +1556,9 @@ ${sourceUrl}`;
     if (timeout > 0) {
       timeoutId = setTimeout(() => {
         timeoutId = null;
+        cancel();
         if (!searchCache(filter)) {
           logger2.warn(`waitFor timed out after ${timeout}ms:`, filter);
-          cancel();
         }
       }, timeout);
     }
@@ -2438,7 +2516,7 @@ ${sourceUrl}`;
       Notification.requestPermission().then((p) => {
         if (p === "granted")
           new Notification(title, { body, icon });
-      });
+      }).catch(() => {});
     }
   }
 
@@ -3345,11 +3423,11 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.4.7")) {
-        logger8.info(`Up to date (${"0.4.7"})`);
+      if (!latest || !isNewer(latest, "0.4.8")) {
+        logger8.info(`Up to date (${"0.4.8"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.4.7"} → ${latest}`);
+      logger8.info(`Update available: ${"0.4.8"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3393,17 +3471,17 @@ ${sourceUrl}`;
     required: true,
     patches: [
       {
-        find: "ingest.us.sentry.io",
+        find: '"opentelemetry.js.api."',
         replacement: {
-          match: /e\.s\(\["onRouterTransitionStart",\(\)=>\i\],(\d+)\);var/,
-          replace: 'e.s(["onRouterTransitionStart",()=>function(){}],$1);return;var'
+          match: /(\i\.s\(\["onRouterTransitionStart",\(\)=>)\i\],(\d+)\);var/,
+          replace: "$1function(){}],$2);return;var"
         }
       },
       {
         find: '"after-init"),(0,',
         replacement: {
-          match: /function (\i)\(\)\{if\(!Object\.prototype\.hasOwnProperty.{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}catch\(\i\)\{.{0,80}\}\}/,
-          replace: "function $1(){}"
+          match: /(function \i\(\)\{)if\(!Object\.prototype\.hasOwnProperty\.call\(\i\.\i,"get_distinct_id"\)\)try\{/,
+          replace: "$1return}function _ignore(){try{"
         }
       },
       {
@@ -3517,7 +3595,7 @@ ${sourceUrl}`;
   function validateThemeUrl(url) {
     try {
       const parsed = new URL(url);
-      if (parsed.protocol !== "https:" && parsed.protocol !== "http:")
+      if (parsed.protocol !== "https:")
         throw 0;
     } catch {
       throw new Error("Enter a valid URL.");
@@ -3527,8 +3605,7 @@ ${sourceUrl}`;
   }
   async function addTheme(url) {
     validateThemeUrl(url);
-    const existing = getThemes();
-    if (existing.some((t) => t.url === url)) {
+    if (getThemes().some((t) => t.url === url)) {
       throw new Error("This theme is already added.");
     }
     const resp = await fetchExternal(url);
@@ -3537,6 +3614,9 @@ ${sourceUrl}`;
     const css = await resp.text();
     if (!css.trim())
       throw new Error("Theme file is empty.");
+    if (getThemes().some((t) => t.url === url)) {
+      throw new Error("This theme is already added.");
+    }
     const meta = parseThemeMeta(css);
     const theme = {
       url,
@@ -3547,7 +3627,7 @@ ${sourceUrl}`;
     };
     registerStyle(themeStyleId(url), css);
     disableStyle(themeStyleId(url));
-    updateSettingsPluginData({ themes: [...existing, theme] });
+    updateSettingsPluginData({ themes: [...getThemes(), theme] });
     logger9.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
   }
@@ -3567,6 +3647,9 @@ ${sourceUrl}`;
       logger9.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
       return;
     }
+    const theme = getThemes().find((t) => t.url === url);
+    if (!theme?.enabled || !isThemesEnabled())
+      return;
     const css = await resp.text();
     registerStyle(id, css);
   }
@@ -4634,7 +4717,9 @@ ${sourceUrl}`;
       size: "xs",
       shape: "square",
       tooltipContent: "Copy URL",
-      onClick: () => copyToClipboard(theme.url)
+      onClick: () => {
+        copyToClipboard(theme.url).catch((e) => logger10.error("Failed to copy URL:", e));
+      }
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16
     })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
@@ -5138,7 +5223,7 @@ ${sourceUrl}`;
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (settings2.store.browserNotifications && Notification.permission === "default")
-        Notification.requestPermission();
+        Notification.requestPermission().catch(() => {});
       const state = FeatureStore.useFeatureStore.getState();
       if (state.status === "ready")
         syncKnownFlags(state.config);
@@ -5154,18 +5239,18 @@ ${sourceUrl}`;
     },
     patches: [
       {
-        find: 'ENABLE_SCREEN_SHARING:"enable_screen_sharing"',
+        find: "local_feature_flags",
         all: true,
         replacement: {
-          match: /\i&&(void 0!==\i\[\i\])/,
-          replace: "$1"
+          match: /("ready"===\i\.\i\).{0,60})\i&&(void 0!==\i\[\i\])/,
+          replace: "$1$2"
         }
       },
       {
-        find: "pressed_cmd_settings",
+        find: '"Feature flag overrides active","Feature flag overrides active"',
         replacement: {
-          match: /\i\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
-          replace: "void 0"
+          match: /\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
+          replace: "&&void 0"
         }
       }
     ]
@@ -5230,9 +5315,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.4.7"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"a797a67"}`
-    }, `(${"a797a67"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.4.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"85536c5"}`
+    }, `(${"85536c5"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5349,6 +5434,7 @@ ${sourceUrl}`;
     patches: [
       {
         find: "avatar_menu_click",
+        all: true,
         replacement: {
           match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{children:\[.{0,100}"user-dropdown\.help"/,
           replace: "(0,$1.jsx)($self._VoidMenu,{}),$&"
@@ -5366,18 +5452,21 @@ ${sourceUrl}`;
         find: "pressed_cmd_settings",
         replacement: [
           {
-            match: /(\i\.jsx)\)\((\i),\{icon:\i\.DatabaseIcon,.{0,80}tab:"data"\}\)/,
+            match: /(?<=(\i\.jsx)\)\((\i),\{icon:\i\.)DatabaseIcon,.{0,80}tab:"data"\}\)/,
             replace: "$&,...$self.renderTabs($1,$2)"
           },
           {
             match: /"data"===(\i)&&\i\.user&&\(0,(\i\.jsx)\)\((\i),\{children:/,
             replace: "...$self.renderPanels($2,$1,$3),$&"
-          },
-          {
-            match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,120}:\i\.userId\}\)/,
-            replace: "!$self._hideUserId()&&$&"
           }
         ]
+      },
+      {
+        find: "settings-account-card",
+        replacement: {
+          match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,120}:\i\.userId\}\)/,
+          replace: "!$self._hideUserId()&&$&"
+        }
       }
     ]
   });
@@ -5531,7 +5620,7 @@ ${sourceUrl}`;
         }
       },
       {
-        find: '"AvatarDropdownMenu",()=>',
+        find: '"user-dropdown.upgrade","Upgrade plan"',
         all: true,
         replacement: {
           match: /"Sign Out"\)\]\}\)/,
@@ -6310,15 +6399,24 @@ ${sourceUrl}`;
       const prompt = item?.prompt ?? item?.originalPrompt;
       if (!prompt)
         return;
-      await copyToClipboard(prompt);
-      Toaster.toast.success("Copied prompt.");
+      try {
+        await copyToClipboard(prompt);
+        Toaster.toast.success("Copied prompt.");
+      } catch (e) {
+        logger13.error("Failed to copy prompt:", e);
+      }
     };
     const onUnfavorite = () => {
       MediaStore.useMediaStore.getState().unlike(postId);
     };
-    const onDelete = () => {
-      MediaStore.useMediaStore.getState().deletePost(postId, postId);
-      Toaster.toast.success("Deleted.");
+    const onDelete = async () => {
+      try {
+        await MediaStore.useMediaStore.getState().deletePost(postId, postId);
+        Toaster.toast.success("Deleted.");
+      } catch (e) {
+        logger13.error("Failed to delete post:", e);
+        Toaster.toast.error("Failed to delete.");
+      }
     };
     const hasPrompt = !!(item?.prompt || item?.originalPrompt);
     return /* @__PURE__ */ React.createElement(Fragment, null, hasPrompt && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
@@ -6418,9 +6516,15 @@ ${sourceUrl}`;
             replace: "$&,$self._renderActionToolbar({}),$self._renderDownloadAll({})"
           },
           {
-            match: /(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\2\.useMediaStore\)\(\i=>\i\.list\)/,
-            replace: "$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)"
-          },
+            match: /,(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.list\)/,
+            replace: ",$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)"
+          }
+        ]
+      },
+      {
+        find: "image_feed_image_selected",
+        group: true,
+        replacement: [
           {
             match: /muted:!0,autoPlay:!0/g,
             replace: "muted:!0,autoPlay:$self._autoPlay()"
@@ -6434,11 +6538,7 @@ ${sourceUrl}`;
             replace: "children:[$self._renderSelectOverlay({postId:$3}),(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})"
           },
           {
-            match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/,
-            replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})"
-          },
-          {
-            match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/,
+            match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/g,
             replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})"
           }
         ]
@@ -6482,6 +6582,8 @@ ${sourceUrl}`;
 .void-sidebar-card button[data-state] {
     pointer-events: none;
     background-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .void-sidebar-info {
@@ -6494,6 +6596,7 @@ ${sourceUrl}`;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    user-select: none;
 }
 `);
 
@@ -6559,6 +6662,7 @@ ${sourceUrl}`;
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
     settings: settings6,
+    managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _defaultOpen() {
       return !settings6.store.defaultCollapsed;
@@ -6568,7 +6672,7 @@ ${sourceUrl}`;
         return;
       return (e) => {
         const target = e.target;
-        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger]"))
+        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
           return;
         e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
       };
@@ -6698,7 +6802,15 @@ ${sourceUrl}`;
         }
       },
       {
-        find: "DialogDescriptionWarning",
+        find: "useDrawerContext must be used within a Drawer.Root",
+        all: true,
+        replacement: {
+          match: /console\.warn\(\i\)/,
+          replace: "void 0"
+        }
+      },
+      {
+        find: 'displayName="DialogFooter"',
         all: true,
         replacement: {
           match: /console\.warn\(\i\)/,
@@ -6748,18 +6860,21 @@ ${sourceUrl}`;
   }
   function DownloadButton() {
     const [loading, setLoading] = useState(false);
+    const busyRef = useRef(false);
     const onClick = useCallback(async () => {
-      if (loading)
+      if (busyRef.current)
         return;
+      busyRef.current = true;
       setLoading(true);
       try {
         await fetchAndDownload();
       } catch (e) {
         logger14.error("Failed to download TTS audio:", e);
       } finally {
+        busyRef.current = false;
         setLoading(false);
       }
-    }, [loading]);
+    }, []);
     return /* @__PURE__ */ React.createElement(Button, {
       "aria-label": "Download audio",
       onClick,
@@ -6899,11 +7014,11 @@ ${sourceUrl}`;
     },
     patches: [
       {
-        find: 'displayName="ResponseFamily"',
+        find: "response-family:handleEditSave",
         all: true,
         replacement: {
-          match: /:null,\(0,(\i)\.jsx\)\((\i)\.MessageBubble,\{isUser:(\i),isIncognito:(\i),children:!(\i)&&(\i)\?\(0,\1\.jsx\)\((\i)\.Editor,\{initialMessage:(\i)\./,
-          replace: ":null,$self._renderTimestamp($8),(0,$1.jsx)($2.MessageBubble,{isUser:$3,isIncognito:$4,children:!$5&&$6?(0,$1.jsx)($7.Editor,{initialMessage:$8."
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,children:!\i&&\i\?\(0,\i\.jsx\)\(\i\.Editor,\{initialMessage:(\i)\./,
+          replace: "$self._renderTimestamp($1),$&"
         }
       }
     ]
@@ -6946,11 +7061,11 @@ ${sourceUrl}`;
     authors: [Devs.Prism],
     patches: [
       {
-        find: "inactivityDelay:1e4,fadeInDuration:1e4",
+        find: "fadeOutDuration:200",
         replacement: [
           {
-            match: /\i\.SHOW_STARRY_IDLE&&!\i&&\i&&"main"===\i\.page&&/,
-            replace: "true&&"
+            match: /\.SHOW_STARRY_IDLE&&.{0,11}"main"===.{0,3}\.page&&/,
+            replace: "&&"
           },
           {
             match: /inactivityDelay:1e4,fadeInDuration:1e4/,
