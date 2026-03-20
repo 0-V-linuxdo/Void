@@ -24,7 +24,7 @@ export default definePlugin({
         {
             find: '"after-init"),(0,',
             replacement: {
-                match: /function (\i)\(\)\{if\(Object\.prototype\.hasOwnProperty.{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}/,
+                match: /function (\i)\(\)\{if\(!Object\.prototype\.hasOwnProperty.{0,450}setHasMixpanelInitialized\)\(!0\)\}\}\)\}/,
                 replace: "function $1(){}",
             },
         },

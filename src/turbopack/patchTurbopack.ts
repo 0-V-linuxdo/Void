@@ -210,18 +210,6 @@ function notifyModuleLoaded(exports: any, id: number) {
     }
 }
 
-function extractAnchor(match: string | RegExp): string | null {
-    const source = match instanceof RegExp ? match.source : match;
-    const literals = source.match(/(?:[A-Za-z_]{3,}(?:\.[A-Za-z_]+)*|"[^"]{2,}"|'[^']{2,}')/g);
-    return literals?.[0]?.replace(/^["']|["']$/g, "") ?? null;
-}
-
-function codeSnippetAround(code: string, anchor: string, radius = 60): string {
-    const idx = code.indexOf(anchor);
-    if (idx === -1) return "";
-    return code.slice(Math.max(0, idx - radius), idx + anchor.length + radius).replace(/\n/g, "\\n");
-}
-
 function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFactory {
     if (!patches.length) return factory as PatchedModuleFactory;
 
@@ -243,9 +231,7 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
                 const { match } = replacement;
                 const matches = match instanceof RegExp ? match.test(originalCode) : originalCode.includes(match as string);
                 if (!matches && !patch.noWarn && !replacement.noWarn) {
-                    const anchor = extractAnchor(match);
-                    const snippet = anchor ? codeSnippetAround(originalCode, anchor) : "";
-                    logger.warn(`[validate] Patch by ${patch.plugin} would have no effect: ${String(match)}${snippet ? `\nNear: …${snippet}…` : ""}`);
+                    logger.warn(`[validate] ${patch.plugin}: ${String(match)}`);
                 }
             }
             if (!patch.all) patches.splice(i--, 1);
@@ -279,11 +265,6 @@ function patchFactory(moduleId: number, factory: ModuleFactory): PatchedModuleFa
                 if (newCode === code) {
                     groupNoEffect++;
                     result.replacements.push({ match: String(match), status: "noEffect" });
-                    if (!patch.noWarn && !replacement.noWarn) {
-                        const anchor = extractAnchor(match);
-                        const snippet = anchor ? codeSnippetAround(code, anchor) : "";
-                        logger.error(`Patch by ${patch.plugin} had no effect: ${String(match)}${snippet ? `\nNear: …${snippet}…` : ""}`);
-                    }
                     if (patch.group) {
                         allSucceeded = false;
                         break;
@@ -466,8 +447,8 @@ export function reportOrphanedPatches(): void {
     if (patchStats.noEffect || patchStats.errors) {
         for (const result of patchResults) {
             for (const rep of result.replacements) {
-                if (rep.status === "noEffect") logger.error(`[no effect] ${result.plugin} on ${result.moduleId}: ${rep.match}`);
-                else if (rep.status === "error") logger.error(`[error] ${result.plugin} on ${result.moduleId}: ${rep.match}`);
+                if (rep.status === "noEffect") logger.error(`[no effect] ${result.plugin}: ${rep.match}`);
+                else if (rep.status === "error") logger.error(`[error] ${result.plugin}: ${rep.match}`);
             }
         }
     }
