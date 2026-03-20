@@ -71,7 +71,7 @@ export function setThemesEnabled(enabled: boolean) {
 function validateThemeUrl(url: string) {
     try {
         const parsed = new URL(url);
-        if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw 0;
+        if (parsed.protocol !== "https:") throw 0;
     } catch {
         throw new Error("Enter a valid URL.");
     }
@@ -81,8 +81,7 @@ function validateThemeUrl(url: string) {
 export async function addTheme(url: string): Promise<ThemeData> {
     validateThemeUrl(url);
 
-    const existing = getThemes();
-    if (existing.some(t => t.url === url)) {
+    if (getThemes().some(t => t.url === url)) {
         throw new Error("This theme is already added.");
     }
 
@@ -91,6 +90,11 @@ export async function addTheme(url: string): Promise<ThemeData> {
 
     const css = await resp.text();
     if (!css.trim()) throw new Error("Theme file is empty.");
+
+    // Re-check after async to prevent race with concurrent addTheme calls
+    if (getThemes().some(t => t.url === url)) {
+        throw new Error("This theme is already added.");
+    }
 
     const meta = parseThemeMeta(css);
     const theme: ThemeData = {
@@ -104,7 +108,7 @@ export async function addTheme(url: string): Promise<ThemeData> {
     registerStyle(themeStyleId(url), css);
     disableStyle(themeStyleId(url));
 
-    updateSettingsPluginData({ themes: [...existing, theme] });
+    updateSettingsPluginData({ themes: [...getThemes(), theme] });
     logger.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
 }
@@ -126,6 +130,11 @@ export async function enableTheme(url: string) {
         logger.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
         return;
     }
+
+    // Re-check if theme is still enabled after async fetch
+    const theme = getThemes().find(t => t.url === url);
+    if (!theme?.enabled || !isThemesEnabled()) return;
+
     const css = await resp.text();
     registerStyle(id, css);
 }
