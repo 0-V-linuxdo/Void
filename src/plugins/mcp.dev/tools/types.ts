@@ -57,7 +57,7 @@ export interface EvalArgs {
 }
 
 export interface PatchArgs {
-    action: "test" | "analyze" | "list" | "conflicts" | "broken" | "lint" | "context";
+    action: "test" | "analyze" | "list" | "conflicts" | "broken" | "lint" | "context" | "bench";
     find?: string;
     match?: string;
     replace?: string;

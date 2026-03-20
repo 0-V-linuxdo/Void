@@ -18,7 +18,7 @@ interface PatchResult {
     plugin: string;
     find: string;
     findOk: boolean;
-    replacements: Array<{ match: string; ok: boolean }>;
+    replacements: Array<{ match: string; ok: boolean; timeMs: number }>;
 }
 
 interface FinderResult {
@@ -190,12 +190,15 @@ function testPatch(patch: Patch, chunks: string[]): PatchResult {
     const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
     const repResults: PatchResult["replacements"] = [];
     for (const rep of replacements) {
-        if (!findOk) { repResults.push({ match: String(rep.match), ok: false }); continue; }
+        if (!findOk) { repResults.push({ match: String(rep.match), ok: false, timeMs: 0 }); continue; }
         try {
             const m = rep.match;
-            if (typeof m === "string") repResults.push({ match: m, ok: matchedChunk.includes(m) });
-            else { m.lastIndex = 0; repResults.push({ match: String(m), ok: m.test(matchedChunk) }); }
-        } catch { repResults.push({ match: String(rep.match), ok: false }); }
+            const start = performance.now();
+            let ok: boolean;
+            if (typeof m === "string") ok = matchedChunk.includes(m);
+            else { m.lastIndex = 0; ok = m.test(matchedChunk); }
+            repResults.push({ match: String(m), ok, timeMs: performance.now() - start });
+        } catch { repResults.push({ match: String(rep.match), ok: false, timeMs: 0 }); }
     }
     return { plugin: patch.plugin, find: findStr, findOk, replacements: repResults };
 }
@@ -227,8 +230,10 @@ async function main() {
     const { patches, skipped } = collectPatches();
     for (const s of skipped) console.log(yellow("SKIP") + ` ${dim(s)}`);
 
+    const SLOW_THRESHOLD = 10;
     let patchPassed = 0;
     let patchFailed = 0;
+    const slowPatches: Array<{ plugin: string; find: string; match: string; timeMs: number }> = [];
     for (const patch of patches) {
         const r = testPatch(patch, chunks);
         const allOk = r.findOk && r.replacements.every(rep => rep.ok);
@@ -243,6 +248,10 @@ async function main() {
             if (!r.findOk) console.log(`     ${red("find matched 0 chunks")}`);
             else for (const rep of r.replacements) { if (!rep.ok) console.log(`     ${yellow("match failed:")} ${rep.match.slice(0, 80)}`); }
         }
+        for (const rep of r.replacements) {
+            if (rep.ok && rep.timeMs > SLOW_THRESHOLD)
+                slowPatches.push({ plugin: r.plugin, find: r.find.slice(0, 60), match: rep.match.slice(0, 100), timeMs: rep.timeMs });
+        }
     }
 
     const finders = collectFinders(allChunkText);
@@ -255,6 +264,13 @@ async function main() {
 
     const sriCount = (html.match(/integrity="sha/g) ?? []).length;
     const rscCount = (allChunkText.match(/createServerReference\(/g) ?? []).length;
+
+    if (slowPatches.length) {
+        console.log(bold("\nSlow Patches:"));
+        slowPatches.sort((a, b) => b.timeMs - a.timeMs);
+        for (const s of slowPatches)
+            console.log(yellow(`${s.timeMs.toFixed(1)}ms`) + ` ${bold(s.plugin + ":")} Find: ${dim(s.find)}\n     ${dim(s.match)}`);
+    }
 
     console.log(bold("\nResults:"));
     console.log(`Patches: ${green(`${patchPassed} passed`)}, ${patchFailed ? red(`${patchFailed} failed`) : dim("0 failed")}${skipped.length ? `, ${yellow(`${skipped.length} skipped`)}` : ""}`);

@@ -21,7 +21,7 @@ function findModulesByFind(findStr: string): { ids: number[]; results: Record<nu
     return { ids, results, canonFind };
 }
 
-const PATCH_ACTIONS = ["test", "analyze", "list", "conflicts", "broken", "lint", "context"] as const;
+const PATCH_ACTIONS = ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench"] as const;
 
 function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
     const warnings: LintWarning[] = [];
@@ -437,6 +437,71 @@ export function handlePatch(args: PatchArgs): unknown {
             if (sameSource) result.sharedFactory = true;
         }
         return result;
+    }
+
+    if (action === "bench") {
+        if (!matchStr) return { error: "Provide match regex string" };
+
+        let regex: RegExp;
+        try {
+            regex = canonicalizeMatch(new RegExp(matchStr, flags ?? ""));
+        } catch (e: unknown) {
+            return { error: `Invalid regex: ${errorMessage(e)}` };
+        }
+
+        const RUNS = 50;
+        const WARMUP = 5;
+
+        let moduleResult: Record<string, unknown> | undefined;
+        if (findStr) {
+            const { ids, results } = findModulesByFind(findStr);
+            if (ids.length) {
+                const src = String(results[ids[0]]);
+                for (let i = 0; i < WARMUP; i++) { regex.lastIndex = 0; regex.test(src); }
+                const times: number[] = [];
+                for (let i = 0; i < RUNS; i++) {
+                    regex.lastIndex = 0;
+                    const start = performance.now();
+                    regex.test(src);
+                    times.push(performance.now() - start);
+                }
+                times.sort((a, b) => a - b);
+                moduleResult = {
+                    id: ids[0],
+                    len: src.length,
+                    medianMs: +(times[Math.floor(RUNS / 2)].toFixed(3)),
+                    p95Ms: +(times[Math.floor(RUNS * 0.95)].toFixed(3)),
+                    maxMs: +(times[RUNS - 1].toFixed(3)),
+                };
+            }
+        }
+
+        const allSources = getAllFactorySources();
+        let chunkLen = 0;
+        for (const src of allSources) chunkLen += src.length;
+
+        const chunkTimes: number[] = [];
+        for (let i = 0; i < WARMUP; i++) {
+            for (const src of allSources) { regex.lastIndex = 0; regex.test(src); }
+        }
+        for (let i = 0; i < RUNS; i++) {
+            const start = performance.now();
+            for (const src of allSources) { regex.lastIndex = 0; regex.test(src); }
+            chunkTimes.push(performance.now() - start);
+        }
+        chunkTimes.sort((a, b) => a - b);
+
+        return {
+            regex: regex.source.slice(0, PATCH.MATCH_SLICE),
+            ...(moduleResult && { module: moduleResult }),
+            allModules: {
+                count: allSources.length,
+                totalLen: chunkLen,
+                medianMs: +(chunkTimes[Math.floor(RUNS / 2)].toFixed(3)),
+                p95Ms: +(chunkTimes[Math.floor(RUNS * 0.95)].toFixed(3)),
+                maxMs: +(chunkTimes[RUNS - 1].toFixed(3)),
+            },
+        };
     }
 
     return { error: `Unknown action: ${action}`, validActions: PATCH_ACTIONS };

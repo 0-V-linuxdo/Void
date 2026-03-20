@@ -60,11 +60,11 @@ export const TOOL_DEFINITIONS = [
     },
     {
         name: "patch",
-        description: "Patch ops. test: validate find+match+replace. analyze: find uniqueness. list: all patches+status. conflicts: multi-plugin modules. broken: failed patches. lint: regex quality. context: source neighborhood+anchors.",
+        description: "Patch ops. test: validate find+match+replace. analyze: find uniqueness. list: all patches+status. conflicts: multi-plugin modules. broken: failed patches. lint: regex quality. context: source neighborhood+anchors. bench: regex speed (median/p95/max over 50 runs).",
         inputSchema: {
             type: "object",
             properties: {
-                action: { type: "string", enum: ["test", "analyze", "list", "conflicts", "broken", "lint", "context"] },
+                action: { type: "string", enum: ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench"] },
                 find: { type: "string", description: "Module locator string." },
                 match: { type: "string", description: "Regex as plain string. \\i=minified var, .{0,N}=bounded gap." },
                 replace: { type: "string", description: "Supports $1, $&, $self." },
