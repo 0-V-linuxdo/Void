@@ -283,8 +283,8 @@ export default definePlugin({
         {
             find: '"Feature flag overrides active","Feature flag overrides active"',
             replacement: {
-                match: /\i&&\i\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
-                replace: "void 0",
+                match: /\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
+                replace: "&&void 0",
             },
         },
     ],

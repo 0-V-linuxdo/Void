@@ -699,8 +699,8 @@ export default definePlugin({
                     replace: "$&,$self._renderActionToolbar({}),$self._renderDownloadAll({})",
                 },
                 {
-                    match: /(?<=(\i))=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\2\.useMediaStore\)\(\i=>\i\.list\)/,
-                    replace: "=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)",
+                    match: /,(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.list\)/,
+                    replace: ",$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)",
                 },
             ],
         },
