@@ -240,17 +240,23 @@ if (isWatch) {
     logger.info("Watching for changes...");
     const { watch } = await import("fs");
     let building = false;
+    let pendingBuild = false;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     const doBuild = async () => {
-        if (building) return;
+        if (building) { pendingBuild = true; return; }
         building = true;
         try { await build(); }
         catch (e) { logger.error(e); }
         building = false;
+        if (pendingBuild) { pendingBuild = false; doBuild(); }
     };
 
     await doBuild();
-    watch("src", { recursive: true }, () => doBuild());
+    watch("src", { recursive: true }, () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => { debounceTimer = null; doBuild(); }, 200);
+    });
 } else {
     await build();
 }
