@@ -257,7 +257,7 @@ export default definePlugin({
     startAt: StartAt.TurbopackReady,
 
     start() {
-        if (settings.store.browserNotifications && Notification.permission === "default") Notification.requestPermission();
+        if (settings.store.browserNotifications && Notification.permission === "default") Notification.requestPermission().catch(() => {});
         const state = FeatureStore.useFeatureStore.getState();
         if (state.status === "ready") syncKnownFlags(state.config);
     },

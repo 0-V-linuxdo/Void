@@ -559,17 +559,26 @@ function CardActions({ postId }: { postId: string }) {
     const onCopyPrompt = async () => {
         const prompt = item?.prompt ?? item?.originalPrompt;
         if (!prompt) return;
-        await copyToClipboard(prompt);
-        Toaster.toast.success("Copied prompt.");
+        try {
+            await copyToClipboard(prompt);
+            Toaster.toast.success("Copied prompt.");
+        } catch (e) {
+            logger.error("Failed to copy prompt:", e);
+        }
     };
 
     const onUnfavorite = () => {
         MediaStore.useMediaStore.getState().unlike(postId);
     };
 
-    const onDelete = () => {
-        MediaStore.useMediaStore.getState().deletePost(postId, postId);
-        Toaster.toast.success("Deleted.");
+    const onDelete = async () => {
+        try {
+            await MediaStore.useMediaStore.getState().deletePost(postId, postId);
+            Toaster.toast.success("Deleted.");
+        } catch (e) {
+            logger.error("Failed to delete post:", e);
+            Toaster.toast.error("Failed to delete.");
+        }
     };
 
     const hasPrompt = !!(item?.prompt || item?.originalPrompt);

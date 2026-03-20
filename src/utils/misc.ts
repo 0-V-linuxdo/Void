@@ -138,6 +138,6 @@ export function sendBrowserNotification(title: string, body: string, icon = "/fa
     if (Notification.permission === "granted") {
         new Notification(title, { body, icon });
     } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(p => { if (p === "granted") new Notification(title, { body, icon }); });
+        Notification.requestPermission().then(p => { if (p === "granted") new Notification(title, { body, icon }); }).catch(() => {});
     }
 }
