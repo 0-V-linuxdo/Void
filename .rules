@@ -198,6 +198,8 @@ Types: `BOOLEAN`, `STRING`, `NUMBER`, `SELECT`, `SLIDER`, `COMPONENT`.
 - Use `all: true` for shared factories (multiple module IDs, same source).
 - Use `noWarn: true` when a patch legitimately may not match (conditional features).
 - Always test patches with MCP `patch test` before finalizing.
+- `find` must be as close as possible to where `match` hits. Minimize scan distance — pick anchors near the replacement site, not across the module.
+- Minimize `\i` count. Use bounded `.{0,N}` gaps or more literal text instead of chaining `\i` wildcards.
 
 ### Never
 

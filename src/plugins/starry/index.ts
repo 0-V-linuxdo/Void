@@ -14,10 +14,10 @@ export default definePlugin({
 
     patches: [
         {
-            find: "inactivityDelay:1e4,fadeInDuration:1e4",
+            find: "fadeOutDuration:200",
             replacement: [
                 {
-                    match: /\i\.SHOW_STARRY_IDLE&&!\i&&\i&&"main"===\i\.page&&/,
+                    match: /\i\.SHOW_STARRY_IDLE&&.{0,20}"main"===\i\.page&&/,
                     replace: "true&&",
                 },
                 {
