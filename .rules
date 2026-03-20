@@ -1,246 +1,144 @@
-# Void — Development Rules
+title: Void Development Rules
 
-## Workflow
+rules:
+  critical:
+    licenseHeader: new files use 2026, NEVER edit existing headers
+    pushBack: push back when the user idea is wrong
+    minimalChanges: fix with smallest possible change, no refactoring unless asked
+    noOverengineering: solve the problem at hand only
+    humanText: natural human text in errors/descriptions/messages, no robotic formatting
+    verify: use void-mcp tools to inspect Grok's live code, NEVER guess module structure
+    linting: run `bun run lint:fix` + `bun run lint:styles:fix` + `bun run tsc` after changes. NEVER run `bun run build` unless asked
+    noSpeculative: dont add finders/utils/components to turbopack/common/ unless existing code needs them
+  code:
+    deleteNotComment: DELETE dead code, dont comment it out
+    noComments: NEVER add comments unless explicitly asked, keep existing ones
+    descriptions: capital first letter, end with period
+    logger: use Logger from @utils/Logger, NEVER console.log/warn/error
+    minimal: less code with same functionality is ALWAYS better, inline single-use variables
+    noSingleUseWrappers: 1-3 line functions called once get inlined
+    noHardcoded: no magic numbers, unused imports, alias re-exports
+    DRY: no duplicate logic, extract shared helpers
+    performance: Promise.all for parallel async, .find/.some over .filter()[0], Map/Set, no spread in loops
+    simple: KISS over clever, flat over nested, early returns over deep nesting
+    robust: every code path returns a value, no silent failures, every subscribe() needs matching unsubscribe()
+    fileOrder: imports > Logger > finders > types > constants > functions/components > definePlugin export
+  typescript:
+    prefer: optional chaining (?.), nullish coalescing (??), const, arrow functions, satisfies over as
+    use: destructuring, template literals, object shorthand, array methods, for...of
+    style: early returns, trust inference for locals, annotate exports/params, never nest ternaries
+    types: use any over unknown when cant be properly typed, use types from packages/grok-types/ for Grok objects, use enums from grok-types/enums/ not raw literals
+  react:
+    errorBoundary: wrap complex components with ErrorBoundary.wrap(Component, fallback?)
+    nullNotUndefined: return null for conditional rendering
+    cleanup: always return cleanup functions in useEffect
+    noMutateParams: never mutate function parameters
+    spreadBeforeMutate: always spread-copy before mutating ({...existing})
+  forbidden:
+    emptyCatch: empty catch blocks (except turbopack iteration)
+    inlineStyles: no style={{}} unless dynamic computed values
+    falsyGates: "{arr.length && <Foo/>}" renders 0, use "!!arr.length" or ".length > 0"
+    mapWithNulls: use .filter().map() instead of .map(x => cond ? <X/> : null)
+    barrelImports: import from @turbopack/common/utils not @turbopack/common
+  antiPatterns{bad > good}:
+    "value !== null && value !== undefined" > "value != null"
+    "array && array.length > 0" > "array.length"
+    "settings?.store?.value" > "settings.store.value"
+    "value || defaultValue" > "value ?? defaultValue"
 
-- Use void-mcp tools to inspect Grok's live code. Don't guess module structure.
-- Run `bun run lint:fix`, `bun run lint:styles:fix`, `bun run tsc` after changes. Don't run `bun run build` unless asked.
-- After building, remind user to reload the extension and restart MCP (`bun run mcp`).
-- Fix with the smallest possible change. No refactoring unless asked.
-- Don't add finders/utils/components to `turbopack/common/` unless existing code already needs them.
-- Push back when the user's idea is wrong or misguided.
+css:
+  classNameFactory: "void-foo-" prefix must end with dash, use cl("bar") not cl("-bar")
+  noTailwind: NEVER use Tailwind in Void code, write proper CSS in styles.css
+  combine: classes(cl("foo"), cl("bar")), NEVER template strings
+  runtime: registerStyle(name, css) for runtime injection
+  files: always named styles.css
 
-## Code Style
+patching:
+  core:
+    surgical: minimum code touched, stability over cleverness, one patch per concern
+    verify: ALWAYS use MCP patch test before finalizing, NEVER guess
+    iterate: try multiple approaches, keep simplifying
+    minimize: remove any regex character that doesnt change the match result
+  tokens:
+    \i: any minified identifier [A-Za-z_$][\w$]*
+    $self: Void.plugins["Name"], call back into plugin
+    $&: entire match, append/prepend without captures
+    .{0,N}: bounded gap, set N to ~1.5x actual
+  find:
+    unique: must match exactly 1 module (or shared factory group), verify with MCP
+    anchors: i18n keys, displayName strings, feature flags, prop names
+    semantic: pick something unique and related to the feature, not generic strings
+    proximity: find must be close to where match hits, minimize scan distance
+  match:
+    stringLiteral: every match must contain a stable string literal, pure \i chains break
+    useAmpersand: $& to append/prepend, only capture groups when reusing content
+    boundedGaps: .{0,N} not .+? or .*?
+    minimizeWildcards: minimize \i count, use bounded gaps or literal text instead
+    groupSplit: use group:true for multi-step transforms instead of one massive regex
+  flags:
+    all: use all:true for shared factories (multiple module IDs, same source)
+    noWarn: use noWarn:true when patch legitimately may not match (lazy/conditional modules)
+    group: use group:true for multiple replacements on same module
+  NEVER:
+    hardcodedMinified: e,t,n,r,i,o,s > use \i
+    unboundedGaps: .*? or .+? > use .{0,N}
+    pureIdentifiers: /\i\|\|\i/ alone > pair with string anchor
+    massiveRegex: split into group:true replacements
+    reassembleNested: match up to anchor, use $&
 
-Write modern, clean, professional code. Every function should be the shortest correct version of itself — same functionality, less code, always. If you can remove a line and behavior stays the same, remove it. Prefer the simplest approach that handles all cases properly.
+plugin:
+  structure: |
+    src/plugins/<name>/index.ts(x)
+    src/plugins/<name>/styles.css (optional)
+  suffixes: .dev (dev only), .chrome (Chromium only)
+  loadOrder: _core/ > _api/ > regular
+  lifecycle: start() on enable, stop() on disable, startAt for timing (Init/DOMContentLoaded/TurbopackReady)
+  helpers: prefix with underscore (_method), called via $self._method() from patches
+  extensions: patches[], chatBarButton, contextMenuItems, managedStyle, events, zustand
+  settings: definePluginSettings() with OptionType (BOOLEAN/STRING/NUMBER/SELECT/SLIDER/COMPONENT)
 
-- **Robust**: every code path returns a value or handles the case. No empty blocks, no silent failures, no unhandled edge cases. Catch blocks must do something (log, return, rethrow).
-- **Fast**: no unnecessary re-renders, no API spam (debounce/cache where needed), no redundant computation. `Promise.all` for parallel async. `.find`/`.some` over `.filter()[0]`.
-- **Organized**: file order is imports → Logger → finders → types → constants → functions/components → definePlugin export. Group related logic together.
-- **Concise**: inline single-use variables unless they clarify intent. No wrapper functions that just call another function. No redundant type annotations the compiler infers. No unnecessary destructuring.
-- **DRY**: no duplicate logic across files. If two files share the same helper, extract it to a shared location or re-export. When a pattern repeats (e.g. read-modify-write on settings), extract a shared helper in the same file.
+imports:
+  react: "@turbopack/common/react" (React, hooks, Fragment, ReactDOM)
+  components: "@turbopack/common/components" or "@components" (Button, Dialog, etc.)
+  stores: "@turbopack/common/stores" (Zustand stores)
+  utils: "@turbopack/common/utils" (ApiClients, Toaster, i18n, NextRouter, FileUtils, etc.)
+  guards: "@utils/guards" (isTruthy, isNonNullish, isObject)
+  text: "@utils/text" (humanizeKey, pluralize, escapeRegExp)
+  reactUtils: "@utils/react" (useForceUpdater, useFiltered, useCountdown, useEventSubscription)
+  misc: "@utils/misc" (copyToClipboard, debounce, sleep, clamp, errorMessage, onlyOnce, fetchExternal, createExternalStore)
+  css: "@utils/css" (registerStyle, enableStyle, disableStyle, classNameFactory, classes)
+  logger: "@utils/Logger"
+  themes: "@api/Themes" (addTheme, removeTheme, enableTheme, disableTheme)
+  voidComponents: "@components" (ConfirmDialog, ErrorBoundary, ErrorCard, Text, Flex, Grid, Paragraph, Chip, ChatBarButton)
+  icons: "@components/icons"
 
-### What NOT to do
+components:
+  Text: styled text, props: as(div), size(xs/sm/base/lg/xl/2xl), weight(normal/medium/semibold/bold), color(primary/secondary/muted)
+  Paragraph: description/helper text, renders <p> text-xs. ALWAYS use for descriptions, never Text size="xs"
+  Flex: flexbox layout, props: flexDirection, gap(1em), justifyContent, alignItems
+  Grid: grid layout, props: columns, rows, gap(0.75rem)
+  Chip: badge/tag, variant(default/secondary/destructive/outline)
+  ChatBarButton: chat input buttons, props: icon, tooltip, children, iconOnly
+  ConfirmDialog: confirm/cancel prompts, props: open, onOpenChange, title, description, onConfirm, danger
+  ErrorBoundary: .wrap(Component, fallback?) for inline wrapping
+  sectionPattern: "Flex column gap=0 > Text sm medium + Paragraph"
 
-- **No single-use wrappers**: if a function is 1–3 lines and called once, inline it at the call site.
-- **No trivial getters/setters**: `getX() { return this.x; }` — access the value directly.
-- **No alias re-exports**: don't create `camelToTitle` that just calls `humanizeKey`. Import the original.
-- **No falsy-value JSX gates**: `{arr.length && <Foo/>}` renders `0` when empty. Use `{!!arr.length && <Foo/>}` or `{arr.length > 0 && <Foo/>}`.
-- **No mutation before spread**: `const obj = existing ?? {}; obj.key = val; save({...base, obj})` mutates the original. Always copy first: `const obj = {...(existing ?? {})}`.
-- **No dangling subscriptions**: every `subscribe()` must have a matching `unsubscribe()` in all code paths (success, error, early return).
-- **No `map` returning nulls**: use `.filter().map()` instead of `.map(x => cond ? <X/> : null)`.
-- **No manual patterns when utils exist**: use `onlyOnce()` instead of hand-rolled `fired` flags, `createExternalStore()` instead of manual subscribe/getSnapshot, shared helpers instead of repeated spread patterns.
-- **No barrel imports for submodules**: import from `@turbopack/common/utils`, not `@turbopack/common`.
+project:
+  src/api/: logic, state, registries (no patches, no UI)
+  src/components/: Void components + icons
+  src/plugins/_core/: core injection patches
+  src/plugins/_api/: API injection patches
+  src/plugins/: user-facing plugins
+  src/turbopack/: module system, patching engine
+  src/turbopack/common/: Grok component/store/util finders
+  packages/grok-types/: type definitions (components, stores, enums)
+  addingInternals:
+    component: type in grok-types/components.d.ts > LazyComponent in common/components.ts
+    store: interface in grok-types/stores/ > typed finder in common/stores.ts
+    util: typed finder in common/utils.ts
+    enum: type union in grok-types/enums/ > re-export from barrel
 
-### What TO do
-
-- Inline trivial helpers at their single call site.
-- Extract repeated multi-line patterns into a local helper within the same file.
-- Use `filter().map()` for conditional rendering lists.
-- Copy objects before mutating: `const copy = {...original}; copy.key = val;`.
-- Clean up all subscriptions and timers in every exit path.
-- Use existing utilities from `@utils/*` — check what's available before writing manual logic.
-- Prefer `for...of` with a counter over double-pass `.filter().length` when you need both count and iteration.
-
-- License header on new files uses 2026. Never edit existing headers.
-- No comments unless explicitly asked. Keep existing ones.
-- Delete dead code, don't comment it out.
-- Descriptions: capital first letter, end with period.
-- Write natural human text in errors, descriptions, messages.
-- Guard clause and return early. Never nest 3+ levels deep.
-- Use `Logger` from `@utils/Logger`. Never raw `console.log/warn/error`.
-- Prefer optional chaining, nullish coalescing, `const`, arrow functions, `satisfies` over `as`.
-- Trust type inference for locals. Annotate exports and params.
-- Use `any` over `unknown` when something can't be properly typed. Use proper types from `packages/grok-types/` for Grok objects.
-- Use enum types from `packages/grok-types/enums/` instead of raw string/number literals. Patch strings are exempt.
-- Empty catch blocks are forbidden (except turbopack module iteration).
-- Never nest ternaries. Use early returns or variables.
-- Never mutate function parameters.
-
-## Imports
-
-Always use centralized imports. Never create per-file finders for things that exist in common modules.
-
-| Need | Import from |
-|------|-------------|
-| React, hooks, Fragment, ReactDOM | `@turbopack/common/react` |
-| Grok components (Button, Dialog, etc.) | `@turbopack/common/components` or `@components` |
-| Zustand stores | `@turbopack/common/stores` |
-| ApiClients, Toaster, ClassNames, i18n, NextRouter, TanStackQuery, FileUtils, CopyUtils, etc. | `@turbopack/common/utils` |
-| isTruthy, isNonNullish, isObject | `@utils/guards` |
-| humanizeKey, pluralize, escapeRegExp | `@utils/text` |
-| useForceUpdater, useFiltered, useCountdown, useEventSubscription | `@utils/react` |
-| copyToClipboard, debounce, sleep, clamp, errorMessage, sanitizeFilename, formatCountdown, formatDuration, mergeDefaults, onlyOnce, fetchExternal, createExternalStore | `@utils/misc` |
-| registerStyle, enableStyle, disableStyle, classNameFactory, classes | `@utils/css` |
-| Logger | `@utils/Logger` |
-| addTheme, removeTheme, enableTheme, disableTheme, getThemes, isThemesEnabled, setThemesEnabled | `@api/Themes` |
-| ConfirmDialog, ErrorBoundary, ErrorCard | `@components` |
-| Text, Flex, Grid, Paragraph, Chip, ChatBarButton | `@components` |
-| Icons | `@components/icons` |
-
-## Components
-
-### Void Components
-
-| Component | Use for | Key props |
-|-----------|---------|-----------|
-| `Text` | Styled text spans/blocks | `as` (default `"div"`), `size` (xs/sm/base/lg/xl/2xl), `weight` (normal/medium/semibold/bold), `color` (primary/secondary/muted) |
-| `Paragraph` | Short helper/description text | `color` (primary/secondary/muted). Renders `<p>` with `text-xs text-pretty`. |
-| `Flex` | Flexbox layout | `flexDirection`, `gap` (default `"1em"`), `justifyContent`, `alignItems`, `flexWrap` |
-| `Grid` | Grid layout | `columns`, `rows`, `gap` (default `"0.75rem"`), `justifyItems`, `alignItems` |
-| `Chip` | Badge/tag labels | `variant` (default/secondary/destructive/outline) |
-| `ChatBarButton` | Buttons next to chat input | `icon`, `tooltip`, `children` (label text), `iconOnly` |
-| `ConfirmDialog` | Confirm/cancel prompts | `open`, `onOpenChange`, `title`, `description`, `onConfirm`, `danger` |
-| `ErrorBoundary` | Wrap risky components | `.wrap(Component, fallback?)` static method for inline wrapping |
-| `ErrorCard` | Error state display | `title`, `children` |
-
-### When to use what
-
-- **Flex/Grid** for layout containers. Plain `<div>` is fine for simple wrappers.
-- **Text** for titles, labels, and inline text that needs size/weight/color control. Use `as="span"` for inline.
-- **Paragraph** for ALL description/helper text — under section headings, empty states, settings descriptions, plugin info. Never use `<Text size="xs" color="secondary">` for descriptions — use `<Paragraph>` instead.
-- **Chip** for small labels/badges.
-- Plain `<span>`/`<div>` with Tailwind classes are fine for trivial cases.
-- No inline `style={{}}` unless dynamic computed values or layout component internals.
-
-### Section header pattern
-
-Use this pattern for section titles with descriptions in settings/tabs:
-
-```tsx
-<Flex flexDirection="column" gap="0">
-    <Text size="sm" weight="medium">Section Title</Text>
-    <Paragraph>Description text explaining what this section does.</Paragraph>
-</Flex>
-```
-
-Never use `<Text size="xs" color="secondary">` for the description line. Always `<Paragraph>`.
-
-### Grok Components (from `@turbopack/common/components`)
-
-Button, ButtonWithTooltip, Dialog/DialogContent/DialogHeader/DialogTitle/DialogFooter/DialogClose, DropdownMenu family, ContextMenu family, Select family, Popover family, Tabs family, Accordion family, Command family, Card, Input, Textarea, Switch, Checkbox, Slider, Separator, Skeleton, Spinner, Avatar, Tooltip/TooltipTrigger/TooltipContent, MotionDiv, AnimatePresence, SettingsRow/SettingsTitle/SettingsDescription, toast.
-
-## CSS
-
-- `classNameFactory("void-foo-")` — prefix must end with `-`. Use `cl("bar")` not `cl("-bar")`.
-- Only use `cl()` for our own CSS class names. Never use Tailwind utility classes in Void code — always write proper CSS in `styles.css`.
-- `classes(cl("foo"), cl("bar"))` to combine. Never template strings like `` `${a} ${b}` ``.
-- Plugin CSS files are always named `styles.css`.
-- `registerStyle(name, css)` for runtime CSS injection.
-
-## Plugin Structure
-
-```
-src/plugins/<name>/index.ts(x)    — entry, uses definePlugin
-src/plugins/<name>/styles.css     — optional CSS
-```
-
-Folder suffixes: `.dev` (dev builds only), `.chrome` (Chromium only). Load order: `_core/` then `_api/` then regular.
-
-### definePlugin shape
-
-```typescript
-export default definePlugin({
-    name: "PluginName",
-    description: "What it does.",
-    authors: [Devs.Prism],
-    settings,                          // from definePluginSettings()
-
-    // Lifecycle
-    start() {},
-    stop() {},
-
-    // Patch helpers (called via $self._method() from patches)
-    _helperMethod() {},
-
-    // Extension points
-    patches: [],
-    chatBarButton: { render: Component },
-    contextMenuItems: { conversation: { label, render } },
-    managedStyle: "style-name",        // auto enable/disable with plugin
-    events: { eventName: handler },
-    startAt: "TurbopackReady",         // "Init" (default), "DOMContentLoaded", "TurbopackReady"
-});
-```
-
-### Settings
-
-```typescript
-const settings = definePluginSettings({
-    optionName: {
-        type: OptionType.BOOLEAN,
-        description: "What this does.",
-        default: true,
-    },
-});
-```
-
-Types: `BOOLEAN`, `STRING`, `NUMBER`, `SELECT`, `SLIDER`, `COMPONENT`.
-
-## Patching
-
-### Tokens
-
-| Token | Expands to | Use |
-|-------|-----------|-----|
-| `\i` | `(?:[A-Za-z_$][\w$]*)` | Any minified identifier |
-| `$self` | `Void.plugins["Name"]` | Call back into plugin from patched code |
-| `$&` | Entire match | Append/prepend without capture groups |
-| `$1`, `$2` | Capture groups | Reuse captured content in replace |
-| `.{0,N}` | Bounded gap | Bridge variable-length sections. Set N to ~1.5x actual. |
-
-### Rules
-
-- Every `find` must match exactly 1 module (or shared factory group). Verify with MCP.
-- Good `find` anchors: i18n keys, displayName strings, feature flags, prop names. Pick something unique and semantically related to the feature being patched — not a generic string that happens to be in the same module.
-- Every `match` regex must contain a stable string literal. Pure `\i` chains break on updates.
-- Use `$&` to append/prepend. Only use capture groups when reusing content.
-- Use `group: true` for multi-step transforms instead of one massive regex.
-- Use `all: true` for shared factories (multiple module IDs, same source).
-- Use `noWarn: true` when a patch legitimately may not match (conditional features).
-- Always test patches with MCP `patch test` before finalizing.
-- `find` must be as close as possible to where `match` hits. Minimize scan distance — pick anchors near the replacement site, not across the module.
-- Minimize `\i` count. Use bounded `.{0,N}` gaps or more literal text instead of chaining `\i` wildcards.
-
-### Never
-
-- Hardcode minified names (`e`, `t`, `n`) — use `\i`.
-- Use `.*?` or `.+?` — use `.{0,N}` with a bounded length.
-- Write pure identifier patterns like `/\i\|\|\i/` alone — pair with a string anchor.
-- Write massive regex — split into `group: true` replacements.
-- Reassemble deeply nested brackets — match up to an anchor, use `$&`.
-
-## Project Structure
-
-```
-src/api/            — logic, state, registries (no patches, no UI)
-src/components/     — Void custom components + icons
-src/plugins/_core/  — core patches that inject API functionality
-src/plugins/_api/   — API injection patches
-src/plugins/        — user-facing plugins
-src/turbopack/      — module system, patching engine, common exports
-src/turbopack/common/
-    components.ts   — Grok component wrappers (LazyComponent + findExportedComponent)
-    stores.ts       — Grok Zustand store finders (38 stores)
-    utils.ts        — Grok utility finders (ApiClients, i18n, NextRouter, etc.)
-    react.tsx       — React instance, hooks, Fragment, ReactDOM
-packages/grok-types/
-    components.d.ts — type definitions for Grok components
-    stores/         — type definitions for Grok stores
-    enums/          — string/number literal union types (18 files, 65+ unions)
-```
-
-### Adding Grok internals
-
-- **New component**: type in `grok-types/components.d.ts` → `LazyComponent` in `common/components.ts`
-- **New store**: interface in `grok-types/stores/` → typed finder in `common/stores.ts`
-- **New util**: typed finder in `common/utils.ts`
-- **New enum**: type union in `grok-types/enums/` → re-export from barrel
-
-Only add when existing code actually needs it. Don't add speculatively.
-
-## Settings Tabs
-
-- Wrapper div handles `flex-1`, `w-full`, `h-full`, padding, `overflow-scroll`.
-- Tab components never set width/height/overflow/flex:1 or create inner scroll containers.
-- Root element: bare `<Flex flexDirection="column" gap="...">`.
-- Verify appearance against Grok's native settings using MCP tools.
+settingsTabs:
+  wrapper: handles flex-1, w-full, h-full, padding, overflow-scroll
+  tabComponent: NEVER set width/height/overflow/flex:1 or create scroll containers
+  root: bare Flex column with gap
