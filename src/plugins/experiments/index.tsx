@@ -273,18 +273,18 @@ export default definePlugin({
 
     patches: [
         {
-            find: 'ENABLE_SCREEN_SHARING:"enable_screen_sharing"',
+            find: "local_feature_flags",
             all: true,
             replacement: {
-                match: /\i&&(void 0!==\i\[\i\])/,
-                replace: "$1",
+                match: /("ready"===\i\.\i\).{0,60})\i&&(void 0!==\i\[\i\])/,
+                replace: "$1$2",
             },
         },
         {
             find: '"Feature flag overrides active","Feature flag overrides active"',
             replacement: {
-                match: /\.toast\.warning\(.{0,3}\("Feature flag overrides active","Feature flag overrides active"\)\)/,
-                replace: ".toast.warning()",
+                match: /\i&&\i\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
+                replace: "void 0",
             },
         },
     ],
