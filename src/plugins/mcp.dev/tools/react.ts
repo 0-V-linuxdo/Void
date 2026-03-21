@@ -77,7 +77,7 @@ export function handleReact(args: ReactArgs): unknown {
     const lim = Math.max(1, clampDefault(args.limit, REACT.DEFAULT_LIMIT, REACT.MAX_LIMIT));
 
     if (action === "find") {
-        if (!componentName) return { error: "Provide componentName" };
+        if (!componentName) return { error: "Provide componentName." };
         const root = getRoot();
         if (!root) return { error: "No React root found. Is grok.com loaded?" };
 
@@ -129,7 +129,7 @@ export function handleReact(args: ReactArgs): unknown {
         return [...seen].sort();
     }
 
-    if (!selector) return { error: "Provide CSS selector (required for this action)" };
+    if (!selector) return { error: "Provide CSS selector (required for this action)." };
     const el = resolveEl(selector);
     if (typeof el === "string") return { error: el };
 

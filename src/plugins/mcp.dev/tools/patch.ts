@@ -5,7 +5,7 @@
  */
 
 import { isPluginEnabled } from "@api/PluginManager";
-import { getRuntimeFactoryRegistry, patches, patchResults, patchStats } from "@turbopack/patchTurbopack";
+import { getRuntimeFactoryRegistry, patches, patchReport, patchResults, patchStats } from "@turbopack/patchTurbopack";
 import { search } from "@turbopack/turbopack";
 import { type PatchedModuleFactory, SYM_PATCHED_BY } from "@turbopack/types";
 import { canonicalizeMatch } from "@utils/patches";
@@ -14,14 +14,15 @@ import { PATCH } from "./constants";
 import type { LintWarning, PatchArgs } from "./types";
 import { clampDefault, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources, getFactorySourceCache } from "./utils";
 
-function findModulesByFind(findStr: string): { ids: number[]; results: Record<number, unknown>; canonFind: string | RegExp } {
-    const canonFind = canonicalizeMatch(findStr);
-    const results = search(canonFind);
+function findModulesByFind(findStr: string | string[]): { ids: number[]; results: Record<number, unknown>; canonFind: string | RegExp } {
+    const parts = Array.isArray(findStr) ? findStr : [findStr];
+    const canonParts = parts.map(f => canonicalizeMatch(f));
+    const results = search(...canonParts);
     const ids = Object.keys(results).map(Number);
-    return { ids, results, canonFind };
+    return { ids, results, canonFind: canonParts[0] };
 }
 
-const PATCH_ACTIONS = ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench"] as const;
+const PATCH_ACTIONS = ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench", "report"] as const;
 
 function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
     const warnings: LintWarning[] = [];
@@ -93,15 +94,15 @@ function longestLiteral(matchStr: string): string {
                     if (current.length > best.length) best = current;
                     current = "";
                     i++;
-                    if (next === "e" && i < matchStr.length && matchStr[i] === "{") {
-                        const close = matchStr.indexOf("}", i + 1);
+                    if (next === "e" && i + 1 < matchStr.length && matchStr[i + 1] === "{") {
+                        const close = matchStr.indexOf("}", i + 2);
                         if (close !== -1) i = close;
-                    } else if ((next === "u" || next === "p" || next === "P" || next === "k") && i < matchStr.length && matchStr[i] === "{") {
-                        const close = matchStr.indexOf("}", i + 1);
+                    } else if ((next === "u" || next === "p" || next === "P" || next === "k") && i + 1 < matchStr.length && matchStr[i + 1] === "{") {
+                        const close = matchStr.indexOf("}", i + 2);
                         if (close !== -1) i = close;
                     } else if (next === "x") {
                         i += 2;
-                    } else if (next === "u" && i < matchStr.length && matchStr[i] !== "{") {
+                    } else if (next === "u" && (i + 1 >= matchStr.length || matchStr[i + 1] !== "{")) {
                         i += 4;
                     }
                 } else {
@@ -120,7 +121,7 @@ function longestLiteral(matchStr: string): string {
     return best;
 }
 
-function testMatchOnSource(src: string, id: number, findStr: string, matchStr: string, replaceStr: string, flags?: string, contextPad?: number) {
+function testMatchOnSource(src: string, id: number, findStr: string | string[], matchStr: string, replaceStr: string, flags?: string, contextPad?: number) {
     let regex: RegExp;
     try {
         regex = canonicalizeMatch(new RegExp(matchStr, flags ?? ""));
@@ -151,7 +152,8 @@ function testMatchOnSource(src: string, id: number, findStr: string, matchStr: s
         } else {
             hint = "No substantial literal in match pattern — add string anchors";
         }
-        const canonFindStr = canonicalizeMatch(findStr);
+        const firstFind = Array.isArray(findStr) ? findStr[0] : findStr;
+        const canonFindStr = canonicalizeMatch(firstFind);
         const findIdx = typeof canonFindStr === "string" ? src.indexOf(canonFindStr) : src.search(canonFindStr);
         const nfPad = clampDefault(contextPad, PATCH.DEFAULT_CONTEXT_PAD, PATCH.MAX_CONTEXT_PAD);
         const nearFind = findIdx >= 0 ? src.slice(Math.max(0, findIdx - nfPad), Math.min(src.length, findIdx + nfPad * 2)) : undefined;
@@ -184,8 +186,8 @@ function testMatchOnSource(src: string, id: number, findStr: string, matchStr: s
     const cs = Math.max(0, at - pad);
     const ce = Math.min(src.length, at + matched[0].length + pad);
 
-    const canonFind = canonicalizeMatch(findStr);
-    const findOffset = typeof canonFind === "string" ? src.indexOf(canonFind) : src.search(canonFind);
+    const canonFindV = canonicalizeMatch(Array.isArray(findStr) ? findStr[0] : findStr);
+    const findOffset = typeof canonFindV === "string" ? src.indexOf(canonFindV) : src.search(canonFindV);
 
     const result: Record<string, unknown> = {
         status: "VALID",
@@ -247,7 +249,7 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
     const canonFind = canonParts[0];
     const findIdx = typeof canonFind === "string" ? src.indexOf(canonFind) : src.search(canonFind);
     if (findIdx >= 0) {
-        const neighborhood = src.slice(Math.max(0, findIdx - 200), Math.min(src.length, findIdx + 400));
+        const neighborhood = src.slice(Math.max(0, findIdx - PATCH.ANALYZE_DEFAULT_CONTEXT), Math.min(src.length, findIdx + PATCH.ANALYZE_DEFAULT_CONTEXT * 2));
         const nearbyI18n = extractI18nKeys(neighborhood);
         if (nearbyI18n.length) result.nearbyI18n = nearbyI18n;
     }
@@ -275,6 +277,9 @@ export function handlePatch(args: PatchArgs): unknown {
                 }),
             };
             if (p.group) entry.group = true;
+            if (p.validateOnly) entry.validateOnly = true;
+            if (p.noWarn) entry.noWarn = true;
+            if (p.predicate) entry.predicate = true;
             if (result) entry.moduleId = result.moduleId;
             else entry.status = isPluginEnabled(p.plugin) ? "unmatched" : "disabled";
             return entry;
@@ -282,7 +287,7 @@ export function handlePatch(args: PatchArgs): unknown {
     }
 
     if (action === "analyze") {
-        if (!findStr) return { error: "Provide find string" };
+        if (!findStr) return { error: "Provide find string." };
         const { ids, results, canonFind } = findModulesByFind(findStr);
         if (!ids.length) return { unique: false, count: 0, hint: "No modules match this find string" };
 
@@ -324,7 +329,7 @@ export function handlePatch(args: PatchArgs): unknown {
     }
 
     if (action === "test") {
-        if (!findStr || !matchStr || !replaceStr) return { error: "Provide find, match, and replace" };
+        if (!findStr || !matchStr || !replaceStr) return { error: "Provide find, match, and replace." };
 
         const { ids, results } = findModulesByFind(findStr);
         if (!ids.length) {
@@ -368,17 +373,22 @@ export function handlePatch(args: PatchArgs): unknown {
     }
 
     if (action === "broken") {
-        const orphaned = patches.map(diagnoseOrphaned).filter(Boolean);
-        const noEffect = patchResults.flatMap(r =>
-            r.replacements.filter(rep => rep.status === "noEffect").map(rep => ({ plugin: r.plugin, find: r.find.slice(0, PATCH.FIND_SLICE), moduleId: r.moduleId, match: rep.match.slice(0, PATCH.MATCH_SLICE) })),
+        const report = patchReport();
+        const diagnosed = patches.map(diagnoseOrphaned).filter(Boolean);
+        const collectByStatus = (status: string) => patchResults.flatMap(r =>
+            r.replacements.filter(rep => rep.status === status).map(rep => ({
+                plugin: r.plugin, find: r.find.slice(0, PATCH.FIND_SLICE), moduleId: r.moduleId, match: rep.match.slice(0, PATCH.MATCH_SLICE),
+            })),
         );
-        const errors = patchResults.flatMap(r =>
-            r.replacements.filter(rep => rep.status === "error").map(rep => ({ plugin: r.plugin, find: r.find.slice(0, PATCH.FIND_SLICE), moduleId: r.moduleId, match: rep.match.slice(0, PATCH.MATCH_SLICE) })),
-        );
+        const noEffect = collectByStatus("noEffect");
+        const errors = collectByStatus("error");
+        const reverted = collectByStatus("reverted");
         return {
-            orphaned,
+            orphaned: diagnosed,
+            ...(report.pending.length && { pending: report.pending }),
             ...(noEffect.length && { noEffect }),
             ...(errors.length && { errors }),
+            ...(reverted.length && { reverted }),
             stats: {
                 applied: patchStats.applied,
                 noEffect: patchStats.noEffect,
@@ -390,7 +400,7 @@ export function handlePatch(args: PatchArgs): unknown {
     }
 
     if (action === "lint") {
-        if (!matchStr) return { error: "Provide match regex string to lint" };
+        if (!matchStr) return { error: "Provide match regex string to lint." };
         const warnings = lintMatchRegex(matchStr, replaceStr);
         const errorCount = warnings.filter(w => w.severity === "error").length;
         const warnCount = warnings.filter(w => w.severity === "warn").length;
@@ -398,7 +408,7 @@ export function handlePatch(args: PatchArgs): unknown {
     }
 
     if (action === "context") {
-        if (!findStr) return { error: "Provide find string" };
+        if (!findStr) return { error: "Provide find string." };
         const { ids, results, canonFind } = findModulesByFind(findStr);
         if (!ids.length) {
             const registry = getRuntimeFactoryRegistry();
@@ -440,7 +450,7 @@ export function handlePatch(args: PatchArgs): unknown {
     }
 
     if (action === "bench") {
-        if (!matchStr) return { error: "Provide match regex string" };
+        if (!matchStr) return { error: "Provide match regex string." };
 
         let regex: RegExp;
         try {
@@ -469,9 +479,10 @@ export function handlePatch(args: PatchArgs): unknown {
         };
 
         const allSources = getAllFactorySources();
-        const canonFind = findStr ? canonicalizeMatch(findStr) : undefined;
+        const benchFindStr = findStr ? (Array.isArray(findStr) ? findStr[0] : findStr) : undefined;
+        const canonFind = benchFindStr ? canonicalizeMatch(benchFindStr) : undefined;
 
-        const find = canonFind ? bench(() => {
+        const find = canonFind && typeof canonFind === "string" ? bench(() => {
             for (const src of allSources) {
                 if (src.includes(canonFind)) break;
             }
@@ -494,6 +505,16 @@ export function handlePatch(args: PatchArgs): unknown {
             ...(find && { find }),
             match,
             ...(replace && { replace }),
+        };
+    }
+
+    if (action === "report") {
+        const report = patchReport();
+        return {
+            stats: report.stats,
+            results: report.results.length,
+            orphaned: report.orphaned,
+            pending: report.pending,
         };
     }
 

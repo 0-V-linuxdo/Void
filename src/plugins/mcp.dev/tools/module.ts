@@ -84,9 +84,11 @@ function buildWhereUsedIndex(): Map<number, Array<{ id: number; n: number }>> {
 
     const index = new Map<number, Array<{ id: number; n: number }>>();
     const importRe = re.turbopackImport();
+    const sourceCache = getFactorySourceCache();
 
-    for (const [moduleId, factory] of registry) {
-        const src = String(factory);
+    for (const [moduleId] of registry) {
+        const src = sourceCache.get(moduleId);
+        if (!src) continue;
         const counts = new Map<number, number>();
         importRe.lastIndex = 0;
         let m;
@@ -187,8 +189,18 @@ function extractFunctionAt(src: string, patternIdx: number): { start: number; en
     if (openBrace < 0) {
         let braceCount = 0;
         for (let i = patternIdx; i >= 0; i--) {
-            if (src[i] === "}") braceCount++;
-            else if (src[i] === "{") {
+            const ch = src[i];
+            if (ch === '"' || ch === "'" || ch === "`") {
+                let j = i - 1;
+                while (j >= 0 && src[j] !== ch) {
+                    if (src[j] === "\\" && j > 0) j--;
+                    j--;
+                }
+                i = j + 1;
+                continue;
+            }
+            if (ch === "}") braceCount++;
+            else if (ch === "{") {
                 if (braceCount > 0) braceCount--;
                 else {
                     openBrace = i;
@@ -354,7 +366,7 @@ export function handleModule(args: ModuleArgs): unknown {
             mod = find(filters.byCode(...code));
             filterType = "code";
         } else {
-            return { error: "Provide props, code, displayName, or storeName" };
+            return { error: "Provide props, code, displayName, or storeName." };
         }
         if (!mod) {
             const cache = getModuleCache();
@@ -363,10 +375,12 @@ export function handleModule(args: ModuleArgs): unknown {
                 let onDefault = 0;
                 for (const [, exports] of cache) {
                     if (exports == null || typeof exports !== "object") continue;
-                    const exp = exports as Record<string, unknown>;
-                    if (props.some((p: string) => exp[p] !== undefined)) partial++;
-                    const def = exp.default;
-                    if (def != null && typeof def === "object" && props.every((p: string) => (def as Record<string, unknown>)[p] !== undefined)) onDefault++;
+                    try {
+                        const exp = exports as Record<string, unknown>;
+                        if (props.some((p: string) => exp[p] !== undefined)) partial++;
+                        const def = exp.default;
+                        if (def != null && typeof def === "object" && props.every((p: string) => (def as Record<string, unknown>)[p] !== undefined)) onDefault++;
+                    } catch {}
                 }
                 if (onDefault) return { error: `${onDefault} module(s) have [${props}] on .default, not top-level` };
                 if (partial) return { error: `${partial} modules have some of [${props}] but not all` };
@@ -410,29 +424,34 @@ export function handleModule(args: ModuleArgs): unknown {
         else if (code?.length && args.componentByCode) mods = findAll(filters.componentByCode(...code));
         else if (props?.length) mods = findAll(filters.byProps(...props));
         else if (code?.length) mods = findAll(filters.byCode(...code));
-        else return { error: "Provide props, code, displayName, or storeName" };
+        else return { error: "Provide props, code, displayName, or storeName." };
         if (!mods.length) return [];
         const cap = clampDefault(args.limit, MODULE.DEFAULT_FIND_ALL, MODULE.MAX_FIND_ALL);
-        const results = mods.slice(0, cap).map(m => {
+        const off = Math.max(0, Math.floor(args.offset ?? 0));
+        const sliced = mods.slice(off, off + cap);
+        const results = sliced.map(m => {
             const moduleId = findModuleId(m);
             const result: Record<string, unknown> = { id: moduleId, exports: serialize(m, 1) };
             if (moduleId != null) attachModuleMetadata(result, moduleId);
             return result;
         });
-        if (mods.length > cap) results.push({ truncated: mods.length });
+        if (mods.length > off + cap) results.push({ truncated: mods.length, showing: `${off}-${off + sliced.length}` });
         return results;
     }
 
     if (action === "findBulk") {
         const filterDefs = args.filters;
-        if (!Array.isArray(filterDefs) || filterDefs.length < 2) return { error: "Provide filters array (2+), each: {props?, code?}" };
-        const builtFilters = filterDefs.map((def: { props?: string[]; code?: string[] }) => {
+        if (!Array.isArray(filterDefs) || filterDefs.length < 2) return { error: "Provide filters array (2+), each: {props?, code?, displayName?, storeName?}." };
+        const builtFilters = filterDefs.map((def: { props?: string[]; code?: string[]; displayName?: string; storeName?: string; componentByCode?: boolean }) => {
+            if (def.displayName) return filters.byDisplayName(def.displayName);
+            if (def.storeName) return filters.byStoreName(def.storeName);
+            if (def.code?.length && def.componentByCode) return filters.componentByCode(...def.code);
             if (def.props?.length) return filters.byProps(...def.props);
             if (def.code?.length) return filters.byCode(...def.code);
             return null;
         });
         const invalid = builtFilters.findIndex(f => !f);
-        if (invalid !== -1) return { error: `Filter[${invalid}] has no props or code` };
+        if (invalid !== -1) return { error: `Filter[${invalid}] needs props, code, displayName, or storeName` };
         const results = findBulk(...(builtFilters as FilterFn[]));
         return results.map((m, i) => {
             if (!m) {
@@ -452,7 +471,7 @@ export function handleModule(args: ModuleArgs): unknown {
             comp = findExportedComponent(...props);
             if (!comp) return { error: `No component "${props[0]}". Try code param for source matching, react find, or search factory source.` };
         } else {
-            return { error: "Provide component name(s) in props, or code strings in code" };
+            return { error: "Provide component name(s) in props, or code strings in code." };
         }
         const moduleId = findModuleId(comp);
         const fn = comp as { displayName?: string; name?: string };
@@ -466,7 +485,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "findModuleId") {
-        if (!code?.length) return { error: "Provide code strings" };
+        if (!code?.length) return { error: "Provide code strings." };
         const foundId = findModuleIdByCode(...code);
         if (foundId == null) return { error: `No factory matches [${code}]` };
         const result: Record<string, unknown> = { id: foundId, loaded: getModuleCache().has(foundId) };
@@ -475,7 +494,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "exports") {
-        if (id == null) return { error: "Provide module id" };
+        if (id == null) return { error: "Provide module id." };
         const exportCache = getModuleCache();
         if (!exportCache.has(id)) {
             const hasFactory = getRuntimeFactoryRegistry()?.has(id);
@@ -498,7 +517,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "source") {
-        if (id == null) return { error: "Provide module id" };
+        if (id == null) return { error: "Provide module id." };
         const patchedCode = args.patched ? getPatchedSource(id) : null;
         const src = patchedCode ?? getFactorySource(id);
         if (!src) return { error: `Module ${id} not found.` };
@@ -539,7 +558,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "imports") {
-        if (id == null) return { error: "Provide module id" };
+        if (id == null) return { error: "Provide module id." };
         const src = getFactorySource(id);
         if (!src) return { error: `Module ${id} not found.` };
         const sync = new Set<number>();
@@ -561,7 +580,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "namedExports") {
-        if (id == null) return { error: "Provide module id" };
+        if (id == null) return { error: "Provide module id." };
         const src = getFactorySource(id);
         if (!src) return { error: `Module ${id} not found.` };
         const named: Array<{ name: string; mid?: number }> = [];
@@ -581,7 +600,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "load") {
-        if (id == null) return { error: "Provide module id" };
+        if (id == null) return { error: "Provide module id." };
         const cache = getModuleCache();
         if (cache.has(id)) return { id, loaded: true, exports: serialize(cache.get(id)) };
 
@@ -601,7 +620,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "loadChunks") {
-        if (!code?.length) return { error: "Provide code to identify the chunk-loading factory" };
+        if (!code?.length) return { error: "Provide code to identify the chunk-loading factory." };
         return extractAndLoadChunks(code).then(
             (loaded: boolean) => ({ loaded }),
             (err: unknown) => ({ error: errorMessage(err) }),
@@ -609,7 +628,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "findByFactory") {
-        if (!code?.length) return { error: "Provide code strings" };
+        if (!code?.length) return { error: "Provide code strings." };
         const found = findModuleFactory(...code);
         if (!found) return { error: `No factory matches [${code}]` };
         const [factoryId] = found;
@@ -623,14 +642,19 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "mapMangled") {
-        if (!code?.length) return { error: "Provide code strings" };
+        if (!code?.length) return { error: "Provide code strings." };
         const mapperDefs = args.mappers;
         if (!isObject(mapperDefs)) return { error: "Provide mappers: {name: filterType}. Types: fn/string/number/boolean/object/array/component/hasProps:a,b/code:pattern" };
         const found = findModuleFactory(...code);
         if (!found) return { error: `No factory matches [${code}]` };
         const [factoryId] = found;
         const mangledCache = getModuleCache();
-        if (!mangledCache.has(factoryId)) return { id: factoryId, error: "Not loaded" };
+        if (!mangledCache.has(factoryId)) {
+            try { requireModule(factoryId); } catch (e: unknown) {
+                return { id: factoryId, error: `Load failed: ${errorMessage(e)}` };
+            }
+            if (!mangledCache.has(factoryId)) return { id: factoryId, error: "Not loaded." };
+        }
         const exports = mangledCache.get(factoryId);
         if (typeof exports !== "object" || exports == null) return { id: factoryId, error: "Not an object" };
 
@@ -649,7 +673,8 @@ export function handleModule(args: ModuleArgs): unknown {
         const exp = exports as Record<string, unknown>;
         for (const key in exp) {
             if (count === filterEntries.length) break;
-            const val = exp[key];
+            let val: unknown;
+            try { val = exp[key]; } catch { continue; }
             if (val == null) continue;
             for (const [filterName, filter] of filterEntries) {
                 if (filterName in mapped) continue;
@@ -668,7 +693,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "css") {
-        if (!props?.length) return { error: "Provide CSS class names in props" };
+        if (!props?.length) return { error: "Provide CSS class names in props." };
         const classes = findCssClasses(...props);
         if (!classes || !Object.keys(classes).length) return { error: `No module exports [${props}] as CSS classes` };
         const cssModuleId = findModuleId(classes);
@@ -701,7 +726,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "diff") {
-        if (id == null) return { error: "Provide module id" };
+        if (id == null) return { error: "Provide module id." };
         const factory = getRuntimeFactoryRegistry()?.get(id) as PatchedModuleFactory | undefined;
         if (!factory) return { error: `Module ${id} not found.` };
         const patchedCode = factory[SYM_PATCHED_CODE];
@@ -712,7 +737,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "whereUsed") {
-        if (id == null) return { error: "Provide module id" };
+        if (id == null) return { error: "Provide module id." };
         const registry = getRuntimeFactoryRegistry();
         if (!registry?.has(id)) return { error: `Module ${id} not found.` };
         const index = buildWhereUsedIndex();
@@ -724,7 +749,7 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "suggest") {
-        if (id == null) return { error: "Provide module id" };
+        if (id == null) return { error: "Provide module id." };
         const src = getFactorySource(id);
         if (!src) return { error: `Module ${id} not found.` };
         const cap = clampDefault(args.limit, MODULE.DEFAULT_SUGGEST, MODULE.MAX_SUGGEST);
@@ -732,14 +757,14 @@ export function handleModule(args: ModuleArgs): unknown {
     }
 
     if (action === "functionAt") {
-        if (id == null) return { error: "Provide module id" };
-        if (!args.pattern) return { error: "Provide pattern" };
+        if (id == null) return { error: "Provide module id." };
+        if (!args.pattern) return { error: "Provide pattern." };
         const src = getFactorySource(id);
         if (!src) return { error: `Module ${id} not found.` };
         const idx = src.indexOf(args.pattern);
-        if (idx < 0) return { error: "Pattern not found" };
+        if (idx < 0) return { error: "Pattern not found." };
         const fn = extractFunctionAt(src, idx);
-        if (!fn) return { error: "Cannot determine function boundaries" };
+        if (!fn) return { error: "Cannot determine function boundaries." };
         const maxLen = clampDefault(args.limit, MODULE.FUNCTION_AT_MAX, MODULE.FUNCTION_AT_MAX);
         const fnSrc = src.slice(fn.start, fn.end);
         return {

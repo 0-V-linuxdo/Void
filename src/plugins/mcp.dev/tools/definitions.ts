@@ -13,7 +13,7 @@ export const TOOL_DEFINITIONS = [
             properties: {
                 action: { type: "string", enum: ["find", "findAll", "findBulk", "findComponent", "findModuleId", "exports", "stats", "source", "diff", "imports", "namedExports", "load", "loadChunks", "findByFactory", "mapMangled", "css", "unloaded", "whereUsed", "suggest", "functionAt"] },
                 props: { type: "array", items: { type: "string" }, description: "Export prop names." },
-                code: { type: "array", items: { type: "string" }, description: "find/findAll: exported fn source. findModuleId/findByFactory/mapMangled/loadChunks: factory source." },
+                code: { type: "array", items: { type: "string" }, description: "Find/findAll: exported fn source. findModuleId/findByFactory/mapMangled/loadChunks: factory source." },
                 displayName: { type: "string" },
                 storeName: { type: "string", description: "Short name OK, e.g. 'chat' → useChatPageStore." },
                 componentByCode: { type: "boolean" },
@@ -23,9 +23,9 @@ export const TOOL_DEFINITIONS = [
                 patched: { type: "boolean", default: false },
                 search: { type: "string", description: "Jump to string in source, overrides offset." },
                 async: { type: "boolean", default: false },
-                mappers: { type: "object", description: "{name: filterType}. Types: fn/string/number/boolean/object/array/component/hasProps:a,b/code:x." },
+                mappers: { type: "object", description: "Map of {name: filterType}. Types: fn/string/number/boolean/object/array/component/hasProps:a,b/code:x." },
                 pattern: { type: "string", description: "Locate in source (functionAt)." },
-                filters: { type: "array", items: { type: "object", properties: { props: { type: "array", items: { type: "string" } }, code: { type: "array", items: { type: "string" } } } }, description: "findBulk: 2+ filters." },
+                filters: { type: "array", items: { type: "object", properties: { props: { type: "array", items: { type: "string" } }, code: { type: "array", items: { type: "string" } }, displayName: { type: "string" }, storeName: { type: "string" }, componentByCode: { type: "boolean" } } }, description: "For findBulk: 2+ filters." },
             },
             required: ["action"],
         },
@@ -60,12 +60,12 @@ export const TOOL_DEFINITIONS = [
     },
     {
         name: "patch",
-        description: "Patch ops. test: validate find+match+replace. analyze: find uniqueness. list: all patches+status. conflicts: multi-plugin modules. broken: failed patches. lint: regex quality. context: source neighborhood+anchors. bench: regex speed (median/p95/max over 50 runs).",
+        description: "Patch ops. test: validate find+match+replace. analyze: find uniqueness. list: all patches+status. conflicts: multi-plugin modules. broken: failed patches. lint: regex quality. context: source neighborhood+anchors. bench: regex speed (median/p95/max over 50 runs). report: full patch system summary with orphaned/pending separation.",
         inputSchema: {
             type: "object",
             properties: {
-                action: { type: "string", enum: ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench"] },
-                find: { type: "string", description: "Module locator string." },
+                action: { type: "string", enum: ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench", "report"] },
+                find: { oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }], description: "Module locator string or array of strings." },
                 match: { type: "string", description: "Regex as plain string. \\i=minified var, .{0,N}=bounded gap." },
                 replace: { type: "string", description: "Supports $1, $&, $self." },
                 flags: { type: "string" },

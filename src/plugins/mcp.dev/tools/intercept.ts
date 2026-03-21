@@ -37,7 +37,7 @@ export function handleIntercept(args: InterceptArgs): unknown {
 
     if (action === "set") {
         const { moduleId, exportKey = "default" } = args;
-        if (moduleId == null) return { error: "Provide moduleId" };
+        if (moduleId == null) return { error: "Provide moduleId." };
 
         const exports = getModuleCache().get(Number(moduleId));
         if (!exports || typeof exports !== "object") {
@@ -130,7 +130,7 @@ export function handleIntercept(args: InterceptArgs): unknown {
 
     if (action === "get") {
         const { id } = args;
-        if (id == null) return { error: "Provide intercept id" };
+        if (id == null) return { error: "Provide intercept id." };
         const state = active.get(id);
         if (!state) return { error: `Intercept ${id} not found (expired or stopped)` };
         return {
@@ -145,7 +145,7 @@ export function handleIntercept(args: InterceptArgs): unknown {
 
     if (action === "stop") {
         const { id } = args;
-        if (id == null) return { error: "Provide intercept id" };
+        if (id == null) return { error: "Provide intercept id." };
         const state = active.get(id);
         if (!state) return { error: `Intercept ${id} not found (expired or stopped)` };
         const lastCaptures = state.captures.length > INTERCEPT.GET_CAPTURES_LIMIT

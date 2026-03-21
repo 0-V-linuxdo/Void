@@ -50,24 +50,7 @@ export function describeValue(val: unknown, maxSlice = MODULE.EXPORT_VALUE_SLICE
 }
 
 export function serialize(value: unknown, depth: number = SERIALIZE.DEFAULT_DEPTH): unknown {
-    if (value === undefined) return "[undefined]";
-    if (value === null) return null;
-    const t = typeof value;
-    if (t === "function") return `[fn:${(value as Function).name || "?"}]`;
-    if (t === "symbol") return (value as symbol).toString();
-    if (t === "bigint") return `${value}n`;
-    if (t === "number") {
-        if (Number.isNaN(value as number)) return "[NaN]";
-        if (!Number.isFinite(value as number)) return value === Infinity ? "[Infinity]" : "[-Infinity]";
-    }
-    if (t !== "object") {
-        if (t === "string" && (value as string).length > SERIALIZE.MAX_STRING_LENGTH)
-            return (value as string).slice(0, SERIALIZE.MAX_STRING_LENGTH) + `…+${(value as string).length - SERIALIZE.MAX_STRING_LENGTH}`;
-        return value;
-    }
-    if (depth <= 0) return "[…]";
-
-    return serializeInner(value as object, depth, new WeakSet());
+    return serializeInner(value, depth, new WeakSet());
 }
 
 function serializeInner(value: unknown, depth: number, seen: WeakSet<object>): unknown {

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { TOOL_DEFINITIONS } from "./definitions";
 import { handleEval } from "./evaluate";
 import { handleGrok } from "./grok";
 import { handleIntercept } from "./intercept";
@@ -15,9 +16,11 @@ import { handleSearch } from "./search";
 import { handleStore } from "./store";
 import type { ToolHandler } from "./types";
 
-export { TOOL_DEFINITIONS } from "./definitions";
+export { TOOL_DEFINITIONS };
 
-export const toolHandlers: Record<string, ToolHandler> = {
+type ToolName = (typeof TOOL_DEFINITIONS)[number]["name"];
+
+export const toolHandlers: Record<ToolName, ToolHandler> = {
     module: handleModule,
     search: handleSearch,
     evaluateCode: handleEval,

@@ -53,7 +53,6 @@ export function handleSearch(args: SearchArgs): unknown {
     if (!sources.size) return { error: "Factory registry not available" };
 
     const loadedCache = filter ? getModuleCache() : null;
-    const ctx = context;
 
     if (andPatterns?.length) {
         const rawPatterns = pattern ? [pattern, ...andPatterns] : andPatterns;
@@ -97,7 +96,7 @@ export function handleSearch(args: SearchArgs): unknown {
                     matchLen = m[0].length;
                 }
             }
-            const { snippet, truncatedMatch } = buildSnippet(src, idx, matchLen, ctx);
+            const { snippet, truncatedMatch } = buildSnippet(src, idx, matchLen, context);
             const entry: SearchMatch = { id, at: idx, s: snippet, len: src.length };
             if (truncatedMatch) entry.truncatedMatch = true;
             if (isModulePatched(id)) entry.patched = true;
@@ -155,7 +154,7 @@ export function handleSearch(args: SearchArgs): unknown {
             while (matches.length < max && total < SEARCH.MAX_TOTAL) {
                 const hit = findMatch(src, pattern, regex, startFrom);
                 if (!hit) break;
-                const { snippet, truncatedMatch } = buildSnippet(src, hit.idx, hit.len, ctx);
+                const { snippet, truncatedMatch } = buildSnippet(src, hit.idx, hit.len, context);
                 total += snippet.length;
                 const entry: SearchMatch = { id, at: hit.idx, s: snippet, len: src.length };
                 if (truncatedMatch) entry.truncatedMatch = true;
@@ -172,7 +171,7 @@ export function handleSearch(args: SearchArgs): unknown {
                 capped = true;
                 continue;
             }
-            const { snippet, truncatedMatch } = buildSnippet(src, hit.idx, hit.len, ctx);
+            const { snippet, truncatedMatch } = buildSnippet(src, hit.idx, hit.len, context);
             total += snippet.length;
             const entry: SearchMatch = { id, at: hit.idx, len: src.length, s: snippet };
             if (truncatedMatch) entry.truncatedMatch = true;

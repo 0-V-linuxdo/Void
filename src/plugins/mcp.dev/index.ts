@@ -73,9 +73,7 @@ function safeSend(json: string) {
     if (ws?.readyState === WebSocket.OPEN) {
         try {
             ws.send(json);
-        } catch (err: unknown) {
-            logger.error("WebSocket send failed", err);
-        }
+        } catch {}
     }
 }
 function send(data: WsResponse) {
@@ -120,7 +118,7 @@ function connect() {
         }
         const { id, tool, arguments: args } = msg;
         if (id == null || !tool) return;
-        const handler = toolHandlers[tool];
+        const handler = toolHandlers[tool as keyof typeof toolHandlers];
         if (!handler) {
             logger.error(`Unknown tool: ${tool}`);
             send({ id, error: `Unknown tool: ${tool}` });
@@ -157,15 +155,13 @@ function connect() {
             send({ id, error: errorMessage(err) });
         }
     };
-    ws.onclose = ({ code, reason }) => {
+    ws.onclose = () => {
         ws = null;
         connectingLock = false;
-        logger.warn(`Disconnected (code ${code}${reason ? `, ${reason}` : ""}), reconnecting in ${reconnectDelay / 1000}s`);
         scheduleReconnect();
     };
     ws.onerror = () => {
         connectingLock = false;
-        logger.error(`Connection to ${MCP_URL} failed. Is the MCP server running? (bun run mcp)`);
         ws?.close();
     };
 }
@@ -179,6 +175,7 @@ function scheduleReconnect() {
 }
 function disconnect() {
     connectingLock = false;
+    reconnectDelay = INITIAL_RECONNECT_DELAY;
     if (reconnectTimer) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;

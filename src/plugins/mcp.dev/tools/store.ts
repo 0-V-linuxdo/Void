@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { getModuleCache, syncLazyModules } from "@turbopack/patchTurbopack";
+import { getModuleCache, isBlacklisted, silenceWarns, syncLazyModules } from "@turbopack/patchTurbopack";
 import { isObject } from "@utils/guards";
 
 import { SERIALIZE, STORE } from "./constants";
@@ -32,13 +32,14 @@ function isZustandStore(value: unknown): value is ZustandLike {
 function findStores(): StoreEntry[] {
     const cache = getModuleCache();
     if (storeCache && storeCacheGen === cache.size) return storeCache;
-    syncLazyModules();
+    silenceWarns(() => syncLazyModules());
 
     const stores: StoreEntry[] = [];
     const seen = new WeakSet<object>();
 
     for (const [id, exports] of cache) {
         if (exports == null || typeof exports !== "object") continue;
+        if (isBlacklisted(exports)) continue;
         const mod = exports as Record<string, unknown>;
         for (const key in mod) {
             try {
@@ -126,6 +127,11 @@ function storeNotFound(query: string | number): { error: string; similar?: strin
     return similar.length ? { error: `No store "${query}"`, similar } : { error: `No store "${query}". Use list action.` };
 }
 
+function requireStore(query: string | number | undefined): { store: ZustandLike; resolvedName: string; also?: string[] } | { error: string; similar?: string[] } {
+    if (!query) return { error: "Provide query (store name or module ID)." };
+    return findStoreByQuery(query) ?? storeNotFound(query);
+}
+
 const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "resetAll", "clearAll", "clearAllOverrides", "deleteUser", "signOut", "clearSession", "refreshSession", "__proto__", "constructor", "prototype"]);
 
 export function handleStore(args: StoreArgs): unknown {
@@ -138,9 +144,8 @@ export function handleStore(args: StoreArgs): unknown {
     }
 
     if (action === "get") {
-        if (!query) return { error: "Provide query (store name or module ID)" };
-        const result = findStoreByQuery(query);
-        if (!result) return storeNotFound(query);
+        const result = requireStore(query);
+        if ("error" in result) return result;
         const state = result.store.getState();
         const maxDepth = path || args.depth != null ? STORE.MAX_DEPTH : STORE.DEFAULT_DEPTH;
         const value = path ? getPath(state, path) : state;
@@ -150,9 +155,8 @@ export function handleStore(args: StoreArgs): unknown {
     }
 
     if (action === "keys") {
-        if (!query) return { error: "Provide query (store name or module ID)" };
-        const result = findStoreByQuery(query);
-        if (!result) return storeNotFound(query);
+        const result = requireStore(query);
+        if ("error" in result) return result;
         const state = result.store.getState();
         const target = path ? getPath(state, path) : state;
         if (!isObject(target)) return { _store: result.resolvedName, ...(path && { path }), keys: [] };
@@ -168,9 +172,8 @@ export function handleStore(args: StoreArgs): unknown {
     }
 
     if (action === "methods") {
-        if (!query) return { error: "Provide query (store name or module ID)" };
-        const result = findStoreByQuery(query);
-        if (!result) return storeNotFound(query);
+        const result = requireStore(query);
+        if ("error" in result) return result;
         const state = result.store.getState();
         if (!isObject(state)) return { _store: result.resolvedName, methods: {} };
         const methods: Record<string, number> = {};
@@ -181,12 +184,11 @@ export function handleStore(args: StoreArgs): unknown {
     }
 
     if (action === "call") {
-        if (!query) return { error: "Provide query (store name or module ID)" };
         const { method, callArgs } = args;
         if (!method) return { error: "Provide method name. Use methods action to list available methods." };
         if (DESTRUCTIVE_METHODS.has(method)) return { error: `Method "${method}" is potentially destructive and blocked via MCP. Use evaluateCode if you really need to call it.` };
-        const found = findStoreByQuery(query);
-        if (!found) return storeNotFound(query);
+        const found = requireStore(query);
+        if ("error" in found) return found;
         const state = found.store.getState();
         if (!state || typeof state[method] !== "function") {
             const available = state ? Object.keys(state).filter(k => typeof state[k] === "function").slice(0, STORE.METHODS_PREVIEW) : [];
@@ -226,9 +228,8 @@ export function handleStore(args: StoreArgs): unknown {
     }
 
     if (action === "subscribe") {
-        if (!query) return { error: "Provide query (store name or module ID)" };
-        const found = findStoreByQuery(query);
-        if (!found) return storeNotFound(query);
+        const found = requireStore(query);
+        if ("error" in found) return found;
         const rawDuration = Number(args.duration);
         const duration = clamp(Number.isFinite(rawDuration) ? rawDuration : STORE.DEFAULT_DURATION, STORE.MIN_DURATION, STORE.MAX_DURATION);
         const rawCaptures = Number(args.maxCaptures);
@@ -251,30 +252,34 @@ export function handleStore(args: StoreArgs): unknown {
 
             const unsub = found.store.subscribe((state: Record<string, unknown>) => {
                 if (done) return;
-                const cur = watchPath ? getPath(state, watchPath) : state;
-                if (cur === prev) return;
+                try {
+                    const cur = watchPath ? getPath(state, watchPath) : state;
+                    if (cur === prev) return;
 
-                if (watchPath) {
-                    changes.push({ t: Date.now() - startTime, p: watchPath, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
-                } else if (isObject(cur) && isObject(prev)) {
-                    const curObj = cur as Record<string, unknown>;
-                    const prevObj = prev as Record<string, unknown>;
-                    for (const k of Object.keys(curObj)) {
-                        if (curObj[k] !== prevObj[k] && changes.length < maxCaptures) {
-                            changes.push({ t: Date.now() - startTime, p: k, from: serialize(prevObj[k], STORE.SUBSCRIBE_DEPTH), to: serialize(curObj[k], STORE.SUBSCRIBE_DEPTH) });
+                    if (watchPath) {
+                        changes.push({ t: Date.now() - startTime, p: watchPath, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
+                    } else if (isObject(cur) && isObject(prev)) {
+                        const curObj = cur as Record<string, unknown>;
+                        const prevObj = prev as Record<string, unknown>;
+                        for (const k of Object.keys(curObj)) {
+                            if (curObj[k] !== prevObj[k] && changes.length < maxCaptures) {
+                                changes.push({ t: Date.now() - startTime, p: k, from: serialize(prevObj[k], STORE.SUBSCRIBE_DEPTH), to: serialize(curObj[k], STORE.SUBSCRIBE_DEPTH) });
+                            }
                         }
-                    }
-                    for (const k of Object.keys(prevObj)) {
-                        if (!(k in curObj) && changes.length < maxCaptures) {
-                            changes.push({ t: Date.now() - startTime, p: k, from: serialize(prevObj[k], STORE.SUBSCRIBE_DEPTH), to: "[deleted]" });
+                        for (const k of Object.keys(prevObj)) {
+                            if (!(k in curObj) && changes.length < maxCaptures) {
+                                changes.push({ t: Date.now() - startTime, p: k, from: serialize(prevObj[k], STORE.SUBSCRIBE_DEPTH), to: "[deleted]" });
+                            }
                         }
+                    } else {
+                        changes.push({ t: Date.now() - startTime, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
                     }
-                } else {
-                    changes.push({ t: Date.now() - startTime, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
+
+                    prev = cur;
+                    if (changes.length >= maxCaptures) finish(true);
+                } catch {
+                    finish(true);
                 }
-
-                prev = cur;
-                if (changes.length >= maxCaptures) finish(true);
             });
 
             const timer = setTimeout(() => finish(false), duration);

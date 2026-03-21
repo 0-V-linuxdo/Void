@@ -26,7 +26,7 @@ export function handlePlugin(args: PluginArgs): unknown {
 
     if (!(PLUGIN_ACTIONS as readonly string[]).includes(action)) return { error: `Unknown action: ${action}`, validActions: PLUGIN_ACTIONS };
 
-    if (!name) return { error: "Provide plugin name" };
+    if (!name) return { error: "Provide plugin name." };
 
     const resolved = plugins[name] ? name : Object.keys(plugins).find(n => n.toLowerCase() === name.toLowerCase());
     const plugin = resolved ? plugins[resolved] : null;

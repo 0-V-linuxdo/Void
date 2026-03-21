@@ -36,7 +36,7 @@ export interface ModuleArgs {
     async?: boolean;
     mappers?: Record<string, string>;
     pattern?: string;
-    filters?: Array<{ props?: string[]; code?: string[] }>;
+    filters?: Array<{ props?: string[]; code?: string[]; displayName?: string; storeName?: string; componentByCode?: boolean }>;
     displayName?: string;
     storeName?: string;
     componentByCode?: boolean;
@@ -53,12 +53,12 @@ export interface SearchArgs {
 }
 
 export interface EvalArgs {
-    code?: string;
+    code: string;
 }
 
 export interface PatchArgs {
-    action: "test" | "analyze" | "list" | "conflicts" | "broken" | "lint" | "context" | "bench";
-    find?: string;
+    action: "test" | "analyze" | "list" | "conflicts" | "broken" | "lint" | "context" | "bench" | "report";
+    find?: string | string[];
     match?: string;
     replace?: string;
     flags?: string;
@@ -109,7 +109,7 @@ export interface GrokArgs {
     model?: string;
     conversationId?: string;
     responseId?: string;
-    reasoningMode?: string;
+    reasoningMode?: "none" | "think" | "deepsearch";
 }
 
 export type ToolHandler = (args: any) => unknown;

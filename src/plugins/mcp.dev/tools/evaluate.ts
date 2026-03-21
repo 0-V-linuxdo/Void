@@ -87,7 +87,7 @@ function tryEval(code: string): EvalResult | EvalError {
 
 export function handleEval(args: EvalArgs): unknown {
     const { code } = args;
-    if (!code) return { error: "Provide code to evaluate" };
+    if (!code) return { error: "Provide code to evaluate." };
     if (code.length > EVAL.MAX_CODE_LENGTH) return { error: `Code too long: ${code.length} chars (max ${EVAL.MAX_CODE_LENGTH}). Reduce code or split into multiple calls.` };
 
     let evalCode = needsIIFE(code) ? wrapIIFE(code) : code;

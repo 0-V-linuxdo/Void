@@ -67,11 +67,11 @@ async function navigateToChat(conversationId?: string): Promise<void> {
     }
 
     const target = conversationId ? `/c/${conversationId}` : "/";
-    if (!clickInternalLink(target)) return;
-    await new Promise(r => setTimeout(r, 500));
+    if (!clickInternalLink(target)) throw new Error("Navigation failed: could not find internal link.");
+    await new Promise(r => setTimeout(r, GROK.NAV_DELAY));
 }
 
-function waitForEditor(timeoutMs = 5000): Promise<TiptapEditor> {
+function waitForEditor(timeoutMs = GROK.EDITOR_TIMEOUT): Promise<TiptapEditor> {
     const editor = getEditor();
     if (editor) return Promise.resolve(editor);
 
@@ -86,7 +86,7 @@ function waitForEditor(timeoutMs = 5000): Promise<TiptapEditor> {
                 clearInterval(interval);
                 reject(new Error("Editor not ready"));
             }
-        }, 200);
+        }, GROK.EDITOR_POLL_INTERVAL);
     });
 }
 
@@ -133,13 +133,13 @@ function waitForResponse(conversationId: string | undefined, beforeCount: number
             if (state.done) return;
 
             const chatState = ChatPageStore.useChatPageStore.getState();
-            const convId = conversationId || chatState.conversationId;
+            const convId = conversationId ?? chatState.conversationId;
             if (!convId) return;
 
             if (chatState.isRateLimited) return fail(typeof chatState.isRateLimited === "string" ? chatState.isRateLimited : "Rate limited");
             if (chatState.isUnauthenticated) return fail("Authentication required");
 
-            const responses = ResponseStore.useResponseStore.getState().byConversationId?.[convId] as any[] | undefined;
+            const responses = ResponseStore.useResponseStore.getState().byConversationId?.[convId] as unknown as GrokResponse[] | undefined;
             if (!responses || responses.length <= beforeCount) return;
 
             const lastResp = findLatestAssistantResponse(responses, beforeCount - 1);
@@ -148,7 +148,7 @@ function waitForResponse(conversationId: string | undefined, beforeCount: number
             finish({
                 conversationId: convId,
                 responseId: lastResp.responseId,
-                message: (lastResp.message || "").slice(0, GROK.MAX_RESPONSE_LENGTH),
+                message: (lastResp.message ?? "").slice(0, GROK.MAX_RESPONSE_LENGTH),
                 thinkingTrace: lastResp.thinkingTrace ? lastResp.thinkingTrace.slice(0, GROK.MAX_THINKING_LENGTH) : undefined,
             });
         };
@@ -179,22 +179,23 @@ async function handleSend(args: GrokArgs): Promise<unknown> {
         if (model) chatPageState.setActiveModelId(model);
         if (reasoningMode === "think") chatPageState.setReasoningMode("think");
         else if (reasoningMode === "deepsearch") chatPageState.setReasoningMode("deepsearch");
+        else chatPageState.setReasoningMode("none");
 
         const editor = await waitForEditor();
 
-        const convId = conversationId || chatPageState.conversationId;
+        const convId = conversationId ?? chatPageState.conversationId;
         const beforeCount = convId ? (ResponseStore.useResponseStore.getState().byConversationId?.[convId]?.length ?? 0) : 0;
 
         editor.commands.setContent(message);
         editor.commands.focus();
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, GROK.PRE_SUBMIT_DELAY));
         submitEditor();
 
         const result = await waitForResponse(convId, beforeCount, GROK.SEND_TIMEOUT);
         return {
             conversationId: result.conversationId,
             responseId: result.responseId,
-            model: model || chatPageState.activeModelId,
+            model: model ?? chatPageState.activeModelId,
             message: result.message,
             thinkingTrace: result.thinkingTrace,
         };
@@ -209,7 +210,7 @@ function formatResponse(r: GrokResponse, maxLength = GROK.MAX_RESPONSE_LENGTH) {
         sender: r.sender,
         model: r.model,
         message: r.message?.slice(0, maxLength),
-        thinkingTrace: r.thinkingTrace?.slice(0, GROK.MAX_THINKING_LENGTH) || undefined,
+        thinkingTrace: r.thinkingTrace?.slice(0, GROK.MAX_THINKING_LENGTH) ?? undefined,
         state: r.state,
         ...(r.partial && { partial: true }),
         ...(r.createTime && { createdAt: r.createTime }),
@@ -242,7 +243,7 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
 
     if (!conversationId) return { error: "Provide conversationId to list responses or get latest." };
 
-    const responses = ResponseStore.useResponseStore.getState().byConversationId?.[conversationId] as any[] | undefined;
+    const responses = ResponseStore.useResponseStore.getState().byConversationId?.[conversationId] as unknown as GrokResponse[] | undefined;
     if (!responses?.length) return { error: "No responses found. Is the conversation loaded?" };
 
     const real = responses.filter(isRealResponse);
@@ -256,14 +257,14 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
             responseId: r.responseId,
             sender: r.sender,
             model: r.model,
-            message: r.message?.slice(0, 500),
+            message: r.message?.slice(0, GROK.READ_PREVIEW_LENGTH),
         })),
     };
 }
 
 async function handleModels(): Promise<unknown> {
     const { models, unavailableModels } = ModelsStore.useModelsStore.getState();
-    const allModels = [...(models || []), ...(unavailableModels || [])];
+    const allModels = [...(models ?? []), ...(unavailableModels ?? [])];
 
     const results = await Promise.all(allModels.map(async (m: GrokModel) => {
         try {
@@ -272,11 +273,11 @@ async function handleModels(): Promise<unknown> {
                 modelId: m.modelId,
                 name: m.name,
                 description: m.description,
-                available: (models || []).some((am: GrokModel) => am.modelId === m.modelId),
+                available: (models ?? []).some((am: GrokModel) => am.modelId === m.modelId),
                 rateLimit: { remaining: rl.remainingQueries, total: rl.totalQueries, windowSeconds: rl.windowSizeSeconds },
             };
         } catch {
-            return { modelId: m.modelId, name: m.name, available: (models || []).some((am: GrokModel) => am.modelId === m.modelId) };
+            return { modelId: m.modelId, name: m.name, available: (models ?? []).some((am: GrokModel) => am.modelId === m.modelId) };
         }
     }));
 
