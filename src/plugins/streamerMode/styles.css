@@ -1,11 +1,12 @@
 /* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
-html.void-streamer-sidebar-avatar .void-sidebar-card button[data-state]>div {
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
     filter: blur(6px);
     transition: filter 0.2s ease;
 }
 
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
 html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
     filter: none;
 }
