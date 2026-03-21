@@ -16,6 +16,7 @@ const CSS_CLASSES = {
     accountAvatar: "void-streamer-account-avatar",
     accountName: "void-streamer-account-name",
     accountEmail: "void-streamer-account-email",
+    accountAge: "void-streamer-account-age",
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations",
 } as const;
@@ -44,6 +45,11 @@ const settings = definePluginSettings({
     accountEmail: {
         type: OptionType.BOOLEAN,
         description: "Blur your email in the account settings tab.",
+        default: true,
+    },
+    accountAge: {
+        type: OptionType.BOOLEAN,
+        description: "Blur your birth year in the account settings tab.",
         default: true,
     },
     projects: {

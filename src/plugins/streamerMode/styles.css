@@ -1,24 +1,22 @@
 /* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] img,
 html.void-streamer-sidebar-avatar .void-sidebar-card button[data-state]>div {
     filter: blur(6px);
     transition: filter 0.2s ease;
 }
 
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] img:hover,
 html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
     filter: none;
 }
 
 /* Sidebar username */
-html.void-streamer-sidebar-name .void-sidebar-name {
+html.void-streamer-sidebar-name .void-sidebar-info {
     filter: blur(6px);
     transition: filter 0.2s ease;
 }
 
-html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-name {
+html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
     filter: none;
 }
 
@@ -49,6 +47,16 @@ html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-seco
 }
 
 html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
+    filter: none;
+}
+
+/* Account tab birth year */
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
     filter: none;
 }
 
