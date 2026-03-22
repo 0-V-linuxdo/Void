@@ -1,0 +1,13 @@
+.void-better-links-picker {
+    width: 32px;
+    height: 32px;
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 2px;
+    background-color: transparent;
+}
+
+.void-better-links-hex {
+    font-family: monospace;
+}
