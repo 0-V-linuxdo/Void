@@ -48,7 +48,7 @@ export default definePlugin({
             find: '"more-actions-dropdown"',
             all: true,
             replacement: {
-                match: /"more-action\.copy-model-hash".{0,80}slice\(0,5\)\}\}\)\}\)\]\}\)\]\}\)/,
+                match: /"more-action\.copy-model-hash".{0,80}slice\(0,5\)\}\}\)\}\)/,
                 replace: '$&,$self.renderItems("message",{response:arguments[0].response})',
             },
         },
