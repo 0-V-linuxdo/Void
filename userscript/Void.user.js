@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.4.8
+// @version      0.4.9
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.4.8 — A modification for grok.com
+ * Void v0.4.9 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -3423,11 +3423,11 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.4.8")) {
-        logger8.info(`Up to date (${"0.4.8"})`);
+      if (!latest || !isNewer(latest, "0.4.9")) {
+        logger8.info(`Up to date (${"0.4.9"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.4.8"} → ${latest}`);
+      logger8.info(`Update available: ${"0.4.9"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3703,8 +3703,11 @@ ${sourceUrl}`;
     grid-area: 1 / 1;
     margin: 0;
     padding: 12px;
+    font-family: var(--font-ibm-plex-mono), ui-monospace, Consolas, monospace;
     font-size: 13px;
     line-height: 1.5;
+    letter-spacing: normal;
+    word-spacing: normal;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     tab-size: 4;
@@ -5315,9 +5318,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.4.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"85536c5"}`
-    }, `(${"85536c5"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.4.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8360b17"}`
+    }, `(${"8360b17"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5615,7 +5618,7 @@ ${sourceUrl}`;
         find: '"more-actions-dropdown"',
         all: true,
         replacement: {
-          match: /"more-action\.copy-model-hash".{0,80}slice\(0,5\)\}\}\)\}\)\]\}\)\]\}\)/,
+          match: /"more-action\.copy-model-hash".{0,80}slice\(0,5\)\}\}\)\}\)/,
           replace: '$&,$self.renderItems("message",{response:arguments[0].response})'
         }
       },
@@ -7080,24 +7083,23 @@ ${sourceUrl}`;
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] img,
-html.void-streamer-sidebar-avatar .void-sidebar-card button[data-state]>div {
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
     filter: blur(6px);
     transition: filter 0.2s ease;
 }
 
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] img:hover,
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
 html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
     filter: none;
 }
 
 /* Sidebar username */
-html.void-streamer-sidebar-name .void-sidebar-name {
+html.void-streamer-sidebar-name .void-sidebar-info {
     filter: blur(6px);
     transition: filter 0.2s ease;
 }
 
-html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-name {
+html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
     filter: none;
 }
 
@@ -7131,6 +7133,16 @@ html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.tex
     filter: none;
 }
 
+/* Account tab birth year */
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
+    filter: none;
+}
+
 /* Conversation titles in sidebar (pinned + recent buckets) */
 html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
     filter: blur(6px);
@@ -7159,6 +7171,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     accountAvatar: "void-streamer-account-avatar",
     accountName: "void-streamer-account-name",
     accountEmail: "void-streamer-account-email",
+    accountAge: "void-streamer-account-age",
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
@@ -7186,6 +7199,11 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     accountEmail: {
       type: 3 /* BOOLEAN */,
       description: "Blur your email in the account settings tab.",
+      default: true
+    },
+    accountAge: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your birth year in the account settings tab.",
       default: true
     },
     projects: {
