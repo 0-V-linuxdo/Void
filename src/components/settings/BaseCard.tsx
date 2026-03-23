@@ -6,7 +6,7 @@
 
 import "./BaseCard.css";
 
-import { Flex, Text } from "@components";
+import { Card, Flex, Separator, Text } from "@components";
 import { React } from "@turbopack/common/react";
 import { classes, classNameFactory } from "@utils/css";
 
@@ -23,7 +23,7 @@ interface BaseCardProps {
 
 export default function BaseCard({ className, name, nameClassName, description, controls, footer }: BaseCardProps) {
     return (
-        <div className={classes(cl("root"), className)}>
+        <Card className={classes(cl("root"), className)}>
             <div className={cl("body")}>
                 <Flex alignItems="center" justifyContent="space-between" gap="0.5rem">
                     <Text as="span" className={classes(cl("name"), nameClassName)}>{name}</Text>
@@ -31,8 +31,8 @@ export default function BaseCard({ className, name, nameClassName, description, 
                 </Flex>
                 {description && <div className={cl("desc")}>{description}</div>}
             </div>
-            <div className={cl("separator")} />
+            <Separator />
             <div className={cl("footer")}>{footer}</div>
-        </div>
+        </Card>
     );
 }
