@@ -5,72 +5,28 @@
  */
 
 import type {
-    AccordionContentProps,
-    AccordionItemProps,
-    AccordionProps,
-    AccordionTriggerProps,
-    AlertDialogContentProps,
-    AlertDialogProps,
-    AvatarProps,
-    BadgeProps,
-    ButtonProps,
-    ButtonWithTooltipProps,
-    CardProps,
-    CheckboxProps,
-    CommandEmptyProps,
-    CommandGroupProps,
-    CommandInputProps,
-    CommandItemProps,
-    CommandListProps,
-    CommandProps,
-    DialogContentProps,
-    DialogHeaderProps,
-    DialogProps,
-    DropdownMenuCheckboxItemProps,
-    DropdownMenuContentProps,
-    DropdownMenuItemProps,
-    DropdownMenuProps,
-    DropdownMenuRadioGroupProps,
-    DropdownMenuRadioItemProps,
-    DropdownMenuSeparatorProps,
-    DropdownMenuSubContentProps,
-    DropdownMenuSubProps,
-    DropdownMenuSubTriggerProps,
-    DropdownMenuTriggerProps,
-    InputProps,
-    MotionProps,
-    PopoverArrowProps,
-    PopoverContentProps,
-    PopoverProps,
-    PopoverTriggerProps,
-    RadixSubProps,
-    ResponsiveDialogProps,
-    SelectContentProps,
-    SelectItemProps,
-    SelectProps,
-    SelectTriggerProps,
-    SelectValueProps,
-    SeparatorProps,
-    SettingsDescriptionProps,
-    SettingsRowProps,
-    SettingsTitleProps,
-    SkeletonProps,
-    SliderProps,
-    SpinnerProps,
-    SwitchProps,
-    TabsContentProps,
-    TabsListProps,
-    TabsProps,
-    TabsTriggerProps,
-    TextareaProps,
-    TooltipContentProps,
-    TooltipProps,
-    TooltipTriggerProps,
+    AccordionContentProps, AccordionItemProps, AccordionProps, AccordionTriggerProps,
+    AlertDialogContentProps, AlertDialogProps, AvatarProps, BadgeProps, ButtonProps, ButtonWithTooltipProps,
+    CardContentProps, CardHeaderProps, CardProps, CardTitleProps, CheckboxProps,
+    CommandEmptyProps, CommandGroupProps, CommandInputProps, CommandItemProps, CommandListProps, CommandProps,
+    DialogContentProps, DialogHeaderProps, DialogOverlayProps, DialogPortalProps, DialogProps, DialogTriggerProps,
+    DropdownMenuCheckboxItemProps, DropdownMenuContentProps, DropdownMenuItemProps, DropdownMenuPortalProps,
+    DropdownMenuProps, DropdownMenuRadioGroupProps, DropdownMenuRadioItemProps, DropdownMenuSeparatorProps,
+    DropdownMenuSubContentProps, DropdownMenuSubProps, DropdownMenuSubTriggerProps, DropdownMenuTriggerProps,
+    InputProps, MotionProps, PopoverArrowProps, PopoverContentProps, PopoverProps, PopoverTriggerProps,
+    RadixSubProps, ResponsiveDialogProps,
+    SelectContentProps, SelectItemProps, SelectProps, SelectTriggerProps, SelectValueProps,
+    SeparatorProps, SettingsDescriptionProps, SettingsRowProps, SettingsTitleProps,
+    SkeletonProps, SliderProps, SpinnerProps, SwitchProps,
+    TabsContentProps, TabsListProps, TabsProps, TabsTriggerProps, TextareaProps,
+    TooltipContentProps, TooltipProps, TooltipProviderProps, TooltipTriggerProps,
 } from "@grok-types";
 import type { ComponentType } from "react";
 
 import { filters, findByProps, findByPropsLazy, findExportedComponent, waitFor } from "../turbopack";
 import { type AnyComponent, LazyComponent } from "./react";
+
+export type * from "@grok-types";
 
 function createModuleLazy(...filterProps: string[]) {
     let mod: Record<string, ComponentType> | null = null;
@@ -78,85 +34,7 @@ function createModuleLazy(...filterProps: string[]) {
     return (name: string): AnyComponent => LazyComponent(name, () => (mod?.[name] ?? findExportedComponent(name)) as AnyComponent | null);
 }
 
-export type {
-    AccordionContentProps,
-    AccordionItemProps,
-    AccordionProps,
-    AccordionTriggerProps,
-    AlertDialogContentProps,
-    AlertDialogProps,
-    AvatarProps,
-    BadgeProps,
-    BadgeVariant,
-    ButtonProps,
-    ButtonShape,
-    ButtonSize,
-    ButtonVariant,
-    ButtonWithTooltipProps,
-    CardProps,
-    CardVariant,
-    CheckboxProps,
-    CommandEmptyProps,
-    CommandGroupProps,
-    CommandInputProps,
-    CommandItemProps,
-    CommandListProps,
-    CommandProps,
-    DialogCloseProps,
-    DialogContentProps,
-    DialogDescriptionProps,
-    DialogFooterProps,
-    DialogHeaderProps,
-    DialogProps,
-    DialogTitleProps,
-    DropdownMenuCheckboxItemProps,
-    DropdownMenuContentProps,
-    DropdownMenuItemProps,
-    DropdownMenuProps,
-    DropdownMenuRadioGroupProps,
-    DropdownMenuRadioItemProps,
-    DropdownMenuSeparatorProps,
-    DropdownMenuSubContentProps,
-    DropdownMenuSubProps,
-    DropdownMenuSubTriggerProps,
-    DropdownMenuTriggerProps,
-    InputProps,
-    MotionProps,
-    PopoverArrowProps,
-    PopoverContentProps,
-    PopoverProps,
-    PopoverTriggerProps,
-    ResponsiveDialogProps,
-    SelectContentPosition,
-    SelectContentProps,
-    SelectItemProps,
-    SelectProps,
-    SelectTriggerProps,
-    SelectTriggerSize,
-    SelectValueProps,
-    SeparatorOrientation,
-    SeparatorProps,
-    SettingsDescriptionProps,
-    SettingsRowProps,
-    SettingsTitleProps,
-    SkeletonProps,
-    SliderProps,
-    SpinnerProps,
-    SpinnerSize,
-    SwitchProps,
-    SwitchSize,
-    TabsContentProps,
-    TabsListProps,
-    TabsProps,
-    TabsTriggerProps,
-    TextareaProps,
-    TooltipContentProps,
-    TooltipProps,
-    TooltipTriggerProps,
-} from "@grok-types";
-
 const buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
-
 export const Button: ComponentType<ButtonProps> = buttonLazy("Button");
 
 // ButtonWithTooltip must come from the legacy module (which Grok's chat bar uses).
@@ -165,21 +43,25 @@ let legacyButtonMod: Record<string, ComponentType> | null = null;
 waitFor(m => m.ButtonWithTooltip != null && m.Button != null && !m.ButtonWithPopover, m => { legacyButtonMod = m; });
 export const ButtonWithTooltip: ComponentType<ButtonWithTooltipProps> = LazyComponent("ButtonWithTooltip", () => legacyButtonMod?.ButtonWithTooltip as AnyComponent | null);
 
-export const Card: ComponentType<CardProps> = LazyComponent("Card", () => findExportedComponent("Card"));
+const cardLazy = createModuleLazy("Card", "CardContent", "CardHeader", "CardTitle");
+export const Card: ComponentType<CardProps> = cardLazy("Card");
+export const CardContent: ComponentType<CardContentProps> = cardLazy("CardContent");
+export const CardHeader: ComponentType<CardHeaderProps> = cardLazy("CardHeader");
+export const CardTitle: ComponentType<CardTitleProps> = cardLazy("CardTitle");
 
 const dialogLazy = createModuleLazy("Dialog", "DialogContent", "DialogHeader");
-
 export const Dialog: ComponentType<DialogProps> = dialogLazy("Dialog");
 export const DialogContent: ComponentType<DialogContentProps> = dialogLazy("DialogContent");
-
 export const DialogHeader: ComponentType<DialogHeaderProps> = dialogLazy("DialogHeader");
 export const DialogTitle: ComponentType<RadixSubProps> = dialogLazy("DialogTitle");
 export const DialogDescription: ComponentType<RadixSubProps> = dialogLazy("DialogDescription");
 export const DialogFooter: ComponentType<RadixSubProps> = dialogLazy("DialogFooter");
 export const DialogClose: ComponentType<RadixSubProps> = dialogLazy("DialogClose");
+export const DialogTrigger: ComponentType<DialogTriggerProps> = dialogLazy("DialogTrigger");
+export const DialogOverlay: ComponentType<DialogOverlayProps> = dialogLazy("DialogOverlay");
+export const DialogPortal: ComponentType<DialogPortalProps> = dialogLazy("DialogPortal");
 
 const dropdownMenuLazy = createModuleLazy("DropdownMenu", "DropdownMenuContent", "DropdownMenuTrigger");
-
 export const DropdownMenu: ComponentType<DropdownMenuProps> = dropdownMenuLazy("DropdownMenu");
 export const DropdownMenuTrigger: ComponentType<DropdownMenuTriggerProps> = dropdownMenuLazy("DropdownMenuTrigger");
 export const DropdownMenuContent: ComponentType<DropdownMenuContentProps> = dropdownMenuLazy("DropdownMenuContent");
@@ -191,64 +73,60 @@ export const DropdownMenuSeparator: ComponentType<DropdownMenuSeparatorProps> = 
 export const DropdownMenuSub: ComponentType<DropdownMenuSubProps> = dropdownMenuLazy("DropdownMenuSub");
 export const DropdownMenuSubTrigger: ComponentType<DropdownMenuSubTriggerProps> = dropdownMenuLazy("DropdownMenuSubTrigger");
 export const DropdownMenuSubContent: ComponentType<DropdownMenuSubContentProps> = dropdownMenuLazy("DropdownMenuSubContent");
+export const DropdownMenuPortal: ComponentType<DropdownMenuPortalProps> = dropdownMenuLazy("DropdownMenuPortal");
 
 export const Input: ComponentType<InputProps> = LazyComponent("Input", () => findExportedComponent("Input"));
-
 export const MotionDiv: ComponentType<MotionProps> = LazyComponent("MotionDiv", () => findByProps("motion")?.motion?.div);
+export const ResponsiveDialog: ComponentType<ResponsiveDialogProps> = LazyComponent("ResponsiveDialog", () => findExportedComponent("ResponsiveDialog"));
 
-export const Select: ComponentType<SelectProps> = LazyComponent("Select", () => findExportedComponent("Select"));
-export const SelectTrigger: ComponentType<SelectTriggerProps> = LazyComponent("SelectTrigger", () => findExportedComponent("SelectTrigger"));
-export const SelectContent: ComponentType<SelectContentProps> = LazyComponent("SelectContent", () => findExportedComponent("SelectContent"));
-export const SelectItem: ComponentType<SelectItemProps> = LazyComponent("SelectItem", () => findExportedComponent("SelectItem"));
-export const SelectValue: ComponentType<SelectValueProps> = LazyComponent("SelectValue", () => findExportedComponent("SelectValue"));
+const selectLazy = createModuleLazy("Select", "SelectContent", "SelectTrigger");
+export const Select: ComponentType<SelectProps> = selectLazy("Select");
+export const SelectTrigger: ComponentType<SelectTriggerProps> = selectLazy("SelectTrigger");
+export const SelectContent: ComponentType<SelectContentProps> = selectLazy("SelectContent");
+export const SelectItem: ComponentType<SelectItemProps> = selectLazy("SelectItem") as any;
+export const SelectValue: ComponentType<SelectValueProps> = selectLazy("SelectValue");
 
 export const Separator: ComponentType<SeparatorProps> = LazyComponent("Separator", () => findExportedComponent("Separator"));
 
+const settingsLazy = createModuleLazy("SettingsRow", "SettingsTitle", "SettingsDescription");
+export const SettingsRow: ComponentType<SettingsRowProps> = settingsLazy("SettingsRow");
+export const SettingsTitle: ComponentType<SettingsTitleProps> = settingsLazy("SettingsTitle");
+export const SettingsDescription: ComponentType<SettingsDescriptionProps> = settingsLazy("SettingsDescription");
+
 export const Skeleton: ComponentType<SkeletonProps> = LazyComponent("Skeleton", () => findExportedComponent("Skeleton"));
-
 export const Slider: ComponentType<SliderProps> = LazyComponent("Slider", () => findExportedComponent("Slider"));
-
-export const SettingsRow: ComponentType<SettingsRowProps> = LazyComponent("SettingsRow", () => findExportedComponent("SettingsRow"));
-export const SettingsTitle: ComponentType<SettingsTitleProps> = LazyComponent("SettingsTitle", () => findExportedComponent("SettingsTitle"));
-export const SettingsDescription: ComponentType<SettingsDescriptionProps> = LazyComponent("SettingsDescription", () => findExportedComponent("SettingsDescription"));
-
 export const Switch: ComponentType<SwitchProps> = LazyComponent("Switch", () => findExportedComponent("Switch"));
 
-export const Tooltip: ComponentType<TooltipProps> = LazyComponent("Tooltip", () => findExportedComponent("Tooltip"));
-export const TooltipTrigger: ComponentType<TooltipTriggerProps> = LazyComponent("TooltipTrigger", () => findExportedComponent("TooltipTrigger"));
-export const TooltipContent: ComponentType<TooltipContentProps> = LazyComponent("TooltipContent", () => findExportedComponent("TooltipContent"));
+const tooltipLazy = createModuleLazy("Tooltip", "TooltipTrigger", "TooltipContent");
+export const Tooltip: ComponentType<TooltipProps> = tooltipLazy("Tooltip");
+export const TooltipTrigger: ComponentType<TooltipTriggerProps> = tooltipLazy("TooltipTrigger");
+export const TooltipContent: ComponentType<TooltipContentProps> = tooltipLazy("TooltipContent");
+export const TooltipProvider: ComponentType<TooltipProviderProps> = tooltipLazy("TooltipProvider");
 
 export const Textarea: ComponentType<TextareaProps> = LazyComponent("Textarea", () => findExportedComponent("Textarea"));
-
 export const Checkbox: ComponentType<CheckboxProps> = LazyComponent("Checkbox", () => findExportedComponent("Checkbox"));
-
 export const Spinner: ComponentType<SpinnerProps> = LazyComponent("Spinner", () => findExportedComponent("Spinner"));
-
 export const Avatar: ComponentType<AvatarProps> = LazyComponent("Avatar", () => findExportedComponent("Avatar"));
 
 const popoverLazy = createModuleLazy("Popover", "PopoverContent", "PopoverTrigger");
-
 export const Popover: ComponentType<PopoverProps> = popoverLazy("Popover");
 export const PopoverTrigger: ComponentType<PopoverTriggerProps> = popoverLazy("PopoverTrigger");
 export const PopoverContent: ComponentType<PopoverContentProps> = popoverLazy("PopoverContent");
 export const PopoverArrow: ComponentType<PopoverArrowProps> = popoverLazy("PopoverArrow");
 
 const tabsLazy = createModuleLazy("Tabs", "TabsList", "TabsTrigger", "TabsContent");
-
 export const Tabs: ComponentType<TabsProps> = tabsLazy("Tabs");
 export const TabsList: ComponentType<TabsListProps> = tabsLazy("TabsList");
 export const TabsTrigger: ComponentType<TabsTriggerProps> = tabsLazy("TabsTrigger");
 export const TabsContent: ComponentType<TabsContentProps> = tabsLazy("TabsContent");
 
 const accordionLazy = createModuleLazy("Accordion", "AccordionContent", "AccordionItem");
-
 export const Accordion: ComponentType<AccordionProps> = accordionLazy("Accordion");
 export const AccordionItem: ComponentType<AccordionItemProps> = accordionLazy("AccordionItem");
 export const AccordionTrigger: ComponentType<AccordionTriggerProps> = accordionLazy("AccordionTrigger");
 export const AccordionContent: ComponentType<AccordionContentProps> = accordionLazy("AccordionContent");
 
 const commandLazy = createModuleLazy("Command", "CommandInput", "CommandList", "CommandItem");
-
 export const Command: ComponentType<CommandProps> = commandLazy("Command");
 export const CommandInput: ComponentType<CommandInputProps> = commandLazy("CommandInput");
 export const CommandList: ComponentType<CommandListProps> = commandLazy("CommandList");
@@ -256,12 +134,9 @@ export const CommandItem: ComponentType<CommandItemProps> = commandLazy("Command
 export const CommandGroup: ComponentType<CommandGroupProps> = commandLazy("CommandGroup");
 export const CommandEmpty: ComponentType<CommandEmptyProps> = commandLazy("CommandEmpty");
 
-export const ResponsiveDialog: ComponentType<ResponsiveDialogProps> = LazyComponent("ResponsiveDialog", () => findExportedComponent("ResponsiveDialog"));
-
 export const Badge: ComponentType<BadgeProps> = LazyComponent("Badge", () => findExportedComponent("Badge"));
 
 const alertDialogLazy = createModuleLazy("AlertDialog", "AlertDialogContent", "AlertDialogAction");
-
 export const AlertDialog: ComponentType<AlertDialogProps> = alertDialogLazy("AlertDialog");
 export const AlertDialogTrigger: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogTrigger");
 export const AlertDialogContent: ComponentType<AlertDialogContentProps> = alertDialogLazy("AlertDialogContent");
@@ -273,7 +148,6 @@ export const AlertDialogAction: ComponentType<RadixSubProps> = alertDialogLazy("
 export const AlertDialogCancel: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogCancel");
 
 const toggleGroupLazy = createModuleLazy("ToggleGroup", "ToggleGroupItem");
-
 export const ToggleGroup: ComponentType<RadixSubProps> = toggleGroupLazy("ToggleGroup");
 export const ToggleGroupItem: ComponentType<RadixSubProps> = toggleGroupLazy("ToggleGroupItem");
 

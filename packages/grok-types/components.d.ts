@@ -998,3 +998,107 @@ export interface ResponsiveDialogProps extends DialogProps {}
 export type ResponsiveDialog = ComponentType<ResponsiveDialogProps>;
 
 // #endregion
+
+// #region Drawer (Vaul Drawer)
+
+export interface DrawerProps extends RadixRootProps {
+    shouldScaleBackground?: boolean;
+    closeThreshold?: number;
+    snapPoints?: (number | string)[];
+    activeSnapPoint?: number | string | null;
+    setActiveSnapPoint?: (snapPoint: number | string | null) => void;
+    direction?: "top" | "right" | "bottom" | "left";
+    dismissible?: boolean;
+    modal?: boolean;
+}
+
+export interface DrawerContentProps {
+    className?: string;
+    children?: ReactNode;
+    onInteractOutside?: (e: Event) => void;
+    onEscapeKeyDown?: (e: KeyboardEvent) => void;
+    [key: string]: any;
+}
+
+export interface DrawerTriggerProps extends RadixTriggerProps {}
+export interface DrawerHeaderProps extends RadixSubProps {}
+export interface DrawerFooterProps extends RadixSubProps {}
+export interface DrawerTitleProps extends RadixSubProps {}
+export interface DrawerDescriptionProps extends RadixSubProps {}
+
+export type Drawer = ComponentType<DrawerProps>;
+export type DrawerContent = ComponentType<DrawerContentProps>;
+export type DrawerTrigger = ComponentType<DrawerTriggerProps>;
+export type DrawerHeader = ComponentType<DrawerHeaderProps>;
+export type DrawerFooter = ComponentType<DrawerFooterProps>;
+export type DrawerTitle = ComponentType<DrawerTitleProps>;
+export type DrawerDescription = ComponentType<DrawerDescriptionProps>;
+
+// #endregion
+
+// #region Table
+
+export interface TableProps {
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface TableHeaderProps extends RadixSubProps {}
+export interface TableBodyProps extends RadixSubProps {}
+export interface TableRowProps extends RadixSubProps {}
+export interface TableHeadProps extends RadixSubProps {}
+export interface TableCellProps extends RadixSubProps {}
+
+export type Table = ComponentType<TableProps>;
+export type TableHeader = ComponentType<TableHeaderProps>;
+export type TableBody = ComponentType<TableBodyProps>;
+export type TableRow = ComponentType<TableRowProps>;
+export type TableHead = ComponentType<TableHeadProps>;
+export type TableCell = ComponentType<TableCellProps>;
+
+// #endregion
+
+// #region Label
+
+export interface LabelProps {
+    htmlFor?: string;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export type Label = ComponentType<LabelProps>;
+
+// #endregion
+
+// #region HoverCard (Radix HoverCard)
+
+export interface HoverCardProps extends RadixRootProps {
+    openDelay?: number;
+    closeDelay?: number;
+}
+
+export interface HoverCardTriggerProps extends RadixTriggerProps {}
+
+export interface HoverCardContentProps extends RadixContentProps {
+    forceMount?: boolean;
+}
+
+export type HoverCard = ComponentType<HoverCardProps>;
+export type HoverCardTrigger = ComponentType<HoverCardTriggerProps>;
+export type HoverCardContent = ComponentType<HoverCardContentProps>;
+
+// #endregion
+
+// #region Portal
+
+export interface PortalProps {
+    container?: HTMLElement | null;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export type Portal = ComponentType<PortalProps>;
+
+// #endregion
