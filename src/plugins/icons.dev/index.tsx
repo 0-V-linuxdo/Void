@@ -68,7 +68,7 @@ function IconCard({ entry }: { entry: IconEntry }) {
 
     return (
         <ErrorBoundary fallback={null}>
-            <Button variant="ghost" className={cl("item")} onClick={onClick} title={finderCode}>
+            <Button variant="tertiary" className={cl("item")} onClick={onClick} title={finderCode}>
                 <div className={cl("item-icon")}>
                     <Comp size="20" />
                 </div>

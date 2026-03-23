@@ -1,6 +1,19 @@
-.void-imagine-filter-btn {
-    flex-shrink: 0;
-    border-radius: 9999px;
+.void-imagine-chip {
+    background: hsl(var(--surface-l1));
+}
+
+.void-imagine-chip:hover {
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-chip-danger {
+    background: hsl(var(--red-700) / 80%);
+    color: hsl(var(--white));
+    border-color: transparent;
+}
+
+.void-imagine-chip-danger:hover {
+    background: hsl(var(--red-600) / 90%);
 }
 
 .void-imagine-search {

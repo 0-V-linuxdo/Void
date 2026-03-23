@@ -51,8 +51,8 @@ function DownloadButton() {
             aria-label="Download audio"
             onClick={onClick}
             disabled={loading}
+            size="sm"
             shape="circle"
-            size="md"
             variant="tertiary"
         >
             {loading

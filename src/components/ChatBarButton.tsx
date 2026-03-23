@@ -6,6 +6,7 @@
 
 import { ButtonWithTooltip } from "@components";
 import { React } from "@turbopack/common/react";
+import { classes } from "@utils/css";
 import type { ReactNode } from "react";
 
 export interface ChatBarButtonProps {
@@ -21,10 +22,10 @@ export function ChatBarButton({ icon, tooltip, onClick, className, "aria-label":
 
     return (
         <ButtonWithTooltip
-            variant="ghost"
-            size="iconMd"
-            rounded
-            className={className}
+            variant="tertiary"
+            size="md"
+            shape="circle"
+            className={classes("text-primary", className)}
             tooltipContent={tooltip}
             tooltipProps={{ delayDuration: 600 }}
             tooltipContentProps={{ side: "top" }}

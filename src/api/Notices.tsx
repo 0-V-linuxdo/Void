@@ -52,7 +52,7 @@ function Notice({ message, type, action, onClose }: NoticeOptions & { onClose: (
             <span className={cl("icon")}>{renderIcon(18)}</span>
             <span className={cl("message")}>{message}</span>
             {action && (
-                <Button variant="primary" size="md" shape="pill" onClick={(e: React.MouseEvent) => { e.stopPropagation(); action.onClick(); }}>
+                <Button variant="primary" size="sm" shape="pill" onClick={(e: React.MouseEvent) => { e.stopPropagation(); action.onClick(); }}>
                     {action.icon}
                     {action.label}
                 </Button>

@@ -288,9 +288,10 @@ function DownloadAllButton() {
     return (
         <ButtonWithTooltip
             tooltipContent="Download all favorites"
-            variant="secondary"
+            variant="tertiary"
+            size="sm"
             shape="pill"
-            size="md"
+            className={cl("chip")}
             disabled={loading}
             onClick={onClick}
         >
@@ -354,9 +355,10 @@ function ActionToolbar() {
         <div className={cl("action-toolbar")}>
             <ButtonWithTooltip
                 tooltipContent={selectMode ? "Exit select mode" : "Select items"}
-                variant={selectMode ? "primary" : "secondary"}
+                variant={selectMode ? "primary" : "tertiary"}
+                size="sm"
                 shape="pill"
-                size="md"
+                className={selectMode ? undefined : cl("chip")}
                 onClick={toggleSelectMode}
             >
                 <SquareMousePointerIcon size={18} />
@@ -365,9 +367,10 @@ function ActionToolbar() {
             {selectMode && (
                 <ButtonWithTooltip
                     tooltipContent="Select all visible items"
-                    variant="secondary"
+                    variant="tertiary"
+                    size="sm"
                     shape="pill"
-                    size="md"
+                    className={cl("chip")}
                     onClick={onSelectAll}
                 >
                     <span className="font-semibold">Select all</span>
@@ -375,9 +378,10 @@ function ActionToolbar() {
             )}
             <ButtonWithTooltip
                 tooltipContent={videoCount > 0 ? `Upscale ${videoCount} ${pluralize(videoCount, "video")}` : "No videos to upscale"}
-                variant="secondary"
+                variant="tertiary"
+                size="sm"
                 shape="pill"
-                size="md"
+                className={cl("chip")}
                 disabled={busy || videoCount === 0}
                 onClick={() => setUpscaleOpen(true)}
             >
@@ -387,9 +391,10 @@ function ActionToolbar() {
             {selectMode && count > 0 ? (
                 <ButtonWithTooltip
                     tooltipContent={`Delete ${count} selected`}
-                    variant="danger"
+                    variant="none"
+                    size="sm"
                     shape="pill"
-                    size="md"
+                    className={classes(cl("chip"), cl("chip-danger"))}
                     disabled={busy}
                     onClick={() => setConfirmOpen(true)}
                 >
@@ -399,9 +404,10 @@ function ActionToolbar() {
             ) : !selectMode && (
                 <ButtonWithTooltip
                     tooltipContent="Delete all visible items"
-                    variant="secondary"
+                    variant="tertiary"
+                    size="sm"
                     shape="pill"
-                    size="md"
+                    className={cl("chip")}
                     disabled={busy}
                     onClick={() => setDeleteAllOpen(true)}
                 >
@@ -508,8 +514,10 @@ function FilterButtons() {
             {(["image", "video"] as const).map(f => (
                 <Button
                     key={f}
-                    variant={currentFilter === f ? "primary" : "secondary"}
-                    className={cl("filter-btn")}
+                    variant={currentFilter === f ? "primary" : "tertiary"}
+                    size="sm"
+                    shape="pill"
+                    className={currentFilter !== f ? cl("chip") : undefined}
                     onClick={() => setFilter(currentFilter === f ? "all" : f)}
                 >
                     {f === "image" ? "Images" : "Videos"}
@@ -576,8 +584,8 @@ function CardActions({ postId }: { postId: string }) {
                 <ButtonWithTooltip
                     tooltipContent="Copy prompt"
                     className={cl("card-btn")}
-                    shape="circle"
                     size="md"
+                    shape="circle"
                     variant="none"
                     onClick={onCopyPrompt}
                 >
@@ -587,8 +595,8 @@ function CardActions({ postId }: { postId: string }) {
             <ButtonWithTooltip
                 tooltipContent="Download"
                 className={cl("card-btn")}
-                shape="circle"
                 size="md"
+                shape="circle"
                 variant="none"
                 onClick={onDownload}
             >
@@ -598,8 +606,8 @@ function CardActions({ postId }: { postId: string }) {
                 <ButtonWithTooltip
                     tooltipContent="Unsave"
                     className={cl("card-btn")}
-                    shape="circle"
                     size="md"
+                    shape="circle"
                     variant="none"
                     onClick={onUnfavorite}
                 >
@@ -610,8 +618,8 @@ function CardActions({ postId }: { postId: string }) {
                 <ButtonWithTooltip
                     tooltipContent="Delete permanently"
                     className={classes(cl("card-btn"), cl("card-btn-danger"))}
-                    shape="circle"
                     size="md"
+                    shape="circle"
                     variant="none"
                     onClick={() => setConfirmDelete(true)}
                 >

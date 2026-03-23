@@ -60,6 +60,7 @@ rules:
     - no nested regex quantifiers (ReDoS), .{0,N} bounded gaps only
     - reset lastIndex before .test()/.exec() on reused RegExp
   forbidden:
+    - bare HTML elements (button, input, select, etc.) when a @components equivalent exists
     - empty catch (except turbopack/module iteration)
     - style={{}} (unless dynamic computed)
     - {arr.length && <Foo/>} (renders 0)
