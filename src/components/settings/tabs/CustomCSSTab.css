@@ -23,9 +23,9 @@
 .void-css-input {
     grid-area: 1 / 1;
     margin: 0;
-    padding: 12px;
+    padding: 0.75rem;
     font-family: var(--font-ibm-plex-mono), ui-monospace, Consolas, monospace;
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.5;
     letter-spacing: normal;
     word-spacing: normal;

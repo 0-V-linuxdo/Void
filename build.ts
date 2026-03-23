@@ -232,8 +232,7 @@ async function buildExtensions() {
 
 async function build() {
     mkdirSync("dist", { recursive: true });
-    await buildUserscript();
-    await buildExtensions();
+    await Promise.all([buildUserscript(), buildExtensions()]);
 }
 
 if (isWatch) {

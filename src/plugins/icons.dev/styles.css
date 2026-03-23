@@ -20,13 +20,14 @@
     border: none;
     border-radius: 0.5rem;
     background: transparent;
-    color: rgb(158 158 158);
+    color: hsl(var(--fg-tertiary));
     cursor: pointer;
     transition: color 0.2s ease;
 }
 
-.void-icons-item:hover {
-    color: rgb(252 252 252);
+.void-icons-item:hover,
+.void-icons-item:focus-visible {
+    color: hsl(var(--fg-primary));
 }
 
 .void-icons-item-icon {

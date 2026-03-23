@@ -80,3 +80,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
 html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
     filter: none;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
+    html.void-streamer-sidebar-name .void-sidebar-info,
+    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
+    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
+    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
+    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
+    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
+    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
+}

@@ -30,7 +30,8 @@
     background: hsl(var(--surface-l2));
 }
 
-.void-imagine-filter-btn:hover {
+.void-imagine-filter-btn:hover,
+.void-imagine-filter-btn:focus-visible {
     color: hsl(var(--fg-primary));
     background: hsl(var(--surface-l2));
 }
@@ -56,7 +57,8 @@
     opacity: 0;
 }
 
-.void-imagine-card-btn:hover {
+.void-imagine-card-btn:hover,
+.void-imagine-card-btn:focus-visible {
     background: rgb(255 255 255 / 10%);
 }
 
@@ -66,7 +68,7 @@
 }
 
 .void-imagine-card-btn-danger:hover {
-    background: rgb(220 38 38 / 60%) !important;
+    background: hsl(var(--red-700) / 60%) !important;
 }
 
 .void-imagine-action-toolbar {
@@ -88,4 +90,9 @@
     border-radius: 2px;
     pointer-events: none;
     z-index: 20;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-imagine-filter-btn,
+    .void-imagine-search { transition: none; }
 }
