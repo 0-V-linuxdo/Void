@@ -203,11 +203,6 @@ const onMouseLeave = (e: { currentTarget: HTMLElement }) => {
     if (video) pauseVideo(video);
 };
 
-function resolveItem(post: MediaItem): MediaItem | undefined {
-    if (!post?.id) return undefined;
-    return post;
-}
-
 function dedupeNames(names: string[]): string[] {
     const counts = new Map<string, number>();
     return names.map(name => {
@@ -224,10 +219,9 @@ async function downloadAllFavorites() {
     const entries: { url: string; name: string }[] = [];
 
     for (const post of favoritesList) {
-        const item = resolveItem(post);
-        if (!item?.mediaUrl) continue;
-        const ext = item.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
-        entries.push({ url: item.mediaUrl, name: `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
+        if (!post?.mediaUrl) continue;
+        const ext = post.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
+        entries.push({ url: post.mediaUrl, name: `${sanitizeFilename((post.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
     }
 
     if (!entries.length) {
