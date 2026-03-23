@@ -14,13 +14,11 @@ import { Toaster } from "@turbopack/common/utils";
 import { getModuleCache, isBlacklisted, syncLazyModules } from "@turbopack/patchTurbopack";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
-import { Logger } from "@utils/Logger";
 import { copyToClipboard } from "@utils/misc";
 import { useFiltered } from "@utils/react";
 import definePlugin, { StartAt } from "@utils/types";
 import type { ComponentType } from "react";
 
-const logger = new Logger("IconsBrowser");
 const cl = classNameFactory("void-icons-");
 
 interface IconEntry {
@@ -55,7 +53,6 @@ function collectIcons(): IconEntry[] {
     }
 
     icons.sort((a, b) => a.name.localeCompare(b.name));
-    logger.info(`Found ${icons.length} icons`);
     return icons;
 }
 

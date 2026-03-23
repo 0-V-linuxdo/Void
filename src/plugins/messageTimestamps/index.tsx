@@ -7,6 +7,7 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
+import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Text } from "@components/Text";
 import type { GrokResponse } from "@grok-types";
 import { React } from "@turbopack/common/react";
@@ -41,19 +42,15 @@ export default definePlugin({
     authors: [Devs.Prism],
     settings,
 
-    _renderTimestamp(response: GrokResponse) {
-        try {
-            if (!response?.createTime) return null;
-            if (settings.store.hideOwnMessages && response.sender === "human") return null;
-            return (
-                <Text as="span" size="xs" color="muted" className="void-timestamp">
-                    {formatTimestamp(response.createTime, settings.store.showDate)}
-                </Text>
-            );
-        } catch {
-            return null;
-        }
-    },
+    _renderTimestamp: ErrorBoundary.wrap(({ response }: { response: GrokResponse }) => {
+        if (!response?.createTime) return null;
+        if (settings.store.hideOwnMessages && response.sender === "human") return null;
+        return (
+            <Text as="span" size="xs" color="muted" className="void-timestamp">
+                {formatTimestamp(response.createTime, settings.store.showDate)}
+            </Text>
+        );
+    }),
 
     patches: [
         {
@@ -61,7 +58,7 @@ export default definePlugin({
             all: true,
             replacement: {
                 match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,children:!\i&&\i\?\(0,\i\.jsx\)\(\i\.Editor,\{initialMessage:(\i)\./,
-                replace: "$self._renderTimestamp($1),$&",
+                replace: "$self._renderTimestamp({response:$1}),$&",
             },
         },
     ],

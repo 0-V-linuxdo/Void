@@ -38,7 +38,6 @@ export default definePlugin({
     settings,
 
     patches: [
-        // hides "upgrade plan" button in user dropdown menu
         {
             find: '"user-dropdown.upgrade","Upgrade plan"',
             all: true,
@@ -47,7 +46,6 @@ export default definePlugin({
                 replace: "$self.settings.store.hideUpgradePlan||$1",
             },
         },
-        // replaces UpsellCard component with empty render
         {
             find: '"UpsellCard",()=>',
             all: true,
@@ -56,7 +54,6 @@ export default definePlugin({
                 replace: '"UpsellCard",()=>$self.settings.store.hideUpsellCard?()=>null:$1',
             },
         },
-        // replaces small supergrok upsell component with empty render
         {
             find: '"UpsellSuperGrokSmall",()=>',
             all: true,
@@ -79,7 +76,6 @@ export default definePlugin({
             all: true,
             group: true,
             replacement: [
-                // hides the upsell card
                 {
                     match: /(?<=useCheckSubscriptionOffer\)\(\);)(.{0,30}return null;)/,
                     replace: "if($self.settings.store.hideModelUpsell)return null;$1",

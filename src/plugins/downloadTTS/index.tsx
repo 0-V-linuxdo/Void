@@ -10,6 +10,7 @@ import { DownloadIcon } from "@components/icons";
 import { Spinner } from "@turbopack/common/components";
 import { React, useCallback, useState } from "@turbopack/common/react";
 import { ChatPageStore, TextToSpeechStore } from "@turbopack/common/stores";
+import { FileUtils } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
@@ -28,12 +29,7 @@ async function fetchAndDownload() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const blob = await res.blob();
-    const href = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = href;
-    a.download = `tts-${currentStreamId.slice(0, 8)}.wav`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(href), 5000);
+    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
 }
 
 function DownloadButton() {

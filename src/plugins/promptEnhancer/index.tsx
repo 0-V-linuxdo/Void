@@ -5,6 +5,7 @@
  */
 
 import { addChatBarButton } from "@api/ChatBarButtons";
+import { definePluginSettings } from "@api/Settings";
 import { WandSparklesIcon } from "@components/icons";
 import { Spinner } from "@turbopack/common/components";
 import { createElement } from "@turbopack/common/react";
@@ -12,7 +13,7 @@ import { ApiClients, Toaster } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { errorMessage } from "@utils/misc";
-import definePlugin from "@utils/types";
+import definePlugin, { OptionType } from "@utils/types";
 
 const logger = new Logger("PromptEnhancer");
 
@@ -29,10 +30,21 @@ interface StreamLine {
     };
 }
 
-const ENHANCE_PROMPT = `Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler. Do NOT add any preamble, commentary, labels, or quotes. Output ONLY the rewritten prompt text and absolutely nothing else.
+const DEFAULT_INSTRUCTIONS = "Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler.";
 
-Original prompt:
-`;
+const settings = definePluginSettings({
+    customInstructions: {
+        type: OptionType.STRING,
+        description: "Custom instructions for how Grok should enhance your prompts.",
+        default: DEFAULT_INSTRUCTIONS,
+        multiline: true,
+    },
+});
+
+function buildSystemPrompt(): string {
+    const instructions = settings.store.customInstructions?.trim() || DEFAULT_INSTRUCTIONS;
+    return `${instructions} Do NOT add any preamble, commentary, labels, or quotes. Output ONLY the rewritten prompt text and absolutely nothing else.\n\nOriginal prompt:\n`;
+}
 
 function getEditor(): TiptapEditor | null {
     return (document.querySelector(".ProseMirror") as HTMLElement & { editor?: TiptapEditor })?.editor ?? null;
@@ -72,7 +84,7 @@ async function enhance() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: {
-                message: ENHANCE_PROMPT + originalText,
+                message: buildSystemPrompt() + originalText,
                 temporary: true,
                 disableSearch: true,
                 disableMemory: true,
@@ -106,7 +118,7 @@ async function enhance() {
             return;
         }
 
-        editor.commands.setContent(improved || originalText);
+        editor.commands.setContent(improved ?? originalText);
         editor.commands.focus();
 
         if (improved) Toaster.toast.success("Prompt enhanced!");
@@ -121,9 +133,10 @@ async function enhance() {
 
 export default definePlugin({
     name: PLUGIN_NAME,
-    description: "Sends your prompt to Grok for improvement, then replaces it with the enhanced version.",
+    description: "Enhance and rewrite your prompts with one click.",
     authors: [Devs.Prism],
     tags: ["chat"],
+    settings,
 
     chatBarButton: {
         icon: () => WandSparklesIcon({ size: 18 }),
