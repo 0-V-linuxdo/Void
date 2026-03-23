@@ -6,7 +6,7 @@
 
 import "./styles.css";
 
-import { ErrorBoundary, Flex, Grid, Input, Paragraph, Text } from "@components";
+import { Button, ErrorBoundary, Flex, Grid, Input, Paragraph, Text } from "@components";
 import { TelescopeIcon } from "@components/icons";
 import { allTabs } from "@plugins/_core/settings";
 import { React, useMemo, useState } from "@turbopack/common/react";
@@ -68,14 +68,14 @@ function IconCard({ entry }: { entry: IconEntry }) {
 
     return (
         <ErrorBoundary fallback={null}>
-            <button className={cl("item")} onClick={onClick} title={finderCode}>
+            <Button variant="ghost" className={cl("item")} onClick={onClick} title={finderCode}>
                 <div className={cl("item-icon")}>
                     <Comp size="20" />
                 </div>
                 <Text size="xs" className={cl("item-name")}>
                     {entry.name.replace(/Icon$/, "")}
                 </Text>
-            </button>
+            </Button>
         </ErrorBoundary>
     );
 }
