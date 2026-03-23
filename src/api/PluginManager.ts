@@ -22,7 +22,14 @@ export const plugins: Record<string, Plugin> = {};
 const pluginUnsubscribers = new Map<string, Array<() => void>>();
 let initialized = false;
 
-const storeRegistry: Record<string, Record<string, any>> = allStores as never;
+const storeRegistry = allStores as Record<string, Record<string, any>>;
+
+function removePluginContextMenuItems(plugin: Plugin) {
+    if (!plugin.contextMenuItems) return;
+    for (const location of Object.keys(plugin.contextMenuItems)) {
+        removeContextMenuItem(location as ContextMenuLocation, plugin.name);
+    }
+}
 
 export function isPluginEnabled(pluginName: string): boolean {
     const plugin = plugins[pluginName];
@@ -184,11 +191,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
         logger.error(`Failed to start plugin ${plugin.name}:`, e);
         if (plugin.managedStyle) disableStyle(plugin.managedStyle);
         removeChatBarButton(plugin.name);
-        if (plugin.contextMenuItems) {
-            for (const location of Object.keys(plugin.contextMenuItems)) {
-                removeContextMenuItem(location as ContextMenuLocation, plugin.name);
-            }
-        }
+        removePluginContextMenuItems(plugin);
         const unsubs = pluginUnsubscribers.get(plugin.name);
         if (unsubs) {
             for (const unsub of unsubs) unsub();
@@ -216,13 +219,9 @@ export function stopPlugin(plugin: Plugin): boolean {
 
         removeChatBarButton(plugin.name);
 
-        if (plugin.contextMenuItems) {
-            for (const location of Object.keys(plugin.contextMenuItems)) {
-                removeContextMenuItem(location as ContextMenuLocation, plugin.name);
-            }
-        }
+        removePluginContextMenuItems(plugin);
 
-        if (plugin.managedStyle) disableStyle(plugin.managedStyle);
+        if (plugin.managedStyle && !plugin.patches?.length) disableStyle(plugin.managedStyle);
 
         if (plugin.cleanupSelectors) {
             for (const selector of plugin.cleanupSelectors) {

@@ -271,7 +271,13 @@ function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult
             for (const replacement of replacements) {
                 if (replacement.predicate && !replacement.predicate()) continue;
                 const { match } = replacement;
-                const matches = match instanceof RegExp ? match.test(originalCode) : originalCode.includes(match as string);
+                let matches: boolean;
+                if (match instanceof RegExp) {
+                    match.lastIndex = 0;
+                    matches = match.test(originalCode);
+                } else {
+                    matches = originalCode.includes(match as string);
+                }
                 if (!matches && !patch.noWarn && !replacement.noWarn) {
                     logger.warn(`[validate] ${patch.plugin}: ${String(match)}`);
                 }

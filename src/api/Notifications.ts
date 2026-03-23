@@ -22,12 +22,19 @@ export interface ToastOptions {
     action?: { label: string; onClick: () => void };
 }
 
-const TOAST_FNS = ["", "success", "error", "info", "warning", "loading"] as const;
+const TOAST_FN: Record<ToastType, string | null> = {
+    [ToastType.MESSAGE]: null,
+    [ToastType.SUCCESS]: "success",
+    [ToastType.ERROR]: "error",
+    [ToastType.INFO]: "info",
+    [ToastType.WARNING]: "warning",
+    [ToastType.LOADING]: "loading",
+};
 
 export function showToast(message: string, type: ToastType = ToastType.MESSAGE, options?: ToastOptions): string | number {
     const { toast } = Toaster;
-    const fn = type === ToastType.MESSAGE ? toast : toast[TOAST_FNS[type] as "success"];
-    return fn(message, options);
+    const key = TOAST_FN[type];
+    return key ? (toast as any)[key](message, options) : toast(message, options);
 }
 
 export function dismissToast(id?: string | number) {
