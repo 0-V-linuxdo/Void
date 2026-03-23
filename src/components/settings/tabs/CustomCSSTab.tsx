@@ -129,6 +129,8 @@ export default function CustomCSSTab() {
     const highlightRef = useRef<HTMLPreElement>(null);
     const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
     const [css, setCss] = useState(loadSavedCSS);
+    const cssRef = useRef(css);
+    cssRef.current = css;
 
     const apply = useCallback((val: string) => {
         setCss(val);
@@ -149,7 +151,7 @@ export default function CustomCSSTab() {
             const start = ta.selectionStart;
             const end = ta.selectionEnd;
             const formatted = formatCSS(pasted);
-            const next = css.slice(0, start) + formatted + css.slice(end);
+            const next = cssRef.current.slice(0, start) + formatted + cssRef.current.slice(end);
             apply(next);
             requestAnimationFrame(() => {
                 const pos = start + formatted.length;
@@ -157,7 +159,7 @@ export default function CustomCSSTab() {
                 ta.selectionEnd = pos;
             });
         }
-    }, [css, apply]);
+    }, [apply]);
 
     useEffect(() => {
         if (highlightRef.current) highlightRef.current.innerHTML = highlight(css) + "\n";
