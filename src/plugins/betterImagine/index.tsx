@@ -7,7 +7,7 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { ButtonWithTooltip, ConfirmDialog, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
+import { Button, ButtonWithTooltip, ConfirmDialog, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { HeartCrackIcon, ScalingIcon, SquareMousePointerIcon, TrashIcon } from "@components/icons";
 import type { GrokPage, MediaPostType } from "@grok-types/enums";
@@ -498,7 +498,7 @@ function FilterButtons() {
                     ))}
                 </SelectContent>
             </Select>
-            <input
+            <Input
                 type="text"
                 placeholder="Search..."
                 value={currentSearch}
@@ -506,13 +506,14 @@ function FilterButtons() {
                 className={cl("search")}
             />
             {(["image", "video"] as const).map(f => (
-                <button
+                <Button
                     key={f}
-                    className={classes(cl("filter-btn"), currentFilter === f && cl("filter-btn-active"))}
+                    variant={currentFilter === f ? "primary" : "secondary"}
+                    className={cl("filter-btn")}
                     onClick={() => setFilter(currentFilter === f ? "all" : f)}
                 >
                     {f === "image" ? "Images" : "Videos"}
-                </button>
+                </Button>
             ))}
         </Fragment>
     );
