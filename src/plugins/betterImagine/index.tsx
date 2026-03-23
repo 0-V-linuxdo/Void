@@ -145,7 +145,7 @@ async function bulkDeletePosts(ids: string[]) {
         }
     }
     clearSelection();
-    Toaster.toast.success(`Deleted ${deleted} ${pluralize(deleted, "item")}.`);
+    Toaster.toast.success(`Deleted ${pluralize(deleted, "item")}.`);
 }
 
 async function bulkUpscaleVideos(ids: string[]) {
@@ -169,9 +169,9 @@ async function bulkUpscaleVideos(ids: string[]) {
             }
         }
     }
-    if (upscaled > 0) Toaster.toast.success(`Upscaling ${upscaled} ${pluralize(upscaled, "video")}.`);
-    else if (alreadyHd > 0) Toaster.toast.info(`${alreadyHd} ${pluralize(alreadyHd, "video")} already in HD.`);
-    else if (inProgress > 0) Toaster.toast.info(`${inProgress} ${pluralize(inProgress, "video")} already upscaling.`);
+    if (upscaled > 0) Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
+    else if (alreadyHd > 0) Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
+    else if (inProgress > 0) Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
     else Toaster.toast.info("No videos to upscale.");
 }
 
@@ -266,7 +266,7 @@ async function downloadAllFavorites() {
 
     const blob = createZip(files);
     FileUtils.downloadBlob(blob, "favorites.zip");
-    Toaster.toast.success(`Downloaded ${done} ${pluralize(done, "file")} as zip.`);
+    Toaster.toast.success(`Downloaded ${pluralize(done, "file")} as zip.`);
 }
 
 function useFavoritesPage() {
@@ -276,6 +276,8 @@ function useFavoritesPage() {
 function DownloadAllButton() {
     const isFavorites = useFavoritesPage();
     const [loading, setLoading] = useState(false);
+    const favorites = MediaStore.useMediaStore(s => s.favoritesList);
+    const visibleCount = getVisibleIds(favorites).length;
 
     const onClick = useCallback(async () => {
         setLoading(true);
@@ -289,13 +291,12 @@ function DownloadAllButton() {
         <ButtonWithTooltip
             tooltipContent="Download all favorites"
             variant="tertiary"
-            size="sm"
+            size="md"
             shape="pill"
-            className={cl("chip")}
-            disabled={loading}
+            disabled={loading || visibleCount === 0}
             onClick={onClick}
         >
-            <DownloadIcon size="20" />
+            <DownloadIcon size={20} />
             <span className="font-semibold">{loading ? "Downloading..." : "Download all"}</span>
         </ButtonWithTooltip>
     );
@@ -316,6 +317,7 @@ function ActionToolbar() {
     const videoByMediaId = MediaStore.useMediaStore(s => s.videoByMediaId);
 
     const count = selectedIds.size;
+    const visibleCount = getVisibleIds(favorites).length;
     const videoCount = useMemo(() => {
         const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
         return ids.filter(id => videoByMediaId[id]?.length).length;
@@ -356,62 +358,58 @@ function ActionToolbar() {
             <ButtonWithTooltip
                 tooltipContent={selectMode ? "Exit select mode" : "Select items"}
                 variant={selectMode ? "primary" : "tertiary"}
-                size="sm"
+                size="md"
                 shape="pill"
-                className={selectMode ? undefined : cl("chip")}
+                disabled={!selectMode && visibleCount === 0}
                 onClick={toggleSelectMode}
             >
-                <SquareMousePointerIcon size={18} />
+                <SquareMousePointerIcon size={20} />
                 <span className="font-semibold">{selectMode ? "Cancel" : "Select"}</span>
             </ButtonWithTooltip>
             {selectMode && (
                 <ButtonWithTooltip
                     tooltipContent="Select all visible items"
                     variant="tertiary"
-                    size="sm"
+                    size="md"
                     shape="pill"
-                    className={cl("chip")}
                     onClick={onSelectAll}
                 >
                     <span className="font-semibold">Select all</span>
                 </ButtonWithTooltip>
             )}
             <ButtonWithTooltip
-                tooltipContent={videoCount > 0 ? `Upscale ${videoCount} ${pluralize(videoCount, "video")}` : "No videos to upscale"}
+                tooltipContent={videoCount > 0 ? `Upscale ${pluralize(videoCount, "video")}` : "No videos to upscale"}
                 variant="tertiary"
-                size="sm"
+                size="md"
                 shape="pill"
-                className={cl("chip")}
                 disabled={busy || videoCount === 0}
                 onClick={() => setUpscaleOpen(true)}
             >
-                <ScalingIcon size={18} />
+                <ScalingIcon size={20} />
                 <span className="font-semibold">{videoCount > 1 ? `Upscale ${videoCount}` : "Upscale"}</span>
             </ButtonWithTooltip>
             {selectMode && count > 0 ? (
                 <ButtonWithTooltip
                     tooltipContent={`Delete ${count} selected`}
-                    variant="none"
-                    size="sm"
+                    variant="danger"
+                    size="md"
                     shape="pill"
-                    className={classes(cl("chip"), cl("chip-danger"))}
                     disabled={busy}
                     onClick={() => setConfirmOpen(true)}
                 >
-                    <TrashIcon size={18} />
+                    <TrashIcon size={20} />
                     <span className="font-semibold">{busy ? "Deleting..." : count > 1 ? `Delete ${count}` : "Delete"}</span>
                 </ButtonWithTooltip>
             ) : !selectMode && (
                 <ButtonWithTooltip
                     tooltipContent="Delete all visible items"
                     variant="tertiary"
-                    size="sm"
+                    size="md"
                     shape="pill"
-                    className={cl("chip")}
-                    disabled={busy}
+                    disabled={busy || visibleCount === 0}
                     onClick={() => setDeleteAllOpen(true)}
                 >
-                    <TrashIcon size={18} />
+                    <TrashIcon size={20} />
                     <span className="font-semibold">{busy ? "Deleting..." : "Delete all"}</span>
                 </ButtonWithTooltip>
             )}
@@ -419,8 +417,8 @@ function ActionToolbar() {
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
                 title="Delete selected items"
-                description={`Are you sure you want to permanently delete ${count} ${pluralize(count, "item")}? This cannot be undone.`}
-                confirmText={`Delete ${count}`}
+                description={`Are you sure you want to permanently delete ${pluralize(count, "item")}? This cannot be undone.`}
+                confirmText="Delete"
                 danger
                 onConfirm={onDeleteSelected}
             />
@@ -436,8 +434,8 @@ function ActionToolbar() {
             <ConfirmDialog
                 open={upscaleOpen}
                 onOpenChange={setUpscaleOpen}
-                title={`Upscale ${videoCount} ${pluralize(videoCount, "video")}`}
-                description={`This will start HD upscaling for ${videoCount} ${pluralize(videoCount, "video")}. Already upscaled videos will be skipped.`}
+                title={`Upscale ${pluralize(videoCount, "video")}`}
+                description={`This will start HD upscaling for ${pluralize(videoCount, "video")}. Already upscaled videos will be skipped.`}
                 confirmText="Upscale"
                 onConfirm={onUpscale}
             />

@@ -6,16 +6,6 @@
     background: hsl(var(--surface-l2));
 }
 
-.void-imagine-chip-danger {
-    background: hsl(var(--red-700) / 80%);
-    color: hsl(var(--white));
-    border-color: transparent;
-}
-
-.void-imagine-chip-danger:hover {
-    background: hsl(var(--red-600) / 90%);
-}
-
 .void-imagine-search {
     width: 10rem;
     flex-shrink: 0;
@@ -71,4 +61,3 @@
     pointer-events: none;
     z-index: 20;
 }
-
