@@ -151,7 +151,12 @@ export type {
 const buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
 
 export const Button: ComponentType<ButtonProps> = buttonLazy("Button");
-export const ButtonWithTooltip: ComponentType<ButtonWithTooltipProps> = buttonLazy("ButtonWithTooltip");
+
+// ButtonWithTooltip must come from the legacy module (which Grok's chat bar uses).
+// The new module (with ButtonWithPopover) has different variant/size enums and breaks chat bar buttons.
+let legacyButtonMod: Record<string, ComponentType> | null = null;
+waitFor(m => m.ButtonWithTooltip != null && m.Button != null && !m.ButtonWithPopover, m => { legacyButtonMod = m; });
+export const ButtonWithTooltip: ComponentType<ButtonWithTooltipProps> = LazyComponent("ButtonWithTooltip", () => legacyButtonMod?.ButtonWithTooltip as AnyComponent | null);
 
 export const Card: ComponentType<CardProps> = LazyComponent("Card", () => findExportedComponent("Card"));
 
