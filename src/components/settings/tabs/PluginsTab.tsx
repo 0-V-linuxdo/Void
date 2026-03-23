@@ -42,6 +42,7 @@ export default function PluginsTab() {
     const [filter, setFilter] = useState<ListFilter>("all");
     const [dialogName, setDialogName] = useState<string | null>(null);
     const [showReload, setShowReload] = useState(false);
+    const [toggleTick, setToggleTick] = useState(0);
 
     const { userPlugins, requiredPlugins } = useMemo(() => {
         const user: string[] = [];
@@ -71,6 +72,8 @@ export default function PluginsTab() {
         if (pending) setDialogName(pending);
     }, []);
 
+    useEffect(() => subscribe("pluginToggle", () => setToggleTick(t => t + 1)), []);
+
     useEffect(() => subscribe("reloadNeeded", () => {
         changedPluginsRef.current.add("__settings__");
         if (!dismissedRef.current) setShowReload(true);
@@ -80,13 +83,13 @@ export default function PluginsTab() {
         if (filter === "all") return userPlugins;
         const enabled = filter === "enabled";
         return userPlugins.filter(n => isPluginEnabled(n) === enabled);
-    }, [filter, userPlugins]);
+    }, [filter, userPlugins, toggleTick]);
 
     const visibleRequired = useMemo(() => {
         if (filter === "all") return requiredPlugins;
         const enabled = filter === "enabled";
         return requiredPlugins.filter(n => isPluginEnabled(n) === enabled);
-    }, [filter, requiredPlugins]);
+    }, [filter, requiredPlugins, toggleTick]);
 
     const filteredUser = useFiltered(visibleUser, search, getPluginKey);
     const filteredRequired = useFiltered(visibleRequired, search, getPluginKey);
