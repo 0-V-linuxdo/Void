@@ -94,8 +94,7 @@ function resolveStoreHook(storeName: string): { subscribe: (...args: any[]) => a
     const hook = storeModule[hookName] as { subscribe?: (...args: any[]) => any } | undefined;
     if (hook && typeof hook.subscribe === "function") return hook as { subscribe: (...args: any[]) => any };
 
-    for (const key in storeModule) {
-        const val = storeModule[key] as { subscribe?: (...args: any[]) => any } | undefined;
+    for (const [key, val] of Object.entries(storeModule) as [string, { subscribe?: (...args: any[]) => any } | undefined][]) {
         if (val && typeof val.subscribe === "function") return val as { subscribe: (...args: any[]) => any };
     }
 
@@ -239,8 +238,7 @@ export function stopPlugin(plugin: Plugin): boolean {
 }
 
 export function startAllPlugins(target: StartAt) {
-    for (const name in plugins) {
-        const plugin = plugins[name];
+    for (const [name, plugin] of Object.entries(plugins)) {
         if (!isPluginEnabled(name)) continue;
         if ((plugin.startAt ?? StartAt.Init) !== target) continue;
         startPlugin(plugin);
@@ -262,7 +260,7 @@ function pruneOrphanedPluginSettings() {
     const stored = PlainSettings.plugins;
     let pruned = false;
 
-    for (const name in stored) {
+    for (const name of Object.keys(stored)) {
         if (!plugins[name]) {
             logger.info(`Pruning settings for removed plugin: ${name}`);
             delete stored[name];
@@ -281,7 +279,7 @@ export function initPluginManager() {
 
     const neededApis = new Set<string>();
 
-    for (const name in plugins) {
+    for (const name of Object.keys(plugins)) {
         if (!isPluginEnabled(name)) continue;
         const plugin = plugins[name];
 
@@ -306,9 +304,8 @@ export function initPluginManager() {
         dep.isDependency = true;
     }
 
-    for (const name in plugins) {
+    for (const [name, plugin] of Object.entries(plugins)) {
         const enabled = isPluginEnabled(name);
-        const plugin = plugins[name];
 
         if (enabled) ensureMethodsBound(plugin);
 

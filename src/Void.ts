@@ -15,21 +15,25 @@ import { checkForUpdates } from "@utils/updateChecker";
 import Plugins from "~plugins";
 
 export { addChatBarButton, removeChatBarButton } from "@api/ChatBarButtons";
+export { addContextMenuItem, removeContextMenuItem } from "@api/ContextMenus";
 export { dispatch, subscribe } from "@api/Events";
 export { closeAllModals, closeModal, confirm, openModal } from "@api/Modals";
 export { closeNotice, NoticeType, showNotice } from "@api/Notices";
 export { dismissToast, showToast, ToastType } from "@api/Notifications";
 export { addPatch, isPluginEnabled, plugins, registerPlugin, startPlugin, stopPlugin } from "@api/PluginManager";
 export { definePluginSettings, initSettings, migratePluginSetting, migratePluginSettings, migrateSettingsToPlugin, PlainSettings, Settings, SettingsStore } from "@api/Settings";
-export { addTheme, disableTheme, enableTheme, getThemes, isThemesEnabled, removeTheme, setThemesEnabled } from "@api/Themes";
+export { addLocalTheme, addTheme, disableTheme, enableTheme, getThemes, isOnlineThemesEnabled, isThemesEnabled, removeTheme, setOnlineThemesEnabled, setThemesEnabled, updateLocalTheme } from "@api/Themes";
+export { ErrorBoundary } from "@components/ErrorBoundary";
 export * as common from "@turbopack/common";
 export { getModuleCache, getRuntimeFactoryRegistry, getRuntimeModuleCache, getTurbopackHelpers, isBlacklisted, onceReady, onModuleLoad, patches, patchReport, patchResults, patchStats, syncLazyModules } from "@turbopack/patchTurbopack";
 export * from "@turbopack/turbopack";
+export { Devs } from "@utils/constants";
 export { classes, classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
 export { isNonNullish, isObject, isTruthy } from "@utils/guards";
 export { makeLazy, proxyLazy } from "@utils/lazy";
 export { Logger } from "@utils/Logger";
-export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, fetchExternal, formatCountdown, formatDuration, mergeDefaults, onlyOnce, sanitizeFilename, sendBrowserNotification, sleep } from "@utils/misc";
+export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, extractUrlExtension, fetchExternal, formatCountdown, formatDuration, mapGetOrCreate, mergeDefaults, onlyOnce, sanitizeFilename, sendBrowserNotification, sleep, sortedEntries } from "@utils/misc";
+export { useEventSubscription, useExternalStore, useForceUpdater } from "@utils/react";
 export { escapeRegExp, humanizeKey, pluralize } from "@utils/text";
 export { default as definePlugin, OptionType, StartAt } from "@utils/types";
 
@@ -115,8 +119,8 @@ function waitForModulesStable() {
 }
 
 export function init() {
-    for (const name in Plugins) {
-        registerPlugin(Plugins[name] as Plugin);
+    for (const plugin of Object.values(Plugins)) {
+        registerPlugin(plugin as Plugin);
     }
 
     initPluginManager();

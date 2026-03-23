@@ -9,7 +9,7 @@ import "./styles.css";
 import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
-import { Flex, Text } from "@components";
+import { ErrorBoundary, Flex, Text } from "@components";
 import { BracesIcon, GhostFilledIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, ThemesTab } from "@components/settings/tabs";
 import { hasVisibleSettings } from "@components/settings/utils";
@@ -224,7 +224,7 @@ export default definePlugin({
         return settings.store.fixDialogFlash;
     },
 
-    _VoidMenu: VoidMenu,
+    _VoidMenu: ErrorBoundary.wrap(VoidMenu),
 
     renderTabs(jsx: typeof createElement, TabButton: ComponentType<TabButtonProps>) {
         try {
@@ -246,8 +246,12 @@ export default definePlugin({
 
     start() {
         registerStyle("void-global", "[data-sonner-toast] [data-title]{font-weight:400}");
-        if (document.head) loadSavedCSS();
-        else document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
+        try {
+            if (document.head) loadSavedCSS();
+            else document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
+        } catch (e) {
+            logger.error("Failed to load saved CSS:", e);
+        }
         loadSavedThemes().catch(e => logger.error("Failed to load saved themes:", e));
     },
 

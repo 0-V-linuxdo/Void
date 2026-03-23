@@ -15,5 +15,5 @@ if (!(target as any).Void) {
         configurable: true,
     });
 
-    Void.initSettings().then(() => Void.init());
+    Void.initSettings().then(() => Void.init()).catch(e => console.error("[Void] Fatal init error:", e));
 }

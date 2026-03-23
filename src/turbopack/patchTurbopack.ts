@@ -625,7 +625,7 @@ function captureModuleCache(factoryRegistry: Map<number, ModuleFactory>): void {
 
     originalPush!(["void-cache-probe", { otherChunks: [], runtimeModuleIds: [PROBE_ID] }]);
 
-    Promise.resolve().then(() => factoryRegistry.delete(PROBE_ID));
+    queueMicrotask(() => factoryRegistry.delete(PROBE_ID));
 }
 
 function wrapExistingFactories() {
