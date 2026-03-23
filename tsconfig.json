@@ -43,7 +43,6 @@
                 "./packages/grok-types/*"
             ]
         },
-        "baseUrl": ".",
         "outDir": "./dist",
         "types": [
             "bun"
