@@ -6,7 +6,7 @@
 
 import "./BaseCard.css";
 
-import { Card, Flex, Separator, Text } from "@components";
+import { Card, Flex, Text } from "@components";
 import { React } from "@turbopack/common/react";
 import { classes, classNameFactory } from "@utils/css";
 
@@ -31,7 +31,7 @@ export default function BaseCard({ className, name, nameClassName, description, 
                 </Flex>
                 {description && <div className={cl("desc")}>{description}</div>}
             </div>
-            <Separator />
+            <div className={cl("separator")} />
             <div className={cl("footer")}>{footer}</div>
         </Card>
     );
