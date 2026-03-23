@@ -29,6 +29,7 @@ import {
     SelectValue,
     Switch,
     Text,
+    Textarea,
 } from "@components";
 import { Cross2Icon, PlusIcon } from "@components/icons";
 import { React, useMemo, useState } from "@turbopack/common/react";
@@ -95,11 +96,11 @@ function LocalThemeDialog({ open, onClose, theme, onSave }: LocalThemeDialogProp
                 </Flex>
                 <Flex flexDirection="column" gap="0.25rem" className={cl("local-css-field")}>
                     <Text size="sm" weight="medium">CSS</Text>
-                    <textarea
+                    <Textarea
                         className={cl("local-textarea")}
                         placeholder="Paste your CSS here..."
                         value={css}
-                        onChange={e => setCss(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCss(e.target.value)}
                         spellCheck={false}
                     />
                 </Flex>

@@ -12,24 +12,13 @@
 }
 
 .void-themes-local-textarea {
-    width: 100%;
     min-height: 250px;
     max-height: 400px;
     resize: vertical;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border-l1);
-    background: var(--surface-l1);
-    color: hsl(var(--fg-primary));
     font-family: monospace;
     font-size: 0.8rem;
     line-height: 1.5;
     tab-size: 2;
-}
-
-.void-themes-local-textarea:focus {
-    outline: none;
-    border-color: hsl(var(--fg-secondary));
 }
 
 .void-themes-local-footer {
