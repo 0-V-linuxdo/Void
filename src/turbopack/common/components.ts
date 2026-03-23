@@ -272,5 +272,10 @@ export const AlertDialogDescription: ComponentType<RadixSubProps> = alertDialogL
 export const AlertDialogAction: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogAction");
 export const AlertDialogCancel: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogCancel");
 
+const toggleGroupLazy = createModuleLazy("ToggleGroup", "ToggleGroupItem");
+
+export const ToggleGroup: ComponentType<RadixSubProps> = toggleGroupLazy("ToggleGroup");
+export const ToggleGroupItem: ComponentType<RadixSubProps> = toggleGroupLazy("ToggleGroupItem");
+
 export const SidebarComponents = findByPropsLazy("Sidebar", "SidebarContent", "SidebarProvider");
 export const AnimatePresence = LazyComponent("AnimatePresence", () => findExportedComponent("AnimatePresence"));
