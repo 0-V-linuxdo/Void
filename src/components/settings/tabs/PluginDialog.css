@@ -11,7 +11,7 @@
 }
 
 /* SettingsRow has px-3 built in, strip it so fields align with the title */
-.void-plugin-dialog-content .px-3 {
+.void-plugin-dialog-settings-list .px-3 {
     padding-left: 0;
     padding-right: 0;
 }
@@ -29,4 +29,9 @@
 
 .void-plugin-dialog-settings-list {
     margin-top: 0.5rem;
+}
+
+.void-plugin-dialog-footer {
+    margin-top: auto;
+    justify-content: flex-start;
 }

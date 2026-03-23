@@ -6,9 +6,10 @@
 
 import "./PluginDialog.css";
 
-import { Button, Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, Flex, Paragraph, Separator, Text } from "@components";
+import { Settings } from "@api/Settings";
+import { Button, Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, Flex, Paragraph, Separator, Text } from "@components";
 import { Cross2Icon } from "@components/icons";
-import { React } from "@turbopack/common/react";
+import { React, useCallback, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import type { Plugin } from "@utils/types";
 
@@ -25,6 +26,16 @@ interface PluginDialogProps {
 
 export default function PluginDialog({ plugin, open, onClose }: PluginDialogProps) {
     const entries = Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting);
+    const [confirming, setConfirming] = useState(false);
+
+    const resetSettings = useCallback(() => {
+        const pluginSettings = Settings.plugins[plugin.name];
+        if (!pluginSettings) return;
+        for (const [key] of entries) {
+            delete pluginSettings[key];
+        }
+        setConfirming(false);
+    }, [plugin.name, entries]);
 
     return (
         <Dialog
@@ -62,6 +73,18 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
                         <Paragraph>No configurable settings.</Paragraph>
                     )}
                 </Flex>
+                {!!entries.length && (
+                    <DialogFooter className={cl("footer")}>
+                        <Button
+                            variant={confirming ? "danger" : "secondary"}
+                            size="sm"
+                            onBlur={() => setConfirming(false)}
+                            onClick={() => confirming ? resetSettings() : setConfirming(true)}
+                        >
+                            {confirming ? "Are you sure?" : "Reset"}
+                        </Button>
+                    </DialogFooter>
+                )}
             </DialogContent>
         </Dialog>
     );
