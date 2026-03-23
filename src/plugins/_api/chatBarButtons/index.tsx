@@ -6,7 +6,8 @@
 
 import { VoidChatBarButtons } from "@api/ChatBarButtons";
 import { ModalContainer } from "@api/Modals";
-import { createElement, Fragment } from "@turbopack/common/react";
+import { ErrorBoundary } from "@components/ErrorBoundary";
+import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
@@ -17,12 +18,13 @@ export default definePlugin({
     required: true,
     hidden: true,
 
-    renderButtons(iconOnly: boolean) {
-        try {
-            return createElement(Fragment, null, createElement(VoidChatBarButtons, { iconOnly }), createElement(ModalContainer, null));
-        } catch {
-            return null;
-        }
+    renderButtons() {
+        return (
+            <ErrorBoundary>
+                <VoidChatBarButtons />
+                <ModalContainer />
+            </ErrorBoundary>
+        );
     },
 
     patches: [
@@ -32,7 +34,7 @@ export default definePlugin({
             replacement: [
                 {
                     match: /ModelModeSelect,\{iconOnlyTrigger:(\i)\}\)\}\),/,
-                    replace: "$&$self.renderButtons($1),",
+                    replace: "$&$self.renderButtons(),",
                 },
                 {
                     match: /paddingInlineEnd:\i\?void 0:(\i)\?/,

@@ -9,17 +9,12 @@ import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
 import { createExternalStore } from "@utils/misc";
 import { type LazyNode, resolveLazyNode, useExternalStore } from "@utils/react";
-import type { ComponentType, ReactNode } from "react";
-
-export interface ChatBarButtonRenderProps {
-    iconOnly: boolean;
-}
+import type { ReactNode } from "react";
 
 export interface ChatBarButtonDef {
     icon?: LazyNode;
     tooltip?: LazyNode;
     order?: number;
-    render?: ComponentType<ChatBarButtonRenderProps>;
     onClick?: () => void;
 }
 
@@ -36,15 +31,11 @@ export function removeChatBarButton(id: string) {
     store.notify();
 }
 
-function renderEntry(def: ChatBarButtonDef, iconOnly: boolean) {
-    if (def.render) {
-        const Render = def.render;
-        return <Render iconOnly={iconOnly} />;
-    }
-    return <ChatBarButton icon={resolveLazyNode(def.icon)} tooltip={resolveLazyNode(def.tooltip)} onClick={def.onClick} iconOnly={iconOnly} />;
+function renderEntry(def: ChatBarButtonDef) {
+    return <ChatBarButton icon={resolveLazyNode(def.icon)} tooltip={resolveLazyNode(def.tooltip)} onClick={def.onClick} />;
 }
 
-export function VoidChatBarButtons({ iconOnly }: { iconOnly: boolean }): ReactNode {
+export function VoidChatBarButtons(): ReactNode {
     useExternalStore(store);
 
     if (!buttons.size) return null;
@@ -54,7 +45,7 @@ export function VoidChatBarButtons({ iconOnly }: { iconOnly: boolean }): ReactNo
     return (
         <>
             {sorted.map(([id, def]) => (
-                <ErrorBoundary key={id}>{renderEntry(def, iconOnly)}</ErrorBoundary>
+                <ErrorBoundary key={id}>{renderEntry(def)}</ErrorBoundary>
             ))}
         </>
     );
