@@ -4,21 +4,25 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+/* eslint-disable unused-imports/no-unused-imports */
 import type {
     AccordionContentProps, AccordionItemProps, AccordionProps, AccordionTriggerProps,
     AlertDialogContentProps, AlertDialogProps, AvatarProps, BadgeProps, ButtonProps, ButtonWithTooltipProps,
     CardContentProps, CardHeaderProps, CardProps, CardTitleProps, CheckboxProps,
     CommandEmptyProps, CommandGroupProps, CommandInputProps, CommandItemProps, CommandListProps, CommandProps,
     DialogContentProps, DialogHeaderProps, DialogOverlayProps, DialogPortalProps, DialogProps, DialogTriggerProps,
+    DrawerContentProps, DrawerDescriptionProps, DrawerFooterProps, DrawerHeaderProps, DrawerProps, DrawerTitleProps, DrawerTriggerProps,
     DropdownMenuCheckboxItemProps, DropdownMenuContentProps, DropdownMenuItemProps, DropdownMenuPortalProps,
     DropdownMenuProps, DropdownMenuRadioGroupProps, DropdownMenuRadioItemProps, DropdownMenuSeparatorProps,
     DropdownMenuSubContentProps, DropdownMenuSubProps, DropdownMenuSubTriggerProps, DropdownMenuTriggerProps,
-    InputProps, MotionProps,
+    HoverCardContentProps, HoverCardProps, HoverCardTriggerProps,
+    InputProps, LabelProps, MotionProps,
     PopoverArrowProps, PopoverContentProps, PopoverProps, PopoverTriggerProps,
-    RadixSubProps, ResponsiveDialogProps,
+    PortalProps, RadixSubProps, ResponsiveDialogProps,
     SelectContentProps, SelectItemProps, SelectProps, SelectTriggerProps, SelectValueProps,
     SeparatorProps, SettingsDescriptionProps, SettingsRowProps, SettingsTitleProps,
     SkeletonProps, SliderProps, SpinnerProps, SwitchProps,
+    TableBodyProps, TableCellProps, TableHeadProps, TableHeaderProps, TableProps, TableRowProps,
     TabsContentProps, TabsListProps, TabsProps, TabsTriggerProps, TextareaProps,
     TooltipContentProps, TooltipProps, TooltipProviderProps, TooltipTriggerProps,
 } from "@grok-types";
@@ -35,16 +39,19 @@ export type {
     CommandEmptyProps, CommandGroupProps, CommandInputProps, CommandItemProps, CommandListProps, CommandProps,
     DialogCloseProps, DialogContentProps, DialogDescriptionProps, DialogFooterProps,
     DialogHeaderProps, DialogOverlayProps, DialogPortalProps, DialogProps, DialogTitleProps, DialogTriggerProps,
+    DrawerContentProps, DrawerDescriptionProps, DrawerFooterProps, DrawerHeaderProps, DrawerProps, DrawerTitleProps, DrawerTriggerProps,
     DropdownMenuCheckboxItemProps, DropdownMenuContentProps, DropdownMenuItemProps, DropdownMenuPortalProps,
     DropdownMenuProps, DropdownMenuRadioGroupProps, DropdownMenuRadioItemProps, DropdownMenuSeparatorProps,
     DropdownMenuSubContentProps, DropdownMenuSubProps, DropdownMenuSubTriggerProps, DropdownMenuTriggerProps,
-    InputProps, MotionProps,
+    HoverCardContentProps, HoverCardProps, HoverCardTriggerProps,
+    InputProps, LabelProps, MotionProps,
     PopoverArrowProps, PopoverContentProps, PopoverProps, PopoverTriggerProps,
-    ResponsiveDialogProps,
+    PortalProps, ResponsiveDialogProps,
     SelectContentPosition, SelectContentProps, SelectItemProps, SelectProps, SelectTriggerProps, SelectTriggerSize, SelectValueProps,
     SeparatorOrientation, SeparatorProps,
     SettingsDescriptionProps, SettingsRowProps, SettingsTitleProps,
     SkeletonProps, SliderProps, SpinnerProps, SpinnerSize, SwitchProps, SwitchSize,
+    TableBodyProps, TableCellProps, TableHeadProps, TableHeaderProps, TableProps, TableRowProps,
     TabsContentProps, TabsListProps, TabsProps, TabsTriggerProps, TextareaProps,
     TooltipContentProps, TooltipProps, TooltipProviderProps, TooltipTriggerProps,
 } from "@grok-types";
@@ -96,9 +103,25 @@ export const DropdownMenuSubTrigger: ComponentType<DropdownMenuSubTriggerProps> 
 export const DropdownMenuSubContent: ComponentType<DropdownMenuSubContentProps> = dropdownMenuLazy("DropdownMenuSubContent");
 export const DropdownMenuPortal: ComponentType<DropdownMenuPortalProps> = dropdownMenuLazy("DropdownMenuPortal");
 
+const drawerLazy = createModuleLazy("Drawer", "DrawerContent", "DrawerTrigger");
+export const Drawer: ComponentType<DrawerProps> = drawerLazy("Drawer");
+export const DrawerContent: ComponentType<DrawerContentProps> = drawerLazy("DrawerContent");
+export const DrawerTrigger: ComponentType<DrawerTriggerProps> = drawerLazy("DrawerTrigger");
+export const DrawerDescription: ComponentType<DrawerDescriptionProps> = drawerLazy("DrawerDescription");
+export const DrawerFooter: ComponentType<DrawerFooterProps> = drawerLazy("DrawerFooter");
+export const DrawerHeader: ComponentType<DrawerHeaderProps> = drawerLazy("DrawerHeader");
+export const DrawerTitle: ComponentType<DrawerTitleProps> = drawerLazy("DrawerTitle");
+
+const hoverCardLazy = createModuleLazy("HoverCard", "HoverCardContent", "HoverCardTrigger");
+export const HoverCard: ComponentType<HoverCardProps> = hoverCardLazy("HoverCard");
+export const HoverCardContent: ComponentType<HoverCardContentProps> = hoverCardLazy("HoverCardContent");
+export const HoverCardTrigger: ComponentType<HoverCardTriggerProps> = hoverCardLazy("HoverCardTrigger");
+
 export const Input: ComponentType<InputProps> = LazyComponent("Input", () => findExportedComponent("Input"));
+export const Label: ComponentType<LabelProps> = LazyComponent("Label", () => findExportedComponent("Label"));
 export const MotionDiv: ComponentType<MotionProps> = LazyComponent("MotionDiv", () => findByProps("motion")?.motion?.div);
-export const ResponsiveDialog: ComponentType<ResponsiveDialogProps> = LazyComponent("ResponsiveDialog", () => findExportedComponent("ResponsiveDialog"));
+export const Portal: ComponentType<PortalProps> = LazyComponent("Portal", () => findExportedComponent("Portal"));
+export const ResponsiveDialog: ComponentType<ResponsiveDialogProps> = drawerLazy("ResponsiveDialog");
 
 const selectLazy = createModuleLazy("Select", "SelectContent", "SelectTrigger");
 export const Select: ComponentType<SelectProps> = selectLazy("Select");
@@ -117,6 +140,14 @@ export const SettingsDescription: ComponentType<SettingsDescriptionProps> = sett
 export const Skeleton: ComponentType<SkeletonProps> = LazyComponent("Skeleton", () => findExportedComponent("Skeleton"));
 export const Slider: ComponentType<SliderProps> = LazyComponent("Slider", () => findExportedComponent("Slider"));
 export const Switch: ComponentType<SwitchProps> = LazyComponent("Switch", () => findExportedComponent("Switch"));
+
+const tableLazy = createModuleLazy("Table", "TableBody", "TableCell");
+export const Table: ComponentType<TableProps> = tableLazy("Table");
+export const TableBody: ComponentType<TableBodyProps> = tableLazy("TableBody");
+export const TableCell: ComponentType<TableCellProps> = tableLazy("TableCell");
+export const TableHead: ComponentType<TableHeadProps> = tableLazy("TableHead");
+export const TableHeader: ComponentType<TableHeaderProps> = tableLazy("TableHeader");
+export const TableRow: ComponentType<TableRowProps> = tableLazy("TableRow");
 
 const tooltipLazy = createModuleLazy("Tooltip", "TooltipTrigger", "TooltipContent");
 export const Tooltip: ComponentType<TooltipProps> = tooltipLazy("Tooltip");
