@@ -7,18 +7,6 @@
     color: hsl(var(--fg-warning));
 }
 
-.void-experiments-new-chip {
-    margin-left: 0.375rem;
-    vertical-align: middle;
-}
-
-.void-experiments-obfuscated-chip {
-    margin-left: 0.375rem;
-    vertical-align: middle;
-    background: hsl(var(--purple-700) / 60%);
-    color: hsl(var(--purple-200));
-}
-
 .void-experiments-warning {
     margin: 0 0.75rem;
     padding: 0.625rem 0.75rem;

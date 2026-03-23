@@ -156,8 +156,8 @@ function ExperimentRow({ flagKey, isNew }: { flagKey: string; isNew: boolean }) 
         <SettingsRow action={<Switch checked={checked} onCheckedChange={handleToggle} />}>
             <SettingsTitle>
                 {prettifyKey(flagKey)}
-                {isNew && <Badge className={cl("new-chip")}>NEW</Badge>}
-                {decodedKey && <Badge className={cl("obfuscated-chip")}>OBFUSCATED</Badge>}
+                {isNew && <Badge variant="accent" className="ml-1.5">New</Badge>}
+                {decodedKey && <Badge className="ml-1.5">Encrypted</Badge>}
                 {isOverridden && (
                     <Text size="xs" as="span" className={cl("modified")}>
                         (modified)
@@ -169,7 +169,7 @@ function ExperimentRow({ flagKey, isNew }: { flagKey: string; isNew: boolean }) 
     );
 }
 
-type Filter = "all" | "enabled" | "disabled" | "new" | "modified" | "obfuscated";
+type Filter = "all" | "enabled" | "disabled" | "new" | "modified" | "encrypted";
 
 function ExperimentsTab() {
     const [search, setSearch] = useState("");
@@ -190,7 +190,7 @@ function ExperimentsTab() {
         if (filter === "enabled") return enabled;
         if (filter === "disabled") return !enabled;
         if (filter === "new") return isNewFlag(k);
-        if (filter === "obfuscated") return tryDecodeBase64Key(k) != null;
+        if (filter === "encrypted") return tryDecodeBase64Key(k) != null;
         return override !== undefined;
     }, [filter, config, overrides]);
 
@@ -229,7 +229,7 @@ function ExperimentsTab() {
                         <SelectItem value="disabled">Disabled</SelectItem>
                         <SelectItem value="new">New</SelectItem>
                         <SelectItem value="modified">Modified</SelectItem>
-                        <SelectItem value="obfuscated">Obfuscated</SelectItem>
+                        <SelectItem value="encrypted">Encrypted</SelectItem>
                     </SelectContent>
                 </Select>
             </Flex>
