@@ -24,8 +24,8 @@ export default definePlugin({
         {
             find: '"after-init"),(0,',
             replacement: {
-                match: /(function \i\(\)\{)if\(!Object\.prototype\.hasOwnProperty\.call\(\i\.\i,"get_distinct_id"\)\)try\{/,
-                replace: "$1return}function _ignore(){try{",
+                match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
+                replace: "$1return}function _ignore(){",
             },
         },
         {
