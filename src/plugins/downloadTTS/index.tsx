@@ -8,7 +8,7 @@ import { Button } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { DownloadIcon } from "@components/icons";
 import { Spinner } from "@turbopack/common/components";
-import { React, useCallback, useRef, useState } from "@turbopack/common/react";
+import { React, useCallback, useState } from "@turbopack/common/react";
 import { ChatPageStore, TextToSpeechStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
@@ -32,26 +32,20 @@ async function fetchAndDownload() {
     const a = document.createElement("a");
     a.href = href;
     a.download = `tts-${currentStreamId.slice(0, 8)}.wav`;
-    document.body.appendChild(a);
     a.click();
-    a.remove();
     setTimeout(() => URL.revokeObjectURL(href), 5000);
 }
 
 function DownloadButton() {
     const [loading, setLoading] = useState(false);
-    const busyRef = useRef(false);
 
     const onClick = useCallback(async () => {
-        if (busyRef.current) return;
-        busyRef.current = true;
         setLoading(true);
         try {
             await fetchAndDownload();
         } catch (e) {
             logger.error("Failed to download TTS audio:", e);
         } finally {
-            busyRef.current = false;
             setLoading(false);
         }
     }, []);
@@ -60,6 +54,7 @@ function DownloadButton() {
         <Button
             aria-label="Download audio"
             onClick={onClick}
+            disabled={loading}
             shape="circle"
             size="md"
             variant="tertiary"
