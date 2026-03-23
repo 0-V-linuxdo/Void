@@ -58,7 +58,7 @@ export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle, on
             <div className={cl("separator")} />
             <div className={cl("footer")}>
                 {theme.local ? <FolderIcon size={12} className={cl("footer-icon")} /> : <GlobeIcon size={12} className={cl("footer-icon")} />}
-                <div className={cl("author")}>{theme.author || "\u00A0"}</div>
+                <div className={cl("author")}>{theme.author ?? "\u00A0"}</div>
             </div>
         </div>
     );

@@ -63,7 +63,7 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
             <AvatarMenu />
             <Flex flexDirection="column" justifyContent="center" gap="0" className={cl("info")}>
                 <Text as="span" size="sm" weight="medium" className={cl("name")}>
-                    {user.givenName || user.email?.split("@")[0] || "User"}
+                    {user.givenName ?? user.email?.split("@")[0] ?? "User"}
                 </Text>
                 <Text as="span" size="xs" color="secondary" className={cl("plan")}>
                     {getPlanName(bestSubscription)}

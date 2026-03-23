@@ -121,8 +121,9 @@ export async function addTheme(url: string): Promise<ThemeData> {
         enabled: false,
     };
 
-    registerStyle(themeStyleId(url), css);
-    disableStyle(themeStyleId(url));
+    const styleId = themeStyleId(url);
+    registerStyle(styleId, css);
+    disableStyle(styleId);
 
     updateSettingsPluginData({ themes: [...getThemes(), theme] });
     logger.info(`Added theme "${theme.name}" from ${url}`);
@@ -133,20 +134,21 @@ export function addLocalTheme(name: string, css: string): ThemeData {
     if (!name.trim()) throw new Error("Name is required.");
     if (!css.trim()) throw new Error("CSS is required.");
 
-    const id = `local-${Date.now()}`;
+    const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const meta = parseThemeMeta(css);
     const theme: ThemeData = {
         url: id,
         name: name.trim(),
-        author: meta.author || "Local",
-        description: meta.description || "",
+        author: meta.author ?? "Local",
+        description: meta.description ?? "",
         enabled: false,
         local: true,
         css,
     };
 
-    registerStyle(themeStyleId(id), css);
-    disableStyle(themeStyleId(id));
+    const styleId = themeStyleId(id);
+    registerStyle(styleId, css);
+    disableStyle(styleId);
 
     updateSettingsPluginData({ themes: [...getThemes(), theme] });
     logger.info(`Added local theme "${theme.name}"`);
@@ -196,7 +198,8 @@ export async function enableTheme(url: string) {
         return;
     }
 
-    if (!theme.enabled || !isThemesEnabled()) return;
+    const current = getThemes().find(t => t.url === url);
+    if (!current?.enabled || !isThemesEnabled()) return;
 
     const css = await resp.text();
     registerStyle(id, css);
