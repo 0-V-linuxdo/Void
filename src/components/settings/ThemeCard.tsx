@@ -40,15 +40,15 @@ export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle, on
                     <Flex alignItems="center" gap="0.375rem" className={cl("controls")}>
                         {theme.local ? (
                             <Button variant="tertiary" size="xs" shape="square" aria-label="Edit" onClick={onEdit}>
-                                <PencilIcon size={16} />
+                                <PencilIcon size={14} />
                             </Button>
                         ) : (
                             <Button variant="tertiary" size="xs" shape="square" aria-label="Copy URL" onClick={() => { copyToClipboard(theme.url).catch(e => logger.error("Failed to copy URL:", e)); }}>
-                                <CopyIcon size={16} />
+                                <CopyIcon size={14} />
                             </Button>
                         )}
                         <Button variant="tertiary" size="xs" shape="square" aria-label="Remove" onClick={() => onRemove(theme.url)}>
-                            <Trash2Icon size={16} />
+                            <Trash2Icon size={14} />
                         </Button>
                         <Switch checked={theme.enabled} disabled={!globalEnabled} onCheckedChange={handleToggle} />
                     </Flex>

@@ -73,7 +73,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
                     <Flex alignItems="center" gap="0.375rem" className={cl("controls")}>
                         {hasVisibleSettings(plugin) && (
                             <Button variant="tertiary" size="xs" shape="square" aria-label="Plugin settings" onClick={() => onSettings(name)}>
-                                <EllipsisVertical size={16} />
+                                <EllipsisVertical size={14} />
                             </Button>
                         )}
                         <Switch checked={enabled} disabled={plugin.required} onCheckedChange={handleToggle} />
