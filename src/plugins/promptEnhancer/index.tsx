@@ -86,9 +86,11 @@ async function enhance() {
         let convId = "";
         let message = "";
         for (const line of lines) {
-            const obj: StreamLine = JSON.parse(line);
-            if (obj.result?.conversation?.conversationId) convId = obj.result.conversation.conversationId;
-            if (obj.result?.response?.token) message += obj.result.response.token;
+            try {
+                const obj: StreamLine = JSON.parse(line);
+                if (obj.result?.conversation?.conversationId) convId = obj.result.conversation.conversationId;
+                if (obj.result?.response?.token) message += obj.result.response.token;
+            } catch { continue; }
         }
 
         const improved = message.trim();
