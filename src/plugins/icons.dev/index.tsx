@@ -73,7 +73,7 @@ function IconCard({ entry }: { entry: IconEntry }) {
         <ErrorBoundary fallback={null}>
             <button className={cl("item")} onClick={onClick} title={finderCode}>
                 <div className={cl("item-icon")}>
-                    <Comp size="24" />
+                    <Comp size="20" />
                 </div>
                 <Text size="xs" className={cl("item-name")}>
                     {entry.name.replace(/Icon$/, "")}
@@ -92,25 +92,27 @@ function IconsTab() {
 
     return (
         <Flex flexDirection="column" gap="1.5rem">
-            <Flex flexDirection="column" gap="0">
+            <Flex flexDirection="column" gap="0" className={cl("section")}>
                 <Text size="sm" weight="medium">Icons</Text>
                 <Paragraph>{`Browse ${icons.length} Grok icons. Click to copy the finder code.`}</Paragraph>
             </Flex>
-            <Input
-                type="text"
-                placeholder={`Search ${icons.length} icons...`}
-                value={search}
-                onChange={(e: any) => setSearch(e.target.value)}
-                className={cl("search")}
-            />
+            <Flex className={cl("section")}>
+                <Input
+                    type="text"
+                    placeholder={`Search ${icons.length} icons...`}
+                    value={search}
+                    onChange={(e: any) => setSearch(e.target.value)}
+                    className={cl("search")}
+                />
+            </Flex>
             {filtered.length > 0 ? (
-                <Grid columns="repeat(auto-fill, minmax(100px, 1fr))" gap="0.5rem">
+                <Grid columns="repeat(auto-fill, minmax(100px, 1fr))" gap="0.5rem" className={cl("section")}>
                     {filtered.map(entry => (
                         <IconCard key={entry.name} entry={entry} />
                     ))}
                 </Grid>
             ) : (
-                <Paragraph>
+                <Paragraph className={cl("empty")}>
                     {search ? "No icons match your search." : "No icons found."}
                 </Paragraph>
             )}

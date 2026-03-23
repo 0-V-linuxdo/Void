@@ -1,5 +1,14 @@
+.void-icons-section {
+    padding: 0 0.75rem;
+}
+
 .void-icons-search {
     width: 100%;
+}
+
+.void-icons-empty {
+    text-align: center;
+    padding: 2rem 0;
 }
 
 .void-icons-item {
@@ -24,7 +33,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 24px;
+    min-height: 20px;
 }
 
 .void-icons-item-name {
