@@ -479,7 +479,7 @@ export function handlePatch(args: PatchArgs): unknown {
         };
 
         const allSources = getAllFactorySources();
-        const benchFindStr = findStr ? (Array.isArray(findStr) ? findStr[0] : findStr) : undefined;
+        const benchFindStr = Array.isArray(findStr) ? findStr[0] : findStr;
         const canonFind = benchFindStr ? canonicalizeMatch(benchFindStr) : undefined;
 
         const find = canonFind && typeof canonFind === "string" ? bench(() => {

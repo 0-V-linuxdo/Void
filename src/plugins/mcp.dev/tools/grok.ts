@@ -6,6 +6,7 @@
 
 import { ChatPageStore, ModelsStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
+import { sleep } from "@utils/misc";
 
 import { GROK } from "./constants";
 import type { GrokArgs } from "./types";
@@ -68,7 +69,7 @@ async function navigateToChat(conversationId?: string): Promise<void> {
 
     const target = conversationId ? `/c/${conversationId}` : "/";
     if (!clickInternalLink(target)) throw new Error("Navigation failed: could not find internal link.");
-    await new Promise(r => setTimeout(r, GROK.NAV_DELAY));
+    await sleep(GROK.NAV_DELAY);
 }
 
 function waitForEditor(timeoutMs = GROK.EDITOR_TIMEOUT): Promise<TiptapEditor> {
@@ -188,7 +189,7 @@ async function handleSend(args: GrokArgs): Promise<unknown> {
 
         editor.commands.setContent(message);
         editor.commands.focus();
-        await new Promise(r => setTimeout(r, GROK.PRE_SUBMIT_DELAY));
+        await sleep(GROK.PRE_SUBMIT_DELAY);
         submitEditor();
 
         const result = await waitForResponse(convId, beforeCount, GROK.SEND_TIMEOUT);
