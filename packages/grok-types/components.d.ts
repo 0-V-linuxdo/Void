@@ -43,58 +43,30 @@ export interface RadixSubProps {
 // #region Button
 
 export type ButtonVariant =
-	| "filled"
-	| "filledSecondary"
-	| "outline"
-	| "ghost"
-	| "ghostSecondary"
-	| "text"
-	| "textSecondary"
-	| "textsecondary"
-	| "sticky"
-	| "none"
 	| "primary"
 	| "secondary"
 	| "tertiary"
-	| "accent"
-	| "card"
 	| "danger"
-	| "destructive"
-	| "link"
+	| "text"
+	| "textsecondary"
+	| "none"
 	| (string & {});
 
 export type ButtonSize =
-	| "xxs"
 	| "xs"
 	| "sm"
 	| "md"
-	| "lg"
 	| "xl"
-	| "iconXs"
-	| "iconSm"
-	| "iconMd"
-	| "iconLg"
-	| "iconXl"
-	| "icon"
-	| "pill"
-	| "nav"
-	| "default"
-	| "noPadding"
 	| "none"
 	| (string & {});
 
 export type ButtonShape = "rectangle" | "pill" | "square" | "circle";
 
-export type ButtonColor = "default" | "danger";
-
 export interface ButtonProps {
     variant?: ButtonVariant;
     size?: ButtonSize;
     shape?: ButtonShape;
-    btnColor?: ButtonColor;
-    rounded?: boolean;
     asChild?: boolean;
-    overideIconStyle?: boolean;
     disabled?: boolean;
     className?: string;
     title?: string;

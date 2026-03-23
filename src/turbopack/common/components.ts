@@ -148,7 +148,7 @@ export type {
     TooltipTriggerProps,
 } from "@grok-types";
 
-const buttonLazy = createModuleLazy("Button", "ButtonWithTooltipOptimized");
+const buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
 
 export const Button: ComponentType<ButtonProps> = buttonLazy("Button");
 export const ButtonWithTooltip: ComponentType<ButtonWithTooltipProps> = buttonLazy("ButtonWithTooltip");
