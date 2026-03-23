@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { VoidContextMenuItems } from "@api/ContextMenus";
-import { createElement } from "@turbopack/common/react";
+import { type ContextMenuLocation, VoidContextMenuItems } from "@api/ContextMenus";
+import { ErrorBoundary } from "@components/ErrorBoundary";
+import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
@@ -16,12 +17,12 @@ export default definePlugin({
     required: true,
     hidden: true,
 
-    renderItems(location: string, ctx?: Record<string, any>) {
-        try {
-            return createElement(VoidContextMenuItems as any, { location, ...ctx });
-        } catch {
-            return null;
-        }
+    renderItems(location: ContextMenuLocation, ctx?: Record<string, any>) {
+        return (
+            <ErrorBoundary>
+                <VoidContextMenuItems location={location} {...ctx} />
+            </ErrorBoundary>
+        );
     },
 
     patches: [
