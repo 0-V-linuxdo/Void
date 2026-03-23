@@ -46,7 +46,13 @@
 .void-theme-card-footer {
     display: flex;
     align-items: center;
+    gap: 0.375rem;
     padding: 0.375rem 0.75rem;
+}
+
+.void-theme-card-footer-icon {
+    flex-shrink: 0;
+    color: hsl(var(--fg-tertiary));
 }
 
 .void-theme-card-author {

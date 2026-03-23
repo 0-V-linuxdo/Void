@@ -193,3 +193,27 @@ export const WandSparklesIcon = (props: IconProps = {}) =>
         <path d="M21 16h-4" />,
         <path d="M11 3H9" />,
     );
+
+export const PencilIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />,
+        <path d="m15 5 4 4" />,
+    );
+
+export const PlusIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M5 12h14" />,
+        <path d="M12 5v14" />,
+    );
+
+export const GlobeIcon = (props: IconProps = {}) =>
+    svg(props,
+        <circle cx="12" cy="12" r="10" />,
+        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />,
+        <path d="M2 12h20" />,
+    );
+
+export const FolderIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />,
+    );

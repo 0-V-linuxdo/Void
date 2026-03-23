@@ -16,10 +16,63 @@
 }
 
 .void-themes-filter-select {
-    width: 7rem;
+    width: 7.5rem;
 }
 
 .void-themes-empty {
     text-align: center;
     padding: 2rem 0;
+}
+
+.void-themes-local-dialog {
+    width: 600px;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border-l1);
+    background: var(--background);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.void-themes-local-close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    z-index: 10;
+}
+
+.void-themes-local-header {
+    text-align: left;
+}
+
+.void-themes-local-css-field {
+    flex: 1;
+    min-height: 0;
+}
+
+.void-themes-local-textarea {
+    width: 100%;
+    min-height: 250px;
+    max-height: 400px;
+    resize: vertical;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-l1);
+    background: var(--surface-l1);
+    color: hsl(var(--fg-primary));
+    font-family: monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    tab-size: 2;
+}
+
+.void-themes-local-textarea:focus {
+    outline: none;
+    border-color: hsl(var(--fg-secondary));
+}
+
+.void-themes-local-footer {
+    justify-content: flex-end;
+    gap: 0.5rem;
 }

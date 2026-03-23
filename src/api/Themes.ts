@@ -17,6 +17,8 @@ export interface ThemeData {
     author: string;
     description: string;
     enabled: boolean;
+    local?: boolean;
+    css?: string;
 }
 
 interface ThemeMeta {
@@ -68,6 +70,20 @@ export function setThemesEnabled(enabled: boolean) {
     }
 }
 
+export function isOnlineThemesEnabled(): boolean {
+    return getSettingsPluginData().onlineThemesEnabled !== false;
+}
+
+export function setOnlineThemesEnabled(enabled: boolean) {
+    updateSettingsPluginData({ onlineThemesEnabled: enabled });
+
+    for (const theme of getThemes()) {
+        if (theme.local || !theme.enabled) continue;
+        if (enabled) enableStyle(themeStyleId(theme.url));
+        else disableStyle(themeStyleId(theme.url));
+    }
+}
+
 function validateThemeUrl(url: string) {
     try {
         const parsed = new URL(url);
@@ -113,6 +129,46 @@ export async function addTheme(url: string): Promise<ThemeData> {
     return theme;
 }
 
+export function addLocalTheme(name: string, css: string): ThemeData {
+    if (!name.trim()) throw new Error("Name is required.");
+    if (!css.trim()) throw new Error("CSS is required.");
+
+    const id = `local-${Date.now()}`;
+    const meta = parseThemeMeta(css);
+    const theme: ThemeData = {
+        url: id,
+        name: name.trim(),
+        author: meta.author || "Local",
+        description: meta.description || "",
+        enabled: false,
+        local: true,
+        css,
+    };
+
+    registerStyle(themeStyleId(id), css);
+    disableStyle(themeStyleId(id));
+
+    updateSettingsPluginData({ themes: [...getThemes(), theme] });
+    logger.info(`Added local theme "${theme.name}"`);
+    return theme;
+}
+
+export function updateLocalTheme(url: string, data: { name?: string; css?: string }) {
+    const themes = getThemes().map(t => {
+        if (t.url !== url || !t.local) return t;
+        const updated = { ...t };
+        if (data.name != null) updated.name = data.name.trim();
+        if (data.css != null) {
+            updated.css = data.css;
+            const meta = parseThemeMeta(data.css);
+            if (meta.description) updated.description = meta.description;
+            if (updated.enabled && isThemesEnabled()) registerStyle(themeStyleId(url), data.css);
+        }
+        return updated;
+    });
+    updateSettingsPluginData({ themes });
+}
+
 export function removeTheme(url: string) {
     disableStyle(themeStyleId(url));
     updateSettingsPluginData({ themes: getThemes().filter(t => t.url !== url) });
@@ -122,8 +178,17 @@ export async function enableTheme(url: string) {
     updateSettingsPluginData({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: true } : t)) });
     if (!isThemesEnabled()) return;
 
+    const theme = getThemes().find(t => t.url === url);
+    if (!theme) return;
+    if (!theme.local && !isOnlineThemesEnabled()) return;
+
     const id = themeStyleId(url);
     if (enableStyle(id)) return;
+
+    if (theme.local) {
+        if (theme.css) registerStyle(id, theme.css);
+        return;
+    }
 
     const resp = await fetchExternal(url);
     if (!resp.ok) {
@@ -131,9 +196,7 @@ export async function enableTheme(url: string) {
         return;
     }
 
-    // Re-check if theme is still enabled after async fetch
-    const theme = getThemes().find(t => t.url === url);
-    if (!theme?.enabled || !isThemesEnabled()) return;
+    if (!theme.enabled || !isThemesEnabled()) return;
 
     const css = await resp.text();
     registerStyle(id, css);
@@ -148,8 +211,16 @@ export async function loadSavedThemes() {
     if (!isThemesEnabled()) return;
 
     const enabled = getThemes().filter(t => t.enabled);
+
+    for (const t of enabled) {
+        if (t.local && t.css) {
+            registerStyle(themeStyleId(t.url), t.css);
+        }
+    }
+
+    const remote = isOnlineThemesEnabled() ? enabled.filter(t => !t.local) : [];
     const results = await Promise.allSettled(
-        enabled.map(async t => {
+        remote.map(async t => {
             const resp = await fetchExternal(t.url);
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const css = await resp.text();
@@ -160,7 +231,7 @@ export async function loadSavedThemes() {
     for (let i = 0; i < results.length; i++) {
         const result = results[i];
         if (result.status === "rejected") {
-            logger.warn(`Failed to load theme "${enabled[i].name}":`, result.reason);
+            logger.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
         }
     }
 }

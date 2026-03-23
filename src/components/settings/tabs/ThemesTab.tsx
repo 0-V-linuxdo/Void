@@ -6,10 +6,16 @@
 
 import "./ThemesTab.css";
 
-import { addTheme, getThemes, isThemesEnabled, removeTheme, setThemesEnabled, type ThemeData } from "@api/Themes";
+import { addLocalTheme, addTheme, getThemes, isOnlineThemesEnabled, isThemesEnabled, removeTheme, setOnlineThemesEnabled, setThemesEnabled, type ThemeData, updateLocalTheme } from "@api/Themes";
 import {
     Button,
     ConfirmDialog,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
     ErrorBoundary,
     Flex,
     Grid,
@@ -23,6 +29,7 @@ import {
     Switch,
     Text,
 } from "@components";
+import { Cross2Icon, PlusIcon } from "@components/icons";
 import { React, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { errorMessage } from "@utils/misc";
@@ -30,25 +37,103 @@ import { useFiltered } from "@utils/react";
 import { pluralize } from "@utils/text";
 
 import ThemeCard from "../ThemeCard";
-import { type InputChangeEvent, type ListFilter } from "../utils";
+import { type InputChangeEvent } from "../utils";
+
+type ThemeFilter = "all" | "enabled" | "disabled" | "online" | "local";
 
 const cl = classNameFactory("void-themes-");
 
 const getThemeKey = (t: ThemeData) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
 
+interface LocalThemeDialogProps {
+    open: boolean;
+    onClose(): void;
+    theme?: ThemeData;
+    onSave(): void;
+}
+
+function LocalThemeDialog({ open, onClose, theme, onSave }: LocalThemeDialogProps) {
+    const [name, setName] = useState(theme?.name ?? "");
+    const [css, setCss] = useState(theme?.css ?? "");
+    const [error, setError] = useState("");
+
+    const handleSave = () => {
+        setError("");
+        try {
+            if (theme) {
+                updateLocalTheme(theme.url, { name, css });
+            } else {
+                addLocalTheme(name, css);
+            }
+            onSave();
+            onClose();
+        } catch (e) {
+            setError(errorMessage(e));
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
+            <DialogContent className={cl("local-dialog")} aria-describedby={undefined}>
+                <DialogClose asChild>
+                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className={cl("local-close")}>
+                        <Cross2Icon />
+                    </Button>
+                </DialogClose>
+                <DialogHeader className={cl("local-header")}>
+                    <DialogTitle>{theme ? "Edit Local Theme" : "New Local Theme"}</DialogTitle>
+                </DialogHeader>
+                <Flex flexDirection="column" gap="0.25rem">
+                    <Text size="sm" weight="medium">Name</Text>
+                    <Input
+                        type="text"
+                        placeholder="My Theme"
+                        value={name}
+                        onChange={(e: InputChangeEvent) => setName(e.target.value)}
+                    />
+                </Flex>
+                <Flex flexDirection="column" gap="0.25rem" className={cl("local-css-field")}>
+                    <Text size="sm" weight="medium">CSS</Text>
+                    <textarea
+                        className={cl("local-textarea")}
+                        placeholder="Paste your CSS here..."
+                        value={css}
+                        onChange={e => setCss(e.target.value)}
+                        spellCheck={false}
+                    />
+                </Flex>
+                {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
+                <DialogFooter className={cl("local-footer")}>
+                    <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
+                    <Button variant="primary" size="sm" onClick={handleSave} disabled={!name.trim() || !css.trim()}>
+                        {theme ? "Save" : "Create"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function ThemesTab() {
     const [search, setSearch] = useState("");
-    const [filter, setFilter] = useState<ListFilter>("all");
+    const [filter, setFilter] = useState<ThemeFilter>("all");
     const [url, setUrl] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [enabled, setEnabled] = useState(isThemesEnabled);
+    const [onlineEnabled, setOnlineEnabled] = useState(isOnlineThemesEnabled);
     const [themes, setThemes] = useState(getThemes);
+    const [localDialogOpen, setLocalDialogOpen] = useState(false);
+    const [editingTheme, setEditingTheme] = useState<ThemeData | undefined>();
 
     const visible = useMemo(() => {
-        if (filter === "all") return themes;
-        const enabled = filter === "enabled";
-        return themes.filter(t => t.enabled === enabled);
+        switch (filter) {
+            case "enabled": return themes.filter(t => t.enabled);
+            case "disabled": return themes.filter(t => !t.enabled);
+            case "online": return themes.filter(t => !t.local);
+            case "local": return themes.filter(t => !!t.local);
+            default: return themes;
+        }
     }, [themes, filter]);
 
     const filtered = useFiltered(visible, search, getThemeKey);
@@ -56,6 +141,12 @@ export default function ThemesTab() {
     const handleToggle = (checked: boolean) => {
         setEnabled(checked);
         setThemesEnabled(checked);
+    };
+
+    const handleOnlineToggle = (checked: boolean) => {
+        setOnlineEnabled(checked);
+        setOnlineThemesEnabled(checked);
+        setThemes(getThemes());
     };
 
     const handleAdd = async () => {
@@ -93,6 +184,13 @@ export default function ThemesTab() {
                 </Flex>
                 <Switch checked={enabled} onCheckedChange={handleToggle} />
             </Flex>
+            <Flex alignItems="center" justifyContent="space-between" className={cl("section")}>
+                <Flex flexDirection="column" gap="0">
+                    <Text size="sm" weight="medium">Online Themes</Text>
+                    <Paragraph>Allow loading themes from external URLs. Disable to only use local themes.</Paragraph>
+                </Flex>
+                <Switch checked={onlineEnabled} disabled={!enabled} onCheckedChange={handleOnlineToggle} />
+            </Flex>
             <Flex flexDirection="column" gap="0.5rem" className={cl("section")}>
                 <Flex alignItems="center" gap="0.5rem">
                     <Input
@@ -105,6 +203,9 @@ export default function ThemesTab() {
                     />
                     <Button variant="primary" size="sm" className={cl("import-btn")} onClick={handleAdd} disabled={loading || !url.trim()}>
                         {loading ? "Importing..." : "Import"}
+                    </Button>
+                    <Button variant="secondary" size="sm" className={cl("import-btn")} onClick={() => { setEditingTheme(undefined); setLocalDialogOpen(true); }}>
+                        <PlusIcon size={14} /> Local
                     </Button>
                 </Flex>
                 {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
@@ -129,7 +230,7 @@ export default function ThemesTab() {
                         onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
                         className={cl("search-input")}
                     />
-                    <Select value={filter} onValueChange={(v: string) => setFilter(v as ListFilter)}>
+                    <Select value={filter} onValueChange={(v: string) => setFilter(v as ThemeFilter)}>
                         <SelectTrigger className={cl("filter-select")}>
                             <SelectValue />
                         </SelectTrigger>
@@ -137,6 +238,8 @@ export default function ThemesTab() {
                             <SelectItem value="all">All</SelectItem>
                             <SelectItem value="enabled">Enabled</SelectItem>
                             <SelectItem value="disabled">Disabled</SelectItem>
+                            <SelectItem value="online">Online</SelectItem>
+                            <SelectItem value="local">Local</SelectItem>
                         </SelectContent>
                     </Select>
                 </Flex>
@@ -145,7 +248,7 @@ export default function ThemesTab() {
                 <Grid columns="repeat(2, 1fr)" className={cl("section")}>
                     {filtered.map(t => (
                         <ErrorBoundary key={t.url} fallback={null}>
-                            <ThemeCard theme={t} globalEnabled={enabled} onRemove={setRemoveUrl} onToggle={() => setThemes(getThemes())} />
+                            <ThemeCard theme={t} globalEnabled={enabled && (!!t.local || onlineEnabled)} onRemove={setRemoveUrl} onToggle={() => setThemes(getThemes())} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
                         </ErrorBoundary>
                     ))}
                 </Grid>
@@ -170,6 +273,14 @@ export default function ThemesTab() {
                 danger
                 onConfirm={handleRemove}
             />
+            {localDialogOpen && (
+                <LocalThemeDialog
+                    open={localDialogOpen}
+                    onClose={() => setLocalDialogOpen(false)}
+                    theme={editingTheme}
+                    onSave={() => setThemes(getThemes())}
+                />
+            )}
         </Flex>
     );
 }

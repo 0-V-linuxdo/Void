@@ -7,8 +7,8 @@
 import "./ThemeCard.css";
 
 import { disableTheme, enableTheme, type ThemeData } from "@api/Themes";
-import { ButtonWithTooltip, Flex, Switch, Text } from "@components";
-import { CopyIcon, Trash2Icon } from "@components/icons";
+import { Button, Flex, Switch, Text } from "@components";
+import { CopyIcon, FolderIcon, GlobeIcon, PencilIcon, Trash2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -22,9 +22,10 @@ interface ThemeCardProps {
     globalEnabled: boolean;
     onRemove(url: string): void;
     onToggle(): void;
+    onEdit?(): void;
 }
 
-export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle }: ThemeCardProps) {
+export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle, onEdit }: ThemeCardProps) {
     const handleToggle = () => {
         if (theme.enabled) disableTheme(theme.url);
         else enableTheme(theme.url).catch(e => logger.error("Failed to enable theme:", e));
@@ -37,12 +38,18 @@ export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle }: 
                 <Flex alignItems="center" justifyContent="space-between" gap="0.5rem">
                     <Text as="span" className={cl("name")}>{theme.name ?? theme.url}</Text>
                     <Flex alignItems="center" gap="0.375rem" className={cl("controls")}>
-                        <ButtonWithTooltip variant="tertiary" size="xs" shape="square" tooltipContent="Copy URL" onClick={() => { copyToClipboard(theme.url).catch(e => logger.error("Failed to copy URL:", e)); }}>
-                            <CopyIcon size={16} />
-                        </ButtonWithTooltip>
-                        <ButtonWithTooltip variant="tertiary" size="xs" shape="square" tooltipContent="Remove" onClick={() => onRemove(theme.url)}>
+                        {theme.local ? (
+                            <Button variant="tertiary" size="xs" shape="square" aria-label="Edit" onClick={onEdit}>
+                                <PencilIcon size={16} />
+                            </Button>
+                        ) : (
+                            <Button variant="tertiary" size="xs" shape="square" aria-label="Copy URL" onClick={() => { copyToClipboard(theme.url).catch(e => logger.error("Failed to copy URL:", e)); }}>
+                                <CopyIcon size={16} />
+                            </Button>
+                        )}
+                        <Button variant="tertiary" size="xs" shape="square" aria-label="Remove" onClick={() => onRemove(theme.url)}>
                             <Trash2Icon size={16} />
-                        </ButtonWithTooltip>
+                        </Button>
                         <Switch checked={theme.enabled} disabled={!globalEnabled} onCheckedChange={handleToggle} />
                     </Flex>
                 </Flex>
@@ -50,7 +57,8 @@ export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle }: 
             </div>
             <div className={cl("separator")} />
             <div className={cl("footer")}>
-                <div className={cl("author")}>{theme.author ?? "\u00A0"}</div>
+                {theme.local ? <FolderIcon size={12} className={cl("footer-icon")} /> : <GlobeIcon size={12} className={cl("footer-icon")} />}
+                <div className={cl("author")}>{theme.author || "\u00A0"}</div>
             </div>
         </div>
     );
