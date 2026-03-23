@@ -32,6 +32,11 @@
     transition: opacity 0.15s ease;
 }
 
-.void-notice-close:hover {
+.void-notice-close:hover,
+.void-notice-close:focus-visible {
     opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-notice-close { transition: none; }
 }

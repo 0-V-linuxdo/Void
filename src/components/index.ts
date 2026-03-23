@@ -80,6 +80,6 @@ export { ErrorBoundary, type ErrorBoundaryProps } from "./ErrorBoundary";
 export { ErrorCard, type ErrorCardProps } from "./ErrorCard";
 export { Flex, type FlexProps } from "./Flex";
 export { Grid, type GridProps } from "./Grid";
-export { BracesIcon, ChromiumIcon, CircleAlertIcon, ClockIcon, DownloadIcon, GaugeIcon, type IconProps, PaletteIcon, TestTubeIcon, UnplugIcon } from "./icons";
+export { BracesIcon, ChromiumIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, ClockIcon, DownloadIcon, GaugeIcon, type IconProps, PaletteIcon, TestTubeIcon, UnplugIcon } from "./icons";
 export { Paragraph, type ParagraphProps } from "./Paragraph";
 export { Text, type TextColor, type TextProps, type TextSize, type TextWeight } from "./Text";
