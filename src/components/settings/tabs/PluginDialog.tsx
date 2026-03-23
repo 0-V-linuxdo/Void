@@ -9,7 +9,7 @@ import "./PluginDialog.css";
 import { Settings } from "@api/Settings";
 import { Button, Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, Flex, Paragraph, Separator, Text } from "@components";
 import { Cross2Icon } from "@components/icons";
-import { React, useCallback, useState } from "@turbopack/common/react";
+import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import type { Plugin } from "@utils/types";
 
@@ -25,15 +25,15 @@ interface PluginDialogProps {
 }
 
 export default function PluginDialog({ plugin, open, onClose }: PluginDialogProps) {
-    const entries = Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting);
+    const entries = useMemo(() => Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting), [plugin.settings?.def]);
     const [confirming, setConfirming] = useState(false);
 
     const resetSettings = useCallback(() => {
-        const pluginSettings = Settings.plugins[plugin.name];
-        if (!pluginSettings) return;
-        for (const [key] of entries) {
-            delete pluginSettings[key];
-        }
+        const current = Settings.plugins[plugin.name];
+        if (!current) return;
+        const cleaned = { ...current };
+        for (const [key] of entries) delete cleaned[key];
+        Settings.plugins[plugin.name] = cleaned;
         setConfirming(false);
     }, [plugin.name, entries]);
 
