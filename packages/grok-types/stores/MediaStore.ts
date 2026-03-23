@@ -10,6 +10,7 @@ import type {
 	OriginalRefType,
 	VideoResolution,
 } from "../enums/media";
+import type { PipelineExecutionStoreState } from "./PipelineExecutionStore";
 import type { ZustandStore } from "../zustand";
 
 /**
@@ -617,27 +618,7 @@ export interface ScrollStoreState {
 	reset: () => void;
 }
 
-/** Zustand state for pipeline execution (imagine templates). */
-export interface PipelineExecutionStoreState {
-	stage: import("../enums/media").PipelineExecutionStage;
-	templateId: string | null;
-	templateName: string | null;
-	templateInputs: Record<string, any> | null;
-	inputUrls: string[];
-	progress: number;
-	steps: any[];
-	postId: string | null;
-	error: string | null;
-	_abortController: AbortController | null;
-
-	setTemplate: (templateId: string, templateName: string, inputs: Record<string, any>) => void;
-	run: (inputUrls: string[]) => Promise<void>;
-	runRedo: (post: any) => Promise<void>;
-	_processStream: (stream: any) => Promise<void>;
-	cancel: () => void;
-	reset: () => void;
-	_setError: (error: string | null) => void;
-}
+export type { PipelineExecutionStoreState } from "./PipelineExecutionStore";
 
 /** Module exports for the Media store. */
 export interface MediaStoreModule {

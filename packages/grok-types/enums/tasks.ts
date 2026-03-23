@@ -36,3 +36,6 @@ export type TaskCadence =
 
 /** Task notification decision from the API (`GrokApiV2TaskNotificationDecision`). */
 export type TaskNotificationDecision = "DISABLED" | "YES" | "NO" | (string & {});
+
+/** Model mode for task execution, controlling inference pipeline. */
+export type TaskModelMode = "BASE" | "THINK" | "DEEPSEARCH" | "IMAGEGEN" | (string & {});

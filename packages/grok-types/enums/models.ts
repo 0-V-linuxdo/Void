@@ -12,6 +12,8 @@ export type ModelId =
     | "grok-420-0204"
     | "grok-4-1-non-thinking-companion"
     | "grok-4-heavy"
+    | "grok-4-auto"
+    | "grok-4-1-non-thinking-w-tool"
     | "grok-2-1212"
     | "grok-2-mini"
     | (string & {});

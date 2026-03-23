@@ -6,8 +6,8 @@ import type { ZustandStore } from "../zustand";
  * Connectors enable Grok to search external data sources.
  */
 export interface WorkspaceConnectorsStoreState {
-    /** Connector state keyed by team ID. */
-    teamIdToConnectorsState: Record<string, any>;
+    /** Connector state keyed by scope ID (team or enterprise). */
+    scopeIdToConnectorsState: Record<string, any>;
     /** Connector state keyed by workspace ID. */
     workspaceIdToConnectorsState: Record<string, any>;
     /** Whether connectors are currently being loaded. */
@@ -25,10 +25,10 @@ export interface WorkspaceConnectorsStoreState {
     removeActiveConnector: (connectorId: string) => void;
     /** Get the connector state for a workspace. */
     getWorkspaceConnectorsState: (workspaceId: string) => any;
-    /** Get the connector state for a team. */
-    getTeamConnectorsState: (teamId: string) => any;
-    /** Get enterprise connectors for a team. */
-    getEnterpriseConnectors: (teamId: string) => any[];
+    /** Get the connector state for a scope (team or enterprise). */
+    getScopeConnectorsState: (scopeId: string) => any;
+    /** Get connectors for a given scope. */
+    getConnectorsForScope: (scopeId: string) => any[];
     /** Get active connector IDs for a workspace. */
     getActiveConnectorIds: (workspaceId: string) => string[];
 }

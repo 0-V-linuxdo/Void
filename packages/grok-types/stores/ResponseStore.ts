@@ -135,8 +135,8 @@ export interface ResponseStoreState {
     conversationImageResponsesPromisesByConversationId: Record<string, Promise<any>>;
     /** All cached responses keyed by response ID. */
     byId: Record<string, GrokResponse>;
-    /** Response ID lists keyed by conversation ID. */
-    byConversationId: Record<string, string[]>;
+    /** Cached responses keyed by conversation ID. */
+    byConversationId: Record<string, GrokResponse[]>;
     /** Image ID lookup keyed by image URL. */
     imageIdByUrl: Record<string, string>;
     /** In-flight streaming promises keyed by conversation ID. */

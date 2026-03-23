@@ -42,6 +42,8 @@ export interface DictationStoreState {
     onTranscript: ((text: string) => void) | null;
     /** Current refinement level for speech processing. */
     refinementLevel: RefinementLevel;
+    /** Whether the hotkey is currently being recorded. */
+    isHotkeyRecording: boolean;
 
     /** Set the refinement level for speech processing. */
     setRefinementLevel: (level: RefinementLevel) => void;

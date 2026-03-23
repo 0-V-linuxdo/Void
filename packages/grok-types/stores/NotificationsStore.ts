@@ -50,7 +50,7 @@ export interface NotificationsStoreState {
     /** Whether the user has been exposed to the notifications feature. */
     userExposedToNotifications: boolean;
     /** Current team ID for team-scoped notifications. */
-    currentTeamId: string | null;
+    currentTeamId: string | null | undefined;
 
     /** Fetch the first page of notifications from the API. */
     loadFirstPage: () => Promise<void>;

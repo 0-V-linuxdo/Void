@@ -92,7 +92,7 @@ export interface ChatPageStoreState {
     /** Selected personality preset ID, or undefined for default assistant. */
     selectedPersonalityId: string | undefined;
     /** Custom personality configuration object. */
-    customPersonality: GrokPersonality | null;
+    customPersonality: GrokPersonality | null | undefined;
     /** Text quoted from a response for reply context. */
     quotedText: string | undefined;
     /** Map of conversation ID to draft query text (preserves drafts across conversations). */
