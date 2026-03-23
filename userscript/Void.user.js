@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.4.9
+// @version      0.5.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.4.9 — A modification for grok.com
+ * Void v0.5.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -620,7 +620,13 @@ ${sourceUrl}`;
           if (replacement.predicate && !replacement.predicate())
             continue;
           const { match } = replacement;
-          const matches = match instanceof RegExp ? match.test(originalCode) : originalCode.includes(match);
+          let matches;
+          if (match instanceof RegExp) {
+            match.lastIndex = 0;
+            matches = match.test(originalCode);
+          } else {
+            matches = originalCode.includes(match);
+          }
           if (!matches && !patch.noWarn && !replacement.noWarn) {
             logger.warn(`[validate] ${patch.plugin}: ${String(match)}`);
           }
@@ -1756,59 +1762,6 @@ ${sourceUrl}`;
     OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
   })(OptionType ||= {});
 
-  // void-css:D:/Projects/Void/src/components/ChatBarButton.css
-  registerStyle("ChatBarButton", `.void-chatbar-wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.void-chatbar-wrapper:focus,
-.void-chatbar-wrapper:focus-visible {
-    outline: none;
-}
-
-.void-chatbar-wrapper:focus-visible {
-    box-shadow: 0 0 0 1px hsl(var(--ring));
-}
-
-.void-chatbar-button {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 2.5rem;
-    border-radius: 9999px;
-    box-shadow: inset 0 0 0 1px oklch(99.24% 0 none / 8%);
-    color: hsl(var(--fg-primary));
-    transition: background-color 0.15s ease-out;
-}
-
-.void-chatbar-button:hover {
-    background-color: hsl(var(--surface-l3));
-}
-
-.void-chatbar-button-icon-only {
-    aspect-ratio: 1;
-    gap: 0.125rem;
-}
-
-.void-chatbar-button-with-text {
-    padding: 0 0.625rem;
-    gap: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-}
-
-.void-chatbar-motion {
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    white-space: nowrap;
-}
-`);
-
   // src/turbopack/common/react.tsx
   var React;
   var useState;
@@ -1845,9 +1798,13 @@ ${sourceUrl}`;
     });
     return (name) => LazyComponent(name, () => mod?.[name] ?? findExportedComponent(name));
   }
-  var buttonLazy = createModuleLazy("Button", "ButtonWithTooltipOptimized");
+  var buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
   var Button = buttonLazy("Button");
-  var ButtonWithTooltip = buttonLazy("ButtonWithTooltip");
+  var legacyButtonMod = null;
+  waitFor((m) => m.ButtonWithTooltip != null && m.Button != null && !m.ButtonWithPopover, (m) => {
+    legacyButtonMod = m;
+  });
+  var ButtonWithTooltip = LazyComponent("ButtonWithTooltip", () => legacyButtonMod?.ButtonWithTooltip);
   var Card = LazyComponent("Card", () => findExportedComponent("Card"));
   var dialogLazy = createModuleLazy("Dialog", "DialogContent", "DialogHeader");
   var Dialog = dialogLazy("Dialog");
@@ -2294,6 +2251,45 @@ ${sourceUrl}`;
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M21 3 9 15"
   }));
+  var WandSparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m14 7 3 3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 6v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 14v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M10 2v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M7 8H3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21 16h-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M11 3H9"
+  }));
+  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m15 5 4 4"
+  }));
+  var PlusIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M5 12h14"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 5v14"
+  }));
+  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M2 12h20"
+  }));
+  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+  }));
   // src/components/Text.tsx
   var sizeClasses = {
     xs: "text-xs",
@@ -2329,37 +2325,19 @@ ${sourceUrl}`;
     }, children);
   }
   // src/components/ChatBarButton.tsx
-  var cl2 = classNameFactory("void-chatbar-");
-  var EXPAND = { width: "auto", opacity: 1 };
-  var COLLAPSE = { width: 0, opacity: 0 };
-  var TRANSITION = { duration: 0.2, ease: "easeOut" };
-  function ChatBarButton({ icon, children, tooltip, onClick, className, iconOnly, "aria-label": ariaLabel }) {
+  function ChatBarButton({ icon, tooltip, onClick, className, "aria-label": ariaLabel }) {
     const label = typeof tooltip === "string" ? tooltip : ariaLabel;
-    const reducedMotion = useReducedMotion();
-    const hasShownText = useRef(false);
-    const showText = !iconOnly && !!children;
-    useEffect(() => {
-      if (showText)
-        hasShownText.current = true;
-    }, [showText]);
     return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "none",
-      size: "none",
-      className: cl2("wrapper"),
+      variant: "ghost",
+      size: "iconMd",
+      rounded: true,
+      className,
       tooltipContent: tooltip,
       tooltipProps: { delayDuration: 600 },
       tooltipContentProps: { side: "top" },
       onClick,
       "aria-label": label
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl2("button"), showText ? cl2("button-with-text") : cl2("button-icon-only"), className)
-    }, icon, iconOnly != null ? /* @__PURE__ */ React.createElement(AnimatePresence, null, showText && /* @__PURE__ */ React.createElement(MotionDiv, {
-      initial: reducedMotion || !hasShownText.current ? false : COLLAPSE,
-      animate: EXPAND,
-      exit: COLLAPSE,
-      transition: reducedMotion ? { duration: 0 } : TRANSITION,
-      className: cl2("motion")
-    }, children)) : children));
+    }, icon);
   }
 
   // src/utils/guards.ts
@@ -2538,7 +2516,7 @@ ${sourceUrl}`;
     const set = listeners.get(event);
     if (!set?.size)
       return;
-    for (const handler2 of [...set]) {
+    for (const handler2 of set) {
       try {
         handler2(data);
       } catch (e) {
@@ -2580,28 +2558,21 @@ ${sourceUrl}`;
     buttons.delete(id);
     store.notify();
   }
-  function renderEntry(def, iconOnly) {
-    if (def.render) {
-      const Render = def.render;
-      return /* @__PURE__ */ React.createElement(Render, {
-        iconOnly
-      });
-    }
+  function renderEntry(def) {
     return /* @__PURE__ */ React.createElement(ChatBarButton, {
       icon: resolveLazyNode(def.icon),
       tooltip: resolveLazyNode(def.tooltip),
-      onClick: def.onClick,
-      iconOnly
+      onClick: def.onClick
     });
   }
-  function VoidChatBarButtons({ iconOnly }) {
+  function VoidChatBarButtons() {
     useExternalStore(store);
     if (!buttons.size)
       return null;
     const sorted = [...buttons.entries()].sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
     return /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: id
-    }, renderEntry(def, iconOnly))));
+    }, renderEntry(def))));
   }
 
   // src/api/ContextMenus.tsx
@@ -3012,6 +2983,13 @@ ${sourceUrl}`;
   var pluginUnsubscribers = new Map;
   var initialized = false;
   var storeRegistry = exports_stores;
+  function removePluginContextMenuItems(plugin) {
+    if (!plugin.contextMenuItems)
+      return;
+    for (const location2 of Object.keys(plugin.contextMenuItems)) {
+      removeContextMenuItem(location2, plugin.name);
+    }
+  }
   function isPluginEnabled(pluginName) {
     const plugin = plugins[pluginName];
     if (!plugin)
@@ -3154,11 +3132,7 @@ ${sourceUrl}`;
       if (plugin.managedStyle)
         disableStyle(plugin.managedStyle);
       removeChatBarButton(plugin.name);
-      if (plugin.contextMenuItems) {
-        for (const location2 of Object.keys(plugin.contextMenuItems)) {
-          removeContextMenuItem(location2, plugin.name);
-        }
-      }
+      removePluginContextMenuItems(plugin);
       const unsubs = pluginUnsubscribers.get(plugin.name);
       if (unsubs) {
         for (const unsub of unsubs)
@@ -3184,12 +3158,8 @@ ${sourceUrl}`;
         pluginUnsubscribers.delete(plugin.name);
       }
       removeChatBarButton(plugin.name);
-      if (plugin.contextMenuItems) {
-        for (const location2 of Object.keys(plugin.contextMenuItems)) {
-          removeContextMenuItem(location2, plugin.name);
-        }
-      }
-      if (plugin.managedStyle)
+      removePluginContextMenuItems(plugin);
+      if (plugin.managedStyle && !plugin.patches?.length)
         disableStyle(plugin.managedStyle);
       if (plugin.cleanupSelectors) {
         for (const selector of plugin.cleanupSelectors) {
@@ -3331,7 +3301,7 @@ ${sourceUrl}`;
     NoticeType2["ERROR"] = "error";
     NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var cl3 = classNameFactory("void-notice-");
+  var cl2 = classNameFactory("void-notice-");
   var ICONS = {
     ["info" /* INFO */]: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
     ["warning" /* WARNING */]: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
@@ -3342,14 +3312,14 @@ ${sourceUrl}`;
   function Notice({ message, type, action, onClose }) {
     const iconSvg = ICONS[type ?? "info" /* INFO */];
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl3("root")
+      className: cl2("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl3("icon"),
+      className: cl2("icon"),
       dangerouslySetInnerHTML: {
         __html: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg>`
       }
     }), /* @__PURE__ */ React.createElement("span", {
-      className: cl3("message")
+      className: cl2("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "md",
@@ -3359,7 +3329,7 @@ ${sourceUrl}`;
         action.onClick();
       }
     }, action.icon, action.label), /* @__PURE__ */ React.createElement("button", {
-      className: cl3("close"),
+      className: cl2("close"),
       onClick: (e) => {
         e.stopPropagation();
         onClose();
@@ -3423,11 +3393,11 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.4.9")) {
-        logger8.info(`Up to date (${"0.4.9"})`);
+      if (!latest || !isNewer(latest, "0.5.0")) {
+        logger8.info(`Up to date (${"0.5.0"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.4.9"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.0"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3480,8 +3450,8 @@ ${sourceUrl}`;
       {
         find: '"after-init"),(0,',
         replacement: {
-          match: /(function \i\(\)\{)if\(!Object\.prototype\.hasOwnProperty\.call\(\i\.\i,"get_distinct_id"\)\)try\{/,
-          replace: "$1return}function _ignore(){try{"
+          match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
+          replace: "$1return}function _ignore(){"
         }
       },
       {
@@ -3592,6 +3562,20 @@ ${sourceUrl}`;
       }
     }
   }
+  function isOnlineThemesEnabled() {
+    return getSettingsPluginData().onlineThemesEnabled !== false;
+  }
+  function setOnlineThemesEnabled(enabled) {
+    updateSettingsPluginData({ onlineThemesEnabled: enabled });
+    for (const theme of getThemes()) {
+      if (theme.local || !theme.enabled)
+        continue;
+      if (enabled)
+        enableStyle(themeStyleId(theme.url));
+      else
+        disableStyle(themeStyleId(theme.url));
+    }
+  }
   function validateThemeUrl(url) {
     try {
       const parsed = new URL(url);
@@ -3625,11 +3609,54 @@ ${sourceUrl}`;
       description: meta.description,
       enabled: false
     };
-    registerStyle(themeStyleId(url), css);
-    disableStyle(themeStyleId(url));
+    const styleId = themeStyleId(url);
+    registerStyle(styleId, css);
+    disableStyle(styleId);
     updateSettingsPluginData({ themes: [...getThemes(), theme] });
     logger9.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
+  }
+  function addLocalTheme(name, css) {
+    if (!name.trim())
+      throw new Error("Name is required.");
+    if (!css.trim())
+      throw new Error("CSS is required.");
+    const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const meta = parseThemeMeta(css);
+    const theme = {
+      url: id,
+      name: name.trim(),
+      author: meta.author ?? "Local",
+      description: meta.description ?? "",
+      enabled: false,
+      local: true,
+      css
+    };
+    const styleId = themeStyleId(id);
+    registerStyle(styleId, css);
+    disableStyle(styleId);
+    updateSettingsPluginData({ themes: [...getThemes(), theme] });
+    logger9.info(`Added local theme "${theme.name}"`);
+    return theme;
+  }
+  function updateLocalTheme(url, data) {
+    const themes = getThemes().map((t) => {
+      if (t.url !== url || !t.local)
+        return t;
+      const updated = { ...t };
+      if (data.name != null)
+        updated.name = data.name.trim();
+      if (data.css != null) {
+        updated.css = data.css;
+        const meta = parseThemeMeta(data.css);
+        if (meta.description)
+          updated.description = meta.description;
+        if (updated.enabled && isThemesEnabled())
+          registerStyle(themeStyleId(url), data.css);
+      }
+      return updated;
+    });
+    updateSettingsPluginData({ themes });
   }
   function removeTheme(url) {
     disableStyle(themeStyleId(url));
@@ -3639,16 +3666,26 @@ ${sourceUrl}`;
     updateSettingsPluginData({ themes: getThemes().map((t) => t.url === url ? { ...t, enabled: true } : t) });
     if (!isThemesEnabled())
       return;
+    const theme = getThemes().find((t) => t.url === url);
+    if (!theme)
+      return;
+    if (!theme.local && !isOnlineThemesEnabled())
+      return;
     const id = themeStyleId(url);
     if (enableStyle(id))
       return;
+    if (theme.local) {
+      if (theme.css)
+        registerStyle(id, theme.css);
+      return;
+    }
     const resp = await fetchExternal(url);
     if (!resp.ok) {
       logger9.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
       return;
     }
-    const theme = getThemes().find((t) => t.url === url);
-    if (!theme?.enabled || !isThemesEnabled())
+    const current = getThemes().find((t) => t.url === url);
+    if (!current?.enabled || !isThemesEnabled())
       return;
     const css = await resp.text();
     registerStyle(id, css);
@@ -3661,7 +3698,13 @@ ${sourceUrl}`;
     if (!isThemesEnabled())
       return;
     const enabled = getThemes().filter((t) => t.enabled);
-    const results = await Promise.allSettled(enabled.map(async (t) => {
+    for (const t of enabled) {
+      if (t.local && t.css) {
+        registerStyle(themeStyleId(t.url), t.css);
+      }
+    }
+    const remote = isOnlineThemesEnabled() ? enabled.filter((t) => !t.local) : [];
+    const results = await Promise.allSettled(remote.map(async (t) => {
       const resp = await fetchExternal(t.url);
       if (!resp.ok)
         throw new Error(`HTTP ${resp.status}`);
@@ -3671,7 +3714,7 @@ ${sourceUrl}`;
     for (let i = 0;i < results.length; i++) {
       const result = results[i];
       if (result.status === "rejected") {
-        logger9.warn(`Failed to load theme "${enabled[i].name}":`, result.reason);
+        logger9.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
       }
     }
   }
@@ -3767,7 +3810,7 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/tabs/CustomCSSTab.tsx
-  var cl4 = classNameFactory("void-css-");
+  var cl3 = classNameFactory("void-css-");
   var STYLE_ID = "void-custom-css";
   function setCustomCSSEnabled(enabled) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
@@ -3873,7 +3916,7 @@ ${sourceUrl}`;
     return result;
   }
   function span(cls, text) {
-    return `<span class="${cl4(cls)}">${esc(text)}</span>`;
+    return `<span class="${cl3(cls)}">${esc(text)}</span>`;
   }
   function esc(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -3882,6 +3925,8 @@ ${sourceUrl}`;
     const highlightRef = useRef(null);
     const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
     const [css, setCss] = useState(loadSavedCSS);
+    const cssRef = useRef(css);
+    cssRef.current = css;
     const apply = useCallback((val) => {
       setCss(val);
       updateSettingsPluginData({ customCSS: val });
@@ -3901,7 +3946,7 @@ ${sourceUrl}`;
         const start = ta.selectionStart;
         const end = ta.selectionEnd;
         const formatted = formatCSS(pasted);
-        const next = css.slice(0, start) + formatted + css.slice(end);
+        const next = cssRef.current.slice(0, start) + formatted + cssRef.current.slice(end);
         apply(next);
         requestAnimationFrame(() => {
           const pos = start + formatted.length;
@@ -3909,7 +3954,7 @@ ${sourceUrl}`;
           ta.selectionEnd = pos;
         });
       }
-    }, [css, apply]);
+    }, [apply]);
     useEffect(() => {
       if (highlightRef.current)
         highlightRef.current.innerHTML = highlight(css) + `
@@ -3918,11 +3963,11 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl4("root")
+      className: cl3("root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
-      className: cl4("header")
+      className: cl3("header")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -3933,13 +3978,13 @@ ${sourceUrl}`;
       checked: enabled,
       onCheckedChange: handleToggle
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl4("wrap")
+      className: cl3("wrap")
     }, /* @__PURE__ */ React.createElement("pre", {
       ref: highlightRef,
-      className: cl4("highlight"),
+      className: cl3("highlight"),
       "aria-hidden": "true"
     }), /* @__PURE__ */ React.createElement("textarea", {
-      className: cl4("input"),
+      className: cl3("input"),
       value: css,
       onChange: (e) => apply(e.target.value),
       onPaste: handlePaste,
@@ -4113,7 +4158,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/PluginCard.tsx
-  var cl5 = classNameFactory("void-plugin-card-");
+  var cl4 = classNameFactory("void-plugin-card-");
   function PluginCard({ name, onSettings, onReload }) {
     const plugin = plugins[name];
     const forceUpdate = useForceUpdater();
@@ -4132,33 +4177,33 @@ ${sourceUrl}`;
         onReload(name);
     };
     return /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl5("root"), plugin.required && cl5("required"), crashed && cl5("crashed"))
+      className: classes(cl4("root"), plugin.required && cl4("required"), crashed && cl4("crashed"))
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl5("body")
+      className: cl4("body")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
-      className: cl5("name")
+      className: cl4("name")
     }, name, crashed && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
-      className: cl5("crashed-icon")
+      className: cl4("crashed-icon")
     }, /* @__PURE__ */ React.createElement(TriangleAlert, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin failed to start")), plugin.required && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
-      className: cl5("required-icon")
+      className: cl4("required-icon")
     }, /* @__PURE__ */ React.createElement(CircleAlertIcon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin is required for Void to work")), /* @__PURE__ */ React.createElement(PluginBadges, {
       plugin,
-      className: cl5("badge")
+      className: cl4("badge")
     })), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
-      className: cl5("controls")
+      className: cl4("controls")
     }, hasVisibleSettings(plugin) && /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "xs",
@@ -4166,19 +4211,19 @@ ${sourceUrl}`;
       "aria-label": "Plugin settings",
       onClick: () => onSettings(name)
     }, /* @__PURE__ */ React.createElement(EllipsisVertical, {
-      size: 16
+      size: 14
     })), /* @__PURE__ */ React.createElement(Switch, {
       checked: enabled,
       disabled: plugin.required,
       onCheckedChange: handleToggle
     }))), plugin.description && /* @__PURE__ */ React.createElement("div", {
-      className: cl5("desc")
+      className: cl4("desc")
     }, plugin.description)), /* @__PURE__ */ React.createElement("div", {
-      className: cl5("separator")
+      className: cl4("separator")
     }), /* @__PURE__ */ React.createElement("div", {
-      className: cl5("footer")
+      className: cl4("footer")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl5("authors")
+      className: cl4("authors")
     }, plugin.authors?.length ? plugin.authors.join(", ") : " ")));
   }
 
@@ -4196,7 +4241,7 @@ ${sourceUrl}`;
 }
 
 /* SettingsRow has px-3 built in, strip it so fields align with the title */
-.void-plugin-dialog-content .px-3 {
+.void-plugin-dialog-settings-list .px-3 {
     padding-left: 0;
     padding-right: 0;
 }
@@ -4214,6 +4259,11 @@ ${sourceUrl}`;
 
 .void-plugin-dialog-settings-list {
     margin-top: 0.5rem;
+}
+
+.void-plugin-dialog-footer {
+    margin-top: auto;
+    justify-content: flex-start;
 }
 `);
 
@@ -4242,9 +4292,16 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/SettingField.tsx
-  var cl6 = classNameFactory("void-setting-");
+  var cl5 = classNameFactory("void-setting-");
   function usePluginSetting(pluginName, id, setting) {
-    const [value, setValue] = useState((Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting));
+    const resolve = () => (Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting);
+    const [value, setValue] = useState(resolve);
+    useEffect(() => {
+      const path = `plugins.${pluginName}.${id}`;
+      const listener = () => setValue(resolve());
+      SettingsStore3.addChangeListener(path, listener);
+      return () => SettingsStore3.removeChangeListener(path, listener);
+    }, [pluginName, id]);
     const update = useCallback((val) => {
       setValue(val);
       Settings.plugins[pluginName] = { ...Settings.plugins[pluginName], [id]: val };
@@ -4305,18 +4362,18 @@ ${sourceUrl}`;
       setting
     }), /* @__PURE__ */ React.createElement(Flex, {
       gap: "8px",
-      className: cl6("slider-row")
+      className: cl5("slider-row")
     }, /* @__PURE__ */ React.createElement(Slider, {
       value: [value ?? min],
       min,
       max,
       step: 1,
       onValueChange: ([v]) => update(v),
-      className: cl6("slider")
+      className: cl5("slider")
     }), /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       color: "secondary",
-      className: cl6("slider-value")
+      className: cl5("slider-value")
     }, value)));
   }
   function ComponentField({ setting, pluginName }) {
@@ -4345,7 +4402,7 @@ ${sourceUrl}`;
         if (!isNaN(n))
           update(n);
       },
-      className: cl6("number-input")
+      className: cl5("number-input")
     }));
   }
   function StringField({ id, setting, pluginName }) {
@@ -4361,7 +4418,7 @@ ${sourceUrl}`;
       value: value ?? "",
       onChange: (e) => update(e.target.value),
       placeholder: "placeholder" in setting ? setting.placeholder : undefined,
-      className: cl6("string-input")
+      className: cl5("string-input")
     }));
   }
   var FIELD_MAP = {
@@ -4386,9 +4443,20 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/PluginDialog.tsx
-  var cl7 = classNameFactory("void-plugin-dialog-");
+  var cl6 = classNameFactory("void-plugin-dialog-");
   function PluginDialog({ plugin, open: open2, onClose }) {
-    const entries = Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting);
+    const entries = useMemo(() => Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting), [plugin.settings?.def]);
+    const [confirming, setConfirming] = useState(false);
+    const resetSettings = useCallback(() => {
+      const current = Settings.plugins[plugin.name];
+      if (!current)
+        return;
+      const cleaned = { ...current };
+      for (const [key] of entries)
+        delete cleaned[key];
+      Settings.plugins[plugin.name] = cleaned;
+      setConfirming(false);
+    }, [plugin.name, entries]);
     return /* @__PURE__ */ React.createElement(Dialog, {
       open: open2,
       onOpenChange: (v) => {
@@ -4396,7 +4464,7 @@ ${sourceUrl}`;
           onClose();
       }
     }, /* @__PURE__ */ React.createElement(DialogContent, {
-      className: cl7("content"),
+      className: cl6("content"),
       "aria-describedby": undefined
     }, /* @__PURE__ */ React.createElement(DialogClose, {
       asChild: true
@@ -4405,9 +4473,9 @@ ${sourceUrl}`;
       size: "sm",
       shape: "square",
       "aria-label": "Close",
-      className: cl7("close")
+      className: cl6("close")
     }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
-      className: cl7("header")
+      className: cl6("header")
     }, /* @__PURE__ */ React.createElement(DialogTitle, null, plugin.name), plugin.description && /* @__PURE__ */ React.createElement(Paragraph, null, plugin.description)), /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.25rem"
@@ -4423,23 +4491,31 @@ ${sourceUrl}`;
     }, "Settings"), entries.length ? /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl7("settings-list")
+      className: cl6("settings-list")
     }, entries.map(([key, setting]) => /* @__PURE__ */ React.createElement(SettingField, {
       key,
       id: key,
       setting,
       pluginName: plugin.name
-    }))) : /* @__PURE__ */ React.createElement(Paragraph, null, "No configurable settings."))));
+    }))) : /* @__PURE__ */ React.createElement(Paragraph, null, "No configurable settings.")), !!entries.length && /* @__PURE__ */ React.createElement(DialogFooter, {
+      className: cl6("footer")
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: confirming ? "danger" : "secondary",
+      size: "sm",
+      onBlur: () => setConfirming(false),
+      onClick: () => confirming ? resetSettings() : setConfirming(true)
+    }, confirming ? "Are you sure?" : "Reset"))));
   }
 
   // src/components/settings/tabs/PluginsTab.tsx
-  var cl8 = classNameFactory("void-plugins-");
+  var cl7 = classNameFactory("void-plugins-");
   var getPluginKey = (name) => `${name} ${plugins[name].description ?? ""}`;
   function PluginsTab() {
     const [search2, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
     const [dialogName, setDialogName] = useState(null);
     const [showReload, setShowReload] = useState(false);
+    const [toggleTick, setToggleTick] = useState(0);
     const { userPlugins, requiredPlugins } = useMemo(() => {
       const user = [];
       const required = [];
@@ -4471,6 +4547,7 @@ ${sourceUrl}`;
       if (pending)
         setDialogName(pending);
     }, []);
+    useEffect(() => subscribe("pluginToggle", () => setToggleTick((t) => t + 1)), []);
     useEffect(() => subscribe("reloadNeeded", () => {
       changedPluginsRef.current.add("__settings__");
       if (!dismissedRef.current)
@@ -4481,13 +4558,13 @@ ${sourceUrl}`;
         return userPlugins;
       const enabled = filter === "enabled";
       return userPlugins.filter((n) => isPluginEnabled(n) === enabled);
-    }, [filter, userPlugins]);
+    }, [filter, userPlugins, toggleTick]);
     const visibleRequired = useMemo(() => {
       if (filter === "all")
         return requiredPlugins;
       const enabled = filter === "enabled";
       return requiredPlugins.filter((n) => isPluginEnabled(n) === enabled);
-    }, [filter, requiredPlugins]);
+    }, [filter, requiredPlugins, toggleTick]);
     const filteredUser = useFiltered(visibleUser, search2, getPluginKey);
     const filteredRequired = useFiltered(visibleRequired, search2, getPluginKey);
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
@@ -4521,16 +4598,16 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: cl8("section")
+      className: cl7("section")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
     }, "Plugins"), /* @__PURE__ */ React.createElement(Paragraph, null, "Pick which plugins to use. Some need a page reload to kick in.")), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
-      className: cl8("reload-banner")
+      className: cl7("reload-banner")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl8("reload-text")
+      className: cl7("reload-text")
     }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
@@ -4538,18 +4615,18 @@ ${sourceUrl}`;
     }, "Reload")), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem",
-      className: cl8("section")
+      className: cl7("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: `Search ${visibleUser.length + visibleRequired.length} plugins...`,
       value: search2,
       onChange: (e) => setSearch(e.target.value),
-      className: cl8("search-input")
+      className: cl7("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl8("filter-select")
+      className: cl7("filter-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
     }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
@@ -4558,7 +4635,7 @@ ${sourceUrl}`;
       value: "disabled"
     }, "Disabled")))), filteredUser.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)",
-      className: cl8("section")
+      className: cl7("section")
     }, filteredUser.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: n,
       fallback: null
@@ -4567,10 +4644,10 @@ ${sourceUrl}`;
       onSettings: setDialogName,
       onReload
     })))), filteredRequired.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Separator, {
-      className: cl8("divider")
+      className: cl7("divider")
     }), /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)",
-      className: cl8("section")
+      className: cl7("section")
     }, filteredRequired.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: n,
       fallback: null
@@ -4580,7 +4657,7 @@ ${sourceUrl}`;
       onReload
     }))))), !hasResults && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
-      className: cl8("empty")
+      className: cl7("empty")
     }, search2 ? "No plugins match your search." : "No plugins available."), dialogPlugin && /* @__PURE__ */ React.createElement(PluginDialog, {
       plugin: dialogPlugin,
       open: true,
@@ -4618,12 +4695,65 @@ ${sourceUrl}`;
 }
 
 .void-themes-filter-select {
-    width: 7rem;
+    width: 7.5rem;
 }
 
 .void-themes-empty {
     text-align: center;
     padding: 2rem 0;
+}
+
+.void-themes-local-dialog {
+    width: 600px;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border-l1);
+    background: var(--background);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.void-themes-local-close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    z-index: 10;
+}
+
+.void-themes-local-header {
+    text-align: left;
+}
+
+.void-themes-local-css-field {
+    flex: 1;
+    min-height: 0;
+}
+
+.void-themes-local-textarea {
+    width: 100%;
+    min-height: 250px;
+    max-height: 400px;
+    resize: vertical;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-l1);
+    background: var(--surface-l1);
+    color: hsl(var(--fg-primary));
+    font-family: monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    tab-size: 2;
+}
+
+.void-themes-local-textarea:focus {
+    outline: none;
+    border-color: hsl(var(--fg-secondary));
+}
+
+.void-themes-local-footer {
+    justify-content: flex-end;
+    gap: 0.5rem;
 }
 `);
 
@@ -4635,6 +4765,7 @@ ${sourceUrl}`;
     border-radius: 0.375rem;
     border: 1px solid var(--border-l1);
     background: var(--card);
+    min-height: 120px;
 }
 
 .void-theme-card-body {
@@ -4676,7 +4807,13 @@ ${sourceUrl}`;
 .void-theme-card-footer {
     display: flex;
     align-items: center;
+    gap: 0.375rem;
     padding: 0.375rem 0.75rem;
+}
+
+.void-theme-card-footer-icon {
+    flex-shrink: 0;
+    color: hsl(var(--fg-tertiary));
 }
 
 .void-theme-card-author {
@@ -4691,8 +4828,8 @@ ${sourceUrl}`;
 
   // src/components/settings/ThemeCard.tsx
   var logger10 = new Logger("ThemeCard");
-  var cl9 = classNameFactory("void-theme-card-");
-  function ThemeCard({ theme, globalEnabled, onRemove, onToggle }) {
+  var cl8 = classNameFactory("void-theme-card-");
+  function ThemeCard({ theme, globalEnabled, onRemove, onToggle, onEdit }) {
     const handleToggle = () => {
       if (theme.enabled)
         disableTheme(theme.url);
@@ -4701,56 +4838,147 @@ ${sourceUrl}`;
       onToggle();
     };
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl9("root")
+      className: cl8("root")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl9("body")
+      className: cl8("body")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
-      className: cl9("name")
+      className: cl8("name")
     }, theme.name ?? theme.url), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
-      className: cl9("controls")
-    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      className: cl8("controls")
+    }, theme.local ? /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "xs",
       shape: "square",
-      tooltipContent: "Copy URL",
+      "aria-label": "Edit",
+      onClick: onEdit
+    }, /* @__PURE__ */ React.createElement(PencilIcon, {
+      size: 14
+    })) : /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      "aria-label": "Copy URL",
       onClick: () => {
         copyToClipboard(theme.url).catch((e) => logger10.error("Failed to copy URL:", e));
       }
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      size: 16
-    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      size: 14
+    })), /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "xs",
       shape: "square",
-      tooltipContent: "Remove",
+      "aria-label": "Remove",
       onClick: () => onRemove(theme.url)
     }, /* @__PURE__ */ React.createElement(Trash2Icon, {
-      size: 16
+      size: 14
     })), /* @__PURE__ */ React.createElement(Switch, {
       checked: theme.enabled,
       disabled: !globalEnabled,
       onCheckedChange: handleToggle
     }))), theme.description && /* @__PURE__ */ React.createElement("div", {
-      className: cl9("desc")
+      className: cl8("desc")
     }, theme.description)), /* @__PURE__ */ React.createElement("div", {
-      className: cl9("separator")
+      className: cl8("separator")
     }), /* @__PURE__ */ React.createElement("div", {
-      className: cl9("footer")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl9("author")
+      className: cl8("footer")
+    }, theme.local ? /* @__PURE__ */ React.createElement(FolderIcon, {
+      size: 12,
+      className: cl8("footer-icon")
+    }) : /* @__PURE__ */ React.createElement(GlobeIcon, {
+      size: 12,
+      className: cl8("footer-icon")
+    }), /* @__PURE__ */ React.createElement("div", {
+      className: cl8("author")
     }, theme.author ?? " ")));
   }
 
   // src/components/settings/tabs/ThemesTab.tsx
-  var cl10 = classNameFactory("void-themes-");
+  var cl9 = classNameFactory("void-themes-");
   var getThemeKey = (t) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
+  function LocalThemeDialog({ open: open2, onClose, theme, onSave }) {
+    const [name, setName] = useState(theme?.name ?? "");
+    const [css, setCss] = useState(theme?.css ?? "");
+    const [error, setError] = useState("");
+    const handleSave = () => {
+      setError("");
+      try {
+        if (theme) {
+          updateLocalTheme(theme.url, { name, css });
+        } else {
+          addLocalTheme(name, css);
+        }
+        onSave();
+        onClose();
+      } catch (e) {
+        setError(errorMessage(e));
+      }
+    };
+    return /* @__PURE__ */ React.createElement(Dialog, {
+      open: open2,
+      onOpenChange: (v) => {
+        if (!v)
+          onClose();
+      }
+    }, /* @__PURE__ */ React.createElement(DialogContent, {
+      className: cl9("local-dialog"),
+      "aria-describedby": undefined
+    }, /* @__PURE__ */ React.createElement(DialogClose, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Close",
+      className: cl9("local-close")
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
+      className: cl9("local-header")
+    }, /* @__PURE__ */ React.createElement(DialogTitle, null, theme ? "Edit Local Theme" : "New Local Theme")), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.25rem"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "My Theme",
+      value: name,
+      onChange: (e) => setName(e.target.value)
+    })), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.25rem",
+      className: cl9("local-css-field")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "CSS"), /* @__PURE__ */ React.createElement("textarea", {
+      className: cl9("local-textarea"),
+      placeholder: "Paste your CSS here...",
+      value: css,
+      onChange: (e) => setCss(e.target.value),
+      spellCheck: false
+    })), error && /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      className: cl9("add-error")
+    }, error), /* @__PURE__ */ React.createElement(DialogFooter, {
+      className: cl9("local-footer")
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      onClick: onClose
+    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
+      variant: "primary",
+      size: "sm",
+      onClick: handleSave,
+      disabled: !name.trim() || !css.trim()
+    }, theme ? "Save" : "Create"))));
+  }
   function ThemesTab() {
     const [search2, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
@@ -4758,17 +4986,33 @@ ${sourceUrl}`;
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [enabled, setEnabled] = useState(isThemesEnabled);
+    const [onlineEnabled, setOnlineEnabled] = useState(isOnlineThemesEnabled);
     const [themes, setThemes] = useState(getThemes);
+    const [localDialogOpen, setLocalDialogOpen] = useState(false);
+    const [editingTheme, setEditingTheme] = useState();
     const visible = useMemo(() => {
-      if (filter === "all")
-        return themes;
-      const enabled2 = filter === "enabled";
-      return themes.filter((t) => t.enabled === enabled2);
+      switch (filter) {
+        case "enabled":
+          return themes.filter((t) => t.enabled);
+        case "disabled":
+          return themes.filter((t) => !t.enabled);
+        case "online":
+          return themes.filter((t) => !t.local);
+        case "local":
+          return themes.filter((t) => !!t.local);
+        default:
+          return themes;
+      }
     }, [themes, filter]);
     const filtered = useFiltered(visible, search2, getThemeKey);
     const handleToggle = (checked) => {
       setEnabled(checked);
       setThemesEnabled(checked);
+    };
+    const handleOnlineToggle = (checked) => {
+      setOnlineEnabled(checked);
+      setOnlineThemesEnabled(checked);
+      setThemes(getThemes());
     };
     const handleAdd = async () => {
       const trimmed = url.trim();
@@ -4801,7 +5045,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
-      className: cl10("section")
+      className: cl9("section")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -4812,9 +5056,23 @@ ${sourceUrl}`;
       checked: enabled,
       onCheckedChange: handleToggle
     })), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      className: cl9("section")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Online Themes"), /* @__PURE__ */ React.createElement(Paragraph, null, "Allow loading themes from external URLs. Disable to only use local themes.")), /* @__PURE__ */ React.createElement(Switch, {
+      checked: onlineEnabled,
+      disabled: !enabled,
+      onCheckedChange: handleOnlineToggle
+    })), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
-      className: cl10("section")
+      className: cl9("section")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem"
@@ -4830,20 +5088,30 @@ ${sourceUrl}`;
         if (e.key === "Enter")
           handleAdd();
       },
-      className: cl10("search-input")
+      className: cl9("search-input")
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
-      className: cl10("import-btn"),
+      className: cl9("import-btn"),
       onClick: handleAdd,
       disabled: loading || !url.trim()
-    }, loading ? "Importing..." : "Import")), error && /* @__PURE__ */ React.createElement(Text, {
+    }, loading ? "Importing..." : "Import"), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      className: cl9("import-btn"),
+      onClick: () => {
+        setEditingTheme(undefined);
+        setLocalDialogOpen(true);
+      }
+    }, /* @__PURE__ */ React.createElement(PlusIcon, {
+      size: 14
+    }), " Local")), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl10("add-error")
+      className: cl9("add-error")
     }, error)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.375rem",
-      className: cl10("section")
+      className: cl9("section")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -4853,41 +5121,49 @@ ${sourceUrl}`;
     }, "Installed Themes"), /* @__PURE__ */ React.createElement(Paragraph, null, "Re-fetched every page load. Use the switch above to disable all themes at once.")), /* @__PURE__ */ React.createElement(Paragraph, null, `${pluralize(themes.length, "theme")} installed · ${themes.filter((t) => t.enabled).length} enabled`)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem",
-      className: cl10("section")
+      className: cl9("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: `Search ${themes.length} themes...`,
       value: search2,
       onChange: (e) => setSearch(e.target.value),
-      className: cl10("search-input")
+      className: cl9("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl10("filter-select")
+      className: cl9("filter-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
     }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
       value: "enabled"
     }, "Enabled"), /* @__PURE__ */ React.createElement(SelectItem, {
       value: "disabled"
-    }, "Disabled")))), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
+    }, "Disabled"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "online"
+    }, "Online"), /* @__PURE__ */ React.createElement(SelectItem, {
+      value: "local"
+    }, "Local")))), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)",
-      className: cl10("section")
+      className: cl9("section")
     }, filtered.map((t) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: t.url,
       fallback: null
     }, /* @__PURE__ */ React.createElement(ThemeCard, {
       theme: t,
-      globalEnabled: enabled,
+      globalEnabled: enabled && (!!t.local || onlineEnabled),
       onRemove: setRemoveUrl,
-      onToggle: () => setThemes(getThemes())
+      onToggle: () => setThemes(getThemes()),
+      onEdit: t.local ? () => {
+        setEditingTheme(t);
+        setLocalDialogOpen(true);
+      } : undefined
     })))), themes.length > 0 && !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
-      className: cl10("empty")
+      className: cl9("empty")
     }, "No themes match your search."), !themes.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
-      className: cl10("empty")
+      className: cl9("empty")
     }, "No themes added yet. Paste a URL above to add one."), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: removeUrl != null,
       onOpenChange: (v) => {
@@ -4900,6 +5176,11 @@ ${sourceUrl}`;
       cancelText: "Cancel",
       danger: true,
       onConfirm: handleRemove
+    }), localDialogOpen && /* @__PURE__ */ React.createElement(LocalThemeDialog, {
+      open: localDialogOpen,
+      onClose: () => setLocalDialogOpen(false),
+      theme: editingTheme,
+      onSave: () => setThemes(getThemes())
     }));
   }
 
@@ -4974,18 +5255,25 @@ ${sourceUrl}`;
     ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
     ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
   })(ToastType ||= {});
-  var TOAST_FNS = ["", "success", "error", "info", "warning", "loading"];
+  var TOAST_FN = {
+    [0 /* MESSAGE */]: null,
+    [1 /* SUCCESS */]: "success",
+    [2 /* ERROR */]: "error",
+    [3 /* INFO */]: "info",
+    [4 /* WARNING */]: "warning",
+    [5 /* LOADING */]: "loading"
+  };
   function showToast(message, type = 0 /* MESSAGE */, options) {
     const { toast } = Toaster;
-    const fn = type === 0 /* MESSAGE */ ? toast : toast[TOAST_FNS[type]];
-    return fn(message, options);
+    const key = TOAST_FN[type];
+    return key ? toast[key](message, options) : toast(message, options);
   }
   function dismissToast(id) {
     Toaster.toast.dismiss(id);
   }
 
   // src/plugins/experiments/index.tsx
-  var cl11 = classNameFactory("void-experiments-");
+  var cl10 = classNameFactory("void-experiments-");
   var NEW_FLAG_TTL = 24 * 60 * 60 * 1000;
   var settings2 = definePluginSettings({
     toastNotifications: {
@@ -5118,13 +5406,13 @@ ${sourceUrl}`;
         onCheckedChange: handleToggle
       })
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React.createElement(Chip, {
-      className: cl11("new-chip")
+      className: cl10("new-chip")
     }, "NEW"), decodedKey && /* @__PURE__ */ React.createElement(Chip, {
-      className: cl11("obfuscated-chip")
+      className: cl10("obfuscated-chip")
     }, "OBFUSCATED"), isOverridden && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       as: "span",
-      className: cl11("modified")
+      className: cl10("modified")
     }, "(modified)")), /* @__PURE__ */ React.createElement(SettingsDescription, null, decodedKey ?? flagKey));
   }
   function ExperimentsTab() {
@@ -5161,39 +5449,39 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: cl11("section")
+      className: cl10("section")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
     }, "Experiments"), /* @__PURE__ */ React.createElement(Paragraph, null, "Toggle unreleased Grok features. These are experimental and may break things.")), /* @__PURE__ */ React.createElement(Card, {
       variant: "ghost",
-      className: cl11("warning")
+      className: cl10("warning")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl11("warning-text")
+      className: cl10("warning-text")
     }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
-      className: cl11("clear-btn"),
+      className: cl10("clear-btn"),
       onClick: () => FeatureStore.useFeatureStore.getState().clearAllOverrides()
     }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem",
-      className: cl11("section")
+      className: cl10("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       placeholder: `Search ${prefiltered.length} flags...`,
       value: search2,
       onChange: (e) => setSearch(e.target.value),
-      className: cl11("search-input")
+      className: cl10("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl11("filter-select")
+      className: cl10("filter-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
     }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
@@ -5214,7 +5502,7 @@ ${sourceUrl}`;
       isNew: isNewFlag(key)
     }))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "muted",
-      className: cl11("empty")
+      className: cl10("empty")
     }, search2 ? `No flags matching "${search2}"` : `No ${filter} flags`));
   }
   var Tab = ErrorBoundary.wrap(ExperimentsTab);
@@ -5261,7 +5549,7 @@ ${sourceUrl}`;
 
   // src/plugins/_core/settings/index.tsx
   var logger11 = new Logger("Settings");
-  var cl12 = classNameFactory("void-settings-");
+  var cl11 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     hideUserId: {
       type: 3 /* BOOLEAN */,
@@ -5299,7 +5587,7 @@ ${sourceUrl}`;
       href,
       target: "_blank",
       rel: "noreferrer",
-      className: cl12("version-link")
+      className: cl11("version-link")
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
@@ -5309,7 +5597,7 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: cl12("version")
+      className: cl11("version")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
@@ -5318,9 +5606,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.4.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8360b17"}`
-    }, `(${"8360b17"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.0"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"46a3f27"}`
+    }, `(${"46a3f27"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5366,24 +5654,24 @@ ${sourceUrl}`;
       return null;
     const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).sort((a, b) => a.localeCompare(b));
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(GhostFilledIcon, {
-      className: cl12("menu-icon")
+      className: cl11("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
-      className: cl12("menu-icon")
+      className: cl11("menu-icon")
     }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       key: name,
       onSelect: () => openPluginSettings(name)
     }, name)))), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => openSettingsTab("void_themes_tab")
     }, /* @__PURE__ */ React.createElement(PaletteIcon, {
-      className: cl12("menu-icon")
+      className: cl11("menu-icon")
     }), "Themes"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => openSettingsTab("void_css_tab")
     }, /* @__PURE__ */ React.createElement(BracesIcon, {
-      className: cl12("menu-icon")
+      className: cl11("menu-icon")
     }), "Quick CSS"), isPluginEnabled("Experiments") && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => openSettingsTab("void_experiments_tab")
     }, /* @__PURE__ */ React.createElement(TestTubeIcon, {
-      className: cl12("menu-icon")
+      className: cl11("menu-icon")
     }), "Experiments")));
   }
   var settings_default = definePlugin({
@@ -5548,19 +5836,15 @@ ${sourceUrl}`;
     })));
   }
 
-  // src/plugins/_api/chatBarButtons/index.ts
+  // src/plugins/_api/chatBarButtons/index.tsx
   var chatBarButtons_default = definePlugin({
     name: "ChatBarButtonAPI",
     description: "Adds buttons to the chat input bar.",
     authors: [Devs.Prism],
     required: true,
     hidden: true,
-    renderButtons(iconOnly) {
-      try {
-        return createElement(Fragment, null, createElement(VoidChatBarButtons, { iconOnly }), createElement(ModalContainer, null));
-      } catch {
-        return null;
-      }
+    renderButtons() {
+      return /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VoidChatBarButtons, null), /* @__PURE__ */ React.createElement(ModalContainer, null));
     },
     patches: [
       {
@@ -5569,7 +5853,7 @@ ${sourceUrl}`;
         replacement: [
           {
             match: /ModelModeSelect,\{iconOnlyTrigger:(\i)\}\)\}\),/,
-            replace: "$&$self.renderButtons($1),"
+            replace: "$&$self.renderButtons(),"
           },
           {
             match: /paddingInlineEnd:\i\?void 0:(\i)\?/,
@@ -5588,11 +5872,10 @@ ${sourceUrl}`;
     required: true,
     hidden: true,
     renderItems(location2, ctx) {
-      try {
-        return createElement(VoidContextMenuItems, { location: location2, ...ctx });
-      } catch {
-        return null;
-      }
+      return /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VoidContextMenuItems, {
+        location: location2,
+        ...ctx
+      }));
     },
     patches: [
       {
@@ -5899,7 +6182,7 @@ ${sourceUrl}`;
   var CopyIcon2 = findExportedComponentLazy("CopyIcon");
   var DownloadIcon2 = findExportedComponentLazy("DownloadIcon");
   var logger13 = new Logger("BetterImagine");
-  var cl13 = classNameFactory("void-imagine-");
+  var cl12 = classNameFactory("void-imagine-");
   var settings5 = definePluginSettings({
     hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
@@ -6075,11 +6358,6 @@ ${sourceUrl}`;
     if (video)
       pauseVideo(video);
   };
-  function resolveItem(post) {
-    if (!post?.id)
-      return;
-    return post;
-  }
   function dedupeNames(names) {
     const counts = new Map;
     return names.map((name) => {
@@ -6095,11 +6373,10 @@ ${sourceUrl}`;
     const { favoritesList } = MediaStore.useMediaStore.getState();
     const entries = [];
     for (const post of favoritesList) {
-      const item = resolveItem(post);
-      if (!item?.mediaUrl)
+      if (!post?.mediaUrl)
         continue;
-      const ext = item.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
-      entries.push({ url: item.mediaUrl, name: `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
+      const ext = post.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
+      entries.push({ url: post.mediaUrl, name: `${sanitizeFilename((post.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
     }
     if (!entries.length) {
       Toaster.toast.error("No favorites to download.");
@@ -6228,7 +6505,7 @@ ${sourceUrl}`;
     if (!isFavorites)
       return null;
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl13("action-toolbar")
+      className: cl12("action-toolbar")
     }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: selectMode ? "Exit select mode" : "Select items",
       variant: selectMode ? "primary" : "secondary",
@@ -6315,9 +6592,9 @@ ${sourceUrl}`;
       if (!card)
         return;
       const selected = isFavorites && isSelected;
-      card.classList.toggle(cl13("card-selected"), selected);
+      card.classList.toggle(cl12("card-selected"), selected);
       return () => {
-        card.classList.remove(cl13("card-selected"));
+        card.classList.remove(cl12("card-selected"));
       };
     }, [isFavorites, isSelected]);
     useEffect(() => {
@@ -6348,7 +6625,7 @@ ${sourceUrl}`;
       return null;
     return /* @__PURE__ */ React.createElement("span", {
       ref,
-      className: cl13("select-marker")
+      className: cl12("select-marker")
     });
   }
   function FilterButtons() {
@@ -6357,7 +6634,7 @@ ${sourceUrl}`;
       value: currentDate,
       onValueChange: (v) => setDate(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl13("date-select")
+      className: cl12("date-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: d,
       value: d
@@ -6366,10 +6643,10 @@ ${sourceUrl}`;
       placeholder: "Search...",
       value: currentSearch,
       onChange: (e) => setSearch(e.target.value),
-      className: cl13("search")
+      className: cl12("search")
     }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement("button", {
       key: f,
-      className: classes(cl13("filter-btn"), currentFilter === f && cl13("filter-btn-active")),
+      className: classes(cl12("filter-btn"), currentFilter === f && cl12("filter-btn-active")),
       onClick: () => setFilter(currentFilter === f ? "all" : f)
     }, f === "image" ? "Images" : "Videos")));
   }
@@ -6424,7 +6701,7 @@ ${sourceUrl}`;
     const hasPrompt = !!(item?.prompt || item?.originalPrompt);
     return /* @__PURE__ */ React.createElement(Fragment, null, hasPrompt && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: "Copy prompt",
-      className: cl13("card-btn"),
+      className: cl12("card-btn"),
       shape: "circle",
       size: "md",
       variant: "none",
@@ -6434,7 +6711,7 @@ ${sourceUrl}`;
       className: "text-white"
     })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: "Download",
-      className: cl13("card-btn"),
+      className: cl12("card-btn"),
       shape: "circle",
       size: "md",
       variant: "none",
@@ -6444,7 +6721,7 @@ ${sourceUrl}`;
       className: "text-white"
     })), isFavorites && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: "Unsave",
-      className: cl13("card-btn"),
+      className: cl12("card-btn"),
       shape: "circle",
       size: "md",
       variant: "none",
@@ -6454,7 +6731,7 @@ ${sourceUrl}`;
       className: "text-white"
     })), isFavorites && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: "Delete permanently",
-      className: classes(cl13("card-btn"), cl13("card-btn-danger")),
+      className: classes(cl12("card-btn"), cl12("card-btn-danger")),
       shape: "circle",
       size: "md",
       variant: "none",
@@ -6556,6 +6833,175 @@ ${sourceUrl}`;
     ]
   });
 
+  // void-css:D:/Projects/Void/src/plugins/betterLinks/styles.css
+  registerStyle("betterLinks", `.void-better-links-picker {
+    width: 32px;
+    height: 32px;
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 2px;
+    background-color: transparent;
+}
+
+.void-better-links-hex {
+    font-family: monospace;
+}
+`);
+
+  // src/plugins/betterLinks/index.tsx
+  var cl13 = classNameFactory("void-better-links-");
+  var DEFAULT_LINK = "#4a9eff";
+  var DEFAULT_VISITED = "#9b59b6";
+  var STYLE_NAME = "better-links-dynamic";
+  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top)(?:\/[^\s<>"'`)\]},]*)?/g;
+  function isValidHex(c) {
+    return /^#[0-9a-fA-F]{6}$/.test(c);
+  }
+  function getColor(key, fallback) {
+    const val = settings6.store[key];
+    return val && isValidHex(val) ? val : fallback;
+  }
+  function applyColors() {
+    const link = getColor("linkColor", DEFAULT_LINK);
+    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
+    if (settings6.store.enableVisitedColor) {
+      const visited = getColor("visitedColor", DEFAULT_VISITED);
+      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
+    }
+    registerStyle(STYLE_NAME, css);
+  }
+  function ColorPicker({ settingKey, title, description, fallback }) {
+    const [value, setValue] = useState(() => getColor(settingKey, fallback));
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Flex, {
+        alignItems: "center",
+        gap: "0.5rem"
+      }, /* @__PURE__ */ React.createElement("input", {
+        type: "color",
+        className: cl13("picker"),
+        value,
+        onChange: (e) => {
+          setValue(e.target.value);
+          settings6.store[settingKey] = e.target.value;
+          applyColors();
+        }
+      }), /* @__PURE__ */ React.createElement(Text, {
+        size: "sm",
+        color: "muted",
+        className: cl13("hex")
+      }, value))
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
+  }
+  var settings6 = definePluginSettings({
+    linkifyDomains: {
+      type: 3 /* BOOLEAN */,
+      description: "Detect bare domains in messages and make them clickable.",
+      default: true
+    },
+    enableVisitedColor: {
+      type: 3 /* BOOLEAN */,
+      description: "Apply a different color to links you already visited.",
+      default: false,
+      onChange: () => applyColors()
+    },
+    linkColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(ColorPicker, {
+        settingKey: "linkColor",
+        title: "Link color",
+        description: "Colorize links in messages.",
+        fallback: DEFAULT_LINK
+      })
+    },
+    visitedColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(ColorPicker, {
+        settingKey: "visitedColor",
+        title: "Visited color",
+        description: "Colorize links you already visited.",
+        fallback: DEFAULT_VISITED
+      })
+    }
+  });
+  var betterLinks_default = definePlugin({
+    name: "BetterLinks",
+    description: "Colorize links and detect bare domains in chat messages.",
+    authors: [Devs.Prism],
+    settings: settings6,
+    patches: [
+      {
+        find: "chat-markdown:a:link",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /target:"_blank",rel:"noopener noreferrer nofollow"/,
+            replace: '$&,className:"void-colored-link"'
+          },
+          {
+            match: /singleDollarTextMath:!1\}],(\i),(\i),(\i)\],\[\]\)/,
+            replace: "singleDollarTextMath:!1}],$1,$2,$3,$self._remarkLinkify],[])"
+          }
+        ]
+      }
+    ],
+    _remarkLinkify() {
+      const { store: store4 } = settings6;
+      return (tree) => {
+        if (!store4.linkifyDomains)
+          return;
+        const walk = (node) => {
+          if (!node.children)
+            return;
+          const out = [];
+          let changed = false;
+          for (const child of node.children) {
+            if (child.type !== "text") {
+              walk(child);
+              out.push(child);
+              continue;
+            }
+            DOMAIN_RE.lastIndex = 0;
+            if (!DOMAIN_RE.test(child.value)) {
+              out.push(child);
+              continue;
+            }
+            DOMAIN_RE.lastIndex = 0;
+            let last = 0;
+            let m;
+            while ((m = DOMAIN_RE.exec(child.value)) != null) {
+              if (m.index > last)
+                out.push({ type: "text", value: child.value.slice(last, m.index) });
+              out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
+              last = m.index + m[0].length;
+            }
+            if (last < child.value.length)
+              out.push({ type: "text", value: child.value.slice(last) });
+            changed = true;
+          }
+          if (changed)
+            node.children = out;
+        };
+        walk(tree);
+      };
+    },
+    start() {
+      if (!settings6.store.linkColor)
+        settings6.store.linkColor = DEFAULT_LINK;
+      if (!settings6.store.visitedColor)
+        settings6.store.visitedColor = DEFAULT_VISITED;
+      applyColors();
+      enableStyle(STYLE_NAME);
+    },
+    stop() {
+      disableStyle(STYLE_NAME);
+    }
+  });
+
   // void-css:D:/Projects/Void/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
@@ -6605,7 +7051,7 @@ ${sourceUrl}`;
 
   // src/plugins/betterSidebar/index.tsx
   var cl14 = classNameFactory("void-sidebar-");
-  var settings6 = definePluginSettings({
+  var settings7 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -6653,7 +7099,7 @@ ${sourceUrl}`;
       size: "sm",
       weight: "medium",
       className: cl14("name")
-    }, user.givenName || user.email?.split("@")[0] || "User"), /* @__PURE__ */ React.createElement(Text, {
+    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "xs",
       color: "secondary",
@@ -6664,14 +7110,14 @@ ${sourceUrl}`;
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
-    settings: settings6,
+    settings: settings7,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _defaultOpen() {
-      return !settings6.store.defaultCollapsed;
+      return !settings7.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings6.store.clickToToggle)
+      if (!settings7.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -6714,7 +7160,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/cleaner/index.ts
-  var settings7 = definePluginSettings({
+  var settings8 = definePluginSettings({
     hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
       description: "Hide the upgrade plan button in the user menu.",
@@ -6740,7 +7186,7 @@ ${sourceUrl}`;
     name: "Cleaner",
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
-    settings: settings7,
+    settings: settings8,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
@@ -6856,31 +7302,25 @@ ${sourceUrl}`;
     const a = document.createElement("a");
     a.href = href;
     a.download = `tts-${currentStreamId.slice(0, 8)}.wav`;
-    document.body.appendChild(a);
     a.click();
-    a.remove();
     setTimeout(() => URL.revokeObjectURL(href), 5000);
   }
   function DownloadButton() {
     const [loading, setLoading] = useState(false);
-    const busyRef = useRef(false);
     const onClick = useCallback(async () => {
-      if (busyRef.current)
-        return;
-      busyRef.current = true;
       setLoading(true);
       try {
         await fetchAndDownload();
       } catch (e) {
         logger14.error("Failed to download TTS audio:", e);
       } finally {
-        busyRef.current = false;
         setLoading(false);
       }
     }, []);
     return /* @__PURE__ */ React.createElement(Button, {
       "aria-label": "Download audio",
       onClick,
+      disabled: loading,
       shape: "circle",
       size: "md",
       variant: "tertiary"
@@ -6973,7 +7413,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings8 = definePluginSettings({
+  var settings9 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -6998,19 +7438,19 @@ ${sourceUrl}`;
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings8,
+    settings: settings9,
     _renderTimestamp(response) {
       try {
         if (!response?.createTime)
           return null;
-        if (settings8.store.hideOwnMessages && response.sender === "human")
+        if (settings9.store.hideOwnMessages && response.sender === "human")
           return null;
         return /* @__PURE__ */ React.createElement(Text, {
           as: "span",
           size: "xs",
           color: "muted",
           className: "void-timestamp"
-        }, formatTimestamp(response.createTime, settings8.store.showDate));
+        }, formatTimestamp(response.createTime, settings9.store.showDate));
       } catch {
         return null;
       }
@@ -7054,6 +7494,100 @@ ${sourceUrl}`;
     },
     stop() {
       stopped = true;
+    }
+  });
+
+  // src/plugins/promptEnhancer/index.tsx
+  var logger17 = new Logger("PromptEnhancer");
+  var PLUGIN_NAME = "PromptEnhancer";
+  var ENHANCE_PROMPT = `Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler. Do NOT add any preamble, commentary, labels, or quotes. Output ONLY the rewritten prompt text and absolutely nothing else.
+
+Original prompt:
+`;
+  function getEditor() {
+    return document.querySelector(".ProseMirror")?.editor ?? null;
+  }
+  function getEditorText() {
+    return document.querySelector(".ProseMirror")?.textContent?.trim() ?? "";
+  }
+  function updateButton(loading) {
+    addChatBarButton(PLUGIN_NAME, {
+      icon: () => loading ? createElement(Spinner, { size: "xs" }) : WandSparklesIcon({ size: 18 }),
+      tooltip: "Enhance prompt",
+      onClick: enhance
+    });
+  }
+  var _enhancing = false;
+  async function enhance() {
+    if (_enhancing)
+      return;
+    const originalText = getEditorText();
+    if (!originalText) {
+      Toaster.toast.error("Type a prompt first.");
+      return;
+    }
+    _enhancing = true;
+    updateButton(true);
+    try {
+      const response = await ApiClients.chatApi.request({
+        path: "/rest/app-chat/conversations/new",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: {
+          message: ENHANCE_PROMPT + originalText,
+          temporary: true,
+          disableSearch: true,
+          disableMemory: true,
+          forceConcise: true
+        }
+      });
+      const text = await response.text();
+      const lines = text.split(`
+`).filter((l) => l.trim());
+      let convId = "";
+      let message = "";
+      for (const line of lines) {
+        try {
+          const obj = JSON.parse(line);
+          if (obj.result?.conversation?.conversationId)
+            convId = obj.result.conversation.conversationId;
+          if (obj.result?.response?.token)
+            message += obj.result.response.token;
+        } catch {
+          continue;
+        }
+      }
+      const improved = message.trim();
+      if (convId) {
+        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger17.warn("Failed to delete throwaway conversation:", e));
+      }
+      const editor = getEditor();
+      if (!editor) {
+        Toaster.toast.error("Editor not found.");
+        return;
+      }
+      editor.commands.setContent(improved || originalText);
+      editor.commands.focus();
+      if (improved)
+        Toaster.toast.success("Prompt enhanced!");
+      else
+        Toaster.toast.error("Got empty response, restored original.");
+    } catch (err) {
+      Toaster.toast.error(`Enhancement failed: ${errorMessage(err)}`);
+    } finally {
+      _enhancing = false;
+      updateButton(false);
+    }
+  }
+  var promptEnhancer_default = definePlugin({
+    name: PLUGIN_NAME,
+    description: "Sends your prompt to Grok for improvement, then replaces it with the enhanced version.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    chatBarButton: {
+      icon: () => WandSparklesIcon({ size: 18 }),
+      tooltip: "Enhance prompt",
+      onClick: enhance
     }
   });
 
@@ -7175,7 +7709,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings9 = definePluginSettings({
+  var settings10 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -7220,7 +7754,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings9.store[key]);
+      classList.toggle(cls, !!settings10.store[key]);
     }
   }
   var unsubscribe = null;
@@ -7228,10 +7762,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings9,
+    settings: settings10,
     start() {
       syncClasses();
-      const prefix = `plugins.${settings9.pluginName}`;
+      const prefix = `plugins.${settings10.pluginName}`;
       SettingsStore3.addPrefixChangeListener(prefix, syncClasses);
       unsubscribe = () => SettingsStore3.removePrefixChangeListener(prefix, syncClasses);
     },
@@ -7248,7 +7782,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -7388,7 +7922,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger17 = new Logger("TurbopackPatcher", "#e78284");
+  var logger18 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
@@ -7424,7 +7958,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger17.info("All previously failed plugins started after late module load");
+          logger18.info("All previously failed plugins started after late module load");
         }
       }, 200);
     };
@@ -7439,7 +7973,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger17.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger18.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -7452,7 +7986,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       blacklistBadModules();
       _resolveReady();
       startAllPlugins("TurbopackReady" /* TurbopackReady */);
-      logger17.info(`${getModuleCache().size} modules loaded, ready`);
+      logger18.info(`${getModuleCache().size} modules loaded, ready`);
       retryFailedPlugins();
       deferOrphanReport();
       checkForUpdates();
