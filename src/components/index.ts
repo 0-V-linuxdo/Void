@@ -6,6 +6,8 @@
 
 // Grok native components (lazy wrappers from turbopack)
 export {
+    Badge,
+    type BadgeProps,
     Button,
     type ButtonProps,
     type ButtonShape,
@@ -74,7 +76,6 @@ export {
 
 // Custom Void components
 export { ChatBarButton, type ChatBarButtonProps } from "./ChatBarButton";
-export { Chip, type ChipProps, type ChipVariant } from "./Chip";
 export { ConfirmDialog, type ConfirmDialogProps } from "./ConfirmDialog";
 export { ErrorBoundary, type ErrorBoundaryProps } from "./ErrorBoundary";
 export { ErrorCard, type ErrorCardProps } from "./ErrorCard";

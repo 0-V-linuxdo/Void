@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { showToast, ToastType } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
-import { Button, Card, Chip, Flex, Input, Paragraph, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Switch, Text } from "@components";
+import { Badge, Button, Card, Flex, Input, Paragraph, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import type { FeatureStoreState } from "@grok-types";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
@@ -156,8 +156,8 @@ function ExperimentRow({ flagKey, isNew }: { flagKey: string; isNew: boolean }) 
         <SettingsRow action={<Switch checked={checked} onCheckedChange={handleToggle} />}>
             <SettingsTitle>
                 {prettifyKey(flagKey)}
-                {isNew && <Chip className={cl("new-chip")}>NEW</Chip>}
-                {decodedKey && <Chip className={cl("obfuscated-chip")}>OBFUSCATED</Chip>}
+                {isNew && <Badge className={cl("new-chip")}>NEW</Badge>}
+                {decodedKey && <Badge className={cl("obfuscated-chip")}>OBFUSCATED</Badge>}
                 {isOverridden && (
                     <Text size="xs" as="span" className={cl("modified")}>
                         (modified)
