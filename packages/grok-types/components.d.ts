@@ -1072,7 +1072,7 @@ export type Label = ComponentType<LabelProps>;
 
 // #endregion
 
-// #region HoverCard
+// #region HoverCard (Radix HoverCard)
 
 export interface HoverCardProps extends RadixRootProps {
     openDelay?: number;
@@ -1102,6 +1102,3 @@ export interface PortalProps {
 export type Portal = ComponentType<PortalProps>;
 
 // #endregion
-
-// #endregion
-
