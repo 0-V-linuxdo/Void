@@ -171,14 +171,16 @@ export function resolveDefault(setting: PluginSettingDef): any {
 export function definePluginSettings<Def extends SettingsDefinition, Checks extends SettingsChecks<Def>, PrivateSettings extends object = {}>(def: Def, checks?: Checks) {
     let _pluginName = "";
 
+    type Store = DefinedSettings<Def, Checks, PrivateSettings>["store"];
+
     const definedSettings: DefinedSettings<Def, Checks, PrivateSettings> = {
         get store() {
             if (!_pluginName) throw new Error("Cannot access settings before plugin is initialized");
-            return Settings.plugins[_pluginName] as any;
+            return Settings.plugins[_pluginName] as unknown as Store;
         },
         get plain() {
             if (!_pluginName) throw new Error("Cannot access settings before plugin is initialized");
-            return PlainSettings.plugins[_pluginName] as any;
+            return PlainSettings.plugins[_pluginName] as unknown as Store;
         },
         def,
         checks: (checks ?? {}) as Checks,
@@ -216,7 +218,7 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
             return definedSettings.store;
         },
         withPrivateSettings<T extends object>() {
-            return this as DefinedSettings<Def, Checks, T>;
+            return this as unknown as DefinedSettings<Def, Checks, T>;
         },
     };
 

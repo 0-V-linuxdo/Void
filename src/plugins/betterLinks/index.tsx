@@ -25,8 +25,13 @@ function isValidHex(c: string) {
     return /^#[0-9a-fA-F]{6}$/.test(c);
 }
 
-function getColor(key: string, fallback: string): string {
-    const val = (settings.store as any)[key] as string | undefined;
+interface PrivateColors {
+    linkColor: string;
+    visitedColor: string;
+}
+
+function getColor(key: keyof PrivateColors, fallback: string): string {
+    const val = settings.store[key];
     return val && isValidHex(val) ? val : fallback;
 }
 
@@ -59,7 +64,7 @@ function ColorPicker({ settingKey, title, description, fallback }: {
                     value={value}
                     onChange={e => {
                         setValue(e.target.value);
-                        (settings.store as any)[settingKey] = e.target.value;
+                        settings.store[settingKey] = e.target.value;
                         applyColors();
                     }}
                 />
@@ -94,7 +99,7 @@ const settings = definePluginSettings({
         type: OptionType.COMPONENT,
         component: () => <ColorPicker settingKey="visitedColor" title="Visited color" description="Colorize links you already visited." fallback={DEFAULT_VISITED} />,
     },
-});
+}).withPrivateSettings<PrivateColors>();
 
 export default definePlugin({
     name: "BetterLinks",
@@ -123,50 +128,52 @@ export default definePlugin({
     _remarkLinkify() {
         const { store } = settings;
         return (tree: any) => {
-            if (!store.linkifyDomains) return;
+            try {
+                if (!store.linkifyDomains) return;
 
-            const walk = (node: any) => {
-                if (!node.children) return;
-                const out: any[] = [];
-                let changed = false;
+                const walk = (node: any) => {
+                    if (!node.children) return;
+                    const out: any[] = [];
+                    let changed = false;
 
-                for (const child of node.children) {
-                    if (child.type !== "text") {
-                        walk(child);
-                        out.push(child);
-                        continue;
+                    for (const child of node.children) {
+                        if (child.type !== "text") {
+                            walk(child);
+                            out.push(child);
+                            continue;
+                        }
+
+                        DOMAIN_RE.lastIndex = 0;
+                        if (!DOMAIN_RE.test(child.value)) {
+                            out.push(child);
+                            continue;
+                        }
+
+                        DOMAIN_RE.lastIndex = 0;
+                        let last = 0;
+                        let m: RegExpExecArray | null;
+
+                        while ((m = DOMAIN_RE.exec(child.value)) != null) {
+                            if (m.index > last) out.push({ type: "text", value: child.value.slice(last, m.index) });
+                            out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
+                            last = m.index + m[0].length;
+                        }
+
+                        if (last < child.value.length) out.push({ type: "text", value: child.value.slice(last) });
+                        changed = true;
                     }
 
-                    DOMAIN_RE.lastIndex = 0;
-                    if (!DOMAIN_RE.test(child.value)) {
-                        out.push(child);
-                        continue;
-                    }
+                    if (changed) node.children = out;
+                };
 
-                    DOMAIN_RE.lastIndex = 0;
-                    let last = 0;
-                    let m: RegExpExecArray | null;
-
-                    while ((m = DOMAIN_RE.exec(child.value)) != null) {
-                        if (m.index > last) out.push({ type: "text", value: child.value.slice(last, m.index) });
-                        out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
-                        last = m.index + m[0].length;
-                    }
-
-                    if (last < child.value.length) out.push({ type: "text", value: child.value.slice(last) });
-                    changed = true;
-                }
-
-                if (changed) node.children = out;
-            };
-
-            walk(tree);
+                walk(tree);
+            } catch { return tree; }
         };
     },
 
     start() {
-        if (!(settings.store as any).linkColor) (settings.store as any).linkColor = DEFAULT_LINK;
-        if (!(settings.store as any).visitedColor) (settings.store as any).visitedColor = DEFAULT_VISITED;
+        if (!settings.store.linkColor) settings.store.linkColor = DEFAULT_LINK;
+        if (!settings.store.visitedColor) settings.store.visitedColor = DEFAULT_VISITED;
         applyColors();
         enableStyle(STYLE_NAME);
     },

@@ -192,7 +192,7 @@ type PluginSettingType<O extends PluginSettingDef> = O extends PluginSettingStri
             ? O["options"][number]["value"]
             : O extends { default: infer D }
               ? D
-              : never;
+              : any;
 
 type PluginSettingDefaultType<O extends PluginSettingDef> = O extends PluginSettingSelectDef
     ? O["options"] extends { default?: boolean }[]
