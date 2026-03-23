@@ -7,7 +7,7 @@
 import { DropdownMenuItem } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
-import { createExternalStore } from "@utils/misc";
+import { createExternalStore, mapGetOrCreate, sortedEntries } from "@utils/misc";
 import { type LazyNode, resolveLazyNode, useExternalStore } from "@utils/react";
 import type { ComponentType, ReactNode } from "react";
 
@@ -31,12 +31,7 @@ const items = new Map<ContextMenuLocation, Map<string, ContextMenuItemDef<any>>>
 const store = createExternalStore();
 
 function getItems(location: ContextMenuLocation): Map<string, ContextMenuItemDef<any>> {
-    let map = items.get(location);
-    if (!map) {
-        map = new Map();
-        items.set(location, map);
-    }
-    return map;
+    return mapGetOrCreate(items, location, () => new Map());
 }
 
 export function addContextMenuItem<L extends ContextMenuLocation>(location: L, id: string, def: ContextMenuItemDef<L>) {
@@ -68,7 +63,7 @@ export function VoidContextMenuItems<L extends ContextMenuLocation>({ location, 
     const map = items.get(location);
     if (!map?.size) return null;
 
-    const sorted = [...map.entries()].sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
+    const sorted = sortedEntries(map);
 
     return (
         <>

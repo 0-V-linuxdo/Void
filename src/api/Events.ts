@@ -5,6 +5,7 @@
  */
 
 import { Logger } from "@utils/Logger";
+import { mapGetOrCreate } from "@utils/misc";
 
 /** Known event names dispatched within Void. Extensible via `(string & {})`. */
 export type VoidEvent = "pluginToggle" | (string & {});
@@ -16,11 +17,7 @@ type Handler = (data: any) => void;
 const listeners = new Map<string, Set<Handler>>();
 
 export function subscribe(event: VoidEvent, handler: Handler): () => void {
-    let set = listeners.get(event);
-    if (!set) {
-        set = new Set();
-        listeners.set(event, set);
-    }
+    const set = mapGetOrCreate(listeners, event, () => new Set());
     set.add(handler);
     return () => {
         set.delete(handler);

@@ -14,13 +14,14 @@ import type { GrokPage, MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
 import { Fragment, React, useCallback, useEffect, useMemo, useRef, useState } from "@turbopack/common/react";
 import { MediaStore, RoutingStore } from "@turbopack/common/stores";
-import { Toaster } from "@turbopack/common/utils";
+import { FileUtils, Toaster } from "@turbopack/common/utils";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { copyToClipboard, createExternalStore, fetchExternal, sanitizeFilename } from "@utils/misc";
+import { copyToClipboard, createExternalStore, extractUrlExtension, fetchExternal, sanitizeFilename } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
+import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 import { createZip } from "@utils/zip";
 
@@ -144,7 +145,7 @@ async function bulkDeletePosts(ids: string[]) {
         }
     }
     clearSelection();
-    Toaster.toast.success(`Deleted ${deleted} item${deleted !== 1 ? "s" : ""}.`);
+    Toaster.toast.success(`Deleted ${deleted} ${pluralize(deleted, "item")}.`);
 }
 
 async function bulkUpscaleVideos(ids: string[]) {
@@ -168,9 +169,9 @@ async function bulkUpscaleVideos(ids: string[]) {
             }
         }
     }
-    if (upscaled > 0) Toaster.toast.success(`Upscaling ${upscaled} video${upscaled !== 1 ? "s" : ""}.`);
-    else if (alreadyHd > 0) Toaster.toast.info(`${alreadyHd} video${alreadyHd !== 1 ? "s" : ""} already in HD.`);
-    else if (inProgress > 0) Toaster.toast.info(`${inProgress} video${inProgress !== 1 ? "s" : ""} already upscaling.`);
+    if (upscaled > 0) Toaster.toast.success(`Upscaling ${upscaled} ${pluralize(upscaled, "video")}.`);
+    else if (alreadyHd > 0) Toaster.toast.info(`${alreadyHd} ${pluralize(alreadyHd, "video")} already in HD.`);
+    else if (inProgress > 0) Toaster.toast.info(`${inProgress} ${pluralize(inProgress, "video")} already upscaling.`);
     else Toaster.toast.info("No videos to upscale.");
 }
 
@@ -220,7 +221,7 @@ async function downloadAllFavorites() {
 
     for (const post of favoritesList) {
         if (!post?.mediaUrl) continue;
-        const ext = post.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
+        const ext = extractUrlExtension(post.mediaUrl);
         entries.push({ url: post.mediaUrl, name: `${sanitizeFilename((post.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
     }
 
@@ -232,12 +233,9 @@ async function downloadAllFavorites() {
     if (entries.length === 1) {
         try {
             const res = await fetchExternal(entries[0].url);
+            if (!res.ok) { logger.warn("Failed to fetch:", entries[0].url); return; }
             const blob = await res.blob();
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = entries[0].name;
-            a.click();
-            URL.revokeObjectURL(a.href);
+            FileUtils.downloadBlob(blob, entries[0].name);
             Toaster.toast.success("Downloaded 1 image.");
         } catch (e) {
             logger.error("Failed to download image:", entries[0].url, e);
@@ -252,6 +250,7 @@ async function downloadAllFavorites() {
     await Promise.all(entries.map(async (entry, i) => {
         try {
             const res = await fetchExternal(entry.url);
+            if (!res.ok) { logger.warn("Failed to fetch:", entry.url); return; }
             const buf = await res.arrayBuffer();
             files[names[i]] = new Uint8Array(buf);
             done++;
@@ -266,12 +265,8 @@ async function downloadAllFavorites() {
     }
 
     const blob = createZip(files);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "favorites.zip";
-    a.click();
-    URL.revokeObjectURL(a.href);
-    Toaster.toast.success(`Downloaded ${done} file${done > 1 ? "s" : ""} as zip.`);
+    FileUtils.downloadBlob(blob, "favorites.zip");
+    Toaster.toast.success(`Downloaded ${done} ${pluralize(done, "file")} as zip.`);
 }
 
 function useFavoritesPage() {
@@ -379,7 +374,7 @@ function ActionToolbar() {
                 </ButtonWithTooltip>
             )}
             <ButtonWithTooltip
-                tooltipContent={videoCount > 0 ? `Upscale ${videoCount} video${videoCount !== 1 ? "s" : ""}` : "No videos to upscale"}
+                tooltipContent={videoCount > 0 ? `Upscale ${videoCount} ${pluralize(videoCount, "video")}` : "No videos to upscale"}
                 variant="secondary"
                 shape="pill"
                 size="md"
@@ -418,7 +413,7 @@ function ActionToolbar() {
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
                 title="Delete selected items"
-                description={`Are you sure you want to permanently delete ${count} item${count !== 1 ? "s" : ""}? This cannot be undone.`}
+                description={`Are you sure you want to permanently delete ${count} ${pluralize(count, "item")}? This cannot be undone.`}
                 confirmText={`Delete ${count}`}
                 danger
                 onConfirm={onDeleteSelected}
@@ -435,8 +430,8 @@ function ActionToolbar() {
             <ConfirmDialog
                 open={upscaleOpen}
                 onOpenChange={setUpscaleOpen}
-                title={`Upscale ${videoCount} video${videoCount !== 1 ? "s" : ""}`}
-                description={`This will start HD upscaling for ${videoCount} video${videoCount !== 1 ? "s" : ""}. Already upscaled videos will be skipped.`}
+                title={`Upscale ${videoCount} ${pluralize(videoCount, "video")}`}
+                description={`This will start HD upscaling for ${videoCount} ${pluralize(videoCount, "video")}. Already upscaled videos will be skipped.`}
                 confirmText="Upscale"
                 onConfirm={onUpscale}
             />
@@ -538,13 +533,10 @@ function CardActions({ postId }: { postId: string }) {
         if (!item?.mediaUrl) return;
         try {
             const res = await fetchExternal(item.mediaUrl);
+            if (!res.ok) { logger.warn("Failed to fetch:", item.mediaUrl); return; }
             const blob = await res.blob();
-            const ext = item.mediaUrl.split(".").pop()?.split("?")[0] ?? "jpg";
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`;
-            a.click();
-            URL.revokeObjectURL(a.href);
+            const ext = extractUrlExtension(item.mediaUrl);
+            FileUtils.downloadBlob(blob, `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`);
         } catch (e) {
             logger.error("Failed to download:", e);
         }

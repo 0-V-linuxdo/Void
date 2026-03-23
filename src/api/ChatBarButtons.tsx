@@ -7,7 +7,7 @@
 import { ChatBarButton } from "@components/ChatBarButton";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
-import { createExternalStore } from "@utils/misc";
+import { createExternalStore, sortedEntries } from "@utils/misc";
 import { type LazyNode, resolveLazyNode, useExternalStore } from "@utils/react";
 import type { ReactNode } from "react";
 
@@ -40,7 +40,7 @@ export function VoidChatBarButtons(): ReactNode {
 
     if (!buttons.size) return null;
 
-    const sorted = [...buttons.entries()].sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
+    const sorted = sortedEntries(buttons);
 
     return (
         <>
