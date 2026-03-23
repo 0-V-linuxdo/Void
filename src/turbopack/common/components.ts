@@ -9,7 +9,10 @@ import type {
     AccordionItemProps,
     AccordionProps,
     AccordionTriggerProps,
+    AlertDialogContentProps,
+    AlertDialogProps,
     AvatarProps,
+    BadgeProps,
     ButtonProps,
     ButtonWithTooltipProps,
     CardProps,
@@ -80,7 +83,11 @@ export type {
     AccordionItemProps,
     AccordionProps,
     AccordionTriggerProps,
+    AlertDialogContentProps,
+    AlertDialogProps,
     AvatarProps,
+    BadgeProps,
+    BadgeVariant,
     ButtonProps,
     ButtonShape,
     ButtonSize,
@@ -250,6 +257,20 @@ export const CommandGroup: ComponentType<CommandGroupProps> = commandLazy("Comma
 export const CommandEmpty: ComponentType<CommandEmptyProps> = commandLazy("CommandEmpty");
 
 export const ResponsiveDialog: ComponentType<ResponsiveDialogProps> = LazyComponent("ResponsiveDialog", () => findExportedComponent("ResponsiveDialog"));
+
+export const Badge: ComponentType<BadgeProps> = LazyComponent("Badge", () => findExportedComponent("Badge"));
+
+const alertDialogLazy = createModuleLazy("AlertDialog", "AlertDialogContent", "AlertDialogAction");
+
+export const AlertDialog: ComponentType<AlertDialogProps> = alertDialogLazy("AlertDialog");
+export const AlertDialogTrigger: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogTrigger");
+export const AlertDialogContent: ComponentType<AlertDialogContentProps> = alertDialogLazy("AlertDialogContent");
+export const AlertDialogHeader: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogHeader");
+export const AlertDialogFooter: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogFooter");
+export const AlertDialogTitle: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogTitle");
+export const AlertDialogDescription: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogDescription");
+export const AlertDialogAction: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogAction");
+export const AlertDialogCancel: ComponentType<RadixSubProps> = alertDialogLazy("AlertDialogCancel");
 
 export const SidebarComponents = findByPropsLazy("Sidebar", "SidebarContent", "SidebarProvider");
 export const AnimatePresence = LazyComponent("AnimatePresence", () => findExportedComponent("AnimatePresence"));

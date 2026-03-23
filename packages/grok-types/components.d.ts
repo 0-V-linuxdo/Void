@@ -504,6 +504,39 @@ export type SidebarTrigger = ComponentType<SidebarTriggerProps>;
 
 // #endregion
 
+// #region Badge
+
+export type BadgeVariant = "default" | "secondary" | "destructive" | "outline" | "accent" | (string & {});
+
+export interface BadgeProps {
+    variant?: BadgeVariant;
+    className?: string;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+// #endregion
+
+// #region AlertDialog
+
+export interface AlertDialogProps {
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    defaultOpen?: boolean;
+    children?: ReactNode;
+    [key: string]: any;
+}
+
+export interface AlertDialogContentProps {
+    className?: string;
+    children?: ReactNode;
+    onEscapeKeyDown?: (e: KeyboardEvent) => void;
+    onOpenAutoFocus?: (e: Event) => void;
+    [key: string]: any;
+}
+
+// #endregion
+
 // #region Toast (sonner)
 
 export interface ToastAction {

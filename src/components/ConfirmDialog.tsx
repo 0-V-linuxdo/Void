@@ -7,13 +7,15 @@
 import "./ConfirmDialog.css";
 
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 	Button,
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
 } from "@turbopack/common/components";
 import { React } from "@turbopack/common/react";
 import type { ReactNode } from "react";
@@ -31,28 +33,25 @@ export interface ConfirmDialogProps {
 
 export function ConfirmDialog({ open, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }: ConfirmDialogProps) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="void-confirm-dialog">
-				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
-				</DialogHeader>
-				<DialogFooter>
-					<Button variant="secondary" size="md" onClick={() => onOpenChange(false)}>
-						{cancelText}
-					</Button>
-					<Button
-						variant={danger ? "danger" : "primary"}
-						size="md"
-						onClick={() => {
-							onOpenChange(false);
-							onConfirm();
-						}}
-					>
-						{confirmText}
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+		<AlertDialog open={open} onOpenChange={onOpenChange}>
+			<AlertDialogContent className="void-confirm-dialog">
+				<AlertDialogHeader>
+					<AlertDialogTitle>{title}</AlertDialogTitle>
+					<AlertDialogDescription>{description}</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel asChild>
+						<Button variant="secondary" size="md">
+							{cancelText}
+						</Button>
+					</AlertDialogCancel>
+					<AlertDialogAction asChild>
+						<Button variant={danger ? "danger" : "primary"} size="md" onClick={onConfirm}>
+							{confirmText}
+						</Button>
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
 	);
 }
