@@ -13,7 +13,8 @@ import type {
     DropdownMenuCheckboxItemProps, DropdownMenuContentProps, DropdownMenuItemProps, DropdownMenuPortalProps,
     DropdownMenuProps, DropdownMenuRadioGroupProps, DropdownMenuRadioItemProps, DropdownMenuSeparatorProps,
     DropdownMenuSubContentProps, DropdownMenuSubProps, DropdownMenuSubTriggerProps, DropdownMenuTriggerProps,
-    InputProps, MotionProps, PopoverArrowProps, PopoverContentProps, PopoverProps, PopoverTriggerProps,
+    InputProps, MotionProps,
+    PopoverArrowProps, PopoverContentProps, PopoverProps, PopoverTriggerProps,
     RadixSubProps, ResponsiveDialogProps,
     SelectContentProps, SelectItemProps, SelectProps, SelectTriggerProps, SelectValueProps,
     SeparatorProps, SettingsDescriptionProps, SettingsRowProps, SettingsTitleProps,
@@ -26,7 +27,27 @@ import type { ComponentType } from "react";
 import { filters, findByProps, findByPropsLazy, findExportedComponent, waitFor } from "../turbopack";
 import { type AnyComponent, LazyComponent } from "./react";
 
-export type * from "@grok-types";
+export type {
+    AccordionContentProps, AccordionItemProps, AccordionProps, AccordionTriggerProps,
+    AlertDialogContentProps, AlertDialogProps, AvatarProps, BadgeProps, BadgeVariant,
+    ButtonProps, ButtonShape, ButtonSize, ButtonVariant, ButtonWithTooltipProps,
+    CardContentProps, CardHeaderProps, CardProps, CardTitleProps, CardVariant, CheckboxProps,
+    CommandEmptyProps, CommandGroupProps, CommandInputProps, CommandItemProps, CommandListProps, CommandProps,
+    DialogCloseProps, DialogContentProps, DialogDescriptionProps, DialogFooterProps,
+    DialogHeaderProps, DialogOverlayProps, DialogPortalProps, DialogProps, DialogTitleProps, DialogTriggerProps,
+    DropdownMenuCheckboxItemProps, DropdownMenuContentProps, DropdownMenuItemProps, DropdownMenuPortalProps,
+    DropdownMenuProps, DropdownMenuRadioGroupProps, DropdownMenuRadioItemProps, DropdownMenuSeparatorProps,
+    DropdownMenuSubContentProps, DropdownMenuSubProps, DropdownMenuSubTriggerProps, DropdownMenuTriggerProps,
+    InputProps, MotionProps,
+    PopoverArrowProps, PopoverContentProps, PopoverProps, PopoverTriggerProps,
+    ResponsiveDialogProps,
+    SelectContentPosition, SelectContentProps, SelectItemProps, SelectProps, SelectTriggerProps, SelectTriggerSize, SelectValueProps,
+    SeparatorOrientation, SeparatorProps,
+    SettingsDescriptionProps, SettingsRowProps, SettingsTitleProps,
+    SkeletonProps, SliderProps, SpinnerProps, SpinnerSize, SwitchProps, SwitchSize,
+    TabsContentProps, TabsListProps, TabsProps, TabsTriggerProps, TextareaProps,
+    TooltipContentProps, TooltipProps, TooltipProviderProps, TooltipTriggerProps,
+} from "@grok-types";
 
 function createModuleLazy(...filterProps: string[]) {
     let mod: Record<string, ComponentType> | null = null;
