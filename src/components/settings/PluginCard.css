@@ -1,26 +1,5 @@
-.void-plugin-card-root {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    border-radius: 0.375rem;
-    border: 1px solid var(--border-l1);
-    background: var(--card);
-    min-height: 120px;
-}
-
-.void-plugin-card-body {
-    padding: 0.625rem 0.75rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.void-plugin-card-name {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    min-width: 0;
+.void-plugin-card-desc {
+    margin-top: 0.5rem;
 }
 
 .void-plugin-card-required-icon,
@@ -31,44 +10,6 @@
     color: hsl(var(--fg-tertiary));
     flex-shrink: 0;
     line-height: 0;
-}
-
-.void-plugin-card-desc {
-    font-size: 0.75rem;
-    color: hsl(var(--fg-secondary));
-    line-height: 1.5;
-    margin-top: 0.5rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.void-plugin-card-controls {
-    flex-shrink: 0;
-}
-
-.void-plugin-card-separator {
-    height: 1px;
-    background: var(--border-l1);
-}
-
-.void-plugin-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.375rem 0.75rem;
-    gap: 0.75rem;
-}
-
-.void-plugin-card-authors {
-    font-size: 0.7rem;
-    color: hsl(var(--fg-tertiary));
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .void-plugin-card-required {
@@ -92,4 +33,13 @@
 .void-plugin-card-crashed-icon svg {
     width: 1em;
     height: 1em;
+}
+
+.void-plugin-card-authors {
+    font-size: 0.7rem;
+    color: hsl(var(--fg-tertiary));
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

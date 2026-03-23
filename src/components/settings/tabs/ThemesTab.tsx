@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "../shared.css";
 import "./ThemesTab.css";
 
-import { addLocalTheme, addTheme, getThemes, isOnlineThemesEnabled, isThemesEnabled, removeTheme, setOnlineThemesEnabled, setThemesEnabled, type ThemeData, updateLocalTheme } from "@api/Themes";
+import { addLocalTheme, addTheme, getThemes, isOnlineThemesEnabled, removeTheme, setOnlineThemesEnabled, type ThemeData, updateLocalTheme } from "@api/Themes";
 import {
     Button,
     ConfirmDialog,
@@ -74,13 +75,13 @@ function LocalThemeDialog({ open, onClose, theme, onSave }: LocalThemeDialogProp
 
     return (
         <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-            <DialogContent className={cl("local-dialog")} aria-describedby={undefined}>
+            <DialogContent className="void-dialog-content" aria-describedby={undefined}>
                 <DialogClose asChild>
-                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className={cl("local-close")}>
+                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className="void-dialog-close">
                         <Cross2Icon />
                     </Button>
                 </DialogClose>
-                <DialogHeader className={cl("local-header")}>
+                <DialogHeader className="void-dialog-header">
                     <DialogTitle>{theme ? "Edit Local Theme" : "New Local Theme"}</DialogTitle>
                 </DialogHeader>
                 <Flex flexDirection="column" gap="0.25rem">
@@ -120,7 +121,6 @@ export default function ThemesTab() {
     const [url, setUrl] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const [enabled, setEnabled] = useState(isThemesEnabled);
     const [onlineEnabled, setOnlineEnabled] = useState(isOnlineThemesEnabled);
     const [themes, setThemes] = useState(getThemes);
     const [localDialogOpen, setLocalDialogOpen] = useState(false);
@@ -137,11 +137,6 @@ export default function ThemesTab() {
     }, [themes, filter]);
 
     const filtered = useFiltered(visible, search, getThemeKey);
-
-    const handleToggle = (checked: boolean) => {
-        setEnabled(checked);
-        setThemesEnabled(checked);
-    };
 
     const handleOnlineToggle = (checked: boolean) => {
         setOnlineEnabled(checked);
@@ -177,21 +172,14 @@ export default function ThemesTab() {
 
     return (
         <Flex flexDirection="column" gap="2rem">
-            <Flex alignItems="center" justifyContent="space-between" className={cl("section")}>
-                <Flex flexDirection="column" gap="0">
-                    <Text size="sm" weight="medium">Themes</Text>
-                    <Paragraph>Custom CSS themes for Grok. Paste a URL to a .css file to add one.</Paragraph>
-                </Flex>
-                <Switch checked={enabled} onCheckedChange={handleToggle} />
-            </Flex>
-            <Flex alignItems="center" justifyContent="space-between" className={cl("section")}>
+            <Flex alignItems="center" justifyContent="space-between" className="void-tab-section">
                 <Flex flexDirection="column" gap="0">
                     <Text size="sm" weight="medium">Online Themes</Text>
                     <Paragraph>Allow loading themes from external URLs. Disable to only use local themes.</Paragraph>
                 </Flex>
-                <Switch checked={onlineEnabled} disabled={!enabled} onCheckedChange={handleOnlineToggle} />
+                <Switch checked={onlineEnabled} onCheckedChange={handleOnlineToggle} />
             </Flex>
-            <Flex flexDirection="column" gap="0.5rem" className={cl("section")}>
+            <Flex flexDirection="column" gap="0.5rem" className="void-tab-section">
                 <Flex alignItems="center" gap="0.5rem">
                     <Input
                         type="text"
@@ -199,7 +187,7 @@ export default function ThemesTab() {
                         value={url}
                         onChange={(e: InputChangeEvent) => { setUrl(e.target.value); setError(""); }}
                         onKeyDown={(e: { key: string }) => { if (e.key === "Enter") handleAdd(); }}
-                        className={cl("search-input")}
+                        className="void-search-bar-input"
                     />
                     <Button variant="primary" size="sm" className={cl("import-btn")} onClick={handleAdd} disabled={loading || !url.trim()}>
                         {loading ? "Importing..." : "Import"}
@@ -211,10 +199,10 @@ export default function ThemesTab() {
                 {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
             </Flex>
             {themes.length > 0 && (
-                <Flex flexDirection="column" gap="0.375rem" className={cl("section")}>
+                <Flex flexDirection="column" gap="0.375rem" className="void-tab-section">
                     <Flex flexDirection="column" gap="0">
                         <Text size="sm" weight="medium">Installed Themes</Text>
-                        <Paragraph>Re-fetched every page load. Use the switch above to disable all themes at once.</Paragraph>
+                        <Paragraph>Re-fetched every page load.</Paragraph>
                     </Flex>
                     <Paragraph>
                         {`${pluralize(themes.length, "theme")} installed \u00B7 ${themes.filter(t => t.enabled).length} enabled`}
@@ -222,16 +210,16 @@ export default function ThemesTab() {
                 </Flex>
             )}
             {themes.length > 0 && (
-                <Flex alignItems="center" gap="0.75rem" className={cl("section")}>
+                <Flex alignItems="center" gap="0.75rem" className="void-tab-section">
                     <Input
                         type="text"
                         placeholder={`Search ${themes.length} themes...`}
                         value={search}
                         onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
-                        className={cl("search-input")}
+                        className="void-search-bar-input"
                     />
                     <Select value={filter} onValueChange={(v: string) => setFilter(v as ThemeFilter)}>
-                        <SelectTrigger className={cl("filter-select")}>
+                        <SelectTrigger className="void-search-bar-select">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -245,21 +233,21 @@ export default function ThemesTab() {
                 </Flex>
             )}
             {filtered.length > 0 && (
-                <Grid columns="repeat(2, 1fr)" className={cl("section")}>
+                <Grid columns="repeat(2, 1fr)" className="void-tab-section">
                     {filtered.map(t => (
                         <ErrorBoundary key={t.url} fallback={null}>
-                            <ThemeCard theme={t} globalEnabled={enabled && (!!t.local || onlineEnabled)} onRemove={setRemoveUrl} onToggle={() => setThemes(getThemes())} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
+                            <ThemeCard theme={t} globalEnabled={!!t.local || onlineEnabled} onRemove={setRemoveUrl} onToggle={() => setThemes(getThemes())} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
                         </ErrorBoundary>
                     ))}
                 </Grid>
             )}
             {themes.length > 0 && !filtered.length && (
-                <Paragraph color="secondary" className={cl("empty")}>
+                <Paragraph color="secondary" className="void-tab-empty">
                     No themes match your search.
                 </Paragraph>
             )}
             {!themes.length && (
-                <Paragraph color="secondary" className={cl("empty")}>
+                <Paragraph color="secondary" className="void-tab-empty">
                     No themes added yet. Paste a URL above to add one.
                 </Paragraph>
             )}

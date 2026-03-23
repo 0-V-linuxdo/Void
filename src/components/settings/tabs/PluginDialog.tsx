@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "../shared.css";
 import "./PluginDialog.css";
 
 import { Settings } from "@api/Settings";
@@ -44,13 +45,13 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
                 if (!v) onClose();
             }}
         >
-            <DialogContent className={cl("content")} aria-describedby={undefined}>
+            <DialogContent className="void-dialog-content" aria-describedby={undefined}>
                 <DialogClose asChild>
-                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className={cl("close")}>
+                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className="void-dialog-close">
                         <Cross2Icon />
                     </Button>
                 </DialogClose>
-                <DialogHeader className={cl("header")}>
+                <DialogHeader className="void-dialog-header">
                     <DialogTitle>{plugin.name}</DialogTitle>
                     {plugin.description && <Paragraph>{plugin.description}</Paragraph>}
                 </DialogHeader>

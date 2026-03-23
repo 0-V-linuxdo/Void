@@ -1,0 +1,67 @@
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-card-root {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.375rem;
+    border: 1px solid var(--border-l1);
+    background: var(--card);
+    min-height: 120px;
+}
+
+.void-card-body {
+    padding: 0.625rem 0.75rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.void-card-name {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+}
+
+.void-card-controls {
+    flex-shrink: 0;
+}
+
+.void-card-desc {
+    font-size: 0.75rem;
+    color: hsl(var(--fg-secondary));
+    line-height: 1.5;
+    margin-top: 0.25rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.void-card-separator {
+    height: 1px;
+    background: var(--border-l1);
+}
+
+.void-card-footer {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    gap: 0.375rem;
+}
+
+.void-card-author {
+    font-size: 0.7rem;
+    color: hsl(var(--fg-tertiary));
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

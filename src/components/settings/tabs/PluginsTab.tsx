@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "../shared.css";
 import "./PluginsTab.css";
 
 import { subscribe } from "@api/Events";
@@ -121,7 +122,7 @@ export default function PluginsTab() {
 
     return (
         <Flex flexDirection="column" gap="1.5rem">
-            <Flex flexDirection="column" gap="0" className={cl("section")}>
+            <Flex flexDirection="column" gap="0" className="void-tab-section">
                 <Text size="sm" weight="medium">Plugins</Text>
                 <Paragraph>Pick which plugins to use. Some need a page reload to kick in.</Paragraph>
             </Flex>
@@ -135,13 +136,13 @@ export default function PluginsTab() {
                     </Button>
                 </Flex>
             )}
-            <Flex alignItems="center" gap="0.75rem" className={cl("section")}>
+            <Flex alignItems="center" gap="0.75rem" className="void-tab-section">
                 <Input
                     type="text"
                     placeholder={`Search ${visibleUser.length + visibleRequired.length} plugins...`}
                     value={search}
                     onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
-                    className={cl("search-input")}
+                    className="void-search-bar-input"
                 />
                 <Select value={filter} onValueChange={(v: string) => setFilter(v as ListFilter)}>
                     <SelectTrigger className={cl("filter-select")}>
@@ -155,7 +156,7 @@ export default function PluginsTab() {
                 </Select>
             </Flex>
             {filteredUser.length > 0 && (
-                <Grid columns="repeat(2, 1fr)" className={cl("section")}>
+                <Grid columns="repeat(2, 1fr)" className="void-tab-section">
                     {filteredUser.map(n => (
                         <ErrorBoundary key={n} fallback={null}>
                             <PluginCard name={n} onSettings={setDialogName} onReload={onReload} />
@@ -166,7 +167,7 @@ export default function PluginsTab() {
             {filteredRequired.length > 0 && (
                 <>
                     <Separator className={cl("divider")} />
-                    <Grid columns="repeat(2, 1fr)" className={cl("section")}>
+                    <Grid columns="repeat(2, 1fr)" className="void-tab-section">
                         {filteredRequired.map(n => (
                             <ErrorBoundary key={n} fallback={null}>
                                 <PluginCard name={n} onSettings={setDialogName} onReload={onReload} />
@@ -176,7 +177,7 @@ export default function PluginsTab() {
                 </>
             )}
             {!hasResults && (
-                <Paragraph color="secondary" className={cl("empty")}>
+                <Paragraph color="secondary" className="void-tab-empty">
                     {search ? "No plugins match your search." : "No plugins available."}
                 </Paragraph>
             )}

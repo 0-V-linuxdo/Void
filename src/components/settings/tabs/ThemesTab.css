@@ -2,48 +2,8 @@
     color: hsl(var(--fg-danger));
 }
 
-.void-themes-section {
-    padding: 0 0.75rem;
-}
-
-.void-themes-search-input {
-    flex: 1;
-    min-width: 0;
-}
-
 .void-themes-import-btn {
     height: 2.25rem;
-}
-
-.void-themes-filter-select {
-    width: 7.5rem;
-}
-
-.void-themes-empty {
-    text-align: center;
-    padding: 2rem 0;
-}
-
-.void-themes-local-dialog {
-    width: 600px;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    border: 1px solid var(--border-l1);
-    background: var(--background);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.void-themes-local-close {
-    position: absolute;
-    right: 1rem;
-    top: 1rem;
-    z-index: 10;
-}
-
-.void-themes-local-header {
-    text-align: left;
 }
 
 .void-themes-local-css-field {
