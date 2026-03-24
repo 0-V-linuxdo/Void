@@ -422,16 +422,16 @@ function wrapFactory(moduleId: number, factory: ModuleFactory): ModuleFactory {
                 logger.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
                 throw origErr;
             }
-        }
+        } finally {
+            try {
+                const actualId = mod?.id ?? moduleId;
+                if (mod?.exports != null) notifyModuleLoaded(mod.exports, actualId);
+            } catch (e) {
+                logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+            }
 
-        try {
-            const actualId = mod?.id ?? moduleId;
-            if (mod?.exports != null) notifyModuleLoaded(mod.exports, actualId);
-        } catch (e) {
-            logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+            factoryStringCache.delete(factory);
         }
-
-        factoryStringCache.delete(factory);
     };
 
     wrapped.toString = () => getFactorySource(factory);
@@ -485,12 +485,15 @@ function patchChunkEntry(entry: any[]): any[] {
 function wrapNotifyOnly(moduleId: number, factory: ModuleFactory): ModuleFactory {
     const wrapped = function (this: any, helpers: TurbopackHelpers, mod?: TurbopackModule, exports?: Record<string, any>) {
         captureRuntimeState(helpers);
-        factory.call(this, helpers, mod, exports);
         try {
-            const actualId = mod?.id ?? moduleId;
-            if (mod?.exports != null) notifyModuleLoaded(mod.exports, actualId);
-        } catch (e) {
-            logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+            factory.call(this, helpers, mod, exports);
+        } finally {
+            try {
+                const actualId = mod?.id ?? moduleId;
+                if (mod?.exports != null) notifyModuleLoaded(mod.exports, actualId);
+            } catch (e) {
+                logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+            }
         }
     };
     wrapped.toString = () => getFactorySource(factory);
