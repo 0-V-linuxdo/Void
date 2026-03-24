@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./styles.css";
+
 import { Button } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { DownloadIcon } from "@components/icons";
@@ -12,8 +14,11 @@ import { React, useCallback, useState } from "@turbopack/common/react";
 import { ChatPageStore, TextToSpeechStore } from "@turbopack/common/stores";
 import { FileUtils } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
+import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import definePlugin from "@utils/types";
+
+const cl = classNameFactory("void-download-tts-");
 
 const logger = new Logger("DownloadTTS");
 
@@ -51,13 +56,13 @@ function DownloadButton() {
             aria-label="Download audio"
             onClick={onClick}
             disabled={loading}
-            size="sm"
-            shape="circle"
+            size="md"
+            shape="square"
             variant="tertiary"
         >
             {loading
-                ? <Spinner size="xs" className="pointer-events-none" />
-                : <DownloadIcon size={19} strokeWidth={2.5} />}
+                ? <Spinner size="sm" className={cl("spinner")} />
+                : <DownloadIcon size={16} />}
         </Button>
     );
 }
