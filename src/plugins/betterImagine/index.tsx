@@ -706,8 +706,8 @@ export default definePlugin({
                     replace: "muted:!0,autoPlay:$self._autoPlay()",
                 },
                 {
-                    match: /onMouseOver:\i\?\(\)=>\i\(!0\):void 0,onMouseLeave:\i\?\(\)=>\i\(!1\):void 0/,
-                    replace: "$&,...$self._hoverProps()",
+                    match: /onMouseOver:\(\)=>\{.{0,120}\},onMouseLeave:\(\)=>\{.{0,120}\},/,
+                    replace: "$&...$self._hoverProps(),",
                 },
                 {
                     match: /children:\(0,(\i)\.jsx\)\((\i),\{postId:(\i),mediaType:(\i),onOpenChange:(\i)\}\)\}\)/,
