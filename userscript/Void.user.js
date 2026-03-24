@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.1
+// @version      0.5.2
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.1 — A modification for grok.com
+ * Void v0.5.2 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -764,15 +764,16 @@ ${sourceUrl}`;
           logger.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
           throw origErr;
         }
+      } finally {
+        try {
+          const actualId = mod?.id ?? moduleId;
+          if (mod?.exports != null)
+            notifyModuleLoaded(mod.exports, actualId);
+        } catch (e) {
+          logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+        }
+        factoryStringCache.delete(factory);
       }
-      try {
-        const actualId = mod?.id ?? moduleId;
-        if (mod?.exports != null)
-          notifyModuleLoaded(mod.exports, actualId);
-      } catch (e) {
-        logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
-      }
-      factoryStringCache.delete(factory);
     };
     wrapped.toString = () => getFactorySource(factory);
     wrapped[SYM_ORIGINAL] = original;
@@ -820,13 +821,16 @@ ${sourceUrl}`;
   function wrapNotifyOnly(moduleId, factory) {
     const wrapped = function(helpers, mod, exports) {
       captureRuntimeState(helpers);
-      factory.call(this, helpers, mod, exports);
       try {
-        const actualId = mod?.id ?? moduleId;
-        if (mod?.exports != null)
-          notifyModuleLoaded(mod.exports, actualId);
-      } catch (e) {
-        logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+        factory.call(this, helpers, mod, exports);
+      } finally {
+        try {
+          const actualId = mod?.id ?? moduleId;
+          if (mod?.exports != null)
+            notifyModuleLoaded(mod.exports, actualId);
+        } catch (e) {
+          logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+        }
       }
     };
     wrapped.toString = () => getFactorySource(factory);
@@ -1726,7 +1730,7 @@ ${sourceUrl}`;
     let canonSource = isString ? match : match.source;
     canonSource = canonSource.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => isString ? `"${key}"` : `"${key.replaceAll(".", "\\.")}"`);
     if (!isString) {
-      canonSource = canonSource.replaceAll(/(\\*)\\i/g, (m, leadingEscapes) => leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : m.slice(1));
+      canonSource = canonSource.replaceAll(/(\\*)\\i/g, (_m, leadingEscapes) => leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : `${leadingEscapes}\\i`);
       canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],\\(\\)=>${iToken}`);
     }
     if (canonSource === (isString ? match : match.source))
@@ -3446,11 +3450,11 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.5.1")) {
-        logger8.info(`Up to date (${"0.5.1"})`);
+      if (!latest || !isNewer(latest, "0.5.2")) {
+        logger8.info(`Up to date (${"0.5.2"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.1"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.2"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3510,6 +3514,7 @@ ${sourceUrl}`;
       {
         find: "sendBatchLogEvent",
         all: true,
+        group: true,
         replacement: [
           {
             match: /"sendBatchLogEvent",\i=>\{\i\(this\.address\+.{0,40},\i\)\}/,
@@ -5197,6 +5202,10 @@ ${sourceUrl}`;
     text-align: center;
     padding: 2rem;
 }
+
+.void-experiments-badge {
+    margin-left: 0.375rem;
+}
 `);
 
   // src/api/Notifications.ts
@@ -5361,9 +5370,9 @@ ${sourceUrl}`;
       })
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React.createElement(Badge, {
       variant: "accent",
-      className: "ml-1.5"
+      className: cl11("badge")
     }, "New"), decodedKey && /* @__PURE__ */ React.createElement(Badge, {
-      className: "ml-1.5"
+      className: cl11("badge")
     }, "Encrypted"), isOverridden && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       as: "span",
@@ -5561,9 +5570,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.1"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"def67db"}`
-    }, `(${"def67db"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.2"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"2e9fb34"}`
+    }, `(${"2e9fb34"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6748,8 +6757,8 @@ ${sourceUrl}`;
             replace: "muted:!0,autoPlay:$self._autoPlay()"
           },
           {
-            match: /onMouseOver:\i\?\(\)=>\i\(!0\):void 0,onMouseLeave:\i\?\(\)=>\i\(!1\):void 0/,
-            replace: "$&,...$self._hoverProps()"
+            match: /onMouseOver:\(\)=>\{.{0,120}\},onMouseLeave:\(\)=>\{.{0,120}\},/,
+            replace: "$&...$self._hoverProps(),"
           },
           {
             match: /children:\(0,(\i)\.jsx\)\((\i),\{postId:(\i),mediaType:(\i),onOpenChange:(\i)\}\)\}\)/,
@@ -7230,7 +7239,14 @@ ${sourceUrl}`;
     ]
   });
 
+  // void-css:D:/Projects/Void/src/plugins/downloadTTS/styles.css
+  registerStyle("downloadTTS", `.void-download-tts-spinner {
+    pointer-events: none;
+}
+`);
+
   // src/plugins/downloadTTS/index.tsx
+  var cl16 = classNameFactory("void-download-tts-");
   var logger14 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
@@ -7262,15 +7278,14 @@ ${sourceUrl}`;
       "aria-label": "Download audio",
       onClick,
       disabled: loading,
-      size: "sm",
-      shape: "circle",
+      size: "md",
+      shape: "square",
       variant: "tertiary"
     }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
-      size: "xs",
-      className: "pointer-events-none"
+      size: "sm",
+      className: cl16("spinner")
     }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 19,
-      strokeWidth: 2.5
+      size: 16
     }));
   }
   var downloadTTS_default = definePlugin({
@@ -7549,6 +7564,7 @@ Original prompt:
     patches: [
       {
         find: "fadeOutDuration:200",
+        group: true,
         replacement: [
           {
             match: /\.SHOW_STARRY_IDLE&&.{0,11}"main"===.{0,3}\.page&&/,
