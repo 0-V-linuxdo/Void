@@ -31,6 +31,7 @@ export default definePlugin({
         {
             find: "sendBatchLogEvent",
             all: true,
+            group: true,
             replacement: [
                 {
                     match: /"sendBatchLogEvent",\i=>\{\i\(this\.address\+.{0,40},\i\)\}/,

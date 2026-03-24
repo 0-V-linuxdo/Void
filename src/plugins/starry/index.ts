@@ -15,6 +15,7 @@ export default definePlugin({
     patches: [
         {
             find: "fadeOutDuration:200",
+            group: true,
             replacement: [
                 {
                     match: /\.SHOW_STARRY_IDLE&&.{0,11}"main"===.{0,3}\.page&&/,
