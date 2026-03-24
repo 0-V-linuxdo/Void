@@ -156,8 +156,8 @@ function ExperimentRow({ flagKey, isNew }: { flagKey: string; isNew: boolean }) 
         <SettingsRow action={<Switch checked={checked} onCheckedChange={handleToggle} />}>
             <SettingsTitle>
                 {prettifyKey(flagKey)}
-                {isNew && <Badge variant="accent" className="ml-1.5">New</Badge>}
-                {decodedKey && <Badge className="ml-1.5">Encrypted</Badge>}
+                {isNew && <Badge variant="accent" className={cl("badge")}>New</Badge>}
+                {decodedKey && <Badge className={cl("badge")}>Encrypted</Badge>}
                 {isOverridden && (
                     <Text size="xs" as="span" className={cl("modified")}>
                         (modified)
