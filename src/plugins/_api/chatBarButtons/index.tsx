@@ -33,7 +33,7 @@ export default definePlugin({
             all: true,
             replacement: [
                 {
-                    match: /ModelModeSelect,\{iconOnlyTrigger:(\i)\}\)\}\),/,
+                    match: /ModeSelect,\{compact:(\i)\}\)\}\),/,
                     replace: "$&$self.renderButtons(),",
                 },
                 {
