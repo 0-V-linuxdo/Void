@@ -13,7 +13,7 @@ import unusedImports from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-    { ignores: ["dist", "browser", "packages"] },
+    { ignores: ["dist", "browser", "packages", "src/plugins/mcp.dev/server.ts"] },
     {
         files: ["src/**/*.{tsx,ts,mts,mjs,js,jsx}"],
         settings: {
