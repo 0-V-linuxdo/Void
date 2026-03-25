@@ -10,7 +10,7 @@ import { idbGet, idbSet } from "@utils/idb";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
-import { STORAGE_KEY, SettingsStore as SettingsStoreClass } from "@utils/SettingsStore";
+import { SettingsStore as SettingsStoreClass, STORAGE_KEY } from "@utils/SettingsStore";
 import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingSelectOption, type SettingsChecks, type SettingsDefinition } from "@utils/types";
 
 const logger = new Logger("Settings");
