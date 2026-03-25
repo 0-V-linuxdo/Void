@@ -10,7 +10,7 @@ import { Logger } from "./Logger";
 
 const logger = new Logger("SettingsStore");
 
-const STORAGE_KEY = "VoidSettings";
+export const STORAGE_KEY = "VoidSettings";
 const SAVE_DEBOUNCE_MS = 100;
 
 type Listener = (path: string) => void;
@@ -30,6 +30,7 @@ export class SettingsStore<T extends object> {
     private prefixListeners = new Map<string, Set<Listener>>();
     private defaultGetters = new Map<string, (key: string) => any>();
     private saveTimer: ReturnType<typeof setTimeout> | null = null;
+    private proxyCache = new WeakMap<object, T>();
 
     public declare store: T;
     public declare plain: T;
@@ -37,7 +38,7 @@ export class SettingsStore<T extends object> {
     constructor(plain: T) {
         this.plain = plain;
         this.store = this.makeProxy(plain as any);
-        window.addEventListener("beforeunload", () => this.flush());
+        window.addEventListener("beforeunload", () => this.flush(), { once: true });
     }
 
     /** Flush any pending save immediately. */
@@ -54,7 +55,10 @@ export class SettingsStore<T extends object> {
     }
 
     private makeProxy(target: any, path = ""): T {
-        return new Proxy(target, {
+        const cached = this.proxyCache.get(target);
+        if (cached) return cached;
+
+        const proxy = new Proxy(target, {
             get: (t, key: string) => {
                 let value = t[key];
                 if (value === undefined && key !== "__proto__") {
@@ -93,16 +97,25 @@ export class SettingsStore<T extends object> {
                 return true;
             },
         });
+
+        this.proxyCache.set(target, proxy);
+        return proxy;
     }
 
     private notifyListeners(path: string) {
-        for (const l of this.globalListeners) l(path);
+        for (const l of this.globalListeners) {
+            try { l(path); } catch (e) { logger.error("Settings listener error:", e); }
+        }
 
         const listeners = this.pathListeners.get(path);
-        if (listeners) for (const l of listeners) l(path);
+        if (listeners) for (const l of listeners) {
+            try { l(path); } catch (e) { logger.error("Settings listener error:", e); }
+        }
 
         for (const [prefix, set] of this.prefixListeners) {
-            if (path.startsWith(prefix)) for (const l of set) l(path);
+            if (path.startsWith(prefix)) for (const l of set) {
+                try { l(path); } catch (e) { logger.error("Settings listener error:", e); }
+            }
         }
 
         this.scheduleSave();

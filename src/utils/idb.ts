@@ -22,7 +22,7 @@ function open(): Promise<IDBDatabase> {
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
     });
-    promise.catch(() => { dbPromise = null; });
+    promise.catch(e => { dbPromise = null; if (IS_DEV) console.warn("[Void/IDB]", e); });
     dbPromise = promise;
     return promise;
 }
@@ -41,8 +41,9 @@ export async function idbSet(key: string, value: any): Promise<void> {
     const db = await open();
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, "readwrite");
-        const req = tx.objectStore(STORE_NAME).put(value, key);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
+        tx.objectStore(STORE_NAME).put(value, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
     });
 }

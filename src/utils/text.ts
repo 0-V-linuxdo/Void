@@ -11,7 +11,7 @@ export function humanizeKey(key: string, acronyms?: Record<string, string>): str
         .replace(/[-_]/g, " ")
         .replace(/\b\w/g, c => c.toUpperCase());
     if (!acronyms) return title;
-    return Object.entries(acronyms).reduce((s, [from, to]) => s.replace(new RegExp(`\\b${from}\\b`, "g"), to), title);
+    return Object.entries(acronyms).reduce((s, [from, to]) => s.replace(new RegExp(`\\b${escapeRegExp(from)}\\b`, "g"), to), title);
 }
 
 /** Escape special regex characters in a string. */

@@ -33,10 +33,13 @@ const compileFactory: (code: string, header?: string, sourceUrl?: string) => Mod
         if (header) src = `${header}\n${src}`;
         if (sourceUrl) src += `\n${sourceUrl}`;
         script.textContent = src;
-        (document.head ?? document.documentElement).appendChild(script);
-        script.remove();
+        try {
+            (document.head ?? document.documentElement).appendChild(script);
+        } finally {
+            script.remove();
+        }
         const fn = (pageWindow as any)[key];
-        delete (pageWindow as any)[key];
+        (pageWindow as any)[key] = undefined;
         if (!fn) throw new Error("Factory compilation failed (CSP?)");
         return fn;
     };
@@ -502,7 +505,13 @@ function wrapNotifyOnly(moduleId: number, factory: ModuleFactory): ModuleFactory
 
 function handleChunkPush(...args: any[]) {
     for (let i = 0; i < args.length; i++) {
-        if (Array.isArray(args[i])) args[i] = patchChunkEntry(args[i]);
+        if (Array.isArray(args[i])) {
+            try {
+                args[i] = patchChunkEntry(args[i]);
+            } catch (e) {
+                logger.error("Failed to patch chunk entry:", e);
+            }
+        }
     }
     return originalPush!(...args);
 }
@@ -679,7 +688,11 @@ export function patchTurbopack(): void {
     if (existingTp && !Array.isArray(existingTp) && typeof existingTp.push === "function") {
         originalPush = existingTp.push.bind(existingTp);
         existingTp.push = (...args: any[]) => handleChunkPush(...args);
-        wrapExistingFactories();
+        try {
+            wrapExistingFactories();
+        } catch (e) {
+            logger.error("Failed to wrap existing factories:", e);
+        }
         return;
     }
 
@@ -709,7 +722,11 @@ export function patchTurbopack(): void {
                 }
                 queuedChunks.length = 0;
 
-                wrapExistingFactories();
+                try {
+                    wrapExistingFactories();
+                } catch (e) {
+                    logger.error("Failed to wrap existing factories:", e);
+                }
             } else {
                 currentTurbopack = newValue as TurbopackPushable | any[];
             }

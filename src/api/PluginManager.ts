@@ -193,7 +193,9 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
         removePluginContextMenuItems(plugin);
         const unsubs = pluginUnsubscribers.get(plugin.name);
         if (unsubs) {
-            for (const unsub of unsubs) unsub();
+            for (const unsub of unsubs) {
+                try { unsub(); } catch (e2) { logger.error(`Unsub error during ${plugin.name} start cleanup:`, e2); }
+            }
             pluginUnsubscribers.delete(plugin.name);
         }
         return false;
@@ -209,32 +211,35 @@ export function stopPlugin(plugin: Plugin): boolean {
         logger.error(`Error in ${plugin.name}.stop():`, e);
     }
 
-    try {
-        const unsubs = pluginUnsubscribers.get(plugin.name);
-        if (unsubs) {
-            for (const unsub of unsubs) unsub();
-            pluginUnsubscribers.delete(plugin.name);
+    let failed = false;
+
+    const unsubs = pluginUnsubscribers.get(plugin.name);
+    if (unsubs) {
+        for (const unsub of unsubs) {
+            try { unsub(); } catch (e) { failed = true; logger.error(`Unsub error in ${plugin.name}:`, e); }
         }
+        pluginUnsubscribers.delete(plugin.name);
+    }
 
-        removeChatBarButton(plugin.name);
+    try { removeChatBarButton(plugin.name); } catch (e) { failed = true; logger.error(`Failed to remove chat bar button for ${plugin.name}:`, e); }
 
-        removePluginContextMenuItems(plugin);
+    try { removePluginContextMenuItems(plugin); } catch (e) { failed = true; logger.error(`Failed to remove context menu items for ${plugin.name}:`, e); }
 
+    try {
         if (plugin.managedStyle && !plugin.patches?.length) disableStyle(plugin.managedStyle);
+    } catch (e) { failed = true; logger.error(`Failed to disable style for ${plugin.name}:`, e); }
 
+    try {
         if (plugin.cleanupSelectors) {
             for (const selector of plugin.cleanupSelectors) {
-                document.querySelectorAll(selector).forEach(el => el.remove());
+                for (const el of document.querySelectorAll(selector)) el.remove();
             }
         }
+    } catch (e) { failed = true; logger.error(`Failed to cleanup selectors for ${plugin.name}:`, e); }
 
-        plugin.started = false;
-        return true;
-    } catch (e) {
-        plugin.started = false;
-        logger.error(`Failed to stop plugin ${plugin.name}:`, e);
-        return false;
-    }
+    plugin.started = false;
+    if (failed) logger.error(`Plugin ${plugin.name} stopped with errors`);
+    return !failed;
 }
 
 export function startAllPlugins(target: StartAt) {
@@ -283,15 +288,15 @@ export function initPluginManager() {
         if (!isPluginEnabled(name)) continue;
         const plugin = plugins[name];
 
-        plugin.dependencies?.forEach(d => {
+        for (const d of plugin.dependencies ?? []) {
             const dep = plugins[d];
             if (!dep) {
                 logger.warn(`Plugin ${name} has unresolved dependency ${d}`);
-                return;
+                continue;
             }
             Settings.plugins[d] = { ...Settings.plugins[d], enabled: true };
             dep.isDependency = true;
-        });
+        }
 
         if (plugin.chatBarButton) neededApis.add("ChatBarButtonAPI");
         if (plugin.contextMenuItems) neededApis.add("ContextMenuAPI");
@@ -310,9 +315,13 @@ export function initPluginManager() {
         if (enabled) ensureMethodsBound(plugin);
 
         if (plugin.patches) {
-            for (const patch of plugin.patches) {
-                if (enabled) addPatch(patch, name);
-                else if (IS_DEV) addPatch({ ...patch, validateOnly: true }, name);
+            try {
+                for (const patch of plugin.patches) {
+                    if (enabled) addPatch(patch, name);
+                    else if (IS_DEV) addPatch({ ...patch, validateOnly: true }, name);
+                }
+            } catch (e) {
+                logger.error(`Failed to register patches for ${name}`, e);
             }
         }
     }

@@ -7,13 +7,12 @@
 import { isObject } from "./guards";
 
 export function mergeDefaults<T extends object>(target: T, defaults: T): T {
-    for (const key in defaults) {
-        if (key === "__proto__" || key === "constructor" || key === "prototype") continue;
-        const value = target[key];
+    for (const [key, defaultValue] of Object.entries(defaults)) {
+        const value = (target as any)[key];
         if (isObject(value)) {
-            mergeDefaults(value as Record<string, any>, defaults[key] as Record<string, any>);
+            mergeDefaults(value as Record<string, any>, defaultValue as Record<string, any>);
         } else if (value === undefined) {
-            target[key] = defaults[key];
+            (target as any)[key] = defaultValue;
         }
     }
     return target;
@@ -58,13 +57,18 @@ export function debounce<T extends (...args: never[]) => void>(fn: T, ms: number
 }
 
 export function fetchExternal(url: string): Promise<Response> {
-    if (IS_EXTENSION || typeof GM_xmlhttpRequest === "undefined") return fetch(url);
+    if (IS_EXTENSION || typeof GM_xmlhttpRequest === "undefined") {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 30_000);
+        return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+    }
 
     return new Promise((resolve, reject) => {
         GM_xmlhttpRequest({
             method: "GET",
             url,
             responseType: "blob",
+            timeout: 30_000,
             onload(resp: any) {
                 const blob: Blob = resp.response;
                 resolve(new Response(blob, {
@@ -155,6 +159,6 @@ export function sendBrowserNotification(title: string, body: string, icon = "/fa
     if (Notification.permission === "granted") {
         new Notification(title, { body, icon });
     } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(p => { if (p === "granted") new Notification(title, { body, icon }); }).catch(() => {});
+        Notification.requestPermission().then(p => { if (p === "granted") new Notification(title, { body, icon }); }).catch(() => undefined);
     }
 }

@@ -16,11 +16,17 @@ export function setCreateElement(fn: CreateElementFn) {
     _createElement = fn;
 }
 
+const LAZY_MAX_RETRIES = 200;
+
 export function LazyComponent<T extends AnyComponent = AnyComponent>(name: string, factory: () => T | null): T {
     let cached: T | null = null;
+    let attempts = 0;
 
     const wrapper = ((props: Record<string, any>) => {
-        cached ??= factory();
+        if (!cached && attempts < LAZY_MAX_RETRIES) {
+            cached = factory();
+            attempts++;
+        }
         if (!cached || !_createElement) return null;
         return _createElement(cached, props);
     }) as unknown as T;
@@ -30,7 +36,10 @@ export function LazyComponent<T extends AnyComponent = AnyComponent>(name: strin
     return new Proxy(wrapper, {
         get(target, prop, receiver) {
             if (prop === "$$voidGetWrapped") return () => cached ?? factory();
-            cached ??= factory();
+            if (!cached && attempts < LAZY_MAX_RETRIES) {
+                cached = factory();
+                attempts++;
+            }
             if (cached && prop in (cached as Record<string | symbol, any>)) return (cached as Record<string | symbol, any>)[prop];
             return Reflect.get(target, prop, receiver);
         },

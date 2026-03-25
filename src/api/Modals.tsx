@@ -5,7 +5,8 @@
  */
 
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@components";
-import { React, useCallback } from "@turbopack/common/react";
+import { ErrorBoundary } from "@components/ErrorBoundary";
+import { React, useCallback, useMemo } from "@turbopack/common/react";
 import { createExternalStore } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
 import type { ReactNode } from "react";
@@ -37,6 +38,8 @@ const store = createExternalStore();
 
 export function openModal(render: (props: ModalProps) => ReactNode, options?: ModalOptions): string {
     const key = options?.modalKey ?? `void-modal-${nextId++}`;
+    const idx = modalStack.findIndex(m => m.key === key);
+    if (idx !== -1) modalStack.splice(idx, 1);
     modalStack.push({ key, render });
     store.notify();
     return key;
@@ -86,20 +89,17 @@ export function confirm(options: ConfirmOptions): Promise<boolean> {
     });
 }
 
-function ModalInstance({ entry }: { entry: ModalEntry }) {
+const ModalInstance = ErrorBoundary.wrap(function ModalInstance({ entry }: { entry: ModalEntry }) {
     const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
+    const onOpenChange = useCallback((open: boolean) => { if (!open) onClose(); }, [onClose]);
+    const modalProps = useMemo(() => ({ onClose }), [onClose]);
 
     return (
-        <Dialog
-            open
-            onOpenChange={open => {
-                if (!open) onClose();
-            }}
-        >
-            <DialogContent aria-describedby={undefined}>{entry.render({ onClose })}</DialogContent>
+        <Dialog open onOpenChange={onOpenChange}>
+            <DialogContent aria-describedby={undefined}>{entry.render(modalProps)}</DialogContent>
         </Dialog>
     );
-}
+});
 
 export function ModalContainer() {
     useExternalStore(store);

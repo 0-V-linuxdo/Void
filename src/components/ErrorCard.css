@@ -1,4 +1,5 @@
 .void-error-card-root {
+    contain: content;
     padding: 1rem;
     border-radius: var(--radius);
     background: hsl(var(--red-800) / 60%);

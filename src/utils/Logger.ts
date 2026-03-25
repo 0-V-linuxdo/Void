@@ -14,6 +14,8 @@ const ANSI = {
     yellow: "\x1b[33m",
 } as const;
 
+const LEVEL_ANSI: Record<string, string> = { error: ANSI.red, warn: ANSI.yellow };
+
 export class Logger {
     constructor(
         public name: string,
@@ -32,7 +34,6 @@ export class Logger {
             return;
         }
 
-        const LEVEL_ANSI: Record<string, string> = { error: ANSI.red, warn: ANSI.yellow };
         const levelAnsi = LEVEL_ANSI[level] ?? ANSI.green;
         const prefix = `${ANSI.bold}${levelAnsi}[${this.name}]${ANSI.reset}`;
         console[level](prefix, ...args);

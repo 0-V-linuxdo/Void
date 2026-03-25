@@ -8,7 +8,7 @@ import "./CustomCSSTab.css";
 
 import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
 import { Flex, Paragraph, Switch, Text } from "@components";
-import { React, useCallback, useEffect, useRef, useState } from "@turbopack/common/react";
+import { React, useCallback, useLayoutEffect, useRef, useState } from "@turbopack/common/react";
 import { classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
 
 const cl = classNameFactory("void-css-");
@@ -161,7 +161,7 @@ export default function CustomCSSTab() {
         }
     }, [apply]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (highlightRef.current) highlightRef.current.innerHTML = highlight(css) + "\n";
     }, [css]);
 

@@ -5,6 +5,7 @@
  */
 
 import { Toaster } from "@turbopack/common/utils";
+import { Logger } from "@utils/Logger";
 
 export const enum ToastType {
     MESSAGE,
@@ -33,12 +34,19 @@ const TOAST_FN: Record<ToastType, ToastMethod | null> = {
     [ToastType.LOADING]: "loading",
 };
 
+const logger = new Logger("Notifications");
+
 export function showToast(message: string, type: ToastType = ToastType.MESSAGE, options?: ToastOptions): string | number {
+    if (!Toaster.toast) {
+        logger.warn("showToast called before Toaster initialized, discarding:", message);
+        return -1;
+    }
+
     const { toast } = Toaster;
     const key = TOAST_FN[type];
     return key ? toast[key](message, options) : toast(message, options);
 }
 
 export function dismissToast(id?: string | number) {
-    Toaster.toast.dismiss(id);
+    Toaster.toast?.dismiss(id);
 }

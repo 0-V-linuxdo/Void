@@ -28,7 +28,7 @@ export * as common from "@turbopack/common";
 export { getModuleCache, getRuntimeFactoryRegistry, getRuntimeModuleCache, getTurbopackHelpers, isBlacklisted, onceReady, onModuleLoad, patches, patchReport, patchResults, patchStats, syncLazyModules } from "@turbopack/patchTurbopack";
 export * from "@turbopack/turbopack";
 export { Devs } from "@utils/constants";
-export { classes, classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
+export { classes, classNameFactory, disableStyle, enableStyle, registerStyle, unregisterStyle } from "@utils/css";
 export { isNonNullish, isObject, isTruthy } from "@utils/guards";
 export { makeLazy, proxyLazy } from "@utils/lazy";
 export { Logger } from "@utils/Logger";
@@ -41,6 +41,7 @@ const logger = new Logger("TurbopackPatcher", "#e78284");
 
 const FALLBACK_MS = 15_000;
 const RETRY_TIMEOUT_MS = 15_000;
+const RETRY_DEBOUNCE_MS = 200;
 const ORPHAN_REPORT_DELAY_MS = 5_000;
 
 function deferOrphanReport() {
@@ -82,7 +83,7 @@ function retryFailedPlugins() {
                 clearTimeout(timeout);
                 logger.info("All previously failed plugins started after late module load");
             }
-        }, 200);
+        }, RETRY_DEBOUNCE_MS);
     };
 
     const unsub = onModuleLoad(tryRetry);
@@ -105,27 +106,43 @@ function waitForModulesStable() {
         if (cancelWaitFor) cancelWaitFor();
         clearTimeout(fallbackTimer);
         rescanRuntimeModules();
-        blacklistBadModules();
-        _resolveReady();
-        startAllPlugins(StartAt.TurbopackReady);
+
+        try { blacklistBadModules(); } catch (e) { logger.error("blacklistBadModules failed:", e); }
+        try { _resolveReady(); } catch (e) { logger.error("_resolveReady failed:", e); }
+        try { startAllPlugins(StartAt.TurbopackReady); } catch (e) { logger.error("startAllPlugins failed:", e); }
+
         logger.info(`${getModuleCache().size} modules loaded, ready`);
-        retryFailedPlugins();
-        deferOrphanReport();
-        checkForUpdates();
+
+        try { retryFailedPlugins(); } catch (e) { logger.error("retryFailedPlugins failed:", e); }
+        try { deferOrphanReport(); } catch (e) { logger.error("deferOrphanReport failed:", e); }
+        try { checkForUpdates(); } catch (e) { logger.error("checkForUpdates failed:", e); }
     });
 
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
     const fallbackTimer = setTimeout(fire, FALLBACK_MS);
 }
 
+let _initialized = false;
+
 export function init() {
+    if (_initialized) return;
+    _initialized = true;
+
     for (const plugin of Object.values(Plugins)) {
-        registerPlugin(plugin as Plugin);
+        try {
+            registerPlugin(plugin as Plugin);
+        } catch (e) {
+            logger.error("Failed to register plugin:", e);
+        }
     }
 
     initPluginManager();
 
-    patchTurbopack();
+    try {
+        patchTurbopack();
+    } catch (e) {
+        logger.error("Failed to patch Turbopack:", e);
+    }
 
     startAllPlugins(StartAt.Init);
 

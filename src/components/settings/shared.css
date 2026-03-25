@@ -5,9 +5,10 @@
  */
 
 .void-dialog-content {
-    width: 600px;
+    contain: content;
+    width: 37.5rem;
     max-width: calc(100vw - 2rem);
-    min-height: 420px;
+    min-height: 26.25rem;
     padding: 1.5rem;
     border-radius: 1rem;
     border: 1px solid var(--border-l1);

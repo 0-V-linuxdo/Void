@@ -12,8 +12,8 @@
 }
 
 .void-themes-local-textarea {
-    min-height: 250px;
-    max-height: 400px;
+    min-height: 15.625rem;
+    max-height: 25rem;
     resize: vertical;
     font-family: monospace;
     font-size: 0.8rem;

@@ -62,7 +62,13 @@ export function makeLazy<T>(factory: () => T): () => T {
     let attempts = 0;
     return () => {
         if (!resolved) {
-            if (attempts >= MAX_RETRIES) return cache;
+            if (attempts >= MAX_RETRIES) {
+                if (IS_DEV && attempts === MAX_RETRIES) {
+                    attempts++;
+                    console.warn("[Void] proxyLazy: factory failed to resolve after", MAX_RETRIES, "attempts");
+                }
+                return cache;
+            }
             cache = factory();
             attempts++;
             if (cache != null) resolved = true;

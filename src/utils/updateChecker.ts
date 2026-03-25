@@ -10,6 +10,7 @@ import { fetchExternal, sleep } from "@utils/misc";
 import { Logger } from "./Logger";
 
 const logger = new Logger("UpdateChecker", "#85c1dc");
+const SEMVER_RE = /^\d+\.\d+\.\d+$/;
 
 const UPDATE_URL = IS_EXTENSION ? REPO_URL : "https://greasyfork.org/en/scripts/567871-void";
 
@@ -30,7 +31,8 @@ export async function checkForUpdates() {
         if (!resp.ok) return;
 
         const { version: latest } = await resp.json() as { version: string };
-        if (!latest || !isNewer(latest, VERSION)) {
+        if (!latest || !SEMVER_RE.test(latest)) return;
+        if (!isNewer(latest, VERSION)) {
             logger.info(`Up to date (${VERSION})`);
             return;
         }

@@ -35,7 +35,7 @@ export interface NoticeOptions {
 
 const cl = classNameFactory("void-notice-");
 
-const ICONS: Record<string, (size: number) => ReactNode> = {
+const ICONS: Record<NoticeType, (size: number) => ReactNode> = {
     [NoticeType.INFO]: size => <CircleAlertIcon size={size} />,
     [NoticeType.WARNING]: size => <TriangleAlert size={size} />,
     [NoticeType.ERROR]: size => <CircleXIcon size={size} />,
@@ -52,14 +52,14 @@ function Notice({ message, type, action, onClose }: NoticeOptions & { onClose: (
             <span className={cl("icon")}>{renderIcon(18)}</span>
             <span className={cl("message")}>{message}</span>
             {action && (
-                <Button variant="primary" size="sm" shape="pill" onClick={(e: React.MouseEvent) => { e.stopPropagation(); action.onClick(); }}>
+                <Button variant="primary" size="sm" shape="pill" onClick={action.onClick}>
                     {action.icon}
                     {action.label}
                 </Button>
             )}
-            <button className={cl("close")} onClick={(e: React.MouseEvent) => { e.stopPropagation(); onClose(); }}>
+            <Button variant="tertiary" size="sm" shape="square" className={cl("close")} onClick={onClose}>
                 <Cross2Icon size={16} />
-            </button>
+            </Button>
         </div>
     );
 }
@@ -70,7 +70,7 @@ export function showNotice(options: NoticeOptions): string | number {
     const { toast } = Toaster;
 
     activeNoticeId = toast.custom(
-        (id: string | number) => <Notice {...options} onClose={() => toast.dismiss(id)} />,
+        (id: string | number) => <Notice {...options} onClose={() => { toast.dismiss(id); activeNoticeId = null; }} />,
         { duration: options.duration ?? Infinity },
     );
 

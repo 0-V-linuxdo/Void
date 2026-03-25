@@ -10,12 +10,10 @@ import { idbGet, idbSet } from "@utils/idb";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
-import { SettingsStore as SettingsStoreClass } from "@utils/SettingsStore";
+import { STORAGE_KEY, SettingsStore as SettingsStoreClass } from "@utils/SettingsStore";
 import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingSelectOption, type SettingsChecks, type SettingsDefinition } from "@utils/types";
 
 const logger = new Logger("Settings");
-
-const STORAGE_KEY = "VoidSettings";
 
 export interface Settings {
     plugins: {
@@ -71,7 +69,9 @@ export async function initSettings(): Promise<void> {
 
     if (!raw) {
         raw = migrateFromLocalStorage();
-        if (raw) idbSet(STORAGE_KEY, raw).catch((e: any) => logger.debug("Failed to persist settings to IndexedDB:", e));
+        if (raw) idbSet(STORAGE_KEY, raw).then(() => {
+            try { localStorage.removeItem(STORAGE_KEY); } catch {}
+        }).catch((e: any) => logger.debug("Failed to persist settings to IndexedDB:", e));
     }
 
     if (raw) {
@@ -90,8 +90,7 @@ function migrateFromLocalStorage(): string | null {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
-            localStorage.removeItem(STORAGE_KEY);
-            logger.info("Migrated settings from localStorage to IndexedDB");
+            logger.info("Migrating settings from localStorage to IndexedDB");
             return raw;
         }
     } catch (e) {
@@ -165,7 +164,7 @@ export function updateSettingsPluginData(patch: Partial<SettingsPluginData>) {
 export function resolveDefault(setting: PluginSettingDef): any {
     if ("default" in setting) return setting.default;
     if (setting.type === OptionType.SELECT) return (setting as { options: readonly PluginSettingSelectOption[] }).options.find(o => o.default)?.value;
-    return;
+    return undefined;
 }
 
 export function definePluginSettings<Def extends SettingsDefinition, Checks extends SettingsChecks<Def>, PrivateSettings extends object = {}>(def: Def, checks?: Checks) {

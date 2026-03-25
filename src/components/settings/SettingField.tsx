@@ -101,7 +101,7 @@ function SliderField({ id, setting, pluginName }: SettingFieldProps) {
     return (
         <Flex flexDirection="column" gap="0.5rem">
             <SettingLabel id={id} setting={setting} />
-            <Flex gap="8px" className={cl("slider-row")}>
+            <Flex gap="0.5rem" className={cl("slider-row")}>
                 <Slider
                     value={[(value as number) ?? min]}
                     min={min}

@@ -17,8 +17,26 @@ function getContainer(): HTMLElement | null {
     if (container?.isConnected) return container;
     if (!document.head) return null;
 
+    const wasDisconnected = container != null;
     container = document.createElement("void-styles") as HTMLElement;
     document.head.appendChild(container);
+
+    if (wasDisconnected) {
+        for (const [name, el] of activeStyles) {
+            if (!el.isConnected) {
+                const css = styleRegistry.get(name);
+                if (css) {
+                    const fresh = document.createElement("style");
+                    fresh.dataset.void = name;
+                    fresh.textContent = css;
+                    fresh.disabled = el.disabled;
+                    container.appendChild(fresh);
+                    activeStyles.set(name, fresh);
+                }
+            }
+        }
+    }
+
     return container;
 }
 
@@ -93,6 +111,15 @@ export function disableStyle(name: string) {
 
     el.disabled = true;
     return true;
+}
+
+export function unregisterStyle(name: string) {
+    const el = activeStyles.get(name);
+    if (el) {
+        el.remove();
+        activeStyles.delete(name);
+    }
+    styleRegistry.delete(name);
 }
 
 export type ClassNameFactoryArg = string | string[] | Record<string, any> | false | null | undefined | 0 | "";

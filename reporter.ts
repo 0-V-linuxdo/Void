@@ -92,7 +92,7 @@ function extractPatchesStatic(src: string, pluginName: string): Patch[] {
         const replacements: Array<{ match: string | RegExp; replace: string }> = [];
 
         for (const rm of afterFind.matchAll(/match:\s*\/((?:[^/\\]|\\.)+)\/(\w*)/g)) {
-            try { replacements.push({ match: new RegExp(rm[1], rm[2]), replace: "" }); } catch {}
+            try { replacements.push({ match: new RegExp(rm[1], rm[2]), replace: "" }); } catch { /* invalid regex in static extraction */ }
         }
         for (const sm of afterFind.matchAll(/match:\s*"((?:[^"\\]|\\.)*)"/g)) {
             replacements.push({ match: sm[1], replace: "" });
@@ -137,7 +137,7 @@ function collectPatches(): { patches: Patch[]; skipped: string[] } {
                 }
                 extracted = true;
             }
-        } catch {}
+        } catch { skipped.push(pluginName); }
 
         if (!extracted) {
             const staticPatches = extractPatchesStatic(src, pluginName);
@@ -207,7 +207,9 @@ async function main() {
     console.log(bold("\nVoid Reporter\n"));
 
     console.log(dim("Fetching grok.com..."));
-    const html = await (await fetch(GROK_URL, { redirect: "follow" })).text();
+    const resp = await fetch(GROK_URL, { redirect: "follow" });
+    if (!resp.ok) throw new Error(`Failed to fetch grok.com (HTTP ${resp.status})`);
+    const html = await resp.text();
     const chunkPaths = [...new Set(html.match(CHUNK_RE) ?? [])];
     const buildId = html.match(/"buildId":"([^"]+)"/)?.[1]
         ?? chunkPaths.map(p => p.split("/").pop()!.replace(/\.js$/, "")).sort().join("").slice(0, 12)

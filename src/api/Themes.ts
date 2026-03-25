@@ -5,7 +5,7 @@
  */
 
 import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
-import { disableStyle, enableStyle, registerStyle } from "@utils/css";
+import { disableStyle, enableStyle, registerStyle, unregisterStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { fetchExternal } from "@utils/misc";
 
@@ -107,7 +107,6 @@ export async function addTheme(url: string): Promise<ThemeData> {
     const css = await resp.text();
     if (!css.trim()) throw new Error("Theme file is empty.");
 
-    // Re-check after async to prevent race with concurrent addTheme calls
     if (getThemes().some(t => t.url === url)) {
         throw new Error("This theme is already added.");
     }
@@ -172,7 +171,7 @@ export function updateLocalTheme(url: string, data: { name?: string; css?: strin
 }
 
 export function removeTheme(url: string) {
-    disableStyle(themeStyleId(url));
+    unregisterStyle(themeStyleId(url));
     updateSettingsPluginData({ themes: getThemes().filter(t => t.url !== url) });
 }
 
@@ -192,16 +191,26 @@ export async function enableTheme(url: string) {
         return;
     }
 
-    const resp = await fetchExternal(url);
-    if (!resp.ok) {
-        logger.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+    let css: string;
+    try {
+        const resp = await fetchExternal(url);
+        if (!resp.ok) {
+            logger.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+            return;
+        }
+
+        const current = getThemes().find(t => t.url === url);
+        if (!current?.enabled || !isThemesEnabled()) return;
+
+        css = await resp.text();
+    } catch (e) {
+        logger.warn("Failed to fetch theme CSS:", url, e);
         return;
     }
 
-    const current = getThemes().find(t => t.url === url);
-    if (!current?.enabled || !isThemesEnabled()) return;
+    const recheck = getThemes().find(t => t.url === url);
+    if (!recheck?.enabled || !isThemesEnabled()) return;
 
-    const css = await resp.text();
     registerStyle(id, css);
 }
 
@@ -227,6 +236,7 @@ export async function loadSavedThemes() {
             const resp = await fetchExternal(t.url);
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const css = await resp.text();
+            if (!getThemes().find(th => th.url === t.url)?.enabled || !isThemesEnabled()) return;
             registerStyle(themeStyleId(t.url), css);
         }),
     );

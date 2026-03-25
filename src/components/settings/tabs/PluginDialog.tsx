@@ -32,9 +32,10 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
     const resetSettings = useCallback(() => {
         const current = Settings.plugins[plugin.name];
         if (!current) return;
-        const cleaned = { ...current };
-        for (const [key] of entries) delete cleaned[key];
-        Settings.plugins[plugin.name] = cleaned;
+        const entryKeys = new Set(entries.map(([key]) => key));
+        Settings.plugins[plugin.name] = Object.fromEntries(
+            Object.entries(current).filter(([k]) => !entryKeys.has(k)),
+        ) as typeof current;
         setConfirming(false);
     }, [plugin.name, entries]);
 

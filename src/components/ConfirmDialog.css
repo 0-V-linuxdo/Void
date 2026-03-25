@@ -1,4 +1,5 @@
 .void-confirm-dialog {
+    contain: content;
     width: 100%;
     max-width: 28rem;
     padding: 1.5rem;
