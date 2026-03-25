@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.2
+// @version      0.5.3
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -15,6 +15,7 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
+// @grant        GM_setClipboard
 // @grant        GM_listValues
 // @connect      self
 // @connect      raw.githubusercontent.com
@@ -30,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.2 — A modification for grok.com
+ * Void v0.5.3 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -59,6 +60,7 @@
     useExternalStore: () => useExternalStore,
     useEventSubscription: () => useEventSubscription,
     updateLocalTheme: () => updateLocalTheme,
+    unregisterStyle: () => unregisterStyle,
     syncLazyModules: () => syncLazyModules,
     subscribe: () => subscribe,
     stopPlugin: () => stopPlugin,
@@ -281,8 +283,10 @@
     let attempts = 0;
     return () => {
       if (!resolved) {
-        if (attempts >= MAX_RETRIES)
+        if (attempts >= MAX_RETRIES) {
+          if (false) {}
           return cache;
+        }
         cache = factory();
         attempts++;
         if (cache != null)
@@ -309,10 +313,15 @@
   function setCreateElement(fn) {
     _createElement = fn;
   }
+  var LAZY_MAX_RETRIES = 200;
   function LazyComponent(name, factory) {
     let cached = null;
+    let attempts = 0;
     const wrapper = (props) => {
-      cached ??= factory();
+      if (!cached && attempts < LAZY_MAX_RETRIES) {
+        cached = factory();
+        attempts++;
+      }
       if (!cached || !_createElement)
         return null;
       return _createElement(cached, props);
@@ -322,7 +331,10 @@
       get(target, prop, receiver) {
         if (prop === "$$voidGetWrapped")
           return () => cached ?? factory();
-        cached ??= factory();
+        if (!cached && attempts < LAZY_MAX_RETRIES) {
+          cached = factory();
+          attempts++;
+        }
         if (cached && prop in cached)
           return cached[prop];
         return Reflect.get(target, prop, receiver);
@@ -339,6 +351,7 @@
     red: "\x1B[31m",
     yellow: "\x1B[33m"
   };
+  var LEVEL_ANSI = { error: ANSI.red, warn: ANSI.yellow };
 
   class Logger {
     name;
@@ -352,7 +365,6 @@
         console[level](`%c Void %c %c ${this.name} `, "background: white; color: black; font-weight: bold; border-radius: 5px;", "", `background: ${this.color}; color: black; font-weight: bold; border-radius: 5px;`, ...args);
         return;
       }
-      const LEVEL_ANSI = { error: ANSI.red, warn: ANSI.yellow };
       const levelAnsi = LEVEL_ANSI[level] ?? ANSI.green;
       const prefix = `${ANSI.bold}${levelAnsi}[${this.name}]${ANSI.reset}`;
       console[level](prefix, ...args);
@@ -379,7 +391,7 @@
     const title = key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     if (!acronyms)
       return title;
-    return Object.entries(acronyms).reduce((s, [from, to]) => s.replace(new RegExp(`\\b${from}\\b`, "g"), to), title);
+    return Object.entries(acronyms).reduce((s, [from, to]) => s.replace(new RegExp(`\\b${escapeRegExp(from)}\\b`, "g"), to), title);
   }
   function escapeRegExp(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -422,10 +434,13 @@ ${src}`;
       src += `
 ${sourceUrl}`;
     script.textContent = src;
-    (document.head ?? document.documentElement).appendChild(script);
-    script.remove();
+    try {
+      (document.head ?? document.documentElement).appendChild(script);
+    } finally {
+      script.remove();
+    }
     const fn = pageWindow[key];
-    delete pageWindow[key];
+    pageWindow[key] = undefined;
     if (!fn)
       throw new Error("Factory compilation failed (CSP?)");
     return fn;
@@ -838,8 +853,13 @@ ${sourceUrl}`;
   }
   function handleChunkPush(...args) {
     for (let i = 0;i < args.length; i++) {
-      if (Array.isArray(args[i]))
-        args[i] = patchChunkEntry(args[i]);
+      if (Array.isArray(args[i])) {
+        try {
+          args[i] = patchChunkEntry(args[i]);
+        } catch (e) {
+          logger.error("Failed to patch chunk entry:", e);
+        }
+      }
     }
     return originalPush(...args);
   }
@@ -992,7 +1012,11 @@ ${sourceUrl}`;
     if (existingTp && !Array.isArray(existingTp) && typeof existingTp.push === "function") {
       originalPush = existingTp.push.bind(existingTp);
       existingTp.push = (...args) => handleChunkPush(...args);
-      wrapExistingFactories();
+      try {
+        wrapExistingFactories();
+      } catch (e) {
+        logger.error("Failed to wrap existing factories:", e);
+      }
       return;
     }
     const queuedChunks = [];
@@ -1018,7 +1042,11 @@ ${sourceUrl}`;
             }
           }
           queuedChunks.length = 0;
-          wrapExistingFactories();
+          try {
+            wrapExistingFactories();
+          } catch (e) {
+            logger.error("Failed to wrap existing factories:", e);
+          }
         } else {
           currentTurbopack = newValue;
         }
@@ -1638,8 +1666,24 @@ ${sourceUrl}`;
       return container;
     if (!document.head)
       return null;
+    const wasDisconnected = container != null;
     container = document.createElement("void-styles");
     document.head.appendChild(container);
+    if (wasDisconnected) {
+      for (const [name, el] of activeStyles) {
+        if (!el.isConnected) {
+          const css = styleRegistry.get(name);
+          if (css) {
+            const fresh = document.createElement("style");
+            fresh.dataset.void = name;
+            fresh.textContent = css;
+            fresh.disabled = el.disabled;
+            container.appendChild(fresh);
+            activeStyles.set(name, fresh);
+          }
+        }
+      }
+    }
     return container;
   }
   function flushPending() {
@@ -1706,6 +1750,14 @@ ${sourceUrl}`;
       return false;
     el.disabled = true;
     return true;
+  }
+  function unregisterStyle(name) {
+    const el = activeStyles.get(name);
+    if (el) {
+      el.remove();
+      activeStyles.delete(name);
+    }
+    styleRegistry.delete(name);
   }
   var classNameFactory = (prefix = "") => (...args) => {
     const classNames = new Set;
@@ -1781,6 +1833,7 @@ ${sourceUrl}`;
   })(OptionType ||= {});
   // void-css:D:/Projects/Void/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
+    contain: content;
     width: 100%;
     max-width: 28rem;
     padding: 1.5rem;
@@ -2011,6 +2064,7 @@ ${sourceUrl}`;
   });
   // void-css:D:/Projects/Void/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
+    contain: content;
     padding: 1rem;
     border-radius: var(--radius);
     background: hsl(var(--red-800) / 60%);
@@ -2078,6 +2132,14 @@ ${sourceUrl}`;
     strokeWidth: props.strokeWidth ?? 2,
     strokeLinecap: "round",
     strokeLinejoin: "round",
+    className: props.className,
+    "aria-hidden": "true"
+  }, children);
+  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React.createElement("svg", {
+    width: props.size ?? "1em",
+    height: props.size ?? "1em",
+    viewBox,
+    fill: "currentColor",
     className: props.className,
     "aria-hidden": "true"
   }, children);
@@ -2222,14 +2284,7 @@ ${sourceUrl}`;
   }), /* @__PURE__ */ React.createElement("path", {
     d: "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"
   }));
-  var Cross2Icon = (props = {}) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.size ?? "1em",
-    height: props.size ?? "1em",
-    viewBox: "0 0 15 15",
-    fill: "none",
-    className: props.className,
-    "aria-hidden": "true"
-  }, /* @__PURE__ */ React.createElement("path", {
+  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React.createElement("path", {
     d: "M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",
     fill: "currentColor",
     fillRule: "evenodd",
@@ -2248,14 +2303,7 @@ ${sourceUrl}`;
     cy: "19",
     r: "1"
   }));
-  var GhostFilledIcon = (props = {}) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.size ?? "1em",
-    height: props.size ?? "1em",
-    viewBox: "0 0 24 24",
-    fill: "currentColor",
-    className: props.className,
-    "aria-hidden": "true"
-  }, /* @__PURE__ */ React.createElement("path", {
+  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"
@@ -2416,14 +2464,12 @@ ${sourceUrl}`;
 
   // src/utils/misc.ts
   function mergeDefaults(target, defaults) {
-    for (const key in defaults) {
-      if (key === "__proto__" || key === "constructor" || key === "prototype")
-        continue;
+    for (const [key, defaultValue] of Object.entries(defaults)) {
       const value = target[key];
       if (isObject(value)) {
-        mergeDefaults(value, defaults[key]);
+        mergeDefaults(value, defaultValue);
       } else if (value === undefined) {
-        target[key] = defaults[key];
+        target[key] = defaultValue;
       }
     }
     return target;
@@ -2477,13 +2523,17 @@ ${sourceUrl}`;
     return debounced;
   }
   function fetchExternal(url) {
-    if (typeof GM_xmlhttpRequest === "undefined")
-      return fetch(url);
+    if (typeof GM_xmlhttpRequest === "undefined") {
+      const controller = new AbortController;
+      const timer = setTimeout(() => controller.abort(), 30000);
+      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+    }
     return new Promise((resolve, reject) => {
       GM_xmlhttpRequest({
         method: "GET",
         url,
         responseType: "blob",
+        timeout: 30000,
         onload(resp) {
           const blob = resp.response;
           resolve(new Response(blob, {
@@ -2571,7 +2621,9 @@ ${sourceUrl}`;
       Notification.requestPermission().then((p) => {
         if (p === "granted")
           new Notification(title, { body, icon });
-      }).catch(() => {});
+      }).catch(() => {
+        return;
+      });
     }
   }
 
@@ -2703,8 +2755,10 @@ ${sourceUrl}`;
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });
-    promise.catch(() => {
+    promise.catch((e) => {
       dbPromise = null;
+      if (false)
+        ;
     });
     dbPromise = promise;
     return promise;
@@ -2722,9 +2776,10 @@ ${sourceUrl}`;
     const db = await open();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, "readwrite");
-      const req = tx.objectStore(STORE_NAME).put(value, key);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
+      tx.objectStore(STORE_NAME).put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
     });
   }
 
@@ -2747,10 +2802,11 @@ ${sourceUrl}`;
     prefixListeners = new Map;
     defaultGetters = new Map;
     saveTimer = null;
+    proxyCache = new WeakMap;
     constructor(plain) {
       this.plain = plain;
       this.store = this.makeProxy(plain);
-      window.addEventListener("beforeunload", () => this.flush());
+      window.addEventListener("beforeunload", () => this.flush(), { once: true });
     }
     flush() {
       if (this.saveTimer) {
@@ -2763,7 +2819,10 @@ ${sourceUrl}`;
       this.defaultGetters.set(prefix, getter);
     }
     makeProxy(target, path = "") {
-      return new Proxy(target, {
+      const cached = this.proxyCache.get(target);
+      if (cached)
+        return cached;
+      const proxy = new Proxy(target, {
         get: (t, key) => {
           let value = t[key];
           if (value === undefined && key !== "__proto__") {
@@ -2804,18 +2863,35 @@ ${sourceUrl}`;
           return true;
         }
       });
+      this.proxyCache.set(target, proxy);
+      return proxy;
     }
     notifyListeners(path) {
-      for (const l of this.globalListeners)
-        l(path);
+      for (const l of this.globalListeners) {
+        try {
+          l(path);
+        } catch (e) {
+          logger5.error("Settings listener error:", e);
+        }
+      }
       const listeners2 = this.pathListeners.get(path);
       if (listeners2)
-        for (const l of listeners2)
-          l(path);
+        for (const l of listeners2) {
+          try {
+            l(path);
+          } catch (e) {
+            logger5.error("Settings listener error:", e);
+          }
+        }
       for (const [prefix, set] of this.prefixListeners) {
         if (path.startsWith(prefix))
-          for (const l of set)
-            l(path);
+          for (const l of set) {
+            try {
+              l(path);
+            } catch (e) {
+              logger5.error("Settings listener error:", e);
+            }
+          }
       }
       this.scheduleSave();
     }
@@ -2874,7 +2950,6 @@ ${sourceUrl}`;
 
   // src/api/Settings.ts
   var logger6 = new Logger("Settings");
-  var STORAGE_KEY2 = "VoidSettings";
   var DefaultSettings = {
     plugins: {},
     notifications: {
@@ -2890,7 +2965,7 @@ ${sourceUrl}`;
   async function initSettings() {
     if (typeof GM_getValue === "function") {
       try {
-        const raw2 = GM_getValue(STORAGE_KEY2, null);
+        const raw2 = GM_getValue(STORAGE_KEY, null);
         if (raw2) {
           const parsed = JSON.parse(raw2);
           if (isObject(parsed))
@@ -2904,14 +2979,18 @@ ${sourceUrl}`;
     }
     let raw = null;
     try {
-      raw = await idbGet(STORAGE_KEY2);
+      raw = await idbGet(STORAGE_KEY);
     } catch (e) {
       logger6.warn("Failed to read IndexedDB:", e);
     }
     if (!raw) {
       raw = migrateFromLocalStorage();
       if (raw)
-        idbSet(STORAGE_KEY2, raw).catch((e) => logger6.debug("Failed to persist settings to IndexedDB:", e));
+        idbSet(STORAGE_KEY, raw).then(() => {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch {}
+        }).catch((e) => logger6.debug("Failed to persist settings to IndexedDB:", e));
     }
     if (raw) {
       try {
@@ -2926,10 +3005,9 @@ ${sourceUrl}`;
   }
   function migrateFromLocalStorage() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY2);
+      const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        localStorage.removeItem(STORAGE_KEY2);
-        logger6.info("Migrated settings from localStorage to IndexedDB");
+        logger6.info("Migrating settings from localStorage to IndexedDB");
         return raw;
       }
     } catch (e) {
@@ -3202,8 +3280,13 @@ ${sourceUrl}`;
       removePluginContextMenuItems(plugin);
       const unsubs = pluginUnsubscribers.get(plugin.name);
       if (unsubs) {
-        for (const unsub of unsubs)
-          unsub();
+        for (const unsub of unsubs) {
+          try {
+            unsub();
+          } catch (e2) {
+            logger7.error(`Unsub error during ${plugin.name} start cleanup:`, e2);
+          }
+        }
         pluginUnsubscribers.delete(plugin.name);
       }
       return false;
@@ -3217,29 +3300,53 @@ ${sourceUrl}`;
     } catch (e) {
       logger7.error(`Error in ${plugin.name}.stop():`, e);
     }
-    try {
-      const unsubs = pluginUnsubscribers.get(plugin.name);
-      if (unsubs) {
-        for (const unsub of unsubs)
+    let failed = false;
+    const unsubs = pluginUnsubscribers.get(plugin.name);
+    if (unsubs) {
+      for (const unsub of unsubs) {
+        try {
           unsub();
-        pluginUnsubscribers.delete(plugin.name);
-      }
-      removeChatBarButton(plugin.name);
-      removePluginContextMenuItems(plugin);
-      if (plugin.managedStyle && !plugin.patches?.length)
-        disableStyle(plugin.managedStyle);
-      if (plugin.cleanupSelectors) {
-        for (const selector of plugin.cleanupSelectors) {
-          document.querySelectorAll(selector).forEach((el) => el.remove());
+        } catch (e) {
+          failed = true;
+          logger7.error(`Unsub error in ${plugin.name}:`, e);
         }
       }
-      plugin.started = false;
-      return true;
-    } catch (e) {
-      plugin.started = false;
-      logger7.error(`Failed to stop plugin ${plugin.name}:`, e);
-      return false;
+      pluginUnsubscribers.delete(plugin.name);
     }
+    try {
+      removeChatBarButton(plugin.name);
+    } catch (e) {
+      failed = true;
+      logger7.error(`Failed to remove chat bar button for ${plugin.name}:`, e);
+    }
+    try {
+      removePluginContextMenuItems(plugin);
+    } catch (e) {
+      failed = true;
+      logger7.error(`Failed to remove context menu items for ${plugin.name}:`, e);
+    }
+    try {
+      if (plugin.managedStyle && !plugin.patches?.length)
+        disableStyle(plugin.managedStyle);
+    } catch (e) {
+      failed = true;
+      logger7.error(`Failed to disable style for ${plugin.name}:`, e);
+    }
+    try {
+      if (plugin.cleanupSelectors) {
+        for (const selector of plugin.cleanupSelectors) {
+          for (const el of document.querySelectorAll(selector))
+            el.remove();
+        }
+      }
+    } catch (e) {
+      failed = true;
+      logger7.error(`Failed to cleanup selectors for ${plugin.name}:`, e);
+    }
+    plugin.started = false;
+    if (failed)
+      logger7.error(`Plugin ${plugin.name} stopped with errors`);
+    return !failed;
   }
   function startAllPlugins(target) {
     for (const [name, plugin] of Object.entries(plugins)) {
@@ -3282,15 +3389,15 @@ ${sourceUrl}`;
       if (!isPluginEnabled(name))
         continue;
       const plugin = plugins[name];
-      plugin.dependencies?.forEach((d) => {
+      for (const d of plugin.dependencies ?? []) {
         const dep = plugins[d];
         if (!dep) {
           logger7.warn(`Plugin ${name} has unresolved dependency ${d}`);
-          return;
+          continue;
         }
         Settings.plugins[d] = { ...Settings.plugins[d], enabled: true };
         dep.isDependency = true;
-      });
+      }
       if (plugin.chatBarButton)
         neededApis.add("ChatBarButtonAPI");
       if (plugin.contextMenuItems)
@@ -3308,11 +3415,15 @@ ${sourceUrl}`;
       if (enabled)
         ensureMethodsBound(plugin);
       if (plugin.patches) {
-        for (const patch of plugin.patches) {
-          if (enabled)
-            addPatch(patch, name);
-          else if (false)
-            ;
+        try {
+          for (const patch of plugin.patches) {
+            if (enabled)
+              addPatch(patch, name);
+            else if (false)
+              ;
+          }
+        } catch (e) {
+          logger7.error(`Failed to register patches for ${name}`, e);
         }
       }
     }
@@ -3320,6 +3431,7 @@ ${sourceUrl}`;
 
   // void-css:D:/Projects/Void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
+    contain: content;
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -3399,16 +3511,13 @@ ${sourceUrl}`;
       variant: "primary",
       size: "sm",
       shape: "pill",
-      onClick: (e) => {
-        e.stopPropagation();
-        action.onClick();
-      }
-    }, action.icon, action.label), /* @__PURE__ */ React.createElement("button", {
+      onClick: action.onClick
+    }, action.icon, action.label), /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
       className: cl2("close"),
-      onClick: (e) => {
-        e.stopPropagation();
-        onClose();
-      }
+      onClick: onClose
     }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
     })));
@@ -3418,7 +3527,10 @@ ${sourceUrl}`;
     const { toast } = Toaster;
     activeNoticeId = toast.custom((id) => /* @__PURE__ */ React.createElement(Notice, {
       ...options,
-      onClose: () => toast.dismiss(id)
+      onClose: () => {
+        toast.dismiss(id);
+        activeNoticeId = null;
+      }
     }), { duration: options.duration ?? Infinity });
     return activeNoticeId;
   }
@@ -3431,6 +3543,7 @@ ${sourceUrl}`;
 
   // src/utils/updateChecker.ts
   var logger8 = new Logger("UpdateChecker", "#85c1dc");
+  var SEMVER_RE = /^\d+\.\d+\.\d+$/;
   var UPDATE_URL = "https://greasyfork.org/en/scripts/567871-void";
   function isNewer(remote, local) {
     const r = remote.split(".").map(Number);
@@ -3450,11 +3563,13 @@ ${sourceUrl}`;
       if (!resp.ok)
         return;
       const { version: latest } = await resp.json();
-      if (!latest || !isNewer(latest, "0.5.2")) {
-        logger8.info(`Up to date (${"0.5.2"})`);
+      if (!latest || !SEMVER_RE.test(latest))
+        return;
+      if (!isNewer(latest, "0.5.3")) {
+        logger8.info(`Up to date (${"0.5.3"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.2"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.3"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3717,7 +3832,7 @@ ${sourceUrl}`;
     updateSettingsPluginData({ themes });
   }
   function removeTheme(url) {
-    disableStyle(themeStyleId(url));
+    unregisterStyle(themeStyleId(url));
     updateSettingsPluginData({ themes: getThemes().filter((t) => t.url !== url) });
   }
   async function enableTheme(url) {
@@ -3737,15 +3852,24 @@ ${sourceUrl}`;
         registerStyle(id, theme.css);
       return;
     }
-    const resp = await fetchExternal(url);
-    if (!resp.ok) {
-      logger9.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+    let css;
+    try {
+      const resp = await fetchExternal(url);
+      if (!resp.ok) {
+        logger9.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+        return;
+      }
+      const current = getThemes().find((t) => t.url === url);
+      if (!current?.enabled || !isThemesEnabled())
+        return;
+      css = await resp.text();
+    } catch (e) {
+      logger9.warn("Failed to fetch theme CSS:", url, e);
       return;
     }
-    const current = getThemes().find((t) => t.url === url);
-    if (!current?.enabled || !isThemesEnabled())
+    const recheck = getThemes().find((t) => t.url === url);
+    if (!recheck?.enabled || !isThemesEnabled())
       return;
-    const css = await resp.text();
     registerStyle(id, css);
   }
   function disableTheme(url) {
@@ -3767,6 +3891,8 @@ ${sourceUrl}`;
       if (!resp.ok)
         throw new Error(`HTTP ${resp.status}`);
       const css = await resp.text();
+      if (!getThemes().find((th) => th.url === t.url)?.enabled || !isThemesEnabled())
+        return;
       registerStyle(themeStyleId(t.url), css);
     }));
     for (let i = 0;i < results.length; i++) {
@@ -3779,6 +3905,7 @@ ${sourceUrl}`;
 
   // void-css:D:/Projects/Void/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
+    contain: content;
     height: 100%;
     min-height: 0;
 }
@@ -4013,7 +4140,7 @@ ${sourceUrl}`;
         });
       }
     }, [apply]);
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (highlightRef.current)
         highlightRef.current.innerHTML = highlight(css) + `
 `;
@@ -4062,9 +4189,10 @@ ${sourceUrl}`;
  */
 
 .void-dialog-content {
-    width: 600px;
+    contain: content;
+    width: 37.5rem;
     max-width: calc(100vw - 2rem);
-    min-height: 420px;
+    min-height: 26.25rem;
     padding: 1.5rem;
     border-radius: 1rem;
     border: 1px solid var(--border-l1);
@@ -4185,13 +4313,14 @@ ${sourceUrl}`;
  */
 
 .void-card-root {
+    contain: content;
     padding: 0;
     display: flex;
     flex-direction: column;
     border-radius: 0.375rem;
     border: 1px solid var(--border-l1);
     background: var(--card);
-    min-height: 120px;
+    min-height: 7.5rem;
 }
 
 .void-card-body {
@@ -4464,7 +4593,7 @@ ${sourceUrl}`;
       id,
       setting
     }), /* @__PURE__ */ React.createElement(Flex, {
-      gap: "8px",
+      gap: "0.5rem",
       className: cl6("slider-row")
     }, /* @__PURE__ */ React.createElement(Slider, {
       value: [value ?? min],
@@ -4554,10 +4683,8 @@ ${sourceUrl}`;
       const current = Settings.plugins[plugin.name];
       if (!current)
         return;
-      const cleaned = { ...current };
-      for (const [key] of entries)
-        delete cleaned[key];
-      Settings.plugins[plugin.name] = cleaned;
+      const entryKeys = new Set(entries.map(([key]) => key));
+      Settings.plugins[plugin.name] = Object.fromEntries(Object.entries(current).filter(([k]) => !entryKeys.has(k)));
       setConfirming(false);
     }, [plugin.name, entries]);
     return /* @__PURE__ */ React.createElement(Dialog, {
@@ -4794,8 +4921,8 @@ ${sourceUrl}`;
 }
 
 .void-themes-local-textarea {
-    min-height: 250px;
-    max-height: 400px;
+    min-height: 15.625rem;
+    max-height: 25rem;
     resize: vertical;
     font-family: monospace;
     font-size: 0.8rem;
@@ -5226,13 +5353,18 @@ ${sourceUrl}`;
     [4 /* WARNING */]: "warning",
     [5 /* LOADING */]: "loading"
   };
+  var logger11 = new Logger("Notifications");
   function showToast(message, type = 0 /* MESSAGE */, options) {
+    if (!Toaster.toast) {
+      logger11.warn("showToast called before Toaster initialized, discarding:", message);
+      return -1;
+    }
     const { toast } = Toaster;
     const key = TOAST_FN[type];
     return key ? toast[key](message, options) : toast(message, options);
   }
   function dismissToast(id) {
-    Toaster.toast.dismiss(id);
+    Toaster.toast?.dismiss(id);
   }
 
   // src/plugins/experiments/index.tsx
@@ -5512,7 +5644,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/_core/settings/index.tsx
-  var logger11 = new Logger("Settings");
+  var logger12 = new Logger("Settings");
   var cl12 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     hideUserId: {
@@ -5570,9 +5702,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.2"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"2e9fb34"}`
-    }, `(${"2e9fb34"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.3"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"227b3a4"}`
+    }, `(${"227b3a4"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5661,7 +5793,7 @@ ${sourceUrl}`;
           key: "void-version"
         })];
       } catch (e) {
-        logger11.error("Failed to render tabs:", e);
+        logger12.error("Failed to render tabs:", e);
         return [];
       }
     },
@@ -5674,7 +5806,7 @@ ${sourceUrl}`;
           Wrapper
         })];
       } catch (e) {
-        logger11.error("Failed to render panels:", e);
+        logger12.error("Failed to render panels:", e);
         return [];
       }
     },
@@ -5686,9 +5818,9 @@ ${sourceUrl}`;
         else
           document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
       } catch (e) {
-        logger11.error("Failed to load saved CSS:", e);
+        logger12.error("Failed to load saved CSS:", e);
       }
-      loadSavedThemes().catch((e) => logger11.error("Failed to load saved themes:", e));
+      loadSavedThemes().catch((e) => logger12.error("Failed to load saved themes:", e));
     },
     patches: [
       {
@@ -5736,6 +5868,9 @@ ${sourceUrl}`;
   var store3 = createExternalStore();
   function openModal(render, options) {
     const key = options?.modalKey ?? `void-modal-${nextId++}`;
+    const idx = modalStack.findIndex((m) => m.key === key);
+    if (idx !== -1)
+      modalStack.splice(idx, 1);
     modalStack.push({ key, render });
     store3.notify();
     return key;
@@ -5782,18 +5917,20 @@ ${sourceUrl}`;
       });
     });
   }
-  function ModalInstance({ entry }) {
+  var ModalInstance = ErrorBoundary.wrap(function ModalInstance2({ entry }) {
     const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
+    const onOpenChange = useCallback((open2) => {
+      if (!open2)
+        onClose();
+    }, [onClose]);
+    const modalProps = useMemo(() => ({ onClose }), [onClose]);
     return /* @__PURE__ */ React.createElement(Dialog, {
       open: true,
-      onOpenChange: (open2) => {
-        if (!open2)
-          onClose();
-      }
+      onOpenChange
     }, /* @__PURE__ */ React.createElement(DialogContent, {
       "aria-describedby": undefined
-    }, entry.render({ onClose })));
-  }
+    }, entry.render(modalProps)));
+  });
   function ModalContainer() {
     useExternalStore(store3);
     if (!modalStack.length)
@@ -5820,7 +5957,7 @@ ${sourceUrl}`;
         all: true,
         replacement: [
           {
-            match: /ModelModeSelect,\{iconOnlyTrigger:(\i)\}\)\}\),/,
+            match: /ModeSelect,\{compact:(\i)\}\)\}\),/,
             replace: "$&$self.renderButtons(),"
           },
           {
@@ -5885,7 +6022,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/betterFiles/index.tsx
-  var logger12 = new Logger("BetterFiles");
+  var logger13 = new Logger("BetterFiles");
   var settings4 = definePluginSettings({
     skipDeleteConfirm: {
       type: 3 /* BOOLEAN */,
@@ -5905,7 +6042,7 @@ ${sourceUrl}`;
         try {
           await deleteAsset(id);
         } catch (e) {
-          logger12.error("Failed to delete asset", id, e);
+          logger13.error("Failed to delete asset", id, e);
         }
       }
     };
@@ -5934,7 +6071,7 @@ ${sourceUrl}`;
     settings: settings4,
     renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
     _deleteFile(assetId) {
-      Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId)).catch((e) => logger12.error("Failed to delete asset", assetId, e));
+      Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId)).catch((e) => logger13.error("Failed to delete asset", assetId, e));
     },
     patches: [
       {
@@ -6053,7 +6190,7 @@ ${sourceUrl}`;
         10,
         0,
         0,
-        0,
+        8,
         0,
         0,
         0,
@@ -6077,7 +6214,7 @@ ${sourceUrl}`;
         10,
         0,
         0,
-        0,
+        8,
         0,
         0,
         0,
@@ -6121,7 +6258,7 @@ ${sourceUrl}`;
   // src/plugins/betterImagine/index.tsx
   var CopyIcon2 = findExportedComponentLazy("CopyIcon");
   var DownloadIcon2 = findExportedComponentLazy("DownloadIcon");
-  var logger13 = new Logger("BetterImagine");
+  var logger14 = new Logger("BetterImagine");
   var cl13 = classNameFactory("void-imagine-");
   var settings5 = definePluginSettings({
     hideDefaultPreviews: {
@@ -6227,7 +6364,7 @@ ${sourceUrl}`;
         await deletePost(id, id);
         deleted++;
       } catch (e) {
-        logger13.error("Failed to delete post:", id, e);
+        logger14.error("Failed to delete post:", id, e);
       }
     }
     clearSelection();
@@ -6258,7 +6395,7 @@ ${sourceUrl}`;
           await state.upscaleVideo(id, video.id);
           upscaled++;
         } catch (e) {
-          logger13.error("Failed to upscale video:", id, video.id, e);
+          logger14.error("Failed to upscale video:", id, video.id, e);
         }
       }
     }
@@ -6282,7 +6419,7 @@ ${sourceUrl}`;
           return;
         video.pause();
         video.currentTime = 0;
-      }).catch((e) => logger13.warn("Failed to pause video:", e));
+      }).catch((e) => logger14.warn("Failed to pause video:", e));
     } else {
       video.pause();
       video.currentTime = 0;
@@ -6291,7 +6428,7 @@ ${sourceUrl}`;
   var onMouseEnter = (e) => {
     const video = e.currentTarget.querySelector("video");
     if (video)
-      pending.set(video, video.play().catch((e2) => logger13.error("Failed to play video", e2)));
+      pending.set(video, video.play().catch((e2) => logger14.error("Failed to play video", e2)));
   };
   var onMouseLeave = (e) => {
     const video = e.currentTarget.querySelector("video");
@@ -6326,14 +6463,14 @@ ${sourceUrl}`;
       try {
         const res = await fetchExternal(entries[0].url);
         if (!res.ok) {
-          logger13.warn("Failed to fetch:", entries[0].url);
+          logger14.warn("Failed to fetch:", entries[0].url);
           return;
         }
         const blob2 = await res.blob();
         FileUtils.downloadBlob(blob2, entries[0].name);
         Toaster.toast.success("Downloaded 1 image.");
       } catch (e) {
-        logger13.error("Failed to download image:", entries[0].url, e);
+        logger14.error("Failed to download image:", entries[0].url, e);
       }
       return;
     }
@@ -6344,14 +6481,14 @@ ${sourceUrl}`;
       try {
         const res = await fetchExternal(entry.url);
         if (!res.ok) {
-          logger13.warn("Failed to fetch:", entry.url);
+          logger14.warn("Failed to fetch:", entry.url);
           return;
         }
         const buf = await res.arrayBuffer();
         files[names[i]] = new Uint8Array(buf);
         done++;
       } catch (e) {
-        logger13.error("Failed to fetch:", entry.url, e);
+        logger14.error("Failed to fetch:", entry.url, e);
       }
     }));
     if (!done) {
@@ -6612,14 +6749,14 @@ ${sourceUrl}`;
       try {
         const res = await fetchExternal(item.mediaUrl);
         if (!res.ok) {
-          logger13.warn("Failed to fetch:", item.mediaUrl);
+          logger14.warn("Failed to fetch:", item.mediaUrl);
           return;
         }
         const blob = await res.blob();
         const ext = extractUrlExtension(item.mediaUrl);
         FileUtils.downloadBlob(blob, `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`);
       } catch (e) {
-        logger13.error("Failed to download:", e);
+        logger14.error("Failed to download:", e);
       }
     };
     const onCopyPrompt = async () => {
@@ -6630,7 +6767,7 @@ ${sourceUrl}`;
         await copyToClipboard(prompt);
         Toaster.toast.success("Copied prompt.");
       } catch (e) {
-        logger13.error("Failed to copy prompt:", e);
+        logger14.error("Failed to copy prompt:", e);
       }
     };
     const onUnfavorite = () => {
@@ -6641,7 +6778,7 @@ ${sourceUrl}`;
         await MediaStore.useMediaStore.getState().deletePost(postId, postId);
         Toaster.toast.success("Deleted.");
       } catch (e) {
-        logger13.error("Failed to delete post:", e);
+        logger14.error("Failed to delete post:", e);
         Toaster.toast.error("Failed to delete.");
       }
     };
@@ -7247,7 +7384,7 @@ ${sourceUrl}`;
 
   // src/plugins/downloadTTS/index.tsx
   var cl16 = classNameFactory("void-download-tts-");
-  var logger14 = new Logger("DownloadTTS");
+  var logger15 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -7269,7 +7406,7 @@ ${sourceUrl}`;
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger14.error("Failed to download TTS audio:", e);
+        logger15.error("Failed to download TTS audio:", e);
       } finally {
         setLoading(false);
       }
@@ -7310,7 +7447,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger15 = new Logger("ExportChat");
+  var logger16 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -7337,7 +7474,7 @@ ${sourceUrl}`;
   function ExportItem({ conversationId }) {
     const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
     return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => exportChat(conversationId).catch((e) => logger15.error("Failed to export chat", e)),
+      onSelect: () => exportChat(conversationId).catch((e) => logger16.error("Failed to export chat", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
@@ -7420,7 +7557,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/oneko/index.ts
-  var logger16 = new Logger("Oneko");
+  var logger17 = new Logger("Oneko");
   var ONEKO_SCRIPT = "https://raw.githubusercontent.com/adryd325/oneko.js/c4ee66353b11a44e4a5b7e914a81f8d33111555e/oneko.js";
   var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
   var stopped = false;
@@ -7442,7 +7579,7 @@ ${sourceUrl}`;
           el.remove();
           URL.revokeObjectURL(el.src);
         });
-      }).catch((e) => logger16.error("Failed to load oneko script", e));
+      }).catch((e) => logger17.error("Failed to load oneko script", e));
     },
     stop() {
       stopped = true;
@@ -7450,7 +7587,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/promptEnhancer/index.tsx
-  var logger17 = new Logger("PromptEnhancer");
+  var logger18 = new Logger("PromptEnhancer");
   var PLUGIN_NAME = "PromptEnhancer";
   var DEFAULT_INSTRUCTIONS = "Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler.";
   var settings10 = definePluginSettings({
@@ -7523,7 +7660,7 @@ Original prompt:
       }
       const improved = message.trim();
       if (convId) {
-        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger17.warn("Failed to delete throwaway conversation:", e));
+        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger18.warn("Failed to delete throwaway conversation:", e));
       }
       const editor = getEditor();
       if (!editor) {
@@ -7937,9 +8074,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger18 = new Logger("TurbopackPatcher", "#e78284");
+  var logger19 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
+  var RETRY_DEBOUNCE_MS = 200;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function deferOrphanReport() {
     const hasNonGlobal = patches.some((p) => !p.all);
@@ -7973,9 +8111,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger18.info("All previously failed plugins started after late module load");
+          logger19.info("All previously failed plugins started after late module load");
         }
-      }, 200);
+      }, RETRY_DEBOUNCE_MS);
     };
     const unsub = onModuleLoad(tryRetry);
     const timeout = setTimeout(() => {
@@ -7988,7 +8126,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger18.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger19.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -7998,23 +8136,59 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         cancelWaitFor();
       clearTimeout(fallbackTimer);
       rescanRuntimeModules();
-      blacklistBadModules();
-      _resolveReady();
-      startAllPlugins("TurbopackReady" /* TurbopackReady */);
-      logger18.info(`${getModuleCache().size} modules loaded, ready`);
-      retryFailedPlugins();
-      deferOrphanReport();
-      checkForUpdates();
+      try {
+        blacklistBadModules();
+      } catch (e) {
+        logger19.error("blacklistBadModules failed:", e);
+      }
+      try {
+        _resolveReady();
+      } catch (e) {
+        logger19.error("_resolveReady failed:", e);
+      }
+      try {
+        startAllPlugins("TurbopackReady" /* TurbopackReady */);
+      } catch (e) {
+        logger19.error("startAllPlugins failed:", e);
+      }
+      logger19.info(`${getModuleCache().size} modules loaded, ready`);
+      try {
+        retryFailedPlugins();
+      } catch (e) {
+        logger19.error("retryFailedPlugins failed:", e);
+      }
+      try {
+        deferOrphanReport();
+      } catch (e) {
+        logger19.error("deferOrphanReport failed:", e);
+      }
+      try {
+        checkForUpdates();
+      } catch (e) {
+        logger19.error("checkForUpdates failed:", e);
+      }
     });
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
     const fallbackTimer = setTimeout(fire, FALLBACK_MS);
   }
+  var _initialized = false;
   function init() {
+    if (_initialized)
+      return;
+    _initialized = true;
     for (const plugin of Object.values(__plugins_default)) {
-      registerPlugin(plugin);
+      try {
+        registerPlugin(plugin);
+      } catch (e) {
+        logger19.error("Failed to register plugin:", e);
+      }
     }
     initPluginManager();
-    patchTurbopack();
+    try {
+      patchTurbopack();
+    } catch (e) {
+      logger19.error("Failed to patch Turbopack:", e);
+    }
     startAllPlugins("Init" /* Init */);
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */), { once: true });
