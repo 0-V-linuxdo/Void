@@ -9,6 +9,7 @@ export type SubscriptionTier =
     | "SUBSCRIPTION_TIER_X_BASIC"
     | "SUBSCRIPTION_TIER_X_PREMIUM"
     | "SUBSCRIPTION_TIER_X_PREMIUM_PLUS"
+    | "SUBSCRIPTION_TIER_SUPER_GROK_LITE"
     | "SUBSCRIPTION_TIER_GROK_PRO"
     | "SUBSCRIPTION_TIER_SUPER_GROK_PRO"
     | (string & {});
@@ -19,14 +20,15 @@ export type SubscriptionTier =
  *
  * | Tier                         | Level | Display Name  |
  * |------------------------------|-------|---------------|
- * | SUBSCRIPTION_TIER_INVALID    | 0     | Free          |
- * | SUBSCRIPTION_TIER_X_BASIC    | 1     | Basic         |
- * | SUBSCRIPTION_TIER_X_PREMIUM  | 2     | Premium       |
- * | SUBSCRIPTION_TIER_X_PREMIUM_PLUS | 3 | PremiumPlus   |
- * | SUBSCRIPTION_TIER_GROK_PRO   | 4     | SuperGrok     |
- * | SUBSCRIPTION_TIER_SUPER_GROK_PRO | 5 | SuperGrokPro  |
+ * | SUBSCRIPTION_TIER_INVALID        | 0     | Free          |
+ * | SUBSCRIPTION_TIER_X_BASIC        | 1     | Basic         |
+ * | SUBSCRIPTION_TIER_X_PREMIUM      | 2     | Premium       |
+ * | SUBSCRIPTION_TIER_X_PREMIUM_PLUS | 3     | PremiumPlus   |
+ * | SUBSCRIPTION_TIER_SUPER_GROK_LITE| 4     | SuperGrokLite |
+ * | SUBSCRIPTION_TIER_GROK_PRO       | 5     | SuperGrok     |
+ * | SUBSCRIPTION_TIER_SUPER_GROK_PRO | 6     | SuperGrokPro  |
  */
-export type SubscriptionTierLevel = 0 | 1 | 2 | 3 | 4 | 5;
+export type SubscriptionTierLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 /**
  * Display name for each subscription tier.
@@ -37,6 +39,7 @@ export type SubscriptionTierName =
     | "Basic"
     | "Premium"
     | "PremiumPlus"
+    | "SuperGrokLite"
     | "SuperGrok"
     | "SuperGrokPro"
     | (string & {});
@@ -96,6 +99,7 @@ export type SubscriptionUpdateStatus =
 /** Requested subscription tier for upgrade flows. */
 export type RequestedTier =
     | "REQUESTED_TIER_INVALID"
+    | "REQUESTED_TIER_SUPER_GROK_LITE"
     | "REQUESTED_TIER_GROK_PRO"
     | "REQUESTED_TIER_SUPER_GROK_PRO"
     | (string & {});

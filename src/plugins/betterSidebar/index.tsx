@@ -35,13 +35,23 @@ const settings = definePluginSettings({
 });
 
 const PLAN_NAMES: Partial<Record<SubscriptionTier, string>> = {
+    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
+    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
     SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
     SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro",
 };
 
-function getPlanName(bestSubscription?: SubscriptionTier): string {
-    if (!bestSubscription) return "Free";
-    return PLAN_NAMES[bestSubscription] ?? "Free";
+function getPlanName(bestSubscription?: SubscriptionTier, xSubscriptionType?: string): string {
+    if (bestSubscription) {
+        const name = PLAN_NAMES[bestSubscription];
+        if (name) return name;
+    }
+    if (xSubscriptionType === "PremiumPlus") return "SuperGrok";
+    if (xSubscriptionType === "Premium") return "X Premium";
+    if (xSubscriptionType === "Basic") return "X Basic";
+    return "Free";
 }
 
 function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
@@ -66,7 +76,7 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
                     {user.givenName ?? user.email?.split("@")[0] ?? "User"}
                 </Text>
                 <Text as="span" size="xs" color="secondary" className={cl("plan")}>
-                    {getPlanName(bestSubscription)}
+                    {getPlanName(bestSubscription, user.xSubscriptionType)}
                 </Text>
             </Flex>
         </div>
