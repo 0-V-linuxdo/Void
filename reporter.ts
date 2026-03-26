@@ -186,15 +186,13 @@ function testPatch(patch: Patch, chunks: string[]): PatchResult {
     const findStr = Array.isArray(patch.find) ? patch.find.map(String).join(" + ") : String(patch.find);
     const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
 
-    let findOk = false;
-    let matchedChunk = "";
+    const matchedChunks: string[] = [];
     for (const chunk of chunks) {
         if (finds.every(f => typeof f === "string" ? chunk.includes(f) : (f.lastIndex = 0, f.test(chunk)))) {
-            findOk = true;
-            matchedChunk = chunk;
-            break;
+            matchedChunks.push(chunk);
         }
     }
+    const findOk = matchedChunks.length > 0;
 
     const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
     const repResults: PatchResult["replacements"] = [];
@@ -203,9 +201,11 @@ function testPatch(patch: Patch, chunks: string[]): PatchResult {
         try {
             const m = rep.match;
             const start = performance.now();
-            let ok: boolean;
-            if (typeof m === "string") ok = matchedChunk.includes(m);
-            else { m.lastIndex = 0; ok = m.test(matchedChunk); }
+            let ok = false;
+            for (const mc of matchedChunks) {
+                if (typeof m === "string") { if (mc.includes(m)) { ok = true; break; } }
+                else { m.lastIndex = 0; if (m.test(mc)) { ok = true; break; } }
+            }
             repResults.push({ match: String(m), ok, timeMs: performance.now() - start });
         } catch { repResults.push({ match: String(rep.match), ok: false, timeMs: 0 }); }
     }

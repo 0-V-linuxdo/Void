@@ -74,8 +74,7 @@ function SelectField({ id, setting, pluginName }: SettingFieldProps) {
     const valueMap = useMemo(() => new Map(options.map(o => [String(o.value), o.value])), [options]);
 
     return (
-        <Flex flexDirection="column" gap="0.5rem">
-            <SettingLabel id={id} setting={setting} />
+        <SettingsRow action={
             <Select value={String(value ?? "")} onValueChange={(v: string) => update(valueMap.get(v) ?? v)}>
                 <SelectTrigger>
                     <SelectValue />
@@ -88,7 +87,9 @@ function SelectField({ id, setting, pluginName }: SettingFieldProps) {
                     ))}
                 </SelectContent>
             </Select>
-        </Flex>
+        }>
+            <SettingLabel id={id} setting={setting} />
+        </SettingsRow>
     );
 }
 

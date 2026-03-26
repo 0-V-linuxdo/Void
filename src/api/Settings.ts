@@ -205,7 +205,7 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
                 if (keys?.length) {
                     const paths = keys.map(k => `${prefix}.${String(k)}`);
                     const listener = (path: string) => {
-                        if (paths.some(p => path.startsWith(p))) forceUpdate();
+                        if (paths.some(p => path.startsWith(p) || p.startsWith(path + "."))) forceUpdate();
                     };
                     SettingsStore.addPrefixChangeListener(prefix, listener);
                     return () => SettingsStore.removePrefixChangeListener(prefix, listener);
