@@ -137,7 +137,7 @@ function collectPatches(): { patches: Patch[]; skipped: string[] } {
                 }
                 extracted = true;
             }
-        } catch { skipped.push(pluginName); }
+        } catch { /* require failed, try static extraction below */ }
 
         if (!extracted) {
             const staticPatches = extractPatchesStatic(src, pluginName);
@@ -155,21 +155,30 @@ function collectPatches(): { patches: Patch[]; skipped: string[] } {
 function collectFinders(allChunkText: string): FinderResult[] {
     const results: FinderResult[] = [];
 
+    const checkProps = (source: string, args: string[]) => {
+        const ok = args.every(arg => allChunkText.includes(`"${arg}"`) || allChunkText.includes(`.${arg}=`));
+        results.push({ source, args: `findByProps(${args.map(a => `"${a}"`).join(", ")})`, ok });
+    };
+
     const check = (source: string, file: string) => {
         const content = readFileSync(resolve(file), "utf-8");
-        for (const m of content.matchAll(/export const (\w+).+findByPropsLazy\(([^)]+)\)/g)) {
-            const args = m[2].replace(/"/g, "").split(",").map(s => s.trim());
-            const ok = args.every(arg => allChunkText.includes(`"${arg}"`));
-            results.push({ source, args: `${m[1]}(${args.join(", ")})`, ok });
+        for (const m of content.matchAll(/findByProps(?:Lazy)?\(([^)]+)\)/g)) {
+            const args = m[1].replace(/"/g, "").split(",").map(s => s.trim()).filter(Boolean);
+            if (args.length && !args.some(a => a.startsWith("..."))) checkProps(source, args);
+        }
+        for (const m of content.matchAll(/filters\.byProps\(([^)]+)\)/g)) {
+            const args = m[1].replace(/"/g, "").split(",").map(s => s.trim()).filter(Boolean);
+            if (args.length && !args.some(a => a.startsWith("..."))) checkProps(source, args);
         }
         for (const m of content.matchAll(/findExportedComponent\("([^"]+)"\)/g)) {
-            results.push({ source, args: m[1], ok: allChunkText.includes(`"${m[1]}"`) });
+            results.push({ source, args: `findExportedComponent("${m[1]}")`, ok: allChunkText.includes(`"${m[1]}"`) });
         }
     };
 
     check("stores", "src/turbopack/common/stores.ts");
     check("utils", "src/turbopack/common/utils.ts");
     check("components", "src/turbopack/common/components.ts");
+    check("react", "src/turbopack/common/react.tsx");
     return results;
 }
 
