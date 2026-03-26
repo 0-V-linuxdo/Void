@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.3
+// @version      0.5.4
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.3 — A modification for grok.com
+ * Void v0.5.4 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -1640,7 +1640,7 @@ ${sourceUrl}`;
   var RoutingStore = findByPropsLazy("useRoutingStore", "formatUrl");
   var SessionStore = findByPropsLazy("useSession", "SessionStoreProvider");
   var SettingsDialogStore = findByPropsLazy("useSettingsDialogStore");
-  var SettingsStore = findByPropsLazy("useSettingsStore", "TOOL_NAMES");
+  var SettingsStore = findByPropsLazy("useSettingsStore", "hasModelConfigOverride");
   var ShareStore = findByPropsLazy("useShareStore");
   var ShopStore = findByPropsLazy("useShopStore");
   var SourcesSelectorStore = findByPropsLazy("useSourcesSelectorStore");
@@ -1871,7 +1871,6 @@ ${sourceUrl}`;
     setCreateElement(m.createElement);
   });
   var Fragment = Symbol.for("react.fragment");
-  var ReactDOM = findByPropsLazy("createPortal", "flushSync");
 
   // src/turbopack/common/components.ts
   function createModuleLazy(...filterProps) {
@@ -2388,18 +2387,7 @@ ${sourceUrl}`;
   var ApiClients = findByPropsLazy("chatApi", "modelsApi");
   var Toaster = findByPropsLazy("Toaster", "toast");
   var ClassNames = findByPropsLazy("cn", "middleTruncate");
-  var ReasoningModeUtils = findByPropsLazy("reasoningModeToRequestKind", "reasoningModeToDeepsearchPreset");
-  var zustandCreate = findByPropsLazy("create", "useStore");
-  var i18n = findByPropsLazy("useTranslation");
-  var EnvUtils = findByPropsLazy("getEnv", "useEnvironment");
-  var AssetUtils = findByPropsLazy("getCachedAssetUrl", "getAssetUrl");
-  var DownloadUtils = findByPropsLazy("downloadImage");
   var FileUtils = findByPropsLazy("downloadBlob", "downloadUri");
-  var RateLimitUtils = findByPropsLazy("useRateLimits");
-  var NextRouter = findByPropsLazy("useRouter", "usePathname");
-  var TanStackQuery = findByPropsLazy("useQuery");
-  var CopyUtils = findByPropsLazy("copyAndToast");
-  var MonacoModule = findByPropsLazy("initMonaco");
 
   // src/components/Text.tsx
   var sizeClasses = {
@@ -3565,11 +3553,11 @@ ${sourceUrl}`;
       const { version: latest } = await resp.json();
       if (!latest || !SEMVER_RE.test(latest))
         return;
-      if (!isNewer(latest, "0.5.3")) {
-        logger8.info(`Up to date (${"0.5.3"})`);
+      if (!isNewer(latest, "0.5.4")) {
+        logger8.info(`Up to date (${"0.5.4"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.3"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.4"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -5702,9 +5690,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.3"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"227b3a4"}`
-    }, `(${"227b3a4"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.4"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"650decc"}`
+    }, `(${"650decc"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -7900,7 +7888,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
-    zustandCreate: () => zustandCreate,
     useTransition: () => useTransition,
     useSyncExternalStore: () => useSyncExternalStore,
     useState: () => useState,
@@ -7915,7 +7902,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     useContext: () => useContext,
     useCallback: () => useCallback,
     onceReady: () => onceReady,
-    i18n: () => i18n,
     createElement: () => createElement,
     WorkspaceStore: () => WorkspaceStore,
     WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
@@ -7932,7 +7918,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     Textarea: () => Textarea,
     TextToSpeechStore: () => TextToSpeechStore,
     TasksStore: () => TasksStore,
-    TanStackQuery: () => TanStackQuery,
     TabsTrigger: () => TabsTrigger,
     TabsManagerStore: () => TabsManagerStore,
     TabsList: () => TabsList,
@@ -7970,10 +7955,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ResponsiveDialog: () => ResponsiveDialog,
     ResponseStore: () => ResponseStore,
     ReportStore: () => ReportStore,
-    ReasoningModeUtils: () => ReasoningModeUtils,
-    ReactDOM: () => ReactDOM,
     React: () => React,
-    RateLimitUtils: () => RateLimitUtils,
     Portal: () => Portal,
     PopoverTrigger: () => PopoverTrigger,
     PopoverContent: () => PopoverContent,
@@ -7981,9 +7963,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     Popover: () => Popover,
     PersonalityStore: () => PersonalityStore,
     NotificationsStore: () => NotificationsStore,
-    NextRouter: () => NextRouter,
     MotionDiv: () => MotionDiv,
-    MonacoModule: () => MonacoModule,
     ModesStore: () => ModesStore,
     ModelsStore: () => ModelsStore,
     MentionMenuStore: () => MentionMenuStore,
@@ -8001,7 +7981,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     FileUtils: () => FileUtils,
     FileStore: () => FileStore,
     FeatureStore: () => FeatureStore,
-    EnvUtils: () => EnvUtils,
     DropdownMenuTrigger: () => DropdownMenuTrigger,
     DropdownMenuSubTrigger: () => DropdownMenuSubTrigger,
     DropdownMenuSubContent: () => DropdownMenuSubContent,
@@ -8021,7 +8000,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     DrawerDescription: () => DrawerDescription,
     DrawerContent: () => DrawerContent,
     Drawer: () => Drawer,
-    DownloadUtils: () => DownloadUtils,
     DictationStore: () => DictationStore,
     DialogTrigger: () => DialogTrigger,
     DialogTitle: () => DialogTitle,
@@ -8033,7 +8011,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     DialogContent: () => DialogContent,
     DialogClose: () => DialogClose,
     Dialog: () => Dialog,
-    CopyUtils: () => CopyUtils,
     ConversationStore: () => ConversationStore,
     CommandMenuStore: () => CommandMenuStore,
     CommandList: () => CommandList,
@@ -8054,7 +8031,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     Button: () => Button,
     Badge: () => Badge,
     Avatar: () => Avatar,
-    AssetUtils: () => AssetUtils,
     AssetStore: () => AssetStore,
     ApiClients: () => ApiClients,
     AnimatePresence: () => AnimatePresence,
