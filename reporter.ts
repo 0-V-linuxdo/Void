@@ -119,7 +119,7 @@ function collectPatches(): { patches: Patch[]; skipped: string[] } {
         const name = entry.replace(/\\/g, "/").match(/plugins\/([^/]+)/)?.[1] ?? entry;
         const src = readFileSync(entry, "utf-8");
         if (!src.includes("patches:")) continue;
-        const pluginName = src.match(/name:\s*"([^"]+)"/)?.[1] ?? name;
+        const pluginName = src.slice(src.indexOf("definePlugin(")).match(/name:\s*"([^"]+)"/)?.[1] ?? name;
 
         let extracted = false;
         try {
