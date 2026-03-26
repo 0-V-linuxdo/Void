@@ -24,6 +24,7 @@ import type {
     PersonalityStoreModule,
     ReportStoreModule,
     ResponseStoreModule,
+    RocketStoreModule,
     RoutingStoreModule,
     SessionStoreModule,
     SettingsDialogStoreModule,
@@ -71,6 +72,7 @@ export const SettingsStore: SettingsStoreModule = findByPropsLazy("useSettingsSt
 export const ShareStore: ShareStoreModule = findByPropsLazy("useShareStore");
 export const ShopStore: ShopStoreModule = findByPropsLazy("useShopStore");
 export const SourcesSelectorStore: SourcesSelectorStoreModule = findByPropsLazy("useSourcesSelectorStore");
+export const RocketStore: RocketStoreModule = findByPropsLazy("useRocketStore");
 export const SubscriptionsStore: SubscriptionsStoreModule = findByPropsLazy("useSubscriptionsStore");
 export const SuggestionStore: SuggestionStoreModule = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");
 export const TabsManagerStore: TabsManagerStoreModule = findByPropsLazy("useTabsManagerStore");
