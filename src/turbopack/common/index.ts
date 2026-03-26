@@ -12,7 +12,6 @@ export {
     Fragment,
     LazyComponent,
     React,
-    ReactDOM,
     useCallback,
     useContext,
     useDeferredValue,

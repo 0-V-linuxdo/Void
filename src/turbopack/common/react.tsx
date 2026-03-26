@@ -8,7 +8,7 @@ import { type AnyComponent, LazyComponent, setCreateElement } from "@utils/lazyR
 import type ReactTypes from "react";
 import type { ComponentType, ReactNode } from "react";
 
-import { filters, findByPropsLazy, waitFor } from "../turbopack";
+import { filters, waitFor } from "../turbopack";
 
 export { type AnyComponent, LazyComponent };
 
@@ -42,12 +42,5 @@ waitFor(filters.byProps("useState", "createElement"), mod => {
 });
 
 export const Fragment = Symbol.for("react.fragment") as unknown as ReactInstance["Fragment"];
-
-export const ReactDOM: {
-    createPortal: (children: ReactNode, container: Element | DocumentFragment) => ReactNode;
-    flushSync: <T>(fn: () => T) => T;
-    unstable_batchedUpdates: <T>(fn: () => T) => T;
-    version: string;
-} = findByPropsLazy("createPortal", "flushSync");
 
 export type { ComponentType, ReactNode };
