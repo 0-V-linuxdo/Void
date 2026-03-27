@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.4
+// @version      0.5.5
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.4 — A modification for grok.com
+ * Void v0.5.5 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -208,12 +208,12 @@
     SettingsDialogStore: () => SettingsDialogStore,
     SessionStore: () => SessionStore,
     RoutingStore: () => RoutingStore,
+    RocketStore: () => RocketStore,
     ResponseStore: () => ResponseStore,
     ReportStore: () => ReportStore,
     PersonalityStore: () => PersonalityStore,
     NotificationsStore: () => NotificationsStore,
     ModesStore: () => ModesStore,
-    ModelsStore: () => ModelsStore,
     MentionMenuStore: () => MentionMenuStore,
     MediaStore: () => MediaStore,
     ImageEditorStore: () => ImageEditorStore,
@@ -1631,7 +1631,6 @@ ${sourceUrl}`;
   var ImageEditorStore = findByPropsLazy("useImageEditorStore");
   var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
   var MentionMenuStore = findByPropsLazy("useMentionMenuStore");
-  var ModelsStore = findByPropsLazy("useModelsStore");
   var ModesStore = findByPropsLazy("useModesStore");
   var NotificationsStore = findByPropsLazy("useNotificationsStore", "useNotificationsStoreInit");
   var PersonalityStore = findByPropsLazy("usePersonalityStore", "DEFAULT_CUSTOM_PERSONALITY");
@@ -1644,6 +1643,7 @@ ${sourceUrl}`;
   var ShareStore = findByPropsLazy("useShareStore");
   var ShopStore = findByPropsLazy("useShopStore");
   var SourcesSelectorStore = findByPropsLazy("useSourcesSelectorStore");
+  var RocketStore = findByPropsLazy("useRocketStore");
   var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
   var SuggestionStore = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");
   var TabsManagerStore = findByPropsLazy("useTabsManagerStore");
@@ -3093,7 +3093,7 @@ ${sourceUrl}`;
           if (keys?.length) {
             const paths = keys.map((k) => `${prefix}.${String(k)}`);
             const listener = (path) => {
-              if (paths.some((p) => path.startsWith(p)))
+              if (paths.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
                 forceUpdate();
             };
             SettingsStore3.addPrefixChangeListener(prefix, listener);
@@ -3553,11 +3553,11 @@ ${sourceUrl}`;
       const { version: latest } = await resp.json();
       if (!latest || !SEMVER_RE.test(latest))
         return;
-      if (!isNewer(latest, "0.5.4")) {
-        logger8.info(`Up to date (${"0.5.4"})`);
+      if (!isNewer(latest, "0.5.5")) {
+        logger8.info(`Up to date (${"0.5.5"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.4"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.5"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -4472,7 +4472,7 @@ ${sourceUrl}`;
 
   // void-css:D:/Projects/Void/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `/* SettingsRow has px-3 built in, strip it so fields align with the title */
-.void-plugin-dialog-settings-list .px-3 {
+.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
 }
@@ -4555,19 +4555,18 @@ ${sourceUrl}`;
       return null;
     const { options } = setting;
     const valueMap = useMemo(() => new Map(options.map((o) => [String(o.value), o.value])), [options]);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem"
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Select, {
+        value: String(value ?? ""),
+        onValueChange: (v) => update(valueMap.get(v) ?? v)
+      }, /* @__PURE__ */ React.createElement(SelectTrigger, null, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
+        key: String(o.value),
+        value: String(o.value)
+      }, o.label))))
     }, /* @__PURE__ */ React.createElement(SettingLabel, {
       id,
       setting
-    }), /* @__PURE__ */ React.createElement(Select, {
-      value: String(value ?? ""),
-      onValueChange: (v) => update(valueMap.get(v) ?? v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, null, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: String(o.value),
-      value: String(o.value)
-    }, o.label)))));
+    }));
   }
   function SliderField({ id, setting, pluginName }) {
     const [value, update] = usePluginSetting(pluginName, id, setting);
@@ -5690,9 +5689,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.4"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"650decc"}`
-    }, `(${"650decc"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.5"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"376e9f8"}`
+    }, `(${"376e9f8"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6882,8 +6881,8 @@ ${sourceUrl}`;
             replace: "muted:!0,autoPlay:$self._autoPlay()"
           },
           {
-            match: /onMouseOver:\(\)=>\{.{0,120}\},onMouseLeave:\(\)=>\{.{0,120}\},/,
-            replace: "$&...$self._hoverProps(),"
+            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
+            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
           },
           {
             match: /children:\(0,(\i)\.jsx\)\((\i),\{postId:(\i),mediaType:(\i),onOpenChange:(\i)\}\)\}\)/,
@@ -7144,13 +7143,26 @@ ${sourceUrl}`;
     }
   });
   var PLAN_NAMES = {
+    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
+    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
     SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
     SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
   };
-  function getPlanName(bestSubscription) {
-    if (!bestSubscription)
-      return "Free";
-    return PLAN_NAMES[bestSubscription] ?? "Free";
+  function getPlanName(bestSubscription, xSubscriptionType) {
+    if (bestSubscription) {
+      const name = PLAN_NAMES[bestSubscription];
+      if (name)
+        return name;
+    }
+    if (xSubscriptionType === "PremiumPlus")
+      return "SuperGrok";
+    if (xSubscriptionType === "Premium")
+      return "X Premium";
+    if (xSubscriptionType === "Basic")
+      return "X Basic";
+    return "Free";
   }
   function UserCard({ AvatarMenu }) {
     const { open: open2 } = SidebarComponents.useSidebar();
@@ -7184,7 +7196,7 @@ ${sourceUrl}`;
       size: "xs",
       color: "secondary",
       className: cl15("plan")
-    }, getPlanName(bestSubscription))));
+    }, getPlanName(bestSubscription, user.xSubscriptionType))));
   }
   var betterSidebar_default = definePlugin({
     name: "BetterSidebar",
@@ -7681,6 +7693,63 @@ Original prompt:
     }
   });
 
+  // src/plugins/rocketAnim/index.tsx
+  var STYLE_KEY = "void-rocket-glow";
+  var GLOW_COLORS = { orange: "#FF5C00", blue: "#82B1F9" };
+  function syncGlow() {
+    const color = GLOW_COLORS[settings11.store.variant] ?? GLOW_COLORS.orange;
+    registerStyle(STYLE_KEY, `:root { --void-rocket-glow: ${color}; }`);
+  }
+  var settings11 = definePluginSettings({
+    variant: {
+      type: 4 /* SELECT */,
+      description: "Color variant for the rocket plume.",
+      onChange: syncGlow,
+      options: [
+        { label: "Orange", value: "orange", default: true },
+        { label: "Blue", value: "blue" }
+      ]
+    }
+  });
+  var rocketAnim_default = definePlugin({
+    name: "RocketAnim",
+    description: "Enables the rocket plume animation.",
+    authors: [Devs.Prism],
+    settings: settings11,
+    patches: [
+      {
+        find: ["SUPERGROK_BRANDING_QUERY_BAR_ANIMATION_ENABLED", "glowBorderColor"],
+        all: true,
+        replacement: [
+          {
+            match: /(\i)=\i\.SUPERGROK_BRANDING_QUERY_BAR_ANIMATION_ENABLED&&\(\i\|\|\i\)/g,
+            replace: "$1=!0"
+          },
+          {
+            match: /glowBorderColor:\i\?\i\?"#82B1F9":"#FF5C00":void 0/,
+            replace: 'glowBorderColor:"var(--void-rocket-glow)"'
+          }
+        ]
+      },
+      {
+        find: ["u_isHeavy", "glowBorderColor"],
+        replacement: {
+          match: /\i&&\(0,(\i)\.jsx\)\((\i),\{isHeavy:\i\}\)/,
+          replace: "(0,$1.jsx)($2,{isHeavy:$self._isHeavy()})"
+        }
+      }
+    ],
+    start() {
+      if (!GLOW_COLORS[settings11.store.variant])
+        settings11.store.variant = "orange";
+      syncGlow();
+    },
+    stop() {
+      unregisterStyle(STYLE_KEY);
+    },
+    _isHeavy: () => settings11.store.variant === "blue"
+  });
+
   // src/plugins/starry/index.ts
   var starry_default = definePlugin({
     name: "Starry",
@@ -7811,7 +7880,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings11 = definePluginSettings({
+  var settings12 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -7856,7 +7925,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings11.store[key]);
+      classList.toggle(cls, !!settings12.store[key]);
     }
   }
   var unsubscribe = null;
@@ -7864,10 +7933,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings11,
+    settings: settings12,
     start() {
       syncClasses();
-      const prefix = `plugins.${settings11.pluginName}`;
+      const prefix = `plugins.${settings12.pluginName}`;
       SettingsStore3.addPrefixChangeListener(prefix, syncClasses);
       unsubscribe = () => SettingsStore3.removePrefixChangeListener(prefix, syncClasses);
     },
@@ -7884,7 +7953,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [rocketAnim_default.name]: rocketAnim_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -7952,6 +8021,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     SelectContent: () => SelectContent,
     Select: () => Select,
     RoutingStore: () => RoutingStore,
+    RocketStore: () => RocketStore,
     ResponsiveDialog: () => ResponsiveDialog,
     ResponseStore: () => ResponseStore,
     ReportStore: () => ReportStore,
@@ -7965,7 +8035,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     NotificationsStore: () => NotificationsStore,
     MotionDiv: () => MotionDiv,
     ModesStore: () => ModesStore,
-    ModelsStore: () => ModelsStore,
     MentionMenuStore: () => MentionMenuStore,
     MediaStore: () => MediaStore,
     LazyComponent: () => LazyComponent,
