@@ -18,7 +18,6 @@ import type {
     ImageEditorStoreModule,
     MediaStoreModule,
     MentionMenuStoreModule,
-    ModelsStoreModule,
     ModesStoreModule,
     NotificationsStoreModule,
     PersonalityStoreModule,
@@ -59,7 +58,6 @@ export const HighlightsStore: HighlightsStoreModule = findByPropsLazy("useHighli
 export const ImageEditorStore: ImageEditorStoreModule = findByPropsLazy("useImageEditorStore");
 export const MediaStore: MediaStoreModule = findByPropsLazy("useMediaStore", "useImagineModeStore");
 export const MentionMenuStore: MentionMenuStoreModule = findByPropsLazy("useMentionMenuStore");
-export const ModelsStore: ModelsStoreModule = findByPropsLazy("useModelsStore");
 export const ModesStore: ModesStoreModule = findByPropsLazy("useModesStore");
 export const NotificationsStore: NotificationsStoreModule = findByPropsLazy("useNotificationsStore", "useNotificationsStoreInit");
 export const PersonalityStore: PersonalityStoreModule = findByPropsLazy("usePersonalityStore", "DEFAULT_CUSTOM_PERSONALITY");

@@ -14,7 +14,6 @@ export * from "./HighlightsStore";
 export * from "./ImageEditorStore";
 export * from "./MediaStore";
 export * from "./MentionMenuStore";
-export * from "./ModelsStore";
 export * from "./ModesStore";
 export * from "./NotificationsStore";
 export * from "./PersonalityStore";

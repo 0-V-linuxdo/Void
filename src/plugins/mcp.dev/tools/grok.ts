@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { ChatPageStore, ModelsStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
+import { ChatPageStore, ModesStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
 import { sleep } from "@utils/misc";
 
@@ -25,12 +25,6 @@ interface GrokResponse {
     state?: string;
     partial?: boolean;
     createTime?: string;
-}
-
-interface GrokModel {
-    modelId: string;
-    name: string;
-    description?: string;
 }
 
 function getEditor(): TiptapEditor | null {
@@ -264,21 +258,21 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
 }
 
 async function handleModels(): Promise<unknown> {
-    const { models, unavailableModels } = ModelsStore.useModelsStore.getState();
-    const allModels = [...(models ?? []), ...(unavailableModels ?? [])];
+    const { modes } = ModesStore.useModesStore.getState();
 
-    const results = await Promise.all(allModels.map(async (m: GrokModel) => {
+    const results = await Promise.all(modes.map(async (m: any) => {
+        const available = "available" in (m.availability ?? {});
         try {
-            const rl = await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: m.modelId, requestKind: "DEFAULT" } });
+            const rl = await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: m.id } });
             return {
-                modelId: m.modelId,
-                name: m.name,
+                id: m.id,
+                title: m.title,
                 description: m.description,
-                available: (models ?? []).some((am: GrokModel) => am.modelId === m.modelId),
+                available,
                 rateLimit: { remaining: rl.remainingQueries, total: rl.totalQueries, windowSeconds: rl.windowSizeSeconds },
             };
         } catch {
-            return { modelId: m.modelId, name: m.name, available: (models ?? []).some((am: GrokModel) => am.modelId === m.modelId) };
+            return { id: m.id, title: m.title, description: m.description, available };
         }
     }));
 
