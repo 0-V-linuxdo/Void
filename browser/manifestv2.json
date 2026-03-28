@@ -34,7 +34,7 @@
                 "*://grok.com/*"
             ],
             "js": [
-                "dist/Void.js"
+                "Void.js"
             ],
             "all_frames": false,
             "world": "MAIN"
@@ -46,12 +46,15 @@
         ]
     },
     "web_accessible_resources": [
-        "dist/Void.js"
+        "Void.js"
     ],
     "browser_specific_settings": {
         "gecko": {
             "id": "firefox@void.prism",
-            "strict_min_version": "128.0"
+            "strict_min_version": "140.0",
+            "data_collection_permissions": {
+                "required": ["none"]
+            }
         }
     }
 }

@@ -35,7 +35,7 @@
                 "*://grok.com/*"
             ],
             "js": [
-                "dist/Void.js"
+                "Void.js"
             ],
             "all_frames": false,
             "world": "MAIN"
@@ -44,7 +44,7 @@
     "web_accessible_resources": [
         {
             "resources": [
-                "dist/*"
+                "Void.js"
             ],
             "matches": [
                 "*://grok.com/*"

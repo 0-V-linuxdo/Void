@@ -209,9 +209,9 @@ async function buildExtensions() {
     for (const target of targets) {
         const outDir = resolve("dist", target.name);
         rmSync(outDir, { recursive: true, force: true });
-        mkdirSync(resolve(outDir, "dist"), { recursive: true });
+        mkdirSync(outDir, { recursive: true });
 
-        cpSync("dist/Void.js", resolve(outDir, "dist/Void.js"));
+        cpSync("dist/Void.js", resolve(outDir, "Void.js"));
         cpSync("browser/icons", resolve(outDir, "icons"), { recursive: true });
 
         for (const file of target.files) {
