@@ -241,3 +241,20 @@ export const FolderIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />,
     );
+
+export const AccessibilityIcon = (props: IconProps = {}) =>
+    svg(props,
+        <circle cx="16" cy="4" r="1" />,
+        <path d="m18 19 1-7-6 1" />,
+        <path d="m5 8 3-3 5.5 3-2.36 3.5" />,
+        <path d="M4.24 14.5a5 5 0 0 0 6.88 6" />,
+        <path d="M13.76 17.5a5 5 0 0 0-6.88-6" />,
+    );
+
+export const ClockAlertIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M12 6v6l4 2" />,
+        <path d="M20 12v5" />,
+        <path d="M20 21h.01" />,
+        <path d="M21.25 8.2A10 10 0 1 0 16 21.16" />,
+    );

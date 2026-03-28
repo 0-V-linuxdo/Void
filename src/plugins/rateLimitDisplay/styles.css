@@ -5,41 +5,45 @@
  */
 
 .void-rld-trigger {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }
 
-/* Expand the circle button to a pill when it has our trigger inside */
 button:has(> .void-rld-trigger) {
     width: auto;
     border-radius: 1.25rem;
     overflow: visible;
+    padding-inline: 0.5rem;
 }
 
 .void-rld-icon-limited {
-    color: var(--color-warning);
-    animation: void-rld-pulse 1.5s ease-in-out infinite;
+    color: inherit;
 }
 
-@keyframes void-rld-pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+.void-rld-value,
+.void-rld-countdown {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    color: hsl(var(--fg-secondary));
 }
 
-.void-rld-popover {
-    min-width: 14rem;
-    padding: 0.75rem;
+.void-rld-auto-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.void-rld-panel {
+    min-width: 12rem;
 }
 
 .void-rld-row {
-    padding: 0.375rem 0.5rem;
+    padding: 0.25rem 0.375rem;
     border-radius: 0.375rem;
 }
 
@@ -51,20 +55,3 @@ button:has(> .void-rld-trigger) {
     text-transform: capitalize;
 }
 
-.void-rld-countdown {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-warning);
-}
-
-.void-rld-bar-track {
-    height: 0.25rem;
-    border-radius: 0.125rem;
-    background: var(--color-surface-tertiary);
-    overflow: hidden;
-}
-
-.void-rld-bar-fill {
-    height: 100%;
-    transition: width 0.3s ease;
-}
