@@ -38,6 +38,12 @@ const cl = classNameFactory("void-plugins-");
 
 const getPluginKey = (name: string) => `${name} ${plugins[name].description ?? ""}`;
 
+function filterByEnabled(list: string[], filter: ListFilter): string[] {
+    if (filter === "all") return list;
+    const enabled = filter === "enabled";
+    return list.filter(n => isPluginEnabled(n) === enabled);
+}
+
 export default function PluginsTab() {
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState<ListFilter>("all");
@@ -46,14 +52,13 @@ export default function PluginsTab() {
     const [toggleTick, setToggleTick] = useState(0);
 
     const { userPlugins, requiredPlugins } = useMemo(() => {
-        const user: string[] = [];
-        const required: string[] = [];
+        const userPlugins: string[] = [];
+        const requiredPlugins: string[] = [];
         for (const n of Object.keys(plugins).sort((a, b) => a.localeCompare(b))) {
             if (plugins[n].hidden) continue;
-            if (plugins[n].required) required.push(n);
-            else user.push(n);
+            (plugins[n].required ? requiredPlugins : userPlugins).push(n);
         }
-        return { userPlugins: user, requiredPlugins: required };
+        return { userPlugins, requiredPlugins };
     }, []);
 
     const initialStatesRef = React.useRef<Map<string, boolean> | null>(null);
@@ -63,8 +68,7 @@ export default function PluginsTab() {
     useEffect(() => {
         if (initialStatesRef.current) return;
         const map = new Map<string, boolean>();
-        for (const n of userPlugins) map.set(n, isPluginEnabled(n));
-        for (const n of requiredPlugins) map.set(n, isPluginEnabled(n));
+        for (const n of [...userPlugins, ...requiredPlugins]) map.set(n, isPluginEnabled(n));
         initialStatesRef.current = map;
     }, [userPlugins, requiredPlugins]);
 
@@ -80,17 +84,8 @@ export default function PluginsTab() {
         if (!dismissedRef.current) setShowReload(true);
     }), []);
 
-    const visibleUser = useMemo(() => {
-        if (filter === "all") return userPlugins;
-        const enabled = filter === "enabled";
-        return userPlugins.filter(n => isPluginEnabled(n) === enabled);
-    }, [filter, userPlugins, toggleTick]);
-
-    const visibleRequired = useMemo(() => {
-        if (filter === "all") return requiredPlugins;
-        const enabled = filter === "enabled";
-        return requiredPlugins.filter(n => isPluginEnabled(n) === enabled);
-    }, [filter, requiredPlugins, toggleTick]);
+    const visibleUser = useMemo(() => filterByEnabled(userPlugins, filter), [filter, userPlugins, toggleTick]);
+    const visibleRequired = useMemo(() => filterByEnabled(requiredPlugins, filter), [filter, requiredPlugins, toggleTick]);
 
     const filteredUser = useFiltered(visibleUser, search, getPluginKey);
     const filteredRequired = useFiltered(visibleRequired, search, getPluginKey);
@@ -101,17 +96,17 @@ export default function PluginsTab() {
 
     const onReload = useCallback((pluginName: string) => {
         const initialStates = initialStatesRef.current;
-        const changedPlugins = changedPluginsRef.current;
         if (!initialStates) return;
-        const current = isPluginEnabled(pluginName);
-        if (current === initialStates.get(pluginName)) changedPlugins.delete(pluginName);
-        else changedPlugins.add(pluginName);
+        const changed = changedPluginsRef.current;
 
-        if (changedPlugins.size) {
-            if (!dismissedRef.current) setShowReload(true);
-        } else {
+        if (isPluginEnabled(pluginName) === initialStates.get(pluginName)) changed.delete(pluginName);
+        else changed.add(pluginName);
+
+        if (!changed.size) {
             setShowReload(false);
             dismissedRef.current = false;
+        } else if (!dismissedRef.current) {
+            setShowReload(true);
         }
     }, []);
 

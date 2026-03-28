@@ -5,7 +5,7 @@
  */
 
 import { subscribe, type VoidEvent } from "@api/Events";
-import { useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
+import { useEffect, useMemo, useReducer, useSyncExternalStore } from "@turbopack/common/react";
 import type { ExternalStore } from "@utils/misc";
 import type { ReactNode } from "react";
 
@@ -33,23 +33,4 @@ export function useFiltered<T>(list: T[], search: string, getKey: (item: T) => s
         if (!q) return list;
         return list.filter(item => getKey(item).toLowerCase().includes(q));
     }, [list, search, getKey]);
-}
-
-/** Countdown timer hook. Ticks down from `seconds` to 0, then returns null. */
-export function useCountdown(seconds: number | null): number | null {
-    const [value, setValue] = useState(seconds);
-    const prevRef = useRef(seconds);
-
-    if (prevRef.current !== seconds) {
-        prevRef.current = seconds;
-        setValue(seconds);
-    }
-
-    useEffect(() => {
-        if (value == null || value <= 0) return;
-        const id = setInterval(() => setValue(p => (p != null && p > 1 ? p - 1 : null)), 1000);
-        return () => clearInterval(id);
-    }, [value != null && value > 0]);
-
-    return value;
 }

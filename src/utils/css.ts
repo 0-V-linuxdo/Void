@@ -114,15 +114,12 @@ export function disableStyle(name: string) {
 }
 
 export function unregisterStyle(name: string) {
-    const el = activeStyles.get(name);
-    if (el) {
-        el.remove();
-        activeStyles.delete(name);
-    }
+    activeStyles.get(name)?.remove();
+    activeStyles.delete(name);
     styleRegistry.delete(name);
 }
 
-export type ClassNameFactoryArg = string | string[] | Record<string, any> | false | null | undefined | 0 | "";
+export type ClassNameFactoryArg = string | string[] | Record<string, unknown> | false | null | undefined | 0 | "";
 
 export const classNameFactory =
     (prefix = "") =>
@@ -130,8 +127,8 @@ export const classNameFactory =
         const classNames = new Set<string>();
         for (const arg of args) {
             if (typeof arg === "string") classNames.add(arg);
-            else if (Array.isArray(arg)) arg.forEach(name => classNames.add(name));
-            else if (arg && typeof arg === "object") Object.entries(arg).forEach(([name, value]) => value && classNames.add(name));
+            else if (Array.isArray(arg)) { for (const name of arg) classNames.add(name); }
+            else if (arg && typeof arg === "object") { for (const [name, value] of Object.entries(arg)) { if (value) classNames.add(name); } }
         }
         return Array.from(classNames, name => prefix + name).join(" ");
     };

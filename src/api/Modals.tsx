@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@components";
+import { Dialog, DialogContent } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { React, useCallback, useMemo } from "@turbopack/common/react";
+import { React, useCallback } from "@turbopack/common/react";
 import { createExternalStore } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
 import type { ReactNode } from "react";
@@ -17,14 +17,6 @@ export interface ModalProps {
 
 export interface ModalOptions {
     modalKey?: string;
-}
-
-export interface ConfirmOptions {
-    title: string;
-    body: string | ReactNode;
-    confirmText?: string;
-    cancelText?: string;
-    danger?: boolean;
 }
 
 interface ModalEntry {
@@ -58,45 +50,12 @@ export function closeAllModals() {
     store.notify();
 }
 
-export function confirm(options: ConfirmOptions): Promise<boolean> {
-    return new Promise(resolve => {
-        let resolved = false;
-        const settle = (value: boolean) => {
-            if (resolved) return;
-            resolved = true;
-            unsub();
-            resolve(value);
-        };
-
-        const key = openModal(({ onClose }) => (
-            <DialogHeader>
-                <DialogTitle>{options.title}</DialogTitle>
-                <DialogDescription>{options.body}</DialogDescription>
-                <DialogFooter>
-                    <Button variant="secondary" size="md" onClick={() => { settle(false); onClose(); }}>
-                        {options.cancelText ?? "Cancel"}
-                    </Button>
-                    <Button variant={options.danger ? "danger" : "primary"} size="md" onClick={() => { settle(true); onClose(); }}>
-                        {options.confirmText ?? "Confirm"}
-                    </Button>
-                </DialogFooter>
-            </DialogHeader>
-        ));
-
-        const unsub = store.subscribe(() => {
-            if (!modalStack.some(m => m.key === key)) settle(false);
-        });
-    });
-}
-
 const ModalInstance = ErrorBoundary.wrap(function ModalInstance({ entry }: { entry: ModalEntry }) {
     const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
-    const onOpenChange = useCallback((open: boolean) => { if (!open) onClose(); }, [onClose]);
-    const modalProps = useMemo(() => ({ onClose }), [onClose]);
 
     return (
-        <Dialog open onOpenChange={onOpenChange}>
-            <DialogContent aria-describedby={undefined}>{entry.render(modalProps)}</DialogContent>
+        <Dialog open onOpenChange={v => { if (!v) onClose(); }}>
+            <DialogContent aria-describedby={undefined}>{entry.render({ onClose })}</DialogContent>
         </Dialog>
     );
 });

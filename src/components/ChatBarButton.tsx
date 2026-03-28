@@ -17,9 +17,10 @@ export interface ChatBarButtonProps {
     className?: string;
 }
 
-export function ChatBarButton({ icon, tooltip, onClick, className, "aria-label": ariaLabel }: ChatBarButtonProps) {
-    const label = typeof tooltip === "string" ? tooltip : ariaLabel;
+const TOOLTIP_PROPS = { delayDuration: 600 } as const;
+const TOOLTIP_CONTENT_PROPS = { side: "top" } as const;
 
+export function ChatBarButton({ icon, tooltip, onClick, className, "aria-label": ariaLabel }: ChatBarButtonProps) {
     return (
         <ButtonWithTooltip
             variant="tertiary"
@@ -27,10 +28,10 @@ export function ChatBarButton({ icon, tooltip, onClick, className, "aria-label":
             shape="circle"
             className={classes("text-primary", className)}
             tooltipContent={tooltip}
-            tooltipProps={{ delayDuration: 600 }}
-            tooltipContentProps={{ side: "top" }}
+            tooltipProps={TOOLTIP_PROPS}
+            tooltipContentProps={TOOLTIP_CONTENT_PROPS}
             onClick={onClick}
-            aria-label={label}
+            aria-label={typeof tooltip === "string" ? tooltip : ariaLabel}
         >
             {icon}
         </ButtonWithTooltip>

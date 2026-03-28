@@ -8,11 +8,11 @@ import { isObject } from "./guards";
 
 export function mergeDefaults<T extends object>(target: T, defaults: T): T {
     for (const [key, defaultValue] of Object.entries(defaults)) {
-        const value = (target as any)[key];
+        const value = (target as Record<string, unknown>)[key];
         if (isObject(value)) {
-            mergeDefaults(value as Record<string, any>, defaultValue as Record<string, any>);
+            mergeDefaults(value as Record<string, unknown>, defaultValue as Record<string, unknown>);
         } else if (value === undefined) {
-            (target as any)[key] = defaultValue;
+            (target as Record<string, unknown>)[key] = defaultValue;
         }
     }
     return target;
@@ -32,10 +32,10 @@ export async function copyToClipboard(text: string): Promise<void> {
     }
 }
 
-export function onlyOnce<T extends (...args: never[]) => any>(fn: T): T {
-    let result: any;
+export function onlyOnce<T extends (...args: never[]) => unknown>(fn: T): T {
+    let result: unknown;
     let f: T | null = fn;
-    return ((...args: any[]) => {
+    return ((...args: unknown[]) => {
         if (!f) return result;
         result = f(...(args as never[]));
         f = null;
@@ -45,12 +45,12 @@ export function onlyOnce<T extends (...args: never[]) => any>(fn: T): T {
 
 export function debounce<T extends (...args: never[]) => void>(fn: T, ms: number): T & { cancel(): void; flush(): void } {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    let lastArgs: any[] | undefined;
-    const debounced = ((...args: any[]) => {
+    let lastArgs: unknown[] | undefined;
+    const debounced = ((...args: unknown[]) => {
         lastArgs = args;
         clearTimeout(timer);
         timer = setTimeout(() => { lastArgs = undefined; fn(...(args as never[])); }, ms);
-    }) as any as T & { cancel(): void; flush(): void };
+    }) as unknown as T & { cancel(): void; flush(): void };
     debounced.cancel = () => { clearTimeout(timer); lastArgs = undefined; };
     debounced.flush = () => { if (lastArgs) { clearTimeout(timer); const a = lastArgs; lastArgs = undefined; fn(...(a as never[])); } };
     return debounced;
@@ -69,9 +69,8 @@ export function fetchExternal(url: string): Promise<Response> {
             url,
             responseType: "blob",
             timeout: 30_000,
-            onload(resp: any) {
-                const blob: Blob = resp.response;
-                resolve(new Response(blob, {
+            onload(resp) {
+                resolve(new Response(resp.response, {
                     status: resp.status,
                     statusText: resp.statusText,
                 }));
@@ -130,7 +129,7 @@ export function clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max);
 }
 
-export function errorMessage(err: any): string {
+export function errorMessage(err: unknown): string {
     return err instanceof Error ? err.message : String(err);
 }
 

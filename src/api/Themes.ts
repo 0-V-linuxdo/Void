@@ -35,24 +35,18 @@ function themeStyleId(url: string) {
     return `void-theme-${(hash >>> 0).toString(36)}`;
 }
 
-function parseThemeMeta(css: string) {
-    const meta: ThemeMeta = { name: "", author: "", description: "" };
-    const header = css.match(/\/\*\*[\s\S]*?\*\//);
-    if (!header) return meta;
-
-    const nameMatch = header[0].match(/@name\s+(.+)/);
-    const authorMatch = header[0].match(/@author\s+(.+)/);
-    const descMatch = header[0].match(/@description\s+(.+)/);
-
-    if (nameMatch) meta.name = nameMatch[1].trim();
-    if (authorMatch) meta.author = authorMatch[1].trim();
-    if (descMatch) meta.description = descMatch[1].trim();
-    return meta;
+function parseThemeMeta(css: string): ThemeMeta {
+    const header = css.match(/\/\*\*[\s\S]*?\*\//)?.[0] ?? "";
+    return {
+        name:        header.match(/@name\s+(.+)/)?.[1]?.trim() ?? "",
+        author:      header.match(/@author\s+(.+)/)?.[1]?.trim() ?? "",
+        description: header.match(/@description\s+(.+)/)?.[1]?.trim() ?? "",
+    };
 }
 
 export function getThemes(): ThemeData[] {
-    const s = getSettingsPluginData();
-    return Array.isArray(s.themes) ? s.themes as ThemeData[] : [];
+    const { themes } = getSettingsPluginData();
+    return Array.isArray(themes) ? themes : [];
 }
 
 export function isThemesEnabled(): boolean {
@@ -85,12 +79,9 @@ export function setOnlineThemesEnabled(enabled: boolean) {
 }
 
 function validateThemeUrl(url: string) {
-    try {
-        const parsed = new URL(url);
-        if (parsed.protocol !== "https:") throw 0;
-    } catch {
-        throw new Error("Enter a valid URL.");
-    }
+    let parsed: URL;
+    try { parsed = new URL(url); } catch { throw new Error("Enter a valid URL."); }
+    if (parsed.protocol !== "https:") throw new Error("Enter a valid URL.");
     if (!/\.css(?:[?#]|$)/i.test(url)) throw new Error("URL must point to a .css file.");
 }
 
@@ -236,13 +227,12 @@ export async function loadSavedThemes() {
             const resp = await fetchExternal(t.url);
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const css = await resp.text();
-            if (!getThemes().find(th => th.url === t.url)?.enabled || !isThemesEnabled()) return;
+            if (!getThemes().some(th => th.url === t.url && th.enabled) || !isThemesEnabled()) return;
             registerStyle(themeStyleId(t.url), css);
         }),
     );
 
-    for (let i = 0; i < results.length; i++) {
-        const result = results[i];
+    for (const [i, result] of results.entries()) {
         if (result.status === "rejected") {
             logger.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
         }

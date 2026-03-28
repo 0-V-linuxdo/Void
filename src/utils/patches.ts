@@ -41,9 +41,7 @@ export function canonicalizeReplacement(replacement: Pick<PatchReplacement, "mat
 }
 
 export function canonicalizeFind(patch: Patch) {
-    if (Array.isArray(patch.find)) {
-        patch.find = patch.find.map(f => canonicalizeMatch(f));
-    } else {
-        patch.find = canonicalizeMatch(patch.find);
-    }
+    patch.find = Array.isArray(patch.find)
+        ? patch.find.map(f => canonicalizeMatch(f))
+        : canonicalizeMatch(patch.find);
 }

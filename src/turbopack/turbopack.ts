@@ -318,15 +318,13 @@ export function mapMangledCssClasses<S extends string>(mod: Record<string, strin
     const result = {} as Record<S, string>;
     for (const name of classes) {
         const regex = new RegExp(`(?:\\b|_)${escapeRegExp(name)}(?:\\b|_)`);
-        let found = false;
         for (const key in mod) {
             if (typeof mod[key] === "string" && regex.test(mod[key])) {
                 result[name] = mod[key];
-                found = true;
                 break;
             }
         }
-        if (!found) logger.warn(`mapMangledCssClasses: class "${name}" not found in module`);
+        if (!(name in result)) logger.warn(`mapMangledCssClasses: class "${name}" not found in module`);
     }
     return result;
 }

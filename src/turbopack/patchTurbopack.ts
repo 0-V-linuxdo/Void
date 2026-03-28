@@ -536,8 +536,7 @@ export function patchReport(): PatchReport {
 }
 
 export function reportOrphanedPatches(): void {
-    const unmatched = patches.filter(p => !p.all);
-    const orphaned = unmatched.filter(p => !isFactoryPending(p));
+    const orphaned = patches.filter(p => !p.all && !isFactoryPending(p));
     const warnOrphaned = orphaned.filter(p => !p.noWarn);
     if (warnOrphaned.length)
         logger.warn(
@@ -561,7 +560,6 @@ export function reportOrphanedPatches(): void {
             logger.warn(`Slow patch: ${t.plugin} on ${t.moduleId} (find: ${t.findTime.toFixed(1)}ms, replace: ${t.replaceTime.toFixed(1)}ms) ${String(t.match)}`);
         }
     }
-
 }
 
 function scanCache(cache: Record<number, TurbopackModule>): number {
@@ -576,11 +574,6 @@ function scanCache(cache: Record<number, TurbopackModule>): number {
         }
     }
     return count;
-}
-
-function scanExistingModules(cache: Record<number, TurbopackModule>) {
-    const count = scanCache(cache);
-    if (IS_DEV) logger.debug(`Scanned ${count} existing modules`);
 }
 
 export function rescanRuntimeModules(): void {
@@ -626,7 +619,8 @@ function captureRuntimeState(helpers: TurbopackHelpers) {
     if (!turbopackHelpers) turbopackHelpers = helpers;
     if (!runtimeModuleCache && helpers.c) {
         runtimeModuleCache = helpers.c;
-        scanExistingModules(runtimeModuleCache);
+        const count = scanCache(runtimeModuleCache);
+        if (IS_DEV) logger.debug(`Scanned ${count} existing modules`);
     }
     if (!runtimeFactoryRegistry && helpers.M) runtimeFactoryRegistry = helpers.M;
 }

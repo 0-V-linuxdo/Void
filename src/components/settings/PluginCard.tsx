@@ -83,7 +83,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
                     <Switch checked={enabled} disabled={plugin.required} onCheckedChange={handleToggle} />
                 </>
             }
-            footer={<div className={cl("authors")}>{plugin.authors?.length ? plugin.authors.join(", ") : "\u00A0"}</div>}
+            footer={<div className={cl("authors")}>{plugin.authors?.join(", ") || "\u00A0"}</div>}
         />
     );
 }

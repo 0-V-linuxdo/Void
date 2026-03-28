@@ -17,8 +17,8 @@ const UPDATE_URL = IS_EXTENSION ? REPO_URL : "https://greasyfork.org/en/scripts/
 function isNewer(remote: string, local: string): boolean {
     const r = remote.split(".").map(Number);
     const l = local.split(".").map(Number);
-    for (let i = 0; i < Math.max(r.length, l.length); i++) {
-        const a = r[i] ?? 0, b = l[i] ?? 0;
+    for (let i = 0; i < 3; i++) {
+        const a = r[i], b = l[i];
         if (a > b) return true;
         if (a < b) return false;
     }
@@ -39,7 +39,6 @@ export async function checkForUpdates() {
 
         logger.info(`Update available: ${VERSION} → ${latest}`);
 
-        // wait for sonner to mount
         await sleep(3000);
 
         showNotice({

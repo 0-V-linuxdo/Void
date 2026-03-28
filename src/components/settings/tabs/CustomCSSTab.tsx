@@ -16,23 +16,18 @@ const STYLE_ID = "void-custom-css";
 
 export function setCustomCSSEnabled(enabled: boolean) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
-    if (enabled) {
-        const css = getSettingsPluginData().customCSS;
-        if (typeof css === "string" && css) {
-            registerStyle(STYLE_ID, css);
-            enableStyle(STYLE_ID);
-        }
-    } else {
-        disableStyle(STYLE_ID);
+    if (!enabled) return disableStyle(STYLE_ID);
+    const css = getSettingsPluginData().customCSS;
+    if (typeof css === "string" && css) {
+        registerStyle(STYLE_ID, css);
+        enableStyle(STYLE_ID);
     }
 }
 
 export function loadSavedCSS(): string {
-    const s = getSettingsPluginData();
-    const saved = s.customCSS;
-    if (typeof saved === "string" && saved && s.customCSSEnabled !== false) {
+    const { customCSS: saved, customCSSEnabled } = getSettingsPluginData();
+    if (typeof saved === "string" && saved && customCSSEnabled !== false) {
         registerStyle(STYLE_ID, saved);
-        return saved;
     }
     return typeof saved === "string" ? saved : "";
 }

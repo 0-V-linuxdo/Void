@@ -34,6 +34,8 @@ export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle, on
         onToggle();
     };
 
+    const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
+
     return (
         <BaseCard
             name={theme.name ?? theme.url}
@@ -58,7 +60,7 @@ export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle, on
             }
             footer={
                 <>
-                    {theme.local ? <FolderIcon size={12} className={cl("footer-icon")} /> : <GlobeIcon size={12} className={cl("footer-icon")} />}
+                    <SourceIcon size={12} className={cl("footer-icon")} />
                     <div className={cl("author")}>{theme.author ?? "\u00A0"}</div>
                 </>
             }

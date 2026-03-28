@@ -132,7 +132,7 @@ export default function ThemesTab() {
             case "enabled": return themes.filter(t => t.enabled);
             case "disabled": return themes.filter(t => !t.enabled);
             case "online": return themes.filter(t => !t.local);
-            case "local": return themes.filter(t => !!t.local);
+            case "local": return themes.filter(t => t.local);
             default: return themes;
         }
     }, [themes, filter]);

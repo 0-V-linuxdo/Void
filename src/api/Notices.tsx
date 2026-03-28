@@ -45,11 +45,9 @@ const ICONS: Record<NoticeType, (size: number) => ReactNode> = {
 let activeNoticeId: string | number | null = null;
 
 function Notice({ message, type, action, onClose }: NoticeOptions & { onClose: () => void }) {
-    const renderIcon = ICONS[type ?? NoticeType.INFO];
-
     return (
         <div className={cl("root")}>
-            <span className={cl("icon")}>{renderIcon(18)}</span>
+            <span className={cl("icon")}>{ICONS[type ?? NoticeType.INFO](18)}</span>
             <span className={cl("message")}>{message}</span>
             {action && (
                 <Button variant="primary" size="sm" shape="pill" onClick={action.onClick}>
