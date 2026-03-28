@@ -17,11 +17,13 @@ import Plugins from "~plugins";
 export { addChatBarButton, removeChatBarButton } from "@api/ChatBarButtons";
 export { addContextMenuItem, removeContextMenuItem } from "@api/ContextMenus";
 export { dispatch, subscribe } from "@api/Events";
-export { closeAllModals, closeModal, confirm, openModal } from "@api/Modals";
+export { type VoidEventMap } from "@api/Events";
+export { closeAllModals, closeModal, openModal } from "@api/Modals";
 export { closeNotice, NoticeType, showNotice } from "@api/Notices";
 export { dismissToast, showToast, ToastType } from "@api/Notifications";
 export { addPatch, isPluginEnabled, plugins, registerPlugin, startPlugin, stopPlugin } from "@api/PluginManager";
 export { definePluginSettings, initSettings, migratePluginSetting, migratePluginSettings, migrateSettingsToPlugin, PlainSettings, Settings, SettingsStore } from "@api/Settings";
+export { type NotificationPosition } from "@api/Settings";
 export { addLocalTheme, addTheme, disableTheme, enableTheme, getThemes, isOnlineThemesEnabled, isThemesEnabled, removeTheme, setOnlineThemesEnabled, setThemesEnabled, updateLocalTheme } from "@api/Themes";
 export { ErrorBoundary } from "@components/ErrorBoundary";
 export * as common from "@turbopack/common";
@@ -32,10 +34,11 @@ export { classes, classNameFactory, disableStyle, enableStyle, registerStyle, un
 export { isNonNullish, isObject, isTruthy } from "@utils/guards";
 export { makeLazy, proxyLazy } from "@utils/lazy";
 export { Logger } from "@utils/Logger";
+export { type LogLevel } from "@utils/Logger";
 export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, extractUrlExtension, fetchExternal, formatCountdown, formatDuration, mapGetOrCreate, mergeDefaults, onlyOnce, sanitizeFilename, sendBrowserNotification, sleep, sortedEntries } from "@utils/misc";
 export { useEventSubscription, useExternalStore, useForceUpdater } from "@utils/react";
 export { escapeRegExp, humanizeKey, pluralize } from "@utils/text";
-export { default as definePlugin, OptionType, StartAt } from "@utils/types";
+export { default as definePlugin, type EventListenerTarget, OptionType, type PluginSettingValue,StartAt } from "@utils/types";
 
 const logger = new Logger("TurbopackPatcher", "#e78284");
 
@@ -45,17 +48,8 @@ const RETRY_DEBOUNCE_MS = 200;
 const ORPHAN_REPORT_DELAY_MS = 5_000;
 
 function deferOrphanReport() {
-    const hasNonGlobal = patches.some(p => !p.all);
-    if (!hasNonGlobal) return;
-
-    const unsub = onModuleLoad(() => {
-        if (!patches.some(p => !p.all)) {
-            unsub();
-            clearTimeout(timeout);
-        }
-    });
-    const timeout = setTimeout(() => {
-        unsub();
+    if (!patches.some(p => !p.all)) return;
+    setTimeout(() => {
         reportOrphanedPatches();
         reportFailedFinders();
     }, ORPHAN_REPORT_DELAY_MS);
@@ -136,21 +130,21 @@ export function init() {
         }
     }
 
-    initPluginManager();
+    try { initPluginManager(); } catch (e) { logger.error("initPluginManager failed:", e); }
+
+    try { patchTurbopack(); } catch (e) { logger.error("Failed to patch Turbopack:", e); }
+
+    try { startAllPlugins(StartAt.Init); } catch (e) { logger.error("startAllPlugins(Init) failed:", e); }
 
     try {
-        patchTurbopack();
-    } catch (e) {
-        logger.error("Failed to patch Turbopack:", e);
-    }
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => {
+                try { startAllPlugins(StartAt.DOMContentLoaded); } catch (e) { logger.error("startAllPlugins(DOMContentLoaded) failed:", e); }
+            }, { once: true });
+        } else {
+            startAllPlugins(StartAt.DOMContentLoaded);
+        }
+    } catch (e) { logger.error("startAllPlugins(DOMContentLoaded) failed:", e); }
 
-    startAllPlugins(StartAt.Init);
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => startAllPlugins(StartAt.DOMContentLoaded), { once: true });
-    } else {
-        startAllPlugins(StartAt.DOMContentLoaded);
-    }
-
-    waitForModulesStable();
+    try { waitForModulesStable(); } catch (e) { logger.error("waitForModulesStable failed:", e); }
 }
