@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.6
+// @version      0.5.7
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.6 — A modification for grok.com
+ * Void v0.5.7 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -2213,11 +2213,6 @@ ${sourceUrl}`;
     r: ".5",
     fill: "currentColor"
   }));
-  var GaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m12 14 4-4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3.34 19a10 10 0 1 1 17.32 0"
-  }));
   var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -2387,6 +2382,28 @@ ${sourceUrl}`;
   }));
   var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+  }));
+  var AccessibilityIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "16",
+    cy: "4",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m18 19 1-7-6 1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m5 8 3-3 5.5 3-2.36 3.5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M4.24 14.5a5 5 0 0 0 6.88 6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M13.76 17.5a5 5 0 0 0-6.88-6"
+  }));
+  var ClockAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 6v6l4 2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M20 12v5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M20 21h.01"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21.25 8.2A10 10 0 1 0 16 21.16"
   }));
   // src/turbopack/common/utils.ts
   var ApiClients = findByPropsLazy("chatApi", "modelsApi");
@@ -3558,11 +3575,11 @@ ${sourceUrl}`;
       const { version: latest } = await resp.json();
       if (!latest || !SEMVER_RE.test(latest))
         return;
-      if (!isNewer(latest, "0.5.6")) {
-        logger8.info(`Up to date (${"0.5.6"})`);
+      if (!isNewer(latest, "0.5.7")) {
+        logger8.info(`Up to date (${"0.5.7"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.6"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.7"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -5694,9 +5711,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"2d570e2"}`
-    }, `(${"2d570e2"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.7"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"110306b"}`
+    }, `(${"110306b"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -7706,41 +7723,45 @@ Original prompt:
  */
 
 .void-rld-trigger {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }
 
-/* Expand the circle button to a pill when it has our trigger inside */
 button:has(> .void-rld-trigger) {
     width: auto;
     border-radius: 1.25rem;
     overflow: visible;
+    padding-inline: 0.5rem;
 }
 
 .void-rld-icon-limited {
-    color: var(--color-warning);
-    animation: void-rld-pulse 1.5s ease-in-out infinite;
+    color: inherit;
 }
 
-@keyframes void-rld-pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+.void-rld-value,
+.void-rld-countdown {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    color: hsl(var(--fg-secondary));
 }
 
-.void-rld-popover {
-    min-width: 14rem;
-    padding: 0.75rem;
+.void-rld-auto-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.void-rld-panel {
+    min-width: 12rem;
 }
 
 .void-rld-row {
-    padding: 0.375rem 0.5rem;
+    padding: 0.25rem 0.375rem;
     border-radius: 0.375rem;
 }
 
@@ -7752,23 +7773,6 @@ button:has(> .void-rld-trigger) {
     text-transform: capitalize;
 }
 
-.void-rld-countdown {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-warning);
-}
-
-.void-rld-bar-track {
-    height: 0.25rem;
-    border-radius: 0.125rem;
-    background: var(--color-surface-tertiary);
-    overflow: hidden;
-}
-
-.void-rld-bar-fill {
-    height: 100%;
-    transition: width 0.3s ease;
-}
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
@@ -7778,7 +7782,6 @@ button:has(> .void-rld-trigger) {
   var store4 = createExternalStore();
   var limits = {};
   var pollTimer = null;
-  var getMode = () => ModesStore.useModesStore?.getState().selectedModeId ?? "auto";
   async function fetchLimit(mode) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
@@ -7787,23 +7790,82 @@ button:has(> .void-rld-trigger) {
       return null;
     }
   }
-  async function fetchCurrent() {
-    const mode = getMode();
-    const data = await fetchLimit(mode);
-    if (!data)
-      return;
-    limits = { ...limits, [mode]: data };
-    store4.notify();
-  }
-  async function fetchAll() {
-    const results = await Promise.all(MODES.map(async (m) => [m, await fetchLimit(m)]));
+  async function applyResults(results) {
     const next = { ...limits };
-    for (const [mode, data] of results) {
+    for (const [m, data] of results) {
       if (data)
-        next[mode] = data;
+        next[m] = data;
     }
     limits = next;
     store4.notify();
+    sync();
+  }
+  async function refresh() {
+    applyResults(await Promise.all(MODES.map(async (m) => [m, await fetchLimit(m)])));
+  }
+  function sync() {
+    addChatBarButton("RateLimitDisplay", {
+      icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
+      tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
+      onClick: refresh,
+      order: 100
+    });
+  }
+  function isLimited(mode) {
+    if (mode === "auto")
+      return limits.expert?.remainingQueries === 0 || limits.fast?.remainingQueries === 0;
+    return limits[mode]?.remainingQueries === 0;
+  }
+  function ButtonIcon() {
+    useExternalStore(store4);
+    const mode = ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
+    const limited = isLimited(mode);
+    return /* @__PURE__ */ React.createElement("span", {
+      className: cl17("trigger")
+    }, limited ? /* @__PURE__ */ React.createElement(ClockAlertIcon, {
+      size: 20,
+      className: cl17("icon-limited")
+    }) : /* @__PURE__ */ React.createElement(AccessibilityIcon, {
+      size: 20
+    }), /* @__PURE__ */ React.createElement(ButtonLabel, {
+      mode
+    }));
+  }
+  function renderRemaining(data) {
+    if (!data)
+      return /* @__PURE__ */ React.createElement("span", {
+        className: cl17("value")
+      }, "—");
+    if (data.remainingQueries === 0 && data.waitTimeSeconds)
+      return /* @__PURE__ */ React.createElement(CountdownTimer, {
+        seconds: data.waitTimeSeconds
+      });
+    return /* @__PURE__ */ React.createElement("span", {
+      className: cl17("value")
+    }, data.remainingQueries);
+  }
+  function ButtonLabel({ mode }) {
+    useExternalStore(store4);
+    if (mode === "auto") {
+      const { expert, fast } = limits;
+      if (!expert && !fast)
+        return null;
+      return /* @__PURE__ */ React.createElement("span", {
+        className: cl17("auto-label")
+      }, renderRemaining(expert), /* @__PURE__ */ React.createElement("span", {
+        className: cl17("value")
+      }, "·"), renderRemaining(fast));
+    }
+    const data = limits[mode];
+    if (!data)
+      return null;
+    if (data.remainingQueries === 0 && data.waitTimeSeconds)
+      return /* @__PURE__ */ React.createElement(CountdownTimer, {
+        seconds: data.waitTimeSeconds
+      });
+    return /* @__PURE__ */ React.createElement("span", {
+      className: cl17("value")
+    }, data.remainingQueries, "/", data.totalQueries);
   }
   function CountdownTimer({ seconds }) {
     const [left, setLeft] = useState(seconds);
@@ -7815,7 +7877,7 @@ button:has(> .void-rld-trigger) {
         setLeft(remaining);
         if (remaining <= 0) {
           clearInterval(id);
-          fetchCurrent();
+          refresh();
         }
       }, 1000);
       return () => clearInterval(id);
@@ -7824,19 +7886,11 @@ button:has(> .void-rld-trigger) {
       className: cl17("countdown")
     }, formatCountdown(left));
   }
-  function barColor(pct) {
-    if (pct > 0.5)
-      return "var(--color-success)";
-    if (pct > 0.2)
-      return "var(--color-warning)";
-    return "var(--color-destructive)";
-  }
   function ModeRow({ mode, data, active }) {
     const limited = data != null && data.remainingQueries === 0;
-    const pct = data ? data.remainingQueries / Math.max(data.totalQueries, 1) : 1;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
-      gap: 4,
+      gap: 0,
       className: classes(cl17("row"), active && cl17("row-active"))
     }, /* @__PURE__ */ React.createElement(Flex, {
       justifyContent: "space-between",
@@ -7854,59 +7908,24 @@ button:has(> .void-rld-trigger) {
     }, data.remainingQueries, "/", data.totalQueries) : /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       color: "muted"
-    }, "—")), data && /* @__PURE__ */ React.createElement("div", {
-      className: cl17("bar-track")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl17("bar-fill"),
-      style: { width: `${pct * 100}%`, backgroundColor: barColor(pct) }
-    })), data && /* @__PURE__ */ React.createElement(Text, {
+    }, "—")), data && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       color: "muted"
     }, "Resets in ", formatDuration(data.windowSizeSeconds)));
   }
-  function Widget() {
+  function TooltipPanel() {
     useExternalStore(store4);
-    const [open2, setOpen] = useState(false);
     const mode = ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
-    const data = limits[mode];
-    const limited = data != null && data.remainingQueries === 0;
-    const onOpenChange = useCallback((v) => {
-      setOpen(v);
-      if (v)
-        fetchAll();
-    }, []);
-    return /* @__PURE__ */ React.createElement(Popover, {
-      open: open2,
-      onOpenChange
-    }, /* @__PURE__ */ React.createElement(PopoverTrigger, {
-      asChild: true
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      gap: 4,
-      alignItems: "center",
-      className: cl17("trigger")
-    }, /* @__PURE__ */ React.createElement(GaugeIcon, {
-      size: 18,
-      className: limited ? cl17("icon-limited") : undefined
-    }), data && /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      weight: "medium",
-      color: limited ? "muted" : "secondary"
-    }, data.remainingQueries, "/", data.totalQueries))), /* @__PURE__ */ React.createElement(PopoverContent, {
-      side: "top",
-      align: "center",
-      className: cl17("popover")
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
-      gap: 8
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "semibold"
-    }, "Rate Limits"), MODES.map((m) => /* @__PURE__ */ React.createElement(ModeRow, {
+      gap: 2,
+      className: cl17("panel")
+    }, MODES.map((m) => /* @__PURE__ */ React.createElement(ModeRow, {
       key: m,
       mode: m,
       data: limits[m],
       active: m === mode
-    })))));
+    })));
   }
   var rateLimitDisplay_default = definePlugin({
     name: "RateLimitDisplay",
@@ -7915,13 +7934,14 @@ button:has(> .void-rld-trigger) {
     tags: ["chat"],
     startAt: "TurbopackReady" /* TurbopackReady */,
     chatBarButton: {
-      icon: () => /* @__PURE__ */ React.createElement(Widget, null),
-      tooltip: "Rate limits",
+      icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
+      tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
+      onClick: refresh,
       order: 100
     },
     start() {
-      fetchCurrent();
-      pollTimer = setInterval(fetchCurrent, 60000);
+      refresh();
+      pollTimer = setInterval(refresh, 60000);
     },
     stop() {
       if (pollTimer) {
@@ -7934,7 +7954,14 @@ button:has(> .void-rld-trigger) {
       ModesStore: {
         selector: (s) => s.selectedModeId,
         handler() {
-          fetchCurrent();
+          refresh();
+        }
+      },
+      ChatPageStore: {
+        selector: (s) => s.streamedMessageId,
+        handler(id, prev) {
+          if (!id && prev)
+            refresh();
         }
       }
     }
