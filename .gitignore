@@ -6,3 +6,4 @@ bun.lock
 .DS_Store
 .claude
 .void-cache
+.env
