@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.5
+// @version      0.5.6
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.5 — A modification for grok.com
+ * Void v0.5.6 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -2213,6 +2213,11 @@ ${sourceUrl}`;
     r: ".5",
     fill: "currentColor"
   }));
+  var GaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m12 14 4-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3.34 19a10 10 0 1 1 17.32 0"
+  }));
   var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -3553,11 +3558,11 @@ ${sourceUrl}`;
       const { version: latest } = await resp.json();
       if (!latest || !SEMVER_RE.test(latest))
         return;
-      if (!isNewer(latest, "0.5.5")) {
-        logger8.info(`Up to date (${"0.5.5"})`);
+      if (!isNewer(latest, "0.5.6")) {
+        logger8.info(`Up to date (${"0.5.6"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.5"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.6"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -5689,9 +5694,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.5"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"376e9f8"}`
-    }, `(${"376e9f8"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"2d570e2"}`
+    }, `(${"2d570e2"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -7693,6 +7698,248 @@ Original prompt:
     }
   });
 
+  // void-css:D:/Projects/Void/src/plugins/rateLimitDisplay/styles.css
+  registerStyle("rateLimitDisplay", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-rld-trigger {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+/* Expand the circle button to a pill when it has our trigger inside */
+button:has(> .void-rld-trigger) {
+    width: auto;
+    border-radius: 1.25rem;
+    overflow: visible;
+}
+
+.void-rld-icon-limited {
+    color: var(--color-warning);
+    animation: void-rld-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes void-rld-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.void-rld-popover {
+    min-width: 14rem;
+    padding: 0.75rem;
+}
+
+.void-rld-row {
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.void-rld-row-active {
+    background: var(--color-surface-secondary);
+}
+
+.void-rld-mode-label {
+    text-transform: capitalize;
+}
+
+.void-rld-countdown {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-warning);
+}
+
+.void-rld-bar-track {
+    height: 0.25rem;
+    border-radius: 0.125rem;
+    background: var(--color-surface-tertiary);
+    overflow: hidden;
+}
+
+.void-rld-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+`);
+
+  // src/plugins/rateLimitDisplay/index.tsx
+  var logger19 = new Logger("RateLimitDisplay");
+  var cl17 = classNameFactory("void-rld-");
+  var MODES = ["auto", "fast", "expert", "heavy"];
+  var store4 = createExternalStore();
+  var limits = {};
+  var pollTimer = null;
+  var getMode = () => ModesStore.useModesStore?.getState().selectedModeId ?? "auto";
+  async function fetchLimit(mode) {
+    try {
+      return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
+    } catch (e) {
+      logger19.warn("Failed to fetch rate limits for", mode, e);
+      return null;
+    }
+  }
+  async function fetchCurrent() {
+    const mode = getMode();
+    const data = await fetchLimit(mode);
+    if (!data)
+      return;
+    limits = { ...limits, [mode]: data };
+    store4.notify();
+  }
+  async function fetchAll() {
+    const results = await Promise.all(MODES.map(async (m) => [m, await fetchLimit(m)]));
+    const next = { ...limits };
+    for (const [mode, data] of results) {
+      if (data)
+        next[mode] = data;
+    }
+    limits = next;
+    store4.notify();
+  }
+  function CountdownTimer({ seconds }) {
+    const [left, setLeft] = useState(seconds);
+    useEffect(() => {
+      setLeft(seconds);
+      const start = Date.now();
+      const id = setInterval(() => {
+        const remaining = Math.max(0, seconds - Math.floor((Date.now() - start) / 1000));
+        setLeft(remaining);
+        if (remaining <= 0) {
+          clearInterval(id);
+          fetchCurrent();
+        }
+      }, 1000);
+      return () => clearInterval(id);
+    }, [seconds]);
+    return /* @__PURE__ */ React.createElement("span", {
+      className: cl17("countdown")
+    }, formatCountdown(left));
+  }
+  function barColor(pct) {
+    if (pct > 0.5)
+      return "var(--color-success)";
+    if (pct > 0.2)
+      return "var(--color-warning)";
+    return "var(--color-destructive)";
+  }
+  function ModeRow({ mode, data, active }) {
+    const limited = data != null && data.remainingQueries === 0;
+    const pct = data ? data.remainingQueries / Math.max(data.totalQueries, 1) : 1;
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: 4,
+      className: classes(cl17("row"), active && cl17("row-active"))
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 8
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: active ? "semibold" : "medium",
+      className: cl17("mode-label")
+    }, mode), data ? limited && data.waitTimeSeconds ? /* @__PURE__ */ React.createElement(CountdownTimer, {
+      seconds: data.waitTimeSeconds
+    }) : /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, data.remainingQueries, "/", data.totalQueries) : /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "muted"
+    }, "—")), data && /* @__PURE__ */ React.createElement("div", {
+      className: cl17("bar-track")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl17("bar-fill"),
+      style: { width: `${pct * 100}%`, backgroundColor: barColor(pct) }
+    })), data && /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "muted"
+    }, "Resets in ", formatDuration(data.windowSizeSeconds)));
+  }
+  function Widget() {
+    useExternalStore(store4);
+    const [open2, setOpen] = useState(false);
+    const mode = ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
+    const data = limits[mode];
+    const limited = data != null && data.remainingQueries === 0;
+    const onOpenChange = useCallback((v) => {
+      setOpen(v);
+      if (v)
+        fetchAll();
+    }, []);
+    return /* @__PURE__ */ React.createElement(Popover, {
+      open: open2,
+      onOpenChange
+    }, /* @__PURE__ */ React.createElement(PopoverTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      gap: 4,
+      alignItems: "center",
+      className: cl17("trigger")
+    }, /* @__PURE__ */ React.createElement(GaugeIcon, {
+      size: 18,
+      className: limited ? cl17("icon-limited") : undefined
+    }), data && /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      weight: "medium",
+      color: limited ? "muted" : "secondary"
+    }, data.remainingQueries, "/", data.totalQueries))), /* @__PURE__ */ React.createElement(PopoverContent, {
+      side: "top",
+      align: "center",
+      className: cl17("popover")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: 8
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "semibold"
+    }, "Rate Limits"), MODES.map((m) => /* @__PURE__ */ React.createElement(ModeRow, {
+      key: m,
+      mode: m,
+      data: limits[m],
+      active: m === mode
+    })))));
+  }
+  var rateLimitDisplay_default = definePlugin({
+    name: "RateLimitDisplay",
+    description: "Shows rate limit usage for the current model mode in the chat bar.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    chatBarButton: {
+      icon: () => /* @__PURE__ */ React.createElement(Widget, null),
+      tooltip: "Rate limits",
+      order: 100
+    },
+    start() {
+      fetchCurrent();
+      pollTimer = setInterval(fetchCurrent, 60000);
+    },
+    stop() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+      limits = {};
+    },
+    zustand: {
+      ModesStore: {
+        selector: (s) => s.selectedModeId,
+        handler() {
+          fetchCurrent();
+        }
+      }
+    }
+  });
+
   // src/plugins/rocketAnim/index.tsx
   var STYLE_KEY = "void-rocket-glow";
   var GLOW_COLORS = { orange: "#FF5C00", blue: "#82B1F9" };
@@ -7953,7 +8200,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [rocketAnim_default.name]: rocketAnim_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [rocketAnim_default.name]: rocketAnim_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -8119,7 +8366,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger19 = new Logger("TurbopackPatcher", "#e78284");
+  var logger20 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var RETRY_DEBOUNCE_MS = 200;
@@ -8156,7 +8403,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger19.info("All previously failed plugins started after late module load");
+          logger20.info("All previously failed plugins started after late module load");
         }
       }, RETRY_DEBOUNCE_MS);
     };
@@ -8171,7 +8418,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger19.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger20.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -8184,33 +8431,33 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       try {
         blacklistBadModules();
       } catch (e) {
-        logger19.error("blacklistBadModules failed:", e);
+        logger20.error("blacklistBadModules failed:", e);
       }
       try {
         _resolveReady();
       } catch (e) {
-        logger19.error("_resolveReady failed:", e);
+        logger20.error("_resolveReady failed:", e);
       }
       try {
         startAllPlugins("TurbopackReady" /* TurbopackReady */);
       } catch (e) {
-        logger19.error("startAllPlugins failed:", e);
+        logger20.error("startAllPlugins failed:", e);
       }
-      logger19.info(`${getModuleCache().size} modules loaded, ready`);
+      logger20.info(`${getModuleCache().size} modules loaded, ready`);
       try {
         retryFailedPlugins();
       } catch (e) {
-        logger19.error("retryFailedPlugins failed:", e);
+        logger20.error("retryFailedPlugins failed:", e);
       }
       try {
         deferOrphanReport();
       } catch (e) {
-        logger19.error("deferOrphanReport failed:", e);
+        logger20.error("deferOrphanReport failed:", e);
       }
       try {
         checkForUpdates();
       } catch (e) {
-        logger19.error("checkForUpdates failed:", e);
+        logger20.error("checkForUpdates failed:", e);
       }
     });
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
@@ -8225,14 +8472,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       try {
         registerPlugin(plugin);
       } catch (e) {
-        logger19.error("Failed to register plugin:", e);
+        logger20.error("Failed to register plugin:", e);
       }
     }
     initPluginManager();
     try {
       patchTurbopack();
     } catch (e) {
-      logger19.error("Failed to patch Turbopack:", e);
+      logger20.error("Failed to patch Turbopack:", e);
     }
     startAllPlugins("Init" /* Init */);
     if (document.readyState === "loading") {
