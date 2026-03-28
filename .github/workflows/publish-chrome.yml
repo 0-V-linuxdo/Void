@@ -1,0 +1,59 @@
+name: Publish Chrome Extension
+
+on:
+  push:
+    branches: [main]
+    paths: [package.json]
+
+concurrency:
+  group: publish-chrome
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Chrome Web Store
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check version change
+        id: version
+        run: |
+          CURRENT=$(jq -r '.version' package.json)
+          git show HEAD~1:package.json > /tmp/prev.json 2>/dev/null || echo '{"version":""}' > /tmp/prev.json
+          PREVIOUS=$(jq -r '.version' /tmp/prev.json)
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          if [ "$CURRENT" != "$PREVIOUS" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.version.outputs.changed == 'true'
+
+      - run: bun install
+        if: steps.version.outputs.changed == 'true'
+
+      - run: bun run build
+        if: steps.version.outputs.changed == 'true'
+
+      - name: Zip extension
+        if: steps.version.outputs.changed == 'true'
+        run: cd dist/chrome-unpacked && zip -r ../../chrome-extension.zip .
+
+      - name: Upload & publish
+        if: steps.version.outputs.changed == 'true'
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: chrome-extension.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}

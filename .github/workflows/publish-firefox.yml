@@ -1,0 +1,58 @@
+name: Publish Firefox Extension
+
+on:
+  push:
+    branches: [main]
+    paths: [package.json]
+
+concurrency:
+  group: publish-firefox
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Firefox Add-ons
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check version change
+        id: version
+        run: |
+          CURRENT=$(jq -r '.version' package.json)
+          git show HEAD~1:package.json > /tmp/prev.json 2>/dev/null || echo '{"version":""}' > /tmp/prev.json
+          PREVIOUS=$(jq -r '.version' /tmp/prev.json)
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          if [ "$CURRENT" != "$PREVIOUS" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.version.outputs.changed == 'true'
+
+      - run: bun install
+        if: steps.version.outputs.changed == 'true'
+
+      - run: bun run build
+        if: steps.version.outputs.changed == 'true'
+
+      - name: Zip extension
+        if: steps.version.outputs.changed == 'true'
+        run: cd dist/firefox-unpacked && zip -r ../../firefox-extension.zip .
+
+      - name: Upload & publish
+        if: steps.version.outputs.changed == 'true'
+        uses: browser-actions/release-firefox-addon@latest
+        with:
+          addon-id: firefox@void.prism
+          addon-path: firefox-extension.zip
+          auth-api-issuer: ${{ secrets.FIREFOX_API_KEY }}
+          auth-api-secret: ${{ secrets.FIREFOX_API_SECRET }}
