@@ -12,6 +12,6 @@ export function isNonNullish<T>(item: T): item is Exclude<T, null | undefined> {
     return item != null;
 }
 
-export function isObject(value: any): value is Record<string, any> {
+export function isObject(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
 }

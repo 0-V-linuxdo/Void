@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+export type LogLevel = "log" | "error" | "warn" | "info" | "debug";
+
 const isBrowser = typeof window !== "undefined";
 
 const ANSI = {
@@ -22,7 +24,7 @@ export class Logger {
         public color = "white",
     ) {}
 
-    private _log(level: "log" | "error" | "warn" | "info" | "debug", args: unknown[]) {
+    private _log(level: LogLevel, args: unknown[]) {
         if (isBrowser) {
             console[level](
                 `%c Void %c %c ${this.name} `,

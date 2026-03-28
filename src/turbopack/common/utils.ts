@@ -36,7 +36,7 @@ export const Toaster: {
 } = findByPropsLazy("Toaster", "toast");
 
 export const ClassNames: {
-    cn: (...inputs: any[]) => string;
+    cn: (...inputs: unknown[]) => string;
     middleTruncate: (text: string, maxLength: number) => string;
 } = findByPropsLazy("cn", "middleTruncate");
 

@@ -7,16 +7,22 @@
 import { Logger } from "@utils/Logger";
 import { mapGetOrCreate } from "@utils/misc";
 
-/** Known event names dispatched within Void. Extensible via `(string & {})`. */
-export type VoidEvent = "pluginToggle" | (string & {});
+export interface VoidEventMap {
+    pluginToggle: void;
+    reloadNeeded: void;
+}
+
+export type VoidEvent = keyof VoidEventMap | (string & {});
 
 const logger = new Logger("Events");
 
-type Handler = (data: any) => void;
+type Handler = (data: unknown) => void;
 
 const listeners = new Map<string, Set<Handler>>();
 
-export function subscribe(event: VoidEvent, handler: Handler): () => void {
+export function subscribe<E extends keyof VoidEventMap>(event: E, handler: (data: VoidEventMap[E]) => void): () => void;
+export function subscribe(event: VoidEvent, handler: (data: unknown) => void): () => void;
+export function subscribe(event: VoidEvent, handler: (data: unknown) => void): () => void {
     const set = mapGetOrCreate(listeners, event, () => new Set());
     set.add(handler);
     return () => {
@@ -24,7 +30,9 @@ export function subscribe(event: VoidEvent, handler: Handler): () => void {
     };
 }
 
-export function dispatch(event: VoidEvent, data?: any) {
+export function dispatch<E extends keyof VoidEventMap>(event: E, ...args: VoidEventMap[E] extends void ? [] : [data: VoidEventMap[E]]): void;
+export function dispatch(event: VoidEvent, data?: unknown): void;
+export function dispatch(event: VoidEvent, data?: unknown) {
     const set = listeners.get(event);
     if (!set?.size) return;
     for (const handler of set) {

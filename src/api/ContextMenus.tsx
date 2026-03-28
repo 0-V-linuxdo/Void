@@ -13,7 +13,7 @@ import type { ComponentType, ReactNode } from "react";
 
 export interface ContextMenuLocationMap {
     conversation: { conversationId: string };
-    message: { response: { responseId: string; conversationId: string; [key: string]: any } };
+    message: { response: { responseId: string; conversationId: string; [key: string]: unknown } };
     user: {};
 }
 
@@ -44,7 +44,7 @@ export function removeContextMenuItem(location: ContextMenuLocation, id: string)
     store.notify();
 }
 
-function renderEntry(def: ContextMenuItemDef<any>, ctx: Record<string, any>) {
+function renderEntry(def: ContextMenuItemDef<any>, ctx: ContextMenuLocationMap[ContextMenuLocation]) {
     if (def.render) {
         const Render = def.render;
         return <Render {...ctx} />;

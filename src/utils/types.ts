@@ -4,11 +4,17 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { ReactNode } from "react";
+
 export default function definePlugin<P extends PluginDef>(p: P & Record<PropertyKey, any>) {
     return p as typeof p & Plugin;
 }
 
 export type ReplaceFn = (match: string, ...groups: string[]) => string;
+
+export type PluginSettingValue = string | number | bigint | boolean | undefined;
+
+export type EventListenerTarget = "document" | "window";
 
 export interface PatchReplacement {
     match: string | RegExp;
@@ -34,20 +40,20 @@ export interface Plugin extends PluginDef {
     isDependency?: boolean;
 }
 
-export interface StoreSubscription {
-    store: { subscribe: (callback: (...args: any[]) => void, selector?: (state: any) => any) => () => void };
-    callback: (state: any, prevState: any) => void;
-    selector?: (state: any) => any;
+export interface StoreSubscription<TState = any, TSlice = any> {
+    store: { subscribe: (callback: (state: TState, prevState: TState) => void, selector?: (state: TState) => TSlice) => () => void };
+    callback: (state: TState, prevState: TState) => void;
+    selector?: (state: TState) => TSlice;
 }
 
-export interface ZustandSubscription {
-    selector?: (state: any) => any;
-    handler: (current: any, prev: any) => void;
+export interface ZustandSubscription<TState = any, TSlice = any> {
+    selector?: (state: TState) => TSlice;
+    handler: (current: TSlice, prev: TSlice) => void;
 }
 
 export interface PluginEventListener {
-    target?: "document" | "window";
-    event: string;
+    target?: EventListenerTarget;
+    event: keyof DocumentEventMap | keyof WindowEventMap;
     handler: EventListener;
     options?: AddEventListenerOptions;
 }
@@ -75,7 +81,7 @@ export interface PluginDef {
     zustand?: Record<string, ZustandSubscription>;
     chatBarButton?: import("@api/ChatBarButtons").ChatBarButtonDef;
     contextMenuItems?: { [L in import("@api/ContextMenus").ContextMenuLocation]?: import("@api/ContextMenus").ContextMenuItemDef<L> };
-    events?: Record<string, (data: any) => void>;
+    events?: Record<string, (data: unknown) => void>;
     eventListeners?: PluginEventListener[];
     cleanupSelectors?: string[];
 }
@@ -104,24 +110,24 @@ export type SettingsChecks<D extends SettingsDefinition> = {
 };
 
 export type PluginSettingDef =
-    | (PluginSettingCustomDef & Pick<PluginSettingCommon, "onChange">)
-    | (PluginSettingComponentDef & Omit<PluginSettingCommon, "description" | "placeholder">)
+    | (PluginSettingCustomDef & Partial<PluginSettingCommon>)
+    | (PluginSettingComponentDef & Omit<PluginSettingCommon, "description" | "placeholder"> & Partial<Pick<PluginSettingCommon, "description" | "placeholder">>)
     | ((PluginSettingStringDef | PluginSettingNumberDef | PluginSettingBooleanDef | PluginSettingSelectDef | PluginSettingSliderDef | PluginSettingBigIntDef) & PluginSettingCommon);
 
 export interface PluginSettingCommon {
     description: string;
     placeholder?: string;
-    onChange?(newValue: any): void;
+    onChange?(newValue: PluginSettingValue): void;
     restartNeeded?: boolean;
-    componentProps?: Record<string, any>;
+    componentProps?: Record<string, unknown>;
     hidden?: boolean;
 }
 
-interface IsDisabled<D = any> {
+interface IsDisabled<D = unknown> {
     disabled?(this: D): boolean;
 }
 
-interface IsValid<T, D = any> {
+interface IsValid<T, D = unknown> {
     isValid?(this: D, value: T): boolean | string;
 }
 
@@ -159,7 +165,7 @@ export interface PluginSettingSelectOption {
 
 export interface PluginSettingCustomDef {
     type: OptionType.CUSTOM;
-    default?: any;
+    default?: unknown;
 }
 
 export interface PluginSettingSliderDef {
@@ -170,14 +176,14 @@ export interface PluginSettingSliderDef {
 }
 
 export interface IPluginOptionComponentProps {
-    setValue(newValue: any): void;
+    setValue(newValue: PluginSettingValue): void;
     option: PluginSettingComponentDef;
 }
 
 export interface PluginSettingComponentDef {
     type: OptionType.COMPONENT;
-    component: (props: IPluginOptionComponentProps) => any;
-    default?: any;
+    component: (props: IPluginOptionComponentProps) => ReactNode;
+    default?: unknown;
 }
 
 type PluginSettingType<O extends PluginSettingDef> = O extends PluginSettingStringDef
@@ -192,7 +198,7 @@ type PluginSettingType<O extends PluginSettingDef> = O extends PluginSettingStri
             ? O["options"][number]["value"]
             : O extends { default: infer D }
               ? D
-              : any;
+              : unknown;
 
 type PluginSettingDefaultType<O extends PluginSettingDef> = O extends PluginSettingSelectDef
     ? O["options"] extends { default?: boolean }[]

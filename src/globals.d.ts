@@ -13,15 +13,33 @@ declare const GIT_HASH: string;
 
 declare const unsafeWindow: typeof globalThis;
 
-declare function GM_getValue<T = any>(key: string, defaultValue?: T): T;
-declare function GM_setValue(key: string, value: any): void;
+declare function GM_getValue<T = unknown>(key: string, defaultValue?: T): T;
+declare function GM_setValue(key: string, value: unknown): void;
 declare function GM_deleteValue(key: string): void;
 declare function GM_listValues(): string[];
 declare function GM_setClipboard(text: string): void;
-declare function GM_xmlhttpRequest(options: Record<string, any>): void;
+
+interface GMXmlhttpRequestOptions {
+    method: string;
+    url: string;
+    responseType?: string;
+    timeout?: number;
+    onload?(response: GMXmlhttpResponse): void;
+    ontimeout?(): void;
+    onerror?(): void;
+    onabort?(): void;
+}
+
+interface GMXmlhttpResponse {
+    response: Blob;
+    status: number;
+    statusText: string;
+}
+
+declare function GM_xmlhttpRequest(options: GMXmlhttpRequestOptions): void;
 
 declare namespace globalThis {
-    var TURBOPACK: any;
+    var TURBOPACK: import("./turbopack/types").TurbopackPushable | unknown[] | undefined;
 }
 
 declare module "*.css" {}

@@ -12,7 +12,7 @@ import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectVa
 import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { humanizeKey } from "@utils/text";
-import { OptionType, type PluginSettingDef, type PluginSettingSelectOption } from "@utils/types";
+import { OptionType, type PluginSettingComponentDef, type PluginSettingDef, type PluginSettingSelectOption, type PluginSettingValue } from "@utils/types";
 
 import { type InputChangeEvent, resolveDefault } from "./utils";
 
@@ -36,11 +36,11 @@ function usePluginSetting(pluginName: string, id: string, setting: PluginSetting
     }, [pluginName, id]);
 
     const update = useCallback(
-        (val: any) => {
+        (val: PluginSettingValue) => {
             setValue(val);
             Settings.plugins[pluginName] = { ...Settings.plugins[pluginName], [id]: val };
             setting.onChange?.(val);
-            if ("restartNeeded" in setting && setting.restartNeeded) dispatch("reloadNeeded");
+            if (setting.restartNeeded) dispatch("reloadNeeded");
         },
         [id, pluginName, setting],
     );
@@ -52,7 +52,7 @@ function SettingLabel({ id, setting }: { id: string; setting: PluginSettingDef }
     return (
         <Flex flexDirection="column" gap="0">
             <SettingsTitle>{humanizeKey(id)}</SettingsTitle>
-            {"description" in setting && setting.description && <SettingsDescription>{setting.description}</SettingsDescription>}
+            {setting.description && <SettingsDescription>{setting.description}</SettingsDescription>}
         </Flex>
     );
 }
@@ -121,7 +121,7 @@ function ComponentField({ setting, pluginName }: SettingFieldProps) {
     const [, update] = usePluginSetting(pluginName, "component", setting);
     if (!("component" in setting)) return null;
 
-    const Comp = (setting as { component: React.ComponentType<{ setValue: (v: any) => void; option: PluginSettingDef }> }).component;
+    const Comp = (setting as PluginSettingComponentDef).component;
     return <Comp setValue={update} option={setting} />;
 }
 
@@ -152,7 +152,7 @@ function StringField({ id, setting, pluginName }: SettingFieldProps) {
                 type="text"
                 value={(value as string) ?? ""}
                 onChange={(e: InputChangeEvent) => update(e.target.value)}
-                placeholder={"placeholder" in setting ? (setting as { placeholder?: string }).placeholder : undefined}
+                placeholder={setting.placeholder}
                 className={cl("string-input")}
             />
         </Flex>

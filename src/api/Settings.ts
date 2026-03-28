@@ -11,20 +11,22 @@ import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
 import { SettingsStore as SettingsStoreClass, STORAGE_KEY } from "@utils/SettingsStore";
-import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingSelectOption, type SettingsChecks, type SettingsDefinition } from "@utils/types";
+import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingSelectOption, type PluginSettingValue, type SettingsChecks, type SettingsDefinition } from "@utils/types";
 
 const logger = new Logger("Settings");
+
+export type NotificationPosition = "top-right" | "bottom-right";
 
 export interface Settings {
     plugins: {
         [plugin: string]: {
             enabled: boolean;
-            [setting: string]: any;
+            [setting: string]: unknown;
         };
     };
     notifications: {
         timeout: number;
-        position: "top-right" | "bottom-right";
+        position: NotificationPosition;
     };
 }
 
@@ -71,7 +73,7 @@ export async function initSettings(): Promise<void> {
         raw = migrateFromLocalStorage();
         if (raw) idbSet(STORAGE_KEY, raw).then(() => {
             try { localStorage.removeItem(STORAGE_KEY); } catch {}
-        }).catch((e: any) => logger.debug("Failed to persist settings to IndexedDB:", e));
+        }).catch((e: unknown) => logger.debug("Failed to persist settings to IndexedDB:", e));
     }
 
     if (raw) {
@@ -150,7 +152,7 @@ export interface SettingsPluginData {
     themesEnabled?: boolean;
     customCSS?: string;
     customCSSEnabled?: boolean;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export function getSettingsPluginData(): SettingsPluginData {
@@ -161,10 +163,9 @@ export function updateSettingsPluginData(patch: Partial<SettingsPluginData>) {
     Settings.plugins.Settings = { ...Settings.plugins.Settings, ...patch };
 }
 
-export function resolveDefault(setting: PluginSettingDef): any {
-    if ("default" in setting) return setting.default;
+export function resolveDefault(setting: PluginSettingDef): PluginSettingValue {
+    if ("default" in setting) return setting.default as PluginSettingValue;
     if (setting.type === OptionType.SELECT) return (setting as { options: readonly PluginSettingSelectOption[] }).options.find(o => o.default)?.value;
-    return undefined;
 }
 
 export function definePluginSettings<Def extends SettingsDefinition, Checks extends SettingsChecks<Def>, PrivateSettings extends object = {}>(def: Def, checks?: Checks) {

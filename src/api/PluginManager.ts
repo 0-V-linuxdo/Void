@@ -12,7 +12,7 @@ import { canonicalizeFind, canonicalizeReplacement } from "@utils/patches";
 import { type Patch, type Plugin, StartAt } from "@utils/types";
 
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
-import { addContextMenuItem, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
+import { addContextMenuItem, type ContextMenuItemDef, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
 import { subscribe as subscribeEvent } from "./Events";
 import { PlainSettings, Settings, SettingsStore } from "./Settings";
 
@@ -22,7 +22,16 @@ export const plugins: Record<string, Plugin> = {};
 const pluginUnsubscribers = new Map<string, Array<() => void>>();
 let initialized = false;
 
-const storeRegistry = allStores as Record<string, Record<string, any>>;
+const storeRegistry = allStores as unknown as Record<string, Record<string, unknown>>;
+
+function runUnsubs(pluginName: string) {
+    const unsubs = pluginUnsubscribers.get(pluginName);
+    if (!unsubs) return;
+    for (const unsub of unsubs) {
+        try { unsub(); } catch (e) { logger.error(`Unsub error in ${pluginName}:`, e); }
+    }
+    pluginUnsubscribers.delete(pluginName);
+}
 
 function removePluginContextMenuItems(plugin: Plugin) {
     if (!plugin.contextMenuItems) return;
@@ -86,29 +95,30 @@ function startDependenciesRecursive(plugin: Plugin, visiting = new Set<string>()
     return true;
 }
 
-function resolveStoreHook(storeName: string): { subscribe: (...args: any[]) => any } | null {
+type Subscribable = { subscribe: (...args: unknown[]) => unknown };
+
+function isSubscribable(val: unknown): val is Subscribable {
+    return val != null && typeof (val as { subscribe?: unknown }).subscribe === "function";
+}
+
+function resolveStoreHook(storeName: string): Subscribable | null {
     const storeModule = storeRegistry[storeName];
     if (!storeModule) return null;
 
-    const hookName = `use${storeName}`;
-    const hook = storeModule[hookName] as { subscribe?: (...args: any[]) => any } | undefined;
-    if (hook && typeof hook.subscribe === "function") return hook as { subscribe: (...args: any[]) => any };
+    const hook = storeModule[`use${storeName}`];
+    if (isSubscribable(hook)) return hook;
 
-    for (const [key, val] of Object.entries(storeModule) as [string, { subscribe?: (...args: any[]) => any } | undefined][]) {
-        if (val && typeof val.subscribe === "function") return val as { subscribe: (...args: any[]) => any };
-    }
-
-    return null;
+    return Object.values(storeModule).find(isSubscribable) ?? null;
 }
 
 function ensureMethodsBound(plugin: Plugin) {
     for (const key of Object.keys(plugin)) {
         if (key === "start" || key === "stop") continue;
-        const val = (plugin as any)[key];
-        if (typeof val === "function" && !val.$$voidBound) {
+        const val = (plugin as unknown as Record<string, unknown>)[key];
+        if (typeof val === "function" && !(val as { $$voidBound?: boolean }).$$voidBound) {
             const bound = val.bind(plugin);
-            bound.$$voidBound = true;
-            (plugin as any)[key] = bound;
+            (bound as { $$voidBound?: boolean }).$$voidBound = true;
+            (plugin as unknown as Record<string, unknown>)[key] = bound;
         }
     }
 }
@@ -135,7 +145,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
 
         if (plugin.contextMenuItems) {
             for (const [location, def] of Object.entries(plugin.contextMenuItems)) {
-                addContextMenuItem(location as ContextMenuLocation, plugin.name, def as any);
+                addContextMenuItem(location as ContextMenuLocation, plugin.name, def as ContextMenuItemDef<any>);
             }
         }
 
@@ -147,7 +157,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
             }
         }
 
-        if (plugin.storeSubscriptions?.length) {
+        if (plugin.storeSubscriptions) {
             for (const sub of plugin.storeSubscriptions) {
                 unsubs.push(sub.store.subscribe(sub.callback, sub.selector));
             }
@@ -161,7 +171,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
                     continue;
                 }
 
-                const wrappedHandler = (current: any, prev: any) => {
+                const wrappedHandler = (current: unknown, prev: unknown) => {
                     try {
                         sub.handler(current, prev);
                     } catch (e) {
@@ -191,13 +201,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
         if (plugin.managedStyle) disableStyle(plugin.managedStyle);
         removeChatBarButton(plugin.name);
         removePluginContextMenuItems(plugin);
-        const unsubs = pluginUnsubscribers.get(plugin.name);
-        if (unsubs) {
-            for (const unsub of unsubs) {
-                try { unsub(); } catch (e2) { logger.error(`Unsub error during ${plugin.name} start cleanup:`, e2); }
-            }
-            pluginUnsubscribers.delete(plugin.name);
-        }
+        runUnsubs(plugin.name);
         return false;
     }
 }
@@ -213,13 +217,7 @@ export function stopPlugin(plugin: Plugin): boolean {
 
     let failed = false;
 
-    const unsubs = pluginUnsubscribers.get(plugin.name);
-    if (unsubs) {
-        for (const unsub of unsubs) {
-            try { unsub(); } catch (e) { failed = true; logger.error(`Unsub error in ${plugin.name}:`, e); }
-        }
-        pluginUnsubscribers.delete(plugin.name);
-    }
+    runUnsubs(plugin.name);
 
     try { removeChatBarButton(plugin.name); } catch (e) { failed = true; logger.error(`Failed to remove chat bar button for ${plugin.name}:`, e); }
 
@@ -242,11 +240,11 @@ export function stopPlugin(plugin: Plugin): boolean {
     return !failed;
 }
 
-export function startAllPlugins(target: StartAt) {
+export function startAllPlugins(target: StartAt): void {
     for (const [name, plugin] of Object.entries(plugins)) {
         if (!isPluginEnabled(name)) continue;
         if ((plugin.startAt ?? StartAt.Init) !== target) continue;
-        startPlugin(plugin);
+        try { startPlugin(plugin); } catch (e) { logger.error(`Unexpected error starting ${name}:`, e); }
     }
 }
 
@@ -263,17 +261,12 @@ export function registerPlugin(plugin: Plugin) {
 
 function pruneOrphanedPluginSettings() {
     const stored = PlainSettings.plugins;
-    let pruned = false;
-
-    for (const name of Object.keys(stored)) {
-        if (!plugins[name]) {
-            logger.info(`Pruning settings for removed plugin: ${name}`);
-            delete stored[name];
-            pruned = true;
-        }
+    const orphaned = Object.keys(stored).filter(name => !plugins[name]);
+    for (const name of orphaned) {
+        logger.info(`Pruning settings for removed plugin: ${name}`);
+        delete stored[name];
     }
-
-    if (pruned) SettingsStore.markAsChanged();
+    if (orphaned.length) SettingsStore.markAsChanged();
 }
 
 export function initPluginManager() {
@@ -284,9 +277,8 @@ export function initPluginManager() {
 
     const neededApis = new Set<string>();
 
-    for (const name of Object.keys(plugins)) {
+    for (const [name, plugin] of Object.entries(plugins)) {
         if (!isPluginEnabled(name)) continue;
-        const plugin = plugins[name];
 
         for (const d of plugin.dependencies ?? []) {
             const dep = plugins[d];

@@ -7,6 +7,7 @@
 import { isObject } from "./guards";
 import { idbSet } from "./idb";
 import { Logger } from "./Logger";
+import { mapGetOrCreate } from "./misc";
 
 const logger = new Logger("SettingsStore");
 
@@ -15,20 +16,11 @@ const SAVE_DEBOUNCE_MS = 100;
 
 type Listener = (path: string) => void;
 
-function getOrCreateSet<K, V>(map: Map<K, Set<V>>, key: K): Set<V> {
-    let set = map.get(key);
-    if (!set) {
-        set = new Set();
-        map.set(key, set);
-    }
-    return set;
-}
-
 export class SettingsStore<T extends object> {
     private globalListeners = new Set<Listener>();
     private pathListeners = new Map<string, Set<Listener>>();
     private prefixListeners = new Map<string, Set<Listener>>();
-    private defaultGetters = new Map<string, (key: string) => any>();
+    private defaultGetters = new Map<string, (key: string) => unknown>();
     private saveTimer: ReturnType<typeof setTimeout> | null = null;
     private proxyCache = new WeakMap<object, T>();
 
@@ -37,7 +29,7 @@ export class SettingsStore<T extends object> {
 
     constructor(plain: T) {
         this.plain = plain;
-        this.store = this.makeProxy(plain as any);
+        this.store = this.makeProxy(plain as Record<string, unknown>);
         window.addEventListener("beforeunload", () => this.flush(), { once: true });
     }
 
@@ -50,13 +42,13 @@ export class SettingsStore<T extends object> {
         }
     }
 
-    public setDefaultGetter(prefix: string, getter: (key: string) => any) {
+    public setDefaultGetter(prefix: string, getter: (key: string) => unknown): void {
         this.defaultGetters.set(prefix, getter);
     }
 
-    private makeProxy(target: any, path = ""): T {
+    private makeProxy(target: Record<string, unknown>, path = ""): T {
         const cached = this.proxyCache.get(target);
-        if (cached) return cached;
+        if (cached) return cached as T;
 
         const proxy = new Proxy(target, {
             get: (t, key: string) => {
@@ -98,8 +90,8 @@ export class SettingsStore<T extends object> {
             },
         });
 
-        this.proxyCache.set(target, proxy);
-        return proxy;
+        this.proxyCache.set(target, proxy as T);
+        return proxy as T;
     }
 
     private notifyListeners(path: string) {
@@ -155,7 +147,7 @@ export class SettingsStore<T extends object> {
     }
 
     public addChangeListener(path: string, listener: Listener) {
-        getOrCreateSet(this.pathListeners, path).add(listener);
+        mapGetOrCreate(this.pathListeners, path, () => new Set<Listener>()).add(listener);
     }
 
     public removeChangeListener(path: string, listener: Listener) {
@@ -164,7 +156,7 @@ export class SettingsStore<T extends object> {
     }
 
     public addPrefixChangeListener(prefix: string, listener: Listener) {
-        getOrCreateSet(this.prefixListeners, prefix).add(listener);
+        mapGetOrCreate(this.prefixListeners, prefix, () => new Set<Listener>()).add(listener);
     }
 
     public removePrefixChangeListener(prefix: string, listener: Listener) {

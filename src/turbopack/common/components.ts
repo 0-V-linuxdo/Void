@@ -100,7 +100,7 @@ const selectLazy = createModuleLazy("Select", "SelectContent", "SelectTrigger");
 export const Select: ComponentType<SelectProps> = selectLazy("Select");
 export const SelectTrigger: ComponentType<SelectTriggerProps> = selectLazy("SelectTrigger");
 export const SelectContent: ComponentType<SelectContentProps> = selectLazy("SelectContent");
-export const SelectItem: ComponentType<SelectItemProps> = selectLazy("SelectItem") as any;
+export const SelectItem: ComponentType<SelectItemProps> = selectLazy("SelectItem") as unknown as ComponentType<SelectItemProps>;
 export const SelectValue: ComponentType<SelectValueProps> = selectLazy("SelectValue");
 
 export const Separator: ComponentType<SeparatorProps> = LazyComponent("Separator", () => findExportedComponent("Separator"));

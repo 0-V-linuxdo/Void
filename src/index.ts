@@ -8,7 +8,7 @@ import * as Void from "./Void";
 
 const target = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
 
-if (!(target as any).Void) {
+if (!(target as { Void?: unknown }).Void) {
     Object.defineProperty(target, "Void", {
         value: Void,
         writable: false,
