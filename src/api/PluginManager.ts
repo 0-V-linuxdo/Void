@@ -14,7 +14,7 @@ import { type Patch, type Plugin, StartAt } from "@utils/types";
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
 import { addContextMenuItem, type ContextMenuItemDef, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
 import { subscribe as subscribeEvent } from "./Events";
-import { PlainSettings, Settings, SettingsStore } from "./Settings";
+import { getSettingsPluginData, PlainSettings, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
 
 const logger = new Logger("PluginManager", "#b4befe");
 
@@ -259,6 +259,28 @@ export function registerPlugin(plugin: Plugin) {
     }
 }
 
+const NEW_PLUGIN_TTL = 2 * 24 * 60 * 60 * 1000;
+
+export function isNewPlugin(name: string): boolean {
+    const seen = getSettingsPluginData().knownPlugins?.[name];
+    return seen != null && Date.now() - seen < NEW_PLUGIN_TTL;
+}
+
+function trackNewPlugins() {
+    const known = getSettingsPluginData().knownPlugins ?? {};
+    const visible = Object.keys(plugins).filter(n => !plugins[n].hidden && !plugins[n].required);
+    let changed = false;
+
+    for (const name of visible) {
+        if (!(name in known)) {
+            known[name] = Date.now();
+            changed = true;
+        }
+    }
+
+    if (changed) updateSettingsPluginData({ knownPlugins: known });
+}
+
 function pruneOrphanedPluginSettings() {
     const stored = PlainSettings.plugins;
     const orphaned = Object.keys(stored).filter(name => !plugins[name]);
@@ -274,6 +296,7 @@ export function initPluginManager() {
     initialized = true;
 
     pruneOrphanedPluginSettings();
+    trackNewPlugins();
 
     const neededApis = new Set<string>();
 

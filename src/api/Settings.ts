@@ -152,6 +152,7 @@ export interface SettingsPluginData {
     themesEnabled?: boolean;
     customCSS?: string;
     customCSSEnabled?: boolean;
+    knownPlugins?: Record<string, number>;
     [key: string]: unknown;
 }
 

@@ -7,9 +7,9 @@
 import "./PluginCard.css";
 
 import { dispatch } from "@api/Events";
-import { isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
+import { isNewPlugin, isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
 import { Settings } from "@api/Settings";
-import { Button, Switch, Text, Tooltip, TooltipContent, TooltipTrigger } from "@components";
+import { Badge, Button, Switch, Text, Tooltip, TooltipContent, TooltipTrigger } from "@components";
 import { CircleAlertIcon, EllipsisVertical, TriangleAlert } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
@@ -46,9 +46,9 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
     return (
         <BaseCard
             className={plugin.required ? cl("required") : crashed ? cl("crashed") : undefined}
-            name={
+            name={name}
+            badges={
                 <>
-                    {name}
                     {crashed && (
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -70,6 +70,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
                         </Tooltip>
                     )}
                     <PluginBadges plugin={plugin} className={cl("badge")} />
+                    {isNewPlugin(name) && <Badge variant="accent">New</Badge>}
                 </>
             }
             description={plugin.description}
