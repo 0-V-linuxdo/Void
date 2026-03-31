@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { addChatBarButton } from "@api/ChatBarButtons";
 import { Flex } from "@components/Flex";
-import { AccessibilityIcon, ClockAlertIcon } from "@components/icons";
+import { ClockAlertIcon, GaugeIcon } from "@components/icons";
 import { Text } from "@components/Text";
 import { React, useEffect, useState } from "@turbopack/common/react";
 import { ModesStore } from "@turbopack/common/stores";
@@ -87,7 +87,7 @@ function ButtonIcon() {
         <span className={cl("trigger")}>
             {limited
                 ? <ClockAlertIcon size={20} className={cl("icon-limited")} />
-                : <AccessibilityIcon size={20} />}
+                : <GaugeIcon size={20} />}
             <ButtonLabel mode={mode} />
         </span>
     );
