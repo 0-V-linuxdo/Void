@@ -138,6 +138,7 @@ export interface PatchResult {
     plugin: string;
     find: string;
     moduleId: number;
+    noWarn?: boolean;
     replacements: Array<{
         match: string;
         status: PatchReplacementStatus;
