@@ -8,13 +8,22 @@ import "./ThemeCard.css";
 
 import { disableTheme, enableTheme, type ThemeData } from "@api/Themes";
 import { Button, Switch } from "@components";
-import { CopyIcon, FolderIcon, GlobeIcon, PencilIcon, Trash2Icon } from "@components/icons";
+import { CopyIcon, FolderIcon, GlobeIcon, type IconProps, PencilIcon, Trash2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { copyToClipboard } from "@utils/misc";
+import type { ComponentType } from "react";
 
 import BaseCard from "./BaseCard";
+
+function IconButton({ icon: Icon, label, onClick }: { icon: ComponentType<IconProps>; label: string; onClick?(): void }) {
+    return (
+        <Button variant="tertiary" size="xs" shape="square" aria-label={label} onClick={onClick}>
+            <Icon size={14} />
+        </Button>
+    );
+}
 
 const logger = new Logger("ThemeCard");
 const cl = classNameFactory("void-theme-card-");
@@ -43,18 +52,11 @@ export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle, on
             description={theme.description}
             controls={
                 <>
-                    {theme.local ? (
-                        <Button variant="tertiary" size="xs" shape="square" aria-label="Edit" onClick={onEdit}>
-                            <PencilIcon size={14} />
-                        </Button>
-                    ) : (
-                        <Button variant="tertiary" size="xs" shape="square" aria-label="Copy URL" onClick={() => { copyToClipboard(theme.url).catch(e => logger.error("Failed to copy URL:", e)); }}>
-                            <CopyIcon size={14} />
-                        </Button>
-                    )}
-                    <Button variant="tertiary" size="xs" shape="square" aria-label="Remove" onClick={() => onRemove(theme.url)}>
-                        <Trash2Icon size={14} />
-                    </Button>
+                    {theme.local
+                        ? <IconButton icon={PencilIcon} label="Edit" onClick={onEdit} />
+                        : <IconButton icon={CopyIcon} label="Copy URL" onClick={() => { copyToClipboard(theme.url).catch(e => logger.error("Failed to copy URL:", e)); }} />
+                    }
+                    <IconButton icon={Trash2Icon} label="Remove" onClick={() => onRemove(theme.url)} />
                     <Switch checked={theme.enabled} disabled={!globalEnabled} onCheckedChange={handleToggle} />
                 </>
             }

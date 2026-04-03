@@ -9,14 +9,14 @@ import "./PluginCard.css";
 import { dispatch } from "@api/Events";
 import { isNewPlugin, isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
 import { Settings } from "@api/Settings";
-import { Badge, Button, Switch, Text, Tooltip, TooltipContent, TooltipTrigger } from "@components";
+import { Badge, Button, Switch } from "@components";
 import { CircleAlertIcon, EllipsisVertical, TriangleAlert } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { useForceUpdater } from "@utils/react";
 
 import BaseCard from "./BaseCard";
-import { PluginBadges } from "./pluginBadges";
+import { PluginBadges, TooltipIcon } from "./pluginBadges";
 import { hasVisibleSettings } from "./utils";
 
 const cl = classNameFactory("void-plugin-card-");
@@ -49,26 +49,8 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
             name={name}
             badges={
                 <>
-                    {crashed && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Text as="span" className={cl("crashed-icon")}>
-                                    <TriangleAlert />
-                                </Text>
-                            </TooltipTrigger>
-                            <TooltipContent>This plugin failed to start</TooltipContent>
-                        </Tooltip>
-                    )}
-                    {plugin.required && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Text as="span" className={cl("required-icon")}>
-                                    <CircleAlertIcon />
-                                </Text>
-                            </TooltipTrigger>
-                            <TooltipContent>This plugin is required for Void to work</TooltipContent>
-                        </Tooltip>
-                    )}
+                    {crashed && <TooltipIcon icon={TriangleAlert} tooltip="This plugin failed to start" className={cl("crashed-icon")} />}
+                    {plugin.required && <TooltipIcon icon={CircleAlertIcon} tooltip="This plugin is required for Void to work" className={cl("required-icon")} />}
                     <PluginBadges plugin={plugin} className={cl("badge")} />
                     {isNewPlugin(name) && <Badge variant="accent">New</Badge>}
                 </>

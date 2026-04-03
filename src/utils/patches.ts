@@ -21,11 +21,11 @@ export function canonicalizeMatch<T extends RegExp | string>(match: T): T {
     }
 
     if (canonSource === (isString ? match : (match as RegExp).source)) return match;
-
     if (isString) return canonSource as T;
 
-    const canonRegex = new RegExp(canonSource, (match as RegExp).flags);
-    canonRegex.toString = (match as RegExp).toString.bind(match);
+    const re = match as RegExp;
+    const canonRegex = new RegExp(canonSource, re.flags);
+    canonRegex.toString = re.toString.bind(re);
     return canonRegex as T;
 }
 

@@ -18,7 +18,8 @@ export { matchesAllPatterns, matchesPattern } from "./match";
 
 const logger = new Logger("TurbopackFinder", "#a6d189");
 
-const fnSourceCache = new WeakMap<Function, string>();
+import { getFnSource } from "./fnSource";
+
 const zustandStoreCache = new Map<string, any>();
 
 interface FinderRecord {
@@ -53,14 +54,7 @@ export function reportFailedFinders(): void {
     if (failed.length) logger.warn(`${failed.length} finder(s) resolved to nothing:`, failed);
 }
 
-function getFnSource(fn: Function): string {
-    let src = fnSourceCache.get(fn);
-    if (src === undefined) {
-        src = String(fn);
-        fnSourceCache.set(fn, src);
-    }
-    return src;
-}
+export { fnSourceCache, getFnSource } from "./fnSource";
 
 function toZustandHookName(name: string): string {
     if (name.startsWith("use")) return name;
@@ -192,35 +186,19 @@ export function findLazy(filter: FilterFn): any {
     return proxyLazy(() => searchCache(filter));
 }
 
-export function findByProps(...props: string[]): any {
-    return find(filters.byProps(...props));
+function makeFinder(name: string, filterFactory: (...args: any[]) => FilterFn) {
+    const finder = (...args: any[]) => find(filterFactory(...args));
+    const lazy = (...args: any[]) => {
+        const resolve = () => finder(...args);
+        trackFinder(name, args.map(String), resolve);
+        return proxyLazy(resolve);
+    };
+    return [finder, lazy] as const;
 }
 
-export function findByPropsLazy(...props: string[]): any {
-    const resolve = () => findByProps(...props);
-    trackFinder("findByProps", props, resolve);
-    return proxyLazy(resolve);
-}
-
-export function findByCode(...code: (string | RegExp)[]): any {
-    return find(filters.byCode(...code));
-}
-
-export function findByCodeLazy(...code: (string | RegExp)[]): any {
-    const resolve = () => findByCode(...code);
-    trackFinder("findByCode", code.map(String), resolve);
-    return proxyLazy(resolve);
-}
-
-export function findByDisplayName(name: string): any {
-    return find(filters.byDisplayName(name));
-}
-
-export function findByDisplayNameLazy(name: string): any {
-    const resolve = () => findByDisplayName(name);
-    trackFinder("findByDisplayName", [name], resolve);
-    return proxyLazy(resolve);
-}
+export const [findByProps, findByPropsLazy] = makeFinder("findByProps", filters.byProps);
+export const [findByCode, findByCodeLazy] = makeFinder("findByCode", filters.byCode);
+export const [findByDisplayName, findByDisplayNameLazy] = makeFinder("findByDisplayName", filters.byDisplayName);
 
 export function findComponentByCode(...code: (string | RegExp)[]): any {
     return find(filters.componentByCode(...code));

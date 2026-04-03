@@ -6,7 +6,7 @@
 
 import "./styles.css";
 
-import { Button, ErrorBoundary, Flex, Grid, Input, Paragraph, Text } from "@components";
+import { Button, ErrorBoundary, Flex, Grid, Input, Paragraph, SectionHeader, Text } from "@components";
 import { TelescopeIcon } from "@components/icons";
 import { allTabs } from "@plugins/_core/settings";
 import { React, useMemo, useState } from "@turbopack/common/react";
@@ -42,7 +42,7 @@ function collectIcons(): IconEntry[] {
         if (exports == null || typeof exports !== "object" || isBlacklisted(exports)) continue;
         if (countKeys(exports) > 3) continue;
         for (const key in exports) {
-            if (key === "Icon" || !key.endsWith("Icon") || seen.has(key)) continue;
+            if (key === "Icon" || !key.endsWith("Icon") || key[0] !== key[0].toUpperCase() || seen.has(key)) continue;
             try {
                 const val = exports[key];
                 if (typeof val !== "function") continue;
@@ -89,10 +89,7 @@ function IconsTab() {
 
     return (
         <Flex flexDirection="column" gap="1.5rem">
-            <Flex flexDirection="column" gap="0" className={cl("section")}>
-                <Text size="sm" weight="medium">Icons</Text>
-                <Paragraph>{`Browse ${icons.length} Grok icons. Click to copy the finder code.`}</Paragraph>
-            </Flex>
+            <SectionHeader title="Icons" description={`Browse ${icons.length} Grok icons. Click to copy the finder code.`} className={cl("section")} />
             <Flex className={cl("section")}>
                 <Input
                     type="text"

@@ -124,6 +124,7 @@ export type ClassNameFactoryArg = string | string[] | Record<string, unknown> | 
 export const classNameFactory =
     (prefix = "") =>
     (...args: ClassNameFactoryArg[]) => {
+        if (args.length === 1 && typeof args[0] === "string") return prefix + args[0];
         const classNames = new Set<string>();
         for (const arg of args) {
             if (typeof arg === "string") classNames.add(arg);

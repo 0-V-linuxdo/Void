@@ -41,19 +41,9 @@ export class Logger {
         console[level](prefix, ...args);
     }
 
-    public log(...args: unknown[]) {
-        this._log("log", args);
-    }
-    public info(...args: unknown[]) {
-        this._log("info", args);
-    }
-    public error(...args: unknown[]) {
-        this._log("error", args);
-    }
-    public warn(...args: unknown[]) {
-        this._log("warn", args);
-    }
-    public debug(...args: unknown[]) {
-        this._log("debug", args);
-    }
+    public log(...args: unknown[]) { this._log("log", args); }
+    public info(...args: unknown[]) { this._log("info", args); }
+    public error(...args: unknown[]) { this._log("error", args); }
+    public warn(...args: unknown[]) { this._log("warn", args); }
+    public debug(...args: unknown[]) { this._log("debug", args); }
 }

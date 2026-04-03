@@ -8,7 +8,8 @@ import { React } from "@turbopack/common/react";
 import { ClassNames } from "@turbopack/common/utils";
 import type { HTMLAttributes, ReactNode } from "react";
 
-import { colorClasses, type TextColor } from "./Text";
+import { Flex } from "./Flex";
+import { Text, type TextColor } from "./Text";
 
 export interface ParagraphProps extends HTMLAttributes<HTMLParagraphElement> {
     color?: TextColor;
@@ -17,8 +18,17 @@ export interface ParagraphProps extends HTMLAttributes<HTMLParagraphElement> {
 
 export function Paragraph({ color = "secondary", className, children, ...props }: ParagraphProps) {
     return (
-        <p className={ClassNames.cn("text-xs text-pretty", colorClasses[color], className)} {...props}>
+        <Text as="p" size="xs" color={color} className={ClassNames.cn("text-pretty", className)} {...props}>
             {children}
-        </p>
+        </Text>
+    );
+}
+
+export function SectionHeader({ title, description, className }: { title: string; description?: string; className?: string }) {
+    return (
+        <Flex flexDirection="column" gap="0" className={className}>
+            <Text size="sm" weight="medium">{title}</Text>
+            {description && <Paragraph>{description}</Paragraph>}
+        </Flex>
     );
 }

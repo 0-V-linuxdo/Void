@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { showToast, ToastType } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
-import { Badge, Button, Card, Flex, Input, Paragraph, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Switch, Text } from "@components";
+import { Badge, Button, Card, Flex, Input, Paragraph, SectionHeader, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import type { FeatureStoreState } from "@grok-types";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
@@ -201,10 +201,7 @@ function ExperimentsTab() {
 
     return (
         <Flex flexDirection="column" gap="1rem">
-            <Flex flexDirection="column" gap="0" className={cl("section")}>
-                <Text size="sm" weight="medium">Experiments</Text>
-                <Paragraph>Toggle unreleased Grok features. These are experimental and may break things.</Paragraph>
-            </Flex>
+            <SectionHeader title="Experiments" description="Toggle unreleased Grok features. These are experimental and may break things." className={cl("section")} />
             <Card variant="ghost" className={cl("warning")}>
                 <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
                     <Text size="xs" className={cl("warning-text")}>

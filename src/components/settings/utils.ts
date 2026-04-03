@@ -6,8 +6,6 @@
 
 import { OptionType, type Plugin, type PluginSettingDef } from "@utils/types";
 
-export { resolveDefault } from "@api/Settings";
-
 export type InputChangeEvent = { target: { value: string } };
 
 export type ListFilter = "all" | "enabled" | "disabled";

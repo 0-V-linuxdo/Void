@@ -7,9 +7,18 @@
 import { VoidChatBarButtons } from "@api/ChatBarButtons";
 import { ModalContainer } from "@api/Modals";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { React } from "@turbopack/common/react";
+import { Fragment, React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
+
+function Buttons() {
+    return (
+        <Fragment>
+            <VoidChatBarButtons />
+            <ModalContainer />
+        </Fragment>
+    );
+}
 
 export default definePlugin({
     name: "ChatBarButtonAPI",
@@ -18,14 +27,7 @@ export default definePlugin({
     required: true,
     hidden: true,
 
-    renderButtons() {
-        return (
-            <ErrorBoundary>
-                <VoidChatBarButtons />
-                <ModalContainer />
-            </ErrorBoundary>
-        );
-    },
+    renderButtons: ErrorBoundary.wrap(Buttons),
 
     patches: [
         {

@@ -20,7 +20,7 @@ import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { copyToClipboard, createExternalStore, extractUrlExtension, fetchExternal, sanitizeFilename } from "@utils/misc";
-import { useExternalStore } from "@utils/react";
+import { useAsyncAction, useExternalStore } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 import { createZip } from "@utils/zip";
@@ -275,15 +275,9 @@ function useFavoritesPage() {
 
 function DownloadAllButton() {
     const isFavorites = useFavoritesPage();
-    const [loading, setLoading] = useState(false);
     const favorites = MediaStore.useMediaStore(s => s.favoritesList);
     const visibleCount = getVisibleIds(favorites).length;
-
-    const onClick = useCallback(async () => {
-        setLoading(true);
-        try { await downloadAllFavorites(); }
-        finally { setLoading(false); }
-    }, []);
+    const [loading, onClick] = useAsyncAction(() => downloadAllFavorites());
 
     if (!isFavorites) return null;
 
@@ -312,7 +306,6 @@ function ActionToolbar() {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteAllOpen, setDeleteAllOpen] = useState(false);
     const [upscaleOpen, setUpscaleOpen] = useState(false);
-    const [busy, setBusy] = useState(false);
     const favorites = MediaStore.useMediaStore(s => s.favoritesList);
     const videoByMediaId = MediaStore.useMediaStore(s => s.videoByMediaId);
 
@@ -327,24 +320,13 @@ function ActionToolbar() {
         if (!isFavorites && selectMode) clearSelection();
     }, [isFavorites]);
 
-    const onDeleteSelected = useCallback(async () => {
-        setBusy(true);
-        try { await bulkDeletePosts([...selectedIds]); }
-        finally { setBusy(false); }
-    }, []);
-
-    const onDeleteAll = useCallback(async () => {
-        setBusy(true);
-        try { await bulkDeletePosts(getVisibleIds(favorites)); }
-        finally { setBusy(false); }
-    }, [favorites]);
-
-    const onUpscale = useCallback(async () => {
-        setBusy(true);
+    const [busyDelete, onDeleteSelected] = useAsyncAction(() => bulkDeletePosts([...selectedIds]));
+    const [busyDeleteAll, onDeleteAll] = useAsyncAction(() => bulkDeletePosts(getVisibleIds(favorites)));
+    const [busyUpscale, onUpscale] = useAsyncAction(async () => {
         const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
-        try { await bulkUpscaleVideos(ids); }
-        finally { setBusy(false); }
-    }, [favorites, count]);
+        await bulkUpscaleVideos(ids);
+    });
+    const busy = busyDelete || busyDeleteAll || busyUpscale;
 
     const onSelectAll = useCallback(() => {
         for (const id of getVisibleIds(favorites)) selectedIds.add(id);
@@ -601,39 +583,37 @@ function CardActions({ postId }: { postId: string }) {
                 <DownloadIcon size="16" className="text-white" />
             </ButtonWithTooltip>
             {isFavorites && (
-                <ButtonWithTooltip
-                    tooltipContent="Unsave"
-                    className={cl("card-btn")}
-                    size="md"
-                    shape="circle"
-                    variant="none"
-                    onClick={onUnfavorite}
-                >
-                    <HeartCrackIcon size={16} className="text-white" />
-                </ButtonWithTooltip>
-            )}
-            {isFavorites && (
-                <ButtonWithTooltip
-                    tooltipContent="Delete permanently"
-                    className={classes(cl("card-btn"), cl("card-btn-danger"))}
-                    size="md"
-                    shape="circle"
-                    variant="none"
-                    onClick={() => setConfirmDelete(true)}
-                >
-                    <TrashIcon size={16} className="text-white" />
-                </ButtonWithTooltip>
-            )}
-            {isFavorites && (
-                <ConfirmDialog
-                    open={confirmDelete}
-                    onOpenChange={setConfirmDelete}
-                    title="Delete this item"
-                    description="Are you sure you want to permanently delete this item? This cannot be undone."
-                    confirmText="Delete"
-                    danger
-                    onConfirm={onDelete}
-                />
+                <Fragment>
+                    <ButtonWithTooltip
+                        tooltipContent="Unsave"
+                        className={cl("card-btn")}
+                        size="md"
+                        shape="circle"
+                        variant="none"
+                        onClick={onUnfavorite}
+                    >
+                        <HeartCrackIcon size={16} className="text-white" />
+                    </ButtonWithTooltip>
+                    <ButtonWithTooltip
+                        tooltipContent="Delete permanently"
+                        className={classes(cl("card-btn"), cl("card-btn-danger"))}
+                        size="md"
+                        shape="circle"
+                        variant="none"
+                        onClick={() => setConfirmDelete(true)}
+                    >
+                        <TrashIcon size={16} className="text-white" />
+                    </ButtonWithTooltip>
+                    <ConfirmDialog
+                        open={confirmDelete}
+                        onOpenChange={setConfirmDelete}
+                        title="Delete this item"
+                        description="Are you sure you want to permanently delete this item? This cannot be undone."
+                        confirmText="Delete"
+                        danger
+                        onConfirm={onDelete}
+                    />
+                </Fragment>
             )}
         </Fragment>
     );

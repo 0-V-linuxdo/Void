@@ -36,24 +36,20 @@ export default definePlugin({
     authors: [Devs.adryd],
     cleanupSelectors: ["#oneko"],
 
-    start() {
+    async start() {
         stopped = false;
-
-        fetchExternal(ONEKO_SCRIPT)
-            .then(r => r.text())
-            .then(s => s.replace("./oneko.gif", ONEKO_GIF).replace("(isReducedMotion)", "(false)"))
-            .then(s => {
-                if (stopped) return;
-                const blob = new Blob([s], { type: "text/javascript" });
-                const el = document.createElement("script");
-                el.src = URL.createObjectURL(blob);
-                document.head.appendChild(el);
-                el.addEventListener("load", () => {
-                    el.remove();
-                    URL.revokeObjectURL(el.src);
-                });
-            })
-            .catch(e => logger.error("Failed to load oneko script", e));
+        try {
+            const s = (await (await fetchExternal(ONEKO_SCRIPT)).text())
+                .replace("./oneko.gif", ONEKO_GIF)
+                .replace("(isReducedMotion)", "(false)");
+            if (stopped) return;
+            const el = document.createElement("script");
+            el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
+            document.head.appendChild(el);
+            el.addEventListener("load", () => { el.remove(); URL.revokeObjectURL(el.src); }, { once: true });
+        } catch (e) {
+            logger.error("Failed to load oneko script", e);
+        }
     },
 
     stop() {

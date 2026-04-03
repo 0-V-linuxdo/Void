@@ -209,31 +209,18 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
 export function stopPlugin(plugin: Plugin): boolean {
     if (!plugin.started) return true;
 
-    try {
-        plugin.stop?.();
-    } catch (e) {
-        logger.error(`Error in ${plugin.name}.stop():`, e);
-    }
-
-    let failed = false;
+    try { plugin.stop?.(); } catch (e) { logger.error(`Error in ${plugin.name}.stop():`, e); }
 
     runUnsubs(plugin.name);
 
-    try { removeChatBarButton(plugin.name); } catch (e) { failed = true; logger.error(`Failed to remove chat bar button for ${plugin.name}:`, e); }
+    const tryCleanup = (fn: () => void) => { try { fn(); return false; } catch (e) { logger.error(`Cleanup error in ${plugin.name}:`, e); return true; } };
 
-    try { removePluginContextMenuItems(plugin); } catch (e) { failed = true; logger.error(`Failed to remove context menu items for ${plugin.name}:`, e); }
-
-    try {
-        if (plugin.managedStyle && !plugin.patches?.length) disableStyle(plugin.managedStyle);
-    } catch (e) { failed = true; logger.error(`Failed to disable style for ${plugin.name}:`, e); }
-
-    try {
-        if (plugin.cleanupSelectors) {
-            for (const selector of plugin.cleanupSelectors) {
-                for (const el of document.querySelectorAll(selector)) el.remove();
-            }
-        }
-    } catch (e) { failed = true; logger.error(`Failed to cleanup selectors for ${plugin.name}:`, e); }
+    const failed = [
+        tryCleanup(() => removeChatBarButton(plugin.name)),
+        tryCleanup(() => removePluginContextMenuItems(plugin)),
+        tryCleanup(() => { if (plugin.managedStyle && !plugin.patches?.length) disableStyle(plugin.managedStyle); }),
+        tryCleanup(() => { if (plugin.cleanupSelectors) for (const s of plugin.cleanupSelectors) for (const el of document.querySelectorAll(s)) el.remove(); }),
+    ].some(Boolean);
 
     plugin.started = false;
     if (failed) logger.error(`Plugin ${plugin.name} stopped with errors`);

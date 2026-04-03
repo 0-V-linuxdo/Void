@@ -12,16 +12,13 @@ import {
     Button,
     ConfirmDialog,
     Dialog,
-    DialogClose,
-    DialogContent,
     DialogFooter,
-    DialogHeader,
-    DialogTitle,
     ErrorBoundary,
     Flex,
     Grid,
     Input,
     Paragraph,
+    SectionHeader,
     Select,
     SelectContent,
     SelectItem,
@@ -31,7 +28,7 @@ import {
     Text,
     Textarea,
 } from "@components";
-import { Cross2Icon, PlusIcon } from "@components/icons";
+import { PlusIcon } from "@components/icons";
 import { React, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { errorMessage } from "@utils/misc";
@@ -40,6 +37,7 @@ import { pluralize } from "@utils/text";
 
 import ThemeCard from "../ThemeCard";
 import { type InputChangeEvent } from "../utils";
+import { VoidDialogShell } from "./VoidDialogShell";
 
 type ThemeFilter = "all" | "enabled" | "disabled" | "online" | "local";
 
@@ -76,15 +74,7 @@ function LocalThemeDialog({ open, onClose, theme, onSave }: LocalThemeDialogProp
 
     return (
         <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-            <DialogContent className="void-dialog-content" aria-describedby={undefined}>
-                <DialogClose asChild>
-                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className="void-dialog-close">
-                        <Cross2Icon />
-                    </Button>
-                </DialogClose>
-                <DialogHeader className="void-dialog-header">
-                    <DialogTitle>{theme ? "Edit Local Theme" : "New Local Theme"}</DialogTitle>
-                </DialogHeader>
+            <VoidDialogShell title={theme ? "Edit Local Theme" : "New Local Theme"}>
                 <Flex flexDirection="column" gap="0.25rem">
                     <Text size="sm" weight="medium">Name</Text>
                     <Input
@@ -111,7 +101,7 @@ function LocalThemeDialog({ open, onClose, theme, onSave }: LocalThemeDialogProp
                         {theme ? "Save" : "Create"}
                     </Button>
                 </DialogFooter>
-            </DialogContent>
+            </VoidDialogShell>
         </Dialog>
     );
 }
@@ -126,6 +116,8 @@ export default function ThemesTab() {
     const [themes, setThemes] = useState(getThemes);
     const [localDialogOpen, setLocalDialogOpen] = useState(false);
     const [editingTheme, setEditingTheme] = useState<ThemeData | undefined>();
+
+    const refreshThemes = () => setThemes(getThemes());
 
     const visible = useMemo(() => {
         switch (filter) {
@@ -142,7 +134,7 @@ export default function ThemesTab() {
     const handleOnlineToggle = (checked: boolean) => {
         setOnlineEnabled(checked);
         setOnlineThemesEnabled(checked);
-        setThemes(getThemes());
+        refreshThemes();
     };
 
     const handleAdd = async () => {
@@ -153,7 +145,7 @@ export default function ThemesTab() {
         try {
             await addTheme(trimmed);
             setUrl("");
-            setThemes(getThemes());
+            refreshThemes();
         } catch (e) {
             setError(errorMessage(e));
         } finally {
@@ -168,16 +160,13 @@ export default function ThemesTab() {
         if (!removeUrl) return;
         removeTheme(removeUrl);
         setRemoveUrl(null);
-        setThemes(getThemes());
+        refreshThemes();
     };
 
     return (
         <Flex flexDirection="column" gap="2rem">
             <Flex alignItems="center" justifyContent="space-between" className="void-tab-section">
-                <Flex flexDirection="column" gap="0">
-                    <Text size="sm" weight="medium">Online Themes</Text>
-                    <Paragraph>Allow loading themes from external URLs. Disable to only use local themes.</Paragraph>
-                </Flex>
+                <SectionHeader title="Online Themes" description="Allow loading themes from external URLs. Disable to only use local themes." />
                 <Switch checked={onlineEnabled} onCheckedChange={handleOnlineToggle} />
             </Flex>
             <Flex flexDirection="column" gap="0.5rem" className="void-tab-section">
@@ -200,44 +189,41 @@ export default function ThemesTab() {
                 {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
             </Flex>
             {themes.length > 0 && (
-                <Flex flexDirection="column" gap="0.375rem" className="void-tab-section">
-                    <Flex flexDirection="column" gap="0">
-                        <Text size="sm" weight="medium">Installed Themes</Text>
-                        <Paragraph>Re-fetched every page load.</Paragraph>
+                <>
+                    <Flex flexDirection="column" gap="0.375rem" className="void-tab-section">
+                        <SectionHeader title="Installed Themes" description="Re-fetched every page load." />
+                        <Paragraph>
+                            {`${pluralize(themes.length, "theme")} installed \u00B7 ${themes.filter(t => t.enabled).length} enabled`}
+                        </Paragraph>
                     </Flex>
-                    <Paragraph>
-                        {`${pluralize(themes.length, "theme")} installed \u00B7 ${themes.filter(t => t.enabled).length} enabled`}
-                    </Paragraph>
-                </Flex>
-            )}
-            {themes.length > 0 && (
-                <Flex alignItems="center" gap="0.75rem" className="void-tab-section">
-                    <Input
-                        type="text"
-                        placeholder={`Search ${themes.length} themes...`}
-                        value={search}
-                        onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
-                        className="void-search-bar-input"
-                    />
-                    <Select value={filter} onValueChange={(v: string) => setFilter(v as ThemeFilter)}>
-                        <SelectTrigger className="void-search-bar-select">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="enabled">Enabled</SelectItem>
-                            <SelectItem value="disabled">Disabled</SelectItem>
-                            <SelectItem value="online">Online</SelectItem>
-                            <SelectItem value="local">Local</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </Flex>
+                    <Flex alignItems="center" gap="0.75rem" className="void-tab-section">
+                        <Input
+                            type="text"
+                            placeholder={`Search ${themes.length} themes...`}
+                            value={search}
+                            onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
+                            className="void-search-bar-input"
+                        />
+                        <Select value={filter} onValueChange={(v: string) => setFilter(v as ThemeFilter)}>
+                            <SelectTrigger className="void-search-bar-select">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All</SelectItem>
+                                <SelectItem value="enabled">Enabled</SelectItem>
+                                <SelectItem value="disabled">Disabled</SelectItem>
+                                <SelectItem value="online">Online</SelectItem>
+                                <SelectItem value="local">Local</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </Flex>
+                </>
             )}
             {filtered.length > 0 && (
                 <Grid columns="repeat(2, 1fr)" className="void-tab-section">
                     {filtered.map(t => (
                         <ErrorBoundary key={t.url} fallback={null}>
-                            <ThemeCard theme={t} globalEnabled={!!t.local || onlineEnabled} onRemove={setRemoveUrl} onToggle={() => setThemes(getThemes())} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
+                            <ThemeCard theme={t} globalEnabled={!!t.local || onlineEnabled} onRemove={setRemoveUrl} onToggle={() => refreshThemes()} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
                         </ErrorBoundary>
                     ))}
                 </Grid>
@@ -267,7 +253,7 @@ export default function ThemesTab() {
                     open={localDialogOpen}
                     onClose={() => setLocalDialogOpen(false)}
                     theme={editingTheme}
-                    onSave={() => setThemes(getThemes())}
+                    onSave={() => refreshThemes()}
                 />
             )}
         </Flex>

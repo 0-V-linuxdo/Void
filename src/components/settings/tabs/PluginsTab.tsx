@@ -17,6 +17,7 @@ import {
     Grid,
     Input,
     Paragraph,
+    SectionHeader,
     Select,
     SelectContent,
     SelectItem,
@@ -117,10 +118,7 @@ export default function PluginsTab() {
 
     return (
         <Flex flexDirection="column" gap="1.5rem">
-            <Flex flexDirection="column" gap="0" className="void-tab-section">
-                <Text size="sm" weight="medium">Plugins</Text>
-                <Paragraph>Pick which plugins to use. Some need a page reload to kick in.</Paragraph>
-            </Flex>
+            <SectionHeader title="Plugins" description="Pick which plugins to use. Some need a page reload to kick in." />
             {needsReload && !showReload && (
                 <Flex alignItems="center" className={cl("reload-banner")}>
                     <Text size="xs" className={cl("reload-text")}>

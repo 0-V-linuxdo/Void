@@ -11,6 +11,7 @@ import { Spinner } from "@turbopack/common/components";
 import { createElement } from "@turbopack/common/react";
 import { ApiClients, Toaster } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
+import { getEditor, getEditorText } from "@utils/editor";
 import { Logger } from "@utils/Logger";
 import { errorMessage } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
@@ -18,10 +19,6 @@ import definePlugin, { OptionType } from "@utils/types";
 const logger = new Logger("PromptEnhancer");
 
 const PLUGIN_NAME = "PromptEnhancer";
-
-interface TiptapEditor {
-    commands: { setContent(content: string): void; focus(): void };
-}
 
 interface StreamLine {
     result?: {
@@ -44,14 +41,6 @@ const settings = definePluginSettings({
 function buildSystemPrompt(): string {
     const instructions = settings.store.customInstructions?.trim() || DEFAULT_INSTRUCTIONS;
     return `${instructions} Do NOT add any preamble, commentary, labels, or quotes. Output ONLY the rewritten prompt text and absolutely nothing else.\n\nOriginal prompt:\n`;
-}
-
-function getEditor(): TiptapEditor | null {
-    return (document.querySelector(".ProseMirror") as HTMLElement & { editor?: TiptapEditor })?.editor ?? null;
-}
-
-function getEditorText(): string {
-    return document.querySelector(".ProseMirror")?.textContent?.trim() ?? "";
 }
 
 function updateButton(loading: boolean) {

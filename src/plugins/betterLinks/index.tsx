@@ -89,7 +89,7 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Apply a different color to links you already visited.",
         default: false,
-        onChange: () => applyColors(),
+        onChange: applyColors,
     },
     linkColor: {
         type: OptionType.COMPONENT,
@@ -172,8 +172,8 @@ export default definePlugin({
     },
 
     start() {
-        if (!settings.store.linkColor) settings.store.linkColor = DEFAULT_LINK;
-        if (!settings.store.visitedColor) settings.store.visitedColor = DEFAULT_VISITED;
+        settings.store.linkColor ??= DEFAULT_LINK;
+        settings.store.visitedColor ??= DEFAULT_VISITED;
         applyColors();
         enableStyle(STYLE_NAME);
     },

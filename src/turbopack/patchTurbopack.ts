@@ -7,6 +7,7 @@
 import { Logger } from "@utils/Logger";
 import type { Patch, PatchReplacement } from "@utils/types";
 
+import { fnSourceCache, getFnSource } from "./fnSource";
 import { matchesAllPatterns, matchesPattern } from "./match";
 import { type ModuleFactory, type PageWindow, type PatchedModuleFactory, type PatchReport, type PatchResult, type PatchStats, SYM_ORIGINAL, SYM_PATCHED, SYM_PATCHED_BY, SYM_PATCHED_CODE, type TurbopackHelpers, type TurbopackModule, type TurbopackPushable } from "./types";
 
@@ -77,16 +78,7 @@ export const patchStats: PatchStats = {
     patchedModules: new Set<number>(),
 };
 
-const factoryStringCache = new WeakMap<ModuleFactory, string>();
-
-function getFactorySource(factory: ModuleFactory): string {
-    let source = factoryStringCache.get(factory);
-    if (source === undefined) {
-        source = String(factory);
-        factoryStringCache.set(factory, source);
-    }
-    return source;
-}
+const getFactorySource = getFnSource;
 
 export function getModuleCache(): Map<number, any> {
     return moduleCache;
@@ -408,7 +400,7 @@ function createFactoryWrapper(
             } catch (e) {
                 logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
             }
-            factoryStringCache.delete(factory);
+            fnSourceCache.delete(factory);
         }
     };
     wrapped.toString = () => getFactorySource(factory);
@@ -509,13 +501,14 @@ function isFactoryPending(patch: Patch): boolean {
 }
 
 export function patchReport(): PatchReport {
-    const unmatched = patches.filter(p => !p.all);
-    return {
-        stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] },
-        results: patchResults,
-        orphaned: unmatched.filter(p => !isFactoryPending(p)).map(p => ({ plugin: p.plugin, find: String(p.find) })),
-        pending: unmatched.filter(p => isFactoryPending(p)).map(p => ({ plugin: p.plugin, find: String(p.find) })),
-    };
+    const orphaned: { plugin: string; find: string }[] = [];
+    const pending: { plugin: string; find: string }[] = [];
+    for (const p of patches) {
+        if (p.all) continue;
+        const entry = { plugin: p.plugin, find: String(p.find) };
+        (isFactoryPending(p) ? pending : orphaned).push(entry);
+    }
+    return { stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] }, results: patchResults, orphaned, pending };
 }
 
 export function reportOrphanedPatches(): void {
@@ -590,7 +583,7 @@ function captureFactoryRegistry(): Map<number, ModuleFactory> | null {
             if (typeof k === "number" && typeof v === "function" && ++valid >= 3) break;
         }
         if (valid < 3) {
-            logger.warn("Captured Map doesn't look like a factory registry, discarding");
+            logger.debug("Captured Map doesn't look like a factory registry, discarding");
             return null;
         }
     }

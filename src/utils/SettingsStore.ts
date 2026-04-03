@@ -94,20 +94,20 @@ export class SettingsStore<T extends object> {
         return proxy as T;
     }
 
-    private notifyListeners(path: string) {
-        for (const l of this.globalListeners) {
+    private invokeListeners(listeners: Iterable<Listener>, path: string) {
+        for (const l of listeners) {
             try { l(path); } catch (e) { logger.error("Settings listener error:", e); }
         }
+    }
+
+    private notifyListeners(path: string) {
+        this.invokeListeners(this.globalListeners, path);
 
         const listeners = this.pathListeners.get(path);
-        if (listeners) for (const l of listeners) {
-            try { l(path); } catch (e) { logger.error("Settings listener error:", e); }
-        }
+        if (listeners) this.invokeListeners(listeners, path);
 
         for (const [prefix, set] of this.prefixListeners) {
-            if (path.startsWith(prefix)) for (const l of set) {
-                try { l(path); } catch (e) { logger.error("Settings listener error:", e); }
-            }
+            if (path.startsWith(prefix)) this.invokeListeners(set, path);
         }
 
         this.scheduleSave();
@@ -146,21 +146,17 @@ export class SettingsStore<T extends object> {
         this.globalListeners.delete(listener);
     }
 
-    public addChangeListener(path: string, listener: Listener) {
-        mapGetOrCreate(this.pathListeners, path, () => new Set<Listener>()).add(listener);
+    private addToMap(map: Map<string, Set<Listener>>, key: string, listener: Listener) {
+        mapGetOrCreate(map, key, () => new Set<Listener>()).add(listener);
     }
 
-    public removeChangeListener(path: string, listener: Listener) {
-        const set = this.pathListeners.get(path);
-        if (set) { set.delete(listener); if (!set.size) this.pathListeners.delete(path); }
+    private removeFromMap(map: Map<string, Set<Listener>>, key: string, listener: Listener) {
+        const set = map.get(key);
+        if (set) { set.delete(listener); if (!set.size) map.delete(key); }
     }
 
-    public addPrefixChangeListener(prefix: string, listener: Listener) {
-        mapGetOrCreate(this.prefixListeners, prefix, () => new Set<Listener>()).add(listener);
-    }
-
-    public removePrefixChangeListener(prefix: string, listener: Listener) {
-        const set = this.prefixListeners.get(prefix);
-        if (set) { set.delete(listener); if (!set.size) this.prefixListeners.delete(prefix); }
-    }
+    public addChangeListener(path: string, listener: Listener) { this.addToMap(this.pathListeners, path, listener); }
+    public removeChangeListener(path: string, listener: Listener) { this.removeFromMap(this.pathListeners, path, listener); }
+    public addPrefixChangeListener(prefix: string, listener: Listener) { this.addToMap(this.prefixListeners, prefix, listener); }
+    public removePrefixChangeListener(prefix: string, listener: Listener) { this.removeFromMap(this.prefixListeners, prefix, listener); }
 }

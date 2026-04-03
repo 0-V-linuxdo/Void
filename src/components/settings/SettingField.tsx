@@ -7,14 +7,14 @@
 import "./SettingField.css";
 
 import { dispatch } from "@api/Events";
-import { Settings, SettingsStore } from "@api/Settings";
+import { resolveDefault, Settings, SettingsStore } from "@api/Settings";
 import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Slider, Switch, Text } from "@components";
 import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { humanizeKey } from "@utils/text";
 import { OptionType, type PluginSettingComponentDef, type PluginSettingDef, type PluginSettingSelectOption, type PluginSettingValue } from "@utils/types";
 
-import { type InputChangeEvent, resolveDefault } from "./utils";
+import { type InputChangeEvent } from "./utils";
 
 const cl = classNameFactory("void-setting-");
 

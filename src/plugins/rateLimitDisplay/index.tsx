@@ -6,7 +6,6 @@
 
 import "./styles.css";
 
-import { addChatBarButton } from "@api/ChatBarButtons";
 import { Flex } from "@components/Flex";
 import { ClockAlertIcon, GaugeIcon } from "@components/icons";
 import { Text } from "@components/Text";
@@ -50,28 +49,17 @@ async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
     }
 }
 
-async function applyResults(results: (readonly [ModeName, RateLimitData | null])[]) {
+async function refresh() {
+    const results = await Promise.all(MODES.map(async m => [m, await fetchLimit(m)] as const));
     const next = { ...limits };
     for (const [m, data] of results) {
         if (data) next[m] = data;
     }
     limits = next;
     store.notify();
-    sync();
 }
 
-async function refresh() {
-    applyResults(await Promise.all(MODES.map(async m => [m, await fetchLimit(m)] as const)));
-}
-
-function sync() {
-    addChatBarButton("RateLimitDisplay", {
-        icon: () => <ButtonIcon />,
-        tooltip: () => <TooltipPanel />,
-        onClick: refresh,
-        order: 100,
-    });
-}
+const useMode = (): ModeName => (ModesStore.useModesStore(s => s.selectedModeId) as ModeName) ?? "auto";
 
 function isLimited(mode: ModeName): boolean {
     if (mode === "auto") return limits.expert?.remainingQueries === 0 || limits.fast?.remainingQueries === 0;
@@ -80,7 +68,7 @@ function isLimited(mode: ModeName): boolean {
 
 function ButtonIcon() {
     useExternalStore(store);
-    const mode = (ModesStore.useModesStore(s => s.selectedModeId) as ModeName) ?? "auto";
+    const mode = useMode();
     const limited = isLimited(mode);
 
     return (
@@ -164,7 +152,7 @@ function ModeRow({ mode, data, active }: { mode: ModeName; data?: RateLimitData;
 
 function TooltipPanel() {
     useExternalStore(store);
-    const mode = (ModesStore.useModesStore(s => s.selectedModeId) as ModeName) ?? "auto";
+    const mode = useMode();
 
     return (
         <Flex flexDirection="column" gap={2} className={cl("panel")}>
@@ -195,10 +183,8 @@ export default definePlugin({
     },
 
     stop() {
-        if (pollTimer) {
-            clearInterval(pollTimer);
-            pollTimer = null;
-        }
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = null;
         limits = {};
     },
 

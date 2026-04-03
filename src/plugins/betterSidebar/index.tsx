@@ -43,15 +43,12 @@ const PLAN_NAMES: Partial<Record<SubscriptionTier, string>> = {
     SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro",
 };
 
+const X_SUB_NAMES: Record<string, string> = { PremiumPlus: "SuperGrok", Premium: "X Premium", Basic: "X Basic" };
+
 function getPlanName(bestSubscription?: SubscriptionTier, xSubscriptionType?: string): string {
-    if (bestSubscription) {
-        const name = PLAN_NAMES[bestSubscription];
-        if (name) return name;
-    }
-    if (xSubscriptionType === "PremiumPlus") return "SuperGrok";
-    if (xSubscriptionType === "Premium") return "X Premium";
-    if (xSubscriptionType === "Basic") return "X Basic";
-    return "Free";
+    return (bestSubscription && PLAN_NAMES[bestSubscription])
+        ?? (xSubscriptionType && X_SUB_NAMES[xSubscriptionType])
+        ?? "Free";
 }
 
 function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {

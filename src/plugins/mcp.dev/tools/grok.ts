@@ -6,15 +6,12 @@
 
 import { ChatPageStore, ModesStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
+import { getEditor,type TiptapEditor } from "@utils/editor";
 import { sleep } from "@utils/misc";
 
 import { GROK } from "./constants";
 import type { GrokArgs } from "./types";
 import { errorMessage, serialize } from "./utils";
-
-interface TiptapEditor {
-    commands: { setContent(content: string): void; focus(): void };
-}
 
 interface GrokResponse {
     responseId: string;
@@ -25,10 +22,6 @@ interface GrokResponse {
     state?: string;
     partial?: boolean;
     createTime?: string;
-}
-
-function getEditor(): TiptapEditor | null {
-    return (document.querySelector(".ProseMirror") as HTMLElement & { editor?: TiptapEditor })?.editor ?? null;
 }
 
 function getCurrentConversationId(): string | undefined {

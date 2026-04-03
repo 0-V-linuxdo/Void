@@ -53,7 +53,7 @@ const settings = definePluginSettings({
 export interface SettingsTab {
     id: string;
     name: string;
-    icon: ComponentType;
+    icon: ComponentType<any>;
     component: ComponentType;
     plugin?: string;
 }
@@ -69,13 +69,7 @@ function getVisibleTabs() {
     return allTabs.filter(t => !t.plugin || isPluginEnabled(t.plugin));
 }
 
-function Dot() {
-    return (
-        <Text as="span" color="secondary">
-            {"\u2022"}
-        </Text>
-    );
-}
+const Dot = () => <Text as="span" color="secondary">{"\u2022"}</Text>;
 
 function VersionLink({ href, children }: { href: string; children: ReactNode }) {
     return (
@@ -190,20 +184,15 @@ function VoidMenu() {
                         ))}
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem onSelect={() => openSettingsTab("void_themes_tab")}>
-                    <PaletteIcon className={cl("menu-icon")} />
-                    Themes
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => openSettingsTab("void_css_tab")}>
-                    <BracesIcon className={cl("menu-icon")} />
-                    Quick CSS
-                </DropdownMenuItem>
-                {isPluginEnabled("Experiments") && (
-                    <DropdownMenuItem onSelect={() => openSettingsTab("void_experiments_tab")}>
-                        <TestTubeIcon className={cl("menu-icon")} />
-                        Experiments
-                    </DropdownMenuItem>
-                )}
+                {getVisibleTabs().filter(t => t.id !== "void_plugins_tab").map(t => {
+                    const Icon = t.icon;
+                    return (
+                        <DropdownMenuItem key={t.id} onSelect={() => openSettingsTab(t.id)}>
+                            <Icon className={cl("menu-icon")} />
+                            {t.name}
+                        </DropdownMenuItem>
+                    );
+                })}
             </DropdownMenuSubContent>
         </DropdownMenuSub>
     );

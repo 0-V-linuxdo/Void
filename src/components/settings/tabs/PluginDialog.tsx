@@ -8,14 +8,14 @@ import "../shared.css";
 import "./PluginDialog.css";
 
 import { Settings } from "@api/Settings";
-import { Button, Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, Flex, Paragraph, Separator, Text } from "@components";
-import { Cross2Icon } from "@components/icons";
+import { Button, Dialog, DialogFooter, Flex, Paragraph, Separator, Text } from "@components";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import type { Plugin } from "@utils/types";
 
 import SettingField from "../SettingField";
 import { isVisibleSetting } from "../utils";
+import { VoidDialogShell } from "./VoidDialogShell";
 
 const cl = classNameFactory("void-plugin-dialog-");
 
@@ -40,22 +40,8 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
     }, [plugin.name, entries]);
 
     return (
-        <Dialog
-            open={open}
-            onOpenChange={(v: boolean) => {
-                if (!v) onClose();
-            }}
-        >
-            <DialogContent className="void-dialog-content" aria-describedby={undefined}>
-                <DialogClose asChild>
-                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className="void-dialog-close">
-                        <Cross2Icon />
-                    </Button>
-                </DialogClose>
-                <DialogHeader className="void-dialog-header">
-                    <DialogTitle>{plugin.name}</DialogTitle>
-                    {plugin.description && <Paragraph>{plugin.description}</Paragraph>}
-                </DialogHeader>
+        <Dialog open={open} onOpenChange={(v: boolean) => { if (!v) onClose(); }}>
+            <VoidDialogShell title={plugin.name} subtitle={plugin.description}>
                 <Separator />
                 {!!plugin.authors?.length && (
                     <Flex flexDirection="column" gap="0.25rem">
@@ -87,7 +73,7 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
                         </Button>
                     </DialogFooter>
                 )}
-            </DialogContent>
+            </VoidDialogShell>
         </Dialog>
     );
 }

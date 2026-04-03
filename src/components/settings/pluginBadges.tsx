@@ -4,14 +4,26 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@components";
+import { Text, Tooltip, TooltipContent, TooltipTrigger } from "@components";
 import { ChromiumIcon, GhostFilledIcon, TelescopeIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import type { Plugin } from "@utils/types";
+import type { ComponentType, ReactNode } from "react";
+
+export function TooltipIcon({ icon: Icon, tooltip, className, as = "span" }: { icon: ComponentType; tooltip: ReactNode; className?: string; as?: string }) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Text as={as} className={className}><Icon /></Text>
+            </TooltipTrigger>
+            <TooltipContent>{tooltip}</TooltipContent>
+        </Tooltip>
+    );
+}
 
 interface BadgeDef {
     key: keyof Plugin;
-    icon: React.ComponentType;
+    icon: ComponentType;
     tooltip: string;
 }
 
@@ -24,14 +36,5 @@ const badges: BadgeDef[] = [
 export function PluginBadges({ plugin, className }: { plugin: Plugin; className?: string }) {
     return badges
         .filter(b => plugin[b.key])
-        .map(b => (
-            <Tooltip key={b.key}>
-                <TooltipTrigger asChild>
-                    <span className={className}>
-                        <b.icon />
-                    </span>
-                </TooltipTrigger>
-                <TooltipContent>{b.tooltip}</TooltipContent>
-            </Tooltip>
-        ));
+        .map(b => <TooltipIcon key={b.key} icon={b.icon} tooltip={b.tooltip} className={className} />);
 }

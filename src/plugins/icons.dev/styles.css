@@ -21,6 +21,11 @@
     height: auto;
 }
 
+.void-icons-item:hover {
+    color: hsl(var(--foreground));
+    background: transparent !important;
+}
+
 .void-icons-item-icon {
     display: flex;
     align-items: center;

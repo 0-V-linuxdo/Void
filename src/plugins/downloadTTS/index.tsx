@@ -10,12 +10,13 @@ import { Button } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { DownloadIcon } from "@components/icons";
 import { Spinner } from "@turbopack/common/components";
-import { React, useCallback, useState } from "@turbopack/common/react";
+import { React } from "@turbopack/common/react";
 import { ChatPageStore, TextToSpeechStore } from "@turbopack/common/stores";
 import { FileUtils } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
+import { useAsyncAction } from "@utils/react";
 import definePlugin from "@utils/types";
 
 const cl = classNameFactory("void-download-tts-");
@@ -38,18 +39,10 @@ async function fetchAndDownload() {
 }
 
 function DownloadButton() {
-    const [loading, setLoading] = useState(false);
-
-    const onClick = useCallback(async () => {
-        setLoading(true);
-        try {
-            await fetchAndDownload();
-        } catch (e) {
-            logger.error("Failed to download TTS audio:", e);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const [loading, onClick] = useAsyncAction(async () => {
+        try { await fetchAndDownload(); }
+        catch (e) { logger.error("Failed to download TTS audio:", e); }
+    });
 
     return (
         <Button

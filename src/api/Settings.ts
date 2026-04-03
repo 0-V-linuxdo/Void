@@ -204,16 +204,13 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
 
             useEffect(() => {
                 const prefix = `plugins.${_pluginName}`;
-                if (keys?.length) {
-                    const paths = keys.map(k => `${prefix}.${String(k)}`);
-                    const listener = (path: string) => {
+                const listener = keys?.length
+                    ? ((paths: string[]) => (path: string) => {
                         if (paths.some(p => path.startsWith(p) || p.startsWith(path + "."))) forceUpdate();
-                    };
-                    SettingsStore.addPrefixChangeListener(prefix, listener);
-                    return () => SettingsStore.removePrefixChangeListener(prefix, listener);
-                }
-                SettingsStore.addPrefixChangeListener(prefix, forceUpdate);
-                return () => SettingsStore.removePrefixChangeListener(prefix, forceUpdate);
+                    })(keys.map(k => `${prefix}.${String(k)}`))
+                    : forceUpdate;
+                SettingsStore.addPrefixChangeListener(prefix, listener);
+                return () => SettingsStore.removePrefixChangeListener(prefix, listener);
             }, []);
 
             return definedSettings.store;

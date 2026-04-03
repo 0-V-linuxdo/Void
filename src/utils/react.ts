@@ -5,7 +5,7 @@
  */
 
 import { subscribe, type VoidEvent } from "@api/Events";
-import { useEffect, useMemo, useReducer, useSyncExternalStore } from "@turbopack/common/react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
 import type { ExternalStore } from "@utils/misc";
 import type { ReactNode } from "react";
 
@@ -33,4 +33,18 @@ export function useFiltered<T>(list: T[], search: string, getKey: (item: T) => s
         if (!q) return list;
         return list.filter(item => getKey(item).toLowerCase().includes(q));
     }, [list, search, getKey]);
+}
+
+export function useAsyncAction(fn: () => Promise<void>): [busy: boolean, execute: () => void] {
+    const [busy, setBusy] = useState(false);
+    const fnRef = useRef(fn);
+    fnRef.current = fn;
+
+    const execute = useCallback(async () => {
+        setBusy(true);
+        try { await fnRef.current(); }
+        finally { setBusy(false); }
+    }, []);
+
+    return [busy, execute];
 }
