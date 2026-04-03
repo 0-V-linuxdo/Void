@@ -12,7 +12,10 @@ import { canonicalizeMatch } from "@utils/patches";
 
 import { PATCH } from "./constants";
 import type { LintWarning, PatchArgs } from "./types";
-import { clampDefault, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources, getFactorySourceCache } from "./utils";
+import { clampConfig, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources, getFactorySourceCache } from "./utils";
+
+const indexOfPattern = (src: string, pat: string | RegExp) => typeof pat === "string" ? src.indexOf(pat) : src.search(pat);
+const CTX_PAD_CFG = { default: PATCH.DEFAULT_CONTEXT_PAD, max: PATCH.MAX_CONTEXT_PAD } as const;
 
 function findModulesByFind(findStr: string | string[]): { ids: number[]; results: Record<number, unknown>; canonFind: string | RegExp } {
     const parts = Array.isArray(findStr) ? findStr : [findStr];
@@ -21,8 +24,6 @@ function findModulesByFind(findStr: string | string[]): { ids: number[]; results
     const ids = Object.keys(results).map(Number);
     return { ids, results, canonFind: canonParts[0] };
 }
-
-const PATCH_ACTIONS = ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench", "report"] as const;
 
 function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
     const warnings: LintWarning[] = [];
@@ -103,7 +104,7 @@ function longestLiteral(matchStr: string): string {
                     } else if (next === "x") {
                         i += 2;
                     } else if (next === "u" && (i + 1 >= matchStr.length || matchStr[i + 1] !== "{")) {
-                        i += 4;
+                        i += 3;
                     }
                 } else {
                     current += next;
@@ -154,8 +155,8 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
         }
         const firstFind = Array.isArray(findStr) ? findStr[0] : findStr;
         const canonFindStr = canonicalizeMatch(firstFind);
-        const findIdx = typeof canonFindStr === "string" ? src.indexOf(canonFindStr) : src.search(canonFindStr);
-        const nfPad = clampDefault(contextPad, PATCH.DEFAULT_CONTEXT_PAD, PATCH.MAX_CONTEXT_PAD);
+        const findIdx = indexOfPattern(src, canonFindStr);
+        const nfPad = clampConfig(contextPad, CTX_PAD_CFG);
         const nearFind = findIdx >= 0 ? src.slice(Math.max(0, findIdx - nfPad), Math.min(src.length, findIdx + nfPad * 2)) : undefined;
         const result: Record<string, unknown> = { status: "MATCH_FAILED", id, len: src.length, hint };
         if (literalIdx >= 0) {
@@ -182,12 +183,12 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
     if (patchedSrc === src) warnings.push("Replacement produced identical output (no-op)");
 
     const at = matched.index!;
-    const pad = clampDefault(contextPad, PATCH.DEFAULT_CONTEXT_PAD, PATCH.MAX_CONTEXT_PAD);
+    const pad = clampConfig(contextPad, CTX_PAD_CFG);
     const cs = Math.max(0, at - pad);
     const ce = Math.min(src.length, at + matched[0].length + pad);
 
     const canonFindV = canonicalizeMatch(Array.isArray(findStr) ? findStr[0] : findStr);
-    const findOffset = typeof canonFindV === "string" ? src.indexOf(canonFindV) : src.search(canonFindV);
+    const findOffset = indexOfPattern(src, canonFindV);
 
     const result: Record<string, unknown> = {
         status: "VALID",
@@ -207,9 +208,8 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
 }
 
 function diagnoseOrphaned(p: (typeof patches)[number]) {
-    const canonParts = Array.isArray(p.find) ? p.find.map(f => canonicalizeMatch(f)) : [canonicalizeMatch(String(p.find))];
-    const results = search(...canonParts);
-    const ids = Object.keys(results).map(Number);
+    const findParts = (Array.isArray(p.find) ? p.find : [p.find]).map(f => String(f));
+    const { ids, results } = findModulesByFind(findParts);
     const replacements = Array.isArray(p.replacement) ? p.replacement : [p.replacement];
     const findLabel = String(p.find).slice(0, PATCH.FIND_SLICE);
 
@@ -246,8 +246,8 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
 
     const result: Record<string, unknown> = { plugin: p.plugin, find: findLabel, n: replacements.length, reason, moduleId: ids[0] };
     const src = String(results[ids[0]]);
-    const canonFind = canonParts[0];
-    const findIdx = typeof canonFind === "string" ? src.indexOf(canonFind) : src.search(canonFind);
+    const canonFind = canonicalizeMatch(findParts[0]);
+    const findIdx = indexOfPattern(src, canonFind);
     if (findIdx >= 0) {
         const neighborhood = src.slice(Math.max(0, findIdx - PATCH.ANALYZE_DEFAULT_CONTEXT), Math.min(src.length, findIdx + PATCH.ANALYZE_DEFAULT_CONTEXT * 2));
         const nearbyI18n = extractI18nKeys(neighborhood);
@@ -291,12 +291,12 @@ export function handlePatch(args: PatchArgs): unknown {
         const { ids, results, canonFind } = findModulesByFind(findStr);
         if (!ids.length) return { unique: false, count: 0, hint: "No modules match this find string" };
 
-        const ctxPad = clampDefault(args.context, PATCH.ANALYZE_DEFAULT_CONTEXT, PATCH.MAX_CONTEXT_PAD);
+        const ctxPad = clampConfig(args.context, { default: PATCH.ANALYZE_DEFAULT_CONTEXT, max: PATCH.MAX_CONTEXT_PAD });
 
         if (ids.length === 1) {
             const id = ids[0];
             const src = String(results[id]);
-            const findIdx = typeof canonFind === "string" ? src.indexOf(canonFind) : src.search(canonFind);
+            const findIdx = indexOfPattern(src, canonFind);
             const start = Math.max(0, findIdx - ctxPad);
             const ctx = src.slice(start, start + ctxPad * 2);
             const nearbyI18n = extractI18nKeys(ctx);
@@ -343,7 +343,7 @@ export function handlePatch(args: PatchArgs): unknown {
 
         if (typeof testResult === "object" && testResult.status === "VALID") {
             const matchAt = testResult.at as number;
-            const i18nPad = clampDefault(args.context, PATCH.DEFAULT_CONTEXT_PAD, PATCH.MAX_CONTEXT_PAD);
+            const i18nPad = clampConfig(args.context, CTX_PAD_CFG);
             const neighborhood = src.slice(Math.max(0, matchAt - i18nPad), Math.min(src.length, matchAt + i18nPad * 2));
             const nearbyI18n = extractI18nKeys(neighborhood);
             if (nearbyI18n.length) (testResult as Record<string, unknown>).nearbyI18n = nearbyI18n;
@@ -417,11 +417,11 @@ export function handlePatch(args: PatchArgs): unknown {
 
         const id = ids[0];
         const src = String(results[id]);
-        const findIdx = typeof canonFind === "string" ? src.indexOf(canonFind) : src.search(canonFind);
+        const findIdx = indexOfPattern(src, canonFind);
         if (findIdx < 0) return { error: "Find matched module but indexOf failed" };
 
         const rawWindow = args.window;
-        const windowSize = Math.max(PATCH.CONTEXT_MIN_WINDOW, clampDefault(rawWindow, PATCH.CONTEXT_DEFAULT_WINDOW, PATCH.CONTEXT_MAX_WINDOW));
+        const windowSize = Math.max(PATCH.CONTEXT_MIN_WINDOW, clampConfig(rawWindow, { default: PATCH.CONTEXT_DEFAULT_WINDOW, max: PATCH.CONTEXT_MAX_WINDOW }));
         const half = Math.floor(windowSize / 2);
         const ctxStart = Math.max(0, findIdx - half);
         const ctxEnd = Math.min(src.length, findIdx + half);
@@ -518,5 +518,5 @@ export function handlePatch(args: PatchArgs): unknown {
         };
     }
 
-    return { error: `Unknown action: ${action}`, validActions: PATCH_ACTIONS };
+    return { error: `Unknown action: ${action}` };
 }

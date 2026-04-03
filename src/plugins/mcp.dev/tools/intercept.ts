@@ -4,16 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { getModuleCache, getRuntimeFactoryRegistry } from "@turbopack/patchTurbopack";
 import { Logger } from "@utils/Logger";
 
 import { INTERCEPT } from "./constants";
 import type { Capture, InterceptArgs, InterceptState } from "./types";
-import { clamp, errorMessage, isThenable, serialize } from "./utils";
+import { clampConfig, errorMessage, isThenable, requireModuleExports, serialize } from "./utils";
 
 const logger = new Logger("MCP:Intercept");
 
-const INTERCEPT_ACTIONS = ["set", "get", "stop", "stopAll", "list"] as const;
 let nextId = 1;
 const active = new Map<number, InterceptState>();
 
@@ -39,11 +37,9 @@ export function handleIntercept(args: InterceptArgs): unknown {
         const { moduleId, exportKey = "default" } = args;
         if (moduleId == null) return { error: "Provide moduleId." };
 
-        const exports = getModuleCache().get(Number(moduleId));
-        if (!exports || typeof exports !== "object") {
-            const hasFactory = getRuntimeFactoryRegistry()?.has(Number(moduleId));
-            return { error: hasFactory ? `Module ${moduleId} exists but is not loaded. Use module load action first.` : `Module ${moduleId} not found.` };
-        }
+        const result = requireModuleExports(Number(moduleId));
+        if ("error" in result) return result;
+        const { exports } = result;
 
         const parts = exportKey.split(".");
         let holder = exports as Record<string, unknown>;
@@ -63,10 +59,8 @@ export function handleIntercept(args: InterceptArgs): unknown {
             }
         }
 
-        const rawDuration = Number(args.duration);
-        const duration = clamp(Number.isFinite(rawDuration) ? rawDuration : INTERCEPT.DEFAULT_DURATION, INTERCEPT.MIN_DURATION, INTERCEPT.MAX_DURATION);
-        const rawCaptures = Number(args.maxCaptures);
-        const maxCaptures = Math.min(Number.isFinite(rawCaptures) && rawCaptures > 0 ? rawCaptures : INTERCEPT.DEFAULT_CAPTURES, INTERCEPT.MAX_CAPTURES);
+        const duration = clampConfig(args.duration, { default: INTERCEPT.DEFAULT_DURATION, min: INTERCEPT.MIN_DURATION, max: INTERCEPT.MAX_DURATION });
+        const maxCaptures = clampConfig(args.maxCaptures, { default: INTERCEPT.DEFAULT_CAPTURES, min: 1, max: INTERCEPT.MAX_CAPTURES });
         const id = nextId++;
 
         const state: InterceptState = {
@@ -138,7 +132,7 @@ export function handleIntercept(args: InterceptArgs): unknown {
             moduleId: state.moduleId,
             exportKey: state.exportKey,
             elapsed: Date.now() - state.startTime,
-            captures: state.captures.length > INTERCEPT.GET_CAPTURES_LIMIT ? state.captures.slice(-INTERCEPT.GET_CAPTURES_LIMIT) : state.captures,
+            captures: state.captures.slice(-INTERCEPT.GET_CAPTURES_LIMIT),
             ...(state.captures.length > INTERCEPT.GET_CAPTURES_LIMIT && { totalCaptures: state.captures.length, hint: `Showing last ${INTERCEPT.GET_CAPTURES_LIMIT} captures. Use stop to get final count.` }),
         };
     }
@@ -148,12 +142,9 @@ export function handleIntercept(args: InterceptArgs): unknown {
         if (id == null) return { error: "Provide intercept id." };
         const state = active.get(id);
         if (!state) return { error: `Intercept ${id} not found (expired or stopped)` };
-        const lastCaptures = state.captures.length > INTERCEPT.GET_CAPTURES_LIMIT
-            ? state.captures.slice(-INTERCEPT.GET_CAPTURES_LIMIT)
-            : state.captures;
         const totalCaptures = state.captures.length;
         restoreIntercept(state);
-        return { id, totalCaptures, captures: lastCaptures, restored: true };
+        return { id, totalCaptures, captures: state.captures.slice(-INTERCEPT.GET_CAPTURES_LIMIT), restored: true };
     }
 
     if (action === "stopAll") {
@@ -172,5 +163,5 @@ export function handleIntercept(args: InterceptArgs): unknown {
         }));
     }
 
-    return { error: `Unknown action: ${action}`, validActions: INTERCEPT_ACTIONS };
+    return { error: `Unknown action: ${action}` };
 }

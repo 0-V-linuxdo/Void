@@ -9,8 +9,15 @@ import { Settings } from "@api/Settings";
 import { OptionType } from "@utils/types";
 
 import type { PluginArgs, PluginInfo } from "./types";
+import { notFound } from "./utils";
 
-const PLUGIN_ACTIONS = ["list", "enable", "disable", "toggle", "settings", "setSetting"] as const;
+const TYPE_MAP: Partial<Record<number, string>> = {
+    [OptionType.BOOLEAN]: "boolean",
+    [OptionType.STRING]: "string",
+    [OptionType.NUMBER]: "number",
+    [OptionType.SLIDER]: "number",
+    [OptionType.BIGINT]: "bigint",
+};
 
 export function handlePlugin(args: PluginArgs): unknown {
     const { action, name, key, value } = args;
@@ -24,32 +31,23 @@ export function handlePlugin(args: PluginArgs): unknown {
         });
     }
 
-    if (!(PLUGIN_ACTIONS as readonly string[]).includes(action)) return { error: `Unknown action: ${action}`, validActions: PLUGIN_ACTIONS };
-
     if (!name) return { error: "Provide plugin name." };
 
     const resolved = plugins[name] ? name : Object.keys(plugins).find(n => n.toLowerCase() === name.toLowerCase());
     const plugin = resolved ? plugins[resolved] : null;
-    if (!plugin || !resolved) {
-        const lower = name.toLowerCase();
-        const similar = Object.keys(plugins).filter(n => n.toLowerCase().includes(lower) || lower.includes(n.toLowerCase()));
-        return similar.length ? { error: `Plugin not found: ${name}`, similar } : { error: `Plugin not found: ${name}. Use list action to see available plugins.` };
-    }
+    if (!plugin || !resolved) return notFound("Plugin", name, Object.keys(plugins));
 
-    if (action === "enable") {
-        const wasEnabled = isPluginEnabled(resolved);
-        Settings.plugins[resolved] = { ...Settings.plugins[resolved], enabled: true };
-        if (!wasEnabled) startPlugin(plugin);
-        return wasEnabled ? { ok: true, action: "enabled", name: resolved, noop: true } : { ok: true, action: "enabled", name: resolved };
-    }
-
-    if (action === "disable") {
-        if (plugin.required) return { error: `Cannot disable required plugin: ${resolved}` };
-        if (resolved === "MCP") return { error: "Cannot disable MCP plugin via MCP — it would kill this connection" };
-        const wasDisabled = !isPluginEnabled(resolved);
-        Settings.plugins[resolved] = { ...Settings.plugins[resolved], enabled: false };
-        if (!wasDisabled) stopPlugin(plugin);
-        return wasDisabled ? { ok: true, action: "disabled", name: resolved, noop: true } : { ok: true, action: "disabled", name: resolved };
+    if (action === "enable" || action === "disable") {
+        const enabling = action === "enable";
+        if (!enabling) {
+            if (plugin.required) return { error: `Cannot disable required plugin: ${resolved}` };
+            if (resolved === "MCP") return { error: "Cannot disable MCP plugin via MCP — it would kill this connection" };
+        }
+        const wasInTargetState = enabling === isPluginEnabled(resolved);
+        Settings.plugins[resolved] = { ...Settings.plugins[resolved], enabled: enabling };
+        if (!wasInTargetState) (enabling ? startPlugin : stopPlugin)(plugin);
+        const label = enabling ? "enabled" : "disabled";
+        return wasInTargetState ? { ok: true, action: label, name: resolved, noop: true } : { ok: true, action: label, name: resolved };
     }
 
     if (action === "toggle") {
@@ -69,13 +67,6 @@ export function handlePlugin(args: PluginArgs): unknown {
     }
     if (settingsDef && key in settingsDef) {
         const def = settingsDef[key];
-        const TYPE_MAP: Partial<Record<number, string>> = {
-            [OptionType.BOOLEAN]: "boolean",
-            [OptionType.STRING]: "string",
-            [OptionType.NUMBER]: "number",
-            [OptionType.SLIDER]: "number",
-            [OptionType.BIGINT]: "bigint",
-        };
         const expectedType = TYPE_MAP[def.type] ?? null;
         if (expectedType && typeof value !== expectedType) {
             return { error: `Setting "${key}" expects ${expectedType}, got ${typeof value}.` };

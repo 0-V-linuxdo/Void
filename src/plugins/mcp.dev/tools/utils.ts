@@ -10,10 +10,53 @@ import { type PatchedModuleFactory, SYM_PATCHED_BY, SYM_PATCHED_CODE } from "@tu
 import { EVAL, MODULE, SERIALIZE } from "./constants";
 import type { Anchor, SuggestCandidate } from "./types";
 
-export { clamp, errorMessage } from "@utils/misc";
+export { errorMessage } from "@utils/misc";
 
 export function isThenable(value: unknown): value is PromiseLike<unknown> {
     return value != null && typeof (value as PromiseLike<unknown>).then === "function";
+}
+
+export function createGenerationalCache<T>(rebuild: () => T, getGen: () => number): { get(): T; clear(): void } {
+    let cache: T | null = null;
+    let gen = -1;
+    return {
+        get() {
+            const current = getGen();
+            if (cache != null && gen === current) return cache;
+            cache = rebuild();
+            gen = current;
+            return cache;
+        },
+        clear() {
+            cache = null;
+            gen = -1;
+        },
+    };
+}
+
+export function clampConfig(raw: number | undefined, defaultVal: number, max: number): number;
+export function clampConfig(raw: number | undefined, config: { default: number; min?: number; max: number }): number;
+export function clampConfig(raw: number | undefined, configOrDefault: number | { default: number; min?: number; max: number }, max?: number): number {
+    const cfg = typeof configOrDefault === "number" ? { default: configOrDefault, min: 0, max: max! } : configOrDefault;
+    const v = raw != null && Number.isFinite(raw) ? raw : cfg.default;
+    return Math.max(cfg.min ?? 0, Math.min(v, cfg.max));
+}
+
+export function notFound(kind: string, query: string, allNames: Iterable<string>): { error: string; similar?: string[] } {
+    const lower = query.toLowerCase();
+    const similar = [...allNames].filter(n => n.toLowerCase().includes(lower)).slice(0, 5);
+    const result: { error: string; similar?: string[] } = { error: `${kind} "${query}" not found.` };
+    if (similar.length) result.similar = similar;
+    return result;
+}
+
+export function requireModuleExports(id: number): { exports: Record<string, unknown> } | { error: string } {
+    const cache = getModuleCache();
+    const exports = cache.get(id);
+    if (exports != null) return { exports };
+    const registry = getRuntimeFactoryRegistry();
+    if (registry?.has(id)) return { error: `Module ${id} exists but is not yet loaded. Use the "load" action first.` };
+    return { error: `Module ${id} not found.` };
 }
 
 const INTERNAL_FRAME_RE = /tryEval|evalAsync|handleEval|ws\.onmessage|<anonymous>:\d+:\d+\)$/;
@@ -117,11 +160,6 @@ function serializeInner(value: unknown, depth: number, seen: WeakSet<object>): u
     }
 }
 
-export const clampDefault = (value: number | undefined, defaultVal: number, max: number): number => {
-    const v = value ?? defaultVal;
-    return Number.isFinite(v) ? Math.max(0, Math.min(v, max)) : defaultVal;
-};
-
 export function getPath(obj: unknown, path: string): unknown {
     let current = obj;
     for (const p of path.split(".")) {
@@ -216,7 +254,9 @@ export function getAllFactorySources(): string[] {
     return allFactorySourcesCache;
 }
 
-export function countInSources(sources: string[], text: string, max: number): number {
+export const safeOffset = (raw: number | undefined) => Math.max(0, Math.floor(raw ?? 0));
+
+function countInSources(sources: string[], text: string, max: number): number {
     let count = 0;
     for (const src of sources) {
         if (src.includes(text)) {
@@ -235,12 +275,7 @@ export function clearFactoryCaches(): void {
     reverseCacheGeneration = 0;
 }
 
-export function getFactorySource(id: number): string | null {
-    const registry = getRuntimeFactoryRegistry();
-    if (!registry) return null;
-    const factory = registry.get(id);
-    return factory ? String(factory) : null;
-}
+export const getFactorySource = (id: number): string | null => getFactorySourceCache().get(id) ?? null;
 
 let reverseCache: Map<unknown, number> | null = null;
 let reverseCacheGeneration = 0;
@@ -266,19 +301,9 @@ export function findModuleId(exportValue: unknown): number | null {
     return reverseCache.get(exportValue) ?? null;
 }
 
-export function getPatchInfo(moduleId: number): string[] | null {
-    const registry = getRuntimeFactoryRegistry();
-    if (!registry) return null;
-    const factory = registry.get(moduleId) as PatchedModuleFactory | undefined;
-    return factory?.[SYM_PATCHED_BY] ?? null;
-}
-
-export function getPatchedSource(moduleId: number): string | null {
-    const registry = getRuntimeFactoryRegistry();
-    if (!registry) return null;
-    const factory = registry.get(moduleId) as PatchedModuleFactory | undefined;
-    return factory?.[SYM_PATCHED_CODE] ?? null;
-}
+const getPatchedFactory = (id: number) => getRuntimeFactoryRegistry()?.get(id) as PatchedModuleFactory | undefined ?? null;
+export const getPatchInfo = (id: number): string[] | null => getPatchedFactory(id)?.[SYM_PATCHED_BY] ?? null;
+export const getPatchedSource = (id: number): string | null => getPatchedFactory(id)?.[SYM_PATCHED_CODE] ?? null;
 
 export function isModulePatched(id: number): boolean {
     return patchStats.patchedModules.has(id);

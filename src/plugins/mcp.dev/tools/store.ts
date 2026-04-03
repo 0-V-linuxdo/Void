@@ -9,17 +9,36 @@ import { isObject } from "@utils/guards";
 
 import { SERIALIZE, STORE } from "./constants";
 import type { StoreArgs, StoreEntry, ZustandLike } from "./types";
-import { clamp, describeValue, errorMessage, getPath, isThenable, serialize } from "./utils";
+import { clampConfig, createGenerationalCache, describeValue, errorMessage, getPath, isThenable, notFound, serialize } from "./utils";
 
-const STORE_ACTIONS = ["list", "get", "keys", "methods", "call", "subscribe"] as const;
+const storeCacheHolder = createGenerationalCache<StoreEntry[]>(
+    () => {
+        silenceWarns(() => syncLazyModules());
+        const cache = getModuleCache();
+        const stores: StoreEntry[] = [];
+        const seen = new WeakSet<object>();
 
-let storeCache: StoreEntry[] | null = null;
-let storeCacheGen = 0;
-
-export function clearStoreCache(): void {
-    storeCache = null;
-    storeCacheGen = 0;
-}
+        for (const [id, exports] of cache) {
+            if (exports == null || typeof exports !== "object") continue;
+            if (isBlacklisted(exports)) continue;
+            const mod = exports as Record<string, unknown>;
+            for (const key in mod) {
+                try {
+                    const val = mod[key];
+                    if (!isZustandStore(val) || seen.has(val as object)) continue;
+                    seen.add(val as object);
+                    const state = val.getState();
+                    const stateKeys = isObject(state) ? Object.keys(state) : [];
+                    const storeName = (key.startsWith("use") ? key : null) ?? (typeof val.name === "string" && val.name !== STORE.MINIFIED_STORE_NAME ? val.name : null) ?? (key !== "default" && key !== STORE.MINIFIED_STORE_NAME ? key : null);
+                    stores.push({ id, name: storeName, keys: stateKeys.slice(0, STORE.KEYS_PREVIEW) });
+                } catch {}
+            }
+        }
+        return stores;
+    },
+    () => getModuleCache().size,
+);
+export const clearStoreCache = storeCacheHolder.clear;
 
 function isZustandStore(value: unknown): value is ZustandLike {
     if (value == null) return false;
@@ -27,36 +46,6 @@ function isZustandStore(value: unknown): value is ZustandLike {
     if (t !== "function" && t !== "object") return false;
     const v = value as Record<string, unknown>;
     return typeof v.getState === "function" && typeof v.setState === "function" && typeof v.subscribe === "function";
-}
-
-function findStores(): StoreEntry[] {
-    const cache = getModuleCache();
-    if (storeCache && storeCacheGen === cache.size) return storeCache;
-    silenceWarns(() => syncLazyModules());
-
-    const stores: StoreEntry[] = [];
-    const seen = new WeakSet<object>();
-
-    for (const [id, exports] of cache) {
-        if (exports == null || typeof exports !== "object") continue;
-        if (isBlacklisted(exports)) continue;
-        const mod = exports as Record<string, unknown>;
-        for (const key in mod) {
-            try {
-                const val = mod[key];
-                if (!isZustandStore(val) || seen.has(val as object)) continue;
-                seen.add(val as object);
-                const state = val.getState();
-                const stateKeys = isObject(state) ? Object.keys(state) : [];
-                const storeName = (key.startsWith("use") ? key : null) ?? (typeof val.name === "string" && val.name !== STORE.MINIFIED_STORE_NAME ? val.name : null) ?? (key !== "default" && key !== STORE.MINIFIED_STORE_NAME ? key : null);
-                stores.push({ id, name: storeName, keys: stateKeys.slice(0, STORE.KEYS_PREVIEW) });
-            } catch {}
-        }
-    }
-
-    storeCache = stores;
-    storeCacheGen = cache.size;
-    return stores;
 }
 
 function getStoreFromModule(moduleId: number, exportName?: string | null): ZustandLike | null {
@@ -73,7 +62,7 @@ function getStoreFromModule(moduleId: number, exportName?: string | null): Zusta
 }
 
 function findStoreByQuery(query: string | number): { store: ZustandLike; resolvedName: string; also?: string[] } | null {
-    const stores = findStores();
+    const stores = storeCacheHolder.get();
     const numQuery = typeof query === "number" ? query : (String(query).trim().length > 0 ? Number(query) : NaN);
     if (!Number.isNaN(numQuery) && Number.isFinite(numQuery)) {
         const store = getStoreFromModule(numQuery);
@@ -117,19 +106,22 @@ function findStoreByQuery(query: string | number): { store: ZustandLike; resolve
     return null;
 }
 
-function storeNotFound(query: string | number): { error: string; similar?: string[] } {
-    const stores = findStores();
-    const lower = String(query).toLowerCase();
-    const similar = stores
-        .filter(s => s.name?.toLowerCase().includes(lower) || s.keys.some(k => k.toLowerCase().includes(lower)))
-        .map(s => s.name ?? `module:${s.id}`)
-        .slice(0, STORE.SIMILAR_LIMIT);
-    return similar.length ? { error: `No store "${query}"`, similar } : { error: `No store "${query}". Use list action.` };
-}
-
 function requireStore(query: string | number | undefined): { store: ZustandLike; resolvedName: string; also?: string[] } | { error: string; similar?: string[] } {
     if (!query) return { error: "Provide query (store name or module ID)." };
-    return findStoreByQuery(query) ?? storeNotFound(query);
+    return findStoreByQuery(query) ?? notFound("Store", String(query), storeCacheHolder.get().map(s => s.name ?? `module:${s.id}`));
+}
+
+function diffState(prev: Record<string, unknown>, cur: Record<string, unknown>, depth: number, maxChanges: number): Array<{ key: string; from: unknown; to: unknown }> {
+    const changes: Array<{ key: string; from: unknown; to: unknown }> = [];
+    for (const k of Object.keys(cur)) {
+        if (cur[k] !== prev[k] && changes.length < maxChanges)
+            changes.push({ key: k, from: serialize(prev[k], depth), to: serialize(cur[k], depth) });
+    }
+    for (const k of Object.keys(prev)) {
+        if (!(k in cur) && changes.length < maxChanges)
+            changes.push({ key: k, from: serialize(prev[k], depth), to: "[deleted]" });
+    }
+    return changes;
 }
 
 const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "resetAll", "clearAll", "clearAllOverrides", "deleteUser", "signOut", "clearSession", "refreshSession", "__proto__", "constructor", "prototype"]);
@@ -140,7 +132,7 @@ export function handleStore(args: StoreArgs): unknown {
     const depth = Number.isFinite(rawDepth) && rawDepth >= 0 ? rawDepth : SERIALIZE.DEFAULT_DEPTH;
 
     if (action === "list") {
-        return findStores().map(s => ({ id: s.id, n: s.name, k: s.keys.slice(0, STORE.LIST_KEYS_PREVIEW) }));
+        return storeCacheHolder.get().map(s => ({ id: s.id, n: s.name, k: s.keys.slice(0, STORE.LIST_KEYS_PREVIEW) }));
     }
 
     if (action === "get") {
@@ -204,13 +196,12 @@ export function handleStore(args: StoreArgs): unknown {
                 const stateAfter = found.store.getState();
                 const result: Record<string, unknown> = { _store: found.resolvedName, result: serialize(v, Math.min(depth, STORE.MAX_DEPTH)) };
                 if (isObject(stateBefore) && isObject(stateAfter)) {
-                    const changed: Record<string, { from: unknown; to: unknown }> = {};
-                    const before = stateBefore as Record<string, unknown>;
-                    const after = stateAfter as Record<string, unknown>;
-                    for (const k of new Set([...Object.keys(before), ...Object.keys(after)])) {
-                        if (before[k] !== after[k]) changed[k] = { from: serialize(before[k], STORE.SUBSCRIBE_DEPTH), to: serialize(after[k], STORE.SUBSCRIBE_DEPTH) };
+                    const changes = diffState(stateBefore as Record<string, unknown>, stateAfter as Record<string, unknown>, STORE.SUBSCRIBE_DEPTH, Infinity);
+                    if (changes.length) {
+                        const changed: Record<string, { from: unknown; to: unknown }> = {};
+                        for (const c of changes) changed[c.key] = { from: c.from, to: c.to };
+                        result.stateChanged = changed;
                     }
-                    if (Object.keys(changed).length) result.stateChanged = changed;
                 }
                 return result;
             };
@@ -230,10 +221,8 @@ export function handleStore(args: StoreArgs): unknown {
     if (action === "subscribe") {
         const found = requireStore(query);
         if ("error" in found) return found;
-        const rawDuration = Number(args.duration);
-        const duration = clamp(Number.isFinite(rawDuration) ? rawDuration : STORE.DEFAULT_DURATION, STORE.MIN_DURATION, STORE.MAX_DURATION);
-        const rawCaptures = Number(args.maxCaptures);
-        const maxCaptures = Math.min(Number.isFinite(rawCaptures) && rawCaptures > 0 ? rawCaptures : STORE.DEFAULT_CAPTURES, STORE.MAX_CAPTURES);
+        const duration = clampConfig(args.duration != null ? Number(args.duration) : undefined, { default: STORE.DEFAULT_DURATION, min: STORE.MIN_DURATION, max: STORE.MAX_DURATION });
+        const maxCaptures = clampConfig(args.maxCaptures != null ? Number(args.maxCaptures) : undefined, { default: STORE.DEFAULT_CAPTURES, min: 1, max: STORE.MAX_CAPTURES });
         const watchPath = args.path;
 
         return new Promise<unknown>(resolve => {
@@ -259,17 +248,9 @@ export function handleStore(args: StoreArgs): unknown {
                     if (watchPath) {
                         changes.push({ t: Date.now() - startTime, p: watchPath, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
                     } else if (isObject(cur) && isObject(prev)) {
-                        const curObj = cur as Record<string, unknown>;
-                        const prevObj = prev as Record<string, unknown>;
-                        for (const k of Object.keys(curObj)) {
-                            if (curObj[k] !== prevObj[k] && changes.length < maxCaptures) {
-                                changes.push({ t: Date.now() - startTime, p: k, from: serialize(prevObj[k], STORE.SUBSCRIBE_DEPTH), to: serialize(curObj[k], STORE.SUBSCRIBE_DEPTH) });
-                            }
-                        }
-                        for (const k of Object.keys(prevObj)) {
-                            if (!(k in curObj) && changes.length < maxCaptures) {
-                                changes.push({ t: Date.now() - startTime, p: k, from: serialize(prevObj[k], STORE.SUBSCRIBE_DEPTH), to: "[deleted]" });
-                            }
+                        const dt = Date.now() - startTime;
+                        for (const c of diffState(prev as Record<string, unknown>, cur as Record<string, unknown>, STORE.SUBSCRIBE_DEPTH, maxCaptures - changes.length)) {
+                            changes.push({ t: dt, p: c.key, from: c.from, to: c.to });
                         }
                     } else {
                         changes.push({ t: Date.now() - startTime, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
@@ -286,5 +267,5 @@ export function handleStore(args: StoreArgs): unknown {
         });
     }
 
-    return { error: `Unknown action: ${action}`, validActions: STORE_ACTIONS };
+    return { error: `Unknown action: ${action}` };
 }

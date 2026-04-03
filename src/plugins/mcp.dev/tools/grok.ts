@@ -94,7 +94,7 @@ function submitEditor() {
 function findLatestAssistantResponse(responses: GrokResponse[], afterIndex: number): GrokResponse | null {
     for (let i = responses.length - 1; i > afterIndex; i--) {
         const r = responses[i];
-        if (r.sender === "assistant" && !r.responseId?.startsWith("optimistic_")) return r;
+        if (r.sender === "assistant" && isRealResponse(r)) return r;
     }
     return null;
 }
@@ -172,9 +172,7 @@ async function handleSend(args: GrokArgs): Promise<unknown> {
         if (chatPageState.isUnauthenticated) return { error: "Authentication required" };
 
         if (model) chatPageState.setActiveModelId(model);
-        if (reasoningMode === "think") chatPageState.setReasoningMode("think");
-        else if (reasoningMode === "deepsearch") chatPageState.setReasoningMode("deepsearch");
-        else chatPageState.setReasoningMode("none");
+        chatPageState.setReasoningMode(reasoningMode);
 
         const editor = await waitForEditor();
 
@@ -260,8 +258,15 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
 async function handleModels(): Promise<unknown> {
     const { modes } = ModesStore.useModesStore.getState();
 
-    const results = await Promise.all(modes.map(async (m: any) => {
-        const available = "available" in (m.availability ?? {});
+    interface Mode {
+        id: string;
+        title: string;
+        description?: string;
+        availability?: Record<string, unknown>;
+    }
+
+    const results = await Promise.all(modes.map(async (m: Mode) => {
+        const available = !!(m.availability);
         try {
             const rl = await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: m.id } });
             return {

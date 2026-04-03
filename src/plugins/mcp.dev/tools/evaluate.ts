@@ -54,9 +54,16 @@ function autoReturn(code: string): string {
         let lastSemi = trimmedCode.length - 1;
         let parenDepth = 0;
         for (let i = trimmedCode.length - 1; i >= 0; i--) {
-            if (trimmedCode[i] === ")") parenDepth++;
-            else if (trimmedCode[i] === "(") parenDepth--;
-            else if (trimmedCode[i] === ";" && parenDepth <= 0) { lastSemi = i; break; }
+            const ch = trimmedCode[i];
+            if (ch === '"' || ch === "'" || ch === "`") {
+                for (i--; i >= 0; i--) {
+                    if (trimmedCode[i] === ch && trimmedCode[i - 1] !== "\\") break;
+                }
+                continue;
+            }
+            if (ch === ")") parenDepth++;
+            else if (ch === "(") parenDepth--;
+            else if (ch === ";" && parenDepth <= 0) { lastSemi = i; break; }
         }
         if (lastSemi < trimmedCode.length - 1 && trimmedCode[lastSemi] === ";") {
             const afterSemi = stripTrailingComment(trimmedCode.slice(lastSemi + 1)).trim();

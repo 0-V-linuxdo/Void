@@ -9,7 +9,7 @@ import { matchesAllPatterns } from "@turbopack/turbopack";
 
 import { SEARCH } from "./constants";
 import type { SearchArgs, SearchMatch } from "./types";
-import { clampDefault, getFactorySourceCache, isModulePatched, parseRegexPattern } from "./utils";
+import { clampConfig, getFactorySourceCache, isModulePatched, parseRegexPattern } from "./utils";
 
 function findMatch(src: string, pattern: string, regex: RegExp | null, startFrom = 0): { idx: number; len: number } | null {
     if (regex) {
@@ -31,6 +31,14 @@ function buildSnippet(src: string, idx: number, matchLen: number, ctx: number): 
     return matchLen > SEARCH.MAX_MATCH_LENGTH ? { snippet, truncatedMatch: true } : { snippet };
 }
 
+function buildMatchEntry(id: number, src: string, idx: number, matchLen: number, context: number): SearchMatch {
+    const { snippet, truncatedMatch } = buildSnippet(src, idx, matchLen, context);
+    const entry: SearchMatch = { id, at: idx, s: snippet, len: src.length };
+    if (truncatedMatch) entry.truncatedMatch = true;
+    if (isModulePatched(id)) entry.patched = true;
+    return entry;
+}
+
 function shouldSkipModule(id: number, filter: string | undefined, loadedCache: Map<number, unknown> | null): boolean {
     if (!filter) return false;
     if (filter === "patched") return !isModulePatched(id);
@@ -42,8 +50,8 @@ function shouldSkipModule(id: number, filter: string | undefined, loadedCache: M
 
 export function handleSearch(args: SearchArgs): unknown {
     const { pattern, id: targetId, and: andPatterns, filter } = args;
-    const max = clampDefault(args.max, SEARCH.DEFAULT_MAX, SEARCH.MAX_RESULTS_CAP);
-    const context = clampDefault(args.context, SEARCH.DEFAULT_CONTEXT, SEARCH.MAX_CONTEXT);
+    const max = clampConfig(args.max, { default: SEARCH.DEFAULT_MAX, max: SEARCH.MAX_RESULTS_CAP });
+    const context = clampConfig(args.context, { default: SEARCH.DEFAULT_CONTEXT, max: SEARCH.MAX_CONTEXT });
 
     if (filter && filter !== "loaded" && filter !== "unloaded" && filter !== "patched") return { error: `Invalid filter: "${filter}". Use "loaded", "unloaded", or "patched".` };
     if (!pattern && !andPatterns?.length)
@@ -96,11 +104,7 @@ export function handleSearch(args: SearchArgs): unknown {
                     matchLen = m[0].length;
                 }
             }
-            const { snippet, truncatedMatch } = buildSnippet(src, idx, matchLen, context);
-            const entry: SearchMatch = { id, at: idx, s: snippet, len: src.length };
-            if (truncatedMatch) entry.truncatedMatch = true;
-            if (isModulePatched(id)) entry.patched = true;
-            matches.push(entry);
+            matches.push(buildMatchEntry(id, src, idx, matchLen, context));
         }
         const result: { matches: SearchMatch[]; totalModules?: number; hint?: string } = { matches };
         if (moduleHits > matches.length) result.totalModules = moduleHits;
@@ -149,16 +153,12 @@ export function handleSearch(args: SearchArgs): unknown {
         if (shouldSkipModule(id, filter, loadedCache)) continue;
 
         if (targetId != null) {
-            const patched = isModulePatched(id);
             let startFrom = 0;
             while (matches.length < max && total < SEARCH.MAX_TOTAL) {
                 const hit = findMatch(src, pattern, regex, startFrom);
                 if (!hit) break;
-                const { snippet, truncatedMatch } = buildSnippet(src, hit.idx, hit.len, context);
-                total += snippet.length;
-                const entry: SearchMatch = { id, at: hit.idx, s: snippet, len: src.length };
-                if (truncatedMatch) entry.truncatedMatch = true;
-                if (patched) entry.patched = true;
+                const entry = buildMatchEntry(id, src, hit.idx, hit.len, context);
+                total += entry.s.length;
                 matches.push(entry);
                 startFrom = hit.idx + Math.max(hit.len, 1);
             }
@@ -171,11 +171,8 @@ export function handleSearch(args: SearchArgs): unknown {
                 capped = true;
                 continue;
             }
-            const { snippet, truncatedMatch } = buildSnippet(src, hit.idx, hit.len, context);
-            total += snippet.length;
-            const entry: SearchMatch = { id, at: hit.idx, len: src.length, s: snippet };
-            if (truncatedMatch) entry.truncatedMatch = true;
-            if (isModulePatched(id)) entry.patched = true;
+            const entry = buildMatchEntry(id, src, hit.idx, hit.len, context);
+            total += entry.s.length;
             matches.push(entry);
         }
     }
