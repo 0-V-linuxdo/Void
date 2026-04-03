@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.7
+// @version      0.5.8
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.7 — A modification for grok.com
+ * Void v0.5.8 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -161,7 +161,6 @@
     debounce: () => debounce,
     createExternalStore: () => createExternalStore,
     copyToClipboard: () => copyToClipboard,
-    confirm: () => confirm,
     common: () => exports_common,
     closeNotice: () => closeNotice,
     closeModal: () => closeModal,
@@ -317,11 +316,14 @@
   function LazyComponent(name, factory) {
     let cached = null;
     let attempts = 0;
-    const wrapper = (props) => {
+    const tryResolve = () => {
       if (!cached && attempts < LAZY_MAX_RETRIES) {
         cached = factory();
         attempts++;
       }
+    };
+    const wrapper = (props) => {
+      tryResolve();
       if (!cached || !_createElement)
         return null;
       return _createElement(cached, props);
@@ -329,14 +331,9 @@
     Object.defineProperty(wrapper, "name", { value: name });
     return new Proxy(wrapper, {
       get(target, prop, receiver) {
-        if (prop === "$$voidGetWrapped")
-          return () => cached ?? factory();
-        if (!cached && attempts < LAZY_MAX_RETRIES) {
-          cached = factory();
-          attempts++;
-        }
-        if (cached && prop in cached)
-          return cached[prop];
+        tryResolve();
+        if (cached && Reflect.has(cached, prop))
+          return Reflect.get(cached, prop);
         return Reflect.get(target, prop, receiver);
       }
     });
@@ -391,7 +388,11 @@
     const title = key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     if (!acronyms)
       return title;
-    return Object.entries(acronyms).reduce((s, [from, to]) => s.replace(new RegExp(`\\b${escapeRegExp(from)}\\b`, "g"), to), title);
+    let result = title;
+    for (const [from, to] of Object.entries(acronyms)) {
+      result = result.replace(new RegExp(`\\b${escapeRegExp(from)}\\b`, "g"), to);
+    }
+    return result;
   }
   function escapeRegExp(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -471,16 +472,6 @@ ${sourceUrl}`;
     }
     return source;
   }
-  function getMinFindLength(patch) {
-    const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
-    let max = 0;
-    for (const f of finds) {
-      const len = typeof f === "string" ? f.length : 0;
-      if (len > max)
-        max = len;
-    }
-    return max;
-  }
   function getModuleCache() {
     return moduleCache;
   }
@@ -522,6 +513,7 @@ ${sourceUrl}`;
     return () => moduleLoadListeners.delete(cb);
   }
   var badExports = new WeakSet;
+  var IGNORED_TYPES = [HTMLElement, ArrayBuffer, MessagePort, Map, Set, WeakMap, WeakSet];
   function shouldIgnoreValue(value) {
     if (value == null)
       return true;
@@ -538,7 +530,7 @@ ${sourceUrl}`;
     } catch {
       return true;
     }
-    return value instanceof HTMLElement || value instanceof ArrayBuffer || value instanceof MessagePort || value instanceof Map || value instanceof Set || value instanceof WeakMap || value instanceof WeakSet || ArrayBuffer.isView(value) || typeof WebSocket !== "undefined" && value instanceof WebSocket;
+    return IGNORED_TYPES.some((T) => value instanceof T) || ArrayBuffer.isView(value) || typeof WebSocket !== "undefined" && value instanceof WebSocket;
   }
   var warnsSuppressed = false;
   function silenceWarns(fn) {
@@ -635,8 +627,9 @@ ${sourceUrl}`;
       const patch = patches[i];
       if (patch.predicate && !patch.predicate())
         continue;
-      const minLen = getMinFindLength(patch);
-      if (minLen > codeLen)
+      const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
+      const maxFindLen = Math.max(0, ...finds.map((f) => typeof f === "string" ? f.length : 0));
+      if (maxFindLen > codeLen)
         continue;
       const findStart = 0;
       const findMatches = Array.isArray(patch.find) ? matchesAllPatterns(originalCode, patch.find) : matchesPattern(originalCode, patch.find);
@@ -673,6 +666,7 @@ ${sourceUrl}`;
         plugin: patch.plugin,
         find: String(patch.find),
         moduleId,
+        noWarn: patch.noWarn,
         replacements: []
       };
       for (const replacement of replacements) {
@@ -759,26 +753,11 @@ ${sourceUrl}`;
     lazy[SYM_PATCHED_CODE] = code;
     return lazy;
   }
-  function wrapFactory(moduleId, factory) {
-    const patchResult = patchFactory(moduleId, factory);
-    const patched = patchResult ? createLazyFactory(moduleId, patchResult, factory) : factory;
-    const original = patched[SYM_ORIGINAL] ?? factory;
-    const isPatched = !!patched[SYM_PATCHED];
+  function createFactoryWrapper(moduleId, factory, exec) {
     const wrapped = function(helpers, mod, exports) {
       captureRuntimeState(helpers);
       try {
-        patched.call(this, helpers, mod, exports);
-      } catch (err) {
-        if (!isPatched)
-          throw err;
-        patchStats.runtimeFallbacks++;
-        logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
-        try {
-          original.call(this, helpers, mod, exports);
-        } catch (origErr) {
-          logger.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
-          throw origErr;
-        }
+        exec(this, helpers, mod, exports);
       } finally {
         try {
           const actualId = mod?.id ?? moduleId;
@@ -791,6 +770,29 @@ ${sourceUrl}`;
       }
     };
     wrapped.toString = () => getFactorySource(factory);
+    return wrapped;
+  }
+  function wrapFactory(moduleId, factory) {
+    const patchResult = patchFactory(moduleId, factory);
+    const patched = patchResult ? createLazyFactory(moduleId, patchResult, factory) : factory;
+    const original = patched[SYM_ORIGINAL] ?? factory;
+    const isPatched = !!patched[SYM_PATCHED];
+    const wrapped = createFactoryWrapper(moduleId, factory, (ctx, helpers, mod, exports) => {
+      try {
+        patched.call(ctx, helpers, mod, exports);
+      } catch (err) {
+        if (!isPatched)
+          throw err;
+        patchStats.runtimeFallbacks++;
+        logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
+        try {
+          original.call(ctx, helpers, mod, exports);
+        } catch (origErr) {
+          logger.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
+          throw origErr;
+        }
+      }
+    });
     wrapped[SYM_ORIGINAL] = original;
     if (isPatched) {
       wrapped[SYM_PATCHED] = true;
@@ -818,7 +820,9 @@ ${sourceUrl}`;
       if (existing) {
         patchedEntry[i] = existing;
       } else {
-        const wrapped = hasPatches ? wrapFactory(prev, factory) : wrapNotifyOnly(prev, factory);
+        const wrapped = hasPatches ? wrapFactory(prev, factory) : createFactoryWrapper(prev, factory, (ctx, helpers, mod, exports) => {
+          factory.call(ctx, helpers, mod, exports);
+        });
         wrappedInChunk.set(factory, wrapped);
         patchedEntry[i] = wrapped;
       }
@@ -832,24 +836,6 @@ ${sourceUrl}`;
         ;
     }
     return patchedEntry ?? entry;
-  }
-  function wrapNotifyOnly(moduleId, factory) {
-    const wrapped = function(helpers, mod, exports) {
-      captureRuntimeState(helpers);
-      try {
-        factory.call(this, helpers, mod, exports);
-      } finally {
-        try {
-          const actualId = mod?.id ?? moduleId;
-          if (mod?.exports != null)
-            notifyModuleLoaded(mod.exports, actualId);
-        } catch (e) {
-          logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
-        }
-      }
-    };
-    wrapped.toString = () => getFactorySource(factory);
-    return wrapped;
   }
   function handleChunkPush(...args) {
     for (let i = 0;i < args.length; i++) {
@@ -883,15 +869,14 @@ ${sourceUrl}`;
     };
   }
   function reportOrphanedPatches() {
-    const unmatched = patches.filter((p) => !p.all);
-    const orphaned = unmatched.filter((p) => !isFactoryPending(p));
+    const orphaned = patches.filter((p) => !p.all && !isFactoryPending(p));
     const warnOrphaned = orphaned.filter((p) => !p.noWarn);
     if (warnOrphaned.length)
       logger.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
     if (patchStats.noEffect || patchStats.errors) {
       for (const result of patchResults) {
         for (const rep of result.replacements) {
-          if (rep.status === "noEffect")
+          if (rep.status === "noEffect" && !result.noWarn)
             logger.error(`[no effect] ${result.plugin}: ${rep.match}`);
           else if (rep.status === "error")
             logger.error(`[error] ${result.plugin}: ${rep.match}`);
@@ -913,11 +898,6 @@ ${sourceUrl}`;
       }
     }
     return count;
-  }
-  function scanExistingModules(cache) {
-    const count = scanCache(cache);
-    if (false)
-      ;
   }
   function rescanRuntimeModules() {
     if (!runtimeModuleCache)
@@ -959,7 +939,9 @@ ${sourceUrl}`;
       turbopackHelpers = helpers;
     if (!runtimeModuleCache && helpers.c) {
       runtimeModuleCache = helpers.c;
-      scanExistingModules(runtimeModuleCache);
+      const count = scanCache(runtimeModuleCache);
+      if (false)
+        ;
     }
     if (!runtimeFactoryRegistry && helpers.M)
       runtimeFactoryRegistry = helpers.M;
@@ -1337,15 +1319,13 @@ ${sourceUrl}`;
     const result = {};
     for (const name of classes) {
       const regex = new RegExp(`(?:\\b|_)${escapeRegExp(name)}(?:\\b|_)`);
-      let found = false;
       for (const key in mod) {
         if (typeof mod[key] === "string" && regex.test(mod[key])) {
           result[name] = mod[key];
-          found = true;
           break;
         }
       }
-      if (!found)
+      if (!(name in result))
         logger2.warn(`mapMangledCssClasses: class "${name}" not found in module`);
     }
     return result;
@@ -1752,11 +1732,8 @@ ${sourceUrl}`;
     return true;
   }
   function unregisterStyle(name) {
-    const el = activeStyles.get(name);
-    if (el) {
-      el.remove();
-      activeStyles.delete(name);
-    }
+    activeStyles.get(name)?.remove();
+    activeStyles.delete(name);
     styleRegistry.delete(name);
   }
   var classNameFactory = (prefix = "") => (...args) => {
@@ -1764,10 +1741,15 @@ ${sourceUrl}`;
     for (const arg of args) {
       if (typeof arg === "string")
         classNames.add(arg);
-      else if (Array.isArray(arg))
-        arg.forEach((name) => classNames.add(name));
-      else if (arg && typeof arg === "object")
-        Object.entries(arg).forEach(([name, value]) => value && classNames.add(name));
+      else if (Array.isArray(arg)) {
+        for (const name of arg)
+          classNames.add(name);
+      } else if (arg && typeof arg === "object") {
+        for (const [name, value] of Object.entries(arg)) {
+          if (value)
+            classNames.add(name);
+        }
+      }
     }
     return Array.from(classNames, (name) => prefix + name).join(" ");
   };
@@ -1803,11 +1785,7 @@ ${sourceUrl}`;
     replacement.replace = canonicalizeReplace(replacement.replace, pluginPath);
   }
   function canonicalizeFind(patch) {
-    if (Array.isArray(patch.find)) {
-      patch.find = patch.find.map((f) => canonicalizeMatch(f));
-    } else {
-      patch.find = canonicalizeMatch(patch.find);
-    }
+    patch.find = Array.isArray(patch.find) ? patch.find.map((f) => canonicalizeMatch(f)) : canonicalizeMatch(patch.find);
   }
 
   // src/utils/types.ts
@@ -2213,6 +2191,11 @@ ${sourceUrl}`;
     r: ".5",
     fill: "currentColor"
   }));
+  var GaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m12 14 4-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3.34 19a10 10 0 1 1 17.32 0"
+  }));
   var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -2383,19 +2366,6 @@ ${sourceUrl}`;
   var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
   }));
-  var AccessibilityIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "16",
-    cy: "4",
-    r: "1"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m18 19 1-7-6 1"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m5 8 3-3 5.5 3-2.36 3.5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M4.24 14.5a5 5 0 0 0 6.88 6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M13.76 17.5a5 5 0 0 0-6.88-6"
-  }));
   var ClockAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 6v6l4 2"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -2446,18 +2416,19 @@ ${sourceUrl}`;
     }, children);
   }
   // src/components/ChatBarButton.tsx
+  var TOOLTIP_PROPS = { delayDuration: 600 };
+  var TOOLTIP_CONTENT_PROPS = { side: "top" };
   function ChatBarButton({ icon, tooltip, onClick, className, "aria-label": ariaLabel }) {
-    const label = typeof tooltip === "string" ? tooltip : ariaLabel;
     return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "tertiary",
       size: "md",
       shape: "circle",
       className: classes("text-primary", className),
       tooltipContent: tooltip,
-      tooltipProps: { delayDuration: 600 },
-      tooltipContentProps: { side: "top" },
+      tooltipProps: TOOLTIP_PROPS,
+      tooltipContentProps: TOOLTIP_CONTENT_PROPS,
       onClick,
-      "aria-label": label
+      "aria-label": typeof tooltip === "string" ? tooltip : ariaLabel
     }, icon);
   }
 
@@ -2545,8 +2516,7 @@ ${sourceUrl}`;
         responseType: "blob",
         timeout: 30000,
         onload(resp) {
-          const blob = resp.response;
-          resolve(new Response(blob, {
+          resolve(new Response(resp.response, {
             status: resp.status,
             statusText: resp.statusText
           }));
@@ -2789,7 +2759,6 @@ ${sourceUrl}`;
       tx.objectStore(STORE_NAME).put(value, key);
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
     });
   }
 
@@ -2797,14 +2766,6 @@ ${sourceUrl}`;
   var logger5 = new Logger("SettingsStore");
   var STORAGE_KEY = "VoidSettings";
   var SAVE_DEBOUNCE_MS = 100;
-  function getOrCreateSet(map, key) {
-    let set = map.get(key);
-    if (!set) {
-      set = new Set;
-      map.set(key, set);
-    }
-    return set;
-  }
 
   class SettingsStore2 {
     globalListeners = new Set;
@@ -2935,7 +2896,7 @@ ${sourceUrl}`;
       this.globalListeners.delete(listener);
     }
     addChangeListener(path, listener) {
-      getOrCreateSet(this.pathListeners, path).add(listener);
+      mapGetOrCreate(this.pathListeners, path, () => new Set).add(listener);
     }
     removeChangeListener(path, listener) {
       const set = this.pathListeners.get(path);
@@ -2946,7 +2907,7 @@ ${sourceUrl}`;
       }
     }
     addPrefixChangeListener(prefix, listener) {
-      getOrCreateSet(this.prefixListeners, prefix).add(listener);
+      mapGetOrCreate(this.prefixListeners, prefix, () => new Set).add(listener);
     }
     removePrefixChangeListener(prefix, listener) {
       const set = this.prefixListeners.get(prefix);
@@ -3077,7 +3038,6 @@ ${sourceUrl}`;
       return setting.default;
     if (setting.type === 4 /* SELECT */)
       return setting.options.find((o) => o.default)?.value;
-    return;
   }
   function definePluginSettings(def, checks) {
     let _pluginName = "";
@@ -3139,6 +3099,19 @@ ${sourceUrl}`;
   var pluginUnsubscribers = new Map;
   var initialized = false;
   var storeRegistry = exports_stores;
+  function runUnsubs(pluginName) {
+    const unsubs = pluginUnsubscribers.get(pluginName);
+    if (!unsubs)
+      return;
+    for (const unsub of unsubs) {
+      try {
+        unsub();
+      } catch (e) {
+        logger7.error(`Unsub error in ${pluginName}:`, e);
+      }
+    }
+    pluginUnsubscribers.delete(pluginName);
+  }
   function removePluginContextMenuItems(plugin) {
     if (!plugin.contextMenuItems)
       return;
@@ -3194,19 +3167,17 @@ ${sourceUrl}`;
     }
     return true;
   }
+  function isSubscribable(val) {
+    return val != null && typeof val.subscribe === "function";
+  }
   function resolveStoreHook(storeName) {
     const storeModule = storeRegistry[storeName];
     if (!storeModule)
       return null;
-    const hookName = `use${storeName}`;
-    const hook = storeModule[hookName];
-    if (hook && typeof hook.subscribe === "function")
+    const hook = storeModule[`use${storeName}`];
+    if (isSubscribable(hook))
       return hook;
-    for (const [key, val] of Object.entries(storeModule)) {
-      if (val && typeof val.subscribe === "function")
-        return val;
-    }
-    return null;
+    return Object.values(storeModule).find(isSubscribable) ?? null;
   }
   function ensureMethodsBound(plugin) {
     for (const key of Object.keys(plugin)) {
@@ -3248,7 +3219,7 @@ ${sourceUrl}`;
           unsubs.push(subscribe(event, handler2));
         }
       }
-      if (plugin.storeSubscriptions?.length) {
+      if (plugin.storeSubscriptions) {
         for (const sub of plugin.storeSubscriptions) {
           unsubs.push(sub.store.subscribe(sub.callback, sub.selector));
         }
@@ -3288,17 +3259,7 @@ ${sourceUrl}`;
         disableStyle(plugin.managedStyle);
       removeChatBarButton(plugin.name);
       removePluginContextMenuItems(plugin);
-      const unsubs = pluginUnsubscribers.get(plugin.name);
-      if (unsubs) {
-        for (const unsub of unsubs) {
-          try {
-            unsub();
-          } catch (e2) {
-            logger7.error(`Unsub error during ${plugin.name} start cleanup:`, e2);
-          }
-        }
-        pluginUnsubscribers.delete(plugin.name);
-      }
+      runUnsubs(plugin.name);
       return false;
     }
   }
@@ -3311,18 +3272,7 @@ ${sourceUrl}`;
       logger7.error(`Error in ${plugin.name}.stop():`, e);
     }
     let failed = false;
-    const unsubs = pluginUnsubscribers.get(plugin.name);
-    if (unsubs) {
-      for (const unsub of unsubs) {
-        try {
-          unsub();
-        } catch (e) {
-          failed = true;
-          logger7.error(`Unsub error in ${plugin.name}:`, e);
-        }
-      }
-      pluginUnsubscribers.delete(plugin.name);
-    }
+    runUnsubs(plugin.name);
     try {
       removeChatBarButton(plugin.name);
     } catch (e) {
@@ -3364,7 +3314,11 @@ ${sourceUrl}`;
         continue;
       if ((plugin.startAt ?? "Init" /* Init */) !== target)
         continue;
-      startPlugin(plugin);
+      try {
+        startPlugin(plugin);
+      } catch (e) {
+        logger7.error(`Unexpected error starting ${name}:`, e);
+      }
     }
   }
   function registerPlugin(plugin) {
@@ -3376,17 +3330,32 @@ ${sourceUrl}`;
       plugin.settings.pluginName = plugin.name;
     }
   }
-  function pruneOrphanedPluginSettings() {
-    const stored = PlainSettings.plugins;
-    let pruned = false;
-    for (const name of Object.keys(stored)) {
-      if (!plugins[name]) {
-        logger7.info(`Pruning settings for removed plugin: ${name}`);
-        delete stored[name];
-        pruned = true;
+  var NEW_PLUGIN_TTL = 2 * 24 * 60 * 60 * 1000;
+  function isNewPlugin(name) {
+    const seen = getSettingsPluginData().knownPlugins?.[name];
+    return seen != null && Date.now() - seen < NEW_PLUGIN_TTL;
+  }
+  function trackNewPlugins() {
+    const known = getSettingsPluginData().knownPlugins ?? {};
+    const visible = Object.keys(plugins).filter((n) => !plugins[n].hidden && !plugins[n].required);
+    let changed = false;
+    for (const name of visible) {
+      if (!(name in known)) {
+        known[name] = Date.now();
+        changed = true;
       }
     }
-    if (pruned)
+    if (changed)
+      updateSettingsPluginData({ knownPlugins: known });
+  }
+  function pruneOrphanedPluginSettings() {
+    const stored = PlainSettings.plugins;
+    const orphaned = Object.keys(stored).filter((name) => !plugins[name]);
+    for (const name of orphaned) {
+      logger7.info(`Pruning settings for removed plugin: ${name}`);
+      delete stored[name];
+    }
+    if (orphaned.length)
       SettingsStore3.markAsChanged();
   }
   function initPluginManager() {
@@ -3394,11 +3363,11 @@ ${sourceUrl}`;
       return;
     initialized = true;
     pruneOrphanedPluginSettings();
+    trackNewPlugins();
     const neededApis = new Set;
-    for (const name of Object.keys(plugins)) {
+    for (const [name, plugin] of Object.entries(plugins)) {
       if (!isPluginEnabled(name))
         continue;
-      const plugin = plugins[name];
       for (const d of plugin.dependencies ?? []) {
         const dep = plugins[d];
         if (!dep) {
@@ -3510,12 +3479,11 @@ ${sourceUrl}`;
   };
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
-    const renderIcon = ICONS[type ?? "info" /* INFO */];
     return /* @__PURE__ */ React.createElement("div", {
       className: cl2("root")
     }, /* @__PURE__ */ React.createElement("span", {
       className: cl2("icon")
-    }, renderIcon(18)), /* @__PURE__ */ React.createElement("span", {
+    }, ICONS[type ?? "info" /* INFO */](18)), /* @__PURE__ */ React.createElement("span", {
       className: cl2("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
@@ -3558,8 +3526,8 @@ ${sourceUrl}`;
   function isNewer(remote, local) {
     const r = remote.split(".").map(Number);
     const l = local.split(".").map(Number);
-    for (let i = 0;i < Math.max(r.length, l.length); i++) {
-      const a = r[i] ?? 0, b = l[i] ?? 0;
+    for (let i = 0;i < 3; i++) {
+      const a = r[i], b = l[i];
       if (a > b)
         return true;
       if (a < b)
@@ -3575,11 +3543,11 @@ ${sourceUrl}`;
       const { version: latest } = await resp.json();
       if (!latest || !SEMVER_RE.test(latest))
         return;
-      if (!isNewer(latest, "0.5.7")) {
-        logger8.info(`Up to date (${"0.5.7"})`);
+      if (!isNewer(latest, "0.5.8")) {
+        logger8.info(`Up to date (${"0.5.8"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.7"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.8"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3712,24 +3680,16 @@ ${sourceUrl}`;
     return `void-theme-${(hash >>> 0).toString(36)}`;
   }
   function parseThemeMeta(css) {
-    const meta = { name: "", author: "", description: "" };
-    const header = css.match(/\/\*\*[\s\S]*?\*\//);
-    if (!header)
-      return meta;
-    const nameMatch = header[0].match(/@name\s+(.+)/);
-    const authorMatch = header[0].match(/@author\s+(.+)/);
-    const descMatch = header[0].match(/@description\s+(.+)/);
-    if (nameMatch)
-      meta.name = nameMatch[1].trim();
-    if (authorMatch)
-      meta.author = authorMatch[1].trim();
-    if (descMatch)
-      meta.description = descMatch[1].trim();
-    return meta;
+    const header = css.match(/\/\*\*[\s\S]*?\*\//)?.[0] ?? "";
+    return {
+      name: header.match(/@name\s+(.+)/)?.[1]?.trim() ?? "",
+      author: header.match(/@author\s+(.+)/)?.[1]?.trim() ?? "",
+      description: header.match(/@description\s+(.+)/)?.[1]?.trim() ?? ""
+    };
   }
   function getThemes() {
-    const s = getSettingsPluginData();
-    return Array.isArray(s.themes) ? s.themes : [];
+    const { themes } = getSettingsPluginData();
+    return Array.isArray(themes) ? themes : [];
   }
   function isThemesEnabled() {
     return getSettingsPluginData().themesEnabled !== false;
@@ -3760,13 +3720,14 @@ ${sourceUrl}`;
     }
   }
   function validateThemeUrl(url) {
+    let parsed;
     try {
-      const parsed = new URL(url);
-      if (parsed.protocol !== "https:")
-        throw 0;
+      parsed = new URL(url);
     } catch {
       throw new Error("Enter a valid URL.");
     }
+    if (parsed.protocol !== "https:")
+      throw new Error("Enter a valid URL.");
     if (!/\.css(?:[?#]|$)/i.test(url))
       throw new Error("URL must point to a .css file.");
   }
@@ -3901,12 +3862,11 @@ ${sourceUrl}`;
       if (!resp.ok)
         throw new Error(`HTTP ${resp.status}`);
       const css = await resp.text();
-      if (!getThemes().find((th) => th.url === t.url)?.enabled || !isThemesEnabled())
+      if (!getThemes().some((th) => th.url === t.url && th.enabled) || !isThemesEnabled())
         return;
       registerStyle(themeStyleId(t.url), css);
     }));
-    for (let i = 0;i < results.length; i++) {
-      const result = results[i];
+    for (const [i, result] of results.entries()) {
       if (result.status === "rejected") {
         logger9.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
       }
@@ -4009,22 +3969,18 @@ ${sourceUrl}`;
   var STYLE_ID = "void-custom-css";
   function setCustomCSSEnabled(enabled) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
-    if (enabled) {
-      const css = getSettingsPluginData().customCSS;
-      if (typeof css === "string" && css) {
-        registerStyle(STYLE_ID, css);
-        enableStyle(STYLE_ID);
-      }
-    } else {
-      disableStyle(STYLE_ID);
+    if (!enabled)
+      return disableStyle(STYLE_ID);
+    const css = getSettingsPluginData().customCSS;
+    if (typeof css === "string" && css) {
+      registerStyle(STYLE_ID, css);
+      enableStyle(STYLE_ID);
     }
   }
   function loadSavedCSS() {
-    const s = getSettingsPluginData();
-    const saved = s.customCSS;
-    if (typeof saved === "string" && saved && s.customCSSEnabled !== false) {
+    const { customCSS: saved, customCSSEnabled } = getSettingsPluginData();
+    if (typeof saved === "string" && saved && customCSSEnabled !== false) {
       registerStyle(STYLE_ID, saved);
-      return saved;
     }
     return typeof saved === "string" ? saved : "";
   }
@@ -4268,11 +4224,7 @@ ${sourceUrl}`;
 `);
 
   // void-css:D:/Projects/Void/src/components/settings/PluginCard.css
-  registerStyle("PluginCard", `.void-plugin-card-desc {
-    margin-top: 0.5rem;
-}
-
-.void-plugin-card-required-icon,
+  registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge {
     display: inline-flex;
     align-items: center;
@@ -4331,6 +4283,8 @@ ${sourceUrl}`;
     border: 1px solid var(--border-l1);
     background: var(--card);
     min-height: 7.5rem;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .void-card-body {
@@ -4345,6 +4299,18 @@ ${sourceUrl}`;
     display: flex;
     align-items: center;
     gap: 0.375rem;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+.void-card-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 500;
+    flex-shrink: 1;
     min-width: 0;
 }
 
@@ -4388,7 +4354,7 @@ ${sourceUrl}`;
 
   // src/components/settings/BaseCard.tsx
   var cl4 = classNameFactory("void-card-");
-  function BaseCard({ className, name, nameClassName, description, controls, footer }) {
+  function BaseCard({ className, name, nameClassName, badges, description, controls, footer }) {
     return /* @__PURE__ */ React.createElement(Card, {
       className: classes(cl4("root"), className)
     }, /* @__PURE__ */ React.createElement("div", {
@@ -4397,10 +4363,13 @@ ${sourceUrl}`;
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      as: "span",
+    }, /* @__PURE__ */ React.createElement("div", {
       className: classes(cl4("name"), nameClassName)
-    }, name), /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: cl4("title")
+    }, name)), /* @__PURE__ */ React.createElement(TooltipContent, null, name)), badges), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
       className: cl4("controls")
@@ -4431,7 +4400,7 @@ ${sourceUrl}`;
 
   // src/components/settings/utils.ts
   function isVisibleSetting([, s]) {
-    return s.type !== 7 /* CUSTOM */ && !(("hidden" in s) && s.hidden);
+    return s.type !== 7 /* CUSTOM */ && !s.hidden;
   }
   function hasVisibleSettings(plugin) {
     return !!plugin.settings?.def && Object.entries(plugin.settings.def).some(isVisibleSetting);
@@ -4458,7 +4427,8 @@ ${sourceUrl}`;
     };
     return /* @__PURE__ */ React.createElement(BaseCard, {
       className: plugin.required ? cl5("required") : crashed ? cl5("crashed") : undefined,
-      name: /* @__PURE__ */ React.createElement(React.Fragment, null, name, crashed && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      name,
+      badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
         asChild: true
       }, /* @__PURE__ */ React.createElement(Text, {
         as: "span",
@@ -4471,7 +4441,9 @@ ${sourceUrl}`;
       }, /* @__PURE__ */ React.createElement(CircleAlertIcon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin is required for Void to work")), /* @__PURE__ */ React.createElement(PluginBadges, {
         plugin,
         className: cl5("badge")
-      })),
+      }), isNewPlugin(name) && /* @__PURE__ */ React.createElement(Badge, {
+        variant: "accent"
+      }, "New")),
       description: plugin.description,
       controls: /* @__PURE__ */ React.createElement(React.Fragment, null, hasVisibleSettings(plugin) && /* @__PURE__ */ React.createElement(Button, {
         variant: "tertiary",
@@ -4488,7 +4460,7 @@ ${sourceUrl}`;
       })),
       footer: /* @__PURE__ */ React.createElement("div", {
         className: cl5("authors")
-      }, plugin.authors?.length ? plugin.authors.join(", ") : " ")
+      }, plugin.authors?.join(", ") || " ")
     });
   }
 
@@ -4548,7 +4520,7 @@ ${sourceUrl}`;
       setValue(val);
       Settings.plugins[pluginName] = { ...Settings.plugins[pluginName], [id]: val };
       setting.onChange?.(val);
-      if ("restartNeeded" in setting && setting.restartNeeded)
+      if (setting.restartNeeded)
         dispatch("reloadNeeded");
     }, [id, pluginName, setting]);
     return [value, update];
@@ -4557,7 +4529,7 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, humanizeKey(id)), "description" in setting && setting.description && /* @__PURE__ */ React.createElement(SettingsDescription, null, setting.description));
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, humanizeKey(id)), setting.description && /* @__PURE__ */ React.createElement(SettingsDescription, null, setting.description));
   }
   function BooleanField({ id, setting, pluginName }) {
     const [value, update] = usePluginSetting(pluginName, id, setting);
@@ -4658,7 +4630,7 @@ ${sourceUrl}`;
       type: "text",
       value: value ?? "",
       onChange: (e) => update(e.target.value),
-      placeholder: "placeholder" in setting ? setting.placeholder : undefined,
+      placeholder: setting.placeholder,
       className: cl6("string-input")
     }));
   }
@@ -4749,6 +4721,12 @@ ${sourceUrl}`;
   // src/components/settings/tabs/PluginsTab.tsx
   var cl8 = classNameFactory("void-plugins-");
   var getPluginKey = (name) => `${name} ${plugins[name].description ?? ""}`;
+  function filterByEnabled(list, filter) {
+    if (filter === "all")
+      return list;
+    const enabled = filter === "enabled";
+    return list.filter((n) => isPluginEnabled(n) === enabled);
+  }
   function PluginsTab() {
     const [search2, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
@@ -4756,17 +4734,14 @@ ${sourceUrl}`;
     const [showReload, setShowReload] = useState(false);
     const [toggleTick, setToggleTick] = useState(0);
     const { userPlugins, requiredPlugins } = useMemo(() => {
-      const user = [];
-      const required = [];
+      const userPlugins2 = [];
+      const requiredPlugins2 = [];
       for (const n of Object.keys(plugins).sort((a, b) => a.localeCompare(b))) {
         if (plugins[n].hidden)
           continue;
-        if (plugins[n].required)
-          required.push(n);
-        else
-          user.push(n);
+        (plugins[n].required ? requiredPlugins2 : userPlugins2).push(n);
       }
-      return { userPlugins: user, requiredPlugins: required };
+      return { userPlugins: userPlugins2, requiredPlugins: requiredPlugins2 };
     }, []);
     const initialStatesRef = React.useRef(null);
     const changedPluginsRef = React.useRef(new Set);
@@ -4775,9 +4750,7 @@ ${sourceUrl}`;
       if (initialStatesRef.current)
         return;
       const map = new Map;
-      for (const n of userPlugins)
-        map.set(n, isPluginEnabled(n));
-      for (const n of requiredPlugins)
+      for (const n of [...userPlugins, ...requiredPlugins])
         map.set(n, isPluginEnabled(n));
       initialStatesRef.current = map;
     }, [userPlugins, requiredPlugins]);
@@ -4792,18 +4765,8 @@ ${sourceUrl}`;
       if (!dismissedRef.current)
         setShowReload(true);
     }), []);
-    const visibleUser = useMemo(() => {
-      if (filter === "all")
-        return userPlugins;
-      const enabled = filter === "enabled";
-      return userPlugins.filter((n) => isPluginEnabled(n) === enabled);
-    }, [filter, userPlugins, toggleTick]);
-    const visibleRequired = useMemo(() => {
-      if (filter === "all")
-        return requiredPlugins;
-      const enabled = filter === "enabled";
-      return requiredPlugins.filter((n) => isPluginEnabled(n) === enabled);
-    }, [filter, requiredPlugins, toggleTick]);
+    const visibleUser = useMemo(() => filterByEnabled(userPlugins, filter), [filter, userPlugins, toggleTick]);
+    const visibleRequired = useMemo(() => filterByEnabled(requiredPlugins, filter), [filter, requiredPlugins, toggleTick]);
     const filteredUser = useFiltered(visibleUser, search2, getPluginKey);
     const filteredRequired = useFiltered(visibleRequired, search2, getPluginKey);
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
@@ -4811,20 +4774,18 @@ ${sourceUrl}`;
     const needsReload = changedPluginsRef.current.size > 0;
     const onReload = useCallback((pluginName) => {
       const initialStates = initialStatesRef.current;
-      const changedPlugins = changedPluginsRef.current;
       if (!initialStates)
         return;
-      const current = isPluginEnabled(pluginName);
-      if (current === initialStates.get(pluginName))
-        changedPlugins.delete(pluginName);
+      const changed = changedPluginsRef.current;
+      if (isPluginEnabled(pluginName) === initialStates.get(pluginName))
+        changed.delete(pluginName);
       else
-        changedPlugins.add(pluginName);
-      if (changedPlugins.size) {
-        if (!dismissedRef.current)
-          setShowReload(true);
-      } else {
+        changed.add(pluginName);
+      if (!changed.size) {
         setShowReload(false);
         dismissedRef.current = false;
+      } else if (!dismissedRef.current) {
+        setShowReload(true);
       }
     }, []);
     const onDismiss = useCallback(() => {
@@ -4978,6 +4939,7 @@ ${sourceUrl}`;
         enableTheme(theme.url).catch((e) => logger10.error("Failed to enable theme:", e));
       onToggle();
     };
+    const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
     return /* @__PURE__ */ React.createElement(BaseCard, {
       name: theme.name ?? theme.url,
       nameClassName: cl9("name"),
@@ -5013,10 +4975,7 @@ ${sourceUrl}`;
         disabled: !globalEnabled,
         onCheckedChange: handleToggle
       })),
-      footer: /* @__PURE__ */ React.createElement(React.Fragment, null, theme.local ? /* @__PURE__ */ React.createElement(FolderIcon, {
-        size: 12,
-        className: cl9("footer-icon")
-      }) : /* @__PURE__ */ React.createElement(GlobeIcon, {
+      footer: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SourceIcon, {
         size: 12,
         className: cl9("footer-icon")
       }), /* @__PURE__ */ React.createElement("div", {
@@ -5124,7 +5083,7 @@ ${sourceUrl}`;
         case "online":
           return themes.filter((t) => !t.local);
         case "local":
-          return themes.filter((t) => !!t.local);
+          return themes.filter((t) => t.local);
         default:
           return themes;
       }
@@ -5711,9 +5670,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.7"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"110306b"}`
-    }, `(${"110306b"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"ecb4458"}`
+    }, `(${"ecb4458"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5895,50 +5854,17 @@ ${sourceUrl}`;
     modalStack.length = 0;
     store3.notify();
   }
-  function confirm(options) {
-    return new Promise((resolve) => {
-      let resolved = false;
-      const settle = (value) => {
-        if (resolved)
-          return;
-        resolved = true;
-        unsub();
-        resolve(value);
-      };
-      const key = openModal(({ onClose }) => /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, options.title), /* @__PURE__ */ React.createElement(DialogDescription, null, options.body), /* @__PURE__ */ React.createElement(DialogFooter, null, /* @__PURE__ */ React.createElement(Button, {
-        variant: "secondary",
-        size: "md",
-        onClick: () => {
-          settle(false);
-          onClose();
-        }
-      }, options.cancelText ?? "Cancel"), /* @__PURE__ */ React.createElement(Button, {
-        variant: options.danger ? "danger" : "primary",
-        size: "md",
-        onClick: () => {
-          settle(true);
-          onClose();
-        }
-      }, options.confirmText ?? "Confirm"))));
-      const unsub = store3.subscribe(() => {
-        if (!modalStack.some((m) => m.key === key))
-          settle(false);
-      });
-    });
-  }
   var ModalInstance = ErrorBoundary.wrap(function ModalInstance2({ entry }) {
     const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
-    const onOpenChange = useCallback((open2) => {
-      if (!open2)
-        onClose();
-    }, [onClose]);
-    const modalProps = useMemo(() => ({ onClose }), [onClose]);
     return /* @__PURE__ */ React.createElement(Dialog, {
       open: true,
-      onOpenChange
+      onOpenChange: (v) => {
+        if (!v)
+          onClose();
+      }
     }, /* @__PURE__ */ React.createElement(DialogContent, {
       "aria-describedby": undefined
-    }, entry.render(modalProps)));
+    }, entry.render({ onClose })));
   });
   function ModalContainer() {
     useExternalStore(store3);
@@ -7351,6 +7277,55 @@ ${sourceUrl}`;
     ]
   });
 
+  // void-css:D:/Projects/Void/src/plugins/cloneChats/styles.css
+  registerStyle("cloneChats", `.void-clone-icon {
+    margin-inline-end: 0.5rem;
+}
+`);
+
+  // src/plugins/cloneChats/index.tsx
+  var logger15 = new Logger("CloneChats");
+  async function cloneChat(conversationId) {
+    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
+    if (!lastResponseId)
+      throw new Error("No responses found in conversation.");
+    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
+      conversationId,
+      body: { responseId: lastResponseId, allowIndexing: false }
+    });
+    if (!shareLinkId)
+      throw new Error("Failed to create share link.");
+    try {
+      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
+      if (conversation?.conversationId) {
+        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
+      }
+    } finally {
+      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
+    }
+  }
+  function CloneItem({ conversationId }) {
+    const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
+    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: () => cloneChat(conversationId).catch((e) => logger15.error("Failed to clone chat:", e)),
+      disabled: streaming
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      size: 16,
+      className: "void-clone-icon"
+    }), "Clone");
+  }
+  var cloneChats_default = definePlugin({
+    name: "CloneChats",
+    description: "Clone conversations from the context-menu.",
+    authors: [Devs.Prism],
+    contextMenuItems: {
+      conversation: {
+        label: "Clone",
+        render: ErrorBoundary.wrap(CloneItem)
+      }
+    }
+  });
+
   // src/plugins/consoleJanitor/index.ts
   var consoleJanitor_default = definePlugin({
     name: "ConsoleJanitor",
@@ -7406,7 +7381,7 @@ ${sourceUrl}`;
 
   // src/plugins/downloadTTS/index.tsx
   var cl16 = classNameFactory("void-download-tts-");
-  var logger15 = new Logger("DownloadTTS");
+  var logger16 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -7428,7 +7403,7 @@ ${sourceUrl}`;
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger15.error("Failed to download TTS audio:", e);
+        logger16.error("Failed to download TTS audio:", e);
       } finally {
         setLoading(false);
       }
@@ -7469,7 +7444,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger16 = new Logger("ExportChat");
+  var logger17 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -7496,7 +7471,7 @@ ${sourceUrl}`;
   function ExportItem({ conversationId }) {
     const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
     return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => exportChat(conversationId).catch((e) => logger16.error("Failed to export chat", e)),
+      onSelect: () => exportChat(conversationId).catch((e) => logger17.error("Failed to export chat", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
@@ -7579,7 +7554,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/oneko/index.ts
-  var logger17 = new Logger("Oneko");
+  var logger18 = new Logger("Oneko");
   var ONEKO_SCRIPT = "https://raw.githubusercontent.com/adryd325/oneko.js/c4ee66353b11a44e4a5b7e914a81f8d33111555e/oneko.js";
   var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
   var stopped = false;
@@ -7601,7 +7576,7 @@ ${sourceUrl}`;
           el.remove();
           URL.revokeObjectURL(el.src);
         });
-      }).catch((e) => logger17.error("Failed to load oneko script", e));
+      }).catch((e) => logger18.error("Failed to load oneko script", e));
     },
     stop() {
       stopped = true;
@@ -7609,7 +7584,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/promptEnhancer/index.tsx
-  var logger18 = new Logger("PromptEnhancer");
+  var logger19 = new Logger("PromptEnhancer");
   var PLUGIN_NAME = "PromptEnhancer";
   var DEFAULT_INSTRUCTIONS = "Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler.";
   var settings10 = definePluginSettings({
@@ -7682,7 +7657,7 @@ Original prompt:
       }
       const improved = message.trim();
       if (convId) {
-        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger18.warn("Failed to delete throwaway conversation:", e));
+        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger19.warn("Failed to delete throwaway conversation:", e));
       }
       const editor = getEditor();
       if (!editor) {
@@ -7776,7 +7751,7 @@ button:has(> .void-rld-trigger) {
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
-  var logger19 = new Logger("RateLimitDisplay");
+  var logger20 = new Logger("RateLimitDisplay");
   var cl17 = classNameFactory("void-rld-");
   var MODES = ["auto", "fast", "expert", "heavy"];
   var store4 = createExternalStore();
@@ -7786,7 +7761,7 @@ button:has(> .void-rld-trigger) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
     } catch (e) {
-      logger19.warn("Failed to fetch rate limits for", mode, e);
+      logger20.warn("Failed to fetch rate limits for", mode, e);
       return null;
     }
   }
@@ -7825,7 +7800,7 @@ button:has(> .void-rld-trigger) {
     }, limited ? /* @__PURE__ */ React.createElement(ClockAlertIcon, {
       size: 20,
       className: cl17("icon-limited")
-    }) : /* @__PURE__ */ React.createElement(AccessibilityIcon, {
+    }) : /* @__PURE__ */ React.createElement(GaugeIcon, {
       size: 20
     }), /* @__PURE__ */ React.createElement(ButtonLabel, {
       mode
@@ -7968,21 +7943,19 @@ button:has(> .void-rld-trigger) {
   });
 
   // src/plugins/rocketAnim/index.tsx
-  var STYLE_KEY = "void-rocket-glow";
-  var GLOW_COLORS = { orange: "#FF5C00", blue: "#82B1F9" };
-  function syncGlow() {
-    const color = GLOW_COLORS[settings11.store.variant] ?? GLOW_COLORS.orange;
-    registerStyle(STYLE_KEY, `:root { --void-rocket-glow: ${color}; }`);
-  }
   var settings11 = definePluginSettings({
     variant: {
       type: 4 /* SELECT */,
       description: "Color variant for the rocket plume.",
-      onChange: syncGlow,
       options: [
         { label: "Orange", value: "orange", default: true },
         { label: "Blue", value: "blue" }
       ]
+    },
+    fullWidth: {
+      type: 3 /* BOOLEAN */,
+      description: "Expand the animation beyond the chat column to fill the full page width.",
+      default: false
     }
   });
   var rocketAnim_default = definePlugin({
@@ -7992,36 +7965,33 @@ button:has(> .void-rld-trigger) {
     settings: settings11,
     patches: [
       {
-        find: ["SUPERGROK_BRANDING_QUERY_BAR_ANIMATION_ENABLED", "glowBorderColor"],
+        find: ["useSuperGrokAnimations", "useRocketStore", "useSurveyLocation"],
         all: true,
-        replacement: [
-          {
-            match: /(\i)=\i\.SUPERGROK_BRANDING_QUERY_BAR_ANIMATION_ENABLED&&\(\i\|\|\i\)/g,
-            replace: "$1=!0"
-          },
-          {
-            match: /glowBorderColor:\i\?\i\?"#82B1F9":"#FF5C00":void 0/,
-            replace: 'glowBorderColor:"var(--void-rocket-glow)"'
-          }
-        ]
+        noWarn: true,
+        replacement: {
+          match: /(\i)=!!\(\i\.SUPERGROK_BRANDING_QUERY_BAR_ANIMATION_ENABLED&&\(\i\|\|\i\)\);return\{enabled:/,
+          replace: "$1=!0;return{enabled:"
+        }
       },
       {
-        find: ["u_isHeavy", "glowBorderColor"],
+        find: ["u_isHeavy", "isSuperGrokProUser"],
         replacement: {
           match: /\i&&\(0,(\i)\.jsx\)\((\i),\{isHeavy:\i\}\)/,
-          replace: "(0,$1.jsx)($2,{isHeavy:$self._isHeavy()})"
+          replace: "(0,$1.jsx)($2,{isHeavy:$self._isHeavy(),maxWidthClass:$self._maxWidth()})"
+        }
+      },
+      {
+        find: ["withRocketGlowBorder", "isSuperGrokProUser"],
+        all: true,
+        noWarn: true,
+        replacement: {
+          match: /withRocketGlowBorder:\i=!1\}=\i,.{0,60}\{isSuperGrokProUser:(\i)\}=\(0,(\i)\.useSubscriptions\)\(\)/,
+          replace: "$&;$1=$self._isHeavy()"
         }
       }
     ],
-    start() {
-      if (!GLOW_COLORS[settings11.store.variant])
-        settings11.store.variant = "orange";
-      syncGlow();
-    },
-    stop() {
-      unregisterStyle(STYLE_KEY);
-    },
-    _isHeavy: () => settings11.store.variant === "blue"
+    _isHeavy: () => settings11.store.variant === "blue",
+    _maxWidth: () => settings11.store.fullWidth ? "" : "max-w-breakout"
   });
 
   // src/plugins/starry/index.ts
@@ -8227,7 +8197,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [rocketAnim_default.name]: rocketAnim_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [consoleJanitor_default.name]: consoleJanitor_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [rocketAnim_default.name]: rocketAnim_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default };
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
@@ -8393,23 +8363,15 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger20 = new Logger("TurbopackPatcher", "#e78284");
+  var logger21 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var RETRY_DEBOUNCE_MS = 200;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function deferOrphanReport() {
-    const hasNonGlobal = patches.some((p) => !p.all);
-    if (!hasNonGlobal)
+    if (!patches.some((p) => !p.all))
       return;
-    const unsub = onModuleLoad(() => {
-      if (!patches.some((p) => !p.all)) {
-        unsub();
-        clearTimeout(timeout);
-      }
-    });
-    const timeout = setTimeout(() => {
-      unsub();
+    setTimeout(() => {
       reportOrphanedPatches();
       reportFailedFinders();
     }, ORPHAN_REPORT_DELAY_MS);
@@ -8430,7 +8392,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger20.info("All previously failed plugins started after late module load");
+          logger21.info("All previously failed plugins started after late module load");
         }
       }, RETRY_DEBOUNCE_MS);
     };
@@ -8445,7 +8407,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger20.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger21.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -8458,33 +8420,33 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       try {
         blacklistBadModules();
       } catch (e) {
-        logger20.error("blacklistBadModules failed:", e);
+        logger21.error("blacklistBadModules failed:", e);
       }
       try {
         _resolveReady();
       } catch (e) {
-        logger20.error("_resolveReady failed:", e);
+        logger21.error("_resolveReady failed:", e);
       }
       try {
         startAllPlugins("TurbopackReady" /* TurbopackReady */);
       } catch (e) {
-        logger20.error("startAllPlugins failed:", e);
+        logger21.error("startAllPlugins failed:", e);
       }
-      logger20.info(`${getModuleCache().size} modules loaded, ready`);
+      logger21.info(`${getModuleCache().size} modules loaded, ready`);
       try {
         retryFailedPlugins();
       } catch (e) {
-        logger20.error("retryFailedPlugins failed:", e);
+        logger21.error("retryFailedPlugins failed:", e);
       }
       try {
         deferOrphanReport();
       } catch (e) {
-        logger20.error("deferOrphanReport failed:", e);
+        logger21.error("deferOrphanReport failed:", e);
       }
       try {
         checkForUpdates();
       } catch (e) {
-        logger20.error("checkForUpdates failed:", e);
+        logger21.error("checkForUpdates failed:", e);
       }
     });
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
@@ -8499,22 +8461,44 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       try {
         registerPlugin(plugin);
       } catch (e) {
-        logger20.error("Failed to register plugin:", e);
+        logger21.error("Failed to register plugin:", e);
       }
     }
-    initPluginManager();
+    try {
+      initPluginManager();
+    } catch (e) {
+      logger21.error("initPluginManager failed:", e);
+    }
     try {
       patchTurbopack();
     } catch (e) {
-      logger20.error("Failed to patch Turbopack:", e);
+      logger21.error("Failed to patch Turbopack:", e);
     }
-    startAllPlugins("Init" /* Init */);
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */), { once: true });
-    } else {
-      startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */);
+    try {
+      startAllPlugins("Init" /* Init */);
+    } catch (e) {
+      logger21.error("startAllPlugins(Init) failed:", e);
     }
-    waitForModulesStable();
+    try {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          try {
+            startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */);
+          } catch (e) {
+            logger21.error("startAllPlugins(DOMContentLoaded) failed:", e);
+          }
+        }, { once: true });
+      } else {
+        startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */);
+      }
+    } catch (e) {
+      logger21.error("startAllPlugins(DOMContentLoaded) failed:", e);
+    }
+    try {
+      waitForModulesStable();
+    } catch (e) {
+      logger21.error("waitForModulesStable failed:", e);
+    }
   }
 
   // src/index.ts
