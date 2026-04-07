@@ -111,17 +111,17 @@ export default definePlugin({
         {
             find: "chat-markdown:a:link",
             all: true,
-            group: true,
-            replacement: [
-                {
-                    match: /target:"_blank",rel:"noopener noreferrer nofollow"/,
-                    replace: '$&,className:"void-colored-link"',
-                },
-                {
-                    match: /singleDollarTextMath:!1\}],(\i),(\i),(\i)\],\[\]\)/,
-                    replace: "singleDollarTextMath:!1}],$1,$2,$3,$self._remarkLinkify],[])",
-                },
-            ],
+            replacement: {
+                match: /target:"_blank",rel:"noopener noreferrer nofollow"/,
+                replace: '$&,className:"void-colored-link"',
+            },
+        },
+        {
+            find: "chat-markdown-load-third-party",
+            replacement: {
+                match: /singleDollarTextMath:!1\}],(\i),(\i),(\i)\],\[\]\)/,
+                replace: "singleDollarTextMath:!1}],$1,$2,$3,$self._remarkLinkify],[])",
+            },
         },
     ],
 
