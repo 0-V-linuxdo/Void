@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths: [package.json]
+  workflow_dispatch:
 
 concurrency:
   group: publish-firefox
@@ -29,7 +30,7 @@ jobs:
           git show HEAD~1:package.json > /tmp/prev.json 2>/dev/null || echo '{"version":""}' > /tmp/prev.json
           PREVIOUS=$(jq -r '.version' /tmp/prev.json)
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
-          if [ "$CURRENT" != "$PREVIOUS" ]; then
+          if [ "$CURRENT" != "$PREVIOUS" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
