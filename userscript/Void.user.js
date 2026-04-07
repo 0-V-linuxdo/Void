@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.8
+// @version      0.5.9
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.8 — A modification for grok.com
+ * Void v0.5.9 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -120,9 +120,11 @@
     getRuntimeModuleCache: () => getRuntimeModuleCache,
     getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry,
     getModuleCache: () => getModuleCache,
+    getFnSource: () => getFnSource,
     getAllStores: () => getAllStores,
     formatDuration: () => formatDuration,
     formatCountdown: () => formatCountdown,
+    fnSourceCache: () => fnSourceCache,
     findStoreLazy: () => findStoreLazy,
     findStore: () => findStore,
     findModuleId: () => findModuleId,
@@ -412,6 +414,17 @@
     return patterns.every((p) => matchesPattern(text, p));
   }
 
+  // src/turbopack/fnSource.ts
+  var fnSourceCache = new WeakMap;
+  function getFnSource(fn) {
+    let src = fnSourceCache.get(fn);
+    if (src === undefined) {
+      src = String(fn);
+      fnSourceCache.set(fn, src);
+    }
+    return src;
+  }
+
   // src/turbopack/types.ts
   var SYM_ORIGINAL = Symbol("Void.originalFactory");
   var SYM_PATCHED = Symbol("Void.patched");
@@ -463,15 +476,7 @@ ${sourceUrl}`;
     runtimeFallbacks: 0,
     patchedModules: new Set
   };
-  var factoryStringCache = new WeakMap;
-  function getFactorySource(factory) {
-    let source = factoryStringCache.get(factory);
-    if (source === undefined) {
-      source = String(factory);
-      factoryStringCache.set(factory, source);
-    }
-    return source;
-  }
+  var getFactorySource = getFnSource;
   function getModuleCache() {
     return moduleCache;
   }
@@ -766,7 +771,7 @@ ${sourceUrl}`;
         } catch (e) {
           logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
         }
-        factoryStringCache.delete(factory);
+        fnSourceCache.delete(factory);
       }
     };
     wrapped.toString = () => getFactorySource(factory);
@@ -860,13 +865,15 @@ ${sourceUrl}`;
     return false;
   }
   function patchReport() {
-    const unmatched = patches.filter((p) => !p.all);
-    return {
-      stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] },
-      results: patchResults,
-      orphaned: unmatched.filter((p) => !isFactoryPending(p)).map((p) => ({ plugin: p.plugin, find: String(p.find) })),
-      pending: unmatched.filter((p) => isFactoryPending(p)).map((p) => ({ plugin: p.plugin, find: String(p.find) }))
-    };
+    const orphaned = [];
+    const pending = [];
+    for (const p of patches) {
+      if (p.all)
+        continue;
+      const entry = { plugin: p.plugin, find: String(p.find) };
+      (isFactoryPending(p) ? pending : orphaned).push(entry);
+    }
+    return { stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] }, results: patchResults, orphaned, pending };
   }
   function reportOrphanedPatches() {
     const orphaned = patches.filter((p) => !p.all && !isFactoryPending(p));
@@ -928,7 +935,7 @@ ${sourceUrl}`;
           break;
       }
       if (valid < 3) {
-        logger.warn("Captured Map doesn't look like a factory registry, discarding");
+        logger.debug("Captured Map doesn't look like a factory registry, discarding");
         return null;
       }
     }
@@ -1042,10 +1049,8 @@ ${sourceUrl}`;
       };
     }
   }
-
   // src/turbopack/turbopack.ts
   var logger2 = new Logger("TurbopackFinder", "#a6d189");
-  var fnSourceCache = new WeakMap;
   var zustandStoreCache = new Map;
   var finderRegistry = null;
   function trackFinder(type, args, resolve) {
@@ -1070,14 +1075,6 @@ ${sourceUrl}`;
     }
     if (failed.length)
       logger2.warn(`${failed.length} finder(s) resolved to nothing:`, failed);
-  }
-  function getFnSource(fn) {
-    let src = fnSourceCache.get(fn);
-    if (src === undefined) {
-      src = String(fn);
-      fnSourceCache.set(fn, src);
-    }
-    return src;
   }
   function toZustandHookName(name) {
     if (name.startsWith("use"))
@@ -1198,30 +1195,18 @@ ${sourceUrl}`;
     trackFinder("find", [String(filter)], () => searchCache(filter));
     return proxyLazy(() => searchCache(filter));
   }
-  function findByProps(...props) {
-    return find(filters.byProps(...props));
+  function makeFinder(name, filterFactory) {
+    const finder = (...args) => find(filterFactory(...args));
+    const lazy = (...args) => {
+      const resolve = () => finder(...args);
+      trackFinder(name, args.map(String), resolve);
+      return proxyLazy(resolve);
+    };
+    return [finder, lazy];
   }
-  function findByPropsLazy(...props) {
-    const resolve = () => findByProps(...props);
-    trackFinder("findByProps", props, resolve);
-    return proxyLazy(resolve);
-  }
-  function findByCode(...code) {
-    return find(filters.byCode(...code));
-  }
-  function findByCodeLazy(...code) {
-    const resolve = () => findByCode(...code);
-    trackFinder("findByCode", code.map(String), resolve);
-    return proxyLazy(resolve);
-  }
-  function findByDisplayName(name) {
-    return find(filters.byDisplayName(name));
-  }
-  function findByDisplayNameLazy(name) {
-    const resolve = () => findByDisplayName(name);
-    trackFinder("findByDisplayName", [name], resolve);
-    return proxyLazy(resolve);
-  }
+  var [findByProps, findByPropsLazy] = makeFinder("findByProps", filters.byProps);
+  var [findByCode, findByCodeLazy] = makeFinder("findByCode", filters.byCode);
+  var [findByDisplayName, findByDisplayNameLazy] = makeFinder("findByDisplayName", filters.byDisplayName);
   function findComponentByCode(...code) {
     return find(filters.componentByCode(...code));
   }
@@ -1737,6 +1722,8 @@ ${sourceUrl}`;
     styleRegistry.delete(name);
   }
   var classNameFactory = (prefix = "") => (...args) => {
+    if (args.length === 1 && typeof args[0] === "string")
+      return prefix + args[0];
     const classNames = new Set;
     for (const arg of args) {
       if (typeof arg === "string")
@@ -1771,8 +1758,9 @@ ${sourceUrl}`;
       return match;
     if (isString)
       return canonSource;
-    const canonRegex = new RegExp(canonSource, match.flags);
-    canonRegex.toString = match.toString.bind(match);
+    const re = match;
+    const canonRegex = new RegExp(canonSource, re.flags);
+    canonRegex.toString = re.toString.bind(re);
     return canonRegex;
   }
   function canonicalizeReplace(replace, pluginPath) {
@@ -1858,6 +1846,9 @@ ${sourceUrl}`;
     });
     return (name) => LazyComponent(name, () => mod?.[name] ?? findExportedComponent(name));
   }
+  function lazyExport(name) {
+    return LazyComponent(name, () => findExportedComponent(name));
+  }
   var buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
   var Button = buttonLazy("Button");
   var ButtonWithTooltip = buttonLazy("ButtonWithTooltip");
@@ -1903,24 +1894,24 @@ ${sourceUrl}`;
   var HoverCard = hoverCardLazy("HoverCard");
   var HoverCardContent = hoverCardLazy("HoverCardContent");
   var HoverCardTrigger = hoverCardLazy("HoverCardTrigger");
-  var Input = LazyComponent("Input", () => findExportedComponent("Input"));
-  var Label = LazyComponent("Label", () => findExportedComponent("Label"));
+  var Input = lazyExport("Input");
+  var Label = lazyExport("Label");
   var MotionDiv = LazyComponent("MotionDiv", () => findByProps("motion")?.motion?.div);
-  var Portal = LazyComponent("Portal", () => findExportedComponent("Portal"));
+  var Portal = lazyExport("Portal");
   var selectLazy = createModuleLazy("Select", "SelectContent", "SelectTrigger");
   var Select = selectLazy("Select");
   var SelectTrigger = selectLazy("SelectTrigger");
   var SelectContent = selectLazy("SelectContent");
   var SelectItem = selectLazy("SelectItem");
   var SelectValue = selectLazy("SelectValue");
-  var Separator = LazyComponent("Separator", () => findExportedComponent("Separator"));
+  var Separator = lazyExport("Separator");
   var settingsLazy = createModuleLazy("SettingsRow", "SettingsTitle", "SettingsDescription");
   var SettingsRow = settingsLazy("SettingsRow");
   var SettingsTitle = settingsLazy("SettingsTitle");
   var SettingsDescription = settingsLazy("SettingsDescription");
-  var Skeleton = LazyComponent("Skeleton", () => findExportedComponent("Skeleton"));
-  var Slider = LazyComponent("Slider", () => findExportedComponent("Slider"));
-  var Switch = LazyComponent("Switch", () => findExportedComponent("Switch"));
+  var Skeleton = lazyExport("Skeleton");
+  var Slider = lazyExport("Slider");
+  var Switch = lazyExport("Switch");
   var tableLazy = createModuleLazy("Table", "TableBody", "TableCell");
   var Table = tableLazy("Table");
   var TableBody = tableLazy("TableBody");
@@ -1933,10 +1924,10 @@ ${sourceUrl}`;
   var TooltipTrigger = tooltipLazy("TooltipTrigger");
   var TooltipContent = tooltipLazy("TooltipContent");
   var TooltipProvider = tooltipLazy("TooltipProvider");
-  var Textarea = LazyComponent("Textarea", () => findExportedComponent("Textarea"));
-  var Checkbox = LazyComponent("Checkbox", () => findExportedComponent("Checkbox"));
-  var Spinner = LazyComponent("Spinner", () => findExportedComponent("Spinner"));
-  var Avatar = LazyComponent("Avatar", () => findExportedComponent("Avatar"));
+  var Textarea = lazyExport("Textarea");
+  var Checkbox = lazyExport("Checkbox");
+  var Spinner = lazyExport("Spinner");
+  var Avatar = lazyExport("Avatar");
   var popoverLazy = createModuleLazy("Popover", "PopoverContent", "PopoverTrigger");
   var Popover = popoverLazy("Popover");
   var PopoverTrigger = popoverLazy("PopoverTrigger");
@@ -1959,7 +1950,7 @@ ${sourceUrl}`;
   var CommandItem = commandLazy("CommandItem");
   var CommandGroup = commandLazy("CommandGroup");
   var CommandEmpty = commandLazy("CommandEmpty");
-  var Badge = LazyComponent("Badge", () => findExportedComponent("Badge"));
+  var Badge = lazyExport("Badge");
   var alertDialogLazy = createModuleLazy("AlertDialog", "AlertDialogContent", "AlertDialogAction");
   var AlertDialog = alertDialogLazy("AlertDialog");
   var AlertDialogTrigger = alertDialogLazy("AlertDialogTrigger");
@@ -1974,7 +1965,7 @@ ${sourceUrl}`;
   var ToggleGroup = toggleGroupLazy("ToggleGroup");
   var ToggleGroupItem = toggleGroupLazy("ToggleGroupItem");
   var SidebarComponents = findByPropsLazy("Sidebar", "SidebarContent", "SidebarProvider");
-  var AnimatePresence = LazyComponent("AnimatePresence", () => findExportedComponent("AnimatePresence"));
+  var AnimatePresence = lazyExport("AnimatePresence");
 
   // src/components/ConfirmDialog.tsx
   function ConfirmDialog({ open, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
@@ -2410,10 +2401,23 @@ ${sourceUrl}`;
 
   // src/components/Paragraph.tsx
   function Paragraph({ color = "secondary", className, children, ...props }) {
-    return /* @__PURE__ */ React.createElement("p", {
-      className: ClassNames.cn("text-xs text-pretty", colorClasses[color], className),
+    return /* @__PURE__ */ React.createElement(Text, {
+      as: "p",
+      size: "xs",
+      color,
+      className: ClassNames.cn("text-pretty", className),
       ...props
     }, children);
+  }
+  function SectionHeader({ title, description, className }) {
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0",
+      className
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
   // src/components/ChatBarButton.tsx
   var TOOLTIP_PROPS = { delayDuration: 600 };
@@ -2651,6 +2655,20 @@ ${sourceUrl}`;
       return list.filter((item) => getKey(item).toLowerCase().includes(q));
     }, [list, search2, getKey]);
   }
+  function useAsyncAction(fn) {
+    const [busy, setBusy] = useState(false);
+    const fnRef = useRef(fn);
+    fnRef.current = fn;
+    const execute = useCallback(async () => {
+      setBusy(true);
+      try {
+        await fnRef.current();
+      } finally {
+        setBusy(false);
+      }
+    }, []);
+    return [busy, execute];
+  }
 
   // src/api/ChatBarButtons.tsx
   var buttons = new Map;
@@ -2837,32 +2855,23 @@ ${sourceUrl}`;
       this.proxyCache.set(target, proxy);
       return proxy;
     }
-    notifyListeners(path) {
-      for (const l of this.globalListeners) {
+    invokeListeners(listeners2, path) {
+      for (const l of listeners2) {
         try {
           l(path);
         } catch (e) {
           logger5.error("Settings listener error:", e);
         }
       }
+    }
+    notifyListeners(path) {
+      this.invokeListeners(this.globalListeners, path);
       const listeners2 = this.pathListeners.get(path);
       if (listeners2)
-        for (const l of listeners2) {
-          try {
-            l(path);
-          } catch (e) {
-            logger5.error("Settings listener error:", e);
-          }
-        }
+        this.invokeListeners(listeners2, path);
       for (const [prefix, set] of this.prefixListeners) {
         if (path.startsWith(prefix))
-          for (const l of set) {
-            try {
-              l(path);
-            } catch (e) {
-              logger5.error("Settings listener error:", e);
-            }
-          }
+          this.invokeListeners(set, path);
       }
       this.scheduleSave();
     }
@@ -2895,27 +2904,28 @@ ${sourceUrl}`;
     removeGlobalChangeListener(listener) {
       this.globalListeners.delete(listener);
     }
+    addToMap(map, key, listener) {
+      mapGetOrCreate(map, key, () => new Set).add(listener);
+    }
+    removeFromMap(map, key, listener) {
+      const set = map.get(key);
+      if (set) {
+        set.delete(listener);
+        if (!set.size)
+          map.delete(key);
+      }
+    }
     addChangeListener(path, listener) {
-      mapGetOrCreate(this.pathListeners, path, () => new Set).add(listener);
+      this.addToMap(this.pathListeners, path, listener);
     }
     removeChangeListener(path, listener) {
-      const set = this.pathListeners.get(path);
-      if (set) {
-        set.delete(listener);
-        if (!set.size)
-          this.pathListeners.delete(path);
-      }
+      this.removeFromMap(this.pathListeners, path, listener);
     }
     addPrefixChangeListener(prefix, listener) {
-      mapGetOrCreate(this.prefixListeners, prefix, () => new Set).add(listener);
+      this.addToMap(this.prefixListeners, prefix, listener);
     }
     removePrefixChangeListener(prefix, listener) {
-      const set = this.prefixListeners.get(prefix);
-      if (set) {
-        set.delete(listener);
-        if (!set.size)
-          this.prefixListeners.delete(prefix);
-      }
+      this.removeFromMap(this.prefixListeners, prefix, listener);
     }
   }
 
@@ -3072,17 +3082,12 @@ ${sourceUrl}`;
         const forceUpdate = useForceUpdater();
         useEffect(() => {
           const prefix = `plugins.${_pluginName}`;
-          if (keys?.length) {
-            const paths = keys.map((k) => `${prefix}.${String(k)}`);
-            const listener = (path) => {
-              if (paths.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
-                forceUpdate();
-            };
-            SettingsStore3.addPrefixChangeListener(prefix, listener);
-            return () => SettingsStore3.removePrefixChangeListener(prefix, listener);
-          }
-          SettingsStore3.addPrefixChangeListener(prefix, forceUpdate);
-          return () => SettingsStore3.removePrefixChangeListener(prefix, forceUpdate);
+          const listener = keys?.length ? ((paths) => (path) => {
+            if (paths.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
+              forceUpdate();
+          })(keys.map((k) => `${prefix}.${String(k)}`)) : forceUpdate;
+          SettingsStore3.addPrefixChangeListener(prefix, listener);
+          return () => SettingsStore3.removePrefixChangeListener(prefix, listener);
         }, []);
         return definedSettings.store;
       },
@@ -3271,38 +3276,30 @@ ${sourceUrl}`;
     } catch (e) {
       logger7.error(`Error in ${plugin.name}.stop():`, e);
     }
-    let failed = false;
     runUnsubs(plugin.name);
-    try {
-      removeChatBarButton(plugin.name);
-    } catch (e) {
-      failed = true;
-      logger7.error(`Failed to remove chat bar button for ${plugin.name}:`, e);
-    }
-    try {
-      removePluginContextMenuItems(plugin);
-    } catch (e) {
-      failed = true;
-      logger7.error(`Failed to remove context menu items for ${plugin.name}:`, e);
-    }
-    try {
-      if (plugin.managedStyle && !plugin.patches?.length)
-        disableStyle(plugin.managedStyle);
-    } catch (e) {
-      failed = true;
-      logger7.error(`Failed to disable style for ${plugin.name}:`, e);
-    }
-    try {
-      if (plugin.cleanupSelectors) {
-        for (const selector of plugin.cleanupSelectors) {
-          for (const el of document.querySelectorAll(selector))
-            el.remove();
-        }
+    const tryCleanup = (fn) => {
+      try {
+        fn();
+        return false;
+      } catch (e) {
+        logger7.error(`Cleanup error in ${plugin.name}:`, e);
+        return true;
       }
-    } catch (e) {
-      failed = true;
-      logger7.error(`Failed to cleanup selectors for ${plugin.name}:`, e);
-    }
+    };
+    const failed = [
+      tryCleanup(() => removeChatBarButton(plugin.name)),
+      tryCleanup(() => removePluginContextMenuItems(plugin)),
+      tryCleanup(() => {
+        if (plugin.managedStyle && !plugin.patches?.length)
+          disableStyle(plugin.managedStyle);
+      }),
+      tryCleanup(() => {
+        if (plugin.cleanupSelectors)
+          for (const s of plugin.cleanupSelectors)
+            for (const el of document.querySelectorAll(s))
+              el.remove();
+      })
+    ].some(Boolean);
     plugin.started = false;
     if (failed)
       logger7.error(`Plugin ${plugin.name} stopped with errors`);
@@ -3543,11 +3540,11 @@ ${sourceUrl}`;
       const { version: latest } = await resp.json();
       if (!latest || !SEMVER_RE.test(latest))
         return;
-      if (!isNewer(latest, "0.5.8")) {
-        logger8.info(`Up to date (${"0.5.8"})`);
+      if (!isNewer(latest, "0.5.9")) {
+        logger8.info(`Up to date (${"0.5.9"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.8"} → ${latest}`);
+      logger8.info(`Update available: ${"0.5.9"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3679,6 +3676,10 @@ ${sourceUrl}`;
     }
     return `void-theme-${(hash >>> 0).toString(36)}`;
   }
+  function registerDisabledStyle(id, css) {
+    registerStyle(id, css);
+    disableStyle(id);
+  }
   function parseThemeMeta(css) {
     const header = css.match(/\/\*\*[\s\S]*?\*\//)?.[0] ?? "";
     return {
@@ -3694,30 +3695,23 @@ ${sourceUrl}`;
   function isThemesEnabled() {
     return getSettingsPluginData().themesEnabled !== false;
   }
+  function toggleThemeStyles(enabled, filter) {
+    const toggle = enabled ? enableStyle : disableStyle;
+    for (const t of getThemes()) {
+      if (t.enabled && (!filter || filter(t)))
+        toggle(themeStyleId(t.url));
+    }
+  }
   function setThemesEnabled(enabled) {
     updateSettingsPluginData({ themesEnabled: enabled });
-    for (const theme of getThemes()) {
-      if (theme.enabled) {
-        if (enabled)
-          enableStyle(themeStyleId(theme.url));
-        else
-          disableStyle(themeStyleId(theme.url));
-      }
-    }
+    toggleThemeStyles(enabled);
   }
   function isOnlineThemesEnabled() {
     return getSettingsPluginData().onlineThemesEnabled !== false;
   }
   function setOnlineThemesEnabled(enabled) {
     updateSettingsPluginData({ onlineThemesEnabled: enabled });
-    for (const theme of getThemes()) {
-      if (theme.local || !theme.enabled)
-        continue;
-      if (enabled)
-        enableStyle(themeStyleId(theme.url));
-      else
-        disableStyle(themeStyleId(theme.url));
-    }
+    toggleThemeStyles(enabled, (t) => !t.local);
   }
   function validateThemeUrl(url) {
     let parsed;
@@ -3753,9 +3747,7 @@ ${sourceUrl}`;
       description: meta.description,
       enabled: false
     };
-    const styleId = themeStyleId(url);
-    registerStyle(styleId, css);
-    disableStyle(styleId);
+    registerDisabledStyle(themeStyleId(url), css);
     updateSettingsPluginData({ themes: [...getThemes(), theme] });
     logger9.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
@@ -3776,9 +3768,7 @@ ${sourceUrl}`;
       local: true,
       css
     };
-    const styleId = themeStyleId(id);
-    registerStyle(styleId, css);
-    disableStyle(styleId);
+    registerDisabledStyle(themeStyleId(id), css);
     updateSettingsPluginData({ themes: [...getThemes(), theme] });
     logger9.info(`Added local theme "${theme.name}"`);
     return theme;
@@ -3823,6 +3813,7 @@ ${sourceUrl}`;
         registerStyle(id, theme.css);
       return;
     }
+    const isStillEnabled = () => getThemes().find((t) => t.url === url)?.enabled && isThemesEnabled();
     let css;
     try {
       const resp = await fetchExternal(url);
@@ -3830,16 +3821,14 @@ ${sourceUrl}`;
         logger9.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
         return;
       }
-      const current = getThemes().find((t) => t.url === url);
-      if (!current?.enabled || !isThemesEnabled())
+      if (!isStillEnabled())
         return;
       css = await resp.text();
     } catch (e) {
       logger9.warn("Failed to fetch theme CSS:", url, e);
       return;
     }
-    const recheck = getThemes().find((t) => t.url === url);
-    if (!recheck?.enabled || !isThemesEnabled())
+    if (!isStillEnabled())
       return;
     registerStyle(id, css);
   }
@@ -4119,13 +4108,10 @@ ${sourceUrl}`;
       alignItems: "center",
       justifyContent: "space-between",
       className: cl3("header")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "Quick CSS"), /* @__PURE__ */ React.createElement(Paragraph, null, "Custom CSS applied live as you type.")), /* @__PURE__ */ React.createElement(Switch, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Quick CSS",
+      description: "Custom CSS applied live as you type."
+    }), /* @__PURE__ */ React.createElement(Switch, {
       checked: enabled,
       onCheckedChange: handleToggle
     })), /* @__PURE__ */ React.createElement("div", {
@@ -4383,19 +4369,26 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/pluginBadges.tsx
+  function TooltipIcon({ icon: Icon, tooltip, className, as = "span" }) {
+    return /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as,
+      className
+    }, /* @__PURE__ */ React.createElement(Icon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, tooltip));
+  }
   var badges = [
     { key: "dev", icon: GhostFilledIcon, tooltip: "Dev Only" },
     { key: "chrome", icon: ChromiumIcon, tooltip: "Chromium Only" },
     { key: "preview", icon: TelescopeIcon, tooltip: "Preview plugin, may be removed once Grok ships this." }
   ];
   function PluginBadges({ plugin, className }) {
-    return badges.filter((b) => plugin[b.key]).map((b) => /* @__PURE__ */ React.createElement(Tooltip, {
-      key: b.key
-    }, /* @__PURE__ */ React.createElement(TooltipTrigger, {
-      asChild: true
-    }, /* @__PURE__ */ React.createElement("span", {
+    return badges.filter((b) => plugin[b.key]).map((b) => /* @__PURE__ */ React.createElement(TooltipIcon, {
+      key: b.key,
+      icon: b.icon,
+      tooltip: b.tooltip,
       className
-    }, /* @__PURE__ */ React.createElement(b.icon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, b.tooltip)));
+    }));
   }
 
   // src/components/settings/utils.ts
@@ -4428,17 +4421,15 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(BaseCard, {
       className: plugin.required ? cl5("required") : crashed ? cl5("crashed") : undefined,
       name,
-      badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
-        asChild: true
-      }, /* @__PURE__ */ React.createElement(Text, {
-        as: "span",
+      badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(TooltipIcon, {
+        icon: TriangleAlert,
+        tooltip: "This plugin failed to start",
         className: cl5("crashed-icon")
-      }, /* @__PURE__ */ React.createElement(TriangleAlert, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin failed to start")), plugin.required && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
-        asChild: true
-      }, /* @__PURE__ */ React.createElement(Text, {
-        as: "span",
+      }), plugin.required && /* @__PURE__ */ React.createElement(TooltipIcon, {
+        icon: CircleAlertIcon,
+        tooltip: "This plugin is required for Void to work",
         className: cl5("required-icon")
-      }, /* @__PURE__ */ React.createElement(CircleAlertIcon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, "This plugin is required for Void to work")), /* @__PURE__ */ React.createElement(PluginBadges, {
+      }), /* @__PURE__ */ React.createElement(PluginBadges, {
         plugin,
         className: cl5("badge")
       }), isNewPlugin(name) && /* @__PURE__ */ React.createElement(Badge, {
@@ -4655,6 +4646,24 @@ ${sourceUrl}`;
     });
   }
 
+  // src/components/settings/tabs/VoidDialogShell.tsx
+  function VoidDialogShell({ title, subtitle, children }) {
+    return /* @__PURE__ */ React.createElement(DialogContent, {
+      className: "void-dialog-content",
+      "aria-describedby": undefined
+    }, /* @__PURE__ */ React.createElement(DialogClose, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Close",
+      className: "void-dialog-close"
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
+      className: "void-dialog-header"
+    }, /* @__PURE__ */ React.createElement(DialogTitle, null, title), subtitle && /* @__PURE__ */ React.createElement(Paragraph, null, subtitle)), children);
+  }
+
   // src/components/settings/tabs/PluginDialog.tsx
   var cl7 = classNameFactory("void-plugin-dialog-");
   function PluginDialog({ plugin, open: open2, onClose }) {
@@ -4674,20 +4683,10 @@ ${sourceUrl}`;
         if (!v)
           onClose();
       }
-    }, /* @__PURE__ */ React.createElement(DialogContent, {
-      className: "void-dialog-content",
-      "aria-describedby": undefined
-    }, /* @__PURE__ */ React.createElement(DialogClose, {
-      asChild: true
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "square",
-      "aria-label": "Close",
-      className: "void-dialog-close"
-    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
-      className: "void-dialog-header"
-    }, /* @__PURE__ */ React.createElement(DialogTitle, null, plugin.name), plugin.description && /* @__PURE__ */ React.createElement(Paragraph, null, plugin.description)), /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(VoidDialogShell, {
+      title: plugin.name,
+      subtitle: plugin.description
+    }, /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -4795,14 +4794,10 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1.5rem"
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0",
-      className: "void-tab-section"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "Plugins"), /* @__PURE__ */ React.createElement(Paragraph, null, "Pick which plugins to use. Some need a page reload to kick in.")), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Plugins",
+      description: "Pick which plugins to use. Some need a page reload to kick in."
+    }), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       className: cl8("reload-banner")
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -4929,6 +4924,17 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/ThemeCard.tsx
+  function IconButton({ icon: Icon, label, onClick }) {
+    return /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      "aria-label": label,
+      onClick
+    }, /* @__PURE__ */ React.createElement(Icon, {
+      size: 14
+    }));
+  }
   var logger10 = new Logger("ThemeCard");
   var cl9 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, globalEnabled, onRemove, onToggle, onEdit }) {
@@ -4944,33 +4950,21 @@ ${sourceUrl}`;
       name: theme.name ?? theme.url,
       nameClassName: cl9("name"),
       description: theme.description,
-      controls: /* @__PURE__ */ React.createElement(React.Fragment, null, theme.local ? /* @__PURE__ */ React.createElement(Button, {
-        variant: "tertiary",
-        size: "xs",
-        shape: "square",
-        "aria-label": "Edit",
+      controls: /* @__PURE__ */ React.createElement(React.Fragment, null, theme.local ? /* @__PURE__ */ React.createElement(IconButton, {
+        icon: PencilIcon,
+        label: "Edit",
         onClick: onEdit
-      }, /* @__PURE__ */ React.createElement(PencilIcon, {
-        size: 14
-      })) : /* @__PURE__ */ React.createElement(Button, {
-        variant: "tertiary",
-        size: "xs",
-        shape: "square",
-        "aria-label": "Copy URL",
+      }) : /* @__PURE__ */ React.createElement(IconButton, {
+        icon: CopyIcon,
+        label: "Copy URL",
         onClick: () => {
           copyToClipboard(theme.url).catch((e) => logger10.error("Failed to copy URL:", e));
         }
-      }, /* @__PURE__ */ React.createElement(CopyIcon, {
-        size: 14
-      })), /* @__PURE__ */ React.createElement(Button, {
-        variant: "tertiary",
-        size: "xs",
-        shape: "square",
-        "aria-label": "Remove",
+      }), /* @__PURE__ */ React.createElement(IconButton, {
+        icon: Trash2Icon,
+        label: "Remove",
         onClick: () => onRemove(theme.url)
-      }, /* @__PURE__ */ React.createElement(Trash2Icon, {
-        size: 14
-      })), /* @__PURE__ */ React.createElement(Switch, {
+      }), /* @__PURE__ */ React.createElement(Switch, {
         checked: theme.enabled,
         disabled: !globalEnabled,
         onCheckedChange: handleToggle
@@ -5011,20 +5005,9 @@ ${sourceUrl}`;
         if (!v)
           onClose();
       }
-    }, /* @__PURE__ */ React.createElement(DialogContent, {
-      className: "void-dialog-content",
-      "aria-describedby": undefined
-    }, /* @__PURE__ */ React.createElement(DialogClose, {
-      asChild: true
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "square",
-      "aria-label": "Close",
-      className: "void-dialog-close"
-    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
-      className: "void-dialog-header"
-    }, /* @__PURE__ */ React.createElement(DialogTitle, null, theme ? "Edit Local Theme" : "New Local Theme")), /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(VoidDialogShell, {
+      title: theme ? "Edit Local Theme" : "New Local Theme"
+    }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5074,6 +5057,7 @@ ${sourceUrl}`;
     const [themes, setThemes] = useState(getThemes);
     const [localDialogOpen, setLocalDialogOpen] = useState(false);
     const [editingTheme, setEditingTheme] = useState();
+    const refreshThemes = () => setThemes(getThemes());
     const visible = useMemo(() => {
       switch (filter) {
         case "enabled":
@@ -5092,7 +5076,7 @@ ${sourceUrl}`;
     const handleOnlineToggle = (checked) => {
       setOnlineEnabled(checked);
       setOnlineThemesEnabled(checked);
-      setThemes(getThemes());
+      refreshThemes();
     };
     const handleAdd = async () => {
       const trimmed = url.trim();
@@ -5103,7 +5087,7 @@ ${sourceUrl}`;
       try {
         await addTheme(trimmed);
         setUrl("");
-        setThemes(getThemes());
+        refreshThemes();
       } catch (e) {
         setError(errorMessage(e));
       } finally {
@@ -5117,7 +5101,7 @@ ${sourceUrl}`;
         return;
       removeTheme(removeUrl);
       setRemoveUrl(null);
-      setThemes(getThemes());
+      refreshThemes();
     };
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
@@ -5126,13 +5110,10 @@ ${sourceUrl}`;
       alignItems: "center",
       justifyContent: "space-between",
       className: "void-tab-section"
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "Online Themes"), /* @__PURE__ */ React.createElement(Paragraph, null, "Allow loading themes from external URLs. Disable to only use local themes.")), /* @__PURE__ */ React.createElement(Switch, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Online Themes",
+      description: "Allow loading themes from external URLs. Disable to only use local themes."
+    }), /* @__PURE__ */ React.createElement(Switch, {
       checked: onlineEnabled,
       onCheckedChange: handleOnlineToggle
     })), /* @__PURE__ */ React.createElement(Flex, {
@@ -5174,17 +5155,14 @@ ${sourceUrl}`;
     }), " Local")), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       className: cl10("add-error")
-    }, error)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
+    }, error)), themes.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.375rem",
       className: "void-tab-section"
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "Installed Themes"), /* @__PURE__ */ React.createElement(Paragraph, null, "Re-fetched every page load.")), /* @__PURE__ */ React.createElement(Paragraph, null, `${pluralize(themes.length, "theme")} installed · ${themes.filter((t) => t.enabled).length} enabled`)), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Installed Themes",
+      description: "Re-fetched every page load."
+    }), /* @__PURE__ */ React.createElement(Paragraph, null, `${pluralize(themes.length, "theme")} installed · ${themes.filter((t) => t.enabled).length} enabled`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem",
       className: "void-tab-section"
@@ -5209,7 +5187,7 @@ ${sourceUrl}`;
       value: "online"
     }, "Online"), /* @__PURE__ */ React.createElement(SelectItem, {
       value: "local"
-    }, "Local")))), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
+    }, "Local"))))), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)",
       className: "void-tab-section"
     }, filtered.map((t) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
@@ -5219,7 +5197,7 @@ ${sourceUrl}`;
       theme: t,
       globalEnabled: !!t.local || onlineEnabled,
       onRemove: setRemoveUrl,
-      onToggle: () => setThemes(getThemes()),
+      onToggle: () => refreshThemes(),
       onEdit: t.local ? () => {
         setEditingTheme(t);
         setLocalDialogOpen(true);
@@ -5246,7 +5224,7 @@ ${sourceUrl}`;
       open: localDialogOpen,
       onClose: () => setLocalDialogOpen(false),
       theme: editingTheme,
-      onSave: () => setThemes(getThemes())
+      onSave: () => refreshThemes()
     }));
   }
 
@@ -5510,14 +5488,11 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem"
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0",
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Experiments",
+      description: "Toggle unreleased Grok features. These are experimental and may break things.",
       className: cl11("section")
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "Experiments"), /* @__PURE__ */ React.createElement(Paragraph, null, "Toggle unreleased Grok features. These are experimental and may break things.")), /* @__PURE__ */ React.createElement(Card, {
+    }), /* @__PURE__ */ React.createElement(Card, {
       variant: "ghost",
       className: cl11("warning")
     }, /* @__PURE__ */ React.createElement(Flex, {
@@ -5640,12 +5615,10 @@ ${sourceUrl}`;
   function getVisibleTabs() {
     return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
   }
-  function Dot() {
-    return /* @__PURE__ */ React.createElement(Text, {
-      as: "span",
-      color: "secondary"
-    }, "•");
-  }
+  var Dot = () => /* @__PURE__ */ React.createElement(Text, {
+    as: "span",
+    color: "secondary"
+  }, "•");
   function VersionLink({ href, children }) {
     return /* @__PURE__ */ React.createElement("a", {
       href,
@@ -5670,9 +5643,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"ecb4458"}`
-    }, `(${"ecb4458"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8c2c65b"}`
+    }, `(${"8c2c65b"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5724,19 +5697,15 @@ ${sourceUrl}`;
     }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       key: name,
       onSelect: () => openPluginSettings(name)
-    }, name)))), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => openSettingsTab("void_themes_tab")
-    }, /* @__PURE__ */ React.createElement(PaletteIcon, {
-      className: cl12("menu-icon")
-    }), "Themes"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => openSettingsTab("void_css_tab")
-    }, /* @__PURE__ */ React.createElement(BracesIcon, {
-      className: cl12("menu-icon")
-    }), "Quick CSS"), isPluginEnabled("Experiments") && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => openSettingsTab("void_experiments_tab")
-    }, /* @__PURE__ */ React.createElement(TestTubeIcon, {
-      className: cl12("menu-icon")
-    }), "Experiments")));
+    }, name)))), getVisibleTabs().filter((t) => t.id !== "void_plugins_tab").map((t) => {
+      const Icon = t.icon;
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+        key: t.id,
+        onSelect: () => openSettingsTab(t.id)
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl12("menu-icon")
+      }), t.name);
+    })));
   }
   var settings_default = definePlugin({
     name: "Settings",
@@ -5877,15 +5846,16 @@ ${sourceUrl}`;
   }
 
   // src/plugins/_api/chatBarButtons/index.tsx
+  function Buttons() {
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(VoidChatBarButtons, null), /* @__PURE__ */ React.createElement(ModalContainer, null));
+  }
   var chatBarButtons_default = definePlugin({
     name: "ChatBarButtonAPI",
     description: "Adds buttons to the chat input bar.",
     authors: [Devs.Prism],
     required: true,
     hidden: true,
-    renderButtons() {
-      return /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VoidChatBarButtons, null), /* @__PURE__ */ React.createElement(ModalContainer, null));
-    },
+    renderButtons: ErrorBoundary.wrap(Buttons),
     patches: [
       {
         find: "ImagineSelector,{iconOnlyTrigger",
@@ -6439,17 +6409,9 @@ ${sourceUrl}`;
   }
   function DownloadAllButton() {
     const isFavorites = useFavoritesPage();
-    const [loading, setLoading] = useState(false);
     const favorites = MediaStore.useMediaStore((s) => s.favoritesList);
     const visibleCount = getVisibleIds(favorites).length;
-    const onClick = useCallback(async () => {
-      setLoading(true);
-      try {
-        await downloadAllFavorites();
-      } finally {
-        setLoading(false);
-      }
-    }, []);
+    const [loading, onClick] = useAsyncAction(() => downloadAllFavorites());
     if (!isFavorites)
       return null;
     return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
@@ -6474,7 +6436,6 @@ ${sourceUrl}`;
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteAllOpen, setDeleteAllOpen] = useState(false);
     const [upscaleOpen, setUpscaleOpen] = useState(false);
-    const [busy, setBusy] = useState(false);
     const favorites = MediaStore.useMediaStore((s) => s.favoritesList);
     const videoByMediaId = MediaStore.useMediaStore((s) => s.videoByMediaId);
     const count = selectedIds.size;
@@ -6487,31 +6448,13 @@ ${sourceUrl}`;
       if (!isFavorites && selectMode)
         clearSelection();
     }, [isFavorites]);
-    const onDeleteSelected = useCallback(async () => {
-      setBusy(true);
-      try {
-        await bulkDeletePosts([...selectedIds]);
-      } finally {
-        setBusy(false);
-      }
-    }, []);
-    const onDeleteAll = useCallback(async () => {
-      setBusy(true);
-      try {
-        await bulkDeletePosts(getVisibleIds(favorites));
-      } finally {
-        setBusy(false);
-      }
-    }, [favorites]);
-    const onUpscale = useCallback(async () => {
-      setBusy(true);
+    const [busyDelete, onDeleteSelected] = useAsyncAction(() => bulkDeletePosts([...selectedIds]));
+    const [busyDeleteAll, onDeleteAll] = useAsyncAction(() => bulkDeletePosts(getVisibleIds(favorites)));
+    const [busyUpscale, onUpscale] = useAsyncAction(async () => {
       const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
-      try {
-        await bulkUpscaleVideos(ids);
-      } finally {
-        setBusy(false);
-      }
-    }, [favorites, count]);
+      await bulkUpscaleVideos(ids);
+    });
+    const busy = busyDelete || busyDeleteAll || busyUpscale;
     const onSelectAll = useCallback(() => {
       for (const id of getVisibleIds(favorites))
         selectedIds.add(id);
@@ -6738,7 +6681,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(DownloadIcon2, {
       size: "16",
       className: "text-white"
-    })), isFavorites && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+    })), isFavorites && /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: "Unsave",
       className: cl13("card-btn"),
       size: "md",
@@ -6748,7 +6691,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(HeartCrackIcon, {
       size: 16,
       className: "text-white"
-    })), isFavorites && /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       tooltipContent: "Delete permanently",
       className: classes(cl13("card-btn"), cl13("card-btn-danger")),
       size: "md",
@@ -6758,7 +6701,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(TrashIcon, {
       size: 16,
       className: "text-white"
-    })), isFavorites && /* @__PURE__ */ React.createElement(ConfirmDialog, {
+    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: confirmDelete,
       onOpenChange: setConfirmDelete,
       title: "Delete this item",
@@ -6766,7 +6709,7 @@ ${sourceUrl}`;
       confirmText: "Delete",
       danger: true,
       onConfirm: onDelete
-    }));
+    })));
   }
   var WrappedDownloadAll = ErrorBoundary.wrap(DownloadAllButton);
   var WrappedActionToolbar = ErrorBoundary.wrap(ActionToolbar);
@@ -6925,7 +6868,7 @@ ${sourceUrl}`;
       type: 3 /* BOOLEAN */,
       description: "Apply a different color to links you already visited.",
       default: false,
-      onChange: () => applyColors()
+      onChange: applyColors
     },
     linkColor: {
       type: 6 /* COMPONENT */,
@@ -6955,17 +6898,17 @@ ${sourceUrl}`;
       {
         find: "chat-markdown:a:link",
         all: true,
-        group: true,
-        replacement: [
-          {
-            match: /target:"_blank",rel:"noopener noreferrer nofollow"/,
-            replace: '$&,className:"void-colored-link"'
-          },
-          {
-            match: /singleDollarTextMath:!1\}],(\i),(\i),(\i)\],\[\]\)/,
-            replace: "singleDollarTextMath:!1}],$1,$2,$3,$self._remarkLinkify],[])"
-          }
-        ]
+        replacement: {
+          match: /target:"_blank",rel:"noopener noreferrer nofollow"/,
+          replace: '$&,className:"void-colored-link"'
+        }
+      },
+      {
+        find: "chat-markdown-load-third-party",
+        replacement: {
+          match: /singleDollarTextMath:!1\}],(\i),(\i),(\i)\],\[\]\)/,
+          replace: "singleDollarTextMath:!1}],$1,$2,$3,$self._remarkLinkify],[])"
+        }
       }
     ],
     _remarkLinkify() {
@@ -7013,10 +6956,8 @@ ${sourceUrl}`;
       };
     },
     start() {
-      if (!settings6.store.linkColor)
-        settings6.store.linkColor = DEFAULT_LINK;
-      if (!settings6.store.visitedColor)
-        settings6.store.visitedColor = DEFAULT_VISITED;
+      settings6.store.linkColor ??= DEFAULT_LINK;
+      settings6.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
       enableStyle(STYLE_NAME);
     },
@@ -7098,19 +7039,9 @@ ${sourceUrl}`;
     SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
     SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
   };
+  var X_SUB_NAMES = { PremiumPlus: "SuperGrok", Premium: "X Premium", Basic: "X Basic" };
   function getPlanName(bestSubscription, xSubscriptionType) {
-    if (bestSubscription) {
-      const name = PLAN_NAMES[bestSubscription];
-      if (name)
-        return name;
-    }
-    if (xSubscriptionType === "PremiumPlus")
-      return "SuperGrok";
-    if (xSubscriptionType === "Premium")
-      return "X Premium";
-    if (xSubscriptionType === "Basic")
-      return "X Basic";
-    return "Free";
+    return (bestSubscription && PLAN_NAMES[bestSubscription]) ?? (xSubscriptionType && X_SUB_NAMES[xSubscriptionType]) ?? "Free";
   }
   function UserCard({ AvatarMenu }) {
     const { open: open2 } = SidebarComponents.useSidebar();
@@ -7327,49 +7258,17 @@ ${sourceUrl}`;
   });
 
   // src/plugins/consoleJanitor/index.ts
+  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
   var consoleJanitor_default = definePlugin({
     name: "ConsoleJanitor",
     description: "Silences noisy warnings and info logs in the browser console.",
     authors: [Devs.Prism],
     patches: [
-      {
-        find: "x.ai/careers",
-        replacement: {
-          match: /console\.info\("[^"]{0,2000}"\)/,
-          replace: "void 0"
-        }
-      },
-      {
-        find: "useDrawerContext must be used within a Drawer.Root",
-        all: true,
-        replacement: {
-          match: /console\.warn\(\i\)/,
-          replace: "void 0"
-        }
-      },
-      {
-        find: 'displayName="DialogFooter"',
-        all: true,
-        replacement: {
-          match: /console\.warn\(\i\)/,
-          replace: "void 0"
-        }
-      },
-      {
-        find: "pressure_observer",
-        replacement: {
-          match: /"PressureObserver"in window/,
-          replace: "false"
-        }
-      },
-      {
-        find: "NO_I18NEXT_INSTANCE",
-        all: true,
-        replacement: {
-          match: /console\.warn\(\.\.\.\i\)/,
-          replace: "void 0"
-        }
-      }
+      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,2000}"\)/, replace: "void 0" } },
+      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
+      { find: 'displayName="DialogFooter"', all: true, replacement: warnNoop },
+      { find: "pressure_observer", replacement: { match: /"PressureObserver"in window/, replace: "false" } },
+      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
     ]
   });
 
@@ -7397,17 +7296,13 @@ ${sourceUrl}`;
     await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
   }
   function DownloadButton() {
-    const [loading, setLoading] = useState(false);
-    const onClick = useCallback(async () => {
-      setLoading(true);
+    const [loading, onClick] = useAsyncAction(async () => {
       try {
         await fetchAndDownload();
       } catch (e) {
         logger16.error("Failed to download TTS audio:", e);
-      } finally {
-        setLoading(false);
       }
-    }, []);
+    });
     return /* @__PURE__ */ React.createElement(Button, {
       "aria-label": "Download audio",
       onClick,
@@ -7554,9 +7449,8 @@ ${sourceUrl}`;
   });
 
   // src/plugins/oneko/index.ts
-  var logger18 = new Logger("Oneko");
-  var ONEKO_SCRIPT = "https://raw.githubusercontent.com/adryd325/oneko.js/c4ee66353b11a44e4a5b7e914a81f8d33111555e/oneko.js";
   var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
+  var ONEKO_SCRIPT = '(function oneko(){const isReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)")===true||window.matchMedia("(prefers-reduced-motion: reduce)").matches===true;if(false)return;const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
   var stopped = false;
   var oneko_default = definePlugin({
     name: "Oneko",
@@ -7565,26 +7459,32 @@ ${sourceUrl}`;
     cleanupSelectors: ["#oneko"],
     start() {
       stopped = false;
-      fetchExternal(ONEKO_SCRIPT).then((r) => r.text()).then((s) => s.replace("./oneko.gif", ONEKO_GIF).replace("(isReducedMotion)", "(false)")).then((s) => {
-        if (stopped)
-          return;
-        const blob = new Blob([s], { type: "text/javascript" });
-        const el = document.createElement("script");
-        el.src = URL.createObjectURL(blob);
-        document.head.appendChild(el);
-        el.addEventListener("load", () => {
-          el.remove();
-          URL.revokeObjectURL(el.src);
-        });
-      }).catch((e) => logger18.error("Failed to load oneko script", e));
+      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
+      if (stopped)
+        return;
+      const el = document.createElement("script");
+      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
+      document.head.appendChild(el);
+      el.addEventListener("load", () => {
+        el.remove();
+        URL.revokeObjectURL(el.src);
+      }, { once: true });
     },
     stop() {
       stopped = true;
     }
   });
 
+  // src/utils/editor.ts
+  function getEditor() {
+    return document.querySelector(".ProseMirror")?.editor ?? null;
+  }
+  function getEditorText() {
+    return document.querySelector(".ProseMirror")?.textContent?.trim() ?? "";
+  }
+
   // src/plugins/promptEnhancer/index.tsx
-  var logger19 = new Logger("PromptEnhancer");
+  var logger18 = new Logger("PromptEnhancer");
   var PLUGIN_NAME = "PromptEnhancer";
   var DEFAULT_INSTRUCTIONS = "Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler.";
   var settings10 = definePluginSettings({
@@ -7601,12 +7501,6 @@ ${sourceUrl}`;
 
 Original prompt:
 `;
-  }
-  function getEditor() {
-    return document.querySelector(".ProseMirror")?.editor ?? null;
-  }
-  function getEditorText() {
-    return document.querySelector(".ProseMirror")?.textContent?.trim() ?? "";
   }
   function updateButton(loading) {
     addChatBarButton(PLUGIN_NAME, {
@@ -7657,7 +7551,7 @@ Original prompt:
       }
       const improved = message.trim();
       if (convId) {
-        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger19.warn("Failed to delete throwaway conversation:", e));
+        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger18.warn("Failed to delete throwaway conversation:", e));
       }
       const editor = getEditor();
       if (!editor) {
@@ -7751,7 +7645,7 @@ button:has(> .void-rld-trigger) {
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
-  var logger20 = new Logger("RateLimitDisplay");
+  var logger19 = new Logger("RateLimitDisplay");
   var cl17 = classNameFactory("void-rld-");
   var MODES = ["auto", "fast", "expert", "heavy"];
   var store4 = createExternalStore();
@@ -7761,11 +7655,12 @@ button:has(> .void-rld-trigger) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
     } catch (e) {
-      logger20.warn("Failed to fetch rate limits for", mode, e);
+      logger19.warn("Failed to fetch rate limits for", mode, e);
       return null;
     }
   }
-  async function applyResults(results) {
+  async function refresh() {
+    const results = await Promise.all(MODES.map(async (m) => [m, await fetchLimit(m)]));
     const next = { ...limits };
     for (const [m, data] of results) {
       if (data)
@@ -7773,19 +7668,8 @@ button:has(> .void-rld-trigger) {
     }
     limits = next;
     store4.notify();
-    sync();
   }
-  async function refresh() {
-    applyResults(await Promise.all(MODES.map(async (m) => [m, await fetchLimit(m)])));
-  }
-  function sync() {
-    addChatBarButton("RateLimitDisplay", {
-      icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
-      tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
-      onClick: refresh,
-      order: 100
-    });
-  }
+  var useMode = () => ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
   function isLimited(mode) {
     if (mode === "auto")
       return limits.expert?.remainingQueries === 0 || limits.fast?.remainingQueries === 0;
@@ -7793,7 +7677,7 @@ button:has(> .void-rld-trigger) {
   }
   function ButtonIcon() {
     useExternalStore(store4);
-    const mode = ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
+    const mode = useMode();
     const limited = isLimited(mode);
     return /* @__PURE__ */ React.createElement("span", {
       className: cl17("trigger")
@@ -7890,7 +7774,7 @@ button:has(> .void-rld-trigger) {
   }
   function TooltipPanel() {
     useExternalStore(store4);
-    const mode = ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
+    const mode = useMode();
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
@@ -7919,10 +7803,9 @@ button:has(> .void-rld-trigger) {
       pollTimer = setInterval(refresh, 60000);
     },
     stop() {
-      if (pollTimer) {
+      if (pollTimer)
         clearInterval(pollTimer);
-        pollTimer = null;
-      }
+      pollTimer = null;
       limits = {};
     },
     zustand: {
@@ -8363,7 +8246,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger21 = new Logger("TurbopackPatcher", "#e78284");
+  var logger20 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var RETRY_DEBOUNCE_MS = 200;
@@ -8392,7 +8275,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger21.info("All previously failed plugins started after late module load");
+          logger20.info("All previously failed plugins started after late module load");
         }
       }, RETRY_DEBOUNCE_MS);
     };
@@ -8407,7 +8290,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger21.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger20.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -8420,33 +8303,33 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       try {
         blacklistBadModules();
       } catch (e) {
-        logger21.error("blacklistBadModules failed:", e);
+        logger20.error("blacklistBadModules failed:", e);
       }
       try {
         _resolveReady();
       } catch (e) {
-        logger21.error("_resolveReady failed:", e);
+        logger20.error("_resolveReady failed:", e);
       }
       try {
         startAllPlugins("TurbopackReady" /* TurbopackReady */);
       } catch (e) {
-        logger21.error("startAllPlugins failed:", e);
+        logger20.error("startAllPlugins failed:", e);
       }
-      logger21.info(`${getModuleCache().size} modules loaded, ready`);
+      logger20.info(`${getModuleCache().size} modules loaded, ready`);
       try {
         retryFailedPlugins();
       } catch (e) {
-        logger21.error("retryFailedPlugins failed:", e);
+        logger20.error("retryFailedPlugins failed:", e);
       }
       try {
         deferOrphanReport();
       } catch (e) {
-        logger21.error("deferOrphanReport failed:", e);
+        logger20.error("deferOrphanReport failed:", e);
       }
       try {
         checkForUpdates();
       } catch (e) {
-        logger21.error("checkForUpdates failed:", e);
+        logger20.error("checkForUpdates failed:", e);
       }
     });
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
@@ -8461,23 +8344,23 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       try {
         registerPlugin(plugin);
       } catch (e) {
-        logger21.error("Failed to register plugin:", e);
+        logger20.error("Failed to register plugin:", e);
       }
     }
     try {
       initPluginManager();
     } catch (e) {
-      logger21.error("initPluginManager failed:", e);
+      logger20.error("initPluginManager failed:", e);
     }
     try {
       patchTurbopack();
     } catch (e) {
-      logger21.error("Failed to patch Turbopack:", e);
+      logger20.error("Failed to patch Turbopack:", e);
     }
     try {
       startAllPlugins("Init" /* Init */);
     } catch (e) {
-      logger21.error("startAllPlugins(Init) failed:", e);
+      logger20.error("startAllPlugins(Init) failed:", e);
     }
     try {
       if (document.readyState === "loading") {
@@ -8485,19 +8368,19 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
           try {
             startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */);
           } catch (e) {
-            logger21.error("startAllPlugins(DOMContentLoaded) failed:", e);
+            logger20.error("startAllPlugins(DOMContentLoaded) failed:", e);
           }
         }, { once: true });
       } else {
         startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */);
       }
     } catch (e) {
-      logger21.error("startAllPlugins(DOMContentLoaded) failed:", e);
+      logger20.error("startAllPlugins(DOMContentLoaded) failed:", e);
     }
     try {
       waitForModulesStable();
     } catch (e) {
-      logger21.error("waitForModulesStable failed:", e);
+      logger20.error("waitForModulesStable failed:", e);
     }
   }
 
