@@ -15,9 +15,11 @@ Install [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](http
 
 ### Browser Extension
 
+**Firefox** — Install from [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/void-cutest-grok-mod/).
+
 **Chrome / Chromium** — Build with `bun run build`, go to `chrome://extensions`, enable Developer Mode, click "Load unpacked" and select the `dist/chrome-unpacked` folder.
 
-**Firefox** — Build with `bun run build`, go to `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on" and select `dist/firefox-unpacked/manifest.json`.
+**Firefox (from source)** — Build with `bun run build`, go to `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on" and select `dist/firefox-unpacked/manifest.json`.
 
 ## Building from Source
 
@@ -52,6 +54,10 @@ There are currently no known cases of accounts being suspended for using client 
 That said, if losing access to your account would be a serious problem for you, consider not using any client modifications at all. This applies to Void and any similar tool.
 
 </details>
+
+## Privacy
+
+See [PRIVACY.md](PRIVACY.md).
 
 ## License
 
