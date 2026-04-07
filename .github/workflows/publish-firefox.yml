@@ -56,4 +56,4 @@ jobs:
           addon-path: firefox-extension.zip
           auth-api-issuer: ${{ secrets.FIREFOX_API_KEY }}
           auth-api-secret: ${{ secrets.FIREFOX_API_SECRET }}
-          release-notes: "v${{ steps.version.outputs.current }}"
+          release-note: "v${{ steps.version.outputs.current }}"
