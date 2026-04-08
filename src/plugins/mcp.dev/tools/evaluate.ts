@@ -45,7 +45,7 @@ function autoReturn(code: string): string {
 
     if (!lastLine || /^[)\]},;]+$/.test(lastLine)) return code;
 
-    if (/^\/\//.test(lastLine) || /^\/\*/.test(lastLine)) return code;
+    if (lastLine.startsWith("//") || lastLine.startsWith("/*")) return code;
 
     const expr = stripTrailingComment(lastLine).replace(/;$/, "").trim();
     if (!expr) return code;

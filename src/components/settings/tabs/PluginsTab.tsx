@@ -55,7 +55,7 @@ export default function PluginsTab() {
     const { userPlugins, requiredPlugins } = useMemo(() => {
         const userPlugins: string[] = [];
         const requiredPlugins: string[] = [];
-        for (const n of Object.keys(plugins).sort((a, b) => a.localeCompare(b))) {
+        for (const n of Object.keys(plugins).toSorted((a, b) => a.localeCompare(b))) {
             if (plugins[n].hidden) continue;
             (plugins[n].required ? requiredPlugins : userPlugins).push(n);
         }

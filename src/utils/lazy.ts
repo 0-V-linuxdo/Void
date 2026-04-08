@@ -48,7 +48,7 @@ handler.get = (target, p, receiver) => {
     if (p === SYM_LAZY_CACHED || p === SYM_LAZY_GET) return Reflect.get(target, p, receiver);
 
     const value = target[SYM_LAZY_GET]();
-    if (value == null) return undefined;
+    if (value == null) return;
     if (typeof value === "object" || typeof value === "function") return Reflect.get(value, p, receiver);
 
     throw new Error("proxyLazy: factory returned a primitive value");

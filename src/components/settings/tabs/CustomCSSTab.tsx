@@ -36,7 +36,7 @@ function formatCSS(raw: string): string {
     let out = "";
     let indent = 0;
     const pad = () => "    ".repeat(indent);
-    const tokens = raw.replace(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
+    const tokens = raw.replaceAll(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
 
     for (const t of tokens) {
         const s = t.trim();
@@ -58,7 +58,7 @@ function formatCSS(raw: string): string {
         }
     }
 
-    return out.replace(/\n{3,}/g, "\n\n").trim() + "\n";
+    return out.replaceAll(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 
 const TOKEN = /\/\*[\s\S]*?\*\/|@[\w-]+|"[^"]*"|'[^']*'|#[\da-fA-F]{3,8}|[\d.]+(?:px|em|rem|%|vh|vw|s|ms|deg|fr|ch)?|[\w-]+|[{}:;,()!]/g;
@@ -117,7 +117,7 @@ function span(cls: string, text: string): string {
 }
 
 function esc(s: string): string {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
 export default function CustomCSSTab() {

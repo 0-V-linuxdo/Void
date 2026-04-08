@@ -162,7 +162,7 @@ function VoidMenu() {
 
     const settingsPlugins = Object.keys(plugins)
         .filter(n => !plugins[n].hidden && hasVisibleSettings(plugins[n]))
-        .sort((a, b) => a.localeCompare(b));
+        .toSorted((a, b) => a.localeCompare(b));
 
     return (
         <DropdownMenuSub>

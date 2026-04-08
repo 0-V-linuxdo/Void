@@ -72,7 +72,7 @@ function syncKnownFlags(config: FeatureStoreState["config"]) {
 
     const existing = settings.plain.knownFlags;
     const firstRun = existing == null;
-    const known: Record<string, number> = { ...(existing ?? {}) };
+    const known: Record<string, number> = { ...existing };
     const now = Date.now();
     let changed = firstRun;
 

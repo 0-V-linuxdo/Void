@@ -380,7 +380,7 @@ function ActionToolbar() {
                     onClick={() => setConfirmOpen(true)}
                 >
                     <TrashIcon size={20} />
-                    <span className="font-semibold">{busy ? "Deleting..." : count > 1 ? `Delete ${count}` : "Delete"}</span>
+                    <span className="font-semibold">{busy ? "Deleting..." : (count > 1 ? `Delete ${count}` : "Delete")}</span>
                 </ButtonWithTooltip>
             ) : !selectMode && (
                 <ButtonWithTooltip

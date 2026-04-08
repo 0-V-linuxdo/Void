@@ -38,7 +38,6 @@ const store = createExternalStore();
 let limits: LimitsMap = {};
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
-const getMode = (): ModeName => (ModesStore.useModesStore?.getState().selectedModeId as ModeName) ?? "auto";
 
 async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
     try {

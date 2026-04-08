@@ -139,7 +139,7 @@ export function handleReact(args: ReactArgs): unknown {
             const nm = fiberName(f);
             if (nm && nm.length >= REACT.MIN_COMPONENT_NAME && seen.size < REACT.MAX_NAMED) seen.add(nm);
         }, REACT.MAX_PROCESS);
-        return [...seen].sort();
+        return [...seen].toSorted();
     }
 
     if (!selector) return { error: "Provide CSS selector (required for this action)." };

@@ -617,7 +617,6 @@ export function handleModule(args: ModuleArgs): unknown {
         const found = findModuleFactory(...code);
         if (!found) return { error: `No factory matches [${code}]` };
         const [factoryId] = found;
-        const src = getFactorySource(factoryId);
         const modCache = getModuleCache();
         const loaded = modCache.has(factoryId);
         const result: Record<string, unknown> = { id: factoryId, loaded };

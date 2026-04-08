@@ -106,7 +106,7 @@ export async function addTheme(url: string): Promise<ThemeData> {
     const meta = parseThemeMeta(css);
     const theme: ThemeData = {
         url,
-        name: meta.name || (url.split("/").pop() ?? url).replace(/\.css$/i, "").replace(/[-_]/g, " "),
+        name: meta.name || (url.split("/").pop() ?? url).replace(/\.css$/i, "").replaceAll(/[-_]/g, " "),
         author: meta.author,
         description: meta.description,
         enabled: false,

@@ -94,7 +94,7 @@ export default definePlugin({
     },
 
     _onSidebarClick() {
-        if (!settings.store.clickToToggle) return undefined;
+        if (!settings.store.clickToToggle) return;
         return (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]")) return;

@@ -134,7 +134,7 @@ export function errorMessage(err: unknown): string {
 }
 
 export function sanitizeFilename(title: string, fallback = "file"): string {
-    return title.replace(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replace(/\s+/g, "-") || fallback;
+    return title.replaceAll(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replaceAll(/\s+/g, "-") || fallback;
 }
 
 export function mapGetOrCreate<K, V>(map: Map<K, V>, key: K, create: () => V): V {
@@ -151,13 +151,13 @@ export function extractUrlExtension(url: string, fallback = "jpg"): string {
 }
 
 export function sortedEntries<V extends { order?: number }>(map: Map<string, V>): [string, V][] {
-    return [...map.entries()].sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
+    return [...map.entries()].toSorted(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
 }
 
 export function sendBrowserNotification(title: string, body: string, icon = "/favicon.ico"): void {
     if (Notification.permission === "granted") {
         new Notification(title, { body, icon });
     } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(p => { if (p === "granted") new Notification(title, { body, icon }); }).catch(() => undefined);
+        Notification.requestPermission().then(p => { if (p === "granted") new Notification(title, { body, icon }); }).catch(() => {});
     }
 }
