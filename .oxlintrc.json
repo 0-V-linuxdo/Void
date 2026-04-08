@@ -1,0 +1,110 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["typescript", "react", "import", "unicorn", "oxc"],
+    "categories": {
+        "correctness": "error",
+        "suspicious": "warn",
+        "perf": "warn"
+    },
+    "ignorePatterns": ["dist", "browser", "packages", "src/plugins/mcp.dev/server.ts"],
+    "rules": {
+        "yoda": "error",
+        "eqeqeq": ["error", "always", { "null": "ignore" }],
+        "prefer-destructuring": ["error", {
+            "VariableDeclarator": { "array": false, "object": true },
+            "AssignmentExpression": { "array": false, "object": false }
+        }],
+        "operator-assignment": ["error", "always"],
+        "no-useless-computed-key": "error",
+        "no-unneeded-ternary": ["error", { "defaultAssignment": false }],
+        "no-invalid-regexp": "error",
+        "no-constant-condition": ["error", { "checkLoops": false }],
+        "no-duplicate-imports": "error",
+        "no-useless-escape": "error",
+        "no-fallthrough": "error",
+        "for-direction": "error",
+        "no-async-promise-executor": "error",
+        "no-cond-assign": "error",
+        "no-dupe-else-if": "error",
+        "no-duplicate-case": "error",
+        "no-irregular-whitespace": "error",
+        "no-loss-of-precision": "error",
+        "no-misleading-character-class": "error",
+        "no-prototype-builtins": "error",
+        "no-regex-spaces": "error",
+        "no-unexpected-multiline": "error",
+        "no-unsafe-optional-chaining": "error",
+        "no-useless-backreference": "error",
+        "use-isnan": "error",
+        "prefer-const": "error",
+        "prefer-spread": "error",
+
+        "no-self-compare": "error",
+        "no-constructor-return": "error",
+        "no-unreachable": "error",
+        "array-callback-return": "error",
+        "no-template-curly-in-string": "warn",
+        "no-useless-rename": "error",
+        "consistent-return": "error",
+        "no-unused-expressions": "error",
+        "no-eval": "error",
+        "no-implied-eval": "error",
+
+        "unicorn/no-unnecessary-await": "error",
+        "unicorn/no-useless-spread": "error",
+        "unicorn/prefer-array-some": "error",
+        "unicorn/prefer-array-find": "error",
+        "unicorn/prefer-string-slice": "error",
+        "unicorn/prefer-string-replace-all": "error",
+        "unicorn/prefer-modern-dom-apis": "error",
+        "unicorn/no-nested-ternary": "error",
+        "unicorn/no-useless-undefined": "warn",
+
+        "oxc/no-accumulating-spread": "error",
+        "oxc/erasing-op": "error",
+        "oxc/const-comparisons": "error",
+        "oxc/double-comparisons": "error",
+        "oxc/missing-throw": "error",
+
+        "typescript/dot-notation": "error",
+        "typescript/prefer-optional-chain": "error",
+        "typescript/no-unnecessary-type-assertion": "warn",
+        "typescript/no-non-null-asserted-optional-chain": "error",
+        "typescript/no-duplicate-enum-values": "error",
+        "typescript/no-extra-non-null-assertion": "error",
+        "typescript/prefer-as-const": "error",
+
+        "react/react-in-jsx-scope": "off",
+        "react/no-unescaped-entities": "off",
+        "react/jsx-no-duplicate-props": "error",
+        "react/no-direct-mutation-state": "error",
+        "react/no-children-prop": "error",
+        "react/jsx-no-useless-fragment": "warn",
+
+        "import/no-unassigned-import": "off",
+
+        "no-shadow": "off",
+        "no-new": "off",
+        "no-new-func": "off",
+        "no-void": "off",
+        "no-extend-native": "off",
+        "no-control-regex": "off",
+        "no-shadow-restricted-names": "off",
+        "no-await-in-loop": "off",
+        "unicorn/prefer-add-event-listener": "off",
+        "unicorn/prefer-at": "off",
+        "unicorn/no-new-array": "off",
+        "oxc/no-barrel-file": "off",
+        "oxc/no-map-spread": "off",
+        "typescript/no-this-alias": "off",
+        "react-hooks/exhaustive-deps": "off"
+    },
+    "overrides": [
+        {
+            "files": ["src/plugins/**/index.{ts,tsx}"],
+            "rules": {
+                "no-useless-escape": "off"
+            }
+        }
+    ]
+}
