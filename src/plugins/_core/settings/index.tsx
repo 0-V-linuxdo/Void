@@ -10,7 +10,7 @@ import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
 import { ErrorBoundary, Flex, Text } from "@components";
-import { BracesIcon, GhostFilledIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
+import { BracesIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, ThemesTab } from "@components/settings/tabs";
 import { hasVisibleSettings } from "@components/settings/utils";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
@@ -22,6 +22,7 @@ import {
 } from "@turbopack/common/components";
 import { createElement, Fragment, React } from "@turbopack/common/react";
 import { SettingsDialogStore } from "@turbopack/common/stores";
+import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -30,6 +31,9 @@ import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType, ReactNode } from "react";
 
 const logger = new Logger("Settings");
+
+const GhostIcon = findExportedComponentLazy("GhostIcon");
+
 const cl = classNameFactory("void-settings-");
 
 const settings = definePluginSettings({
@@ -167,7 +171,7 @@ function VoidMenu() {
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-                <GhostFilledIcon className={cl("menu-icon")} />
+                <GhostIcon className={cl("menu-icon")} />
                 Void
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
