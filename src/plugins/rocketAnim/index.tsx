@@ -41,9 +41,9 @@ export default definePlugin({
             },
         },
         {
-            find: ["u_isHeavy", "isSuperGrokProUser"],
+            find: ["RocketEngineAnimation", "TeamSwitchPrompt", "DropPrompt"],
             replacement: {
-                match: /\i&&\(0,(\i)\.jsx\)\((\i),\{isHeavy:\i\}\)/,
+                match: /\i&&\(0,(\i)\.jsx\)\((\i\.RocketEngineAnimation),\{isHeavy:\i\}\)/,
                 replace: "(0,$1.jsx)($2,{isHeavy:$self._isHeavy(),maxWidthClass:$self._maxWidth()})",
             },
         },
