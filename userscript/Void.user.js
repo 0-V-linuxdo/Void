@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      0.5.9
+// @version      0.5.10
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v0.5.9 — A modification for grok.com
+ * Void v0.5.10 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -203,11 +203,13 @@
     SuggestionStore: () => SuggestionStore,
     SubscriptionsStore: () => SubscriptionsStore,
     SourcesSelectorStore: () => SourcesSelectorStore,
+    SkillsStore: () => SkillsStore,
     ShopStore: () => ShopStore,
     ShareStore: () => ShareStore,
     SettingsStore: () => SettingsStore,
     SettingsDialogStore: () => SettingsDialogStore,
     SessionStore: () => SessionStore,
+    ScrollStore: () => ScrollStore,
     RoutingStore: () => RoutingStore,
     RocketStore: () => RocketStore,
     ResponseStore: () => ResponseStore,
@@ -217,8 +219,9 @@
     ModesStore: () => ModesStore,
     MentionMenuStore: () => MentionMenuStore,
     MediaStore: () => MediaStore,
+    MediaFolderStore: () => MediaFolderStore,
+    ImagineModelOverrideStore: () => ImagineModelOverrideStore,
     ImageEditorStore: () => ImageEditorStore,
-    HighlightsStore: () => HighlightsStore,
     FilesPageStore: () => FilesPageStore,
     FileStore: () => FileStore,
     FeatureStore: () => FeatureStore,
@@ -230,7 +233,52 @@
     AssetStore: () => AssetStore
   });
 
+  // src/utils/Logger.ts
+  var isBrowser = typeof window !== "undefined";
+  var ANSI = {
+    reset: "\x1B[0m",
+    bold: "\x1B[1m",
+    green: "\x1B[32m",
+    red: "\x1B[31m",
+    yellow: "\x1B[33m"
+  };
+  var LEVEL_ANSI = { error: ANSI.red, warn: ANSI.yellow };
+
+  class Logger {
+    name;
+    color;
+    constructor(name, color = "white") {
+      this.name = name;
+      this.color = color;
+    }
+    _log(level, args) {
+      if (isBrowser) {
+        console[level](`%c Void %c %c ${this.name} `, "background: white; color: black; font-weight: bold; border-radius: 5px;", "", `background: ${this.color}; color: black; font-weight: bold; border-radius: 5px;`, ...args);
+        return;
+      }
+      const levelAnsi = LEVEL_ANSI[level] ?? ANSI.green;
+      const prefix = `${ANSI.bold}${levelAnsi}[${this.name}]${ANSI.reset}`;
+      console[level](prefix, ...args);
+    }
+    log(...args) {
+      this._log("log", args);
+    }
+    info(...args) {
+      this._log("info", args);
+    }
+    error(...args) {
+      this._log("error", args);
+    }
+    warn(...args) {
+      this._log("warn", args);
+    }
+    debug(...args) {
+      this._log("debug", args);
+    }
+  }
+
   // src/utils/lazy.ts
+  var logger = new Logger("Lazy");
   var unconfigurable = ["arguments", "caller", "prototype"];
   var SYM_LAZY_GET = Symbol.for("void.lazy.get");
   var SYM_LAZY_CACHED = Symbol.for("void.lazy.cached");
@@ -341,77 +389,22 @@
     });
   }
 
-  // src/utils/Logger.ts
-  var isBrowser = typeof window !== "undefined";
-  var ANSI = {
-    reset: "\x1B[0m",
-    bold: "\x1B[1m",
-    green: "\x1B[32m",
-    red: "\x1B[31m",
-    yellow: "\x1B[33m"
-  };
-  var LEVEL_ANSI = { error: ANSI.red, warn: ANSI.yellow };
-
-  class Logger {
-    name;
-    color;
-    constructor(name, color = "white") {
-      this.name = name;
-      this.color = color;
-    }
-    _log(level, args) {
-      if (isBrowser) {
-        console[level](`%c Void %c %c ${this.name} `, "background: white; color: black; font-weight: bold; border-radius: 5px;", "", `background: ${this.color}; color: black; font-weight: bold; border-radius: 5px;`, ...args);
-        return;
-      }
-      const levelAnsi = LEVEL_ANSI[level] ?? ANSI.green;
-      const prefix = `${ANSI.bold}${levelAnsi}[${this.name}]${ANSI.reset}`;
-      console[level](prefix, ...args);
-    }
-    log(...args) {
-      this._log("log", args);
-    }
-    info(...args) {
-      this._log("info", args);
-    }
-    error(...args) {
-      this._log("error", args);
-    }
-    warn(...args) {
-      this._log("warn", args);
-    }
-    debug(...args) {
-      this._log("debug", args);
-    }
-  }
-
   // src/utils/text.ts
   function humanizeKey(key, acronyms) {
-    const title = key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const title = key.replaceAll(/([a-z])([A-Z])/g, "$1 $2").replaceAll(/[-_]/g, " ").replaceAll(/\b\w/g, (c) => c.toUpperCase());
     if (!acronyms)
       return title;
     let result = title;
     for (const [from, to] of Object.entries(acronyms)) {
-      result = result.replace(new RegExp(`\\b${escapeRegExp(from)}\\b`, "g"), to);
+      result = result.replaceAll(new RegExp(`\\b${escapeRegExp(from)}\\b`, "g"), to);
     }
     return result;
   }
   function escapeRegExp(s) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return s.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
   function pluralize(count, singular, plural) {
     return `${count} ${count === 1 ? singular : plural ?? singular + "s"}`;
-  }
-
-  // src/turbopack/match.ts
-  function matchesPattern(text, pattern) {
-    if (typeof pattern === "string")
-      return text.includes(pattern);
-    pattern.lastIndex = 0;
-    return pattern.test(text);
-  }
-  function matchesAllPatterns(text, patterns) {
-    return patterns.every((p) => matchesPattern(text, p));
   }
 
   // src/turbopack/fnSource.ts
@@ -425,6 +418,17 @@
     return src;
   }
 
+  // src/turbopack/match.ts
+  function matchesPattern(text, pattern) {
+    if (typeof pattern === "string")
+      return text.includes(pattern);
+    pattern.lastIndex = 0;
+    return pattern.test(text);
+  }
+  function matchesAllPatterns(text, patterns) {
+    return patterns.every((p) => matchesPattern(text, p));
+  }
+
   // src/turbopack/types.ts
   var SYM_ORIGINAL = Symbol("Void.originalFactory");
   var SYM_PATCHED = Symbol("Void.patched");
@@ -432,7 +436,7 @@
   var SYM_PATCHED_CODE = Symbol("Void.patchedCode");
 
   // src/turbopack/patchTurbopack.ts
-  var logger = new Logger("TurbopackPatcher", "#e78284");
+  var logger2 = new Logger("TurbopackPatcher", "#e78284");
   var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
   var FACTORY_PROBE_ID = 2147483646;
   var motionSymbol = Symbol.for("motionComponentSymbol");
@@ -607,7 +611,7 @@ ${sourceUrl}`;
             callback(exports, id);
           }
         } catch (e) {
-          logger.error("WaitFor listener error:", e);
+          logger2.error("WaitFor listener error:", e);
         }
       }
     }
@@ -616,7 +620,7 @@ ${sourceUrl}`;
         try {
           cb();
         } catch (e) {
-          logger.error("Module load listener error:", e);
+          logger2.error("Module load listener error:", e);
         }
       }
     }
@@ -655,7 +659,7 @@ ${sourceUrl}`;
             matches = originalCode.includes(match);
           }
           if (!matches && !patch.noWarn && !replacement.noWarn) {
-            logger.warn(`[validate] ${patch.plugin}: ${String(match)}`);
+            logger2.debug(`[validate] ${patch.plugin}: ${String(match)}`);
           }
         }
         if (!patch.all)
@@ -701,7 +705,7 @@ ${sourceUrl}`;
         } catch (err) {
           groupErrors++;
           result.replacements.push({ match: String(replacement.match), status: "error" });
-          logger.error(`Error in patch by ${patch.plugin} on module ${moduleId}:`, err);
+          logger2.error(`Error in patch by ${patch.plugin} on module ${moduleId}:`, err);
           code = lastCode;
           if (patch.group) {
             allSucceeded = false;
@@ -718,7 +722,7 @@ ${sourceUrl}`;
         }
         patchResults.push(result);
         if (!patch.noWarn)
-          logger.warn(`Group patch by ${patch.plugin} failed, reverting`);
+          logger2.warn(`Group patch by ${patch.plugin} failed, reverting`);
         continue;
       }
       patchResults.push(result);
@@ -743,7 +747,7 @@ ${sourceUrl}`;
         try {
           compiled = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins.join(", ")}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
         } catch (err) {
-          logger.error(`Failed to compile patched module ${moduleId} (${plugins.join(", ")}), using original:`, err);
+          logger2.error(`Failed to compile patched module ${moduleId} (${plugins.join(", ")}), using original:`, err);
           patchStats.errors++;
           compiled = original;
         }
@@ -769,7 +773,7 @@ ${sourceUrl}`;
           if (mod?.exports != null)
             notifyModuleLoaded(mod.exports, actualId);
         } catch (e) {
-          logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+          logger2.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
         }
         fnSourceCache.delete(factory);
       }
@@ -789,11 +793,11 @@ ${sourceUrl}`;
         if (!isPatched)
           throw err;
         patchStats.runtimeFallbacks++;
-        logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
+        logger2.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
         try {
           original.call(ctx, helpers, mod, exports);
         } catch (origErr) {
-          logger.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
+          logger2.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
           throw origErr;
         }
       }
@@ -848,7 +852,7 @@ ${sourceUrl}`;
         try {
           args[i] = patchChunkEntry(args[i]);
         } catch (e) {
-          logger.error("Failed to patch chunk entry:", e);
+          logger2.error("Failed to patch chunk entry:", e);
         }
       }
     }
@@ -879,14 +883,14 @@ ${sourceUrl}`;
     const orphaned = patches.filter((p) => !p.all && !isFactoryPending(p));
     const warnOrphaned = orphaned.filter((p) => !p.noWarn);
     if (warnOrphaned.length)
-      logger.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
+      logger2.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
     if (patchStats.noEffect || patchStats.errors) {
       for (const result of patchResults) {
         for (const rep of result.replacements) {
           if (rep.status === "noEffect" && !result.noWarn)
-            logger.error(`[no effect] ${result.plugin}: ${rep.match}`);
+            logger2.debug(`[no effect] ${result.plugin}: ${rep.match}`);
           else if (rep.status === "error")
-            logger.error(`[error] ${result.plugin}: ${rep.match}`);
+            logger2.debug(`[error] ${result.plugin}: ${rep.match}`);
         }
       }
     }
@@ -911,7 +915,7 @@ ${sourceUrl}`;
       return;
     const count = scanCache(runtimeModuleCache);
     if (count > 0)
-      logger.info(`Rescan found ${count} new/updated modules`);
+      logger2.info(`Rescan found ${count} new/updated modules`);
   }
   function captureFactoryRegistry() {
     const origMapSet = Map.prototype.set;
@@ -935,7 +939,7 @@ ${sourceUrl}`;
           break;
       }
       if (valid < 3) {
-        logger.debug("Captured Map doesn't look like a factory registry, discarding");
+        logger2.debug("Captured Map doesn't look like a factory registry, discarding");
         return null;
       }
     }
@@ -1004,7 +1008,7 @@ ${sourceUrl}`;
       try {
         wrapExistingFactories();
       } catch (e) {
-        logger.error("Failed to wrap existing factories:", e);
+        logger2.error("Failed to wrap existing factories:", e);
       }
       return;
     }
@@ -1027,14 +1031,14 @@ ${sourceUrl}`;
             try {
               handleChunkPush(chunk);
             } catch (e) {
-              logger.error("Failed to process queued chunk:", e);
+              logger2.error("Failed to process queued chunk:", e);
             }
           }
           queuedChunks.length = 0;
           try {
             wrapExistingFactories();
           } catch (e) {
-            logger.error("Failed to wrap existing factories:", e);
+            logger2.error("Failed to wrap existing factories:", e);
           }
         } else {
           currentTurbopack = newValue;
@@ -1049,8 +1053,9 @@ ${sourceUrl}`;
       };
     }
   }
+
   // src/turbopack/turbopack.ts
-  var logger2 = new Logger("TurbopackFinder", "#a6d189");
+  var logger3 = new Logger("TurbopackFinder", "#a6d189");
   var zustandStoreCache = new Map;
   var finderRegistry = null;
   function trackFinder(type, args, resolve) {
@@ -1070,11 +1075,11 @@ ${sourceUrl}`;
         if (isEmptyResult(record.resolve()))
           failed.push(`${record.type}(${record.args.map((a) => JSON.stringify(a)).join(", ")})`);
       } catch (e) {
-        logger2.warn("Finder resolution error:", e);
+        logger3.warn("Finder resolution error:", e);
       }
     }
     if (failed.length)
-      logger2.warn(`${failed.length} finder(s) resolved to nothing:`, failed);
+      logger3.debug(`${failed.length} finder(s) resolved to nothing:`, failed);
   }
   function toZustandHookName(name) {
     if (name.startsWith("use"))
@@ -1311,14 +1316,14 @@ ${sourceUrl}`;
         }
       }
       if (!(name in result))
-        logger2.warn(`mapMangledCssClasses: class "${name}" not found in module`);
+        logger3.warn(`mapMangledCssClasses: class "${name}" not found in module`);
     }
     return result;
   }
   function findBulk(...filterFns) {
     const { length } = filterFns;
     if (length < 2) {
-      logger2.warn("findBulk called with fewer than 2 filters, use find instead.");
+      logger3.warn("findBulk called with fewer than 2 filters, use find instead.");
       return length === 1 ? [find(filterFns[0])] : [];
     }
     const scan = () => {
@@ -1376,7 +1381,7 @@ ${sourceUrl}`;
           ({ results, found } = scan());
       }
       if (found !== length)
-        logger2.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
+        logger3.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
       return results;
     });
   }
@@ -1435,22 +1440,22 @@ ${sourceUrl}`;
   async function extractAndLoadChunks(code, matcher = DefaultChunkLoadRegex) {
     const factory = findModuleFactory(...code);
     if (!factory) {
-      logger2.warn("extractAndLoadChunks: no module factory found for:", code);
+      logger3.warn("extractAndLoadChunks: no module factory found for:", code);
       return false;
     }
     const match = getFnSource(factory[1]).match(matcher);
     if (!match) {
-      logger2.warn("extractAndLoadChunks: no chunk loading pattern found in factory for:", code);
+      logger3.warn("extractAndLoadChunks: no chunk loading pattern found in factory for:", code);
       return false;
     }
     const [, rawChunkPaths, entryPointId] = match;
     if (entryPointId == null) {
-      logger2.warn("extractAndLoadChunks: matcher did not capture entry point ID for:", code);
+      logger3.warn("extractAndLoadChunks: matcher did not capture entry point ID for:", code);
       return false;
     }
     const helpers = getTurbopackHelpers();
     if (!helpers) {
-      logger2.warn("extractAndLoadChunks: Turbopack helpers not available.");
+      logger3.warn("extractAndLoadChunks: Turbopack helpers not available.");
       return false;
     }
     if (rawChunkPaths) {
@@ -1459,7 +1464,7 @@ ${sourceUrl}`;
         try {
           await Promise.all(chunkPaths.map((path) => helpers.l(path)));
         } catch (e) {
-          logger2.warn("extractAndLoadChunks: chunk loading failed:", e);
+          logger3.warn("extractAndLoadChunks: chunk loading failed:", e);
           return false;
         }
       }
@@ -1468,7 +1473,7 @@ ${sourceUrl}`;
     try {
       requireModule(entryPoint);
     } catch (e) {
-      logger2.warn("extractAndLoadChunks: entry point module failed:", e);
+      logger3.warn("extractAndLoadChunks: entry point module failed:", e);
       return false;
     }
     return true;
@@ -1510,7 +1515,7 @@ ${sourceUrl}`;
     try {
       return helpers.i(moduleId);
     } catch (e) {
-      logger2.warn(`Failed to require module ${moduleId}:`, e);
+      logger3.warn(`Failed to require module ${moduleId}:`, e);
       return null;
     }
   }
@@ -1561,7 +1566,7 @@ ${sourceUrl}`;
           callback(lastMatch, id);
         lastMatch = null;
       } catch (e) {
-        logger2.error("waitFor callback error:", e);
+        logger3.error("waitFor callback error:", e);
       }
     };
     addWaitForSubscription(wrappedFilter, wrappedCallback);
@@ -1575,7 +1580,7 @@ ${sourceUrl}`;
         timeoutId = null;
         cancel();
         if (!searchCache(filter)) {
-          logger2.warn(`waitFor timed out after ${timeout}ms:`, filter);
+          logger3.warn(`waitFor timed out after ${timeout}ms:`, filter);
         }
       }, timeout);
     }
@@ -1592,8 +1597,9 @@ ${sourceUrl}`;
   var FeatureStore = findByPropsLazy("useFeatureStore");
   var FilesPageStore = findByPropsLazy("useFilesPageStore", "useAssetsList");
   var FileStore = findByPropsLazy("useFileStore");
-  var HighlightsStore = findByPropsLazy("useHighlightsStore");
   var ImageEditorStore = findByPropsLazy("useImageEditorStore");
+  var ImagineModelOverrideStore = findByPropsLazy("useImagineModelOverrideStore");
+  var MediaFolderStore = findByPropsLazy("useMediaFolderStore", "usePostFolderIds");
   var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
   var MentionMenuStore = findByPropsLazy("useMentionMenuStore");
   var ModesStore = findByPropsLazy("useModesStore");
@@ -1602,11 +1608,13 @@ ${sourceUrl}`;
   var ReportStore = findByPropsLazy("useReportStore");
   var ResponseStore = findByPropsLazy("useResponseStore", "createOptimisticResponse");
   var RoutingStore = findByPropsLazy("useRoutingStore", "formatUrl");
+  var ScrollStore = findByPropsLazy("useScrollStore");
   var SessionStore = findByPropsLazy("useSession", "SessionStoreProvider");
   var SettingsDialogStore = findByPropsLazy("useSettingsDialogStore");
   var SettingsStore = findByPropsLazy("useSettingsStore", "hasModelConfigOverride");
   var ShareStore = findByPropsLazy("useShareStore");
   var ShopStore = findByPropsLazy("useShopStore");
+  var SkillsStore = findByPropsLazy("useSkillsStore");
   var SourcesSelectorStore = findByPropsLazy("useSourcesSelectorStore");
   var RocketStore = findByPropsLazy("useRocketStore");
   var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
@@ -1621,7 +1629,7 @@ ${sourceUrl}`;
   var WorkspaceStore = findByPropsLazy("useWorkspaceStore", "useWorkspacesList");
 
   // src/utils/css.ts
-  var logger3 = new Logger("Styles", "#a6d189");
+  var logger4 = new Logger("Styles", "#a6d189");
   var styleRegistry = new Map;
   var activeStyles = new Map;
   var container = null;
@@ -1700,7 +1708,7 @@ ${sourceUrl}`;
     }
     const css = styleRegistry.get(name);
     if (!css) {
-      logger3.warn(`Style "${name}" not registered.`);
+      logger4.warn(`Style "${name}" not registered.`);
       return false;
     }
     const root = getContainer();
@@ -2582,7 +2590,7 @@ ${sourceUrl}`;
     return err instanceof Error ? err.message : String(err);
   }
   function sanitizeFilename(title, fallback = "file") {
-    return title.replace(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replace(/\s+/g, "-") || fallback;
+    return title.replaceAll(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replaceAll(/\s+/g, "-") || fallback;
   }
   function mapGetOrCreate(map, key, create) {
     let value = map.get(key);
@@ -2596,7 +2604,7 @@ ${sourceUrl}`;
     return url.split(".").pop()?.split("?")[0] ?? fallback;
   }
   function sortedEntries(map) {
-    return [...map.entries()].sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
+    return [...map.entries()].toSorted(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
   }
   function sendBrowserNotification(title, body, icon = "/favicon.ico") {
     if (Notification.permission === "granted") {
@@ -2605,14 +2613,12 @@ ${sourceUrl}`;
       Notification.requestPermission().then((p) => {
         if (p === "granted")
           new Notification(title, { body, icon });
-      }).catch(() => {
-        return;
-      });
+      }).catch(() => {});
     }
   }
 
   // src/api/Events.ts
-  var logger4 = new Logger("Events");
+  var logger5 = new Logger("Events");
   var listeners = new Map;
   function subscribe(event, handler2) {
     const set = mapGetOrCreate(listeners, event, () => new Set);
@@ -2629,7 +2635,7 @@ ${sourceUrl}`;
       try {
         handler2(data);
       } catch (e) {
-        logger4.error(`Event handler error (${event}):`, e);
+        logger5.error(`Event handler error (${event}):`, e);
       }
     }
   }
@@ -2736,6 +2742,7 @@ ${sourceUrl}`;
   }
 
   // src/utils/idb.ts
+  var logger6 = new Logger("IDB");
   var DB_NAME = "Void";
   var STORE_NAME = "kv";
   var DB_VERSION = 1;
@@ -2781,7 +2788,7 @@ ${sourceUrl}`;
   }
 
   // src/utils/SettingsStore.ts
-  var logger5 = new Logger("SettingsStore");
+  var logger7 = new Logger("SettingsStore");
   var STORAGE_KEY = "VoidSettings";
   var SAVE_DEBOUNCE_MS = 100;
 
@@ -2860,7 +2867,7 @@ ${sourceUrl}`;
         try {
           l(path);
         } catch (e) {
-          logger5.error("Settings listener error:", e);
+          logger7.error("Settings listener error:", e);
         }
       }
     }
@@ -2889,10 +2896,10 @@ ${sourceUrl}`;
         if (typeof GM_setValue === "function") {
           GM_setValue(STORAGE_KEY, json);
         } else {
-          idbSet(STORAGE_KEY, json).catch((e) => logger5.warn("Failed to save settings to IndexedDB:", e));
+          idbSet(STORAGE_KEY, json).catch((e) => logger7.warn("Failed to save settings to IndexedDB:", e));
         }
       } catch (e) {
-        logger5.error("Failed to save settings:", e);
+        logger7.error("Failed to save settings:", e);
       }
     }
     markAsChanged() {
@@ -2930,7 +2937,7 @@ ${sourceUrl}`;
   }
 
   // src/api/Settings.ts
-  var logger6 = new Logger("Settings");
+  var logger8 = new Logger("Settings");
   var DefaultSettings = {
     plugins: {},
     notifications: {
@@ -2953,7 +2960,7 @@ ${sourceUrl}`;
             Object.assign(settings, parsed);
         }
       } catch (e) {
-        logger6.error("Failed to load settings:", e);
+        logger8.error("Failed to load settings:", e);
       }
       mergeDefaults(settings, DefaultSettings);
       return;
@@ -2962,7 +2969,7 @@ ${sourceUrl}`;
     try {
       raw = await idbGet(STORAGE_KEY);
     } catch (e) {
-      logger6.warn("Failed to read IndexedDB:", e);
+      logger8.warn("Failed to read IndexedDB:", e);
     }
     if (!raw) {
       raw = migrateFromLocalStorage();
@@ -2971,7 +2978,7 @@ ${sourceUrl}`;
           try {
             localStorage.removeItem(STORAGE_KEY);
           } catch {}
-        }).catch((e) => logger6.debug("Failed to persist settings to IndexedDB:", e));
+        }).catch((e) => logger8.debug("Failed to persist settings to IndexedDB:", e));
     }
     if (raw) {
       try {
@@ -2979,7 +2986,7 @@ ${sourceUrl}`;
         if (isObject(parsed))
           Object.assign(settings, parsed);
       } catch (e) {
-        logger6.error("Failed to parse settings:", e);
+        logger8.error("Failed to parse settings:", e);
       }
     }
     mergeDefaults(settings, DefaultSettings);
@@ -2988,11 +2995,11 @@ ${sourceUrl}`;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        logger6.info("Migrating settings from localStorage to IndexedDB");
+        logger8.info("Migrating settings from localStorage to IndexedDB");
         return raw;
       }
     } catch (e) {
-      logger6.warn("Failed to read localStorage:", e);
+      logger8.warn("Failed to read localStorage:", e);
     }
     return null;
   }
@@ -3002,7 +3009,7 @@ ${sourceUrl}`;
       return;
     for (const oldName of oldNames) {
       if (oldName in plugins) {
-        logger6.info(`Migrating settings from old name ${oldName} to ${name}`);
+        logger8.info(`Migrating settings from old name ${oldName} to ${name}`);
         plugins[name] = plugins[oldName];
         delete plugins[oldName];
         SettingsStore3.markAsChanged();
@@ -3014,7 +3021,7 @@ ${sourceUrl}`;
     const pluginSettings = SettingsStore3.plain.plugins[pluginName];
     if (!pluginSettings || !(oldKey in pluginSettings) || newKey in pluginSettings)
       return;
-    logger6.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
+    logger8.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
     pluginSettings[newKey] = pluginSettings[oldKey];
     delete pluginSettings[oldKey];
     SettingsStore3.markAsChanged();
@@ -3033,7 +3040,7 @@ ${sourceUrl}`;
       }
     }
     if (changed) {
-      logger6.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
+      logger8.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
       SettingsStore3.markAsChanged();
     }
   }
@@ -3099,7 +3106,7 @@ ${sourceUrl}`;
   }
 
   // src/api/PluginManager.ts
-  var logger7 = new Logger("PluginManager", "#b4befe");
+  var logger9 = new Logger("PluginManager", "#b4befe");
   var plugins = {};
   var pluginUnsubscribers = new Map;
   var initialized = false;
@@ -3112,7 +3119,7 @@ ${sourceUrl}`;
       try {
         unsub();
       } catch (e) {
-        logger7.error(`Unsub error in ${pluginName}:`, e);
+        logger9.error(`Unsub error in ${pluginName}:`, e);
       }
     }
     pluginUnsubscribers.delete(pluginName);
@@ -3153,13 +3160,13 @@ ${sourceUrl}`;
     for (const depName of plugin.dependencies) {
       const dep = plugins[depName];
       if (!dep) {
-        logger7.warn(`Missing dependency ${depName} for ${plugin.name}`);
+        logger9.warn(`Missing dependency ${depName} for ${plugin.name}`);
         return false;
       }
       if (dep.started)
         continue;
       if (visiting.has(depName)) {
-        logger7.error(`Circular dependency detected: ${plugin.name} -> ${depName}`);
+        logger9.error(`Circular dependency detected: ${plugin.name} -> ${depName}`);
         return false;
       }
       dep.isDependency = true;
@@ -3201,14 +3208,14 @@ ${sourceUrl}`;
       return true;
     try {
       if (!startDependenciesRecursive(plugin)) {
-        logger7.error(`Failed to start dependencies for ${plugin.name}`);
+        logger9.error(`Failed to start dependencies for ${plugin.name}`);
         return false;
       }
       ensureMethodsBound(plugin);
       if (plugin.managedStyle)
         enableStyle(plugin.managedStyle);
       if (!plugin.hidden && !silent)
-        logger7.info(`Starting plugin ${plugin.name}`);
+        logger9.info(`Starting plugin ${plugin.name}`);
       plugin.start?.();
       if (plugin.chatBarButton) {
         addChatBarButton(plugin.name, plugin.chatBarButton);
@@ -3233,14 +3240,14 @@ ${sourceUrl}`;
         for (const [storeName, sub] of Object.entries(plugin.zustand)) {
           const store3 = resolveStoreHook(storeName);
           if (!store3) {
-            logger7.warn(`Store "${storeName}" not found for plugin ${plugin.name}`);
+            logger9.warn(`Store "${storeName}" not found for plugin ${plugin.name}`);
             continue;
           }
           const wrappedHandler = (current, prev) => {
             try {
               sub.handler(current, prev);
             } catch (e) {
-              logger7.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
+              logger9.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
             }
           };
           const unsub = sub.selector ? store3.subscribe(sub.selector, wrappedHandler) : store3.subscribe(wrappedHandler);
@@ -3259,7 +3266,7 @@ ${sourceUrl}`;
       plugin.started = true;
       return true;
     } catch (e) {
-      logger7.error(`Failed to start plugin ${plugin.name}:`, e);
+      logger9.error(`Failed to start plugin ${plugin.name}:`, e);
       if (plugin.managedStyle)
         disableStyle(plugin.managedStyle);
       removeChatBarButton(plugin.name);
@@ -3274,7 +3281,7 @@ ${sourceUrl}`;
     try {
       plugin.stop?.();
     } catch (e) {
-      logger7.error(`Error in ${plugin.name}.stop():`, e);
+      logger9.error(`Error in ${plugin.name}.stop():`, e);
     }
     runUnsubs(plugin.name);
     const tryCleanup = (fn) => {
@@ -3282,7 +3289,7 @@ ${sourceUrl}`;
         fn();
         return false;
       } catch (e) {
-        logger7.error(`Cleanup error in ${plugin.name}:`, e);
+        logger9.error(`Cleanup error in ${plugin.name}:`, e);
         return true;
       }
     };
@@ -3302,7 +3309,7 @@ ${sourceUrl}`;
     ].some(Boolean);
     plugin.started = false;
     if (failed)
-      logger7.error(`Plugin ${plugin.name} stopped with errors`);
+      logger9.error(`Plugin ${plugin.name} stopped with errors`);
     return !failed;
   }
   function startAllPlugins(target) {
@@ -3314,7 +3321,7 @@ ${sourceUrl}`;
       try {
         startPlugin(plugin);
       } catch (e) {
-        logger7.error(`Unexpected error starting ${name}:`, e);
+        logger9.error(`Unexpected error starting ${name}:`, e);
       }
     }
   }
@@ -3349,7 +3356,7 @@ ${sourceUrl}`;
     const stored = PlainSettings.plugins;
     const orphaned = Object.keys(stored).filter((name) => !plugins[name]);
     for (const name of orphaned) {
-      logger7.info(`Pruning settings for removed plugin: ${name}`);
+      logger9.info(`Pruning settings for removed plugin: ${name}`);
       delete stored[name];
     }
     if (orphaned.length)
@@ -3368,7 +3375,7 @@ ${sourceUrl}`;
       for (const d of plugin.dependencies ?? []) {
         const dep = plugins[d];
         if (!dep) {
-          logger7.warn(`Plugin ${name} has unresolved dependency ${d}`);
+          logger9.warn(`Plugin ${name} has unresolved dependency ${d}`);
           continue;
         }
         Settings.plugins[d] = { ...Settings.plugins[d], enabled: true };
@@ -3399,7 +3406,7 @@ ${sourceUrl}`;
               ;
           }
         } catch (e) {
-          logger7.error(`Failed to register patches for ${name}`, e);
+          logger9.error(`Failed to register patches for ${name}`, e);
         }
       }
     }
@@ -3517,7 +3524,7 @@ ${sourceUrl}`;
   }
 
   // src/utils/updateChecker.ts
-  var logger8 = new Logger("UpdateChecker", "#85c1dc");
+  var logger10 = new Logger("UpdateChecker", "#85c1dc");
   var SEMVER_RE = /^\d+\.\d+\.\d+$/;
   var UPDATE_URL = "https://greasyfork.org/en/scripts/567871-void";
   function isNewer(remote, local) {
@@ -3540,11 +3547,11 @@ ${sourceUrl}`;
       const { version: latest } = await resp.json();
       if (!latest || !SEMVER_RE.test(latest))
         return;
-      if (!isNewer(latest, "0.5.9")) {
-        logger8.info(`Up to date (${"0.5.9"})`);
+      if (!isNewer(latest, "0.5.10")) {
+        logger10.info(`Up to date (${"0.5.10"})`);
         return;
       }
-      logger8.info(`Update available: ${"0.5.9"} → ${latest}`);
+      logger10.info(`Update available: ${"0.5.10"} → ${latest}`);
       await sleep(3000);
       showNotice({
         message: "Void is outdated, please update to the new version.",
@@ -3552,7 +3559,7 @@ ${sourceUrl}`;
         action: { label: "Update", onClick: () => window.open(UPDATE_URL, "_blank") }
       });
     } catch (e) {
-      logger8.warn("Failed to check for updates", e);
+      logger10.warn("Failed to check for updates", e);
     }
   }
 
@@ -3668,7 +3675,7 @@ ${sourceUrl}`;
 `);
 
   // src/api/Themes.ts
-  var logger9 = new Logger("Themes", "#c6a0f6");
+  var logger11 = new Logger("Themes", "#c6a0f6");
   function themeStyleId(url) {
     let hash = 0;
     for (let i = 0;i < url.length; i++) {
@@ -3742,14 +3749,14 @@ ${sourceUrl}`;
     const meta = parseThemeMeta(css);
     const theme = {
       url,
-      name: meta.name || (url.split("/").pop() ?? url).replace(/\.css$/i, "").replace(/[-_]/g, " "),
+      name: meta.name || (url.split("/").pop() ?? url).replace(/\.css$/i, "").replaceAll(/[-_]/g, " "),
       author: meta.author,
       description: meta.description,
       enabled: false
     };
     registerDisabledStyle(themeStyleId(url), css);
     updateSettingsPluginData({ themes: [...getThemes(), theme] });
-    logger9.info(`Added theme "${theme.name}" from ${url}`);
+    logger11.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
   }
   function addLocalTheme(name, css) {
@@ -3770,7 +3777,7 @@ ${sourceUrl}`;
     };
     registerDisabledStyle(themeStyleId(id), css);
     updateSettingsPluginData({ themes: [...getThemes(), theme] });
-    logger9.info(`Added local theme "${theme.name}"`);
+    logger11.info(`Added local theme "${theme.name}"`);
     return theme;
   }
   function updateLocalTheme(url, data) {
@@ -3818,14 +3825,14 @@ ${sourceUrl}`;
     try {
       const resp = await fetchExternal(url);
       if (!resp.ok) {
-        logger9.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+        logger11.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
         return;
       }
       if (!isStillEnabled())
         return;
       css = await resp.text();
     } catch (e) {
-      logger9.warn("Failed to fetch theme CSS:", url, e);
+      logger11.warn("Failed to fetch theme CSS:", url, e);
       return;
     }
     if (!isStillEnabled())
@@ -3857,7 +3864,7 @@ ${sourceUrl}`;
     }));
     for (const [i, result] of results.entries()) {
       if (result.status === "rejected") {
-        logger9.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
+        logger11.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
       }
     }
   }
@@ -3977,7 +3984,7 @@ ${sourceUrl}`;
     let out = "";
     let indent = 0;
     const pad2 = () => "    ".repeat(indent);
-    const tokens = raw.replace(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
+    const tokens = raw.replaceAll(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
     for (const t of tokens) {
       const s = t.trim();
       if (!s)
@@ -4002,7 +4009,7 @@ ${sourceUrl}`;
         out += s;
       }
     }
-    return out.replace(/\n{3,}/g, `
+    return out.replaceAll(/\n{3,}/g, `
 
 `).trim() + `
 `;
@@ -4014,9 +4021,10 @@ ${sourceUrl}`;
     let result = "";
     let lastEnd = 0;
     for (const m of css.matchAll(TOKEN)) {
-      if (m.index > lastEnd)
-        result += esc(css.slice(lastEnd, m.index));
-      lastEnd = m.index + m[0].length;
+      const idx = m.index ?? 0;
+      if (idx > lastEnd)
+        result += esc(css.slice(lastEnd, idx));
+      lastEnd = idx + m[0].length;
       const t = m[0];
       if (t.startsWith("/*")) {
         result += span("com", t);
@@ -4059,7 +4067,7 @@ ${sourceUrl}`;
     return `<span class="${cl3(cls)}">${esc(text)}</span>`;
   }
   function esc(s) {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
   }
   function CustomCSSTab() {
     const highlightRef = useRef(null);
@@ -4536,10 +4544,10 @@ ${sourceUrl}`;
   }
   function SelectField({ id, setting, pluginName }) {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    if (!("options" in setting))
+    const options = "options" in setting ? setting.options : null;
+    const valueMap = useMemo(() => new Map(options?.map((o) => [String(o.value), o.value])), [options]);
+    if (!options)
       return null;
-    const { options } = setting;
-    const valueMap = useMemo(() => new Map(options.map((o) => [String(o.value), o.value])), [options]);
     return /* @__PURE__ */ React.createElement(SettingsRow, {
       action: /* @__PURE__ */ React.createElement(Select, {
         value: String(value ?? ""),
@@ -4735,16 +4743,16 @@ ${sourceUrl}`;
     const { userPlugins, requiredPlugins } = useMemo(() => {
       const userPlugins2 = [];
       const requiredPlugins2 = [];
-      for (const n of Object.keys(plugins).sort((a, b) => a.localeCompare(b))) {
+      for (const n of Object.keys(plugins).toSorted((a, b) => a.localeCompare(b))) {
         if (plugins[n].hidden)
           continue;
         (plugins[n].required ? requiredPlugins2 : userPlugins2).push(n);
       }
       return { userPlugins: userPlugins2, requiredPlugins: requiredPlugins2 };
     }, []);
-    const initialStatesRef = React.useRef(null);
-    const changedPluginsRef = React.useRef(new Set);
-    const dismissedRef = React.useRef(false);
+    const initialStatesRef = useRef(null);
+    const changedPluginsRef = useRef(new Set);
+    const dismissedRef = useRef(false);
     useEffect(() => {
       if (initialStatesRef.current)
         return;
@@ -4935,14 +4943,14 @@ ${sourceUrl}`;
       size: 14
     }));
   }
-  var logger10 = new Logger("ThemeCard");
+  var logger12 = new Logger("ThemeCard");
   var cl9 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, globalEnabled, onRemove, onToggle, onEdit }) {
     const handleToggle = () => {
       if (theme.enabled)
         disableTheme(theme.url);
       else
-        enableTheme(theme.url).catch((e) => logger10.error("Failed to enable theme:", e));
+        enableTheme(theme.url).catch((e) => logger12.error("Failed to enable theme:", e));
       onToggle();
     };
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
@@ -4958,7 +4966,7 @@ ${sourceUrl}`;
         icon: CopyIcon,
         label: "Copy URL",
         onClick: () => {
-          copyToClipboard(theme.url).catch((e) => logger10.error("Failed to copy URL:", e));
+          copyToClipboard(theme.url).catch((e) => logger12.error("Failed to copy URL:", e));
         }
       }), /* @__PURE__ */ React.createElement(IconButton, {
         icon: Trash2Icon,
@@ -5299,10 +5307,10 @@ ${sourceUrl}`;
     [4 /* WARNING */]: "warning",
     [5 /* LOADING */]: "loading"
   };
-  var logger11 = new Logger("Notifications");
+  var logger13 = new Logger("Notifications");
   function showToast(message, type = 0 /* MESSAGE */, options) {
     if (!Toaster.toast) {
-      logger11.warn("showToast called before Toaster initialized, discarding:", message);
+      logger13.warn("showToast called before Toaster initialized, discarding:", message);
       return -1;
     }
     const { toast } = Toaster;
@@ -5359,7 +5367,7 @@ ${sourceUrl}`;
       return;
     const existing = settings2.plain.knownFlags;
     const firstRun = existing == null;
-    const known = { ...existing ?? {} };
+    const known = { ...existing };
     const now = Date.now();
     let changed = firstRun;
     const newFlags = [];
@@ -5587,7 +5595,8 @@ ${sourceUrl}`;
   });
 
   // src/plugins/_core/settings/index.tsx
-  var logger12 = new Logger("Settings");
+  var logger14 = new Logger("Settings");
+  var GhostIcon = findExportedComponentLazy("GhostIcon");
   var cl12 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     hideUserId: {
@@ -5643,9 +5652,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"0.5.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8c2c65b"}`
-    }, `(${"8c2c65b"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"0.5.10"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"5f3c004"}`
+    }, `(${"5f3c004"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5689,8 +5698,8 @@ ${sourceUrl}`;
     useEventSubscription("pluginToggle", forceUpdate);
     if (!settings3.store.showVoidMenu)
       return null;
-    const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).sort((a, b) => a.localeCompare(b));
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(GhostFilledIcon, {
+    const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).toSorted((a, b) => a.localeCompare(b));
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(GhostIcon, {
       className: cl12("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl12("menu-icon")
@@ -5730,7 +5739,7 @@ ${sourceUrl}`;
           key: "void-version"
         })];
       } catch (e) {
-        logger12.error("Failed to render tabs:", e);
+        logger14.error("Failed to render tabs:", e);
         return [];
       }
     },
@@ -5743,7 +5752,7 @@ ${sourceUrl}`;
           Wrapper
         })];
       } catch (e) {
-        logger12.error("Failed to render panels:", e);
+        logger14.error("Failed to render panels:", e);
         return [];
       }
     },
@@ -5755,9 +5764,9 @@ ${sourceUrl}`;
         else
           document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
       } catch (e) {
-        logger12.error("Failed to load saved CSS:", e);
+        logger14.error("Failed to load saved CSS:", e);
       }
-      loadSavedThemes().catch((e) => logger12.error("Failed to load saved themes:", e));
+      loadSavedThemes().catch((e) => logger14.error("Failed to load saved themes:", e));
     },
     patches: [
       {
@@ -5927,7 +5936,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/betterFiles/index.tsx
-  var logger13 = new Logger("BetterFiles");
+  var logger15 = new Logger("BetterFiles");
   var settings4 = definePluginSettings({
     skipDeleteConfirm: {
       type: 3 /* BOOLEAN */,
@@ -5947,7 +5956,7 @@ ${sourceUrl}`;
         try {
           await deleteAsset(id);
         } catch (e) {
-          logger13.error("Failed to delete asset", id, e);
+          logger15.error("Failed to delete asset", id, e);
         }
       }
     };
@@ -5976,7 +5985,7 @@ ${sourceUrl}`;
     settings: settings4,
     renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
     _deleteFile(assetId) {
-      Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId)).catch((e) => logger13.error("Failed to delete asset", assetId, e));
+      Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId)).catch((e) => logger15.error("Failed to delete asset", assetId, e));
     },
     patches: [
       {
@@ -6163,7 +6172,7 @@ ${sourceUrl}`;
   // src/plugins/betterImagine/index.tsx
   var CopyIcon2 = findExportedComponentLazy("CopyIcon");
   var DownloadIcon2 = findExportedComponentLazy("DownloadIcon");
-  var logger14 = new Logger("BetterImagine");
+  var logger16 = new Logger("BetterImagine");
   var cl13 = classNameFactory("void-imagine-");
   var settings5 = definePluginSettings({
     hideDefaultPreviews: {
@@ -6269,7 +6278,7 @@ ${sourceUrl}`;
         await deletePost(id, id);
         deleted++;
       } catch (e) {
-        logger14.error("Failed to delete post:", id, e);
+        logger16.error("Failed to delete post:", id, e);
       }
     }
     clearSelection();
@@ -6300,7 +6309,7 @@ ${sourceUrl}`;
           await state.upscaleVideo(id, video.id);
           upscaled++;
         } catch (e) {
-          logger14.error("Failed to upscale video:", id, video.id, e);
+          logger16.error("Failed to upscale video:", id, video.id, e);
         }
       }
     }
@@ -6324,7 +6333,7 @@ ${sourceUrl}`;
           return;
         video.pause();
         video.currentTime = 0;
-      }).catch((e) => logger14.warn("Failed to pause video:", e));
+      }).catch((e) => logger16.warn("Failed to pause video:", e));
     } else {
       video.pause();
       video.currentTime = 0;
@@ -6333,7 +6342,7 @@ ${sourceUrl}`;
   var onMouseEnter = (e) => {
     const video = e.currentTarget.querySelector("video");
     if (video)
-      pending.set(video, video.play().catch((e2) => logger14.error("Failed to play video", e2)));
+      pending.set(video, video.play().catch((e2) => logger16.error("Failed to play video", e2)));
   };
   var onMouseLeave = (e) => {
     const video = e.currentTarget.querySelector("video");
@@ -6368,14 +6377,14 @@ ${sourceUrl}`;
       try {
         const res = await fetchExternal(entries[0].url);
         if (!res.ok) {
-          logger14.warn("Failed to fetch:", entries[0].url);
+          logger16.warn("Failed to fetch:", entries[0].url);
           return;
         }
         const blob2 = await res.blob();
         FileUtils.downloadBlob(blob2, entries[0].name);
         Toaster.toast.success("Downloaded 1 image.");
       } catch (e) {
-        logger14.error("Failed to download image:", entries[0].url, e);
+        logger16.error("Failed to download image:", entries[0].url, e);
       }
       return;
     }
@@ -6386,14 +6395,14 @@ ${sourceUrl}`;
       try {
         const res = await fetchExternal(entry.url);
         if (!res.ok) {
-          logger14.warn("Failed to fetch:", entry.url);
+          logger16.warn("Failed to fetch:", entry.url);
           return;
         }
         const buf = await res.arrayBuffer();
         files[names[i]] = new Uint8Array(buf);
         done++;
       } catch (e) {
-        logger14.error("Failed to fetch:", entry.url, e);
+        logger16.error("Failed to fetch:", entry.url, e);
       }
     }));
     if (!done) {
@@ -6627,14 +6636,14 @@ ${sourceUrl}`;
       try {
         const res = await fetchExternal(item.mediaUrl);
         if (!res.ok) {
-          logger14.warn("Failed to fetch:", item.mediaUrl);
+          logger16.warn("Failed to fetch:", item.mediaUrl);
           return;
         }
         const blob = await res.blob();
         const ext = extractUrlExtension(item.mediaUrl);
         FileUtils.downloadBlob(blob, `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`);
       } catch (e) {
-        logger14.error("Failed to download:", e);
+        logger16.error("Failed to download:", e);
       }
     };
     const onCopyPrompt = async () => {
@@ -6645,7 +6654,7 @@ ${sourceUrl}`;
         await copyToClipboard(prompt);
         Toaster.toast.success("Copied prompt.");
       } catch (e) {
-        logger14.error("Failed to copy prompt:", e);
+        logger16.error("Failed to copy prompt:", e);
       }
     };
     const onUnfavorite = () => {
@@ -6656,7 +6665,7 @@ ${sourceUrl}`;
         await MediaStore.useMediaStore.getState().deletePost(postId, postId);
         Toaster.toast.success("Deleted.");
       } catch (e) {
-        logger14.error("Failed to delete post:", e);
+        logger16.error("Failed to delete post:", e);
         Toaster.toast.error("Failed to delete.");
       }
     };
@@ -7215,7 +7224,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/cloneChats/index.tsx
-  var logger15 = new Logger("CloneChats");
+  var logger17 = new Logger("CloneChats");
   async function cloneChat(conversationId) {
     const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
     if (!lastResponseId)
@@ -7238,7 +7247,7 @@ ${sourceUrl}`;
   function CloneItem({ conversationId }) {
     const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
     return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger15.error("Failed to clone chat:", e)),
+      onSelect: () => cloneChat(conversationId).catch((e) => logger17.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
@@ -7280,7 +7289,7 @@ ${sourceUrl}`;
 
   // src/plugins/downloadTTS/index.tsx
   var cl16 = classNameFactory("void-download-tts-");
-  var logger16 = new Logger("DownloadTTS");
+  var logger18 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -7300,7 +7309,7 @@ ${sourceUrl}`;
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger16.error("Failed to download TTS audio:", e);
+        logger18.error("Failed to download TTS audio:", e);
       }
     });
     return /* @__PURE__ */ React.createElement(Button, {
@@ -7339,7 +7348,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger17 = new Logger("ExportChat");
+  var logger19 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -7366,7 +7375,7 @@ ${sourceUrl}`;
   function ExportItem({ conversationId }) {
     const streaming = ChatPageStore.useChatPageStore((s) => s.conversationId === conversationId && !!s.streamedMessageId);
     return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => exportChat(conversationId).catch((e) => logger17.error("Failed to export chat", e)),
+      onSelect: () => exportChat(conversationId).catch((e) => logger19.error("Failed to export chat", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
@@ -7451,17 +7460,13 @@ ${sourceUrl}`;
   // src/plugins/oneko/index.ts
   var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
   var ONEKO_SCRIPT = '(function oneko(){const isReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)")===true||window.matchMedia("(prefers-reduced-motion: reduce)").matches===true;if(false)return;const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
-  var stopped = false;
   var oneko_default = definePlugin({
     name: "Oneko",
     description: "Cat follows your mouse cursor.",
     authors: [Devs.adryd],
     cleanupSelectors: ["#oneko"],
     start() {
-      stopped = false;
       const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
-      if (stopped)
-        return;
       const el = document.createElement("script");
       el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
       document.head.appendChild(el);
@@ -7469,9 +7474,6 @@ ${sourceUrl}`;
         el.remove();
         URL.revokeObjectURL(el.src);
       }, { once: true });
-    },
-    stop() {
-      stopped = true;
     }
   });
 
@@ -7484,7 +7486,7 @@ ${sourceUrl}`;
   }
 
   // src/plugins/promptEnhancer/index.tsx
-  var logger18 = new Logger("PromptEnhancer");
+  var logger20 = new Logger("PromptEnhancer");
   var PLUGIN_NAME = "PromptEnhancer";
   var DEFAULT_INSTRUCTIONS = "Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler.";
   var settings10 = definePluginSettings({
@@ -7551,7 +7553,7 @@ Original prompt:
       }
       const improved = message.trim();
       if (convId) {
-        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger18.warn("Failed to delete throwaway conversation:", e));
+        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger20.warn("Failed to delete throwaway conversation:", e));
       }
       const editor = getEditor();
       if (!editor) {
@@ -7645,7 +7647,7 @@ button:has(> .void-rld-trigger) {
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
-  var logger19 = new Logger("RateLimitDisplay");
+  var logger21 = new Logger("RateLimitDisplay");
   var cl17 = classNameFactory("void-rld-");
   var MODES = ["auto", "fast", "expert", "heavy"];
   var store4 = createExternalStore();
@@ -7655,7 +7657,7 @@ button:has(> .void-rld-trigger) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
     } catch (e) {
-      logger19.warn("Failed to fetch rate limits for", mode, e);
+      logger21.warn("Failed to fetch rate limits for", mode, e);
       return null;
     }
   }
@@ -7857,9 +7859,9 @@ button:has(> .void-rld-trigger) {
         }
       },
       {
-        find: ["u_isHeavy", "isSuperGrokProUser"],
+        find: ["RocketEngineAnimation", "TeamSwitchPrompt", "DropPrompt"],
         replacement: {
-          match: /\i&&\(0,(\i)\.jsx\)\((\i),\{isHeavy:\i\}\)/,
+          match: /\i&&\(0,(\i)\.jsx\)\((\i\.RocketEngineAnimation),\{isHeavy:\i\}\)/,
           replace: "(0,$1.jsx)($2,{isHeavy:$self._isHeavy(),maxWidthClass:$self._maxWidth()})"
         }
       },
@@ -8131,6 +8133,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     Spinner: () => Spinner,
     SourcesSelectorStore: () => SourcesSelectorStore,
     Slider: () => Slider,
+    SkillsStore: () => SkillsStore,
     Skeleton: () => Skeleton,
     SidebarComponents: () => SidebarComponents,
     ShopStore: () => ShopStore,
@@ -8147,6 +8150,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     SelectItem: () => SelectItem,
     SelectContent: () => SelectContent,
     Select: () => Select,
+    ScrollStore: () => ScrollStore,
     RoutingStore: () => RoutingStore,
     RocketStore: () => RocketStore,
     ResponsiveDialog: () => ResponsiveDialog,
@@ -8164,14 +8168,15 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ModesStore: () => ModesStore,
     MentionMenuStore: () => MentionMenuStore,
     MediaStore: () => MediaStore,
+    MediaFolderStore: () => MediaFolderStore,
     LazyComponent: () => LazyComponent,
     Label: () => Label,
     Input: () => Input,
+    ImagineModelOverrideStore: () => ImagineModelOverrideStore,
     ImageEditorStore: () => ImageEditorStore,
     HoverCardTrigger: () => HoverCardTrigger,
     HoverCardContent: () => HoverCardContent,
     HoverCard: () => HoverCard,
-    HighlightsStore: () => HighlightsStore,
     Fragment: () => Fragment,
     FilesPageStore: () => FilesPageStore,
     FileUtils: () => FileUtils,
@@ -8246,7 +8251,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger20 = new Logger("TurbopackPatcher", "#e78284");
+  var logger22 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var RETRY_DEBOUNCE_MS = 200;
@@ -8275,7 +8280,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger20.info("All previously failed plugins started after late module load");
+          logger22.info("All previously failed plugins started after late module load");
         }
       }, RETRY_DEBOUNCE_MS);
     };
@@ -8290,7 +8295,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger20.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger22.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -8303,33 +8308,33 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       try {
         blacklistBadModules();
       } catch (e) {
-        logger20.error("blacklistBadModules failed:", e);
+        logger22.error("blacklistBadModules failed:", e);
       }
       try {
         _resolveReady();
       } catch (e) {
-        logger20.error("_resolveReady failed:", e);
+        logger22.error("_resolveReady failed:", e);
       }
       try {
         startAllPlugins("TurbopackReady" /* TurbopackReady */);
       } catch (e) {
-        logger20.error("startAllPlugins failed:", e);
+        logger22.error("startAllPlugins failed:", e);
       }
-      logger20.info(`${getModuleCache().size} modules loaded, ready`);
+      logger22.info(`${getModuleCache().size} modules loaded, ready`);
       try {
         retryFailedPlugins();
       } catch (e) {
-        logger20.error("retryFailedPlugins failed:", e);
+        logger22.error("retryFailedPlugins failed:", e);
       }
       try {
         deferOrphanReport();
       } catch (e) {
-        logger20.error("deferOrphanReport failed:", e);
+        logger22.error("deferOrphanReport failed:", e);
       }
       try {
         checkForUpdates();
       } catch (e) {
-        logger20.error("checkForUpdates failed:", e);
+        logger22.error("checkForUpdates failed:", e);
       }
     });
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
@@ -8344,23 +8349,23 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       try {
         registerPlugin(plugin);
       } catch (e) {
-        logger20.error("Failed to register plugin:", e);
+        logger22.error("Failed to register plugin:", e);
       }
     }
     try {
       initPluginManager();
     } catch (e) {
-      logger20.error("initPluginManager failed:", e);
+      logger22.error("initPluginManager failed:", e);
     }
     try {
       patchTurbopack();
     } catch (e) {
-      logger20.error("Failed to patch Turbopack:", e);
+      logger22.error("Failed to patch Turbopack:", e);
     }
     try {
       startAllPlugins("Init" /* Init */);
     } catch (e) {
-      logger20.error("startAllPlugins(Init) failed:", e);
+      logger22.error("startAllPlugins(Init) failed:", e);
     }
     try {
       if (document.readyState === "loading") {
@@ -8368,19 +8373,19 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
           try {
             startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */);
           } catch (e) {
-            logger20.error("startAllPlugins(DOMContentLoaded) failed:", e);
+            logger22.error("startAllPlugins(DOMContentLoaded) failed:", e);
           }
         }, { once: true });
       } else {
         startAllPlugins("DOMContentLoaded" /* DOMContentLoaded */);
       }
     } catch (e) {
-      logger20.error("startAllPlugins(DOMContentLoaded) failed:", e);
+      logger22.error("startAllPlugins(DOMContentLoaded) failed:", e);
     }
     try {
       waitForModulesStable();
     } catch (e) {
-      logger20.error("waitForModulesStable failed:", e);
+      logger22.error("waitForModulesStable failed:", e);
     }
   }
 
