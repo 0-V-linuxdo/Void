@@ -8,7 +8,6 @@ declare const IS_DEV: boolean;
 declare const IS_EXTENSION: boolean;
 declare const VERSION: string;
 declare const REPO_URL: string;
-declare const REPO_RAW_URL: string;
 declare const GIT_HASH: string;
 
 declare const unsafeWindow: typeof globalThis;

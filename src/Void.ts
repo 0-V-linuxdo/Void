@@ -10,7 +10,6 @@ import { filters, reportFailedFinders, waitFor } from "@turbopack/turbopack";
 import { Logger } from "@utils/Logger";
 import { onlyOnce } from "@utils/misc";
 import { type Plugin, StartAt } from "@utils/types";
-import { checkForUpdates } from "@utils/updateChecker";
 
 import Plugins from "~plugins";
 
@@ -109,7 +108,6 @@ function waitForModulesStable() {
 
         try { retryFailedPlugins(); } catch (e) { logger.error("retryFailedPlugins failed:", e); }
         try { deferOrphanReport(); } catch (e) { logger.error("deferOrphanReport failed:", e); }
-        try { checkForUpdates(); } catch (e) { logger.error("checkForUpdates failed:", e); }
     });
 
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);

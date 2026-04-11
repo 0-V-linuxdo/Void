@@ -155,7 +155,6 @@ async function buildCore(outfile: string, isExt: boolean) {
             IS_EXTENSION: JSON.stringify(isExt),
             VERSION: JSON.stringify(pkg.version),
             REPO_URL: JSON.stringify(repoUrl),
-            REPO_RAW_URL: JSON.stringify(repoRawUrl),
             GIT_HASH: JSON.stringify((() => {
                 try {
                     const result = Bun.spawnSync(["git", "rev-parse", "--short", "HEAD"]);
