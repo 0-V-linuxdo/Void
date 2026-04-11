@@ -23,6 +23,8 @@ export type OriginalRefType =
 	| "ORIGINAL_REF_TYPE_IMAGE_EDIT"
 	| "ORIGINAL_REF_TYPE_MULTI_REF_IMAGE_EDIT"
 	| "ORIGINAL_REF_TYPE_DOODLE_IMAGE_EDIT"
+	| "ORIGINAL_REF_TYPE_TEMPLATE"
+	| "ORIGINAL_REF_TYPE_VIDEO_REMIX"
 	| (string & {});
 
 /** Imagine generation mode. */

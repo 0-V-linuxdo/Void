@@ -20,6 +20,8 @@ export interface CodePageStoreState {
     chatPanelOpen: boolean;
     /** Whether the content/preview panel is open. */
     contentPanelOpen: boolean;
+    /** Current layout mode (e.g. "code"). */
+    layout: string;
     /** Diff view mode, or null for default. */
     diffViewMode: string | null;
     /** Edits filter mode (e.g. "all"). */
@@ -62,6 +64,7 @@ export interface CodePageStoreState {
     setChatPanelOpen: (open: boolean) => void;
     toggleChatPanel: () => void;
     setContentPanelOpen: (open: boolean) => void;
+    setLayout: (layout: string) => void;
     setDiffViewMode: (mode: string | null) => void;
     setEditsFilter: (filter: string) => void;
     setYoloMode: (enabled: boolean) => void;

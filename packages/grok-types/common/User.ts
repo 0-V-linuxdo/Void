@@ -94,4 +94,6 @@ export interface GrokUser {
     vercelName?: string;
     /** Vercel role, if linked. */
     vercelRole?: string;
+    /** Whether the account is synced with WorkOS (enterprise SSO). */
+    isWorkosSynced?: boolean;
 }

@@ -14,8 +14,9 @@ import type {
     FeatureStoreModule,
     FilesPageStoreModule,
     FileStoreModule,
-    HighlightsStoreModule,
     ImageEditorStoreModule,
+    ImagineModelOverrideStoreModule,
+    MediaFolderStoreModule,
     MediaStoreModule,
     MentionMenuStoreModule,
     ModesStoreModule,
@@ -25,11 +26,13 @@ import type {
     ResponseStoreModule,
     RocketStoreModule,
     RoutingStoreModule,
+    ScrollStoreModule,
     SessionStoreModule,
     SettingsDialogStoreModule,
     SettingsStoreModule,
     ShareStoreModule,
     ShopStoreModule,
+    SkillsStoreModule,
     SourcesSelectorStoreModule,
     SubscriptionsStoreModule,
     SuggestionStoreModule,
@@ -54,8 +57,9 @@ export const DictationStore: DictationStoreModule = findByPropsLazy("useDictatio
 export const FeatureStore: FeatureStoreModule = findByPropsLazy("useFeatureStore");
 export const FilesPageStore: FilesPageStoreModule = findByPropsLazy("useFilesPageStore", "useAssetsList");
 export const FileStore: FileStoreModule = findByPropsLazy("useFileStore");
-export const HighlightsStore: HighlightsStoreModule = findByPropsLazy("useHighlightsStore");
 export const ImageEditorStore: ImageEditorStoreModule = findByPropsLazy("useImageEditorStore");
+export const ImagineModelOverrideStore: ImagineModelOverrideStoreModule = findByPropsLazy("useImagineModelOverrideStore");
+export const MediaFolderStore: MediaFolderStoreModule = findByPropsLazy("useMediaFolderStore", "usePostFolderIds");
 export const MediaStore: MediaStoreModule = findByPropsLazy("useMediaStore", "useImagineModeStore");
 export const MentionMenuStore: MentionMenuStoreModule = findByPropsLazy("useMentionMenuStore");
 export const ModesStore: ModesStoreModule = findByPropsLazy("useModesStore");
@@ -64,11 +68,13 @@ export const PersonalityStore: PersonalityStoreModule = findByPropsLazy("usePers
 export const ReportStore: ReportStoreModule = findByPropsLazy("useReportStore");
 export const ResponseStore: ResponseStoreModule = findByPropsLazy("useResponseStore", "createOptimisticResponse");
 export const RoutingStore: RoutingStoreModule = findByPropsLazy("useRoutingStore", "formatUrl");
+export const ScrollStore: ScrollStoreModule = findByPropsLazy("useScrollStore");
 export const SessionStore: SessionStoreModule = findByPropsLazy("useSession", "SessionStoreProvider");
 export const SettingsDialogStore: SettingsDialogStoreModule = findByPropsLazy("useSettingsDialogStore");
 export const SettingsStore: SettingsStoreModule = findByPropsLazy("useSettingsStore", "hasModelConfigOverride");
 export const ShareStore: ShareStoreModule = findByPropsLazy("useShareStore");
 export const ShopStore: ShopStoreModule = findByPropsLazy("useShopStore");
+export const SkillsStore: SkillsStoreModule = findByPropsLazy("useSkillsStore");
 export const SourcesSelectorStore: SourcesSelectorStoreModule = findByPropsLazy("useSourcesSelectorStore");
 export const RocketStore: RocketStoreModule = findByPropsLazy("useRocketStore");
 export const SubscriptionsStore: SubscriptionsStoreModule = findByPropsLazy("useSubscriptionsStore");

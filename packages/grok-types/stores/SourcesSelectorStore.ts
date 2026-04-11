@@ -6,8 +6,8 @@ import type { ZustandStore } from "../zustand";
  * connectors/collections are active for the current query.
  */
 export interface SourcesSelectorStoreState {
-    /** Team ID for which the selector was initialized, or null. */
-    sourcesSelectorInitializedTeamId: string | null;
+    /** Scope ID (team or workspace) for which the selector was initialized, or null. */
+    sourcesSelectorInitializedScopeId: string | null;
     /** Whether web search is enabled for the current query. */
     isWebSearchEnabled: boolean;
     /** Whether X (Twitter) search is enabled. */
@@ -16,8 +16,12 @@ export interface SourcesSelectorStoreState {
     isGmailSearchEnabled: boolean;
     /** Whether Google Calendar search is enabled. */
     isGoogleCalendarSearchEnabled: boolean;
+    /** Whether Google Drive search is enabled. */
+    isGoogleDriveSearchEnabled: boolean;
     /** Whether Outlook search is enabled. */
     isOutlookSearchEnabled: boolean;
+    /** Whether Outlook Calendar search is enabled. */
+    isOutlookCalendarSearchEnabled: boolean;
     /** Active workspace connector IDs. */
     activeConnectorIds: string[];
     /** Active workspace collection IDs. */
@@ -27,8 +31,8 @@ export interface SourcesSelectorStoreState {
 
     /** Reset all source selections to initial state. */
     clear: () => void;
-    /** Set the initialized team ID. */
-    setSourcesSelectorInitializedTeamId: (teamId: string | null) => void;
+    /** Set the initialized scope ID. */
+    setSourcesSelectorInitializedScopeId: (scopeId: string | null) => void;
     /** Toggle web search enabled. */
     setIsWebSearchEnabled: (enabled: boolean) => void;
     /** Toggle X search enabled. */
@@ -37,9 +41,8 @@ export interface SourcesSelectorStoreState {
     setIsGmailSearchEnabled: (enabled: boolean) => void;
     /** Toggle Google Calendar search enabled. */
     setIsGoogleCalendarSearchEnabled: (enabled: boolean) => void;
-    /** Whether Outlook Calendar search is enabled. */
-    isOutlookCalendarSearchEnabled: boolean;
-
+    /** Toggle Google Drive search enabled. */
+    setIsGoogleDriveSearchEnabled: (enabled: boolean) => void;
     /** Toggle Outlook search enabled. */
     setIsOutlookSearchEnabled: (enabled: boolean) => void;
     /** Toggle Outlook Calendar search enabled. */
@@ -50,6 +53,10 @@ export interface SourcesSelectorStoreState {
     setActiveConnectorIds: (ids: string[]) => void;
     /** Enable a specific connector ID. */
     enableConnectorId: (id: string) => void;
+    /** Toggle a connector for a given scope. */
+    toggleConnector: (scopeId: string, connectorId: string) => void;
+    /** Sync active connectors from the server for a scope. */
+    syncConnectors: (scopeId: string, connectorIds: string[]) => void;
     /** Toggle a collection ID in the active set. */
     toggleActiveCollectionId: (id: string) => void;
     /** Replace the active collection IDs. */

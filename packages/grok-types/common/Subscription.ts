@@ -26,6 +26,8 @@ export interface GrokSubscription {
     apple?: GrokSubscriptionApple;
     /** PayPal billing details. */
     paypal?: GrokSubscriptionPaypal;
+    /** Braintree billing details. */
+    braintree?: GrokSubscriptionBraintree;
     /** X (Twitter) subscription passthrough. */
     x?: unknown;
     /** Enterprise/team subscription details. */
@@ -45,6 +47,8 @@ export interface GrokSubscriptionStripe {
     currentPeriodEnd?: string;
     /** Whether the subscription will cancel at period end. */
     cancelAtPeriodEnd?: boolean;
+    /** Stripe subscription type enum (mapped via `av()` transformer). */
+    subscriptionType?: string;
 }
 
 /** Google Play subscription details. */
@@ -52,6 +56,10 @@ export interface GrokSubscriptionGoogle {
     purchaseToken?: string;
     productId?: string;
     basePlanId?: string;
+    /** Expiration timestamp of the current Google Play entitlement. */
+    expiryTime?: string;
+    /** Whether auto-renewal is enabled on the Google Play subscription. */
+    autoRenewEnabled?: boolean;
 }
 
 /** Apple App Store subscription details. */
@@ -60,10 +68,18 @@ export interface GrokSubscriptionApple {
     txid?: string;
     bundleId?: string;
     productId?: string;
+    /** Whether auto-renewal is enabled on the App Store subscription. */
+    autoRenewOn?: boolean;
 }
 
 /** PayPal subscription details. */
 export interface GrokSubscriptionPaypal {
+    subscriptionId?: string;
+    planId?: string;
+}
+
+/** Braintree subscription details. */
+export interface GrokSubscriptionBraintree {
     subscriptionId?: string;
     planId?: string;
 }

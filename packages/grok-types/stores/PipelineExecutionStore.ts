@@ -28,12 +28,16 @@ export interface PipelineExecutionStoreState {
     setTemplate: (id: string, templateId: string, name: string) => void;
     /** Run a pipeline execution with inputs. */
     run: (id: string, inputs: Record<string, any>) => Promise<void>;
+    /** Run a pipeline execution with an explicit template spec. */
+    runSpec: (id: string, spec: any, inputs: Record<string, any>) => Promise<void>;
     /** Re-run a pipeline execution with inputs. */
     runRedo: (id: string, inputs: Record<string, any>) => Promise<void>;
     /** Process a streaming response for an execution. */
-    _processStream: (id: string, stream: any) => Promise<void>;
+    _processStream: (id: string, stream: any, a: any, b: any) => Promise<void>;
     /** Cancel a running execution. */
     cancel: (id: string) => void;
+    /** Append a generated post ID to an execution's outputs. */
+    appendPostId: (id: string, postId: string) => void;
     /** Reset an execution to initial state. */
     reset: (id: string) => void;
 }

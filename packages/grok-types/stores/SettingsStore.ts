@@ -62,10 +62,10 @@ export interface SettingsStoreState {
     memorySystemPromptOverride: string | undefined;
     /** Force the tool composer v2 UI. Undefined uses server default. */
     isToolComposer2: boolean | undefined;
-    /** Enable side-by-side response comparison mode. Undefined uses default. */
-    sideBySideMode: boolean | undefined;
-    /** Bypass the response cache for fresh generations. Undefined uses default. */
-    skipResponseCache: boolean | undefined;
+    /** Side-by-side response comparison mode (e.g. "default"). */
+    sideBySideMode: string;
+    /** Bypass the response cache for fresh generations. */
+    skipResponseCache: boolean;
     /** Override the model API address (dev tools). Empty string for default. */
     modelAddressOverride: string;
     /** Override the model family routing (dev tools). "none" for default. */
@@ -84,7 +84,7 @@ export interface SettingsStoreState {
     setAgeVerificationCallback: (cb: (() => void) | undefined) => void;
     setModelConfigOverrideByModel: (overrides: Record<ModelId, any>) => void;
     setIsToolComposer2: (value: boolean) => void;
-    setSideBySideMode: (value: boolean) => void;
+    setSideBySideMode: (value: string) => void;
     setSkipResponseCache: (value: boolean) => void;
     setModelAddressOverride: (address: string) => void;
     setModelFamilyOverride: (family: string) => void;

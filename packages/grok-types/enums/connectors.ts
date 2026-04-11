@@ -17,8 +17,10 @@
  * | `9`   | Outlook            |
  * | `10`  | Microsoft Teams    |
  * | `11`  | Outlook Calendar   |
+ * | `12`  | OneDrive           |
+ * | `13`  | SharePoint RW      |
  */
-export type ConnectorType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+export type ConnectorType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
 /**
  * Connector type name string used in analytics events.
@@ -34,6 +36,7 @@ export type ConnectorTypeName =
 	| "mcp"
 	| "sharepoint"
 	| "google_calendar"
+	| "onedrive"
 	| "outlook"
 	| "microsoft_teams"
 	| "outlook_calendar"

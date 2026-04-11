@@ -12,6 +12,7 @@ export type SettingsDialogTab =
 	| "dev"
 	| "dev-flags"
 	| "behavior"
+	| "code"
 	| "connectors"
 	| "connected-apps"
 	| "grok-business-connected-apps"

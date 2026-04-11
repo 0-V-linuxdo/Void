@@ -33,8 +33,6 @@ export interface ChatPageStoreState {
     reasoningMode: ReasoningMode;
     /** Model variant mode from the model picker (e.g. "expert", "fast", "auto"). */
     modelMode: ModelMode;
-    /** Whether the 4/20 special model mode is enabled. */
-    enable420: boolean;
 
 
     /** Whether the user is rate-limited. `false` when not limited, or a string error message. */
@@ -182,7 +180,6 @@ export interface ChatPageStoreState {
     setQueryBarExpanded: (expanded: boolean) => void;
     setIsTypingDebounce: (value: boolean) => void;
     setIsDeeperSearchSelected: (value: boolean) => void;
-    setEnable420: (value: boolean) => void;
     setShowStreamingIndicator: (value: boolean) => void;
     setRequestShareDialogOpen: (open: boolean) => void;
     setSideBySideConfig: (config: any) => void;

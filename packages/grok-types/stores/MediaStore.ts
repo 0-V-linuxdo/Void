@@ -10,7 +10,6 @@ import type {
 	OriginalRefType,
 	VideoResolution,
 } from "../enums/media";
-import type { PipelineExecutionStoreState } from "./PipelineExecutionStore";
 import type { ZustandStore } from "../zustand";
 
 /**
@@ -626,12 +625,8 @@ export interface MediaStoreModule {
 	useMediaStore: ZustandStore<MediaStoreState>;
 	/** Zustand store hook for imagine mode settings. */
 	useImagineModeStore: ZustandStore<ImagineModeStoreState>;
-	/** Zustand store hook for model override settings. */
-	useImagineModelOverrideStore: ZustandStore<ImagineModelOverrideStoreState>;
 	/** Zustand store hook for grid rendering permits. */
 	useGridStore: ZustandStore<GridStoreState>;
-	/** Zustand store hook for scroll positions. */
-	useScrollStore: ZustandStore<ScrollStoreState>;
 	/** Default aspect ratios for image generation: `[[2,3],[3,2],[1,1],[9,16],[16,9]]`. */
 	ASPECT_RATIOS: [number, number][];
 	/** Default resolution for video generation (`"480p"`). */
@@ -644,8 +639,6 @@ export interface MediaStoreModule {
 	getNormalizedPercentages: (aspectRatio: [number, number]) => [number, number];
 	/** Noise image generator singleton. */
 	noiseMaker: any;
-	/** Zustand store hook for pipeline execution state. */
-	usePipelineExecutionStore: ZustandStore<PipelineExecutionStoreState>;
 	/** Initialize media store subscriptions. */
 	useMediaStoreInit: () => void;
 }
