@@ -68,10 +68,9 @@ function BooleanField({ id, setting, pluginName }: SettingFieldProps) {
 
 function SelectField({ id, setting, pluginName }: SettingFieldProps) {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    if (!("options" in setting)) return null;
-
-    const { options } = (setting as { options: readonly PluginSettingSelectOption[] });
-    const valueMap = useMemo(() => new Map(options.map(o => [String(o.value), o.value])), [options]);
+    const options = "options" in setting ? (setting as { options: readonly PluginSettingSelectOption[] }).options : null;
+    const valueMap = useMemo(() => new Map(options?.map(o => [String(o.value), o.value])), [options]);
+    if (!options) return null;
 
     return (
         <SettingsRow action={

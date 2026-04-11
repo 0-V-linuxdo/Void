@@ -70,8 +70,9 @@ function highlight(css: string): string {
     let lastEnd = 0;
 
     for (const m of css.matchAll(TOKEN)) {
-        if (m.index! > lastEnd) result += esc(css.slice(lastEnd, m.index));
-        lastEnd = m.index! + m[0].length;
+        const idx = m.index ?? 0;
+        if (idx > lastEnd) result += esc(css.slice(lastEnd, idx));
+        lastEnd = idx + m[0].length;
         const t = m[0];
 
         if (t.startsWith("/*")) {

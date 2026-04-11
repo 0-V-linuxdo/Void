@@ -27,7 +27,7 @@ import {
     Text,
 } from "@components";
 import { consumePendingPluginDialog } from "@plugins/_core/settings";
-import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
+import { React, useCallback, useEffect, useMemo, useRef, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { useFiltered } from "@utils/react";
 
@@ -62,9 +62,9 @@ export default function PluginsTab() {
         return { userPlugins, requiredPlugins };
     }, []);
 
-    const initialStatesRef = React.useRef<Map<string, boolean> | null>(null);
-    const changedPluginsRef = React.useRef(new Set<string>());
-    const dismissedRef = React.useRef(false);
+    const initialStatesRef = useRef<Map<string, boolean> | null>(null);
+    const changedPluginsRef = useRef(new Set<string>());
+    const dismissedRef = useRef(false);
 
     useEffect(() => {
         if (initialStatesRef.current) return;
@@ -174,7 +174,7 @@ export default function PluginsTab() {
                     {search ? "No plugins match your search." : "No plugins available."}
                 </Paragraph>
             )}
-            {dialogPlugin && <PluginDialog plugin={dialogPlugin} open={true} onClose={() => setDialogName(null)} />}
+            {dialogPlugin && <PluginDialog plugin={dialogPlugin} open onClose={() => setDialogName(null)} />}
             <ConfirmDialog
                 open={showReload}
                 onOpenChange={v => { if (!v) onDismiss(); }}

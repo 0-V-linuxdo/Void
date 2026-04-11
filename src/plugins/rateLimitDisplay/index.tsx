@@ -38,7 +38,6 @@ const store = createExternalStore();
 let limits: LimitsMap = {};
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
-
 async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
     try {
         return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } }) as RateLimitData;

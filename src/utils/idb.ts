@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Logger } from "./Logger";
+
+const logger = new Logger("IDB");
+
 const DB_NAME = "Void";
 const STORE_NAME = "kv";
 const DB_VERSION = 1;
@@ -22,7 +26,7 @@ function open(): Promise<IDBDatabase> {
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
     });
-    promise.catch(e => { dbPromise = null; if (IS_DEV) console.warn("[Void/IDB]", e); });
+    promise.catch(e => { dbPromise = null; if (IS_DEV) logger.warn(e); });
     dbPromise = promise;
     return promise;
 }

@@ -10,15 +10,15 @@ import { LazyComponent } from "@utils/lazyReact";
 import { Logger } from "@utils/Logger";
 import { escapeRegExp } from "@utils/text";
 
+import { getFnSource } from "./fnSource";
 import { matchesAllPatterns } from "./match";
 import { addWaitForSubscription, getModuleCache, getRuntimeFactoryRegistry, getTurbopackHelpers, isBlacklisted, removeWaitForSubscription, silenceWarns, syncLazyModules } from "./patchTurbopack";
 import type { FilterFn, ModuleFactory } from "./types";
 
+export { fnSourceCache, getFnSource } from "./fnSource";
 export { matchesAllPatterns, matchesPattern } from "./match";
 
 const logger = new Logger("TurbopackFinder", "#a6d189");
-
-import { getFnSource } from "./fnSource";
 
 const zustandStoreCache = new Map<string, any>();
 
@@ -53,8 +53,6 @@ export function reportFailedFinders(): void {
 
     if (failed.length) logger.debug(`${failed.length} finder(s) resolved to nothing:`, failed);
 }
-
-export { fnSourceCache, getFnSource } from "./fnSource";
 
 function toZustandHookName(name: string): string {
     if (name.startsWith("use")) return name;

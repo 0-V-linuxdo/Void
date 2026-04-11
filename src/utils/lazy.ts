@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Logger } from "./Logger";
+
+const logger = new Logger("Lazy");
+
 const unconfigurable = ["arguments", "caller", "prototype"];
 
 const SYM_LAZY_GET = Symbol.for("void.lazy.get");
@@ -65,7 +69,7 @@ export function makeLazy<T>(factory: () => T): () => T {
             if (attempts >= MAX_RETRIES) {
                 if (IS_DEV && attempts === MAX_RETRIES) {
                     attempts++;
-                    console.warn("[Void] proxyLazy: factory failed to resolve after", MAX_RETRIES, "attempts");
+                    logger.warn("proxyLazy: factory failed to resolve after", MAX_RETRIES, "attempts");
                 }
                 return cache;
             }

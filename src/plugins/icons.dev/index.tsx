@@ -95,7 +95,7 @@ function IconsTab() {
                     type="text"
                     placeholder={`Search ${icons.length} icons...`}
                     value={search}
-                    onChange={(e: any) => setSearch(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
                     className={cl("search")}
                 />
             </Flex>
