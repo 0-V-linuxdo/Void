@@ -261,7 +261,7 @@ function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult
                     matches = originalCode.includes(match as string);
                 }
                 if (!matches && !patch.noWarn && !replacement.noWarn) {
-                    logger.warn(`[validate] ${patch.plugin}: ${String(match)}`);
+                    logger.debug(`[validate] ${patch.plugin}: ${String(match)}`);
                 }
             }
             if (!patch.all) patches.splice(i--, 1);
@@ -523,8 +523,8 @@ export function reportOrphanedPatches(): void {
     if (patchStats.noEffect || patchStats.errors) {
         for (const result of patchResults) {
             for (const rep of result.replacements) {
-                if (rep.status === "noEffect" && !result.noWarn) logger.error(`[no effect] ${result.plugin}: ${rep.match}`);
-                else if (rep.status === "error") logger.error(`[error] ${result.plugin}: ${rep.match}`);
+                if (rep.status === "noEffect" && !result.noWarn) logger.debug(`[no effect] ${result.plugin}: ${rep.match}`);
+                else if (rep.status === "error") logger.debug(`[error] ${result.plugin}: ${rep.match}`);
             }
         }
     }

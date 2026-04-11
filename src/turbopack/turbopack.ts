@@ -51,7 +51,7 @@ export function reportFailedFinders(): void {
         }
     }
 
-    if (failed.length) logger.warn(`${failed.length} finder(s) resolved to nothing:`, failed);
+    if (failed.length) logger.debug(`${failed.length} finder(s) resolved to nothing:`, failed);
 }
 
 export { fnSourceCache, getFnSource } from "./fnSource";
