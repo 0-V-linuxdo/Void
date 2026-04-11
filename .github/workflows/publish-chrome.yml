@@ -44,16 +44,13 @@ jobs:
       - run: bun run build
         if: steps.version.outputs.changed == 'true'
 
-      - name: Zip extension
-        if: steps.version.outputs.changed == 'true'
-        run: cd dist/chrome-unpacked && zip -r ../../chrome-extension.zip .
-
       - name: Upload & publish
         if: steps.version.outputs.changed == 'true'
-        uses: mnao305/chrome-extension-upload@v5.0.0
-        with:
-          file-path: chrome-extension.zip
-          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
-          client-id: ${{ secrets.CHROME_CLIENT_ID }}
-          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
-          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+        run: |
+          cd dist/chrome-unpacked
+          bunx chrome-webstore-upload-cli@3 upload --auto-publish
+        env:
+          EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
