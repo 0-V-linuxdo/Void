@@ -3,20 +3,31 @@ title: Void Development Rules
 rules:
   critical:
     - new files use 2026 license header, NEVER edit existing headers
-    - push back when user idea is wrong
+    - push back when user idea is wrong, user NOT always right
+    - NEVER assume values/APIs/module shapes you dont know, ask or inspect via void-mcp
     - smallest possible change, no refactoring unless asked
-    - ALWAYS explore @utils/, @components/, @api/ BEFORE writing anything — use existing utils/helpers, never reimplement
+    - ALWAYS explore @utils/, @components/, @api/ BEFORE writing anything — reuse existing, NEVER reimplement
+    - if a helper/component/pattern exists elsewhere, import it, NEVER copy-paste or recreate
     - use void-mcp to inspect live code, NEVER guess module structure
     - run `bun run lint:fix` + `bun run lint:styles:fix` + `bun run tsc` after changes, NEVER `bun run build` unless asked
+    - NEVER commit/push without explicit user instruction
+    - NEVER commit design specs/plans/docs to the repo
   code:
     - DELETE dead code, never comment out
-    - NEVER add comments unless asked
+    - NEVER add comments unless asked, only for non-obvious gotchas
     - capital first letter, period at end for descriptions
     - Logger from @utils/Logger, NEVER console.log/warn/error
-    - less code is better, inline single-use vars, hoist statics out of components/loops
-    - no magic numbers, unused imports/exports, dead functions
-    - DRY — extract shared helpers, use existing utils
-    - KISS, flat over nested, early returns, guard clauses at top
+    - less code = smarter code, same functionality fewer lines always wins
+    - if it can be simpler, make it simpler — no clever, no cute, just clear
+    - NEVER overengineer, NEVER overcomplicate, NEVER speculative abstractions
+    - NEVER wrapper functions that add nothing, NEVER helpers for one-time operations
+    - NEVER backwards-compat shims, feature flags, or dead-code fallbacks — just change the code
+    - NEVER add error handling/validation for scenarios that cant happen
+    - inline single-use vars, hoist statics out of components/loops
+    - no magic numbers, unused imports/exports, dead functions, unused types
+    - DRY — if a pattern repeats 2+ times, extract to @utils/ or @components/
+    - deduplicate ruthlessly, prefer importing over reimplementing
+    - KISS, flat over nested, early returns, guard clauses at top, max 3 nesting levels
     - every code path returns a value, every subscribe() needs unsubscribe()
     - re-read state after await gaps, never trust snapshots across async
     - never Date.now() alone for IDs, add random suffix
@@ -66,9 +77,14 @@ rules:
     - {arr.length && <Foo/>} (renders 0)
     - .map(x => cond ? <X/> : null) (use .filter().map())
     - barrel imports from @turbopack/common
-    - reimplementing utils that exist in @utils/
+    - reimplementing utils that exist in @utils/ or @components/
+    - wrapper functions/components that add zero value
+    - abstractions for a single call site
+    - deep nesting beyond 3 levels, nested ternaries
     - direct mutation of Settings objects
     - delete obj.key in hot paths (deoptimizes hidden classes)
+    - any type when unknown/generic works
+    - non-null assertions (!) unless the invariant is guaranteed upstream
   antiPatterns{bad > good}:
     - "value !== null && value !== undefined" > "value != null"
     - "array && array.length > 0" > "array.length"
@@ -130,8 +146,10 @@ imports:
 components:
   - Text: size(xs/sm/base/lg/xl/2xl), weight, color
   - Paragraph: descriptions, ALWAYS use over Text size="xs"
+  - SectionHeader: Text sm medium + Paragraph, use over hand-rolled section labels
   - Flex/Grid: layout containers
-  - Chip, ChatBarButton, ConfirmDialog, ErrorBoundary
+  - ChatBarButton, ConfirmDialog, ErrorBoundary, ErrorCard from @components
+  - Button, Dialog, Drawer, DropdownMenu, Select, Switch, Tooltip, Tabs, Badge, etc. from @turbopack/common/components (re-exported via @components)
   - sectionPattern: Flex column gap=0 > Text sm medium + Paragraph
 
 project:
@@ -145,3 +163,23 @@ settingsTabs:
   - wrapper handles flex-1, padding, overflow-scroll
   - tab components: NEVER set width/height/overflow/flex:1
   - root: bare Flex column with gap
+
+git:
+  - NEVER commit or push without explicit user permission, always ask first
+  - format: `type(scope): imperative summary` — scope optional, lowercase, no trailing period
+  - types: feat, fix, refactor, perf, style, chore, docs, test, build, ci, revert
+  - imperative mood: "add", "fix", "remove" — never "added", "adds", "adding"
+  - subject ≤50 chars preferred, hard cap 72
+  - no body by default — skip entirely when subject is self-explanatory
+  - body ONLY for: breaking changes, security fixes, data migrations, non-obvious *why*
+  - body wraps at 72 chars, bullets use `-` not `*`, why over what
+  - issue refs at end of body: `Closes #42`, `Refs #17`
+  - NEVER "this commit does X", NEVER I/we/now/currently — diff says what
+  - NEVER Co-Authored-By, NEVER Claude/AI attribution, NEVER generated-by tags
+  - NEVER emoji
+  - NEVER restate file/folder names when scope already says it
+  - NEVER --amend, create a new commit instead
+  - NEVER --force push
+  - group related files into one commit, dont split atomic changes
+  - NEVER commit userscript/Void.user.js except on version bumps
+  - examples: `feat(rocketAnim): add launch animation`, `fix(sidebar): broken toggle state`, `chore: bump deps`, `refactor(plugins): flatten loader`, `perf(regex): hoist to module scope`, `style: oxlint auto-fixes`
