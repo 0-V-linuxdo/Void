@@ -18,7 +18,7 @@ function enforce() {
 
 export default definePlugin({
     name: "Incognito",
-    description: "Force private chat mode for all conversations.",
+    description: "Force private chat mode for new conversations.",
     authors: [Devs.Prism],
     startAt: StartAt.TurbopackReady,
 
