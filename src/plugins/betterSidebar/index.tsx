@@ -7,19 +7,25 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
+import { Button, Checkbox, ConfirmDialog } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
 import type { SubscriptionTier } from "@grok-types/enums";
 import { SidebarComponents } from "@turbopack/common/components";
-import { React, useRef } from "@turbopack/common/react";
-import { SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
+import { Fragment, React, useEffect, useRef, useState } from "@turbopack/common/react";
+import { ChatPageStore, ConversationStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
-import { classNameFactory } from "@utils/css";
+import { classNameFactory, registerStyle, unregisterStyle } from "@utils/css";
+import { Logger } from "@utils/Logger";
+import { createExternalStore } from "@utils/misc";
+import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType } from "react";
 
+const logger = new Logger("BetterSidebar");
 const cl = classNameFactory("void-sidebar-");
+const bdCl = classNameFactory("void-bd-");
 
 const settings = definePluginSettings({
     clickToToggle: {
@@ -31,6 +37,11 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Start with the sidebar collapsed on page load.",
         default: false,
+    },
+    batchSelect: {
+        type: OptionType.BOOLEAN,
+        description: "Show checkboxes on conversations for bulk selection and deletion.",
+        default: true,
     },
 });
 
@@ -80,6 +91,86 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
     );
 }
 
+const selected = new Set<string>();
+const bdStore = createExternalStore();
+
+function toggleSelect(id: string) {
+    if (selected.has(id)) selected.delete(id);
+    else selected.add(id);
+    bdStore.notify();
+}
+
+function clearSelection() {
+    selected.clear();
+    bdStore.notify();
+}
+
+async function deleteSelected() {
+    const ids = [...selected];
+    clearSelection();
+
+    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
+    if (currentConvId && ids.includes(currentConvId)) {
+        ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
+    }
+
+    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
+    await Promise.allSettled(ids.map(id =>
+        fetchSoftDeleteConversation(id).catch(e => logger.error("Failed to delete", id, e)),
+    ));
+}
+
+function SelectCheckbox({ id }: { id: string }) {
+    const enabled = settings.use(["batchSelect"]).batchSelect;
+    const [checked, setChecked] = useState(selected.has(id));
+    const idRef = useRef(id);
+    idRef.current = id;
+
+    useEffect(() => bdStore.subscribe(() => setChecked(selected.has(idRef.current))), []);
+
+    if (!enabled) return null;
+
+    return (
+        <div onClick={e => { e.stopPropagation(); e.preventDefault(); }} className={bdCl("wrap")}>
+            <Checkbox
+                checked={checked}
+                onCheckedChange={() => toggleSelect(id)}
+                className={bdCl("checkbox")}
+            />
+        </div>
+    );
+}
+
+function ActionBar() {
+    const [count, setCount] = useState(selected.size);
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => bdStore.subscribe(() => setCount(selected.size)), []);
+
+    if (!count) return null;
+
+    return (
+        <Fragment>
+            <div className={bdCl("action-bar")}>
+                <span className={bdCl("count")}>Selected · {count}</span>
+                <div className={bdCl("buttons")}>
+                    <Button variant="primary" size="sm" shape="pill" onClick={clearSelection}>Cancel</Button>
+                    <Button variant="danger" size="sm" shape="pill" onClick={() => setOpen(true)}>Delete</Button>
+                </div>
+            </div>
+            <ConfirmDialog
+                open={open}
+                onOpenChange={setOpen}
+                title="Delete conversations"
+                description={`Are you sure you want to delete ${pluralize(count, "conversation")}? This cannot be undone.`}
+                confirmText="Delete"
+                danger
+                onConfirm={deleteSelected}
+            />
+        </Fragment>
+    );
+}
+
 export default definePlugin({
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
@@ -88,6 +179,8 @@ export default definePlugin({
     managedStyle: "betterSidebar",
 
     _UserCard: ErrorBoundary.wrap(UserCard),
+    _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
+    _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
 
     _defaultOpen() {
         return !settings.store.defaultCollapsed;
@@ -101,6 +194,21 @@ export default definePlugin({
             (e.currentTarget as HTMLElement).closest("[data-state]")
                 ?.querySelector<HTMLElement>("[data-sidebar=trigger]")?.click();
         };
+    },
+
+    start() {
+        clearSelection();
+        registerStyle("batchDelete-hover", [
+            ".void-bd-wrap{display:none}",
+            ".void-bd-wrap:has([data-state=checked]){display:inline-flex}",
+            ".group\\/sidebar-menu-item:hover .void-bd-wrap{display:inline-flex}",
+            ".void-bd-checkbox{border-color:oklch(.9924 0 none/.15)!important}",
+        ].join(""));
+    },
+
+    stop() {
+        clearSelection();
+        unregisterStyle("batchDelete-hover");
     },
 
     patches: [
@@ -132,6 +240,21 @@ export default definePlugin({
                     replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:',
                 },
             ],
+        },
+        {
+            find: "\"Editing actions\",\"Editing actions\"",
+            all: true,
+            replacement: {
+                match: /\),(\i),(\i)&&\(0,(\i)\.jsx\)\((\i),\{editing:/,
+                replace: "),$1,(0,$3.jsx)($self._renderCheckbox,{id:arguments[0].id}),$2&&(0,$3.jsx)($4,{editing:",
+            },
+        },
+        {
+            find: "\"sidebar-expand\",\"Expand\"",
+            replacement: {
+                match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history","History"\)/,
+                replace: "$self._renderActionBar(),$&",
+            },
         },
     ],
 });

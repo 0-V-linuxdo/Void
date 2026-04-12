@@ -46,3 +46,23 @@
     white-space: nowrap;
     user-select: none;
 }
+
+/* Batch delete */
+
+.void-bd-action-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.void-bd-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-tertiary);
+}
+
+.void-bd-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
