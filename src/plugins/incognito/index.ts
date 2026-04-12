@@ -1,0 +1,35 @@
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+import { SettingsStore } from "@turbopack/common/stores";
+import { Devs } from "@utils/constants";
+import definePlugin, { StartAt } from "@utils/types";
+
+const store = () => SettingsStore.useSettingsStore.getState();
+
+let unsubscribe: (() => void) | null = null;
+
+function enforce() {
+    if (!store().isIncognito) store().setIsIncognito(true);
+}
+
+export default definePlugin({
+    name: "Incognito",
+    description: "Automatically enable private chat mode on page load.",
+    authors: [Devs.Prism],
+    startAt: StartAt.TurbopackReady,
+
+    start() {
+        enforce();
+        unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce);
+    },
+
+    stop() {
+        unsubscribe?.();
+        unsubscribe = null;
+        store().setIsIncognito(false);
+    },
+});
