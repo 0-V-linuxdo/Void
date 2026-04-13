@@ -47,6 +47,11 @@ const settings = definePluginSettings({
         description: "Play video thumbnails when hovered.",
         default: true,
     },
+    hideModerated: {
+        type: OptionType.BOOLEAN,
+        description: "Hide moderated images and videos that cannot be interacted with.",
+        default: true,
+    },
 });
 
 const MEDIA_TYPE_IMAGE: MediaPostType = "MEDIA_POST_TYPE_IMAGE";
@@ -97,13 +102,19 @@ function getDateCutoff(d: DateFilter): number {
     return 0;
 }
 
+function isModeratedItem(p: MediaItem): boolean {
+    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
+}
+
 function filterItems(items: MediaItem[]): MediaItem[] {
-    if (currentFilter === "all" && !currentSearch && currentDate === "all") return items;
+    const { hideModerated } = settings.store;
+    if (currentFilter === "all" && !currentSearch && currentDate === "all" && !hideModerated) return items;
     const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
     const q = currentSearch.toLowerCase();
     const cutoff = getDateCutoff(currentDate);
     return items.filter(p => {
         if (!p) return false;
+        if (hideModerated && isModeratedItem(p)) return false;
         if (target && p.mediaType !== target) return false;
         if (cutoff && new Date(p.createTime).getTime() < cutoff) return false;
         if (q && !(p.prompt ?? "").toLowerCase().includes(q) && !(p.originalPrompt ?? "").toLowerCase().includes(q)) return false;
@@ -513,6 +524,11 @@ function useFilteredFavorites(): MediaItem[] {
     return filterItems(favorites);
 }
 
+function useFilteredList(): MediaItem[] {
+    const list = MediaStore.useMediaStore(s => s.list);
+    return settings.store.hideModerated ? list.filter(p => p && !isModeratedItem(p)) : list;
+}
+
 function CardActions({ postId }: { postId: string }) {
     const isFavorites = useFavoritesPage();
     const item = MediaStore.useMediaStore(s => s.byId[postId]);
@@ -654,6 +670,10 @@ export default definePlugin({
         return useFilteredFavorites();
     },
 
+    _useFilteredList() {
+        return useFilteredList();
+    },
+
     patches: [
         {
             find: "image_feed_opened",
@@ -673,7 +693,7 @@ export default definePlugin({
                 },
                 {
                     match: /,(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.list\)/,
-                    replace: ",$1=$self._useFilteredFavorites(),$3=(0,$2.useMediaStore)(e=>e.list)",
+                    replace: ",$1=$self._useFilteredFavorites(),$3=$self._useFilteredList()",
                 },
             ],
         },
