@@ -182,4 +182,5 @@ git:
   - NEVER --force push
   - group related files into one commit, dont split atomic changes
   - NEVER commit userscript/Void.user.js except on version bumps
-  - examples: `feat(rocketAnim): add launch animation`, `fix(sidebar): broken toggle state`, `chore: bump deps`, `refactor(plugins): flatten loader`, `perf(regex): hoist to module scope`, `style: oxlint auto-fixes`
+  - new plugins: `feat(pluginName): add plugin` — nothing else, no body, no description
+  - examples: `feat(rocketAnim): add launch animation`, `feat(customInstructions): add plugin`, `fix(sidebar): broken toggle state`, `chore: bump deps`, `refactor(plugins): flatten loader`, `perf(regex): hoist to module scope`, `style: oxlint auto-fixes`
