@@ -182,6 +182,18 @@ export default definePlugin({
     _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
 
+    _wrapSidebarClick(onClick: () => void, id: string) {
+        return (e: MouseEvent) => {
+            if (settings.store.batchSelect && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSelect(id);
+                return;
+            }
+            onClick();
+        };
+    },
+
     _defaultOpen() {
         return !settings.store.defaultCollapsed;
     },
@@ -244,10 +256,17 @@ export default definePlugin({
         {
             find: "\"Editing actions\",\"Editing actions\"",
             all: true,
-            replacement: {
-                match: /\),(\i),(\i)&&\(0,(\i)\.jsx\)\((\i),\{editing:/,
-                replace: "),$1,(0,$3.jsx)($self._renderCheckbox,{id:arguments[0].id}),$2&&(0,$3.jsx)($4,{editing:",
-            },
+            group: true,
+            replacement: [
+                {
+                    match: /,\(0,(\i)\.jsx\)\((\i),\{title:(\i),editing:/,
+                    replace: ",(0,$1.jsx)($self._renderCheckbox,{id:arguments[0].id}),(0,$1.jsx)($2,{title:$3,editing:",
+                },
+                {
+                    match: /\((\i),\{route:(\i),onClick:(\i),onDragStart:(\i),className:/,
+                    replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id),onDragStart:$4,className:",
+                },
+            ],
         },
         {
             find: "\"sidebar-expand\",\"Expand\"",
