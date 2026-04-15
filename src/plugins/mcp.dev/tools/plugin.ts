@@ -5,7 +5,7 @@
  */
 
 import { isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
-import { Settings } from "@api/Settings";
+import { mergePluginSettings, Settings } from "@api/Settings";
 import { OptionType, type Plugin } from "@utils/types";
 
 import type { PluginArgs, PluginInfo } from "./types";
@@ -41,7 +41,7 @@ function setEnabled(plugin: Plugin, resolvedName: string, enabling: boolean): un
         if (resolvedName === "MCP") return { error: "Cannot disable MCP plugin via MCP, would kill this connection." };
     }
     const wasInTargetState = enabling === isPluginEnabled(resolvedName);
-    Settings.plugins[resolvedName] = { ...Settings.plugins[resolvedName], enabled: enabling };
+    mergePluginSettings(resolvedName, { enabled: enabling });
     if (!wasInTargetState) (enabling ? startPlugin : stopPlugin)(plugin);
     const action = enabling ? "enabled" : "disabled";
     return { ok: true, action, name: resolvedName, ...(wasInTargetState && { noop: true }) };
@@ -95,7 +95,7 @@ function actionSetSetting(args: PluginArgs): unknown {
             return { error: `Value ${value} out of range for "${key}" (min: ${def.min}, max: ${def.max}).` };
         }
     }
-    Settings.plugins[r.resolvedName] = { ...Settings.plugins[r.resolvedName], [key]: value };
+    mergePluginSettings(r.resolvedName, { [key]: value });
     return { ok: true, name: r.resolvedName, key, value };
 }
 

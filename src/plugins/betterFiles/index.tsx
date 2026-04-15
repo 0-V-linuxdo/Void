@@ -13,7 +13,7 @@ import { FilesPageStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle, unregisterStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { createExternalStore } from "@utils/misc";
+import { createSelectionStore } from "@utils/misc";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -28,23 +28,11 @@ const settings = definePluginSettings({
     },
 });
 
-const selected = new Set<string>();
-const bfStore = createExternalStore();
-
-function toggleSelect(id: string) {
-    if (selected.has(id)) selected.delete(id);
-    else selected.add(id);
-    bfStore.notify();
-}
-
-function clearSelection() {
-    selected.clear();
-    bfStore.notify();
-}
+const selection = createSelectionStore<string>();
 
 async function deleteSelected() {
-    const ids = [...selected];
-    clearSelection();
+    const ids = selection.all();
+    selection.clear();
     const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
     await Promise.allSettled(ids.map(id =>
         deleteAsset(id).catch(e => logger.error("Failed to delete asset", id, e)),
@@ -84,17 +72,17 @@ function DeleteAllButton() {
 }
 
 function FileSelectCheckbox({ id }: { id: string }) {
-    const [checked, setChecked] = useState(selected.has(id));
+    const [checked, setChecked] = useState(selection.has(id));
     const idRef = useRef(id);
     idRef.current = id;
 
-    useEffect(() => bfStore.subscribe(() => setChecked(selected.has(idRef.current))), []);
+    useEffect(() => selection.subscribe(() => setChecked(selection.has(idRef.current))), []);
 
     return (
         <div onClick={e => { e.stopPropagation(); e.preventDefault(); }} className={cl("wrap")}>
             <Checkbox
                 checked={checked}
-                onCheckedChange={() => toggleSelect(id)}
+                onCheckedChange={() => selection.toggle(id)}
                 className={cl("checkbox")}
             />
         </div>
@@ -102,10 +90,10 @@ function FileSelectCheckbox({ id }: { id: string }) {
 }
 
 function FileActionBar() {
-    const [count, setCount] = useState(selected.size);
+    const [count, setCount] = useState(selection.size());
     const [open, setOpen] = useState(false);
 
-    useEffect(() => bfStore.subscribe(() => setCount(selected.size)), []);
+    useEffect(() => selection.subscribe(() => setCount(selection.size())), []);
 
     if (!count) return null;
 
@@ -114,7 +102,7 @@ function FileActionBar() {
             <div className={cl("action-bar")}>
                 <span className={cl("count")}>Selected · {count}</span>
                 <div className={cl("buttons")}>
-                    <Button variant="primary" size="sm" shape="pill" onClick={clearSelection}>Cancel</Button>
+                    <Button variant="primary" size="sm" shape="pill" onClick={() => selection.clear()}>Cancel</Button>
                     <Button variant="danger" size="sm" shape="pill" onClick={() => setOpen(true)}>Delete</Button>
                 </div>
             </div>
@@ -140,7 +128,7 @@ export default definePlugin({
     settings,
 
     start() {
-        clearSelection();
+        selection.clear();
         registerStyle(HOVER_STYLE, [
             ".void-bf-wrap{display:none;align-items:center}",
             ".void-bf-wrap:has([data-state=checked]){display:inline-flex}",
@@ -155,7 +143,7 @@ export default definePlugin({
     },
 
     stop() {
-        clearSelection();
+        selection.clear();
         unregisterStyle(HOVER_STYLE);
     },
 
@@ -168,7 +156,7 @@ export default definePlugin({
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleSelect(asset.assetId);
+                selection.toggle(asset.assetId);
                 return;
             }
             onClick();
@@ -180,7 +168,7 @@ export default definePlugin({
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleSelect(assetId);
+                selection.toggle(assetId);
             }
         };
     },

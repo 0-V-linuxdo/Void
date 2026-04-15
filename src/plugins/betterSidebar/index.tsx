@@ -18,7 +18,7 @@ import { ChatPageStore, ConversationStore, SessionStore, SubscriptionsStore } fr
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle, unregisterStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { createExternalStore } from "@utils/misc";
+import { createSelectionStore } from "@utils/misc";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType } from "react";
@@ -74,23 +74,11 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
     );
 }
 
-const selected = new Set<string>();
-const bdStore = createExternalStore();
-
-function toggleSelect(id: string) {
-    if (selected.has(id)) selected.delete(id);
-    else selected.add(id);
-    bdStore.notify();
-}
-
-function clearSelection() {
-    selected.clear();
-    bdStore.notify();
-}
+const selection = createSelectionStore<string>();
 
 async function deleteSelected() {
-    const ids = [...selected];
-    clearSelection();
+    const ids = selection.all();
+    selection.clear();
 
     const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
     if (currentConvId && ids.includes(currentConvId)) {
@@ -105,11 +93,11 @@ async function deleteSelected() {
 
 function SelectCheckbox({ id }: { id: string }) {
     const enabled = settings.use(["batchSelect"]).batchSelect;
-    const [checked, setChecked] = useState(selected.has(id));
+    const [checked, setChecked] = useState(selection.has(id));
     const idRef = useRef(id);
     idRef.current = id;
 
-    useEffect(() => bdStore.subscribe(() => setChecked(selected.has(idRef.current))), []);
+    useEffect(() => selection.subscribe(() => setChecked(selection.has(idRef.current))), []);
 
     if (!enabled) return null;
 
@@ -117,7 +105,7 @@ function SelectCheckbox({ id }: { id: string }) {
         <div onClick={e => { e.stopPropagation(); e.preventDefault(); }} className={bdCl("wrap")}>
             <Checkbox
                 checked={checked}
-                onCheckedChange={() => toggleSelect(id)}
+                onCheckedChange={() => selection.toggle(id)}
                 className={bdCl("checkbox")}
             />
         </div>
@@ -125,10 +113,10 @@ function SelectCheckbox({ id }: { id: string }) {
 }
 
 function ActionBar() {
-    const [count, setCount] = useState(selected.size);
+    const [count, setCount] = useState(selection.size());
     const [open, setOpen] = useState(false);
 
-    useEffect(() => bdStore.subscribe(() => setCount(selected.size)), []);
+    useEffect(() => selection.subscribe(() => setCount(selection.size())), []);
 
     if (!count) return null;
 
@@ -137,7 +125,7 @@ function ActionBar() {
             <div className={bdCl("action-bar")}>
                 <span className={bdCl("count")}>Selected · {count}</span>
                 <div className={bdCl("buttons")}>
-                    <Button variant="primary" size="sm" shape="pill" onClick={clearSelection}>Cancel</Button>
+                    <Button variant="primary" size="sm" shape="pill" onClick={() => selection.clear()}>Cancel</Button>
                     <Button variant="danger" size="sm" shape="pill" onClick={() => setOpen(true)}>Delete</Button>
                 </div>
             </div>
@@ -170,7 +158,7 @@ export default definePlugin({
             if (settings.store.batchSelect && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleSelect(id);
+                selection.toggle(id);
                 return;
             }
             onClick();
@@ -192,7 +180,7 @@ export default definePlugin({
     },
 
     start() {
-        clearSelection();
+        selection.clear();
         registerStyle("batchDelete-hover", [
             ".void-bd-wrap{display:none}",
             ".void-bd-wrap:has([data-state=checked]){display:inline-flex}",
@@ -202,7 +190,7 @@ export default definePlugin({
     },
 
     stop() {
-        clearSelection();
+        selection.clear();
         unregisterStyle("batchDelete-hover");
     },
 

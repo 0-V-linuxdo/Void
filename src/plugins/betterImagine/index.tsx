@@ -14,16 +14,16 @@ import type { GrokPage, MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
 import { Fragment, React, useCallback, useEffect, useMemo, useRef, useState } from "@turbopack/common/react";
 import { MediaStore, RoutingStore } from "@turbopack/common/stores";
-import { FileUtils, Toaster } from "@turbopack/common/utils";
+import { Toaster } from "@turbopack/common/utils";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
+import { fetchAndDownload, fetchAndZip } from "@utils/download";
 import { Logger } from "@utils/Logger";
-import { copyToClipboard, createExternalStore, extractUrlExtension, fetchExternal, sanitizeFilename } from "@utils/misc";
+import { copyToClipboard, createExternalStore, createSelectionStore, extractUrlExtension, sanitizeFilename } from "@utils/misc";
 import { useAsyncAction, useExternalStore } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
-import { createZip } from "@utils/zip";
 
 const CopyIcon = findExportedComponentLazy("CopyIcon");
 const DownloadIcon = findExportedComponentLazy("DownloadIcon");
@@ -122,26 +122,19 @@ function filterItems(items: MediaItem[]): MediaItem[] {
     });
 }
 
-const selectedIds = new Set<string>();
+const selection = createSelectionStore<string>();
 let selectMode = false;
-const selectionStore = createExternalStore();
 
 function toggleSelectMode() {
     selectMode = !selectMode;
-    if (!selectMode) selectedIds.clear();
-    selectionStore.notify();
-}
-
-function toggleSelected(id: string) {
-    if (selectedIds.has(id)) selectedIds.delete(id);
-    else selectedIds.add(id);
-    selectionStore.notify();
+    if (!selectMode) selection.clear();
+    else selection.notify();
 }
 
 function clearSelection() {
-    selectedIds.clear();
     selectMode = false;
-    selectionStore.notify();
+    selection.clear();
+    selection.notify();
 }
 
 async function bulkDeletePosts(ids: string[]) {
@@ -215,68 +208,23 @@ const onMouseLeave = (e: { currentTarget: HTMLElement }) => {
     if (video) pauseVideo(video);
 };
 
-function dedupeNames(names: string[]): string[] {
-    const counts = new Map<string, number>();
-    return names.map(name => {
-        const count = counts.get(name) ?? 0;
-        counts.set(name, count + 1);
-        if (!count) return name;
-        const dot = name.lastIndexOf(".");
-        return dot > 0 ? `${name.slice(0, dot)} (${count})${name.slice(dot)}` : `${name} (${count})`;
-    });
-}
-
-async function downloadAllFavorites() {
+async function downloadAllFavorites(): Promise<void> {
     const { favoritesList } = MediaStore.useMediaStore.getState();
-    const entries: { url: string; name: string }[] = [];
-
-    for (const post of favoritesList) {
-        if (!post?.mediaUrl) continue;
+    const entries = favoritesList.flatMap(post => {
+        if (!post?.mediaUrl) return [];
         const ext = extractUrlExtension(post.mediaUrl);
-        entries.push({ url: post.mediaUrl, name: `${sanitizeFilename((post.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
-    }
+        return [{ url: post.mediaUrl, name: `${sanitizeFilename((post.prompt ?? "").slice(0, 60), "imagine")}.${ext}` }];
+    });
 
-    if (!entries.length) {
-        Toaster.toast.error("No favorites to download.");
-        return;
-    }
+    if (!entries.length) { Toaster.toast.error("No favorites to download."); return; }
 
     if (entries.length === 1) {
-        try {
-            const res = await fetchExternal(entries[0].url);
-            if (!res.ok) { logger.warn("Failed to fetch:", entries[0].url); return; }
-            const blob = await res.blob();
-            FileUtils.downloadBlob(blob, entries[0].name);
-            Toaster.toast.success("Downloaded 1 image.");
-        } catch (e) {
-            logger.error("Failed to download image:", entries[0].url, e);
-        }
+        if (await fetchAndDownload(entries[0].url, entries[0].name)) Toaster.toast.success("Downloaded 1 image.");
         return;
     }
 
-    const names = dedupeNames(entries.map(e => e.name));
-    const files: Record<string, Uint8Array> = {};
-    let done = 0;
-
-    await Promise.all(entries.map(async (entry, i) => {
-        try {
-            const res = await fetchExternal(entry.url);
-            if (!res.ok) { logger.warn("Failed to fetch:", entry.url); return; }
-            const buf = await res.arrayBuffer();
-            files[names[i]] = new Uint8Array(buf);
-            done++;
-        } catch (e) {
-            logger.error("Failed to fetch:", entry.url, e);
-        }
-    }));
-
-    if (!done) {
-        Toaster.toast.error("Failed to download any files.");
-        return;
-    }
-
-    const blob = createZip(files);
-    FileUtils.downloadBlob(blob, "favorites.zip");
+    const done = await fetchAndZip(entries, "favorites.zip");
+    if (!done) { Toaster.toast.error("Failed to download any files."); return; }
     Toaster.toast.success(`Downloaded ${pluralize(done, "file")} as zip.`);
 }
 
@@ -313,17 +261,17 @@ function getVisibleIds(favorites: MediaItem[]): string[] {
 
 function ActionToolbar() {
     const isFavorites = useFavoritesPage();
-    useExternalStore(selectionStore);
+    useExternalStore(selection);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteAllOpen, setDeleteAllOpen] = useState(false);
     const [upscaleOpen, setUpscaleOpen] = useState(false);
     const favorites = MediaStore.useMediaStore(s => s.favoritesList);
     const videoByMediaId = MediaStore.useMediaStore(s => s.videoByMediaId);
 
-    const count = selectedIds.size;
+    const count = selection.size();
     const visibleCount = getVisibleIds(favorites).length;
     const videoCount = useMemo(() => {
-        const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
+        const ids = count > 0 ? selection.all() : getVisibleIds(favorites);
         return ids.filter(id => videoByMediaId[id]?.length).length;
     }, [count, favorites, videoByMediaId]);
 
@@ -331,17 +279,16 @@ function ActionToolbar() {
         if (!isFavorites && selectMode) clearSelection();
     }, [isFavorites]);
 
-    const [busyDelete, onDeleteSelected] = useAsyncAction(() => bulkDeletePosts([...selectedIds]));
+    const [busyDelete, onDeleteSelected] = useAsyncAction(() => bulkDeletePosts(selection.all()));
     const [busyDeleteAll, onDeleteAll] = useAsyncAction(() => bulkDeletePosts(getVisibleIds(favorites)));
     const [busyUpscale, onUpscale] = useAsyncAction(async () => {
-        const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
+        const ids = count > 0 ? selection.all() : getVisibleIds(favorites);
         await bulkUpscaleVideos(ids);
     });
     const busy = busyDelete || busyDeleteAll || busyUpscale;
 
     const onSelectAll = useCallback(() => {
-        for (const id of getVisibleIds(favorites)) selectedIds.add(id);
-        selectionStore.notify();
+        for (const id of getVisibleIds(favorites)) selection.add(id);
     }, [favorites]);
 
     if (!isFavorites) return null;
@@ -439,9 +386,9 @@ function ActionToolbar() {
 function SelectOverlay({ postId }: { postId: string }) {
     const isFavorites = useFavoritesPage();
     const ref = useRef<HTMLSpanElement>(null);
-    useExternalStore(selectionStore);
+    useExternalStore(selection);
 
-    const isSelected = selectMode && selectedIds.has(postId);
+    const isSelected = selectMode && selection.has(postId);
 
     useEffect(() => {
         const card = ref.current?.closest(CARD_SELECTOR) as HTMLElement | null;
@@ -460,15 +407,14 @@ function SelectOverlay({ postId }: { postId: string }) {
             if (selectMode) {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleSelected(postId);
+                selection.toggle(postId);
                 return;
             }
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
                 e.stopPropagation();
                 selectMode = true;
-                selectedIds.add(postId);
-                selectionStore.notify();
+                selection.add(postId);
             }
         };
 
@@ -536,15 +482,8 @@ function CardActions({ postId }: { postId: string }) {
 
     const onDownload = async () => {
         if (!item?.mediaUrl) return;
-        try {
-            const res = await fetchExternal(item.mediaUrl);
-            if (!res.ok) { logger.warn("Failed to fetch:", item.mediaUrl); return; }
-            const blob = await res.blob();
-            const ext = extractUrlExtension(item.mediaUrl);
-            FileUtils.downloadBlob(blob, `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`);
-        } catch (e) {
-            logger.error("Failed to download:", e);
-        }
+        const ext = extractUrlExtension(item.mediaUrl);
+        await fetchAndDownload(item.mediaUrl, `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`);
     };
 
     const onCopyPrompt = async () => {
