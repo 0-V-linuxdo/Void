@@ -34,7 +34,6 @@ export default definePlugin({
         {
             find: ["useSuperGrokAnimations", "useRocketStore", "useSurveyLocation"],
             all: true,
-            noWarn: true,
             replacement: {
                 match: /(\i)=!!\(\i\.SUPERGROK_BRANDING_QUERY_BAR_ANIMATION_ENABLED&&\(\i\|\|\i\)\);return\{enabled:/,
                 replace: "$1=!0;return{enabled:",
@@ -50,7 +49,6 @@ export default definePlugin({
         {
             find: ["withRocketGlowBorder", "isSuperGrokProUser"],
             all: true,
-            noWarn: true,
             replacement: {
                 match: /withRocketGlowBorder:\i=!1\}=\i,.{0,60}\{isSuperGrokProUser:(\i)\}=\(0,(\i)\.useSubscriptions\)\(\)/,
                 replace: "$&;$1=$self._isHeavy()",
