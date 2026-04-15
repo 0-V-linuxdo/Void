@@ -161,12 +161,17 @@ export function getSettingsPluginData(): SettingsPluginData {
 }
 
 export function updateSettingsPluginData(patch: Partial<SettingsPluginData>) {
-    Settings.plugins.Settings = { ...Settings.plugins.Settings, ...patch };
+    Settings.plugins.Settings = { ...(Settings.plugins.Settings ?? { enabled: true }), ...patch };
 }
 
-export function resolveDefault(setting: PluginSettingDef): PluginSettingValue {
+export function mergePluginSettings(name: string, patch: Record<string, unknown>) {
+    Settings.plugins[name] = { ...(Settings.plugins[name] ?? { enabled: false }), ...patch };
+}
+
+export function resolveDefault(setting: PluginSettingDef): PluginSettingValue | undefined {
     if ("default" in setting) return setting.default as PluginSettingValue;
     if (setting.type === OptionType.SELECT) return (setting as { options: readonly PluginSettingSelectOption[] }).options.find(o => o.default)?.value;
+    return undefined;
 }
 
 export function definePluginSettings<Def extends SettingsDefinition, Checks extends SettingsChecks<Def>, PrivateSettings extends object = {}>(def: Def, checks?: Checks) {

@@ -5,6 +5,7 @@
  */
 
 import { Logger } from "@utils/Logger";
+import { randomId } from "@utils/misc";
 
 const logger = new Logger("Cookies");
 
@@ -47,7 +48,7 @@ interface BridgeResponse<T> {
 }
 
 function bridgeRequest<T>(op: "list" | "set" | "remove", payload: unknown): Promise<T> {
-    const requestId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const requestId = randomId();
 
     return new Promise((resolve, reject) => {
         const ac = new AbortController();

@@ -7,7 +7,7 @@
 import "./SettingField.css";
 
 import { dispatch } from "@api/Events";
-import { resolveDefault, Settings, SettingsStore } from "@api/Settings";
+import { mergePluginSettings, resolveDefault, Settings, SettingsStore } from "@api/Settings";
 import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Slider, Switch, Text } from "@components";
 import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
@@ -38,7 +38,7 @@ function usePluginSetting(pluginName: string, id: string, setting: PluginSetting
     const update = useCallback(
         (val: PluginSettingValue) => {
             setValue(val);
-            Settings.plugins[pluginName] = { ...Settings.plugins[pluginName], [id]: val };
+            mergePluginSettings(pluginName, { [id]: val });
             setting.onChange?.(val);
             if (setting.restartNeeded) dispatch("reloadNeeded");
         },
@@ -142,6 +142,27 @@ function NumberField({ id, setting, pluginName }: SettingFieldProps) {
     );
 }
 
+function BigIntField({ id, setting, pluginName }: SettingFieldProps) {
+    const [value, update] = usePluginSetting(pluginName, id, setting);
+    const display = value == null ? "" : String(value);
+    return (
+        <Flex flexDirection="column" gap="0.5rem">
+            <SettingLabel id={id} setting={setting} />
+            <Input
+                type="text"
+                inputMode="numeric"
+                value={display}
+                onChange={(e: InputChangeEvent) => {
+                    const raw = e.target.value.trim();
+                    if (!raw) return update(0n as unknown as PluginSettingValue);
+                    try { update(BigInt(raw) as unknown as PluginSettingValue); } catch {}
+                }}
+                className={cl("number-input")}
+            />
+        </Flex>
+    );
+}
+
 function StringField({ id, setting, pluginName }: SettingFieldProps) {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return (
@@ -166,7 +187,7 @@ const FIELD_MAP: Record<OptionType, FieldComponent | null> = {
     [OptionType.SLIDER]: SliderField,
     [OptionType.COMPONENT]: ComponentField,
     [OptionType.NUMBER]: NumberField,
-    [OptionType.BIGINT]: NumberField,
+    [OptionType.BIGINT]: BigIntField,
     [OptionType.STRING]: StringField,
     [OptionType.CUSTOM]: null,
 };

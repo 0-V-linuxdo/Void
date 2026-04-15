@@ -24,7 +24,9 @@ export function useForceUpdater() {
 }
 
 export function useEventSubscription(event: VoidEvent, handler: () => void) {
-    useEffect(() => subscribe(event, handler), [event, handler]);
+    const ref = useRef(handler);
+    ref.current = handler;
+    useEffect(() => subscribe(event, () => ref.current()), [event]);
 }
 
 export function useFiltered<T>(list: T[], search: string, getKey: (item: T) => string): T[] {

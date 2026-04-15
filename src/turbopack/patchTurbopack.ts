@@ -236,7 +236,14 @@ function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult
 
     for (let i = 0; i < patches.length; i++) {
         const patch = patches[i];
-        if (patch.predicate && !patch.predicate()) continue;
+        if (patch.predicate) {
+            try {
+                if (!patch.predicate()) continue;
+            } catch (e) {
+                logger.error(`predicate threw for ${patch.plugin}:`, e);
+                continue;
+            }
+        }
 
         const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
         const maxFindLen = Math.max(0, ...finds.map(f => typeof f === "string" ? f.length : 0));
@@ -282,7 +289,14 @@ function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult
         };
 
         for (const replacement of replacements) {
-            if (replacement.predicate && !replacement.predicate()) continue;
+            if (replacement.predicate) {
+                try {
+                    if (!replacement.predicate()) continue;
+                } catch (e) {
+                    logger.error(`replacement predicate threw for ${patch.plugin}:`, e);
+                    continue;
+                }
+            }
             const lastCode = code;
 
             try {

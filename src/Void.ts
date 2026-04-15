@@ -46,6 +46,10 @@ const RETRY_TIMEOUT_MS = 15_000;
 const RETRY_DEBOUNCE_MS = 200;
 const ORPHAN_REPORT_DELAY_MS = 5_000;
 
+function safely(name: string, fn: () => void) {
+    try { fn(); } catch (e) { logger.error(`${name} failed:`, e); }
+}
+
 function deferOrphanReport() {
     if (!patches.some(p => !p.all)) return;
     setTimeout(() => {
@@ -100,14 +104,14 @@ function waitForModulesStable() {
         clearTimeout(fallbackTimer);
         rescanRuntimeModules();
 
-        try { blacklistBadModules(); } catch (e) { logger.error("blacklistBadModules failed:", e); }
-        try { _resolveReady(); } catch (e) { logger.error("_resolveReady failed:", e); }
-        try { startAllPlugins(StartAt.TurbopackReady); } catch (e) { logger.error("startAllPlugins failed:", e); }
+        safely("blacklistBadModules", blacklistBadModules);
+        safely("_resolveReady", _resolveReady);
+        safely("startAllPlugins", () => startAllPlugins(StartAt.TurbopackReady));
 
         logger.info(`${getModuleCache().size} modules loaded, ready`);
 
-        try { retryFailedPlugins(); } catch (e) { logger.error("retryFailedPlugins failed:", e); }
-        try { deferOrphanReport(); } catch (e) { logger.error("deferOrphanReport failed:", e); }
+        safely("retryFailedPlugins", retryFailedPlugins);
+        safely("deferOrphanReport", deferOrphanReport);
     });
 
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
@@ -121,28 +125,16 @@ export function init() {
     _initialized = true;
 
     for (const plugin of Object.values(Plugins)) {
-        try {
-            registerPlugin(plugin as Plugin);
-        } catch (e) {
-            logger.error("Failed to register plugin:", e);
-        }
+        safely("registerPlugin", () => registerPlugin(plugin as Plugin));
     }
 
-    try { initPluginManager(); } catch (e) { logger.error("initPluginManager failed:", e); }
+    safely("initPluginManager", initPluginManager);
+    safely("patchTurbopack", patchTurbopack);
+    safely("startAllPlugins(Init)", () => startAllPlugins(StartAt.Init));
 
-    try { patchTurbopack(); } catch (e) { logger.error("Failed to patch Turbopack:", e); }
+    const fireDomContent = () => safely("startAllPlugins(DOMContentLoaded)", () => startAllPlugins(StartAt.DOMContentLoaded));
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fireDomContent, { once: true });
+    else fireDomContent();
 
-    try { startAllPlugins(StartAt.Init); } catch (e) { logger.error("startAllPlugins(Init) failed:", e); }
-
-    try {
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", () => {
-                try { startAllPlugins(StartAt.DOMContentLoaded); } catch (e) { logger.error("startAllPlugins(DOMContentLoaded) failed:", e); }
-            }, { once: true });
-        } else {
-            startAllPlugins(StartAt.DOMContentLoaded);
-        }
-    } catch (e) { logger.error("startAllPlugins(DOMContentLoaded) failed:", e); }
-
-    try { waitForModulesStable(); } catch (e) { logger.error("waitForModulesStable failed:", e); }
+    safely("waitForModulesStable", waitForModulesStable);
 }

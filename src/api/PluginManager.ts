@@ -14,7 +14,7 @@ import { type Patch, type Plugin, StartAt } from "@utils/types";
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
 import { addContextMenuItem, type ContextMenuItemDef, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
 import { subscribe as subscribeEvent } from "./Events";
-import { getSettingsPluginData, PlainSettings, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
+import { getSettingsPluginData, mergePluginSettings, PlainSettings, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
 
 const logger = new Logger("PluginManager", "#b4befe");
 
@@ -85,7 +85,7 @@ function startDependenciesRecursive(plugin: Plugin, visiting = new Set<string>()
         }
 
         dep.isDependency = true;
-        Settings.plugins[depName] = { ...Settings.plugins[depName], enabled: true };
+        mergePluginSettings(depName, { enabled: true });
 
         visiting.add(depName);
         if (!startDependenciesRecursive(dep, visiting)) return false;
@@ -296,7 +296,7 @@ export function initPluginManager() {
                 logger.warn(`Plugin ${name} has unresolved dependency ${d}`);
                 continue;
             }
-            Settings.plugins[d] = { ...Settings.plugins[d], enabled: true };
+            mergePluginSettings(d, { enabled: true });
             dep.isDependency = true;
         }
 
@@ -307,7 +307,7 @@ export function initPluginManager() {
     for (const api of neededApis) {
         const dep = plugins[api];
         if (!dep) continue;
-        Settings.plugins[api] = { ...Settings.plugins[api], enabled: true };
+        mergePluginSettings(api, { enabled: true });
         dep.isDependency = true;
     }
 

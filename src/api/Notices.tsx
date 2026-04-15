@@ -66,6 +66,7 @@ export function showNotice(options: NoticeOptions): string | number {
     closeNotice();
 
     const { toast } = Toaster;
+    if (!toast) return -1;
 
     activeNoticeId = toast.custom(
         (id: string | number) => <Notice {...options} onClose={() => { toast.dismiss(id); activeNoticeId = null; }} />,
@@ -77,7 +78,7 @@ export function showNotice(options: NoticeOptions): string | number {
 
 export function closeNotice() {
     if (activeNoticeId != null) {
-        Toaster.toast.dismiss(activeNoticeId);
+        Toaster.toast?.dismiss(activeNoticeId);
         activeNoticeId = null;
     }
 }

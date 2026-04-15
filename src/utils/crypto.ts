@@ -74,18 +74,15 @@ async function deriveAccountKey(root: CryptoKey, salt: Bytes, aad: Bytes, usage:
     );
 }
 
-function buildAad(accountId: string): Bytes {
-    const s = `grok|${accountId}|v${CURRENT_VERSION}`;
-    const buf = new Uint8Array(new ArrayBuffer(s.length));
-    for (let i = 0; i < s.length; i++) buf[i] = s.charCodeAt(i);
-    return buf;
-}
-
 function encodeUtf8(s: string): Bytes {
     const enc = new TextEncoder().encode(s);
     const buf = new Uint8Array(new ArrayBuffer(enc.length));
     buf.set(enc);
     return buf;
+}
+
+function buildAad(accountId: string): Bytes {
+    return encodeUtf8(`grok|${accountId}|v${CURRENT_VERSION}`);
 }
 
 export async function encryptForAccount(accountId: string, plaintext: string): Promise<EncryptedBlob> {

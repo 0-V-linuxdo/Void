@@ -7,7 +7,7 @@
 import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
 import { disableStyle, enableStyle, registerStyle, unregisterStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { fetchExternal } from "@utils/misc";
+import { fetchExternal, randomId } from "@utils/misc";
 
 const logger = new Logger("Themes", "#c6a0f6");
 
@@ -123,7 +123,7 @@ export function addLocalTheme(name: string, css: string): ThemeData {
     if (!name.trim()) throw new Error("Name is required.");
     if (!css.trim()) throw new Error("CSS is required.");
 
-    const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const id = randomId("local");
     const meta = parseThemeMeta(css);
     const theme: ThemeData = {
         url: id,

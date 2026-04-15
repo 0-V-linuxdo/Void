@@ -33,13 +33,9 @@ export class SettingsStore<T extends object> {
         window.addEventListener("beforeunload", () => this.flush(), { once: true });
     }
 
-    /** Flush any pending save immediately. */
     public flush() {
-        if (this.saveTimer) {
-            clearTimeout(this.saveTimer);
-            this.saveTimer = null;
-            this.save();
-        }
+        if (this.saveTimer) { clearTimeout(this.saveTimer); this.saveTimer = null; }
+        this.save();
     }
 
     public setDefaultGetter(prefix: string, getter: (key: string) => unknown): void {
@@ -127,6 +123,7 @@ export class SettingsStore<T extends object> {
             if (typeof GM_setValue === "function") {
                 GM_setValue(STORAGE_KEY, json);
             } else {
+                try { localStorage.setItem(STORAGE_KEY, json); } catch {}
                 idbSet(STORAGE_KEY, json).catch(e => logger.warn("Failed to save settings to IndexedDB:", e));
             }
         } catch (e) {
