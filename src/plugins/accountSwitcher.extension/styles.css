@@ -1,0 +1,111 @@
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-as-content {
+    min-width: 16rem;
+    max-width: 22rem;
+}
+
+.void-as-trigger,
+.void-as-save {
+    display: flex;
+    align-items: center;
+}
+
+.void-as-icon-lead {
+    width: 1rem;
+    height: 1rem;
+    margin-inline-end: 0.5rem;
+    color: var(--fg-secondary);
+    flex-shrink: 0;
+}
+
+.void-as-icon-check {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--fg-secondary);
+    flex-shrink: 0;
+}
+
+.void-as-heading {
+    padding-inline: 0.75rem;
+    padding-block: 0.25rem 0.125rem;
+    opacity: 0.6;
+}
+
+.void-as-row-wrap {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    border-radius: 0.375rem;
+    margin-block: 0.125rem;
+}
+
+.void-as-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-inline: 0.5rem;
+    padding-inline-end: 2rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.void-as-row-active .void-as-row {
+    background: var(--surface-l5, rgb(255 255 255 / 4%));
+}
+
+.void-as-avatar {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.void-as-avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-l5, rgb(255 255 255 / 10%));
+    color: var(--fg-primary, currentcolor);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.void-as-row-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.void-as-row-label,
+.void-as-row-plan {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-as-row-delete {
+    position: absolute;
+    inset-inline-end: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    visibility: hidden;
+    flex-shrink: 0;
+}
+
+.void-as-row-delete:hover {
+    color: var(--destructive, #f87171);
+}
+
+.void-as-row-wrap:hover .void-as-row-delete,
+.void-as-row-wrap:focus-within .void-as-row-delete {
+    visibility: visible;
+}

@@ -12,11 +12,17 @@
         "128": "icons/icon128.png"
     },
     "host_permissions": [
-        "*://grok.com/*"
+        "*://grok.com/*",
+        "*://x.ai/*",
+        "*://*.x.ai/*"
     ],
     "permissions": [
-        "declarativeNetRequest"
+        "declarativeNetRequest",
+        "cookies"
     ],
+    "background": {
+        "service_worker": "background.js"
+    },
     "content_scripts": [
         {
             "run_at": "document_start",

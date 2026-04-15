@@ -57,17 +57,18 @@ const pluginDir = resolve("src/plugins");
 
 interface FolderConvention {
     suffix: string;
-    skip?: boolean;
+    skip?: (ctx: { isExt: boolean }) => boolean;
     mutations(varName: string): string;
 }
 
 const FOLDER_CONVENTIONS: FolderConvention[] = [
-    { suffix: ".dev", skip: !isDev, mutations: v => `${v}.dev=true;` },
+    { suffix: ".dev", skip: () => !isDev, mutations: v => `${v}.dev=true;` },
     { suffix: ".chrome", mutations: v => `${v}.chrome=true;${v}.hidden=!window.chrome;` },
     { suffix: ".preview", mutations: v => `${v}.preview=true;` },
+    { suffix: ".extension", skip: ({ isExt }) => !isExt, mutations: v => `${v}.extension=true;` },
 ];
 
-function scanPluginDir(baseDir: string, imports: string[], exports: string[], mutations: string[], counter: { i: number }) {
+function scanPluginDir(baseDir: string, imports: string[], exports: string[], mutations: string[], counter: { i: number }, isExt: boolean) {
     if (!existsSync(baseDir)) return;
     const entries = readdirSync(baseDir, { withFileTypes: true });
 
@@ -75,7 +76,7 @@ function scanPluginDir(baseDir: string, imports: string[], exports: string[], mu
         if (!entry.isDirectory() || entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
 
         const convention = FOLDER_CONVENTIONS.find(c => entry.name.endsWith(c.suffix));
-        if (convention?.skip) continue;
+        if (convention?.skip?.({ isExt })) continue;
 
         const pluginDir = `${baseDir}/${entry.name}`;
         if (!existsSync(`${pluginDir}/index.ts`) && !existsSync(`${pluginDir}/index.tsx`)) continue;
@@ -88,15 +89,15 @@ function scanPluginDir(baseDir: string, imports: string[], exports: string[], mu
     }
 }
 
-function generatePluginModule(): string {
+function generatePluginModule(isExt: boolean): string {
     const imports: string[] = [];
     const exports: string[] = [];
     const mutations: string[] = [];
     const counter = { i: 0 };
 
-    scanPluginDir(resolve(pluginDir, "_core"), imports, exports, mutations, counter);
-    scanPluginDir(resolve(pluginDir, "_api"), imports, exports, mutations, counter);
-    scanPluginDir(pluginDir, imports, exports, mutations, counter);
+    scanPluginDir(resolve(pluginDir, "_core"), imports, exports, mutations, counter, isExt);
+    scanPluginDir(resolve(pluginDir, "_api"), imports, exports, mutations, counter, isExt);
+    scanPluginDir(pluginDir, imports, exports, mutations, counter, isExt);
 
     logger.info(`Found ${counter.i} plugins`);
 
@@ -105,7 +106,7 @@ function generatePluginModule(): string {
     return `${imports.join("\n")}\n${mutationBlock}\nexport default { ${exports.join(", ")} } as Record<string, unknown>;\n`;
 }
 
-function pluginsPlugin(): import("bun").BunPlugin {
+function pluginsPlugin(isExt: boolean): import("bun").BunPlugin {
     return {
         name: "virtual-plugins",
         setup(build) {
@@ -114,7 +115,7 @@ function pluginsPlugin(): import("bun").BunPlugin {
                 namespace: "virtual",
             }));
             build.onLoad({ filter: /^~plugins$/, namespace: "virtual" }, () => ({
-                contents: generatePluginModule(),
+                contents: generatePluginModule(isExt),
                 loader: "ts",
             }));
         },
@@ -165,7 +166,7 @@ async function buildCore(outfile: string, isExt: boolean) {
             })()),
         },
         naming: outfile,
-        plugins: [pluginsPlugin(), cssPlugin()],
+        plugins: [pluginsPlugin(isExt), cssPlugin()],
     });
 
     if (!result.success) {
@@ -197,7 +198,7 @@ async function buildExtensions() {
     const targets = [
         {
             name: "chrome-unpacked",
-            files: ["manifest.json", "content.js", "modifyResponseHeaders.json"],
+            files: ["manifest.json", "content.js", "background.js", "modifyResponseHeaders.json"],
         },
         {
             name: "firefox-unpacked",
