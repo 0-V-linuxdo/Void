@@ -57,8 +57,8 @@ export default definePlugin({
             find: '"user-dropdown.upgrade","Upgrade plan"',
             all: true,
             replacement: {
-                match: /"Sign Out"\)\]\}\)/,
-                replace: '$&,$self.renderItems("user")',
+                match: /(\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\i,children:\[\(0,\i\.jsx\)\(\i\.SignOutIcon)/,
+                replace: '$self.renderItems("user"),$1',
             },
         },
     ],
