@@ -29,6 +29,11 @@ const settings = definePluginSettings({
         description: "Hide upgrade prompts and locked modes in the model selector.",
         default: true,
     },
+    hideNotificationBanner: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the \"Get notified when Grok finishes answering\" banner.",
+        default: true,
+    },
 });
 
 export default definePlugin({
@@ -68,6 +73,14 @@ export default definePlugin({
             replacement: {
                 match: /"UpsellButton",\(\)=>(\i)/,
                 replace: '"UpsellButton",()=>$self.settings.store.hideUpsellSmall?()=>null:$1',
+            },
+        },
+        {
+            find: '"BrowserNotificationBanner",()=>',
+            all: true,
+            replacement: {
+                match: /"BrowserNotificationBanner",\(\)=>(\i)/,
+                replace: '"BrowserNotificationBanner",()=>$self.settings.store.hideNotificationBanner?()=>null:$1',
             },
         },
         // hides upsell card and locked modes in the mode selector
