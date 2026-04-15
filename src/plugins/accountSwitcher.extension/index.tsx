@@ -22,6 +22,7 @@ import { captureSnapshots, CookieAccessError, type CookieDomainSnapshot, replace
 import { decryptForAccount, type EncryptedBlob, encryptForAccount, isEncryptedBlob } from "@utils/crypto";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
+import { randomId } from "@utils/misc";
 import definePlugin from "@utils/types";
 
 const logger = new Logger("AccountSwitcher");
@@ -69,9 +70,6 @@ interface SavedAccount {
 
 const settings = definePluginSettings({}).withPrivateSettings<{ accounts: SavedAccount[] }>();
 
-function createId() {
-    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
 
 function isPerAccountKey(key: string) {
     if (PER_ACCOUNT_KEYS.has(key)) return true;
@@ -130,40 +128,47 @@ async function snapshotAvatar(url: string): Promise<string | null> {
     }
 }
 
+async function persistCurrent(user: GrokUser): Promise<SavedAccount> {
+    const snapshots = await captureSnapshots();
+    const totalCookies = snapshots.reduce((n, s) => n + s.cookies.length, 0);
+    if (!totalCookies) throw new CookieAccessError("No cookies returned for grok.com or accounts.x.ai.");
+
+    const accounts = settings.plain.accounts ?? [];
+    const existingIdx = accounts.findIndex(a => a.userId === user.userId);
+    const id = existingIdx >= 0 ? accounts[existingIdx].id : randomId();
+    const [encryptedCookies, profileImageData] = await Promise.all([
+        encryptForAccount(id, JSON.stringify(snapshots)),
+        snapshotAvatar(user.profileImageUrl),
+    ]);
+    const fallbackLabel = user.givenName || user.email.split("@")[0] || "Account";
+    const { bestSubscription } = SubscriptionsStore.useSubscriptionsStore.getState();
+
+    const account: SavedAccount = {
+        id,
+        userId: user.userId,
+        label: accounts[existingIdx]?.label || fallbackLabel,
+        email: user.email,
+        givenName: user.givenName,
+        profileImageUrl: user.profileImageUrl,
+        profileImageData: profileImageData ?? accounts[existingIdx]?.profileImageData,
+        plan: getPlanName(bestSubscription, user.xSubscriptionType),
+        encryptedCookies,
+        savedAt: Date.now(),
+    };
+
+    settings.store.accounts = existingIdx >= 0
+        ? accounts.map((a, i) => i === existingIdx ? account : a)
+        : [...accounts, account];
+
+    return account;
+}
+
 async function saveCurrent(user: GrokUser) {
     try {
-        const snapshots = await captureSnapshots();
-        const totalCookies = snapshots.reduce((n, s) => n + s.cookies.length, 0);
-        if (!totalCookies) throw new CookieAccessError("No cookies returned for grok.com or accounts.x.ai.");
-
         const accounts = settings.plain.accounts ?? [];
-        const existingIdx = accounts.findIndex(a => a.userId === user.userId);
-        const id = existingIdx >= 0 ? accounts[existingIdx].id : createId();
-        const [encryptedCookies, profileImageData] = await Promise.all([
-            encryptForAccount(id, JSON.stringify(snapshots)),
-            snapshotAvatar(user.profileImageUrl),
-        ]);
-        const fallbackLabel = user.givenName || user.email.split("@")[0] || "Account";
-        const { bestSubscription } = SubscriptionsStore.useSubscriptionsStore.getState();
-
-        const account: SavedAccount = {
-            id,
-            userId: user.userId,
-            label: accounts[existingIdx]?.label || fallbackLabel,
-            email: user.email,
-            givenName: user.givenName,
-            profileImageUrl: user.profileImageUrl,
-            profileImageData: profileImageData ?? accounts[existingIdx]?.profileImageData,
-            plan: getPlanName(bestSubscription, user.xSubscriptionType),
-            encryptedCookies,
-            savedAt: Date.now(),
-        };
-
-        settings.store.accounts = existingIdx >= 0
-            ? accounts.map((a, i) => i === existingIdx ? account : a)
-            : [...accounts, account];
-
-        showToast(existingIdx >= 0 ? `Updated ${account.label}.` : `Saved ${account.label}.`, ToastType.SUCCESS);
+        const existed = accounts.some(a => a.userId === user.userId);
+        const account = await persistCurrent(user);
+        showToast(existed ? `Updated ${account.label}.` : `Saved ${account.label}.`, ToastType.SUCCESS);
     } catch (e) {
         logger.error("Save failed", e);
         showToast(e instanceof Error ? e.message : "Failed to save account.", ToastType.ERROR);
@@ -172,6 +177,14 @@ async function saveCurrent(user: GrokUser) {
 
 async function switchTo(account: SavedAccount) {
     try {
+        const currentUser = SessionStore.getSessionStoreState().user;
+        if (currentUser?.userId === account.userId) return;
+        const alreadySaved = currentUser && (settings.plain.accounts ?? []).some(a => a.userId === currentUser.userId);
+        if (currentUser && alreadySaved) {
+            try { await persistCurrent(currentUser); }
+            catch (e) { logger.warn("Failed to refresh current account before switch", e); }
+        }
+
         const plaintext = await decryptForAccount(account.id, account.encryptedCookies);
         const snapshots = JSON.parse(plaintext) as CookieDomainSnapshot[];
         if (!Array.isArray(snapshots) || !snapshots.length) throw new Error("Stored session is empty or corrupt.");
