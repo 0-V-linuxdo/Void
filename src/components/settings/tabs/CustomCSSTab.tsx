@@ -8,8 +8,10 @@ import "./CustomCSSTab.css";
 
 import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
 import { Flex, SectionHeader, Switch } from "@components";
-import { React, useCallback, useLayoutEffect, useRef, useState } from "@turbopack/common/react";
+import { React, useCallback, useState } from "@turbopack/common/react";
 import { classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
+
+import { CssEditor } from "../CssEditor";
 
 const cl = classNameFactory("void-css-");
 const STYLE_ID = "void-custom-css";
@@ -32,101 +34,9 @@ export function loadSavedCSS(): string {
     return typeof saved === "string" ? saved : "";
 }
 
-function formatCSS(raw: string): string {
-    let out = "";
-    let indent = 0;
-    const pad = () => "    ".repeat(indent);
-    const tokens = raw.replaceAll(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
-
-    for (const t of tokens) {
-        const s = t.trim();
-        if (!s) continue;
-        if (s === "{") {
-            out += " {\n";
-            indent++;
-        } else if (s === "}") {
-            indent = Math.max(0, indent - 1);
-            out += pad() + "}\n\n";
-        } else if (s === ";") {
-            out += ";\n";
-        } else if (s === ":") {
-            out += ": ";
-        } else if (indent > 0) {
-            out += pad() + s;
-        } else {
-            out += s;
-        }
-    }
-
-    return out.replaceAll(/\n{3,}/g, "\n\n").trim() + "\n";
-}
-
-const TOKEN = /\/\*[\s\S]*?\*\/|@[\w-]+|"[^"]*"|'[^']*'|#[\da-fA-F]{3,8}|[\d.]+(?:px|em|rem|%|vh|vw|s|ms|deg|fr|ch)?|[\w-]+|[{}:;,()!]/g;
-
-function highlight(css: string): string {
-    let inBlock = 0;
-    let afterColon = false;
-    let result = "";
-    let lastEnd = 0;
-
-    for (const m of css.matchAll(TOKEN)) {
-        const idx = m.index ?? 0;
-        if (idx > lastEnd) result += esc(css.slice(lastEnd, idx));
-        lastEnd = idx + m[0].length;
-        const t = m[0];
-
-        if (t.startsWith("/*")) {
-            result += span("com", t);
-            afterColon = false;
-        } else if (t.startsWith("@")) {
-            result += span("at", t);
-        } else if (t === "{") {
-            inBlock++;
-            afterColon = false;
-            result += span("brace", t);
-        } else if (t === "}") {
-            inBlock = Math.max(0, inBlock - 1);
-            afterColon = false;
-            result += span("brace", t);
-        } else if (t === ":") {
-            afterColon = inBlock > 0;
-            result += span("punct", t);
-        } else if (t === ";" || t === ",") {
-            afterColon = false;
-            result += span("punct", t);
-        } else if (t === "(" || t === ")" || t === "!") {
-            result += span("punct", t);
-        } else if (t.startsWith('"') || t.startsWith("'")) {
-            result += span("str", t);
-        } else if (t.startsWith("#") || /^[\d.]/.test(t)) {
-            result += span("num", t);
-        } else if (afterColon) {
-            result += span("val", t);
-        } else if (inBlock > 0) {
-            result += span("prop", t);
-        } else {
-            result += span("sel", t);
-        }
-    }
-
-    if (lastEnd < css.length) result += esc(css.slice(lastEnd));
-    return result;
-}
-
-function span(cls: string, text: string): string {
-    return `<span class="${cl(cls)}">${esc(text)}</span>`;
-}
-
-function esc(s: string): string {
-    return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-}
-
 export default function CustomCSSTab() {
-    const highlightRef = useRef<HTMLPreElement>(null);
     const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
     const [css, setCss] = useState(loadSavedCSS);
-    const cssRef = useRef(css);
-    cssRef.current = css;
 
     const apply = useCallback((val: string) => {
         setCss(val);
@@ -139,48 +49,13 @@ export default function CustomCSSTab() {
         setCustomCSSEnabled(checked);
     };
 
-    const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-        const pasted = e.clipboardData.getData("text/plain");
-        if (pasted.includes("{") && !pasted.includes("\n")) {
-            e.preventDefault();
-            const ta = e.currentTarget;
-            const start = ta.selectionStart;
-            const end = ta.selectionEnd;
-            const formatted = formatCSS(pasted);
-            const next = cssRef.current.slice(0, start) + formatted + cssRef.current.slice(end);
-            apply(next);
-            requestAnimationFrame(() => {
-                const pos = start + formatted.length;
-                ta.selectionStart = pos;
-                ta.selectionEnd = pos;
-            });
-        }
-    }, [apply]);
-
-    useLayoutEffect(() => {
-        if (highlightRef.current) highlightRef.current.innerHTML = highlight(css) + "\n";
-    }, [css]);
-
     return (
-        <Flex flexDirection="column" gap="0.75rem" className={cl("root")}>
+        <Flex flexDirection="column" gap="1rem" className={`${cl("root")} void-tab-root`}>
             <Flex alignItems="center" justifyContent="space-between" className={cl("header")}>
-                <SectionHeader title="Quick CSS" description="Custom CSS applied live as you type." />
+                <SectionHeader title="Quick CSS" description="Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it." />
                 <Switch checked={enabled} onCheckedChange={handleToggle} />
             </Flex>
-            <div className={cl("wrap")}>
-                <pre ref={highlightRef} className={cl("highlight")} aria-hidden="true" />
-                <textarea
-                    className={cl("input")}
-                    value={css}
-                    onChange={e => apply(e.target.value)}
-                    onPaste={handlePaste}
-                    disabled={!enabled}
-                    spellCheck={false}
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                />
-            </div>
+            <CssEditor value={css} onChange={apply} disabled={!enabled} />
         </Flex>
     );
 }

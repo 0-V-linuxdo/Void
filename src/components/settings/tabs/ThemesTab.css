@@ -2,23 +2,15 @@
     color: hsl(var(--fg-danger));
 }
 
-.void-themes-import-btn {
-    height: 2.25rem;
-}
-
 .void-themes-local-css-field {
     flex: 1;
     min-height: 0;
 }
 
-.void-themes-local-textarea {
+.void-themes-local-editor {
     min-height: 15.625rem;
     max-height: 25rem;
     resize: vertical;
-    font-family: monospace;
-    font-size: 0.8rem;
-    line-height: 1.5;
-    tab-size: 2;
 }
 
 .void-themes-local-footer {

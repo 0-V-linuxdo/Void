@@ -30,13 +30,12 @@ const cl = classNameFactory("void-theme-card-");
 
 interface ThemeCardProps {
     theme: ThemeData;
-    globalEnabled: boolean;
     onRemove(url: string): void;
     onToggle(): void;
     onEdit?(): void;
 }
 
-export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle, onEdit }: ThemeCardProps) {
+export default function ThemeCard({ theme, onRemove, onToggle, onEdit }: ThemeCardProps) {
     const handleToggle = () => {
         if (theme.enabled) disableTheme(theme.url);
         else enableTheme(theme.url).catch(e => logger.error("Failed to enable theme:", e));
@@ -57,7 +56,7 @@ export default function ThemeCard({ theme, globalEnabled, onRemove, onToggle, on
                         : <IconButton icon={CopyIcon} label="Copy URL" onClick={() => { copyToClipboard(theme.url).catch(e => logger.error("Failed to copy URL:", e)); }} />
                     }
                     <IconButton icon={Trash2Icon} label="Remove" onClick={() => onRemove(theme.url)} />
-                    <Switch checked={theme.enabled} disabled={!globalEnabled} onCheckedChange={handleToggle} />
+                    <Switch checked={theme.enabled} onCheckedChange={handleToggle} />
                 </>
             }
             footer={

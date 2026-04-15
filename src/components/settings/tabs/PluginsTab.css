@@ -1,5 +1,4 @@
 .void-plugins-reload-banner {
-    margin: 0 0.75rem;
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
     background: hsl(var(--yellow-800) / 60%);
@@ -14,9 +13,4 @@
 
 .void-plugins-filter-select {
     width: 7rem;
-}
-
-.void-plugins-divider {
-    margin: 0 0.75rem;
-    width: auto;
 }
