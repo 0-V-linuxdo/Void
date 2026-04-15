@@ -40,8 +40,8 @@ export default definePlugin({
                     replace: "onEditClick:$1,...arguments[0]})",
                 },
                 {
-                    match: /"Delete","Delete"\)\]\}\)/,
-                    replace: '$&,$self.renderItems("conversation",{conversationId:arguments[0].id})',
+                    match: /(\i)&&\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\(\)=>\{null==\1.{0,120}"Delete","Delete"\)\]\}\)/,
+                    replace: '$self.renderItems("conversation",{conversationId:arguments[0].id}),$&',
                 },
             ],
         },
