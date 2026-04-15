@@ -11,8 +11,8 @@ import { Button, Checkbox, ConfirmDialog } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
-import type { SubscriptionTier } from "@grok-types/enums";
 import { SidebarComponents } from "@turbopack/common/components";
+import { getPlanName } from "@turbopack/common/plan";
 import { Fragment, React, useEffect, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
@@ -44,23 +44,6 @@ const settings = definePluginSettings({
         default: true,
     },
 });
-
-const PLAN_NAMES: Partial<Record<SubscriptionTier, string>> = {
-    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
-    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
-    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
-    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro",
-};
-
-const X_SUB_NAMES: Record<string, string> = { PremiumPlus: "SuperGrok", Premium: "X Premium", Basic: "X Basic" };
-
-function getPlanName(bestSubscription?: SubscriptionTier, xSubscriptionType?: string): string {
-    return (bestSubscription && PLAN_NAMES[bestSubscription])
-        ?? (xSubscriptionType && X_SUB_NAMES[xSubscriptionType])
-        ?? "Free";
-}
 
 function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
     const { open } = SidebarComponents.useSidebar();
