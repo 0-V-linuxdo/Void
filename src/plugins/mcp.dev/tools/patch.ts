@@ -11,15 +11,20 @@ import { type PatchedModuleFactory, SYM_PATCHED_BY } from "@turbopack/types";
 import { canonicalizeMatch } from "@utils/patches";
 
 import { PATCH } from "./constants";
-import type { LintWarning, PatchArgs } from "./types";
-import { clampConfig, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources, getFactorySourceCache } from "./utils";
+import type { LintWarning, PatchArgs, ValidationIssue } from "./types";
+import { asArray, clampConfig, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources, getFactorySourceCache } from "./utils";
 
-const indexOfPattern = (src: string, pat: string | RegExp) => typeof pat === "string" ? src.indexOf(pat) : src.search(pat);
 const CTX_PAD_CFG = { default: PATCH.DEFAULT_CONTEXT_PAD, max: PATCH.MAX_CONTEXT_PAD } as const;
+const ANALYZE_CTX_CFG = { default: PATCH.ANALYZE_DEFAULT_CONTEXT, max: PATCH.MAX_CONTEXT_PAD } as const;
+
+function firstIndexOf(src: string, pat: string | RegExp): number {
+    if (typeof pat === "string") return src.indexOf(pat);
+    pat.lastIndex = 0;
+    return src.search(pat);
+}
 
 function findModulesByFind(findStr: string | string[]): { ids: number[]; results: Record<number, unknown>; canonFind: string | RegExp } {
-    const parts = Array.isArray(findStr) ? findStr : [findStr];
-    const canonParts = parts.map(f => canonicalizeMatch(f));
+    const canonParts = asArray(findStr).map(f => canonicalizeMatch(f));
     const results = search(...canonParts);
     const ids = Object.keys(results).map(Number);
     return { ids, results, canonFind: canonParts[0] };
@@ -33,7 +38,7 @@ function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
 
     const varRe = /(?:^|[^\\a-zA-Z_$\w])([etrnioslcu])(?=[.,()[\]{}=!<>?:])/g;
     const foundVars = new Set<string>();
-    let vm;
+    let vm: RegExpExecArray | null;
     while ((vm = varRe.exec(matchStr)) !== null) {
         if (!matchStr.startsWith("\\i", vm.index + vm[0].length - 1)) foundVars.add(vm[1]);
     }
@@ -75,7 +80,7 @@ function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
     if (matchStr.length > PATCH.MATCH_LONG_LENGTH) warnings.push({ severity: "warn", message: `Long regex (${PATCH.MATCH_LONG_LENGTH}+ chars)`, fix: "Split into multiple patches" });
 
     const unnecessaryEscapeRe = /\\([/:!@#%=<>,;])/g;
-    let ue;
+    let ue: RegExpExecArray | null;
     while ((ue = unnecessaryEscapeRe.exec(matchStr)) !== null) {
         warnings.push({ severity: "info", message: `Unnecessary escape: \\${ue[1]} (${ue[1]} doesn't need escaping in regex)` });
     }
@@ -155,7 +160,7 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
         }
         const firstFind = Array.isArray(findStr) ? findStr[0] : findStr;
         const canonFindStr = canonicalizeMatch(firstFind);
-        const findIdx = indexOfPattern(src, canonFindStr);
+        const findIdx = firstIndexOf(src, canonFindStr);
         const nfPad = clampConfig(contextPad, CTX_PAD_CFG);
         const nearFind = findIdx >= 0 ? src.slice(Math.max(0, findIdx - nfPad), Math.min(src.length, findIdx + nfPad * 2)) : undefined;
         const result: Record<string, unknown> = { status: "MATCH_FAILED", id, len: src.length, hint };
@@ -182,13 +187,19 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
     const patchedSrc = src.replace(regex, replaceStr);
     if (patchedSrc === src) warnings.push("Replacement produced identical output (no-op)");
 
+    try {
+        new Function("return " + patchedSrc.replaceAll("$self", "({})"));
+    } catch (syntaxErr: unknown) {
+        warnings.push(`Replacement produces invalid JS: ${errorMessage(syntaxErr).split("\n")[0]}`);
+    }
+
     const at = matched.index!;
     const pad = clampConfig(contextPad, CTX_PAD_CFG);
     const cs = Math.max(0, at - pad);
     const ce = Math.min(src.length, at + matched[0].length + pad);
 
     const canonFindV = canonicalizeMatch(Array.isArray(findStr) ? findStr[0] : findStr);
-    const findOffset = indexOfPattern(src, canonFindV);
+    const findOffset = firstIndexOf(src, canonFindV);
 
     const result: Record<string, unknown> = {
         status: "VALID",
@@ -208,9 +219,9 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
 }
 
 function diagnoseOrphaned(p: (typeof patches)[number]) {
-    const findParts = (Array.isArray(p.find) ? p.find : [p.find]).map(f => String(f));
+    const findParts = asArray(p.find).map(f => String(f));
     const { ids, results } = findModulesByFind(findParts);
-    const replacements = Array.isArray(p.replacement) ? p.replacement : [p.replacement];
+    const replacements = asArray(p.replacement);
     const findLabel = String(p.find).slice(0, PATCH.FIND_SLICE);
 
     if (!ids.length) {
@@ -247,7 +258,7 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
     const result: Record<string, unknown> = { plugin: p.plugin, find: findLabel, n: replacements.length, reason, moduleId: ids[0] };
     const src = String(results[ids[0]]);
     const canonFind = canonicalizeMatch(findParts[0]);
-    const findIdx = indexOfPattern(src, canonFind);
+    const findIdx = firstIndexOf(src, canonFind);
     if (findIdx >= 0) {
         const neighborhood = src.slice(Math.max(0, findIdx - PATCH.ANALYZE_DEFAULT_CONTEXT), Math.min(src.length, findIdx + PATCH.ANALYZE_DEFAULT_CONTEXT * 2));
         const nearbyI18n = extractI18nKeys(neighborhood);
@@ -256,267 +267,428 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
     return result;
 }
 
-export function handlePatch(args: PatchArgs): unknown {
-    const { action, find: findStr, match: matchStr, replace: replaceStr, flags } = args;
+const BACKREF_RE = /\$(\d+)/g;
 
-    if (action === "list") {
-        return patches.map(p => {
-            const replacements = Array.isArray(p.replacement) ? p.replacement : [p.replacement];
-            const result = patchResults.find(r => r.plugin === p.plugin && r.find === String(p.find));
-            const entry: Record<string, unknown> = {
-                plugin: p.plugin,
-                find: String(p.find).slice(0, PATCH.FIND_SLICE),
-                all: !!p.all,
-                replacements: replacements.map((r, i) => {
-                    const rep: Record<string, unknown> = {
-                        match: String(r.match).slice(0, PATCH.MATCH_SLICE),
-                        replace: typeof r.replace === "string" ? r.replace.slice(0, PATCH.MATCH_SLICE) : "[function]",
-                    };
-                    if (result?.replacements[i]) rep.status = result.replacements[i].status;
-                    return rep;
-                }),
-            };
-            if (p.group) entry.group = true;
-            if (p.validateOnly) entry.validateOnly = true;
-            if (p.noWarn) entry.noWarn = true;
-            if (p.predicate) entry.predicate = true;
-            if (result) entry.moduleId = result.moduleId;
-            else entry.status = isPluginEnabled(p.plugin) ? "unmatched" : "disabled";
-            return entry;
+function validatePatch(p: (typeof patches)[number]): ValidationIssue[] {
+    const issues: ValidationIssue[] = [];
+    const findParts = asArray(p.find).map(String);
+    const findLabel = String(p.find).slice(0, PATCH.FIND_SLICE);
+    const replacements = asArray(p.replacement);
+    const push = (issue: Omit<ValidationIssue, "plugin" | "find">): void => {
+        issues.push({ plugin: p.plugin, find: findLabel, ...issue });
+    };
+
+    const { ids, results } = findModulesByFind(findParts);
+    if (!ids.length) {
+        if (!p.noWarn) push({ code: "find::no-module", severity: "error", message: "find matched 0 modules" });
+        return issues;
+    }
+
+    const uniqueFactories = new Set<string>();
+    for (const id of ids) uniqueFactories.add(String(results[id]));
+    if (!p.all && uniqueFactories.size > 1) {
+        push({
+            code: "find::ambiguous",
+            severity: "error",
+            message: `find matches ${uniqueFactories.size} distinct factories across ${ids.length} modules without all:true`,
+            detail: `ids: ${ids.slice(0, 10).join(", ")}${ids.length > 10 ? "…" : ""}`,
         });
     }
 
-    if (action === "analyze") {
-        if (!findStr) return { error: "Provide find string." };
-        const { ids, results, canonFind } = findModulesByFind(findStr);
-        if (!ids.length) return { unique: false, count: 0, hint: "No modules match this find string" };
+    const candidateSources = [...uniqueFactories];
+    const candidateIds = [...uniqueFactories].map(src => ids.find(id => String(results[id]) === src)!);
+    const groupFailures: number[] = [];
 
-        const ctxPad = clampConfig(args.context, { default: PATCH.ANALYZE_DEFAULT_CONTEXT, max: PATCH.MAX_CONTEXT_PAD });
+    for (let r = 0; r < replacements.length; r++) {
+        const rep = replacements[r];
+        if (typeof rep.match === "function" || typeof rep.replace === "function") continue;
 
-        if (ids.length === 1) {
-            const id = ids[0];
-            const src = String(results[id]);
-            const findIdx = indexOfPattern(src, canonFind);
-            const start = Math.max(0, findIdx - ctxPad);
-            const ctx = src.slice(start, start + ctxPad * 2);
-            const nearbyI18n = extractI18nKeys(ctx);
-            const result: Record<string, unknown> = { unique: true, id, at: findIdx, len: src.length, ctx };
-            if (nearbyI18n.length) result.i18nKeys = nearbyI18n;
-            return result;
+        let compiled: RegExp | null = null;
+        if (rep.match instanceof RegExp) {
+            try { compiled = canonicalizeMatch(rep.match); }
+            catch (e) {
+                push({ code: "replace::regex-invalid", severity: "error", message: "match regex failed to compile", replacementIndex: r, detail: errorMessage(e) });
+                groupFailures.push(r);
+                continue;
+            }
+        } else if (typeof rep.match === "string") {
+            try { compiled = canonicalizeMatch(new RegExp(rep.match)); }
+            catch {}
         }
 
-        const firstSrc = String(results[ids[0]]);
-        const sameSource = ids.every(mid => String(results[mid]) === firstSrc);
-
-        const entries = ids.slice(0, PATCH.ANALYZE_IDS_LIMIT).map(mid => {
-            const modSrc = String(results[mid]);
-            const modIdx = typeof canonFind === "string" ? modSrc.indexOf(canonFind) : modSrc.search(canonFind);
-            const start = Math.max(0, modIdx - ctxPad);
-            const ctx = modSrc.slice(start, start + ctxPad * 2);
-            const nearbyI18n = extractI18nKeys(ctx);
-            const entry: Record<string, unknown> = { id: mid, ctx };
-            if (nearbyI18n.length) entry.i18nKeys = nearbyI18n;
-            return entry;
-        });
-
-        const result: Record<string, unknown> = { unique: false, count: ids.length, entries };
-        if (sameSource) {
-            result.sharedFactory = true;
-            result.ids = ids.slice(0, PATCH.ANALYZE_IDS_LIMIT);
-            result.hint = `Shared factory — all ${ids.length} IDs share identical source. Use all:true in patch.`;
+        let hitSrc: string | null = null;
+        let hitModId: number | null = null;
+        for (let i = 0; i < candidateSources.length; i++) {
+            const src = candidateSources[i];
+            if (compiled) {
+                compiled.lastIndex = 0;
+                if (compiled.test(src)) { hitSrc = src; hitModId = candidateIds[i]; break; }
+            } else if (typeof rep.match === "string" && src.includes(rep.match)) {
+                hitSrc = src; hitModId = candidateIds[i]; break;
+            }
         }
+
+        if (!hitSrc) {
+            if (!rep.noWarn && !p.noWarn) {
+                push({ code: "replace::match-miss", severity: "error", message: "match did not resolve in any matched module", replacementIndex: r, moduleId: candidateIds[0] });
+            }
+            groupFailures.push(r);
+            continue;
+        }
+
+        if (compiled && typeof rep.replace === "string") {
+            const groups = countCaptureGroups(compiled.source);
+            for (const m of rep.replace.matchAll(BACKREF_RE)) {
+                const ref = Number(m[1]);
+                if (ref > groups) {
+                    push({ code: "replace::backref-invalid", severity: "error", message: `replace uses $${ref} but match has only ${groups} capture group(s)`, replacementIndex: r, moduleId: hitModId ?? undefined });
+                }
+            }
+        }
+
+        if (typeof rep.replace === "string") {
+            try {
+                const pluginPath = `Void.plugins[${JSON.stringify(p.plugin)}]`;
+                const replaceExpr = rep.replace.replaceAll("$self", pluginPath);
+                const patched = hitSrc.replace(compiled ?? (rep.match as string), replaceExpr);
+                new Function("return " + patched.replaceAll(pluginPath, "({})"));
+            } catch (e) {
+                push({ code: "replace::syntax-error", severity: "error", message: "replacement produced invalid JavaScript", replacementIndex: r, moduleId: hitModId ?? undefined, detail: errorMessage(e).split("\n")[0] });
+                groupFailures.push(r);
+            }
+        }
+    }
+
+    if (p.group && groupFailures.length) {
+        push({ code: "group::failed", severity: "error", message: `grouped patch: ${groupFailures.length}/${replacements.length} replacements fail — whole group would revert` });
+    }
+
+    return issues;
+}
+
+
+function actionList(): unknown {
+    return patches.map(p => {
+        const replacements = asArray(p.replacement);
+        const result = patchResults.find(r => r.plugin === p.plugin && r.find === String(p.find));
+        const entry: Record<string, unknown> = {
+            plugin: p.plugin,
+            find: String(p.find).slice(0, PATCH.FIND_SLICE),
+            all: !!p.all,
+            replacements: replacements.map((r, i) => {
+                const rep: Record<string, unknown> = {
+                    match: String(r.match).slice(0, PATCH.MATCH_SLICE),
+                    replace: typeof r.replace === "string" ? r.replace.slice(0, PATCH.MATCH_SLICE) : "[function]",
+                };
+                if (result?.replacements[i]) rep.status = result.replacements[i].status;
+                return rep;
+            }),
+        };
+        if (p.group) entry.group = true;
+        if (p.validateOnly) entry.validateOnly = true;
+        if (p.noWarn) entry.noWarn = true;
+        if (p.predicate) entry.predicate = true;
+        if (result) entry.moduleId = result.moduleId;
+        else entry.status = isPluginEnabled(p.plugin) ? "unmatched" : "disabled";
+        return entry;
+    });
+}
+
+function actionAnalyze(args: PatchArgs): unknown {
+    const { find: findStr } = args;
+    if (!findStr) return { error: "Provide find string." };
+    const { ids, results, canonFind } = findModulesByFind(findStr);
+    if (!ids.length) return { unique: false, count: 0, hint: "No modules match this find string" };
+
+    const ctxPad = clampConfig(args.context, ANALYZE_CTX_CFG);
+
+    if (ids.length === 1) {
+        const id = ids[0];
+        const src = String(results[id]);
+        const findIdx = firstIndexOf(src, canonFind);
+        const start = Math.max(0, findIdx - ctxPad);
+        const ctx = src.slice(start, start + ctxPad * 2);
+        const nearbyI18n = extractI18nKeys(ctx);
+        const result: Record<string, unknown> = { unique: true, id, at: findIdx, len: src.length, ctx };
+        if (nearbyI18n.length) result.i18nKeys = nearbyI18n;
         return result;
     }
 
-    if (action === "test") {
-        if (!findStr || !matchStr || !replaceStr) return { error: "Provide find, match, and replace." };
+    const firstSrc = String(results[ids[0]]);
+    const sameSource = ids.every(mid => String(results[mid]) === firstSrc);
 
-        const { ids, results } = findModulesByFind(findStr);
-        if (!ids.length) {
-            const registry = getRuntimeFactoryRegistry();
-            return { status: "FIND_NO_MATCH", hint: "No modules match this find string. Verify the string exists in module source or use search tool.", factories: registry?.size ?? 0 };
-        }
+    const entries = ids.slice(0, PATCH.ANALYZE_IDS_LIMIT).map(mid => {
+        const modSrc = String(results[mid]);
+        const modIdx = typeof canonFind === "string" ? modSrc.indexOf(canonFind) : modSrc.search(canonFind);
+        const start = Math.max(0, modIdx - ctxPad);
+        const ctx = modSrc.slice(start, start + ctxPad * 2);
+        const nearbyI18n = extractI18nKeys(ctx);
+        const entry: Record<string, unknown> = { id: mid, ctx };
+        if (nearbyI18n.length) entry.i18nKeys = nearbyI18n;
+        return entry;
+    });
 
-        const id = ids[0];
-        const src = String(results[id]);
-        const testResult = testMatchOnSource(src, id, findStr, matchStr, replaceStr, flags, args.context);
-
-        if (typeof testResult === "object" && testResult.status === "VALID") {
-            const matchAt = testResult.at as number;
-            const i18nPad = clampConfig(args.context, CTX_PAD_CFG);
-            const neighborhood = src.slice(Math.max(0, matchAt - i18nPad), Math.min(src.length, matchAt + i18nPad * 2));
-            const nearbyI18n = extractI18nKeys(neighborhood);
-            if (nearbyI18n.length) (testResult as Record<string, unknown>).nearbyI18n = nearbyI18n;
-        }
-
-        if (ids.length === 1) return testResult;
-
-        const sameSource = ids.every(mid => String(results[mid]) === src);
-        return {
-            ...testResult,
-            findCount: ids.length,
-            ids: ids.slice(0, PATCH.NOT_UNIQUE_IDS_LIMIT),
-            sharedFactory: sameSource,
-            hint: sameSource ? `Shared factory (${ids.length} IDs, same source) — use all:true in patch` : `${ids.length} different modules match find — make find more specific`,
-        };
+    const result: Record<string, unknown> = { unique: false, count: ids.length, entries };
+    if (sameSource) {
+        result.sharedFactory = true;
+        result.ids = ids.slice(0, PATCH.ANALYZE_IDS_LIMIT);
+        result.hint = `Shared factory, all ${ids.length} IDs share identical source. Use all:true in patch.`;
     }
+    return result;
+}
 
-    if (action === "conflicts") {
+function actionTest(args: PatchArgs): unknown {
+    const { find: findStr, match: matchStr, replace: replaceStr, flags } = args;
+    if (!findStr || !matchStr || !replaceStr) return { error: "Provide find, match, and replace." };
+
+    const { ids, results } = findModulesByFind(findStr);
+    if (!ids.length) {
         const registry = getRuntimeFactoryRegistry();
-        if (!registry) return { error: "Factory registry not available" };
-        const conflicts: Array<{ id: number; plugins: string[] }> = [];
-        for (const [id, factory] of registry) {
-            const patchedBy = (factory as PatchedModuleFactory)[SYM_PATCHED_BY];
-            if (patchedBy && patchedBy.length > 1) conflicts.push({ id, plugins: patchedBy });
+        return { status: "FIND_NO_MATCH", hint: "No modules match this find string. Verify the string exists in module source or use search tool.", factories: registry?.size ?? 0 };
+    }
+
+    const id = ids[0];
+    const src = String(results[id]);
+    const testResult = testMatchOnSource(src, id, findStr, matchStr, replaceStr, flags, args.context);
+
+    if (typeof testResult === "object" && testResult.status === "VALID") {
+        const matchAt = testResult.at as number;
+        const i18nPad = clampConfig(args.context, CTX_PAD_CFG);
+        const neighborhood = src.slice(Math.max(0, matchAt - i18nPad), Math.min(src.length, matchAt + i18nPad * 2));
+        const nearbyI18n = extractI18nKeys(neighborhood);
+        if (nearbyI18n.length) (testResult as Record<string, unknown>).nearbyI18n = nearbyI18n;
+    }
+
+    if (ids.length === 1) return testResult;
+
+    const sameSource = ids.every(mid => String(results[mid]) === src);
+    return {
+        ...testResult,
+        findCount: ids.length,
+        ids: ids.slice(0, PATCH.NOT_UNIQUE_IDS_LIMIT),
+        sharedFactory: sameSource,
+        hint: sameSource ? `Shared factory (${ids.length} IDs, same source), use all:true in patch` : `${ids.length} different modules match find, make find more specific`,
+    };
+}
+
+function actionConflicts(): unknown {
+    const registry = getRuntimeFactoryRegistry();
+    if (!registry) return { error: "Factory registry not available" };
+    const conflicts: Array<{ id: number; plugins: string[] }> = [];
+    for (const [id, factory] of registry) {
+        const patchedBy = (factory as PatchedModuleFactory)[SYM_PATCHED_BY];
+        if (patchedBy && patchedBy.length > 1) conflicts.push({ id, plugins: patchedBy });
+    }
+    return { count: conflicts.length, conflicts };
+}
+
+function collectResultsByStatus(status: string): Array<{ plugin: string; find: string; moduleId: number; match: string }> {
+    return patchResults.flatMap(r =>
+        r.replacements.filter(rep => rep.status === status).map(rep => ({
+            plugin: r.plugin, find: r.find.slice(0, PATCH.FIND_SLICE), moduleId: r.moduleId, match: rep.match.slice(0, PATCH.MATCH_SLICE),
+        })),
+    );
+}
+
+function actionBroken(): unknown {
+    const report = patchReport();
+    const diagnosed = patches.map(diagnoseOrphaned).filter(Boolean);
+    const noEffect = collectResultsByStatus("noEffect");
+    const errors = collectResultsByStatus("error");
+    const reverted = collectResultsByStatus("reverted");
+    return {
+        orphaned: diagnosed,
+        ...(report.pending.length && { pending: report.pending }),
+        ...(noEffect.length && { noEffect }),
+        ...(errors.length && { errors }),
+        ...(reverted.length && { reverted }),
+        stats: {
+            applied: patchStats.applied,
+            noEffect: patchStats.noEffect,
+            errors: patchStats.errors,
+            runtimeFallbacks: patchStats.runtimeFallbacks,
+            patched: patchStats.patchedModules.size,
+        },
+    };
+}
+
+function actionLint(args: PatchArgs): unknown {
+    const { match: matchStr, replace: replaceStr } = args;
+    if (!matchStr) return { error: "Provide match regex string to lint." };
+    const warnings = lintMatchRegex(matchStr, replaceStr);
+    const errorCount = warnings.filter(w => w.severity === "error").length;
+    const warnCount = warnings.filter(w => w.severity === "warn").length;
+    return { warnings, summary: { errors: errorCount, warns: warnCount, info: warnings.length - errorCount - warnCount }, clean: !errorCount && !warnCount };
+}
+
+function actionContext(args: PatchArgs): unknown {
+    const { find: findStr } = args;
+    if (!findStr) return { error: "Provide find string." };
+    const { ids, results, canonFind } = findModulesByFind(findStr);
+    if (!ids.length) {
+        const registry = getRuntimeFactoryRegistry();
+        return { error: "No modules match this find string", hint: "Verify the string exists in module source or use search tool.", factories: registry?.size ?? 0 };
+    }
+
+    const id = ids[0];
+    const src = String(results[id]);
+    const findIdx = firstIndexOf(src, canonFind);
+    if (findIdx < 0) return { error: "Find matched module but indexOf failed" };
+
+    const rawWindow = args.window;
+    const windowSize = Math.max(PATCH.CONTEXT_MIN_WINDOW, clampConfig(rawWindow, { default: PATCH.CONTEXT_DEFAULT_WINDOW, max: PATCH.CONTEXT_MAX_WINDOW }));
+    const half = Math.floor(windowSize / 2);
+    const ctxStart = Math.max(0, findIdx - half);
+    const ctxEnd = Math.min(src.length, findIdx + half);
+    const ctx = src.slice(ctxStart, ctxEnd);
+
+    const anchors = extractContextAnchors(ctx, getAllFactorySources(), PATCH.CONTEXT_MAX_ANCHORS);
+    const findRelative = findIdx - ctxStart;
+    for (const anchor of anchors) anchor.dist = Math.abs(anchor.at - findRelative);
+    anchors.sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0));
+
+    const result: Record<string, unknown> = { id, at: findIdx, len: src.length, ctxStart, src: ctx, anchors };
+    if (rawWindow != null && rawWindow < PATCH.CONTEXT_MIN_WINDOW) result.note = `Window clamped to minimum of ${PATCH.CONTEXT_MIN_WINDOW} (requested ${rawWindow}).`;
+    if (ids.length > 1) {
+        const sameSource = ids.every(mid => String(results[mid]) === src);
+        result.findCount = ids.length;
+        if (sameSource) result.sharedFactory = true;
+    }
+    return result;
+}
+
+const BENCH_RUNS = 50;
+const BENCH_WARMUP = 5;
+const BENCH_PHASE_BUDGET_MS = 1500;
+
+interface BenchStats {
+    medianMs: number;
+    p95Ms: number;
+    maxMs: number;
+    aborted?: true;
+}
+
+function runBench(fn: () => void): BenchStats {
+    const phaseStart = performance.now();
+    const warmupTimes: number[] = [];
+    for (let i = 0; i < BENCH_WARMUP; i++) {
+        const t = performance.now();
+        fn();
+        warmupTimes.push(performance.now() - t);
+        if (performance.now() - phaseStart > BENCH_PHASE_BUDGET_MS) {
+            warmupTimes.sort((a, b) => a - b);
+            const mid = warmupTimes[Math.floor(warmupTimes.length / 2)];
+            return { medianMs: +mid.toFixed(3), p95Ms: +warmupTimes[warmupTimes.length - 1].toFixed(3), maxMs: +warmupTimes[warmupTimes.length - 1].toFixed(3), aborted: true };
         }
-        return { count: conflicts.length, conflicts };
+    }
+    const times: number[] = [];
+    for (let i = 0; i < BENCH_RUNS; i++) {
+        if (performance.now() - phaseStart > BENCH_PHASE_BUDGET_MS) break;
+        const start = performance.now();
+        fn();
+        times.push(performance.now() - start);
+    }
+    if (!times.length) return { medianMs: -1, p95Ms: -1, maxMs: -1, aborted: true };
+    times.sort((a, b) => a - b);
+    const aborted = times.length < BENCH_RUNS;
+    return {
+        medianMs: +(times[Math.floor(times.length / 2)].toFixed(3)),
+        p95Ms: +(times[Math.floor(times.length * 0.95)].toFixed(3)),
+        maxMs: +(times[times.length - 1].toFixed(3)),
+        ...(aborted && { aborted: true }),
+    };
+}
+
+function actionBench(args: PatchArgs): unknown {
+    const { find: findStr, match: matchStr, replace: replaceStr, flags } = args;
+    if (!matchStr) return { error: "Provide match regex string." };
+
+    let regex: RegExp;
+    try {
+        regex = canonicalizeMatch(new RegExp(matchStr, flags ?? ""));
+    } catch (e: unknown) {
+        return { error: `Invalid regex: ${errorMessage(e)}` };
     }
 
-    if (action === "broken") {
-        const report = patchReport();
-        const diagnosed = patches.map(diagnoseOrphaned).filter(Boolean);
-        const collectByStatus = (status: string) => patchResults.flatMap(r =>
-            r.replacements.filter(rep => rep.status === status).map(rep => ({
-                plugin: r.plugin, find: r.find.slice(0, PATCH.FIND_SLICE), moduleId: r.moduleId, match: rep.match.slice(0, PATCH.MATCH_SLICE),
-            })),
-        );
-        const noEffect = collectByStatus("noEffect");
-        const errors = collectByStatus("error");
-        const reverted = collectByStatus("reverted");
-        return {
-            orphaned: diagnosed,
-            ...(report.pending.length && { pending: report.pending }),
-            ...(noEffect.length && { noEffect }),
-            ...(errors.length && { errors }),
-            ...(reverted.length && { reverted }),
-            stats: {
-                applied: patchStats.applied,
-                noEffect: patchStats.noEffect,
-                errors: patchStats.errors,
-                runtimeFallbacks: patchStats.runtimeFallbacks,
-                patched: patchStats.patchedModules.size,
-            },
-        };
-    }
+    const allSources = getAllFactorySources();
+    const benchFindStr = Array.isArray(findStr) ? findStr[0] : findStr;
+    const canonFind = benchFindStr ? canonicalizeMatch(benchFindStr) : undefined;
 
-    if (action === "lint") {
-        if (!matchStr) return { error: "Provide match regex string to lint." };
-        const warnings = lintMatchRegex(matchStr, replaceStr);
-        const errorCount = warnings.filter(w => w.severity === "error").length;
-        const warnCount = warnings.filter(w => w.severity === "warn").length;
-        return { warnings, summary: { errors: errorCount, warns: warnCount, info: warnings.length - errorCount - warnCount }, clean: !errorCount && !warnCount };
-    }
+    const find = canonFind && typeof canonFind === "string" ? runBench(() => {
+        for (const src of allSources) if (src.includes(canonFind)) break;
+    }) : undefined;
 
-    if (action === "context") {
-        if (!findStr) return { error: "Provide find string." };
-        const { ids, results, canonFind } = findModulesByFind(findStr);
-        if (!ids.length) {
-            const registry = getRuntimeFactoryRegistry();
-            return { error: "No modules match this find string", hint: "Verify the string exists in module source or use search tool.", factories: registry?.size ?? 0 };
-        }
+    const match = runBench(() => {
+        for (const src of allSources) { regex.lastIndex = 0; regex.test(src); }
+    });
 
-        const id = ids[0];
-        const src = String(results[id]);
-        const findIdx = indexOfPattern(src, canonFind);
-        if (findIdx < 0) return { error: "Find matched module but indexOf failed" };
+    const replace = replaceStr ? runBench(() => {
+        for (const src of allSources) { regex.lastIndex = 0; src.replace(regex, replaceStr); }
+    }) : undefined;
 
-        const rawWindow = args.window;
-        const windowSize = Math.max(PATCH.CONTEXT_MIN_WINDOW, clampConfig(rawWindow, { default: PATCH.CONTEXT_DEFAULT_WINDOW, max: PATCH.CONTEXT_MAX_WINDOW }));
-        const half = Math.floor(windowSize / 2);
-        const ctxStart = Math.max(0, findIdx - half);
-        const ctxEnd = Math.min(src.length, findIdx + half);
-        const ctx = src.slice(ctxStart, ctxEnd);
+    let totalLen = 0;
+    for (const src of allSources) totalLen += src.length;
 
-        const anchors = extractContextAnchors(ctx, getAllFactorySources(), PATCH.CONTEXT_MAX_ANCHORS);
-        const findRelative = findIdx - ctxStart;
-        for (const anchor of anchors) anchor.dist = Math.abs(anchor.at - findRelative);
-        anchors.sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0));
+    return {
+        regex: regex.source.slice(0, PATCH.MATCH_SLICE),
+        modules: { count: allSources.length, totalLen },
+        ...(find && { find }),
+        match,
+        ...(replace && { replace }),
+    };
+}
 
-        const result: Record<string, unknown> = {
-            id,
-            at: findIdx,
-            len: src.length,
-            ctxStart,
-            src: ctx,
-            anchors,
-        };
-        if (rawWindow != null && rawWindow < PATCH.CONTEXT_MIN_WINDOW) result.note = `Window clamped to minimum of ${PATCH.CONTEXT_MIN_WINDOW} (requested ${rawWindow}).`;
-        if (ids.length > 1) {
-            const sameSource = ids.every(mid => String(results[mid]) === src);
-            result.findCount = ids.length;
-            if (sameSource) result.sharedFactory = true;
-        }
-        return result;
-    }
+function actionReport(): unknown {
+    const report = patchReport();
+    return {
+        stats: report.stats,
+        results: report.results.length,
+        orphaned: report.orphaned,
+        pending: report.pending,
+    };
+}
 
-    if (action === "bench") {
-        if (!matchStr) return { error: "Provide match regex string." };
+function actionValidate(args: PatchArgs): unknown {
+    const targetPlugin = args.plugin;
+    const severityFilter = args.severity ?? "error";
+    const scope = targetPlugin ? patches.filter(p => p.plugin === targetPlugin) : patches;
+    if (targetPlugin && !scope.length) return { error: `No patches for plugin "${targetPlugin}".` };
 
-        let regex: RegExp;
-        try {
-            regex = canonicalizeMatch(new RegExp(matchStr, flags ?? ""));
-        } catch (e: unknown) {
-            return { error: `Invalid regex: ${errorMessage(e)}` };
-        }
+    const issues: ValidationIssue[] = [];
+    for (const p of scope) issues.push(...validatePatch(p));
 
-        const RUNS = 50;
-        const WARMUP = 5;
+    const filtered = severityFilter === "all" ? issues : issues.filter(i => i.severity === severityFilter);
+    const byCode: Partial<Record<ValidationIssue["code"], number>> = {};
+    for (const i of issues) byCode[i.code] = (byCode[i.code] ?? 0) + 1;
+    const byPlugin: Record<string, number> = {};
+    for (const i of issues) byPlugin[i.plugin] = (byPlugin[i.plugin] ?? 0) + 1;
 
-        const bench = (fn: () => void) => {
-            for (let i = 0; i < WARMUP; i++) fn();
-            const times: number[] = [];
-            for (let i = 0; i < RUNS; i++) {
-                const start = performance.now();
-                fn();
-                times.push(performance.now() - start);
-            }
-            times.sort((a, b) => a - b);
-            return {
-                medianMs: +(times[Math.floor(RUNS / 2)].toFixed(3)),
-                p95Ms: +(times[Math.floor(RUNS * 0.95)].toFixed(3)),
-                maxMs: +(times[RUNS - 1].toFixed(3)),
-            };
-        };
+    return {
+        patches: scope.length,
+        total: issues.length,
+        errors: issues.filter(i => i.severity === "error").length,
+        warnings: issues.filter(i => i.severity === "warn").length,
+        byCode,
+        ...(Object.keys(byPlugin).length && { byPlugin }),
+        issues: filtered,
+    };
+}
 
-        const allSources = getAllFactorySources();
-        const benchFindStr = Array.isArray(findStr) ? findStr[0] : findStr;
-        const canonFind = benchFindStr ? canonicalizeMatch(benchFindStr) : undefined;
+const PATCH_ACTIONS: Record<PatchArgs["action"], (args: PatchArgs) => unknown> = {
+    list: actionList,
+    analyze: actionAnalyze,
+    test: actionTest,
+    conflicts: actionConflicts,
+    broken: actionBroken,
+    lint: actionLint,
+    context: actionContext,
+    bench: actionBench,
+    report: actionReport,
+    validate: actionValidate,
+};
 
-        const find = canonFind && typeof canonFind === "string" ? bench(() => {
-            for (const src of allSources) {
-                if (src.includes(canonFind)) break;
-            }
-        }) : undefined;
-
-        const match = bench(() => {
-            for (const src of allSources) { regex.lastIndex = 0; regex.test(src); }
-        });
-
-        const replace = replaceStr ? bench(() => {
-            for (const src of allSources) { regex.lastIndex = 0; src.replace(regex, replaceStr); }
-        }) : undefined;
-
-        let totalLen = 0;
-        for (const src of allSources) totalLen += src.length;
-
-        return {
-            regex: regex.source.slice(0, PATCH.MATCH_SLICE),
-            modules: { count: allSources.length, totalLen },
-            ...(find && { find }),
-            match,
-            ...(replace && { replace }),
-        };
-    }
-
-    if (action === "report") {
-        const report = patchReport();
-        return {
-            stats: report.stats,
-            results: report.results.length,
-            orphaned: report.orphaned,
-            pending: report.pending,
-        };
-    }
-
-    return { error: `Unknown action: ${action}` };
+export function handlePatch(args: PatchArgs): unknown {
+    const fn = PATCH_ACTIONS[args.action];
+    if (!fn) return { error: `Unknown action: ${args.action}` };
+    return fn(args);
 }

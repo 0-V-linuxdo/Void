@@ -52,11 +52,12 @@
         "src/**/*.ts",
         "src/**/*.tsx",
         "packages/**/*.ts",
-        "packages/**/*.d.ts"
+        "packages/**/*.d.ts",
+        "reporter/**/*.ts",
+        "reporter.ts"
     ],
     "exclude": [
         "node_modules",
-        "dist",
-        "src/plugins/mcp.dev/server.ts"
+        "dist"
     ]
 }

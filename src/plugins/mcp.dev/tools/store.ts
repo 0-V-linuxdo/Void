@@ -29,7 +29,7 @@ const storeCacheHolder = createGenerationalCache<StoreEntry[]>(
                     seen.add(val as object);
                     const state = val.getState();
                     const stateKeys = isObject(state) ? Object.keys(state) : [];
-                    const storeName = (key.startsWith("use") ? key : null) ?? (typeof val.name === "string" && val.name !== STORE.MINIFIED_STORE_NAME ? val.name : null) ?? (key !== "default" && key !== STORE.MINIFIED_STORE_NAME ? key : null);
+                    const storeName = resolveStoreName(key, val.name);
                     stores.push({ id, name: storeName, keys: stateKeys.slice(0, STORE.KEYS_PREVIEW) });
                 } catch {}
             }
@@ -39,6 +39,20 @@ const storeCacheHolder = createGenerationalCache<StoreEntry[]>(
     () => getModuleCache().size,
 );
 export const clearStoreCache = storeCacheHolder.clear;
+
+function coerceModuleId(query: string | number): number {
+    if (typeof query === "number") return query;
+    const trimmed = String(query).trim();
+    if (!trimmed.length) return NaN;
+    return Number(trimmed);
+}
+
+function resolveStoreName(exportKey: string, valName?: string): string | null {
+    if (exportKey.startsWith("use")) return exportKey;
+    if (typeof valName === "string" && valName !== STORE.MINIFIED_STORE_NAME) return valName;
+    if (exportKey !== "default" && exportKey !== STORE.MINIFIED_STORE_NAME) return exportKey;
+    return null;
+}
 
 function isZustandStore(value: unknown): value is ZustandLike {
     if (value == null) return false;
@@ -63,7 +77,7 @@ function getStoreFromModule(moduleId: number, exportName?: string | null): Zusta
 
 function findStoreByQuery(query: string | number): { store: ZustandLike; resolvedName: string; also?: string[] } | null {
     const stores = storeCacheHolder.get();
-    const numQuery = typeof query === "number" ? query : (String(query).trim().length > 0 ? Number(query) : NaN);
+    const numQuery = coerceModuleId(query);
     if (!Number.isNaN(numQuery) && Number.isFinite(numQuery)) {
         const store = getStoreFromModule(numQuery);
         return store ? { store, resolvedName: `module:${numQuery}` } : null;
@@ -124,148 +138,154 @@ function diffState(prev: Record<string, unknown>, cur: Record<string, unknown>, 
     return changes;
 }
 
-const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "resetAll", "clearAll", "clearAllOverrides", "deleteUser", "signOut", "clearSession", "refreshSession", "__proto__", "constructor", "prototype"]);
+const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "resetAll", "clearAll", "clearAllOverrides", "deleteUser", "signOut", "clearSession", "refreshSession"]);
+
+function actionList(): unknown {
+    return storeCacheHolder.get().map(s => ({ id: s.id, n: s.name, k: s.keys.slice(0, STORE.LIST_KEYS_PREVIEW) }));
+}
+
+function actionGet(args: StoreArgs): unknown {
+    const result = requireStore(args.query);
+    if ("error" in result) return result;
+    const state = result.store.getState();
+    const hasPathOrDepth = args.path || args.depth != null;
+    const defaultDepth = hasPathOrDepth ? SERIALIZE.DEFAULT_DEPTH : STORE.DEFAULT_DEPTH;
+    const depth = clampConfig(args.depth, { default: defaultDepth, max: STORE.MAX_DEPTH });
+    const value = args.path ? getPath(state, args.path) : state;
+    const out: Record<string, unknown> = { _store: result.resolvedName, value: serialize(value, depth) };
+    if (result.also?.length) out._also = result.also;
+    return out;
+}
+
+function actionKeys(args: StoreArgs): unknown {
+    const result = requireStore(args.query);
+    if ("error" in result) return result;
+    const state = result.store.getState();
+    const target = args.path ? getPath(state, args.path) : state;
+    if (!isObject(target)) return { _store: result.resolvedName, ...(args.path && { path: args.path }), keys: [] };
+    const keys: Record<string, string> = {};
+    for (const k of Object.keys(target as Record<string, unknown>)) {
+        try {
+            keys[k] = describeValue((target as Record<string, unknown>)[k]);
+        } catch {
+            keys[k] = "!";
+        }
+    }
+    return { _store: result.resolvedName, ...(args.path && { path: args.path }), keys };
+}
+
+function actionMethods(args: StoreArgs): unknown {
+    const result = requireStore(args.query);
+    if ("error" in result) return result;
+    const state = result.store.getState();
+    if (!isObject(state)) return { _store: result.resolvedName, methods: {} };
+    const methods: Record<string, number> = {};
+    for (const k of Object.keys(state)) {
+        if (typeof state[k] === "function") methods[k] = (state[k] as Function).length;
+    }
+    return { _store: result.resolvedName, methods };
+}
+
+function actionCall(args: StoreArgs): unknown {
+    const { method, callArgs } = args;
+    if (!method) return { error: "Provide method name. Use methods action to list available methods." };
+    if (DESTRUCTIVE_METHODS.has(method)) return { error: `Method "${method}" is potentially destructive and blocked via MCP. Use evaluateCode if you really need to call it.` };
+    const found = requireStore(args.query);
+    if ("error" in found) return found;
+    const state = found.store.getState();
+    if (!state || typeof state[method] !== "function") {
+        const available = state ? Object.keys(state).filter(k => typeof state[k] === "function").slice(0, STORE.METHODS_PREVIEW) : [];
+        if (available.length) return { error: `No method "${method}"`, available };
+        return { error: `No method "${method}". Store has no callable methods.` };
+    }
+
+    const depth = clampConfig(args.depth, { default: SERIALIZE.DEFAULT_DEPTH, max: STORE.MAX_DEPTH });
+    try {
+        const stateBefore = found.store.getState();
+        const callResult = (state[method] as Function)(...(Array.isArray(callArgs) ? callArgs : []));
+
+        const buildResult = (v: unknown): Record<string, unknown> => {
+            const stateAfter = found.store.getState();
+            const result: Record<string, unknown> = { _store: found.resolvedName, result: serialize(v, depth) };
+            if (isObject(stateBefore) && isObject(stateAfter)) {
+                const changes = diffState(stateBefore as Record<string, unknown>, stateAfter as Record<string, unknown>, STORE.SUBSCRIBE_DEPTH, Infinity);
+                if (changes.length) {
+                    const changed: Record<string, { from: unknown; to: unknown }> = {};
+                    for (const c of changes) changed[c.key] = { from: c.from, to: c.to };
+                    result.stateChanged = changed;
+                }
+            }
+            return result;
+        };
+
+        if (isThenable(callResult)) {
+            return callResult.then(
+                v => buildResult(v),
+                (e: unknown) => ({ error: errorMessage(e) }),
+            );
+        }
+        return buildResult(callResult);
+    } catch (e: unknown) {
+        return { error: errorMessage(e) };
+    }
+}
+
+function actionSubscribe(args: StoreArgs): unknown {
+    const found = requireStore(args.query);
+    if ("error" in found) return found;
+    const duration = clampConfig(args.duration != null ? Number(args.duration) : undefined, { default: STORE.DEFAULT_DURATION, min: STORE.MIN_DURATION, max: STORE.MAX_DURATION });
+    const maxCaptures = clampConfig(args.maxCaptures != null ? Number(args.maxCaptures) : undefined, { default: STORE.DEFAULT_CAPTURES, min: 1, max: STORE.MAX_CAPTURES });
+    const watchPath = args.path;
+
+    return new Promise<unknown>(resolve => {
+        const changes: Array<{ t: number; p?: string; from: unknown; to: unknown }> = [];
+        const startTime = Date.now();
+        let prev = watchPath ? getPath(found.store.getState(), watchPath) : found.store.getState();
+        let done = false;
+
+        const finish = (capped: boolean): void => {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            unsub();
+            resolve({ _store: found.resolvedName, changes, ...(capped ? { capped: true } : {}), ms: Date.now() - startTime });
+        };
+
+        const unsub = found.store.subscribe((state: Record<string, unknown>) => {
+            if (done) return;
+            const cur = watchPath ? getPath(state, watchPath) : state;
+            if (cur === prev) return;
+
+            if (watchPath) {
+                changes.push({ t: Date.now() - startTime, p: watchPath, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
+            } else if (isObject(cur) && isObject(prev)) {
+                const dt = Date.now() - startTime;
+                for (const c of diffState(prev as Record<string, unknown>, cur as Record<string, unknown>, STORE.SUBSCRIBE_DEPTH, maxCaptures - changes.length)) {
+                    changes.push({ t: dt, p: c.key, from: c.from, to: c.to });
+                }
+            } else {
+                changes.push({ t: Date.now() - startTime, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
+            }
+
+            prev = cur;
+            if (changes.length >= maxCaptures) finish(true);
+        });
+
+        const timer = setTimeout(() => finish(false), duration);
+    });
+}
+
+const STORE_ACTIONS: Record<StoreArgs["action"], (args: StoreArgs) => unknown> = {
+    list: actionList,
+    get: actionGet,
+    keys: actionKeys,
+    methods: actionMethods,
+    call: actionCall,
+    subscribe: actionSubscribe,
+};
 
 export function handleStore(args: StoreArgs): unknown {
-    const { action, query, path } = args;
-    const rawDepth = Number(args.depth);
-    const depth = Number.isFinite(rawDepth) && rawDepth >= 0 ? rawDepth : SERIALIZE.DEFAULT_DEPTH;
-
-    if (action === "list") {
-        return storeCacheHolder.get().map(s => ({ id: s.id, n: s.name, k: s.keys.slice(0, STORE.LIST_KEYS_PREVIEW) }));
-    }
-
-    if (action === "get") {
-        const result = requireStore(query);
-        if ("error" in result) return result;
-        const state = result.store.getState();
-        const maxDepth = path || args.depth != null ? STORE.MAX_DEPTH : STORE.DEFAULT_DEPTH;
-        const value = path ? getPath(state, path) : state;
-        const out: Record<string, unknown> = { _store: result.resolvedName, value: serialize(value, Math.min(depth, maxDepth)) };
-        if (result.also?.length) out._also = result.also;
-        return out;
-    }
-
-    if (action === "keys") {
-        const result = requireStore(query);
-        if ("error" in result) return result;
-        const state = result.store.getState();
-        const target = path ? getPath(state, path) : state;
-        if (!isObject(target)) return { _store: result.resolvedName, ...(path && { path }), keys: [] };
-        const keys: Record<string, string> = {};
-        for (const k of Object.keys(target as Record<string, unknown>)) {
-            try {
-                keys[k] = describeValue((target as Record<string, unknown>)[k]);
-            } catch {
-                keys[k] = "!";
-            }
-        }
-        return { _store: result.resolvedName, ...(path && { path }), keys };
-    }
-
-    if (action === "methods") {
-        const result = requireStore(query);
-        if ("error" in result) return result;
-        const state = result.store.getState();
-        if (!isObject(state)) return { _store: result.resolvedName, methods: {} };
-        const methods: Record<string, number> = {};
-        for (const k of Object.keys(state)) {
-            if (typeof state[k] === "function") methods[k] = (state[k] as Function).length;
-        }
-        return { _store: result.resolvedName, methods };
-    }
-
-    if (action === "call") {
-        const { method, callArgs } = args;
-        if (!method) return { error: "Provide method name. Use methods action to list available methods." };
-        if (DESTRUCTIVE_METHODS.has(method)) return { error: `Method "${method}" is potentially destructive and blocked via MCP. Use evaluateCode if you really need to call it.` };
-        const found = requireStore(query);
-        if ("error" in found) return found;
-        const state = found.store.getState();
-        if (!state || typeof state[method] !== "function") {
-            const available = state ? Object.keys(state).filter(k => typeof state[k] === "function").slice(0, STORE.METHODS_PREVIEW) : [];
-            return available.length
-                ? { error: `No method "${method}"`, available }
-                : { error: `No method "${method}". Store has no callable methods.` };
-        }
-        try {
-            const stateBefore = found.store.getState();
-            const callResult = (state[method] as Function)(...(Array.isArray(callArgs) ? callArgs : []));
-
-            const buildResult = (v: unknown) => {
-                const stateAfter = found.store.getState();
-                const result: Record<string, unknown> = { _store: found.resolvedName, result: serialize(v, Math.min(depth, STORE.MAX_DEPTH)) };
-                if (isObject(stateBefore) && isObject(stateAfter)) {
-                    const changes = diffState(stateBefore as Record<string, unknown>, stateAfter as Record<string, unknown>, STORE.SUBSCRIBE_DEPTH, Infinity);
-                    if (changes.length) {
-                        const changed: Record<string, { from: unknown; to: unknown }> = {};
-                        for (const c of changes) changed[c.key] = { from: c.from, to: c.to };
-                        result.stateChanged = changed;
-                    }
-                }
-                return result;
-            };
-
-            if (isThenable(callResult)) {
-                return callResult.then(
-                    v => buildResult(v),
-                    (e: unknown) => ({ error: errorMessage(e) }),
-                );
-            }
-            return buildResult(callResult);
-        } catch (e: unknown) {
-            return { error: errorMessage(e) };
-        }
-    }
-
-    if (action === "subscribe") {
-        const found = requireStore(query);
-        if ("error" in found) return found;
-        const duration = clampConfig(args.duration != null ? Number(args.duration) : undefined, { default: STORE.DEFAULT_DURATION, min: STORE.MIN_DURATION, max: STORE.MAX_DURATION });
-        const maxCaptures = clampConfig(args.maxCaptures != null ? Number(args.maxCaptures) : undefined, { default: STORE.DEFAULT_CAPTURES, min: 1, max: STORE.MAX_CAPTURES });
-        const watchPath = args.path;
-
-        return new Promise<unknown>(resolve => {
-            const changes: Array<{ t: number; p?: string; from: unknown; to: unknown }> = [];
-            const startTime = Date.now();
-            let prev = watchPath ? getPath(found.store.getState(), watchPath) : found.store.getState();
-            let done = false;
-
-            const finish = (capped: boolean) => {
-                if (done) return;
-                done = true;
-                clearTimeout(timer);
-                unsub();
-                resolve({ _store: found.resolvedName, changes, ...(capped ? { capped: true } : {}), ms: Date.now() - startTime });
-            };
-
-            const unsub = found.store.subscribe((state: Record<string, unknown>) => {
-                if (done) return;
-                try {
-                    const cur = watchPath ? getPath(state, watchPath) : state;
-                    if (cur === prev) return;
-
-                    if (watchPath) {
-                        changes.push({ t: Date.now() - startTime, p: watchPath, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
-                    } else if (isObject(cur) && isObject(prev)) {
-                        const dt = Date.now() - startTime;
-                        for (const c of diffState(prev as Record<string, unknown>, cur as Record<string, unknown>, STORE.SUBSCRIBE_DEPTH, maxCaptures - changes.length)) {
-                            changes.push({ t: dt, p: c.key, from: c.from, to: c.to });
-                        }
-                    } else {
-                        changes.push({ t: Date.now() - startTime, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
-                    }
-
-                    prev = cur;
-                    if (changes.length >= maxCaptures) finish(true);
-                } catch {
-                    finish(true);
-                }
-            });
-
-            const timer = setTimeout(() => finish(false), duration);
-        });
-    }
-
-    return { error: `Unknown action: ${action}` };
+    const fn = STORE_ACTIONS[args.action];
+    if (!fn) return { error: `Unknown action: ${args.action}` };
+    return fn(args);
 }

@@ -14,13 +14,13 @@ import { handlePlugin } from "./plugin";
 import { handleReact } from "./react";
 import { handleSearch } from "./search";
 import { handleStore } from "./store";
-import type { ToolHandler } from "./types";
+import type { ToolArgs, ToolArgsMap, ToolHandler, ToolName } from "./types";
 
 export { TOOL_DEFINITIONS };
 
-type ToolName = (typeof TOOL_DEFINITIONS)[number]["name"];
+type TypedHandlers = { [K in ToolName]: (args: ToolArgsMap[K]) => unknown };
 
-export const toolHandlers: Record<ToolName, ToolHandler> = {
+const typedHandlers: TypedHandlers = {
     module: handleModule,
     search: handleSearch,
     evaluateCode: handleEval,
@@ -31,3 +31,7 @@ export const toolHandlers: Record<ToolName, ToolHandler> = {
     intercept: handleIntercept,
     grok: handleGrok,
 };
+
+export const toolHandlers = typedHandlers as unknown as Record<ToolName, ToolHandler>;
+
+export type { ToolArgs, ToolName };

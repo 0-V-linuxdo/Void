@@ -185,50 +185,55 @@ export function parseRegexPattern(pattern: string): { regex: RegExp | null; lite
     return { regex: null, literal: pattern };
 }
 
-export function countCaptureGroups(matchStr: string): number {
-    let count = 0;
-    let inCharClass = false;
-    for (let i = 0; i < matchStr.length; i++) {
-        if (matchStr[i] === "\\" && i + 1 < matchStr.length) {
-            i++;
-            continue;
-        }
-        if (inCharClass) {
-            if (matchStr[i] === "]") inCharClass = false;
-            continue;
-        }
-        if (matchStr[i] === "[") {
-            inCharClass = true;
-            continue;
-        }
-        if (matchStr[i] === "(") {
-            if (matchStr[i + 1] !== "?") {
-                count++;
-            } else if (matchStr[i + 2] === "<" && matchStr[i + 3] !== "!" && matchStr[i + 3] !== "=") {
-                count++;
-            }
-        }
-    }
-    return count;
+export { countCaptureGroups } from "@utils/patches";
+
+const RE_I18N_KEY = /\w\("([a-z][a-z0-9]*(?:[-.][a-z0-9]+)+)","([^"]+)"\)/g;
+const RE_DISPLAY_NAME = /displayName="([^"]+)"/g;
+const RE_DATA_TEST_ID = /"data-testid":"([^"]+)"/g;
+const RE_STRING_LITERAL = /"([^"\\]{6,80})"/g;
+const RE_TEMPLATE_LITERAL = /`([^`\\]{6,80})`/g;
+const RE_EXPORT_BLOCK = /\.s\(\[([^\]]*)\]/g;
+const RE_EXPORT_INNER = /"([^"]+)"/g;
+const RE_I18N_NAMESPACE = /useTranslation\)\("([a-z]+)"\)/g;
+const RE_FEATURE_FLAG = /"((?:ENABLE|DISABLE|ALLOW|SHOW|HIDE|IS|HAS)_[A-Z][A-Z0-9_]+)"/g;
+const RE_JSX_COMPONENT = /jsx\)\(\w+\.(\w{3,}),/g;
+const RE_TURBOPACK_IMPORT = /\.[irAR]\((\d+)\)/g;
+const RE_TURBOPACK_SYNC_IMPORT = /\.[irR]\((\d+)\)/g;
+const RE_TURBOPACK_ASYNC_IMPORT = /\.A\((\d+)\)/g;
+const RE_TURBOPACK_EXPORT_DEF = /\.s\(\[([^\]]*)\](?:,(\d+))?\)/g;
+const RE_CODEGEN = /"(idsert\w*|lisert\w*)"/g;
+const RE_PROP_ACCESS_CACHE = new Map<number, RegExp>();
+
+function resetRe(r: RegExp): RegExp {
+    r.lastIndex = 0;
+    return r;
 }
 
 export const re = {
-    i18nKey: () => /\w\("([a-z][a-z0-9]*(?:[-.][a-z0-9]+)+)","([^"]+)"\)/g,
-    displayName: () => /displayName="([^"]+)"/g,
-    dataTestId: () => /"data-testid":"([^"]+)"/g,
-    stringLiteral: () => /"([^"\\]{6,80})"/g,
-    templateLiteral: () => /`([^`\\]{6,80})`/g,
-    exportBlock: () => /\.s\(\[([^\]]*)\]/g,
-    exportEntry: () => /\["([A-Z][\w]+)",\(\)=>/g,
-    exportInner: () => /"([^"]+)"/g,
-    propAccess: (minLen = 4) => new RegExp(`\\.([a-zA-Z_$][\\w$]{${minLen},})[=(]`, "g"),
-    i18nNamespace: () => /useTranslation\)\("([a-z]+)"\)/g,
-    featureFlag: () => /"((?:ENABLE|DISABLE|ALLOW|SHOW|HIDE|IS|HAS)_[A-Z][A-Z0-9_]+)"/g,
-    jsxComponent: () => /jsx\)\(\w+\.(\w{3,}),/g,
-    turbopackImport: () => /\.[irAR]\((\d+)\)/g,
-    turbopackSyncImport: () => /\.[irR]\((\d+)\)/g,
-    turbopackAsyncImport: () => /\.A\((\d+)\)/g,
-    turbopackExportDef: () => /\.s\(\[([^\]]*)\](?:,(\d+))?\)/g,
+    i18nKey: () => resetRe(RE_I18N_KEY),
+    displayName: () => resetRe(RE_DISPLAY_NAME),
+    dataTestId: () => resetRe(RE_DATA_TEST_ID),
+    stringLiteral: () => resetRe(RE_STRING_LITERAL),
+    templateLiteral: () => resetRe(RE_TEMPLATE_LITERAL),
+    exportBlock: () => resetRe(RE_EXPORT_BLOCK),
+    exportInner: () => resetRe(RE_EXPORT_INNER),
+    i18nNamespace: () => resetRe(RE_I18N_NAMESPACE),
+    featureFlag: () => resetRe(RE_FEATURE_FLAG),
+    jsxComponent: () => resetRe(RE_JSX_COMPONENT),
+    turbopackImport: () => resetRe(RE_TURBOPACK_IMPORT),
+    turbopackSyncImport: () => resetRe(RE_TURBOPACK_SYNC_IMPORT),
+    turbopackAsyncImport: () => resetRe(RE_TURBOPACK_ASYNC_IMPORT),
+    turbopackExportDef: () => resetRe(RE_TURBOPACK_EXPORT_DEF),
+    codegen: () => resetRe(RE_CODEGEN),
+    propAccess: (minLen = 4) => {
+        let r = RE_PROP_ACCESS_CACHE.get(minLen);
+        if (!r) {
+            r = new RegExp(`\\.([a-zA-Z_$][\\w$]{${minLen},})[=(]`, "g");
+            RE_PROP_ACCESS_CACHE.set(minLen, r);
+        }
+        r.lastIndex = 0;
+        return r;
+    },
 };
 
 let factorySourceCache: Map<number, string> | null = null;
@@ -255,6 +260,8 @@ export function getAllFactorySources(): string[] {
 }
 
 export const safeOffset = (raw: number | undefined) => Math.max(0, Math.floor(raw ?? 0));
+
+export const asArray = <T>(v: T | T[]): T[] => Array.isArray(v) ? v : [v];
 
 function countInSources(sources: string[], text: string, max: number): number {
     let count = 0;
@@ -318,7 +325,7 @@ export function extractI18nKeys(ctx: string): Array<{ key: string; default: stri
     const keys: Array<{ key: string; default: string }> = [];
     const seen = new Set<string>();
     const pattern = re.i18nKey();
-    let m;
+    let m: RegExpExecArray | null;
     while ((m = pattern.exec(ctx)) !== null) {
         if (!seen.has(m[1])) {
             seen.add(m[1]);
@@ -361,7 +368,7 @@ function collectRawAnchors(
         raw.push({ text, type, at });
     };
 
-    let m;
+    let m: RegExpExecArray | null;
     const i18nRe = re.i18nKey();
     while ((m = i18nRe.exec(src)) !== null) collect(`"${m[1]}","${m[2]}"`, "i18n", m.index);
 
@@ -381,7 +388,7 @@ function collectRawAnchors(
     const exportRe = re.exportBlock();
     while ((m = exportRe.exec(src)) !== null) {
         const innerRe = re.exportInner();
-        let nm;
+        let nm: RegExpExecArray | null;
         while ((nm = innerRe.exec(m[1])) !== null) collect(`"${nm[1]}",()=>`, "export", m.index);
     }
 
@@ -403,7 +410,7 @@ function collectRawAnchors(
         while ((m = jsxRe.exec(src)) !== null) collect(m[1], "jsx", m.index);
     }
 
-    const codegenRe = /"(idsert\w*|lisert\w*)"/g;
+    const codegenRe = re.codegen();
     while ((m = codegenRe.exec(src)) !== null) collect(`"${m[1]}"`, "codegen", m.index);
 
     const propRe = re.propAccess(propMinLen);
