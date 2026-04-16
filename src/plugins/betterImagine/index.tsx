@@ -21,7 +21,7 @@ import { classes, classNameFactory } from "@utils/css";
 import { fetchAndDownload, fetchAndZip } from "@utils/download";
 import { Logger } from "@utils/Logger";
 import { copyToClipboard, createExternalStore, createSelectionStore, extractUrlExtension, sanitizeFilename } from "@utils/misc";
-import { useAsyncAction, useExternalStore } from "@utils/react";
+import { useAsyncAction, useExternalStore, useSelectionHas, useSelectionSize } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -261,14 +261,13 @@ function getVisibleIds(favorites: MediaItem[]): string[] {
 
 function ActionToolbar() {
     const isFavorites = useFavoritesPage();
-    useExternalStore(selection);
+    const count = useSelectionSize(selection);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteAllOpen, setDeleteAllOpen] = useState(false);
     const [upscaleOpen, setUpscaleOpen] = useState(false);
     const favorites = MediaStore.useMediaStore(s => s.favoritesList);
     const videoByMediaId = MediaStore.useMediaStore(s => s.videoByMediaId);
 
-    const count = selection.size();
     const visibleCount = getVisibleIds(favorites).length;
     const videoCount = useMemo(() => {
         const ids = count > 0 ? selection.all() : getVisibleIds(favorites);
@@ -386,9 +385,7 @@ function ActionToolbar() {
 function SelectOverlay({ postId }: { postId: string }) {
     const isFavorites = useFavoritesPage();
     const ref = useRef<HTMLSpanElement>(null);
-    useExternalStore(selection);
-
-    const isSelected = selectMode && selection.has(postId);
+    const isSelected = useSelectionHas(selection, postId) && selectMode;
 
     useEffect(() => {
         const card = ref.current?.closest(CARD_SELECTOR) as HTMLElement | null;

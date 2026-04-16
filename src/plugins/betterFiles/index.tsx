@@ -8,12 +8,13 @@ import { definePluginSettings } from "@api/Settings";
 import { Button, Checkbox, ConfirmDialog } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { TrashIcon } from "@components/icons";
-import { Fragment, React, useEffect, useRef, useState } from "@turbopack/common/react";
+import { Fragment, React, useState } from "@turbopack/common/react";
 import { FilesPageStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle, unregisterStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { createSelectionStore } from "@utils/misc";
+import { useSelectionHas, useSelectionSize } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -72,11 +73,7 @@ function DeleteAllButton() {
 }
 
 function FileSelectCheckbox({ id }: { id: string }) {
-    const [checked, setChecked] = useState(selection.has(id));
-    const idRef = useRef(id);
-    idRef.current = id;
-
-    useEffect(() => selection.subscribe(() => setChecked(selection.has(idRef.current))), []);
+    const checked = useSelectionHas(selection, id);
 
     return (
         <div onClick={e => { e.stopPropagation(); e.preventDefault(); }} className={cl("wrap")}>
@@ -90,10 +87,8 @@ function FileSelectCheckbox({ id }: { id: string }) {
 }
 
 function FileActionBar() {
-    const [count, setCount] = useState(selection.size());
+    const count = useSelectionSize(selection);
     const [open, setOpen] = useState(false);
-
-    useEffect(() => selection.subscribe(() => setCount(selection.size())), []);
 
     if (!count) return null;
 

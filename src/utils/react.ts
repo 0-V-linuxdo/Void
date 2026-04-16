@@ -6,7 +6,7 @@
 
 import { subscribe, type VoidEvent } from "@api/Events";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
-import type { ExternalStore } from "@utils/misc";
+import type { ExternalStore, SelectionStore } from "@utils/misc";
 import type { ReactNode } from "react";
 
 export type LazyNode = ReactNode | (() => ReactNode);
@@ -17,6 +17,16 @@ export function resolveLazyNode(node: LazyNode | undefined): ReactNode {
 
 export function useExternalStore(store: ExternalStore) {
     useSyncExternalStore(store.subscribe, store.getSnapshot);
+}
+
+export function useSelectionHas<T>(store: SelectionStore<T>, id: T): boolean {
+    useExternalStore(store);
+    return store.has(id);
+}
+
+export function useSelectionSize<T>(store: SelectionStore<T>): number {
+    useExternalStore(store);
+    return store.size();
 }
 
 export function useForceUpdater() {

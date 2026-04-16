@@ -13,12 +13,13 @@ import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
 import { SidebarComponents } from "@turbopack/common/components";
 import { getPlanName } from "@turbopack/common/plan";
-import { Fragment, React, useEffect, useRef, useState } from "@turbopack/common/react";
+import { Fragment, React, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle, unregisterStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { createSelectionStore } from "@utils/misc";
+import { useSelectionHas, useSelectionSize } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType } from "react";
@@ -93,11 +94,7 @@ async function deleteSelected() {
 
 function SelectCheckbox({ id }: { id: string }) {
     const enabled = settings.use(["batchSelect"]).batchSelect;
-    const [checked, setChecked] = useState(selection.has(id));
-    const idRef = useRef(id);
-    idRef.current = id;
-
-    useEffect(() => selection.subscribe(() => setChecked(selection.has(idRef.current))), []);
+    const checked = useSelectionHas(selection, id);
 
     if (!enabled) return null;
 
@@ -113,10 +110,8 @@ function SelectCheckbox({ id }: { id: string }) {
 }
 
 function ActionBar() {
-    const [count, setCount] = useState(selection.size());
+    const count = useSelectionSize(selection);
     const [open, setOpen] = useState(false);
-
-    useEffect(() => selection.subscribe(() => setCount(selection.size())), []);
 
     if (!count) return null;
 
