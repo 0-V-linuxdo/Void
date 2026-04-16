@@ -35,11 +35,7 @@ const settings = definePluginSettings({
 });
 
 let userGestured = false;
-const gestureCtrl = new AbortController();
-const markGestured = () => { userGestured = true; gestureCtrl.abort(); };
-for (const evt of ["pointerdown", "keydown", "touchstart"] as const) {
-    addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
-}
+let gestureCtrl: AbortController | null = null;
 
 function playBeep() {
     if (!userGestured) return;
@@ -91,6 +87,20 @@ export default definePlugin({
     tags: ["chat"],
     settings,
     startAt: StartAt.TurbopackReady,
+
+    start() {
+        if (gestureCtrl) return;
+        gestureCtrl = new AbortController();
+        const markGestured = () => { userGestured = true; gestureCtrl?.abort(); gestureCtrl = null; };
+        for (const evt of ["pointerdown", "keydown", "touchstart"] as const) {
+            addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
+        }
+    },
+
+    stop() {
+        gestureCtrl?.abort();
+        gestureCtrl = null;
+    },
 
     zustand: {
         ChatPageStore: {
