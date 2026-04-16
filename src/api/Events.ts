@@ -27,6 +27,7 @@ export function subscribe(event: VoidEvent, handler: (data: unknown) => void): (
     set.add(handler);
     return () => {
         set.delete(handler);
+        if (!set.size) listeners.delete(event);
     };
 }
 
