@@ -153,7 +153,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
 
         if (plugin.events) {
             for (const [event, handler] of Object.entries(plugin.events)) {
-                unsubs.push(subscribeEvent(event, handler));
+                if (handler) unsubs.push(subscribeEvent(event, handler as (data: unknown) => void));
             }
         }
 
