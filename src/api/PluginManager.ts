@@ -157,12 +157,6 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
             }
         }
 
-        if (plugin.storeSubscriptions) {
-            for (const sub of plugin.storeSubscriptions) {
-                unsubs.push(sub.store.subscribe(sub.callback, sub.selector));
-            }
-        }
-
         if (plugin.zustand) {
             for (const [storeName, sub] of Object.entries(plugin.zustand)) {
                 const store = resolveStoreHook(storeName);
@@ -181,14 +175,6 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
 
                 const unsub = sub.selector ? store.subscribe(sub.selector, wrappedHandler) : store.subscribe(wrappedHandler);
                 unsubs.push(unsub as () => void);
-            }
-        }
-
-        if (plugin.eventListeners) {
-            for (const el of plugin.eventListeners) {
-                const target = el.target === "window" ? window : document;
-                target.addEventListener(el.event, el.handler, el.options);
-                unsubs.push(() => target.removeEventListener(el.event, el.handler, el.options));
             }
         }
 
