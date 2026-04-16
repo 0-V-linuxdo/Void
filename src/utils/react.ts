@@ -5,7 +5,9 @@
  */
 
 import { subscribe, type VoidEvent } from "@api/Events";
+import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
+import { ChatPageStore } from "@turbopack/common/stores";
 import type { ExternalStore, SelectionStore } from "@utils/misc";
 import type { ReactNode } from "react";
 
@@ -27,6 +29,11 @@ export function useSelectionHas<T>(store: SelectionStore<T>, id: T): boolean {
 export function useSelectionSize<T>(store: SelectionStore<T>): number {
     useExternalStore(store);
     return store.size();
+}
+
+export function useIsStreaming(conversationId?: string): boolean {
+    return ChatPageStore.useChatPageStore((s: ChatPageStoreState) =>
+        !!s.streamedMessageId && (conversationId == null || s.conversationId === conversationId));
 }
 
 export function useForceUpdater() {

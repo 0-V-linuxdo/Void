@@ -9,6 +9,7 @@ import "./styles.css";
 import { Flex } from "@components/Flex";
 import { ClockAlertIcon, GaugeIcon } from "@components/icons";
 import { Text } from "@components/Text";
+import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React, useEffect, useState } from "@turbopack/common/react";
 import { ModesStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
@@ -188,14 +189,12 @@ export default definePlugin({
 
     zustand: {
         ModesStore: {
-            selector: (s: { selectedModeId: string }) => s.selectedModeId,
+            selector: (s: ModesStoreState) => s.selectedModeId,
             handler() { refresh(); },
         },
-        ChatPageStore: {
-            selector: (s: { streamedMessageId: string | undefined }) => s.streamedMessageId,
-            handler(id: string | undefined, prev: string | undefined) {
-                if (!id && prev) refresh();
-            },
-        },
+    },
+
+    events: {
+        streamEnd() { refresh(); },
     },
 });

@@ -17,11 +17,12 @@ import { ErrorBoundary } from "@components/ErrorBoundary";
 import { DownloadIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
 import { React } from "@turbopack/common/react";
-import { ChatPageStore, ConversationStore } from "@turbopack/common/stores";
+import { ConversationStore } from "@turbopack/common/stores";
 import { ApiClients, FileUtils } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { sanitizeFilename } from "@utils/misc";
+import { useIsStreaming } from "@utils/react";
 import { escapeHtml } from "@utils/text";
 import definePlugin from "@utils/types";
 
@@ -191,7 +192,7 @@ async function exportChat(conversationId: string, format: Format) {
 }
 
 function ExportMenu({ conversationId }: ContextMenuLocationMap["conversation"]) {
-    const streaming = ChatPageStore.useChatPageStore(s => s.conversationId === conversationId && !!s.streamedMessageId);
+    const streaming = useIsStreaming(conversationId);
 
     return (
         <DropdownMenuSub>

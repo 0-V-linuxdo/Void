@@ -11,10 +11,11 @@ import { DropdownMenuItem } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CopyIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
-import { ChatPageStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
+import { ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
+import { useIsStreaming } from "@utils/react";
 import definePlugin from "@utils/types";
 
 const logger = new Logger("CloneChats");
@@ -41,7 +42,7 @@ async function cloneChat(conversationId: string) {
 }
 
 function CloneItem({ conversationId }: ContextMenuLocationMap["conversation"]) {
-    const streaming = ChatPageStore.useChatPageStore(s => s.conversationId === conversationId && !!s.streamedMessageId);
+    const streaming = useIsStreaming(conversationId);
 
     return (
         <DropdownMenuItem onSelect={() => cloneChat(conversationId).catch(e => logger.error("Failed to clone chat:", e))} disabled={streaming}>

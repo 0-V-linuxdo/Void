@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { VoidEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
 import { ResponseStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
@@ -68,10 +69,8 @@ function playSound() {
     }
 }
 
-function onStreamEnd(id: string | undefined, prev: string | undefined) {
-    if (id || !prev) return;
-
-    const response = ResponseStore.useResponseStore.getState().byId[prev];
+function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed") return;
 
     if (settings.store.onlyWhenHidden && document.visibilityState === "visible") return;
@@ -102,10 +101,7 @@ export default definePlugin({
         gestureCtrl = null;
     },
 
-    zustand: {
-        ChatPageStore: {
-            selector: (s: { streamedMessageId: string | undefined }) => s.streamedMessageId,
-            handler: onStreamEnd,
-        },
+    events: {
+        streamEnd: onStreamEnd,
     },
 });

@@ -5,6 +5,7 @@
  */
 
 import { initPluginManager, isPluginEnabled, plugins, registerPlugin, startAllPlugins, startPlugin } from "@api/PluginManager";
+import { initStreamEvents } from "@api/StreamEvents";
 import { _resolveReady, blacklistBadModules, getModuleCache, onModuleLoad, patches, patchTurbopack, reportOrphanedPatches, rescanRuntimeModules } from "@turbopack/patchTurbopack";
 import { filters, reportFailedFinders, waitFor } from "@turbopack/turbopack";
 import { Logger } from "@utils/Logger";
@@ -35,9 +36,9 @@ export { makeLazy, proxyLazy } from "@utils/lazy";
 export { Logger } from "@utils/Logger";
 export { type LogLevel } from "@utils/Logger";
 export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, extractUrlExtension, fetchExternal, formatCountdown, formatDuration, mapGetOrCreate, mergeDefaults, onlyOnce, sanitizeFilename, sendBrowserNotification, sleep, sortedEntries } from "@utils/misc";
-export { useEventSubscription, useExternalStore, useForceUpdater } from "@utils/react";
-export { escapeRegExp, humanizeKey, pluralize } from "@utils/text";
-export { default as definePlugin, type EventListenerTarget, OptionType, type PluginSettingValue,StartAt } from "@utils/types";
+export { useEventSubscription, useExternalStore, useForceUpdater, useIsStreaming, useSelectionHas, useSelectionSize } from "@utils/react";
+export { escapeHtml, escapeRegExp, humanizeKey, pluralize } from "@utils/text";
+export { default as definePlugin, type EventListenerTarget, OptionType, type PluginSettingValue, StartAt } from "@utils/types";
 
 const logger = new Logger("TurbopackPatcher", "#e78284");
 
@@ -105,6 +106,7 @@ function waitForModulesStable() {
         rescanRuntimeModules();
 
         safely("blacklistBadModules", blacklistBadModules);
+        safely("initStreamEvents", initStreamEvents);
         safely("_resolveReady", _resolveReady);
         safely("startAllPlugins", () => startAllPlugins(StartAt.TurbopackReady));
 
