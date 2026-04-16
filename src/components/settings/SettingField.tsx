@@ -131,7 +131,7 @@ function NumberField({ id, setting, pluginName }: SettingFieldProps) {
             <SettingLabel id={id} setting={setting} />
             <Input
                 type="number"
-                value={(value as string) ?? ""}
+                value={value == null ? "" : String(value)}
                 onChange={(e: InputChangeEvent) => {
                     const n = Number(e.target.value);
                     if (!isNaN(n)) update(n);
@@ -154,8 +154,8 @@ function BigIntField({ id, setting, pluginName }: SettingFieldProps) {
                 value={display}
                 onChange={(e: InputChangeEvent) => {
                     const raw = e.target.value.trim();
-                    if (!raw) return update(0n as unknown as PluginSettingValue);
-                    try { update(BigInt(raw) as unknown as PluginSettingValue); } catch {}
+                    if (!raw) return update(0n);
+                    try { update(BigInt(raw)); } catch {}
                 }}
                 className={cl("number-input")}
             />
@@ -170,7 +170,7 @@ function StringField({ id, setting, pluginName }: SettingFieldProps) {
             <SettingLabel id={id} setting={setting} />
             <Input
                 type="text"
-                value={(value as string) ?? ""}
+                value={value == null ? "" : String(value)}
                 onChange={(e: InputChangeEvent) => update(e.target.value)}
                 placeholder={setting.placeholder}
                 className={cl("string-input")}
