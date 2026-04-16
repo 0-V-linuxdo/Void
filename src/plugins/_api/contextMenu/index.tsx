@@ -40,7 +40,7 @@ export default definePlugin({
                     replace: "onEditClick:$1,...arguments[0]})",
                 },
                 {
-                    match: /(\i)&&\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\(\)=>\{null==\1.{0,120}"Delete","Delete"\)\]\}\)/,
+                    match: /(\i)&&\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\(\)=>\{null==\1.{0,80}\.TrashIcon,.{0,80}\]\}\)/,
                     replace: '$self.renderItems("conversation",{conversationId:arguments[0].id}),$&',
                 },
             ],
