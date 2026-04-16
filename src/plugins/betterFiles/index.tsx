@@ -181,6 +181,7 @@ export default definePlugin({
     patches: [
         {
             find: "title-and-button",
+            noWarn: true,
             group: true,
             replacement: [
                 {
