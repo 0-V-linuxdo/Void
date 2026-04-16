@@ -69,7 +69,7 @@ export default definePlugin({
         find: "tts-controls.play.label\",\"Play\"),onClick",
         all: true,
         replacement: {
-            match: /\(0,\i\.jsx\)\(\i\.Button,\{"aria-label":\i\("tts-controls\.stop\.label","Stop"\)/,
+            match: /\(0,\i\.jsx\)\(\i\.Button,\{"aria-label":\i\("tts-controls\.stop\.label"/,
             replace: "$self._renderDownloadButton(),$&",
         },
     }],
