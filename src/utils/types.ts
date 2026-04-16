@@ -84,6 +84,7 @@ export interface PluginDef {
     events?: Record<string, (data: unknown) => void>;
     eventListeners?: PluginEventListener[];
     cleanupSelectors?: string[];
+    onSettingsChange?(): void;
 }
 
 export const enum StartAt {

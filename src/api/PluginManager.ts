@@ -192,6 +192,13 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
             }
         }
 
+        if (plugin.onSettingsChange) {
+            const prefix = `plugins.${plugin.name}`;
+            const listener = () => plugin.onSettingsChange!();
+            SettingsStore.addPrefixChangeListener(prefix, listener);
+            unsubs.push(() => SettingsStore.removePrefixChangeListener(prefix, listener));
+        }
+
         if (unsubs.length) pluginUnsubscribers.set(plugin.name, unsubs);
 
         plugin.started = true;

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings, SettingsStore } from "@api/Settings";
+import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
@@ -24,24 +24,13 @@ function applyWidth() {
     registerStyle(STYLE_NAME, `.breakout{--content-max-width:${w}rem!important}.max-w-breakout{max-width:${w}rem!important}`);
 }
 
-let unsubscribe: (() => void) | null = null;
-
 export default definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
     settings,
 
-    start() {
-        applyWidth();
-        const prefix = `plugins.${settings.pluginName}`;
-        SettingsStore.addPrefixChangeListener(prefix, applyWidth);
-        unsubscribe = () => SettingsStore.removePrefixChangeListener(prefix, applyWidth);
-    },
-
-    stop() {
-        unsubscribe?.();
-        unsubscribe = null;
-        unregisterStyle(STYLE_NAME);
-    },
+    start: applyWidth,
+    onSettingsChange: applyWidth,
+    stop() { unregisterStyle(STYLE_NAME); },
 });
