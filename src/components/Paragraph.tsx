@@ -26,7 +26,7 @@ export function Paragraph({ color = "secondary", className, children, ...props }
 
 export function SectionHeader({ title, description, className }: { title: string; description?: string; className?: string }) {
     return (
-        <Flex flexDirection="column" gap="0" className={className}>
+        <Flex flexDirection="column" gap="0" className={ClassNames.cn("max-w-sm min-w-0", className)}>
             <Text size="sm" weight="medium">{title}</Text>
             {description && <Paragraph>{description}</Paragraph>}
         </Flex>
