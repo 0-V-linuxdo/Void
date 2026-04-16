@@ -106,11 +106,10 @@ async function clearUserScopedStorage() {
 
 async function snapshotAvatar(url: string): Promise<string | null> {
     if (!url) return null;
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), AVATAR_FETCH_TIMEOUT_MS);
     try {
-        const ac = new AbortController();
-        const timer = setTimeout(() => ac.abort(), AVATAR_FETCH_TIMEOUT_MS);
         const res = await fetch(url, { credentials: "include", signal: ac.signal });
-        clearTimeout(timer);
         if (!res.ok) return null;
 
         const blob = await res.blob();
@@ -125,6 +124,8 @@ async function snapshotAvatar(url: string): Promise<string | null> {
     } catch (e) {
         logger.warn("Avatar snapshot failed", e);
         return null;
+    } finally {
+        clearTimeout(timer);
     }
 }
 
