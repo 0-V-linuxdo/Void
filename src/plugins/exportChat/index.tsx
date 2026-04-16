@@ -22,6 +22,7 @@ import { ApiClients, FileUtils } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { sanitizeFilename } from "@utils/misc";
+import { escapeHtml } from "@utils/text";
 import definePlugin from "@utils/types";
 
 const logger = new Logger("ExportChat");
@@ -50,10 +51,6 @@ function formatTs(ts?: string): string {
 
 function sender(s: string): string {
     return s.toLowerCase() === "human" ? "You" : "Grok";
-}
-
-function escapeHtml(s: string): string {
-    return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
 
 function toMarkdown(title: string, messages: ExportMessage[]): string {
@@ -144,14 +141,14 @@ function toHtml(title: string, messages: ExportMessage[]): string {
         if (text) p.push(`<div>${escapeHtml(text).replaceAll("\n", "<br>")}</div>`);
 
         if (m.generatedImageUrls?.length) {
-            for (const url of m.generatedImageUrls) p.push(`<img src="${escapeHtml(url)}" style="max-width:100%;margin:.5rem 0">`);
+            for (const url of m.generatedImageUrls) p.push(`<img src="${escapeHtml(url, true)}" style="max-width:100%;margin:.5rem 0">`);
         }
 
         if (m.webSearchResults?.length) {
             p.push("<ul>");
             for (const r of m.webSearchResults) {
                 const { title: t, url } = r as { title?: string; url?: string };
-                if (url) p.push(`<li><a href="${escapeHtml(url)}">${escapeHtml(t ?? url)}</a></li>`);
+                if (url) p.push(`<li><a href="${escapeHtml(url, true)}">${escapeHtml(t ?? url)}</a></li>`);
             }
             p.push("</ul>");
         }

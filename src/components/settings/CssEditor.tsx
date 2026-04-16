@@ -8,17 +8,14 @@ import "./CssEditor.css";
 
 import { React, useCallback, useLayoutEffect, useRef } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
+import { escapeHtml } from "@utils/text";
 
 const cl = classNameFactory("void-css-");
 
 const TOKEN = /\/\*[\s\S]*?\*\/|@[\w-]+|"[^"]*"|'[^']*'|#[\da-fA-F]{3,8}|[\d.]+(?:px|em|rem|%|vh|vw|s|ms|deg|fr|ch)?|[\w-]+|[{}:;,()!]/g;
 
-function esc(s: string): string {
-    return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-}
-
 function span(cls: string, text: string): string {
-    return `<span class="${cl(cls)}">${esc(text)}</span>`;
+    return `<span class="${cl(cls)}">${escapeHtml(text)}</span>`;
 }
 
 export function highlightCss(css: string): string {
@@ -29,7 +26,7 @@ export function highlightCss(css: string): string {
 
     for (const m of css.matchAll(TOKEN)) {
         const idx = m.index ?? 0;
-        if (idx > lastEnd) result += esc(css.slice(lastEnd, idx));
+        if (idx > lastEnd) result += escapeHtml(css.slice(lastEnd, idx));
         lastEnd = idx + m[0].length;
         const t = m[0];
 
@@ -47,7 +44,7 @@ export function highlightCss(css: string): string {
         else result += span("sel", t);
     }
 
-    if (lastEnd < css.length) result += esc(css.slice(lastEnd));
+    if (lastEnd < css.length) result += escapeHtml(css.slice(lastEnd));
     return result;
 }
 
