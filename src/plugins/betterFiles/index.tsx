@@ -188,7 +188,7 @@ export default definePlugin({
                     replace: "$self.settings.store.skipDeleteConfirm?$self._deleteFile($2.assetId):$1({type:\"delete\",assetId:$2.assetId})",
                 },
                 {
-                    match: /(?<=")flex-shrink-0 items-center gap-4 p-2/,
+                    match: /(?<=")flex flex-shrink-0 items-center gap-4 p-2/,
                     replace: "group/file-row $&",
                 },
                 {
