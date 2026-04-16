@@ -66,7 +66,7 @@ export async function initSettings(): Promise<void> {
     let raw: string | null = null;
 
     try {
-        raw = await idbGet(STORAGE_KEY) as string | null;
+        raw = await idbGet<string>(STORAGE_KEY) ?? null;
     } catch (e) {
         logger.warn("Failed to read IndexedDB:", e);
     }
