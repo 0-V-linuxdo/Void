@@ -14,7 +14,7 @@ import { type Patch, type Plugin, StartAt } from "@utils/types";
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
 import { addContextMenuItem, type ContextMenuItemDef, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
 import { subscribe as subscribeEvent } from "./Events";
-import { getSettingsPluginData, mergePluginSettings, PlainSettings, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
+import { getSettingsPluginData, mergePluginSettings, PlainSettings, pluginPath, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
 
 const logger = new Logger("PluginManager", "#b4befe");
 
@@ -179,7 +179,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
         }
 
         if (plugin.onSettingsChange) {
-            const prefix = `plugins.${plugin.name}`;
+            const prefix = pluginPath(plugin.name);
             const listener = () => plugin.onSettingsChange!();
             SettingsStore.addPrefixChangeListener(prefix, listener);
             unsubs.push(() => SettingsStore.removePrefixChangeListener(prefix, listener));

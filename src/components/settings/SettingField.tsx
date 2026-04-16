@@ -7,7 +7,7 @@
 import "./SettingField.css";
 
 import { dispatch } from "@api/Events";
-import { mergePluginSettings, resolveDefault, Settings, SettingsStore } from "@api/Settings";
+import { mergePluginSettings, pluginPath, resolveDefault, Settings, SettingsStore } from "@api/Settings";
 import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Slider, Switch, Text } from "@components";
 import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
@@ -29,7 +29,7 @@ function usePluginSetting(pluginName: string, id: string, setting: PluginSetting
     const [value, setValue] = useState(resolve);
 
     useEffect(() => {
-        const path = `plugins.${pluginName}.${id}`;
+        const path = pluginPath(pluginName, id);
         const listener = () => setValue(resolve());
         SettingsStore.addChangeListener(path, listener);
         return () => SettingsStore.removeChangeListener(path, listener);

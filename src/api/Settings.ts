@@ -46,6 +46,8 @@ export const SettingsStore = new SettingsStoreClass(settings);
 export const PlainSettings = settings;
 export const Settings = SettingsStore.store;
 
+export const pluginPath = (name: string, key?: string) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
+
 export async function initSettings(): Promise<void> {
     if (typeof GM_getValue === "function") {
         try {
@@ -199,7 +201,7 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
 
             if (!PlainSettings.plugins[name]) PlainSettings.plugins[name] = { enabled: false };
 
-            SettingsStore.setDefaultGetter(`plugins.${name}`, key => {
+            SettingsStore.setDefaultGetter(pluginPath(name), key => {
                 const setting = def[key];
                 return setting ? resolveDefault(setting) : undefined;
             });
@@ -208,7 +210,7 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
             const forceUpdate = useForceUpdater();
 
             useEffect(() => {
-                const prefix = `plugins.${_pluginName}`;
+                const prefix = pluginPath(_pluginName);
                 const listener = keys?.length
                     ? ((paths: string[]) => (path: string) => {
                         if (paths.some(p => path.startsWith(p) || p.startsWith(path + "."))) forceUpdate();
