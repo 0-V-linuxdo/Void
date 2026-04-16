@@ -19,14 +19,14 @@
     width: 1rem;
     height: 1rem;
     margin-inline-end: 0.5rem;
-    color: var(--fg-secondary);
+    color: hsl(var(--fg-secondary));
     flex-shrink: 0;
 }
 
 .void-as-icon-check {
     width: 0.875rem;
     height: 0.875rem;
-    color: var(--fg-secondary);
+    color: hsl(var(--fg-secondary));
     flex-shrink: 0;
 }
 
