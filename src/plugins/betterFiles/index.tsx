@@ -188,8 +188,8 @@ export default definePlugin({
                     replace: "$self.settings.store.skipDeleteConfirm?$self._deleteFile($2.assetId):$1({type:\"delete\",assetId:$2.assetId})",
                 },
                 {
-                    match: /"flex flex-shrink-0 items-center gap-4 p-2 border rounded-xl bg-card hover:bg-card-hover cursor-pointer/,
-                    replace: '"group/file-row flex flex-shrink-0 items-center gap-4 p-2 border rounded-xl bg-card hover:bg-card-hover cursor-pointer',
+                    match: /(?<=")flex-shrink-0 items-center gap-4 p-2/,
+                    replace: "group/file-row $&",
                 },
                 {
                     match: /tabIndex:0,onClick:(\i),children:\[\(0,(\i)\.jsx\)\((\i)\.AssetIcon,\{metadata:\(0,(\i)\.convertAssetMetadataToFileMetadata\)\((\i),/,
@@ -200,8 +200,8 @@ export default definePlugin({
                     replace: "$self._renderFileActionBar(),(0,$1.jsxs)($2.FadeScrollContainer,{children:[(0,$3.jsxs)($4.AnimatePresence,",
                 },
                 {
-                    match: /className:"w-full flex flex-row gap-2 text-primary ps-2 items-center min-h-10",children:\[/,
-                    replace: 'className:"w-full flex flex-row gap-2 text-primary ps-2 items-center min-h-10",children:[$self._renderFileCheckbox({id:arguments[0].asset.assetId}),',
+                    match: /items-center min-h-10",children:\[/,
+                    replace: "$&$self._renderFileCheckbox({id:arguments[0].asset.assetId}),",
                 },
                 {
                     match: /\((\i)\.Link,\{route:\{page:"files",fileId:null!=\((\i)=null!=\((\i)=(\i)\.rootAssetId\)/,
