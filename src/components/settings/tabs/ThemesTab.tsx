@@ -30,7 +30,6 @@ import { React, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { errorMessage } from "@utils/misc";
 import { useFiltered } from "@utils/react";
-import { pluralize } from "@utils/text";
 
 import { CssEditor } from "../CssEditor";
 import ThemeCard from "../ThemeCard";
@@ -182,11 +181,6 @@ export default function ThemesTab() {
         refreshThemes();
     };
 
-    const enabledCount = themes.filter(t => t.enabled).length;
-    const installedDescription = themes.length
-        ? `${pluralize(themes.length, "theme")} installed, ${enabledCount} enabled. Toggle, edit, or remove any theme below.`
-        : "No themes installed yet. Add one above to get started.";
-
     return (
         <Flex flexDirection="column" gap="1rem" className="void-tab-root">
             <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
@@ -201,7 +195,6 @@ export default function ThemesTab() {
                     Manage
                 </Button>
             </Flex>
-            <SectionHeader title="Installed Themes" description={installedDescription} />
             {themes.length > 0 && (
                 <Flex alignItems="center" gap="0.75rem">
                     <Input
