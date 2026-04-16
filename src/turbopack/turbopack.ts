@@ -169,25 +169,25 @@ function scanModuleCache(filter: FilterFn, collectAll: boolean, topLevelOnly: bo
     return collectAll ? results : null;
 }
 
-export function find(filter: FilterFn): any {
+export function find<T = any>(filter: FilterFn): T {
     return searchCache(filter);
 }
 
-export function findAll(filter: FilterFn): any[] {
+export function findAll<T = any>(filter: FilterFn): T[] {
     return searchCache(filter, true);
 }
 
-export function findLazy(filter: FilterFn): any {
+export function findLazy<T = any>(filter: FilterFn): T {
     const cached = searchCache(filter);
     if (cached) return cached;
     trackFinder("find", [String(filter)], () => searchCache(filter));
     return proxyLazy(() => searchCache(filter));
 }
 
-function makeFinder(name: string, filterFactory: (...args: any[]) => FilterFn) {
-    const finder = (...args: any[]) => find(filterFactory(...args));
-    const lazy = (...args: any[]) => {
-        const resolve = () => finder(...args);
+function makeFinder<Args extends any[]>(name: string, filterFactory: (...args: Args) => FilterFn) {
+    const finder = <T = any>(...args: Args): T => find<T>(filterFactory(...args));
+    const lazy = <T = any>(...args: Args): T => {
+        const resolve = () => finder<T>(...args);
         trackFinder(name, args.map(String), resolve);
         return proxyLazy(resolve);
     };
@@ -198,17 +198,17 @@ export const [findByProps, findByPropsLazy] = makeFinder("findByProps", filters.
 export const [findByCode, findByCodeLazy] = makeFinder("findByCode", filters.byCode);
 export const [findByDisplayName, findByDisplayNameLazy] = makeFinder("findByDisplayName", filters.byDisplayName);
 
-export function findComponentByCode(...code: (string | RegExp)[]): any {
-    return find(filters.componentByCode(...code));
+export function findComponentByCode<T = any>(...code: (string | RegExp)[]): T {
+    return find<T>(filters.componentByCode(...code));
 }
 
-export function findComponentByCodeLazy(...code: (string | RegExp)[]): any {
+export function findComponentByCodeLazy<T = any>(...code: (string | RegExp)[]): T {
     const resolve = () => findComponentByCode(...code);
     trackFinder("findComponentByCode", code.map(String), resolve);
-    return LazyComponent("findComponentByCode", resolve);
+    return LazyComponent("findComponentByCode", resolve) as T;
 }
 
-export function findExportedComponent(...props: string[]): any {
+export function findExportedComponent<T = any>(...props: string[]): T {
     return withLazySync(() => scanExportedComponent(props), result => !result);
 }
 
@@ -227,10 +227,10 @@ function scanExportedComponent(props: string[]): any {
     return null;
 }
 
-export function findExportedComponentLazy(...props: string[]): any {
+export function findExportedComponentLazy<T = any>(...props: string[]): T {
     const resolve = () => findExportedComponent(...props);
     trackFinder("findExportedComponent", props, resolve);
-    return LazyComponent(props[0], resolve);
+    return LazyComponent(props[0], resolve) as T;
 }
 
 function collectStores(): void {
@@ -255,7 +255,7 @@ function populateStoreCache(): void {
     });
 }
 
-export function findStore(name: string): any {
+export function findStore<T = any>(name: string): T | undefined {
     const hookName = toZustandHookName(name);
     if (zustandStoreCache.has(hookName)) return zustandStoreCache.get(hookName);
     if (!zustandStoreCache.size) populateStoreCache();
@@ -264,13 +264,13 @@ export function findStore(name: string): any {
     const hook = mod?.[hookName] ?? mod;
     if (!hook || !isZustandStore(hook)) return undefined;
     zustandStoreCache.set(hookName, hook);
-    return hook;
+    return hook as T;
 }
 
-export function findStoreLazy(name: string): any {
-    const resolve = () => findStore(name);
+export function findStoreLazy<T = any>(name: string): T {
+    const resolve = () => findStore<T>(name);
     trackFinder("findStore", [name], resolve);
-    return proxyLazy(resolve);
+    return proxyLazy(resolve) as T;
 }
 
 export function getAllStores(): Map<string, any> {
@@ -491,7 +491,7 @@ export function search(...code: (string | RegExp)[]): Record<number, ModuleFacto
     return results;
 }
 
-export function requireModule(moduleId: number): any {
+export function requireModule<T = any>(moduleId: number): T | null {
     const cache = getModuleCache();
     if (cache.has(moduleId)) return cache.get(moduleId);
 
@@ -506,7 +506,7 @@ export function requireModule(moduleId: number): any {
     }
 }
 
-export function importModule(moduleId: number): Promise<any> {
+export function importModule<T = any>(moduleId: number): Promise<T> {
     const helpers = getTurbopackHelpers();
     if (!helpers) return Promise.reject(new Error("Turbopack helpers not available"));
     return helpers.A(moduleId);
@@ -530,7 +530,7 @@ function findMatchInExports(exports: any, filter: FilterFn): any {
     });
 }
 
-export function waitFor(filter: FilterFn, callback: (mod: any, id: number) => void, timeout = 0) {
+export function waitFor<T = any>(filter: FilterFn, callback: (mod: T, id: number) => void, timeout = 0) {
     const cached = searchCache(filter);
     if (cached) {
         callback(cached, -1);
