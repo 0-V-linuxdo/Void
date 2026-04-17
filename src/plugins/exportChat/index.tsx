@@ -21,7 +21,7 @@ import { ConversationStore } from "@turbopack/common/stores";
 import { ApiClients, FileUtils } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
-import { sanitizeFilename } from "@utils/misc";
+import { safeUrl, sanitizeFilename } from "@utils/misc";
 import { useIsStreaming } from "@utils/react";
 import { escapeHtml } from "@utils/text";
 import definePlugin from "@utils/types";
@@ -142,14 +142,20 @@ function toHtml(title: string, messages: ExportMessage[]): string {
         if (text) p.push(`<div>${escapeHtml(text).replaceAll("\n", "<br>")}</div>`);
 
         if (m.generatedImageUrls?.length) {
-            for (const url of m.generatedImageUrls) p.push(`<img src="${escapeHtml(url, true)}" style="max-width:100%;margin:.5rem 0">`);
+            for (const url of m.generatedImageUrls) {
+                const safe = safeUrl(url);
+                if (safe) p.push(`<img src="${escapeHtml(safe, true)}" style="max-width:100%;margin:.5rem 0">`);
+            }
         }
 
         if (m.webSearchResults?.length) {
             p.push("<ul>");
             for (const r of m.webSearchResults) {
                 const { title: t, url } = r as { title?: string; url?: string };
-                if (url) p.push(`<li><a href="${escapeHtml(url, true)}">${escapeHtml(t ?? url)}</a></li>`);
+                if (!url) continue;
+                const safe = safeUrl(url);
+                if (safe) p.push(`<li><a href="${escapeHtml(safe, true)}" rel="noopener noreferrer">${escapeHtml(t ?? safe)}</a></li>`);
+                else p.push(`<li>${escapeHtml(t ?? url)}</li>`);
             }
             p.push("</ul>");
         }

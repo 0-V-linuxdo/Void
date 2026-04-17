@@ -175,6 +175,15 @@ export function extractUrlExtension(url: string, fallback = "jpg"): string {
     return url.split(".").pop()?.split("?")[0] ?? fallback;
 }
 
+export function safeUrl(url: string): string | null {
+    try {
+        const { protocol } = new URL(url);
+        return protocol === "https:" || protocol === "http:" || protocol === "mailto:" ? url : null;
+    } catch {
+        return null;
+    }
+}
+
 export function randomId(prefix = ""): string {
     const tail = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     return prefix ? `${prefix}-${tail}` : tail;
