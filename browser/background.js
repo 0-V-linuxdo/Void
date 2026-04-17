@@ -1,13 +1,3 @@
-const VOID_CSP_DOMAINS = [
-    "raw.githubusercontent.com",
-    "*.github.io",
-    "*.githubusercontent.com",
-    "*.gitlab.io",
-    "*.codeberg.page",
-    "cdn.jsdelivr.net",
-    "*.jsdelivr.net",
-];
-
 function patchCsp(csp) {
     const directives = new Map();
     for (const part of csp.split(";")) {
@@ -18,22 +8,15 @@ function patchCsp(csp) {
         directives.set(trimmed.slice(0, spaceIdx), trimmed.slice(spaceIdx + 1));
     }
 
-    const domains = VOID_CSP_DOMAINS.join(" ");
-
     if (directives.has("script-src")) {
         let val = directives.get("script-src");
         if (!val.includes("'unsafe-eval'")) val += " 'unsafe-eval'";
         if (!val.includes("blob:")) val += " blob:";
-        val += " " + domains;
         directives.set("script-src", val);
     }
 
-    if (directives.has("connect-src")) {
-        directives.set("connect-src", directives.get("connect-src") + " " + domains);
-    }
-
-    if (directives.has("style-src")) {
-        directives.set("style-src", directives.get("style-src") + " " + domains);
+    if (directives.has("connect-src") && !directives.get("connect-src").includes("https:")) {
+        directives.set("connect-src", directives.get("connect-src") + " https:");
     }
 
     if (directives.has("img-src")) {
@@ -46,12 +29,13 @@ function patchCsp(csp) {
 }
 
 const VOID_ALLOWED_ORIGINS = new Set(["https://grok.com", "https://accounts.x.ai"]);
-const VOID_SENDER_HOSTS = ["grok.com", ".grok.com"];
+const VOID_SENDER_HOSTS = ["grok.com"];
 
 function isAllowedSender(url) {
     try {
-        const { hostname } = new URL(url);
-        return VOID_SENDER_HOSTS.some(h => hostname === h.replace(/^\./, "") || hostname.endsWith(h));
+        const { protocol, hostname } = new URL(url);
+        if (protocol !== "https:" && protocol !== "http:") return false;
+        return VOID_SENDER_HOSTS.some(h => hostname === h || hostname.endsWith("." + h));
     } catch {
         return false;
     }
