@@ -21,7 +21,12 @@ const settings = definePluginSettings({
 
 function applyWidth() {
     const w = settings.store.width ?? 64;
-    registerStyle(STYLE_NAME, `.breakout{--content-max-width:${w}rem!important}.max-w-breakout{max-width:${w}rem!important}`);
+    registerStyle(
+        STYLE_NAME,
+        `.breakout{--content-max-width:${w}rem!important}`
+        + `.max-w-breakout{max-width:${w}rem!important}`
+        + ".max-w-breakout [class*=\"w-4/5\"]{width:100%!important}",
+    );
 }
 
 export default definePlugin({
