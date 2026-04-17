@@ -1,6 +1,5 @@
 dist
 node_modules
-bun.lock
 *.log
 *.tsbuildinfo
 .DS_Store

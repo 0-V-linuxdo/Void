@@ -38,7 +38,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         if: steps.version.outputs.changed == 'true'
 
-      - run: bun install
+      - run: bun install --frozen-lockfile
         if: steps.version.outputs.changed == 'true'
 
       - run: bun run build
@@ -48,7 +48,7 @@ jobs:
         if: steps.version.outputs.changed == 'true'
         run: |
           cd dist/chrome-unpacked
-          bunx chrome-webstore-upload-cli@3 upload --auto-publish
+          bunx chrome-webstore-upload-cli@3.3.2 upload --auto-publish
         env:
           EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
