@@ -26,7 +26,12 @@ const settings = definePluginSettings({
     },
     hideModelUpsell: {
         type: OptionType.BOOLEAN,
-        description: "Hide upgrade prompts and locked modes in the model selector.",
+        description: "Hide the upgrade prompt in the model selector.",
+        default: true,
+    },
+    hideInaccessibleModels: {
+        type: OptionType.BOOLEAN,
+        description: "Hide locked/inaccessible models in the model selector.",
         default: true,
     },
     hideNotificationBanner: {
@@ -93,10 +98,9 @@ export default definePlugin({
                     match: /(?<=useCheckSubscriptionOffer\)\(\);)(.{0,30}return null;)/,
                     replace: "if($self.settings.store.hideModelUpsell)return null;$1",
                 },
-                // empties the locked modes list so they don't render greyed out
                 {
                     match: /(\i)(\.map\(\i=>\(0,\i\.jsx\).{0,60}"text-secondary opacity-75)/,
-                    replace: "($self.settings.store.hideModelUpsell?[]:$1)$2",
+                    replace: "($self.settings.store.hideInaccessibleModels?[]:$1)$2",
                 },
             ],
         },
