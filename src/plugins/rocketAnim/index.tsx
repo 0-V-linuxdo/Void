@@ -40,10 +40,10 @@ export default definePlugin({
             },
         },
         {
-            find: ["RocketEngineAnimation", "TeamSwitchPrompt", "DropPrompt"],
+            find: ["RocketEngineAnimation", "TeamSwitchPrompt"],
             replacement: {
-                match: /\i&&\(0,(\i)\.jsx\)\((\i\.RocketEngineAnimation),\{isHeavy:\i\}\)/,
-                replace: "(0,$1.jsx)($2,{isHeavy:$self._isHeavy(),maxWidthClass:$self._maxWidth()})",
+                match: /TriggeredError,\{hidden:!0\}\),(\i)&&\(0,(\i)\.jsx\)\((\i),\{isHeavy:\i\}\)/,
+                replace: "TriggeredError,{hidden:!0}),$1&&(0,$2.jsx)($3,{isHeavy:$self._isHeavy(),maxWidthClass:$self._maxWidth()})",
             },
         },
         {
