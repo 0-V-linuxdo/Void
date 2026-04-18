@@ -60,17 +60,19 @@ export const TOOL_DEFINITIONS = [
     },
     {
         name: "patch",
-        description: "Patch ops. test: validate find+match+replace. analyze: find uniqueness. list: all patches+status. conflicts: multi-plugin modules. broken: failed patches. lint: regex quality. context: source neighborhood+anchors. bench: regex speed (median/p95/max over 50 runs). report: full patch system summary with orphaned/pending separation.",
+        description: "Patch ops. test: validate find+match+replace. analyze: find uniqueness. list: all patches+status. conflicts: multi-plugin modules. broken: failed patches. lint: regex quality. context: source neighborhood+anchors. bench: regex speed (median/p95/max over 50 runs). report: full patch system summary with orphaned/pending separation. validate: reporter-style audit of all registered patches — flags find::no-module, find::ambiguous, replace::match-miss, replace::backref-invalid, replace::regex-invalid, replace::syntax-error, group::failed. Use plugin to scope to one plugin, severity to filter issues.",
         inputSchema: {
             type: "object",
             properties: {
-                action: { type: "string", enum: ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench", "report"] },
+                action: { type: "string", enum: ["test", "analyze", "list", "conflicts", "broken", "lint", "context", "bench", "report", "validate"] },
                 find: { oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }], description: "Module locator string or array of strings." },
                 match: { type: "string", description: "Regex as plain string. \\i=minified var, .{0,N}=bounded gap." },
                 replace: { type: "string", description: "Supports $1, $&, $self." },
                 flags: { type: "string" },
                 window: { type: "number", default: 1200 },
                 context: { type: "number", default: 120 },
+                plugin: { type: "string", description: "validate: restrict audit to one plugin name." },
+                severity: { type: "string", enum: ["error", "warn", "all"], default: "error", description: "validate: filter issues by severity." },
             },
             required: ["action"],
         },

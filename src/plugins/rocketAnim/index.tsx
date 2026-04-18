@@ -34,23 +34,21 @@ export default definePlugin({
         {
             find: ["useSuperGrokAnimations", "useRocketStore", "useSurveyLocation"],
             all: true,
-            noWarn: true,
             replacement: {
                 match: /(\i)=!!\(\i\.SUPERGROK_BRANDING_QUERY_BAR_ANIMATION_ENABLED&&\(\i\|\|\i\)\);return\{enabled:/,
                 replace: "$1=!0;return{enabled:",
             },
         },
         {
-            find: ["RocketEngineAnimation", "TeamSwitchPrompt", "DropPrompt"],
+            find: ["RocketEngineAnimation", "TeamSwitchPrompt"],
             replacement: {
-                match: /\i&&\(0,(\i)\.jsx\)\((\i\.RocketEngineAnimation),\{isHeavy:\i\}\)/,
-                replace: "(0,$1.jsx)($2,{isHeavy:$self._isHeavy(),maxWidthClass:$self._maxWidth()})",
+                match: /TriggeredError,\{hidden:!0\}\),(\i)&&\(0,(\i)\.jsx\)\((\i),\{isHeavy:\i\}\)/,
+                replace: "TriggeredError,{hidden:!0}),$1&&(0,$2.jsx)($3,{isHeavy:$self._isHeavy(),maxWidthClass:$self._maxWidth()})",
             },
         },
         {
             find: ["withRocketGlowBorder", "isSuperGrokProUser"],
             all: true,
-            noWarn: true,
             replacement: {
                 match: /withRocketGlowBorder:\i=!1\}=\i,.{0,60}\{isSuperGrokProUser:(\i)\}=\(0,(\i)\.useSubscriptions\)\(\)/,
                 replace: "$&;$1=$self._isHeavy()",

@@ -17,11 +17,13 @@ import { ErrorBoundary } from "@components/ErrorBoundary";
 import { DownloadIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
 import { React } from "@turbopack/common/react";
-import { ChatPageStore, ConversationStore } from "@turbopack/common/stores";
+import { ConversationStore } from "@turbopack/common/stores";
 import { ApiClients, FileUtils } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
-import { sanitizeFilename } from "@utils/misc";
+import { safeUrl, sanitizeFilename } from "@utils/misc";
+import { useIsStreaming } from "@utils/react";
+import { escapeHtml } from "@utils/text";
 import definePlugin from "@utils/types";
 
 const logger = new Logger("ExportChat");
@@ -50,10 +52,6 @@ function formatTs(ts?: string): string {
 
 function sender(s: string): string {
     return s.toLowerCase() === "human" ? "You" : "Grok";
-}
-
-function escapeHtml(s: string): string {
-    return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
 
 function toMarkdown(title: string, messages: ExportMessage[]): string {
@@ -144,14 +142,20 @@ function toHtml(title: string, messages: ExportMessage[]): string {
         if (text) p.push(`<div>${escapeHtml(text).replaceAll("\n", "<br>")}</div>`);
 
         if (m.generatedImageUrls?.length) {
-            for (const url of m.generatedImageUrls) p.push(`<img src="${escapeHtml(url)}" style="max-width:100%;margin:.5rem 0">`);
+            for (const url of m.generatedImageUrls) {
+                const safe = safeUrl(url);
+                if (safe) p.push(`<img src="${escapeHtml(safe, true)}" style="max-width:100%;margin:.5rem 0">`);
+            }
         }
 
         if (m.webSearchResults?.length) {
             p.push("<ul>");
             for (const r of m.webSearchResults) {
                 const { title: t, url } = r as { title?: string; url?: string };
-                if (url) p.push(`<li><a href="${escapeHtml(url)}">${escapeHtml(t ?? url)}</a></li>`);
+                if (!url) continue;
+                const safe = safeUrl(url);
+                if (safe) p.push(`<li><a href="${escapeHtml(safe, true)}" rel="noopener noreferrer">${escapeHtml(t ?? safe)}</a></li>`);
+                else p.push(`<li>${escapeHtml(t ?? url)}</li>`);
             }
             p.push("</ul>");
         }
@@ -194,7 +198,7 @@ async function exportChat(conversationId: string, format: Format) {
 }
 
 function ExportMenu({ conversationId }: ContextMenuLocationMap["conversation"]) {
-    const streaming = ChatPageStore.useChatPageStore(s => s.conversationId === conversationId && !!s.streamedMessageId);
+    const streaming = useIsStreaming(conversationId);
 
     return (
         <DropdownMenuSub>

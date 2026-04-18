@@ -63,7 +63,6 @@ interface PatchTiming {
     match: PatchReplacement["match"];
     findTime: number;
     replaceTime: number;
-    compileTime: number;
 }
 
 const patchTimings: PatchTiming[] | null = IS_DEV ? [] : null;
@@ -77,8 +76,6 @@ export const patchStats: PatchStats = {
     runtimeFallbacks: 0,
     patchedModules: new Set<number>(),
 };
-
-const getFactorySource = getFnSource;
 
 export function getModuleCache(): Map<number, any> {
     return moduleCache;
@@ -229,14 +226,21 @@ interface LazyPatchResult {
 function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult | null {
     if (!patches.length) return null;
 
-    const originalCode = getFactorySource(factory);
+    const originalCode = getFnSource(factory);
     const codeLen = originalCode.length;
     let code = originalCode;
     const patchedBy = new Set<string>();
 
     for (let i = 0; i < patches.length; i++) {
         const patch = patches[i];
-        if (patch.predicate && !patch.predicate()) continue;
+        if (patch.predicate) {
+            try {
+                if (!patch.predicate()) continue;
+            } catch (e) {
+                logger.error(`predicate threw for ${patch.plugin}:`, e);
+                continue;
+            }
+        }
 
         const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
         const maxFindLen = Math.max(0, ...finds.map(f => typeof f === "string" ? f.length : 0));
@@ -282,16 +286,22 @@ function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult
         };
 
         for (const replacement of replacements) {
-            if (replacement.predicate && !replacement.predicate()) continue;
+            if (replacement.predicate) {
+                try {
+                    if (!replacement.predicate()) continue;
+                } catch (e) {
+                    logger.error(`replacement predicate threw for ${patch.plugin}:`, e);
+                    continue;
+                }
+            }
             const lastCode = code;
 
             try {
                 const { match } = replacement;
-                const start = performance.now();
+                const start = IS_DEV ? performance.now() : 0;
                 const newCode = code.replace(match, replacement.replace as string);
-                const replaceElapsed = performance.now() - start;
 
-                if (IS_DEV) patchTimings!.push({ plugin: patch.plugin, moduleId, match, findTime: findElapsed, replaceTime: replaceElapsed, compileTime: 0 });
+                if (IS_DEV) patchTimings!.push({ plugin: patch.plugin, moduleId, match, findTime: findElapsed, replaceTime: performance.now() - start });
 
                 if (newCode === code) {
                     groupNoEffect++;
@@ -351,7 +361,6 @@ function createLazyFactory(moduleId: number, patchResult: LazyPatchResult, origi
 
     const lazy: PatchedModuleFactory = function (this: any, helpers: TurbopackHelpers, mod?: TurbopackModule, exports?: Record<string, any>) {
         if (!compiled) {
-            const compileStart = IS_DEV ? performance.now() : 0;
             try {
                 compiled = compileFactory(
                     code,
@@ -363,20 +372,11 @@ function createLazyFactory(moduleId: number, patchResult: LazyPatchResult, origi
                 patchStats.errors++;
                 compiled = original;
             }
-            if (IS_DEV) {
-                const compileElapsed = performance.now() - compileStart;
-                for (let i = patchTimings!.length - 1; i >= 0; i--) {
-                    if (patchTimings![i].moduleId === moduleId) {
-                        patchTimings![i].compileTime = compileElapsed;
-                        break;
-                    }
-                }
-            }
         }
         compiled.call(this, helpers, mod, exports);
     };
 
-    lazy.toString = () => getFactorySource(original);
+    lazy.toString = () => getFnSource(original);
     lazy[SYM_ORIGINAL] = original;
     lazy[SYM_PATCHED] = true;
     lazy[SYM_PATCHED_BY] = plugins;
@@ -403,7 +403,7 @@ function createFactoryWrapper(
             fnSourceCache.delete(factory);
         }
     };
-    wrapped.toString = () => getFactorySource(factory);
+    wrapped.toString = () => getFnSource(factory);
     return wrapped;
 }
 
@@ -495,7 +495,7 @@ function isFactoryPending(patch: Patch): boolean {
     if (!runtimeFactoryRegistry) return false;
     const find = Array.isArray(patch.find) ? patch.find : [patch.find];
     for (const [, factory] of runtimeFactoryRegistry) {
-        if (matchesAllPatterns(getFactorySource(factory), find)) return true;
+        if (matchesAllPatterns(getFnSource(factory), find)) return true;
     }
     return false;
 }
@@ -535,6 +535,7 @@ export function reportOrphanedPatches(): void {
             if (patchTime <= 10) continue;
             logger.warn(`Slow patch: ${t.plugin} on ${t.moduleId} (find: ${t.findTime.toFixed(1)}ms, replace: ${t.replaceTime.toFixed(1)}ms) ${String(t.match)}`);
         }
+        patchTimings!.length = 0;
     }
 }
 

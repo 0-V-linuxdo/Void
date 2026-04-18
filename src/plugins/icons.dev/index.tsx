@@ -89,7 +89,7 @@ function IconsTab() {
 
     return (
         <Flex flexDirection="column" gap="1.5rem">
-            <SectionHeader title="Icons" description={`Browse ${icons.length} Grok icons. Click to copy the finder code.`} className={cl("section")} />
+            <SectionHeader title="Icons" description={`Browse all ${icons.length} icons used by Grok. Click any icon to copy its finder code for use in plugins.`} className={cl("section")} />
             <Flex className={cl("section")}>
                 <Input
                     type="text"

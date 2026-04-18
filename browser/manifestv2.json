@@ -14,7 +14,10 @@
     "permissions": [
         "webRequest",
         "webRequestBlocking",
-        "*://grok.com/*"
+        "cookies",
+        "*://grok.com/*",
+        "*://x.ai/*",
+        "*://*.x.ai/*"
     ],
     "content_scripts": [
         {

@@ -201,7 +201,7 @@ function ExperimentsTab() {
 
     return (
         <Flex flexDirection="column" gap="1rem">
-            <SectionHeader title="Experiments" description="Toggle unreleased Grok features. These are experimental and may break things." className={cl("section")} />
+            <SectionHeader title="Experiments" description="Toggle unreleased Grok features. These are experimental and may break. New flags are marked when they appear." className={cl("section")} />
             <Card variant="ghost" className={cl("warning")}>
                 <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
                     <Text size="xs" className={cl("warning-text")}>

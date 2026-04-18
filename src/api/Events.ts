@@ -10,6 +10,7 @@ import { mapGetOrCreate } from "@utils/misc";
 export interface VoidEventMap {
     pluginToggle: void;
     reloadNeeded: void;
+    streamEnd: { responseId: string };
 }
 
 export type VoidEvent = keyof VoidEventMap | (string & {});
@@ -27,6 +28,7 @@ export function subscribe(event: VoidEvent, handler: (data: unknown) => void): (
     set.add(handler);
     return () => {
         set.delete(handler);
+        if (!set.size) listeners.delete(event);
     };
 }
 

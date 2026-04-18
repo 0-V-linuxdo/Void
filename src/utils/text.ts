@@ -27,3 +27,9 @@ export function escapeRegExp(s: string): string {
 export function pluralize(count: number, singular: string, plural?: string): string {
     return `${count} ${count === 1 ? singular : (plural ?? singular + "s")}`;
 }
+
+/** Escape HTML-special characters for safe insertion as text. Pass `quotes: true` to also escape `"`. */
+export function escapeHtml(s: string, quotes = false): string {
+    const base = s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    return quotes ? base.replaceAll("\"", "&quot;") : base;
+}

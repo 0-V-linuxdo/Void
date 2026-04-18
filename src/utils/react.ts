@@ -5,8 +5,10 @@
  */
 
 import { subscribe, type VoidEvent } from "@api/Events";
+import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
-import type { ExternalStore } from "@utils/misc";
+import { ChatPageStore } from "@turbopack/common/stores";
+import type { ExternalStore, SelectionStore } from "@utils/misc";
 import type { ReactNode } from "react";
 
 export type LazyNode = ReactNode | (() => ReactNode);
@@ -19,12 +21,29 @@ export function useExternalStore(store: ExternalStore) {
     useSyncExternalStore(store.subscribe, store.getSnapshot);
 }
 
+export function useSelectionHas<T>(store: SelectionStore<T>, id: T): boolean {
+    useExternalStore(store);
+    return store.has(id);
+}
+
+export function useSelectionSize<T>(store: SelectionStore<T>): number {
+    useExternalStore(store);
+    return store.size();
+}
+
+export function useIsStreaming(conversationId?: string): boolean {
+    return ChatPageStore.useChatPageStore((s: ChatPageStoreState) =>
+        !!s.streamedMessageId && (conversationId == null || s.conversationId === conversationId));
+}
+
 export function useForceUpdater() {
     return useReducer((x: number) => x + 1, 0)[1];
 }
 
 export function useEventSubscription(event: VoidEvent, handler: () => void) {
-    useEffect(() => subscribe(event, handler), [event, handler]);
+    const ref = useRef(handler);
+    ref.current = handler;
+    useEffect(() => subscribe(event, () => ref.current()), [event]);
 }
 
 export function useFiltered<T>(list: T[], search: string, getKey: (item: T) => string): T[] {

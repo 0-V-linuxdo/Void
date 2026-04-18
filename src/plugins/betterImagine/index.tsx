@@ -7,28 +7,23 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { Button, ButtonWithTooltip, ConfirmDialog, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
+import { Button, ConfirmDialog, DropdownMenuItem, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { HeartCrackIcon, ScalingIcon, SquareMousePointerIcon, TrashIcon } from "@components/icons";
-import type { GrokPage, MediaPostType } from "@grok-types/enums";
+import { CopyIcon, ScalingIcon, SquareMousePointerIcon } from "@components/icons";
+import type { MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
-import { Fragment, React, useCallback, useEffect, useMemo, useRef, useState } from "@turbopack/common/react";
+import { Fragment, React, useEffect, useRef, useState } from "@turbopack/common/react";
 import { MediaStore, RoutingStore } from "@turbopack/common/stores";
-import { FileUtils, Toaster } from "@turbopack/common/utils";
-import { findExportedComponentLazy } from "@turbopack/turbopack";
+import { Toaster } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
-import { classes, classNameFactory } from "@utils/css";
+import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { copyToClipboard, createExternalStore, extractUrlExtension, fetchExternal, sanitizeFilename } from "@utils/misc";
-import { useAsyncAction, useExternalStore } from "@utils/react";
+import { copyToClipboard, createExternalStore, sanitizeFilename } from "@utils/misc";
+import { useExternalStore } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
-import { createZip } from "@utils/zip";
 
-const CopyIcon = findExportedComponentLazy("CopyIcon");
-const DownloadIcon = findExportedComponentLazy("DownloadIcon");
 const logger = new Logger("BetterImagine");
-
 const cl = classNameFactory("void-imagine-");
 
 const settings = definePluginSettings({
@@ -52,19 +47,48 @@ const settings = definePluginSettings({
         description: "Hide moderated images and videos that cannot be interacted with.",
         default: true,
     },
+    pauseWhenHidden: {
+        type: OptionType.BOOLEAN,
+        description: "Pause any playing video thumbnails when the tab loses focus.",
+        default: true,
+    },
+    persistFilters: {
+        type: OptionType.BOOLEAN,
+        description: "Remember Favorites filter + sort across reloads.",
+        default: true,
+    },
+    smartFilenames: {
+        type: OptionType.BOOLEAN,
+        description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
+        default: true,
+    },
+    bypassPaywall: {
+        type: OptionType.BOOLEAN,
+        description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
+        default: false,
+    },
 });
 
-const MEDIA_TYPE_IMAGE: MediaPostType = "MEDIA_POST_TYPE_IMAGE";
-const MEDIA_TYPE_VIDEO: MediaPostType = "MEDIA_POST_TYPE_VIDEO";
-const PAGE_FAVORITES: GrokPage = "imagine-favorites";
-
-const FILTER_MAP: Record<Exclude<MediaFilter, "all">, MediaPostType> = {
-    image: MEDIA_TYPE_IMAGE,
-    video: MEDIA_TYPE_VIDEO,
-};
+function buildFilename(post: MediaItem | undefined, isVideo: boolean): string | null {
+    if (!settings.store.smartFilenames || !post) return null;
+    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
+    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
+    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
+    const id = post.id?.slice(0, 8) ?? "";
+    const ext = isVideo ? "mp4" : "png";
+    const parts = [date, slug, id].filter(Boolean);
+    if (!parts.length) return null;
+    return `${parts.join("_")}.${ext}`;
+}
 
 type MediaFilter = "all" | "image" | "video";
 type DateFilter = "all" | "today" | "week" | "month";
+type SortMode = "newest" | "oldest" | "prompt-az" | "prompt-za" | "random";
+
+const FILTER_MAP: Record<Exclude<MediaFilter, "all">, MediaPostType> = {
+    image: "MEDIA_POST_TYPE_IMAGE",
+    video: "MEDIA_POST_TYPE_VIDEO",
+};
 
 const DATE_LABELS: Record<DateFilter, string> = {
     all: "Any time",
@@ -73,120 +97,148 @@ const DATE_LABELS: Record<DateFilter, string> = {
     month: "This month",
 };
 
-let currentFilter: MediaFilter = "all";
-let currentSearch = "";
-let currentDate: DateFilter = "all";
+const SORT_LABELS: Record<SortMode, string> = {
+    newest: "Newest first",
+    oldest: "Oldest first",
+    "prompt-az": "Prompt A → Z",
+    "prompt-za": "Prompt Z → A",
+    random: "Shuffle",
+};
+
+const SORT_KEYS = Object.keys(SORT_LABELS) as SortMode[];
+
+const DAY_MS = 86_400_000;
+
+const DATE_CUTOFFS: Record<DateFilter, number> = {
+    all: 0,
+    today: DAY_MS,
+    week: 7 * DAY_MS,
+    month: 30 * DAY_MS,
+};
+
+const STORAGE_KEY = "void-imagine-filters";
+
+interface FilterState {
+    filter: MediaFilter;
+    search: string;
+    date: DateFilter;
+    sort: SortMode;
+}
+
+const DEFAULT_FILTERS: FilterState = { filter: "all", search: "", date: "all", sort: "newest" };
+
+function loadFilters(): FilterState {
+    try {
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        if (!raw) return DEFAULT_FILTERS;
+        const parsed = JSON.parse(raw) as Partial<FilterState>;
+        return {
+            filter: (["all", "image", "video"] as const).includes(parsed.filter as MediaFilter) ? parsed.filter as MediaFilter : "all",
+            search: typeof parsed.search === "string" ? parsed.search : "",
+            date: (Object.keys(DATE_LABELS) as DateFilter[]).includes(parsed.date as DateFilter) ? parsed.date as DateFilter : "all",
+            sort: SORT_KEYS.includes(parsed.sort as SortMode) ? parsed.sort as SortMode : "newest",
+        };
+    } catch {
+        return DEFAULT_FILTERS;
+    }
+}
+
+const initial = loadFilters();
+let currentFilter: MediaFilter = initial.filter;
+let currentSearch = initial.search;
+let currentDate: DateFilter = initial.date;
+let currentSort: SortMode = initial.sort;
+let randomSeed = Date.now();
 const filterStore = createExternalStore();
 
-function setFilter(f: MediaFilter) {
-    currentFilter = f;
+function persist() {
+    if (!settings.store.persistFilters) return;
+    try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
+    } catch {}
+}
+
+function setFilter(f: MediaFilter) { currentFilter = f; filterStore.notify(); persist(); }
+function setSearch(s: string) { currentSearch = s; filterStore.notify(); persist(); }
+function setDate(d: DateFilter) { currentDate = d; filterStore.notify(); persist(); }
+function setSort(s: SortMode) {
+    if (s === "random" && currentSort === "random") randomSeed = Date.now();
+    currentSort = s;
     filterStore.notify();
+    persist();
 }
 
-function setSearch(s: string) {
-    currentSearch = s;
+function resetFilters() {
+    currentFilter = "all";
+    currentSearch = "";
+    currentDate = "all";
+    currentSort = "newest";
     filterStore.notify();
+    persist();
 }
 
-function setDate(d: DateFilter) {
-    currentDate = d;
-    filterStore.notify();
+function hasActiveFilters(): boolean {
+    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
 }
 
-function getDateCutoff(d: DateFilter): number {
-    const now = Date.now();
-    const DAY = 86_400_000;
-    if (d === "today") return now - DAY;
-    if (d === "week") return now - 7 * DAY;
-    if (d === "month") return now - 30 * DAY;
-    return 0;
-}
-
-function isModeratedItem(p: MediaItem): boolean {
+function isModerated(p: MediaItem): boolean {
     return !!(p.moderated || p.isModerated) && !p.mediaUrl;
+}
+
+function matchesFilters(p: MediaItem, target: MediaPostType | null, q: string, cutoff: number, hideModerated: boolean): boolean {
+    if (!p) return false;
+    if (hideModerated && isModerated(p)) return false;
+    if (target && p.mediaType !== target) return false;
+    if (cutoff && new Date(p.createTime).getTime() < cutoff) return false;
+    if (q && !(p.prompt ?? "").toLowerCase().includes(q) && !(p.originalPrompt ?? "").toLowerCase().includes(q)) return false;
+    return true;
 }
 
 function filterItems(items: MediaItem[]): MediaItem[] {
     const { hideModerated } = settings.store;
-    if (currentFilter === "all" && !currentSearch && currentDate === "all" && !hideModerated) return items;
-    const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
-    const q = currentSearch.toLowerCase();
-    const cutoff = getDateCutoff(currentDate);
-    return items.filter(p => {
-        if (!p) return false;
-        if (hideModerated && isModeratedItem(p)) return false;
-        if (target && p.mediaType !== target) return false;
-        if (cutoff && new Date(p.createTime).getTime() < cutoff) return false;
-        if (q && !(p.prompt ?? "").toLowerCase().includes(q) && !(p.originalPrompt ?? "").toLowerCase().includes(q)) return false;
-        return true;
-    });
-}
-
-const selectedIds = new Set<string>();
-let selectMode = false;
-const selectionStore = createExternalStore();
-
-function toggleSelectMode() {
-    selectMode = !selectMode;
-    if (!selectMode) selectedIds.clear();
-    selectionStore.notify();
-}
-
-function toggleSelected(id: string) {
-    if (selectedIds.has(id)) selectedIds.delete(id);
-    else selectedIds.add(id);
-    selectionStore.notify();
-}
-
-function clearSelection() {
-    selectedIds.clear();
-    selectMode = false;
-    selectionStore.notify();
-}
-
-async function bulkDeletePosts(ids: string[]) {
-    const { deletePost } = MediaStore.useMediaStore.getState();
-    let deleted = 0;
-    for (const id of ids) {
-        try {
-            await deletePost(id, id);
-            deleted++;
-        } catch (e) {
-            logger.error("Failed to delete post:", id, e);
-        }
+    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
+    let out = items;
+    if (needsFilter) {
+        const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
+        const q = currentSearch.toLowerCase();
+        const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
+        out = items.filter(p => matchesFilters(p, target, q, cutoff, hideModerated));
     }
-    clearSelection();
-    Toaster.toast.success(`Deleted ${pluralize(deleted, "item")}.`);
+    return currentSort === "newest" ? out : sortItems(out);
 }
 
-async function bulkUpscaleVideos(ids: string[]) {
-    const state = MediaStore.useMediaStore.getState();
-    let upscaled = 0;
-    let alreadyHd = 0;
-    let inProgress = 0;
-    for (const id of ids) {
-        const item = state.byId[id];
-        if (!item) continue;
-        const videos = state.videoByMediaId[id];
-        if (!videos?.length) continue;
-        for (const video of videos) {
-            if (video.hdMediaUrl) { alreadyHd++; continue; }
-            if (video.upscalingInProgress) { inProgress++; continue; }
-            try {
-                await state.upscaleVideo(id, video.id);
-                upscaled++;
-            } catch (e) {
-                logger.error("Failed to upscale video:", id, video.id, e);
+function mulberry32(seed: number): () => number {
+    let a = seed;
+    return () => {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+
+function sortItems(items: MediaItem[]): MediaItem[] {
+    if (items.length < 2) return items;
+    const arr = [...items];
+    switch (currentSort) {
+        case "oldest":
+            return arr.toSorted((a, b) => new Date(a.createTime).getTime() - new Date(b.createTime).getTime());
+        case "prompt-az":
+            return arr.toSorted((a, b) => (a.prompt ?? "").localeCompare(b.prompt ?? ""));
+        case "prompt-za":
+            return arr.toSorted((a, b) => (b.prompt ?? "").localeCompare(a.prompt ?? ""));
+        case "random": {
+            const rand = mulberry32(randomSeed);
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(rand() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
             }
+            return arr;
         }
+        default:
+            return arr;
     }
-    if (upscaled > 0) Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
-    else if (alreadyHd > 0) Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
-    else if (inProgress > 0) Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
-    else Toaster.toast.info("No videos to upscale.");
 }
-
-const CARD_SELECTOR = ".group\\/media-post-masonry-card";
 
 const pending = new WeakMap<HTMLVideoElement, Promise<void>>();
 
@@ -215,273 +267,124 @@ const onMouseLeave = (e: { currentTarget: HTMLElement }) => {
     if (video) pauseVideo(video);
 };
 
-function dedupeNames(names: string[]): string[] {
-    const counts = new Map<string, number>();
-    return names.map(name => {
-        const count = counts.get(name) ?? 0;
-        counts.set(name, count + 1);
-        if (!count) return name;
-        const dot = name.lastIndexOf(".");
-        return dot > 0 ? `${name.slice(0, dot)} (${count})${name.slice(dot)}` : `${name} (${count})`;
-    });
+function useFilteredFavorites(): MediaItem[] {
+    const list = MediaStore.useMediaStore((s: { favoritesList: MediaItem[] }) => s.favoritesList);
+    useExternalStore(filterStore);
+    return filterItems(list);
 }
 
-async function downloadAllFavorites() {
-    const { favoritesList } = MediaStore.useMediaStore.getState();
-    const entries: { url: string; name: string }[] = [];
+function useFavoritesStats() {
+    const list = MediaStore.useMediaStore((s: { favoritesList: MediaItem[] }) => s.favoritesList);
+    useExternalStore(filterStore);
+    const filtered = list?.length ? filterItems(list) : [];
+    return { total: list?.length ?? 0, visible: filtered.length, filtered };
+}
 
-    for (const post of favoritesList) {
-        if (!post?.mediaUrl) continue;
-        const ext = extractUrlExtension(post.mediaUrl);
-        entries.push({ url: post.mediaUrl, name: `${sanitizeFilename((post.prompt ?? "").slice(0, 60), "imagine")}.${ext}` });
+type VideoInfo = { id: string; hdMediaUrl?: string; upscalingInProgress?: boolean };
+type MediaStoreHandle = {
+    favoritesList?: MediaItem[];
+    multiSelectIds?: Record<string, unknown>;
+    byId: Record<string, MediaItem | undefined>;
+    setMultiSelectItems?: (items: MediaItem[]) => void;
+    clearMultiSelect?: () => void;
+    videoByMediaId: Record<string, VideoInfo[]>;
+    upscaleVideo: (mediaId: string, videoId: string) => Promise<void>;
+};
+
+function mediaState(): MediaStoreHandle {
+    return MediaStore.useMediaStore.getState() as unknown as MediaStoreHandle;
+}
+
+function selectVisible() {
+    const state = mediaState();
+    const list = state.favoritesList ?? [];
+    const visible = filterItems(list);
+    if (!visible.length) return;
+    if (typeof state.setMultiSelectItems === "function") {
+        state.setMultiSelectItems(visible);
+    } else {
+        const ids: Record<string, MediaItem> = {};
+        for (const item of visible) ids[item.id] = item;
+        (MediaStore.useMediaStore.setState as (p: Record<string, unknown>) => void)({ multiSelectIds: ids });
     }
+    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
+}
 
-    if (!entries.length) {
-        Toaster.toast.error("No favorites to download.");
-        return;
+function deselectAll() {
+    const state = mediaState();
+    state.clearMultiSelect?.();
+}
+
+function selectedPosts(): MediaItem[] {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    return ids.map(id => state.byId[id]).filter((p): p is MediaItem => !!p);
+}
+
+async function copyLines(lines: string[], label: string) {
+    if (!lines.length) { Toaster.toast.info(`Selected items have no ${label}s.`); return; }
+    try {
+        await copyToClipboard(lines.join("\n"));
+        Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
+    } catch (e) {
+        logger.error(`Failed to copy ${label}s`, e);
+        Toaster.toast.error(`Failed to copy ${label}s.`);
     }
-
-    if (entries.length === 1) {
-        try {
-            const res = await fetchExternal(entries[0].url);
-            if (!res.ok) { logger.warn("Failed to fetch:", entries[0].url); return; }
-            const blob = await res.blob();
-            FileUtils.downloadBlob(blob, entries[0].name);
-            Toaster.toast.success("Downloaded 1 image.");
-        } catch (e) {
-            logger.error("Failed to download image:", entries[0].url, e);
-        }
-        return;
-    }
-
-    const names = dedupeNames(entries.map(e => e.name));
-    const files: Record<string, Uint8Array> = {};
-    let done = 0;
-
-    await Promise.all(entries.map(async (entry, i) => {
-        try {
-            const res = await fetchExternal(entry.url);
-            if (!res.ok) { logger.warn("Failed to fetch:", entry.url); return; }
-            const buf = await res.arrayBuffer();
-            files[names[i]] = new Uint8Array(buf);
-            done++;
-        } catch (e) {
-            logger.error("Failed to fetch:", entry.url, e);
-        }
-    }));
-
-    if (!done) {
-        Toaster.toast.error("Failed to download any files.");
-        return;
-    }
-
-    const blob = createZip(files);
-    FileUtils.downloadBlob(blob, "favorites.zip");
-    Toaster.toast.success(`Downloaded ${pluralize(done, "file")} as zip.`);
 }
 
-function useFavoritesPage() {
-    return RoutingStore.useRoutingStore(s => s.route.page) === PAGE_FAVORITES;
+async function copySelectedPrompts() {
+    const posts = selectedPosts();
+    if (!posts.length) { Toaster.toast.info("No items selected."); return; }
+    await copyLines(posts.map(p => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
 }
 
-function DownloadAllButton() {
-    const isFavorites = useFavoritesPage();
-    const favorites = MediaStore.useMediaStore(s => s.favoritesList);
-    const visibleCount = getVisibleIds(favorites).length;
-    const [loading, onClick] = useAsyncAction(() => downloadAllFavorites());
-
-    if (!isFavorites) return null;
-
-    return (
-        <ButtonWithTooltip
-            tooltipContent="Download all favorites"
-            variant="tertiary"
-            size="md"
-            shape="pill"
-            disabled={loading || visibleCount === 0}
-            onClick={onClick}
-        >
-            <DownloadIcon size={20} />
-            <span className="font-semibold">{loading ? "Downloading..." : "Download all"}</span>
-        </ButtonWithTooltip>
-    );
+async function copySelectedUrls() {
+    const posts = selectedPosts();
+    if (!posts.length) { Toaster.toast.info("No items selected."); return; }
+    const { videoByMediaId } = mediaState();
+    const urls = posts.map(p => videoByMediaId[p.id]?.find(v => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u): u is string => !!u);
+    await copyLines(urls, "URL");
 }
 
-function getVisibleIds(favorites: MediaItem[]): string[] {
-    return filterItems(favorites).map(i => i.id);
-}
+async function bulkUpscaleSelected() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    let upscaled = 0;
+    let alreadyHd = 0;
+    let inProgress = 0;
 
-function ActionToolbar() {
-    const isFavorites = useFavoritesPage();
-    useExternalStore(selectionStore);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [deleteAllOpen, setDeleteAllOpen] = useState(false);
-    const [upscaleOpen, setUpscaleOpen] = useState(false);
-    const favorites = MediaStore.useMediaStore(s => s.favoritesList);
-    const videoByMediaId = MediaStore.useMediaStore(s => s.videoByMediaId);
-
-    const count = selectedIds.size;
-    const visibleCount = getVisibleIds(favorites).length;
-    const videoCount = useMemo(() => {
-        const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
-        return ids.filter(id => videoByMediaId[id]?.length).length;
-    }, [count, favorites, videoByMediaId]);
-
-    useEffect(() => {
-        if (!isFavorites && selectMode) clearSelection();
-    }, [isFavorites]);
-
-    const [busyDelete, onDeleteSelected] = useAsyncAction(() => bulkDeletePosts([...selectedIds]));
-    const [busyDeleteAll, onDeleteAll] = useAsyncAction(() => bulkDeletePosts(getVisibleIds(favorites)));
-    const [busyUpscale, onUpscale] = useAsyncAction(async () => {
-        const ids = count > 0 ? [...selectedIds] : getVisibleIds(favorites);
-        await bulkUpscaleVideos(ids);
-    });
-    const busy = busyDelete || busyDeleteAll || busyUpscale;
-
-    const onSelectAll = useCallback(() => {
-        for (const id of getVisibleIds(favorites)) selectedIds.add(id);
-        selectionStore.notify();
-    }, [favorites]);
-
-    if (!isFavorites) return null;
-
-    return (
-        <div className={cl("action-toolbar")}>
-            <ButtonWithTooltip
-                tooltipContent={selectMode ? "Exit select mode" : "Select items"}
-                variant={selectMode ? "primary" : "tertiary"}
-                size="md"
-                shape="pill"
-                disabled={!selectMode && visibleCount === 0}
-                onClick={toggleSelectMode}
-            >
-                <SquareMousePointerIcon size={20} />
-                <span className="font-semibold">{selectMode ? "Cancel" : "Select"}</span>
-            </ButtonWithTooltip>
-            {selectMode && (
-                <ButtonWithTooltip
-                    tooltipContent="Select all visible items"
-                    variant="tertiary"
-                    size="md"
-                    shape="pill"
-                    onClick={onSelectAll}
-                >
-                    <span className="font-semibold">Select all</span>
-                </ButtonWithTooltip>
-            )}
-            <ButtonWithTooltip
-                tooltipContent={videoCount > 0 ? `Upscale ${pluralize(videoCount, "video")}` : "No videos to upscale"}
-                variant="tertiary"
-                size="md"
-                shape="pill"
-                disabled={busy || videoCount === 0}
-                onClick={() => setUpscaleOpen(true)}
-            >
-                <ScalingIcon size={20} />
-                <span className="font-semibold">{videoCount > 1 ? `Upscale ${videoCount}` : "Upscale"}</span>
-            </ButtonWithTooltip>
-            {selectMode && count > 0 ? (
-                <ButtonWithTooltip
-                    tooltipContent={`Delete ${count} selected`}
-                    variant="danger"
-                    size="md"
-                    shape="pill"
-                    disabled={busy}
-                    onClick={() => setConfirmOpen(true)}
-                >
-                    <TrashIcon size={20} />
-                    <span className="font-semibold">{busy ? "Deleting..." : (count > 1 ? `Delete ${count}` : "Delete")}</span>
-                </ButtonWithTooltip>
-            ) : !selectMode && (
-                <ButtonWithTooltip
-                    tooltipContent="Delete all visible items"
-                    variant="tertiary"
-                    size="md"
-                    shape="pill"
-                    disabled={busy || visibleCount === 0}
-                    onClick={() => setDeleteAllOpen(true)}
-                >
-                    <TrashIcon size={20} />
-                    <span className="font-semibold">{busy ? "Deleting..." : "Delete all"}</span>
-                </ButtonWithTooltip>
-            )}
-            <ConfirmDialog
-                open={confirmOpen}
-                onOpenChange={setConfirmOpen}
-                title="Delete selected items"
-                description={`Are you sure you want to permanently delete ${pluralize(count, "item")}? This cannot be undone.`}
-                confirmText="Delete"
-                danger
-                onConfirm={onDeleteSelected}
-            />
-            <ConfirmDialog
-                open={deleteAllOpen}
-                onOpenChange={setDeleteAllOpen}
-                title="Delete all items"
-                description="Are you sure you want to permanently delete all visible items? This cannot be undone."
-                confirmText="Delete all"
-                danger
-                onConfirm={onDeleteAll}
-            />
-            <ConfirmDialog
-                open={upscaleOpen}
-                onOpenChange={setUpscaleOpen}
-                title={`Upscale ${pluralize(videoCount, "video")}`}
-                description={`This will start HD upscaling for ${pluralize(videoCount, "video")}. Already upscaled videos will be skipped.`}
-                confirmText="Upscale"
-                onConfirm={onUpscale}
-            />
-        </div>
-    );
-}
-
-function SelectOverlay({ postId }: { postId: string }) {
-    const isFavorites = useFavoritesPage();
-    const ref = useRef<HTMLSpanElement>(null);
-    useExternalStore(selectionStore);
-
-    const isSelected = selectMode && selectedIds.has(postId);
-
-    useEffect(() => {
-        const card = ref.current?.closest(CARD_SELECTOR) as HTMLElement | null;
-        if (!card) return;
-        const selected = isFavorites && isSelected;
-        card.classList.toggle(cl("card-selected"), selected);
-        return () => { card.classList.remove(cl("card-selected")); };
-    }, [isFavorites, isSelected]);
-
-    useEffect(() => {
-        if (!isFavorites) return;
-        const card = ref.current?.closest(CARD_SELECTOR) as HTMLElement | null;
-        if (!card) return;
-
-        const handler = (e: MouseEvent) => {
-            if (selectMode) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleSelected(postId);
-                return;
+    for (const id of ids) {
+        const videos = state.videoByMediaId[id];
+        if (!videos?.length) continue;
+        for (const video of videos) {
+            if (video.hdMediaUrl) { alreadyHd++; continue; }
+            if (video.upscalingInProgress) { inProgress++; continue; }
+            try {
+                await state.upscaleVideo(id, video.id);
+                upscaled++;
+            } catch (e) {
+                logger.error("Failed to upscale video:", id, video.id, e);
             }
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                selectMode = true;
-                selectedIds.add(postId);
-                selectionStore.notify();
-            }
-        };
+        }
+    }
 
-        card.addEventListener("click", handler, { capture: true });
-        return () => card.removeEventListener("click", handler, { capture: true });
-    }, [isFavorites, postId]);
-
-    if (!isFavorites) return null;
-    return <span ref={ref} className={cl("select-marker")} />;
+    if (upscaled) Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
+    else if (alreadyHd) Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
+    else if (inProgress) Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
+    else Toaster.toast.info("No videos to upscale.");
 }
 
 function FilterButtons() {
     useExternalStore(filterStore);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const { total, visible } = useFavoritesStats();
+    const hidden = total - visible;
+    const showClear = hasActiveFilters() || currentSort !== "newest";
+    const sortActive = currentSort !== "newest";
+
+    useEffect(() => {
+        (inputRef.current as HTMLInputElement & { __voidSearch?: boolean } | null)?.classList?.add?.(cl("search-marker"));
+    }, []);
 
     return (
         <Fragment>
@@ -495,12 +398,24 @@ function FilterButtons() {
                     ))}
                 </SelectContent>
             </Select>
+            <Select value={currentSort} onValueChange={(v: string) => setSort(v as SortMode)}>
+                <SelectTrigger className={sortActive ? cl("sort-select", "sort-active") : cl("sort-select")}>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {SORT_KEYS.map(s => (
+                        <SelectItem key={s} value={s}>{SORT_LABELS[s]}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
             <Input
+                ref={inputRef}
                 type="text"
                 placeholder="Search..."
                 value={currentSearch}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
                 className={cl("search")}
+                data-void-search="true"
             />
             {(["image", "video"] as const).map(f => (
                 <Button
@@ -514,164 +429,145 @@ function FilterButtons() {
                     {f === "image" ? "Images" : "Videos"}
                 </Button>
             ))}
+            {hasActiveFilters() && visible > 0 && (
+                <Button variant="tertiary" size="sm" shape="pill" className={cl("chip")} onClick={selectVisible}>
+                    <SquareMousePointerIcon className="size-4" /> Select visible
+                </Button>
+            )}
+            {showClear && (
+                <Button variant="tertiary" size="sm" shape="pill" className={cl("chip")} onClick={resetFilters}>
+                    Clear
+                </Button>
+            )}
+            {total > 0 && hasActiveFilters() && (
+                <span className={cl("hidden-count")} title={`${visible} of ${total} items match`}>
+                    {visible} / {total}
+                </span>
+            )}
+            {!hasActiveFilters() && hidden > 0 && (
+                <span className={cl("hidden-count")} title={`${hidden} moderated item${hidden === 1 ? "" : "s"} hidden`}>
+                    {pluralize(hidden, "hidden")}
+                </span>
+            )}
         </Fragment>
     );
 }
 
-function useFilteredFavorites(): MediaItem[] {
-    const favorites = MediaStore.useMediaStore(s => s.favoritesList);
-    useExternalStore(filterStore);
-    return filterItems(favorites);
-}
-
-function useFilteredList(): MediaItem[] {
-    const list = MediaStore.useMediaStore(s => s.list);
-    return settings.store.hideModerated ? list.filter(p => p && !isModeratedItem(p)) : list;
-}
-
-function CardActions({ postId }: { postId: string }) {
-    const isFavorites = useFavoritesPage();
-    const item = MediaStore.useMediaStore(s => s.byId[postId]);
-    const [confirmDelete, setConfirmDelete] = useState(false);
-
-    const onDownload = async () => {
-        if (!item?.mediaUrl) return;
-        try {
-            const res = await fetchExternal(item.mediaUrl);
-            if (!res.ok) { logger.warn("Failed to fetch:", item.mediaUrl); return; }
-            const blob = await res.blob();
-            const ext = extractUrlExtension(item.mediaUrl);
-            FileUtils.downloadBlob(blob, `${sanitizeFilename((item.prompt ?? "").slice(0, 60), "imagine")}.${ext}`);
-        } catch (e) {
-            logger.error("Failed to download:", e);
-        }
-    };
-
-    const onCopyPrompt = async () => {
-        const prompt = item?.prompt ?? item?.originalPrompt;
-        if (!prompt) return;
-        try {
-            await copyToClipboard(prompt);
-            Toaster.toast.success("Copied prompt.");
-        } catch (e) {
-            logger.error("Failed to copy prompt:", e);
-        }
-    };
-
-    const onUnfavorite = () => {
-        MediaStore.useMediaStore.getState().unlike(postId);
-    };
-
-    const onDelete = async () => {
-        try {
-            await MediaStore.useMediaStore.getState().deletePost(postId, postId);
-            Toaster.toast.success("Deleted.");
-        } catch (e) {
-            logger.error("Failed to delete post:", e);
-            Toaster.toast.error("Failed to delete.");
-        }
-    };
-
-    const hasPrompt = !!(item?.prompt || item?.originalPrompt);
-
+function UpscaleItem() {
+    const [open, setOpen] = useState(false);
     return (
-        <Fragment>
-            {hasPrompt && (
-                <ButtonWithTooltip
-                    tooltipContent="Copy prompt"
-                    className={cl("card-btn")}
-                    size="md"
-                    shape="circle"
-                    variant="none"
-                    onClick={onCopyPrompt}
-                >
-                    <CopyIcon size="16" className="text-white" />
-                </ButtonWithTooltip>
-            )}
-            <ButtonWithTooltip
-                tooltipContent="Download"
-                className={cl("card-btn")}
-                size="md"
-                shape="circle"
-                variant="none"
-                onClick={onDownload}
-            >
-                <DownloadIcon size="16" className="text-white" />
-            </ButtonWithTooltip>
-            {isFavorites && (
-                <Fragment>
-                    <ButtonWithTooltip
-                        tooltipContent="Unsave"
-                        className={cl("card-btn")}
-                        size="md"
-                        shape="circle"
-                        variant="none"
-                        onClick={onUnfavorite}
-                    >
-                        <HeartCrackIcon size={16} className="text-white" />
-                    </ButtonWithTooltip>
-                    <ButtonWithTooltip
-                        tooltipContent="Delete permanently"
-                        className={classes(cl("card-btn"), cl("card-btn-danger"))}
-                        size="md"
-                        shape="circle"
-                        variant="none"
-                        onClick={() => setConfirmDelete(true)}
-                    >
-                        <TrashIcon size={16} className="text-white" />
-                    </ButtonWithTooltip>
-                    <ConfirmDialog
-                        open={confirmDelete}
-                        onOpenChange={setConfirmDelete}
-                        title="Delete this item"
-                        description="Are you sure you want to permanently delete this item? This cannot be undone."
-                        confirmText="Delete"
-                        danger
-                        onConfirm={onDelete}
-                    />
-                </Fragment>
-            )}
-        </Fragment>
+        <>
+            <DropdownMenuItem onSelect={() => setOpen(true)}>
+                <ScalingIcon className="size-4 me-2" />
+                Upscale videos
+            </DropdownMenuItem>
+            <ConfirmDialog
+                open={open}
+                onOpenChange={setOpen}
+                title="Upscale selected videos"
+                description="Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped."
+                confirmText="Upscale"
+                onConfirm={bulkUpscaleSelected}
+            />
+        </>
     );
 }
 
-const WrappedDownloadAll = ErrorBoundary.wrap(DownloadAllButton);
-const WrappedActionToolbar = ErrorBoundary.wrap(ActionToolbar);
-const WrappedFilterButtons = ErrorBoundary.wrap(FilterButtons);
-const WrappedCardActions = ErrorBoundary.wrap(CardActions);
-const WrappedSelectOverlay = ErrorBoundary.wrap(SelectOverlay);
+function CopyActions() {
+    return (
+        <>
+            <DropdownMenuItem onSelect={copySelectedPrompts}>
+                <CopyIcon className="size-4 me-2" />
+                Copy prompts
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={copySelectedUrls}>
+                <CopyIcon className="size-4 me-2" />
+                Copy URLs
+            </DropdownMenuItem>
+        </>
+    );
+}
+
+function isImaginePage(): boolean {
+    const page = RoutingStore.useRoutingStore.getState().route?.page;
+    return page === "imagine" || page === "imagine-favorites";
+}
+
+function isFavoritesPage(): boolean {
+    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
+}
+
+function isTypingTarget(t: EventTarget | null): boolean {
+    if (!(t instanceof HTMLElement)) return false;
+    if (t.isContentEditable) return true;
+    const tag = t.tagName;
+    if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") return false;
+    return (t as HTMLInputElement).dataset.voidSearch !== "true";
+}
+
+function onKeyDown(e: KeyboardEvent) {
+    if (!isImaginePage()) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (isTypingTarget(e.target)) return;
+
+    if (e.key === "i" || e.key === "I") {
+        setFilter(currentFilter === "image" ? "all" : "image");
+        e.preventDefault();
+    } else if (e.key === "v" || e.key === "V") {
+        setFilter(currentFilter === "video" ? "all" : "video");
+        e.preventDefault();
+    } else if (e.key === "r" || e.key === "R") {
+        resetFilters();
+        e.preventDefault();
+    } else if (e.key === "A") {
+        if (isFavoritesPage()) { deselectAll(); e.preventDefault(); }
+    } else if (e.key === "a") {
+        if (isFavoritesPage()) { selectVisible(); e.preventDefault(); }
+    } else if (e.key === "c" || e.key === "C") {
+        if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
+            copySelectedPrompts();
+            e.preventDefault();
+        }
+    }
+}
+
+function onVisibilityChange() {
+    if (!settings.store.pauseWhenHidden) return;
+    if (document.visibilityState !== "hidden") return;
+    for (const video of document.querySelectorAll<HTMLVideoElement>("video")) {
+        if (!video.paused) video.pause();
+    }
+}
+
+let abortCtrl: AbortController | null = null;
 
 export default definePlugin({
     name: "BetterImagine",
-    description: "Quality of life improvements and features for the Imagine page.",
+    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
     settings,
 
-    _hideDefault() {
-        return settings.store.hideDefaultPreviews;
+    _hideDefault: () => settings.store.hideDefaultPreviews,
+    _autoPlay: () => !settings.store.noAutoplay,
+    _bypassPaywall: () => settings.store.bypassPaywall,
+    _hoverProps: () => settings.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _useFilteredFavorites: useFilteredFavorites,
+    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
+    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
+    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
+    _buildFilename: buildFilename,
+
+    start() {
+        if (abortCtrl) return;
+        abortCtrl = new AbortController();
+        const { signal } = abortCtrl;
+        document.addEventListener("keydown", onKeyDown, { capture: true, signal });
+        document.addEventListener("visibilitychange", onVisibilityChange, { signal });
     },
 
-    _autoPlay() {
-        return !settings.store.noAutoplay;
-    },
-
-    _hoverProps() {
-        if (!settings.store.playOnHover) return {};
-        return { onMouseEnter, onMouseLeave };
-    },
-
-    _renderDownloadAll: WrappedDownloadAll,
-    _renderActionToolbar: WrappedActionToolbar,
-    _renderFilterButtons: WrappedFilterButtons,
-    _renderCardActions: WrappedCardActions,
-    _renderSelectOverlay: WrappedSelectOverlay,
-
-    _useFilteredFavorites() {
-        return useFilteredFavorites();
-    },
-
-    _useFilteredList() {
-        return useFilteredList();
+    stop() {
+        abortCtrl?.abort();
+        abortCtrl = null;
     },
 
     patches: [
@@ -684,16 +580,12 @@ export default definePlugin({
                     replace: '"default"===$1&&!$self._hideDefault()&&(0,$2.jsx)($3,{containerWidth:',
                 },
                 {
-                    match: /}\):\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),/,
-                    replace: '}):(0,$1)($self._hideDefault()&&"favorites"!==$4?()=>null:$2,{containerRef:$3,variant:$4,',
+                    match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
+                    replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?()=>null:$2,{containerRef:$3,variant:$4,width:',
                 },
                 {
-                    match: /"imagine-upload-image-button.label","Upload image"\)}\)]\}\)/,
-                    replace: "$&,$self._renderActionToolbar({}),$self._renderDownloadAll({})",
-                },
-                {
-                    match: /,(\i)=\(0,(\i)\.useMediaStore\)\(\i=>\i\.favoritesList\),(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.list\)/,
-                    replace: ",$1=$self._useFilteredFavorites(),$3=$self._useFilteredList()",
+                    match: /,(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
+                    replace: ",$1=$self._useFilteredFavorites()",
                 },
             ],
         },
@@ -702,20 +594,16 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /muted:!0,autoPlay:!0/g,
-                    replace: "muted:!0,autoPlay:$self._autoPlay()",
+                    match: /autoPlay:!0/g,
+                    replace: "autoPlay:$self._autoPlay()",
                 },
                 {
                     match: /\.updateShiftPreview\(null\)\)\},onClick:/,
                     replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:",
                 },
                 {
-                    match: /children:\(0,(\i)\.jsx\)\((\i),\{postId:(\i),mediaType:(\i),onOpenChange:(\i)\}\)\}\)/,
-                    replace: "children:[$self._renderSelectOverlay({postId:$3}),(0,$1.jsx)($2,{postId:$3,mediaType:$4,onOpenChange:$5}),$self._renderCardActions({postId:$3})]})",
-                },
-                {
-                    match: /children:(\(0,\i\.jsx\)\(\i,\{isLiked:\i,postId:(\i),isImageEdit:\i,forceVisible:\i\}\))\}\)/g,
-                    replace: "children:[$self._renderSelectOverlay({postId:$2}),$1,$self._renderCardActions({postId:$2})]})",
+                    match: /if\(((?:\i)&&(?:\i))\)return void (\i)\(e\);(let \i=\{imagine:"home-grid")/,
+                    replace: "if($1||e.ctrlKey||e.metaKey)return void $2(e);$3",
                 },
             ],
         },
@@ -725,6 +613,37 @@ export default definePlugin({
                 match: /"imagine-folder.all","All"\)}\)]\}\)/,
                 replace: "$&,$self._renderFilterButtons({})",
             },
+        },
+        {
+            find: "imagine-templates.section-title",
+            all: true,
+            noWarn: true,
+            replacement: {
+                match: /(\i)&&!(\i)\?(\i)\.play\(\)\.catch\(\(\)=>\{\}\):\3\.pause\(\)/,
+                replace: "$1&&!$2&&$self._autoPlay()?$3.play().catch(()=>{}):$3.pause()",
+            },
+        },
+        {
+            find: '"imagine-set-resolution"',
+            all: true,
+            replacement: {
+                match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
+                replace: "if(!$self._bypassPaywall())$&",
+            },
+        },
+        {
+            find: "imagine-multiselect.add-to-tag",
+            group: true,
+            replacement: [
+                {
+                    match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[/,
+                    replace: '(0,$1.jsxs)($2.DropdownMenuContent,{align:"end",sideOffset:8,children:[$self._renderUpscaleItem(),$self._renderCopyActions(),',
+                },
+                {
+                    match: /"imagine-"\.concat\((\i)\.slice\(0,8\),"\."\)\.concat\((\i)\?"mp4":"png"\)/,
+                    replace: '($self._buildFilename(e.byId[$1],$2)||"imagine-".concat($1.slice(0,8),".").concat($2?"mp4":"png"))',
+                },
+            ],
         },
     ],
 });

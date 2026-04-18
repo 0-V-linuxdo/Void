@@ -45,3 +45,27 @@ export function canonicalizeFind(patch: Patch) {
         ? patch.find.map(f => canonicalizeMatch(f))
         : canonicalizeMatch(patch.find);
 }
+
+export function countCaptureGroups(matchStr: string): number {
+    let count = 0;
+    let inCharClass = false;
+    for (let i = 0; i < matchStr.length; i++) {
+        if (matchStr[i] === "\\" && i + 1 < matchStr.length) {
+            i++;
+            continue;
+        }
+        if (inCharClass) {
+            if (matchStr[i] === "]") inCharClass = false;
+            continue;
+        }
+        if (matchStr[i] === "[") {
+            inCharClass = true;
+            continue;
+        }
+        if (matchStr[i] === "(") {
+            if (matchStr[i + 1] !== "?") count++;
+            else if (matchStr[i + 2] === "<" && matchStr[i + 3] !== "!" && matchStr[i + 3] !== "=") count++;
+        }
+    }
+    return count;
+}

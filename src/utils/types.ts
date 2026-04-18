@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { VoidEventMap } from "@api/Events";
+import type * as Stores from "@turbopack/common/stores";
 import type { ReactNode } from "react";
 
 export default function definePlugin<P extends PluginDef>(p: P & Record<PropertyKey, any>) {
@@ -13,8 +15,6 @@ export default function definePlugin<P extends PluginDef>(p: P & Record<Property
 export type ReplaceFn = (match: string, ...groups: string[]) => string;
 
 export type PluginSettingValue = string | number | bigint | boolean | undefined;
-
-export type EventListenerTarget = "document" | "window";
 
 export interface PatchReplacement {
     match: string | RegExp;
@@ -40,22 +40,9 @@ export interface Plugin extends PluginDef {
     isDependency?: boolean;
 }
 
-export interface StoreSubscription<TState = any, TSlice = any> {
-    store: { subscribe: (callback: (state: TState, prevState: TState) => void, selector?: (state: TState) => TSlice) => () => void };
-    callback: (state: TState, prevState: TState) => void;
-    selector?: (state: TState) => TSlice;
-}
-
 export interface ZustandSubscription<TState = any, TSlice = any> {
     selector?: (state: TState) => TSlice;
     handler: (current: TSlice, prev: TSlice) => void;
-}
-
-export interface PluginEventListener {
-    target?: EventListenerTarget;
-    event: keyof DocumentEventMap | keyof WindowEventMap;
-    handler: EventListener;
-    options?: AddEventListenerOptions;
 }
 
 export interface PluginDef {
@@ -77,13 +64,12 @@ export interface PluginDef {
     settings?: DefinedSettings;
     managedStyle?: string;
     tags?: string[];
-    storeSubscriptions?: StoreSubscription[];
-    zustand?: Record<string, ZustandSubscription>;
+    zustand?: Partial<Record<keyof typeof Stores, ZustandSubscription>>;
     chatBarButton?: import("@api/ChatBarButtons").ChatBarButtonDef;
     contextMenuItems?: { [L in import("@api/ContextMenus").ContextMenuLocation]?: import("@api/ContextMenus").ContextMenuItemDef<L> };
-    events?: Record<string, (data: unknown) => void>;
-    eventListeners?: PluginEventListener[];
+    events?: { [K in keyof VoidEventMap]?: (data: VoidEventMap[K]) => void };
     cleanupSelectors?: string[];
+    onSettingsChange?(): void;
 }
 
 export const enum StartAt {

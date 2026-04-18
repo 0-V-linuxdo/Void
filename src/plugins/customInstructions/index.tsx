@@ -24,6 +24,7 @@ import { ChatPageStore } from "@turbopack/common/stores";
 import { findByPropsLazy, findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { randomId } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 
 const cl = classNameFactory("void-ci-");
@@ -54,10 +55,6 @@ const settings = definePluginSettings({
         component: () => <PresetsEditor />,
     },
 }).withPrivateSettings<PrivateSettings>();
-
-function createId() {
-    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
 
 function getPresets(): Preset[] {
     return settings.plain.presets ?? [];
@@ -146,7 +143,7 @@ function PresetsEditor() {
     }, []);
 
     const addPreset = useCallback(() => {
-        const id = createId();
+        const id = randomId();
         setPresets([...getPresets(), { id, name: "", prompt: "" }]);
         setEditingId(id);
     }, []);

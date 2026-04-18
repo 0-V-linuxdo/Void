@@ -117,8 +117,8 @@ export default function PluginsTab() {
     }, []);
 
     return (
-        <Flex flexDirection="column" gap="1.5rem">
-            <SectionHeader title="Plugins" description="Pick which plugins to use. Some need a page reload to kick in." />
+        <Flex flexDirection="column" gap="1rem" className="void-tab-root">
+            <SectionHeader title="Plugins" description="Turn Void features on or off. Some require a reload to apply. Click the dots on a plugin to configure it." />
             {needsReload && !showReload && (
                 <Flex alignItems="center" className={cl("reload-banner")}>
                     <Text size="xs" className={cl("reload-text")}>
@@ -129,7 +129,7 @@ export default function PluginsTab() {
                     </Button>
                 </Flex>
             )}
-            <Flex alignItems="center" gap="0.75rem" className="void-tab-section">
+            <Flex alignItems="center" gap="0.75rem">
                 <Input
                     type="text"
                     placeholder={`Search ${visibleUser.length + visibleRequired.length} plugins...`}
@@ -149,7 +149,7 @@ export default function PluginsTab() {
                 </Select>
             </Flex>
             {filteredUser.length > 0 && (
-                <Grid columns="repeat(2, 1fr)" className="void-tab-section">
+                <Grid columns="repeat(2, 1fr)">
                     {filteredUser.map(n => (
                         <ErrorBoundary key={n} fallback={null}>
                             <PluginCard name={n} onSettings={setDialogName} onReload={onReload} />
@@ -159,8 +159,8 @@ export default function PluginsTab() {
             )}
             {filteredRequired.length > 0 && (
                 <>
-                    <Separator className={cl("divider")} />
-                    <Grid columns="repeat(2, 1fr)" className="void-tab-section">
+                    <Separator />
+                    <Grid columns="repeat(2, 1fr)">
                         {filteredRequired.map(n => (
                             <ErrorBoundary key={n} fallback={null}>
                                 <PluginCard name={n} onSettings={setDialogName} onReload={onReload} />

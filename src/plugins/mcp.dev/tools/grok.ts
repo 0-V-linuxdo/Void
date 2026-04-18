@@ -24,6 +24,11 @@ interface GrokResponse {
     createTime?: string;
 }
 
+function readResponses(conversationId: string): GrokResponse[] | undefined {
+    const state = ResponseStore.useResponseStore.getState() as { byConversationId?: Record<string, GrokResponse[]> };
+    return state.byConversationId?.[conversationId];
+}
+
 function getCurrentConversationId(): string | undefined {
     return RoutingStore.useRoutingStore.getState().route?.conversationId ?? undefined;
 }
@@ -84,10 +89,14 @@ function submitEditor() {
     pm.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, bubbles: true, cancelable: true }));
 }
 
+function isAssistant(r: GrokResponse): boolean {
+    return typeof r.sender === "string" && r.sender.toLowerCase() === "assistant";
+}
+
 function findLatestAssistantResponse(responses: GrokResponse[], afterIndex: number): GrokResponse | null {
     for (let i = responses.length - 1; i > afterIndex; i--) {
         const r = responses[i];
-        if (r.sender === "assistant" && isRealResponse(r)) return r;
+        if (isAssistant(r) && isRealResponse(r)) return r;
     }
     return null;
 }
@@ -127,7 +136,7 @@ function waitForResponse(conversationId: string | undefined, beforeCount: number
             if (chatState.isRateLimited) return fail(typeof chatState.isRateLimited === "string" ? chatState.isRateLimited : "Rate limited");
             if (chatState.isUnauthenticated) return fail("Authentication required");
 
-            const responses = ResponseStore.useResponseStore.getState().byConversationId?.[convId] as unknown as GrokResponse[] | undefined;
+            const responses = readResponses(convId);
             if (!responses || responses.length <= beforeCount) return;
 
             const lastResp = findLatestAssistantResponse(responses, beforeCount - 1);
@@ -207,13 +216,18 @@ function isRealResponse(r: GrokResponse): boolean {
     return !!r.responseId && !r.responseId.startsWith("optimistic_");
 }
 
+function isFinalResponse(r: GrokResponse): boolean {
+    return r.state !== "streaming" && !r.partial;
+}
+
 async function handleRead(args: GrokArgs): Promise<unknown> {
     const { conversationId, responseId } = args;
     if (!conversationId && !responseId) return { error: "Provide conversationId or responseId." };
 
     if (responseId) {
-        const cached = ResponseStore.useResponseStore.getState().byId?.[responseId];
-        if (cached) return formatResponse(cached);
+        const { byId } = ResponseStore.useResponseStore.getState() as { byId?: Record<string, GrokResponse> };
+        const cached = byId?.[responseId];
+        if (cached && isFinalResponse(cached)) return formatResponse(cached);
     }
 
     if (conversationId && responseId) {
@@ -229,7 +243,7 @@ async function handleRead(args: GrokArgs): Promise<unknown> {
 
     if (!conversationId) return { error: "Provide conversationId to list responses or get latest." };
 
-    const responses = ResponseStore.useResponseStore.getState().byConversationId?.[conversationId] as unknown as GrokResponse[] | undefined;
+    const responses = readResponses(conversationId);
     if (!responses?.length) return { error: "No responses found. Is the conversation loaded?" };
 
     const real = responses.filter(isRealResponse);

@@ -16,7 +16,25 @@ import { MCP as MCP_CONSTANTS } from "./tools/constants";
 import { clearAllIntercepts } from "./tools/intercept";
 import { clearWhereUsedCache } from "./tools/module";
 import { clearStoreCache } from "./tools/store";
-import { clearFactoryCaches } from "./tools/utils";
+import { clearFactoryCaches, isThenable } from "./tools/utils";
+
+const logger = new Logger("MCP", "#ca9ee6");
+
+interface WsMessage {
+    id: string | number;
+    tool: string;
+    arguments?: Record<string, unknown>;
+}
+
+interface WsResponse {
+    id: string | number;
+    result?: unknown;
+    error?: string;
+}
+
+const MCP_URL = `ws://localhost:${MCP_CONSTANTS.PORT}`;
+const { SLOW_THRESHOLD, MAX_RESULT_SIZE, INITIAL_RECONNECT_DELAY, MAX_RECONNECT_DELAY } = MCP_CONSTANTS;
+
 const settings = definePluginSettings({
     logToolCalls: {
         type: OptionType.BOOLEAN,
@@ -24,19 +42,7 @@ const settings = definePluginSettings({
         default: true,
     },
 });
-const logger = new Logger("MCP", "#ca9ee6");
-const MCP_URL = `ws://localhost:${MCP_CONSTANTS.PORT}`;
-const { SLOW_THRESHOLD, MAX_RESULT_SIZE, INITIAL_RECONNECT_DELAY, MAX_RECONNECT_DELAY } = MCP_CONSTANTS;
-interface WsMessage {
-    id: string | number;
-    tool: string;
-    arguments?: Record<string, unknown>;
-}
-interface WsResponse {
-    id: string | number;
-    result?: unknown;
-    error?: string;
-}
+
 let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectDelay: number = INITIAL_RECONNECT_DELAY;
@@ -80,8 +86,8 @@ function send(data: WsResponse) {
     try {
         let json = JSON.stringify(data);
         if (json.length > MAX_RESULT_SIZE && data.result != null) {
-            data.result = truncateResult(data.result);
-            json = JSON.stringify(data);
+            const truncated: WsResponse = { id: data.id, result: truncateResult(data.result) };
+            json = JSON.stringify(truncated);
             if (json.length > MAX_RESULT_SIZE) {
                 safeSend(JSON.stringify({ id: data.id, error: `Result too large (${json.length} chars) even after auto-truncation. Use narrower queries or pagination.` }));
                 return;
@@ -135,16 +141,10 @@ function connect() {
         };
         try {
             const result = handler(args ?? {});
-            if (result != null && typeof (result as Promise<unknown>).then === "function") {
-                (result as Promise<unknown>).then(
-                    val => {
-                        logCall();
-                        send({ id, result: val });
-                    },
-                    (err: unknown) => {
-                        logCall(true);
-                        send({ id, error: errorMessage(err) });
-                    },
+            if (isThenable(result)) {
+                result.then(
+                    val => { logCall(); send({ id, result: val }); },
+                    (err: unknown) => { logCall(true); send({ id, error: errorMessage(err) }); },
                 );
             } else {
                 logCall();

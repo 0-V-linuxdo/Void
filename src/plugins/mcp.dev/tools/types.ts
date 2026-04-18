@@ -36,7 +36,7 @@ export interface ModuleArgs {
     async?: boolean;
     mappers?: Record<string, string>;
     pattern?: string;
-    filters?: Array<{ props?: string[]; code?: string[]; displayName?: string; storeName?: string; componentByCode?: boolean }>;
+    filters?: FilterDef[];
     displayName?: string;
     storeName?: string;
     componentByCode?: boolean;
@@ -57,13 +57,35 @@ export interface EvalArgs {
 }
 
 export interface PatchArgs {
-    action: "test" | "analyze" | "list" | "conflicts" | "broken" | "lint" | "context" | "bench" | "report";
+    action: "test" | "analyze" | "list" | "conflicts" | "broken" | "lint" | "context" | "bench" | "report" | "validate";
     find?: string | string[];
     match?: string;
     replace?: string;
     flags?: string;
     window?: number;
     context?: number;
+    plugin?: string;
+    severity?: "error" | "warn" | "all";
+}
+
+export type ValidationCode =
+    | "find::no-module"
+    | "find::ambiguous"
+    | "replace::regex-invalid"
+    | "replace::match-miss"
+    | "replace::backref-invalid"
+    | "replace::syntax-error"
+    | "group::failed";
+
+export interface ValidationIssue {
+    plugin: string;
+    find: string;
+    code: ValidationCode;
+    severity: "error" | "warn";
+    message: string;
+    moduleId?: number;
+    replacementIndex?: number;
+    detail?: string;
 }
 
 export interface PluginArgs {
@@ -112,7 +134,30 @@ export interface GrokArgs {
     reasoningMode?: "none" | "think" | "deepsearch";
 }
 
-export type ToolHandler = (args: any) => unknown;
+export type ToolArgs = Record<string, unknown>;
+export type ToolHandler = (args: ToolArgs) => unknown;
+
+export interface ToolArgsMap {
+    module: ModuleArgs;
+    search: SearchArgs;
+    evaluateCode: EvalArgs;
+    patch: PatchArgs;
+    plugin: PluginArgs;
+    react: ReactArgs;
+    store: StoreArgs;
+    intercept: InterceptArgs;
+    grok: GrokArgs;
+}
+
+export type ToolName = keyof ToolArgsMap;
+
+export interface FilterDef {
+    props?: string[];
+    code?: string[];
+    displayName?: string;
+    storeName?: string;
+    componentByCode?: boolean;
+}
 
 export interface SuggestCandidate {
     text: string;

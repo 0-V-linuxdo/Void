@@ -107,6 +107,31 @@ export function createExternalStore(): ExternalStore {
     };
 }
 
+export interface SelectionStore<T> extends ExternalStore {
+    has(id: T): boolean;
+    toggle(id: T): void;
+    add(id: T): void;
+    remove(id: T): void;
+    clear(): void;
+    all(): T[];
+    size(): number;
+}
+
+export function createSelectionStore<T>(): SelectionStore<T> {
+    const set = new Set<T>();
+    const store = createExternalStore();
+    return {
+        ...store,
+        has: id => set.has(id),
+        toggle(id) { if (set.has(id)) set.delete(id); else set.add(id); store.notify(); },
+        add(id) { if (!set.has(id)) { set.add(id); store.notify(); } },
+        remove(id) { if (set.delete(id)) store.notify(); },
+        clear() { if (set.size) { set.clear(); store.notify(); } },
+        all: () => [...set],
+        size: () => set.size,
+    };
+}
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
 export function formatCountdown(totalSeconds: number): string {
@@ -148,6 +173,31 @@ export function mapGetOrCreate<K, V>(map: Map<K, V>, key: K, create: () => V): V
 
 export function extractUrlExtension(url: string, fallback = "jpg"): string {
     return url.split(".").pop()?.split("?")[0] ?? fallback;
+}
+
+export function safeUrl(url: string): string | null {
+    try {
+        const { protocol } = new URL(url);
+        return protocol === "https:" || protocol === "http:" || protocol === "mailto:" ? url : null;
+    } catch {
+        return null;
+    }
+}
+
+export function randomId(prefix = ""): string {
+    const tail = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return prefix ? `${prefix}-${tail}` : tail;
+}
+
+export function dedupeNames(names: string[]): string[] {
+    const counts = new Map<string, number>();
+    return names.map(name => {
+        const count = counts.get(name) ?? 0;
+        counts.set(name, count + 1);
+        if (!count) return name;
+        const dot = name.lastIndexOf(".");
+        return dot > 0 ? `${name.slice(0, dot)} (${count})${name.slice(dot)}` : `${name} (${count})`;
+    });
 }
 
 export function sortedEntries<V extends { order?: number }>(map: Map<string, V>): [string, V][] {

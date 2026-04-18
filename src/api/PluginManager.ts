@@ -14,7 +14,7 @@ import { type Patch, type Plugin, StartAt } from "@utils/types";
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
 import { addContextMenuItem, type ContextMenuItemDef, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
 import { subscribe as subscribeEvent } from "./Events";
-import { getSettingsPluginData, PlainSettings, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
+import { getSettingsPluginData, mergePluginSettings, PlainSettings, pluginPath, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
 
 const logger = new Logger("PluginManager", "#b4befe");
 
@@ -85,7 +85,7 @@ function startDependenciesRecursive(plugin: Plugin, visiting = new Set<string>()
         }
 
         dep.isDependency = true;
-        Settings.plugins[depName] = { ...Settings.plugins[depName], enabled: true };
+        mergePluginSettings(depName, { enabled: true });
 
         visiting.add(depName);
         if (!startDependenciesRecursive(dep, visiting)) return false;
@@ -153,13 +153,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
 
         if (plugin.events) {
             for (const [event, handler] of Object.entries(plugin.events)) {
-                unsubs.push(subscribeEvent(event, handler));
-            }
-        }
-
-        if (plugin.storeSubscriptions) {
-            for (const sub of plugin.storeSubscriptions) {
-                unsubs.push(sub.store.subscribe(sub.callback, sub.selector));
+                if (handler) unsubs.push(subscribeEvent(event, handler as (data: unknown) => void));
             }
         }
 
@@ -184,12 +178,11 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
             }
         }
 
-        if (plugin.eventListeners) {
-            for (const el of plugin.eventListeners) {
-                const target = el.target === "window" ? window : document;
-                target.addEventListener(el.event, el.handler, el.options);
-                unsubs.push(() => target.removeEventListener(el.event, el.handler, el.options));
-            }
+        if (plugin.onSettingsChange) {
+            const prefix = pluginPath(plugin.name);
+            const listener = () => plugin.onSettingsChange!();
+            SettingsStore.addPrefixChangeListener(prefix, listener);
+            unsubs.push(() => SettingsStore.removePrefixChangeListener(prefix, listener));
         }
 
         if (unsubs.length) pluginUnsubscribers.set(plugin.name, unsubs);
@@ -296,7 +289,7 @@ export function initPluginManager() {
                 logger.warn(`Plugin ${name} has unresolved dependency ${d}`);
                 continue;
             }
-            Settings.plugins[d] = { ...Settings.plugins[d], enabled: true };
+            mergePluginSettings(d, { enabled: true });
             dep.isDependency = true;
         }
 
@@ -307,7 +300,7 @@ export function initPluginManager() {
     for (const api of neededApis) {
         const dep = plugins[api];
         if (!dep) continue;
-        Settings.plugins[api] = { ...Settings.plugins[api], enabled: true };
+        mergePluginSettings(api, { enabled: true });
         dep.isDependency = true;
     }
 

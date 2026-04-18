@@ -1,27 +1,28 @@
 # Void
 
 [![License](https://img.shields.io/github/license/imjustprism/Void?style=flat-square)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/imjustprism/Void/lint.yml?branch=main&style=flat-square&label=ci)](https://github.com/imjustprism/Void/actions/workflows/lint.yml)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ojhnaooipkeakpjnpcjgbllfehmocjpk?style=flat-square&label=chrome)](https://chromewebstore.google.com/detail/void/ojhnaooipkeakpjnpcjgbllfehmocjpk)
+[![Firefox Add-ons](https://img.shields.io/amo/v/void-cutest-grok-mod?style=flat-square&label=firefox)](https://addons.mozilla.org/en-US/firefox/addon/void-cutest-grok-mod/)
+[![Greasy Fork](https://img.shields.io/greasyfork/v/567871?style=flat-square&label=greasy%20fork)](https://greasyfork.org/en/scripts/567871-void)
 [![Contributing](https://img.shields.io/badge/contributing-guide-blue?style=flat-square)](CONTRIBUTING.md)
-[![Discord](https://img.shields.io/discord/1346547498754437182?style=flat-square&label=discord)](https://discord.gg/4Rx3qUCR5Y)
-[![GitHub Stars](https://img.shields.io/github/stars/imjustprism/Void?style=flat-square)](https://github.com/imjustprism/Void/stargazers)
 
 A client-side modification for [Grok](https://grok.com), inspired by [Vencord](https://github.com/Vendicated/Vencord). Patches Grok's bundled code at runtime with a plugin system, custom CSS editor, and theme support. No server-side changes, no telemetry. Works as a userscript or browser extension.
 
 ## Installation
 
-### Userscript
-
-Install [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/), then install the script from [Greasy Fork](https://greasyfork.org/en/scripts/567871-void).
-
 ### Browser Extension
 
-**Firefox** — Install from [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/void-cutest-grok-mod/).
+- **Chrome / Edge / Opera / Brave** — [Chrome Web Store](https://chromewebstore.google.com/detail/void/ojhnaooipkeakpjnpcjgbllfehmocjpk).
+- **Firefox** — [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/void-cutest-grok-mod/).
 
-**Chrome / Chromium** — Build with `bun run build`, go to `chrome://extensions`, enable Developer Mode, click "Load unpacked" and select the `dist/chrome-unpacked` folder.
+### Userscript
 
-**Firefox (from source)** — Build with `bun run build`, go to `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on" and select `dist/firefox-unpacked/manifest.json`.
+Install [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/), then install from [Greasy Fork](https://greasyfork.org/en/scripts/567871-void).
 
-## Building from Source
+> A few plugins (currently just **AccountSwitcher**) are extension-only because they need APIs userscript managers don't expose. They simply won't appear in the userscript build.
+
+### Install from Source
 
 Requires [Bun](https://bun.sh/) >= 1.0.
 
@@ -31,6 +32,8 @@ cd Void
 bun install
 bun run build
 ```
+
+Then load `dist/chrome-unpacked` via `chrome://extensions` (Developer Mode → Load unpacked), or `dist/firefox-unpacked/manifest.json` via `about:debugging#/runtime/this-firefox` (Load Temporary Add-on), or install `userscript/Void.user.js` in your userscript manager.
 
 ## Support
 

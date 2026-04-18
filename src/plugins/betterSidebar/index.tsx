@@ -11,14 +11,15 @@ import { Button, Checkbox, ConfirmDialog } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
-import type { SubscriptionTier } from "@grok-types/enums";
 import { SidebarComponents } from "@turbopack/common/components";
-import { Fragment, React, useEffect, useRef, useState } from "@turbopack/common/react";
+import { getPlanName } from "@turbopack/common/plan";
+import { Fragment, React, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle, unregisterStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { createExternalStore } from "@utils/misc";
+import { createSelectionStore } from "@utils/misc";
+import { useSelectionHas, useSelectionSize } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType } from "react";
@@ -44,23 +45,6 @@ const settings = definePluginSettings({
         default: true,
     },
 });
-
-const PLAN_NAMES: Partial<Record<SubscriptionTier, string>> = {
-    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
-    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
-    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
-    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro",
-};
-
-const X_SUB_NAMES: Record<string, string> = { PremiumPlus: "SuperGrok", Premium: "X Premium", Basic: "X Basic" };
-
-function getPlanName(bestSubscription?: SubscriptionTier, xSubscriptionType?: string): string {
-    return (bestSubscription && PLAN_NAMES[bestSubscription])
-        ?? (xSubscriptionType && X_SUB_NAMES[xSubscriptionType])
-        ?? "Free";
-}
 
 function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
     const { open } = SidebarComponents.useSidebar();
@@ -91,23 +75,11 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
     );
 }
 
-const selected = new Set<string>();
-const bdStore = createExternalStore();
-
-function toggleSelect(id: string) {
-    if (selected.has(id)) selected.delete(id);
-    else selected.add(id);
-    bdStore.notify();
-}
-
-function clearSelection() {
-    selected.clear();
-    bdStore.notify();
-}
+const selection = createSelectionStore<string>();
 
 async function deleteSelected() {
-    const ids = [...selected];
-    clearSelection();
+    const ids = selection.all();
+    selection.clear();
 
     const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
     if (currentConvId && ids.includes(currentConvId)) {
@@ -122,11 +94,7 @@ async function deleteSelected() {
 
 function SelectCheckbox({ id }: { id: string }) {
     const enabled = settings.use(["batchSelect"]).batchSelect;
-    const [checked, setChecked] = useState(selected.has(id));
-    const idRef = useRef(id);
-    idRef.current = id;
-
-    useEffect(() => bdStore.subscribe(() => setChecked(selected.has(idRef.current))), []);
+    const checked = useSelectionHas(selection, id);
 
     if (!enabled) return null;
 
@@ -134,7 +102,7 @@ function SelectCheckbox({ id }: { id: string }) {
         <div onClick={e => { e.stopPropagation(); e.preventDefault(); }} className={bdCl("wrap")}>
             <Checkbox
                 checked={checked}
-                onCheckedChange={() => toggleSelect(id)}
+                onCheckedChange={() => selection.toggle(id)}
                 className={bdCl("checkbox")}
             />
         </div>
@@ -142,10 +110,8 @@ function SelectCheckbox({ id }: { id: string }) {
 }
 
 function ActionBar() {
-    const [count, setCount] = useState(selected.size);
+    const count = useSelectionSize(selection);
     const [open, setOpen] = useState(false);
-
-    useEffect(() => bdStore.subscribe(() => setCount(selected.size)), []);
 
     if (!count) return null;
 
@@ -154,7 +120,7 @@ function ActionBar() {
             <div className={bdCl("action-bar")}>
                 <span className={bdCl("count")}>Selected · {count}</span>
                 <div className={bdCl("buttons")}>
-                    <Button variant="primary" size="sm" shape="pill" onClick={clearSelection}>Cancel</Button>
+                    <Button variant="primary" size="sm" shape="pill" onClick={() => selection.clear()}>Cancel</Button>
                     <Button variant="danger" size="sm" shape="pill" onClick={() => setOpen(true)}>Delete</Button>
                 </div>
             </div>
@@ -182,6 +148,18 @@ export default definePlugin({
     _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
 
+    _wrapSidebarClick(onClick: () => void, id: string) {
+        return (e: MouseEvent) => {
+            if (settings.store.batchSelect && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                e.stopPropagation();
+                selection.toggle(id);
+                return;
+            }
+            onClick();
+        };
+    },
+
     _defaultOpen() {
         return !settings.store.defaultCollapsed;
     },
@@ -197,7 +175,7 @@ export default definePlugin({
     },
 
     start() {
-        clearSelection();
+        selection.clear();
         registerStyle("batchDelete-hover", [
             ".void-bd-wrap{display:none}",
             ".void-bd-wrap:has([data-state=checked]){display:inline-flex}",
@@ -207,7 +185,7 @@ export default definePlugin({
     },
 
     stop() {
-        clearSelection();
+        selection.clear();
         unregisterStyle("batchDelete-hover");
     },
 
@@ -244,15 +222,22 @@ export default definePlugin({
         {
             find: "\"Editing actions\",\"Editing actions\"",
             all: true,
-            replacement: {
-                match: /\),(\i),(\i)&&\(0,(\i)\.jsx\)\((\i),\{editing:/,
-                replace: "),$1,(0,$3.jsx)($self._renderCheckbox,{id:arguments[0].id}),$2&&(0,$3.jsx)($4,{editing:",
-            },
+            group: true,
+            replacement: [
+                {
+                    match: /,\(0,(\i)\.jsx\)\((\i),\{title:(\i),editing:/,
+                    replace: ",(0,$1.jsx)($self._renderCheckbox,{id:arguments[0].id}),(0,$1.jsx)($2,{title:$3,editing:",
+                },
+                {
+                    match: /\((\i),\{route:(\i),onClick:(\i),onDragStart:(\i),className:/,
+                    replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id),onDragStart:$4,className:",
+                },
+            ],
         },
         {
             find: "\"sidebar-expand\",\"Expand\"",
             replacement: {
-                match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history","History"\)/,
+                match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
                 replace: "$self._renderActionBar(),$&",
             },
         },

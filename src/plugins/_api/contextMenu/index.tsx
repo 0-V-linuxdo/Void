@@ -40,8 +40,8 @@ export default definePlugin({
                     replace: "onEditClick:$1,...arguments[0]})",
                 },
                 {
-                    match: /"Delete","Delete"\)\]\}\)/,
-                    replace: '$&,$self.renderItems("conversation",{conversationId:arguments[0].id})',
+                    match: /(\i)&&\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\(\)=>\{null==\1.{0,80}\.TrashIcon,.{0,80}\]\}\)/,
+                    replace: '$self.renderItems("conversation",{conversationId:arguments[0].id}),$&',
                 },
             ],
         },
@@ -57,8 +57,8 @@ export default definePlugin({
             find: '"user-dropdown.upgrade","Upgrade plan"',
             all: true,
             replacement: {
-                match: /"Sign Out"\)\]\}\)/,
-                replace: '$&,$self.renderItems("user")',
+                match: /(\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\i,children:\[\(0,\i\.jsx\)\(\i\.SignOutIcon)/,
+                replace: '$self.renderItems("user"),$1',
             },
         },
     ],

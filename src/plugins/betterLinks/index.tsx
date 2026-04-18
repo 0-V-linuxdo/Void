@@ -68,7 +68,7 @@ function ColorPicker({ settingKey, title, description, fallback }: {
                         applyColors();
                     }}
                 />
-                <Text size="sm" color="muted" className={cl("hex")}>{value}</Text>
+                <Text size="sm" color="muted">{value}</Text>
             </Flex>
         }>
             <Flex flexDirection="column" gap="0">

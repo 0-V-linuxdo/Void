@@ -8,7 +8,7 @@ import "./PluginCard.css";
 
 import { dispatch } from "@api/Events";
 import { isNewPlugin, isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
-import { Settings } from "@api/Settings";
+import { mergePluginSettings } from "@api/Settings";
 import { Badge, Button, Switch } from "@components";
 import { CircleAlertIcon, EllipsisVertical, TriangleAlert } from "@components/icons";
 import { React } from "@turbopack/common/react";
@@ -35,7 +35,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
     const hasPatches = !!plugin.patches?.length;
 
     const handleToggle = () => {
-        Settings.plugins[name] = { ...Settings.plugins[name], enabled: !enabled };
+        mergePluginSettings(name, { enabled: !enabled });
         if (!enabled) startPlugin(plugin, true);
         else stopPlugin(plugin);
         forceUpdate();

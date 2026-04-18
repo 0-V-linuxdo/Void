@@ -46,6 +46,8 @@ export const SettingsStore = new SettingsStoreClass(settings);
 export const PlainSettings = settings;
 export const Settings = SettingsStore.store;
 
+export const pluginPath = (name: string, key?: string) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
+
 export async function initSettings(): Promise<void> {
     if (typeof GM_getValue === "function") {
         try {
@@ -64,7 +66,7 @@ export async function initSettings(): Promise<void> {
     let raw: string | null = null;
 
     try {
-        raw = await idbGet(STORAGE_KEY) as string | null;
+        raw = await idbGet<string>(STORAGE_KEY) ?? null;
     } catch (e) {
         logger.warn("Failed to read IndexedDB:", e);
     }
@@ -161,12 +163,17 @@ export function getSettingsPluginData(): SettingsPluginData {
 }
 
 export function updateSettingsPluginData(patch: Partial<SettingsPluginData>) {
-    Settings.plugins.Settings = { ...Settings.plugins.Settings, ...patch };
+    Settings.plugins.Settings = { ...(Settings.plugins.Settings ?? { enabled: true }), ...patch };
 }
 
-export function resolveDefault(setting: PluginSettingDef): PluginSettingValue {
+export function mergePluginSettings(name: string, patch: Record<string, unknown>) {
+    Settings.plugins[name] = { ...(Settings.plugins[name] ?? { enabled: false }), ...patch };
+}
+
+export function resolveDefault(setting: PluginSettingDef): PluginSettingValue | undefined {
     if ("default" in setting) return setting.default as PluginSettingValue;
     if (setting.type === OptionType.SELECT) return (setting as { options: readonly PluginSettingSelectOption[] }).options.find(o => o.default)?.value;
+    return undefined;
 }
 
 export function definePluginSettings<Def extends SettingsDefinition, Checks extends SettingsChecks<Def>, PrivateSettings extends object = {}>(def: Def, checks?: Checks) {
@@ -194,7 +201,7 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
 
             if (!PlainSettings.plugins[name]) PlainSettings.plugins[name] = { enabled: false };
 
-            SettingsStore.setDefaultGetter(`plugins.${name}`, key => {
+            SettingsStore.setDefaultGetter(pluginPath(name), key => {
                 const setting = def[key];
                 return setting ? resolveDefault(setting) : undefined;
             });
@@ -203,7 +210,7 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
             const forceUpdate = useForceUpdater();
 
             useEffect(() => {
-                const prefix = `plugins.${_pluginName}`;
+                const prefix = pluginPath(_pluginName);
                 const listener = keys?.length
                     ? ((paths: string[]) => (path: string) => {
                         if (paths.some(p => path.startsWith(p) || p.startsWith(path + "."))) forceUpdate();

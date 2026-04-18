@@ -1,3 +1,9 @@
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 .void-imagine-chip {
     background: hsl(var(--surface-l1));
 }
@@ -12,7 +18,8 @@
     border-radius: 9999px;
 }
 
-.void-imagine-date-select {
+.void-imagine-date-select,
+.void-imagine-sort-select {
     flex-shrink: 0;
     border-radius: 9999px;
     font-size: 0.875rem;
@@ -21,43 +28,15 @@
     border: none;
 }
 
-.void-imagine-card-btn {
-    background: rgb(0 0 0 / 25%);
-    border: 1px solid rgb(255 255 255 / 15%);
-    opacity: 0;
+.void-imagine-sort-active {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
 }
 
-.void-imagine-card-btn:hover,
-.void-imagine-card-btn:focus-visible {
-    background: rgb(255 255 255 / 10%);
-}
-
-/* stylelint-disable-next-line selector-class-pattern -- Grok's class name */
-.group\/media-post-masonry-card:hover .void-imagine-card-btn {
-    opacity: 1;
-}
-
-.void-imagine-card-btn-danger:hover {
-    background: hsl(var(--red-700) / 60%) !important;
-}
-
-.void-imagine-action-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.void-imagine-hidden-count {
     flex-shrink: 0;
-}
-
-.void-imagine-select-marker {
-    display: none;
-}
-
-.void-imagine-card-selected::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border: 3px solid hsl(217deg 91% 60%);
-    border-radius: 2px;
-    pointer-events: none;
-    z-index: 20;
+    font-size: 0.75rem;
+    color: hsl(var(--fg-secondary));
+    padding-inline: 0.5rem;
+    align-self: center;
 }

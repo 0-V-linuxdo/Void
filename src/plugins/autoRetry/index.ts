@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { VoidEventMap } from "@api/Events";
 import { showToast, ToastType } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import type { GrokResponse } from "@grok-types";
@@ -92,10 +93,8 @@ function retry(responseId: string, conversationId: string, response: GrokRespons
     }, delaySec * 1000);
 }
 
-function onStreamEnd(id: string | undefined, prev: string | undefined) {
-    if (id || !prev) return;
-
-    const response = ResponseStore.useResponseStore.getState().byId[prev];
+function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "error") {
         const convId = ChatPageStore.useChatPageStore.getState().conversationId;
         if (convId) retryCounts.delete(convId);
@@ -107,7 +106,7 @@ function onStreamEnd(id: string | undefined, prev: string | undefined) {
     const { conversationId } = ChatPageStore.useChatPageStore.getState();
     if (!conversationId) return;
 
-    retry(prev, conversationId, response);
+    retry(responseId, conversationId, response);
 }
 
 export default definePlugin({
@@ -128,10 +127,7 @@ export default definePlugin({
         retryCounts.clear();
     },
 
-    zustand: {
-        ChatPageStore: {
-            selector: (s: { streamedMessageId: string | undefined }) => s.streamedMessageId,
-            handler: onStreamEnd,
-        },
+    events: {
+        streamEnd: onStreamEnd,
     },
 });

@@ -6,7 +6,7 @@
 
 import "./styles.css";
 
-import { definePluginSettings, SettingsStore } from "@api/Settings";
+import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -71,24 +71,16 @@ function syncClasses() {
     }
 }
 
-let unsubscribe: (() => void) | null = null;
-
 export default definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
     settings,
 
-    start() {
-        syncClasses();
-        const prefix = `plugins.${settings.pluginName}`;
-        SettingsStore.addPrefixChangeListener(prefix, syncClasses);
-        unsubscribe = () => SettingsStore.removePrefixChangeListener(prefix, syncClasses);
-    },
+    start: syncClasses,
+    onSettingsChange: syncClasses,
 
     stop() {
-        unsubscribe?.();
-        unsubscribe = null;
         const { classList } = document.documentElement;
         for (const cls of Object.values(CSS_CLASSES)) {
             classList.remove(cls);
