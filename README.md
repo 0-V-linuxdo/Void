@@ -16,6 +16,9 @@ A client-side modification for [Grok](https://grok.com), inspired by [Vencord](h
 - **Chrome / Edge / Opera / Brave** — [Chrome Web Store](https://chromewebstore.google.com/detail/void/ojhnaooipkeakpjnpcjgbllfehmocjpk).
 - **Firefox** — [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/void-cutest-grok-mod/).
 
+> [!NOTE]
+> The Chrome Web Store build may lag behind the latest release. Chrome's manual review process is slow, so updates can take a while to publish. For the newest version, use the Firefox add-on, the userscript, or install from source.
+
 ### Userscript
 
 Install [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/), then install from [Greasy Fork](https://greasyfork.org/en/scripts/567871-void).
