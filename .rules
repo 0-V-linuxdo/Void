@@ -166,10 +166,13 @@ settingsTabs:
 
 git:
   - NEVER commit or push without explicit user permission, always ask first
-  - format: `type(scope): imperative summary` — scope optional, lowercase, no trailing period
-  - types: feat, fix, refactor, perf, style, chore, docs, test, build, ci, revert
+  - plugin change: `PluginName: imperative summary` — PascalCase plugin name, colon, space
+  - new plugin: `PluginName: add plugin` — nothing else, no body, no description
+  - dropped plugin: `PluginName: drop plugin`
+  - non-plugin change: `type: imperative summary` — types: fix, refactor, perf, style, chore, docs, test, build, ci, revert
+  - NEVER use parenthesis scope syntax like `feat(scope):`, NEVER use `feat:` prefix
   - imperative mood: "add", "fix", "remove" — never "added", "adds", "adding"
-  - subject ≤50 chars preferred, hard cap 72
+  - subject ≤50 chars preferred, hard cap 72, no trailing period
   - no body by default — skip entirely when subject is self-explanatory
   - body ONLY for: breaking changes, security fixes, data migrations, non-obvious *why*
   - body wraps at 72 chars, bullets use `-` not `*`, why over what
@@ -177,10 +180,8 @@ git:
   - NEVER "this commit does X", NEVER I/we/now/currently — diff says what
   - NEVER Co-Authored-By, NEVER Claude/AI attribution, NEVER generated-by tags
   - NEVER emoji
-  - NEVER restate file/folder names when scope already says it
   - NEVER --amend, create a new commit instead
   - NEVER --force push
   - group related files into one commit, dont split atomic changes
   - NEVER commit userscript/Void.user.js except on version bumps
-  - new plugins: `feat(pluginName): add plugin` — nothing else, no body, no description
-  - examples: `feat(rocketAnim): add launch animation`, `feat(customInstructions): add plugin`, `fix(sidebar): broken toggle state`, `chore: bump deps`, `refactor(plugins): flatten loader`, `perf(regex): hoist to module scope`, `style: oxlint auto-fixes`
+  - examples: `PluginName: fix patch`, `PluginName: add plugin`, `PluginName: drop plugin`, `PluginName: add setting`, `chore: bump deps`, `refactor: flatten plugin loader`, `perf: hoist regex to module scope`, `style: oxlint auto-fixes`
