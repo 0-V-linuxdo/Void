@@ -18,13 +18,21 @@ import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { createExternalStore, formatCountdown, formatDuration } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
-import definePlugin, { StartAt } from "@utils/types";
+import definePlugin from "@utils/types";
 
 const logger = new Logger("RateLimitDisplay");
 const cl = classNameFactory("void-rld-");
 
-const MODES = ["auto", "fast", "expert", "heavy"] as const;
+const MODES = ["auto", "fast", "expert", "heavy", "grok-420-computer-use-sa"] as const;
 type ModeName = typeof MODES[number];
+
+const MODE_LABELS: Record<ModeName, string> = {
+    "auto": "auto",
+    "fast": "fast",
+    "expert": "expert",
+    "heavy": "heavy",
+    "grok-420-computer-use-sa": "grok 4.3",
+};
 
 interface RateLimitData {
     windowSizeSeconds: number;
@@ -37,7 +45,6 @@ type LimitsMap = Partial<Record<ModeName, RateLimitData>>;
 
 const store = createExternalStore();
 let limits: LimitsMap = {};
-let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
     try {
@@ -69,6 +76,8 @@ function ButtonIcon() {
     useExternalStore(store);
     const mode = useMode();
     const limited = isLimited(mode);
+
+    useEffect(() => { refresh(); }, []);
 
     return (
         <span className={cl("trigger")}>
@@ -134,7 +143,7 @@ function ModeRow({ mode, data, active }: { mode: ModeName; data?: RateLimitData;
         <Flex flexDirection="column" gap={0} className={classes(cl("row"), active && cl("row-active"))}>
             <Flex justifyContent="space-between" alignItems="center" gap={8}>
                 <Text size="sm" weight={active ? "semibold" : "medium"} className={cl("mode-label")}>
-                    {mode}
+                    {MODE_LABELS[mode]}
                 </Text>
                 {data ? (
                     limited && data.waitTimeSeconds
@@ -167,7 +176,6 @@ export default definePlugin({
     description: "Shows rate limit usage for the current model mode in the chat bar.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    startAt: StartAt.TurbopackReady,
 
     chatBarButton: {
         icon: () => <ButtonIcon />,
@@ -176,14 +184,7 @@ export default definePlugin({
         order: 100,
     },
 
-    start() {
-        refresh();
-        pollTimer = setInterval(refresh, 60_000);
-    },
-
     stop() {
-        if (pollTimer) clearInterval(pollTimer);
-        pollTimer = null;
         limits = {};
     },
 
