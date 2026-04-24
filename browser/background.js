@@ -1,3 +1,7 @@
+if (typeof browser === "undefined") {
+    var browser = chrome;
+}
+
 function patchCsp(csp) {
     const directives = new Map();
     for (const part of csp.split(";")) {
@@ -28,21 +32,52 @@ function patchCsp(csp) {
     return [...directives.entries()].map(([k, v]) => v ? `${k} ${v}` : k).join("; ");
 }
 
-const VOID_ALLOWED_ORIGINS = new Set(["https://grok.com", "https://accounts.x.ai"]);
-const VOID_SENDER_HOSTS = ["grok.com"];
+const VOID_ALLOWED_TARGET_HOSTS = new Set(["grok.com", "x.ai", "accounts.x.ai"]);
+const VOID_SENDER_HOSTS = new Set(["grok.com"]);
+const VOID_PARTITION_SITES = ["https://grok.com"];
+const VOID_ALLOWED_COOKIE_DOMAINS = ["grok.com", "x.ai"];
+
+function isAllowedHost(hostname, set) {
+    return typeof hostname === "string" && set.has(hostname);
+}
 
 function isAllowedSender(url) {
     try {
         const { protocol, hostname } = new URL(url);
-        if (protocol !== "https:" && protocol !== "http:") return false;
-        return VOID_SENDER_HOSTS.some(h => hostname === h || hostname.endsWith("." + h));
+        if (protocol !== "https:") return false;
+        return isAllowedHost(hostname, VOID_SENDER_HOSTS);
     } catch {
         return false;
     }
 }
 
 function isAllowedTargetUrl(url) {
-    return typeof url === "string" && VOID_ALLOWED_ORIGINS.has(url);
+    if (typeof url !== "string") return false;
+    try {
+        const { protocol, hostname } = new URL(url);
+        if (protocol !== "https:") return false;
+        return isAllowedHost(hostname, VOID_ALLOWED_TARGET_HOSTS);
+    } catch {
+        return false;
+    }
+}
+
+function isAllowedCookieDomain(domain) {
+    if (typeof domain !== "string" || !domain) return false;
+    const bare = domain.replace(/^\./, "");
+    return VOID_ALLOWED_COOKIE_DOMAINS.some(h => bare === h || bare.endsWith("." + h));
+}
+
+function sanitizeSameSite(v) {
+    return v === "no_restriction" || v === "lax" || v === "strict" || v === "unspecified" ? v : undefined;
+}
+
+function sanitizePartitionKey(pk) {
+    if (!pk || typeof pk !== "object") return undefined;
+    const top = pk.topLevelSite;
+    if (typeof top !== "string") return undefined;
+    if (!VOID_PARTITION_SITES.includes(top)) return undefined;
+    return { topLevelSite: top };
 }
 
 function callCookies(method, details) {
@@ -55,27 +90,73 @@ function callCookies(method, details) {
             else resolve(value);
         };
         try {
-            const maybe = chrome.cookies[method](details, value => done(chrome.runtime?.lastError, value));
+            const maybe = browser.cookies[method](details, value => done(browser.runtime?.lastError, value));
             if (maybe && typeof maybe.then === "function") maybe.then(v => done(null, v), e => done(e));
         } catch (e) { done(e); }
     });
 }
 
+function cookieKey(c) {
+    return `${c.domain}|${c.path}|${c.name}|${c.partitionKey?.topLevelSite ?? ""}`;
+}
+
+async function listCookiesAllPartitions(url, storeOpt) {
+    const queries = [callCookies("getAll", { url, ...storeOpt }).catch(() => [])];
+    for (const topLevelSite of VOID_PARTITION_SITES) {
+        queries.push(callCookies("getAll", { url, partitionKey: { topLevelSite }, ...storeOpt }).catch(() => []));
+    }
+    const results = await Promise.all(queries);
+    const seen = new Map();
+    for (const list of results) for (const c of list) if (!seen.has(cookieKey(c))) seen.set(cookieKey(c), c);
+    return [...seen.values()];
+}
+
+function buildSetDetails(cookie, url, storeOpt) {
+    if (typeof cookie.name !== "string" || typeof cookie.value !== "string") {
+        throw new Error("cookie name/value must be strings");
+    }
+    if (!isAllowedCookieDomain(cookie.domain)) {
+        throw new Error(`cookie domain not allowed: ${cookie.domain}`);
+    }
+    const details = {
+        url,
+        name: cookie.name,
+        value: cookie.value,
+        path: typeof cookie.path === "string" ? cookie.path : "/",
+        secure: cookie.secure === true,
+        httpOnly: cookie.httpOnly === true,
+        ...storeOpt,
+    };
+    const sameSite = sanitizeSameSite(cookie.sameSite);
+    if (sameSite) details.sameSite = sameSite;
+    if (cookie.hostOnly !== true) details.domain = cookie.domain;
+    if (cookie.session !== true && typeof cookie.expirationDate === "number" && Number.isFinite(cookie.expirationDate)) {
+        details.expirationDate = cookie.expirationDate;
+    }
+    const partitionKey = sanitizePartitionKey(cookie.partitionKey);
+    if (partitionKey) details.partitionKey = partitionKey;
+    return details;
+}
+
 async function voidCookieOp(op, payload, storeId) {
     const storeOpt = storeId ? { storeId } : {};
-    const url = payload?.url;
+    if (!payload || typeof payload !== "object") throw new Error("invalid payload");
+    const url = payload.url;
     if (!isAllowedTargetUrl(url)) throw new Error(`url not allowed: ${url}`);
 
-    if (op === "list") return (await callCookies("getAll", { url, ...storeOpt })) || [];
-    if (op === "set") {
-        const { name, value, domain, path, secure, httpOnly, sameSite, expirationDate } = payload;
-        return (await callCookies("set", { url, name, value, domain, path, secure, httpOnly, sameSite, expirationDate, ...storeOpt })) || null;
+    if (op === "list") return listCookiesAllPartitions(url, storeOpt);
+    if (op === "set") return (await callCookies("set", buildSetDetails(payload, url, storeOpt))) || null;
+    if (op === "remove") {
+        if (typeof payload.name !== "string") throw new Error("cookie name must be a string");
+        const details = { url, name: payload.name, ...storeOpt };
+        const partitionKey = sanitizePartitionKey(payload.partitionKey);
+        if (partitionKey) details.partitionKey = partitionKey;
+        return (await callCookies("remove", details)) || null;
     }
-    if (op === "remove") return (await callCookies("remove", { url, name: payload.name, ...storeOpt })) || null;
     throw new Error(`unknown op: ${op}`);
 }
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (!msg || msg.type !== "void-cookies") return;
     if (!sender.url || !isAllowedSender(sender.url)) {
         sendResponse({ ok: false, error: "forbidden" });
@@ -88,9 +169,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
 });
 
-const manifestVersion = chrome.runtime.getManifest().manifest_version;
-if (manifestVersion < 3 && chrome.webRequest?.onHeadersReceived) {
-    chrome.webRequest.onHeadersReceived.addListener(
+const manifestVersion = browser.runtime.getManifest().manifest_version;
+if (manifestVersion < 3 && browser.webRequest?.onHeadersReceived) {
+    browser.webRequest.onHeadersReceived.addListener(
         ({ responseHeaders }) => {
             if (!responseHeaders) return;
 
