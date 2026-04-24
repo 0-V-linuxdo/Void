@@ -87,7 +87,9 @@ async function clearUserScopedStorage() {
     }
 
     try {
-        sessionStorage.clear();
+        for (const key of Object.keys(sessionStorage)) {
+            if (isPerAccountKey(key)) sessionStorage.removeItem(key);
+        }
     } catch (e) {
         logger.warn("sessionStorage cleanup failed", e);
     }
