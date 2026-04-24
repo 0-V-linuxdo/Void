@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.1
+// @version      1.0.2
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
 // @homepageURL  https://github.com/imjustprism/Void
-// @icon         https://raw.githubusercontent.com/imjustprism/Void/main/assets/logo.jpg
+// @icon         https://raw.githubusercontent.com/imjustprism/Void/main/assets/logos/app-icon/void-icon-256.png
 // @match        *://grok.com/*
 // @run-at       document-start
 // @noframes
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.1 — A modification for grok.com
+ * Void v1.0.2 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -5604,9 +5604,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.1"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"0e33935"}`
-    }, `(${"0e33935"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"f96c99c"}`
+    }, `(${"f96c99c"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -8372,10 +8372,16 @@ button:has(> .void-rld-trigger) {
   // src/plugins/rateLimitDisplay/index.tsx
   var logger23 = new Logger("RateLimitDisplay");
   var cl19 = classNameFactory("void-rld-");
-  var MODES = ["auto", "fast", "expert", "heavy"];
+  var MODES = ["auto", "fast", "expert", "heavy", "grok-420-computer-use-sa"];
+  var MODE_LABELS = {
+    auto: "auto",
+    fast: "fast",
+    expert: "expert",
+    heavy: "heavy",
+    "grok-420-computer-use-sa": "grok 4.3"
+  };
   var store5 = createExternalStore();
   var limits = {};
-  var pollTimer = null;
   async function fetchLimit(mode) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
@@ -8404,6 +8410,9 @@ button:has(> .void-rld-trigger) {
     useExternalStore(store5);
     const mode = useMode();
     const limited = isLimited(mode);
+    useEffect(() => {
+      refresh();
+    }, []);
     return /* @__PURE__ */ React.createElement("span", {
       className: cl19("trigger")
     }, limited ? /* @__PURE__ */ React.createElement(ClockAlertIcon, {
@@ -8484,7 +8493,7 @@ button:has(> .void-rld-trigger) {
       size: "sm",
       weight: active ? "semibold" : "medium",
       className: cl19("mode-label")
-    }, mode), data ? limited && data.waitTimeSeconds ? /* @__PURE__ */ React.createElement(CountdownTimer, {
+    }, MODE_LABELS[mode]), data ? limited && data.waitTimeSeconds ? /* @__PURE__ */ React.createElement(CountdownTimer, {
       seconds: data.waitTimeSeconds
     }) : /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
@@ -8516,21 +8525,13 @@ button:has(> .void-rld-trigger) {
     description: "Shows rate limit usage for the current model mode in the chat bar.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    startAt: "TurbopackReady" /* TurbopackReady */,
     chatBarButton: {
       icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
       tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
       onClick: refresh,
       order: 100
     },
-    start() {
-      refresh();
-      pollTimer = setInterval(refresh, 60000);
-    },
     stop() {
-      if (pollTimer)
-        clearInterval(pollTimer);
-      pollTimer = null;
       limits = {};
     },
     zustand: {
