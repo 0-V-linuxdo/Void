@@ -39,6 +39,16 @@ const settings = definePluginSettings({
         description: "Hide the \"Get notified when Grok finishes answering\" banner.",
         default: true,
     },
+    hideDictationHint: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the \"Hold Ctrl+D to dictate\" hint under the query bar.",
+        default: true,
+    },
+    hideConnectX: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the \"Connect your 𝕏 account\" upsell popout.",
+        default: true,
+    },
 });
 
 export default definePlugin({
@@ -52,7 +62,7 @@ export default definePlugin({
             find: '"user-dropdown.upgrade","Upgrade plan"',
             all: true,
             replacement: {
-                match: /(\i(?:\|\|\i)+)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+                match: /(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
                 replace: "$self.settings.store.hideUpgradePlan||$1",
             },
         },
@@ -78,6 +88,20 @@ export default definePlugin({
             replacement: {
                 match: /"UpsellButton",\(\)=>(\i)/,
                 replace: '"UpsellButton",()=>$self.settings.store.hideUpsellSmall?()=>null:$1',
+            },
+        },
+        {
+            find: "dictation-hint-dismissed",
+            replacement: {
+                match: /(\i)\.ENABLE_DICTATION&&!\i\.DISABLE_VOICE_MODE/,
+                replace: "!$self.settings.store.hideDictationHint&&$&",
+            },
+        },
+        {
+            find: "connect-x-upsell-dismissed",
+            replacement: {
+                match: /(\i)\.ENABLE_X_INTEGRATION&&\i\.SHOW_CONNECT_X_UPSELL/,
+                replace: "!$self.settings.store.hideConnectX&&$&",
             },
         },
         {

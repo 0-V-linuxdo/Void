@@ -17,11 +17,11 @@ export default definePlugin({
 
     patches: [
         {
-            find: ["MarkdownChunkContext", "MemoizedMarkdown"],
+            find: ["isInitiallyCollapsed", "MarkdownChunkContext"],
             all: true,
             replacement: {
-                match: /isInitiallyCollapsed:(\i)\|\|(\i)/,
-                replace: "isInitiallyCollapsed:$self._collapse()||$1||$2",
+                match: /isInitiallyCollapsed:(\i)=!1/g,
+                replace: "isInitiallyCollapsed:$1=$self._collapse()",
             },
         },
     ],
