@@ -6,6 +6,7 @@
 
 import * as allStores from "@turbopack/common/stores";
 import { patches } from "@turbopack/patchTurbopack";
+import { filters, waitFor } from "@turbopack/turbopack";
 import { disableStyle, enableStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { canonicalizeFind, canonicalizeReplacement } from "@utils/patches";
@@ -101,14 +102,19 @@ function isSubscribable(val: unknown): val is Subscribable {
     return val != null && typeof (val as { subscribe?: unknown }).subscribe === "function";
 }
 
-function resolveStoreHook(storeName: string): Subscribable | null {
-    const storeModule = storeRegistry[storeName];
-    if (!storeModule) return null;
+const SYM_LAZY_GET = Symbol.for("void.lazy.get");
 
-    const hook = storeModule[`use${storeName}`];
+function resolveStoreHook(storeName: string): Subscribable | null {
+    const lazy = storeRegistry[storeName];
+    if (!lazy) return null;
+
+    const resolved = (lazy as { [SYM_LAZY_GET]?: () => Record<string, unknown> })[SYM_LAZY_GET]?.() ?? lazy;
+    if (!resolved) return null;
+
+    const hook = resolved[`use${storeName}`];
     if (isSubscribable(hook)) return hook;
 
-    return Object.values(storeModule).find(isSubscribable) ?? null;
+    return Object.values(resolved).find(isSubscribable) ?? null;
 }
 
 function ensureMethodsBound(plugin: Plugin) {
@@ -159,12 +165,6 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
 
         if (plugin.zustand) {
             for (const [storeName, sub] of Object.entries(plugin.zustand)) {
-                const store = resolveStoreHook(storeName);
-                if (!store) {
-                    logger.warn(`Store "${storeName}" not found for plugin ${plugin.name}`);
-                    continue;
-                }
-
                 const wrappedHandler = (current: unknown, prev: unknown) => {
                     try {
                         sub.handler(current, prev);
@@ -173,8 +173,25 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
                     }
                 };
 
-                const unsub = sub.selector ? store.subscribe(sub.selector, wrappedHandler) : store.subscribe(wrappedHandler);
-                unsubs.push(unsub as () => void);
+                const attach = (store: Subscribable) => {
+                    const unsub = sub.selector ? store.subscribe(sub.selector, wrappedHandler) : store.subscribe(wrappedHandler);
+                    unsubs.push(unsub as () => void);
+                };
+
+                const store = resolveStoreHook(storeName);
+                if (store) {
+                    attach(store);
+                    continue;
+                }
+
+                let cancelled = false;
+                const cancelWait = waitFor(filters.byProps(`use${storeName}`), () => {
+                    if (cancelled) return;
+                    const resolved = resolveStoreHook(storeName);
+                    if (resolved) attach(resolved);
+                    else logger.warn(`Store "${storeName}" resolved module missing hook for plugin ${plugin.name}`);
+                });
+                unsubs.push(() => { cancelled = true; cancelWait(); });
             }
         }
 
