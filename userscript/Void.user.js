@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2
+// @version      1.0.2.1
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2 — A modification for grok.com
+ * Void v1.0.2.1 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -198,7 +198,6 @@
   __export(exports_stores, {
     WorkspaceStore: () => WorkspaceStore,
     WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
-    WorkspaceCollectionsStore: () => WorkspaceCollectionsStore,
     UpsellStore: () => UpsellStore,
     TourGuideStore: () => TourGuideStore,
     TextToSpeechStore: () => TextToSpeechStore,
@@ -206,7 +205,6 @@
     TabsManagerStore: () => TabsManagerStore,
     SuggestionStore: () => SuggestionStore,
     SubscriptionsStore: () => SubscriptionsStore,
-    SourcesSelectorStore: () => SourcesSelectorStore,
     SkillsStore: () => SkillsStore,
     ShopStore: () => ShopStore,
     ShareStore: () => ShareStore,
@@ -223,7 +221,6 @@
     ModesStore: () => ModesStore,
     MentionMenuStore: () => MentionMenuStore,
     MediaStore: () => MediaStore,
-    MediaFolderStore: () => MediaFolderStore,
     ImagineModelOverrideStore: () => ImagineModelOverrideStore,
     ImageEditorStore: () => ImageEditorStore,
     FilesPageStore: () => FilesPageStore,
@@ -1617,7 +1614,6 @@ ${sourceUrl}`;
   var FileStore = findByPropsLazy("useFileStore");
   var ImageEditorStore = findByPropsLazy("useImageEditorStore");
   var ImagineModelOverrideStore = findByPropsLazy("useImagineModelOverrideStore");
-  var MediaFolderStore = findByPropsLazy("useMediaFolderStore", "usePostFolderIds");
   var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
   var MentionMenuStore = findByPropsLazy("useMentionMenuStore");
   var ModesStore = findByPropsLazy("useModesStore");
@@ -1633,7 +1629,6 @@ ${sourceUrl}`;
   var ShareStore = findByPropsLazy("useShareStore");
   var ShopStore = findByPropsLazy("useShopStore");
   var SkillsStore = findByPropsLazy("useSkillsStore");
-  var SourcesSelectorStore = findByPropsLazy("useSourcesSelectorStore");
   var RocketStore = findByPropsLazy("useRocketStore");
   var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
   var SuggestionStore = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");
@@ -1642,7 +1637,6 @@ ${sourceUrl}`;
   var TextToSpeechStore = findByPropsLazy("useTextToSpeechStore");
   var TourGuideStore = findByPropsLazy("useTourGuideStore", "useTourGuideTooltip");
   var UpsellStore = findByPropsLazy("useUpsellStore", "useShouldShowUpgradeButton");
-  var WorkspaceCollectionsStore = findByPropsLazy("useWorkspaceCollectionsStore", "useWorkspaceActiveCollectionIds");
   var WorkspaceConnectorsStore = findByPropsLazy("useWorkspaceConnectorsStore", "useWorkspaceActiveConnectorIds");
   var WorkspaceStore = findByPropsLazy("useWorkspaceStore", "useWorkspacesList");
 
@@ -3258,14 +3252,18 @@ ${sourceUrl}`;
   function isSubscribable(val) {
     return val != null && typeof val.subscribe === "function";
   }
+  var SYM_LAZY_GET2 = Symbol.for("void.lazy.get");
   function resolveStoreHook(storeName) {
-    const storeModule = storeRegistry[storeName];
-    if (!storeModule)
+    const lazy = storeRegistry[storeName];
+    if (!lazy)
       return null;
-    const hook = storeModule[`use${storeName}`];
+    const resolved = lazy[SYM_LAZY_GET2]?.() ?? lazy;
+    if (!resolved)
+      return null;
+    const hook = resolved[`use${storeName}`];
     if (isSubscribable(hook))
       return hook;
-    return Object.values(storeModule).find(isSubscribable) ?? null;
+    return Object.values(resolved).find(isSubscribable) ?? null;
   }
   function ensureMethodsBound(plugin) {
     for (const key of Object.keys(plugin)) {
@@ -3310,11 +3308,6 @@ ${sourceUrl}`;
       }
       if (plugin.zustand) {
         for (const [storeName, sub] of Object.entries(plugin.zustand)) {
-          const store3 = resolveStoreHook(storeName);
-          if (!store3) {
-            logger9.warn(`Store "${storeName}" not found for plugin ${plugin.name}`);
-            continue;
-          }
           const wrappedHandler = (current, prev) => {
             try {
               sub.handler(current, prev);
@@ -3322,8 +3315,29 @@ ${sourceUrl}`;
               logger9.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
             }
           };
-          const unsub = sub.selector ? store3.subscribe(sub.selector, wrappedHandler) : store3.subscribe(wrappedHandler);
-          unsubs.push(unsub);
+          const attach = (store4) => {
+            const unsub = sub.selector ? store4.subscribe(sub.selector, wrappedHandler) : store4.subscribe(wrappedHandler);
+            unsubs.push(unsub);
+          };
+          const store3 = resolveStoreHook(storeName);
+          if (store3) {
+            attach(store3);
+            continue;
+          }
+          let cancelled = false;
+          const cancelWait = waitFor(filters.byProps(`use${storeName}`), () => {
+            if (cancelled)
+              return;
+            const resolved = resolveStoreHook(storeName);
+            if (resolved)
+              attach(resolved);
+            else
+              logger9.warn(`Store "${storeName}" resolved module missing hook for plugin ${plugin.name}`);
+          });
+          unsubs.push(() => {
+            cancelled = true;
+            cancelWait();
+          });
         }
       }
       if (plugin.onSettingsChange) {
@@ -5604,9 +5618,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"f96c99c"}`
-    }, `(${"f96c99c"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.1"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"b093112"}`
+    }, `(${"b093112"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5896,11 +5910,11 @@ ${sourceUrl}`;
     _collapse: () => true,
     patches: [
       {
-        find: ["MarkdownChunkContext", "MemoizedMarkdown"],
+        find: ["isInitiallyCollapsed", "MarkdownChunkContext"],
         all: true,
         replacement: {
-          match: /isInitiallyCollapsed:(\i)\|\|(\i)/,
-          replace: "isInitiallyCollapsed:$self._collapse()||$1||$2"
+          match: /isInitiallyCollapsed:(\i)=!1/g,
+          replace: "isInitiallyCollapsed:$1=$self._collapse()"
         }
       }
     ]
@@ -7347,6 +7361,16 @@ ${sourceUrl}`;
       type: 3 /* BOOLEAN */,
       description: 'Hide the "Get notified when Grok finishes answering" banner.',
       default: true
+    },
+    hideDictationHint: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Hold Ctrl+D to dictate" hint under the query bar.',
+      default: true
+    },
+    hideConnectX: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
+      default: true
     }
   });
   var cleaner_default = definePlugin({
@@ -7359,7 +7383,7 @@ ${sourceUrl}`;
         find: '"user-dropdown.upgrade","Upgrade plan"',
         all: true,
         replacement: {
-          match: /(\i(?:\|\|\i)+)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          match: /(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
           replace: "$self.settings.store.hideUpgradePlan||$1"
         }
       },
@@ -7384,6 +7408,20 @@ ${sourceUrl}`;
         replacement: {
           match: /"UpsellButton",\(\)=>(\i)/,
           replace: '"UpsellButton",()=>$self.settings.store.hideUpsellSmall?()=>null:$1'
+        }
+      },
+      {
+        find: "dictation-hint-dismissed",
+        replacement: {
+          match: /(\i)\.ENABLE_DICTATION&&!\i\.DISABLE_VOICE_MODE/,
+          replace: "!$self.settings.store.hideDictationHint&&$&"
+        }
+      },
+      {
+        find: "connect-x-upsell-dismissed",
+        replacement: {
+          match: /(\i)\.ENABLE_X_INTEGRATION&&\i\.SHOW_CONNECT_X_UPSELL/,
+          replace: "!$self.settings.store.hideConnectX&&$&"
         }
       },
       {
@@ -9052,7 +9090,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     createElement: () => createElement,
     WorkspaceStore: () => WorkspaceStore,
     WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
-    WorkspaceCollectionsStore: () => WorkspaceCollectionsStore,
     UpsellStore: () => UpsellStore,
     TourGuideStore: () => TourGuideStore,
     TooltipTrigger: () => TooltipTrigger,
@@ -9080,7 +9117,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     SuggestionStore: () => SuggestionStore,
     SubscriptionsStore: () => SubscriptionsStore,
     Spinner: () => Spinner,
-    SourcesSelectorStore: () => SourcesSelectorStore,
     Slider: () => Slider,
     SkillsStore: () => SkillsStore,
     Skeleton: () => Skeleton,
@@ -9117,7 +9153,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ModesStore: () => ModesStore,
     MentionMenuStore: () => MentionMenuStore,
     MediaStore: () => MediaStore,
-    MediaFolderStore: () => MediaFolderStore,
     LazyComponent: () => LazyComponent,
     Label: () => Label,
     Input: () => Input,
