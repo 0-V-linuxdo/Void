@@ -548,6 +548,7 @@ export default definePlugin({
     settings,
 
     _hideDefault: () => settings.store.hideDefaultPreviews,
+    _NullGrid: () => null,
     _autoPlay: () => !settings.store.noAutoplay,
     _bypassPaywall: () => settings.store.bypassPaywall,
     _hoverProps: () => settings.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
@@ -576,12 +577,8 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /"default"===(\i)&&\(0,(\i)\.jsx\)\((\i),\{containerWidth:/,
-                    replace: '"default"===$1&&!$self._hideDefault()&&(0,$2.jsx)($3,{containerWidth:',
-                },
-                {
                     match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
-                    replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?()=>null:$2,{containerRef:$3,variant:$4,width:',
+                    replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:',
                 },
                 {
                     match: /,(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,

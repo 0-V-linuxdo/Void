@@ -23,10 +23,21 @@ export default definePlugin({
         },
         {
             find: '"after-init"),(0,',
-            replacement: {
-                match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
-                replace: "$1return}function _ignore(){",
-            },
+            group: true,
+            replacement: [
+                {
+                    match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
+                    replace: "$1return}function _ignore(){",
+                },
+                {
+                    match: /function (\i)\(\)\{\i&&\(clearTimeout\(\i\),\i=null\),\i\.default\.set_config\(.{0,120}\),\i\.default\.start_session_recording\(\)\}/,
+                    replace: "function $1(){}",
+                },
+                {
+                    match: /function (\i)\(\)\{\i&&\(clearTimeout\(\i\),\i=null\),\i=setTimeout\(\(\)=>\{\i\.default\.stop_session_recording\(\)\},\d+e?\d*\)\}/,
+                    replace: "function $1(){}",
+                },
+            ],
         },
         {
             find: "sendBatchLogEvent",
