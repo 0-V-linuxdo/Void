@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.2
+// @version      1.0.2.3
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.2 — A modification for grok.com
+ * Void v1.0.2.3 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -3555,10 +3555,21 @@ ${sourceUrl}`;
       },
       {
         find: '"after-init"),(0,',
-        replacement: {
-          match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
-          replace: "$1return}function _ignore(){"
-        }
+        group: true,
+        replacement: [
+          {
+            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
+            replace: "$1return}function _ignore(){"
+          },
+          {
+            match: /function (\i)\(\)\{\i&&\(clearTimeout\(\i\),\i=null\),\i\.default\.set_config\(.{0,120}\),\i\.default\.start_session_recording\(\)\}/,
+            replace: "function $1(){}"
+          },
+          {
+            match: /function (\i)\(\)\{\i&&\(clearTimeout\(\i\),\i=null\),\i=setTimeout\(\(\)=>\{\i\.default\.stop_session_recording\(\)\},\d+e?\d*\)\}/,
+            replace: "function $1(){}"
+          }
+        ]
       },
       {
         find: "sendBatchLogEvent",
@@ -5618,9 +5629,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.2"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"fa67ecb"}`
-    }, `(${"fa67ecb"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.3"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"46597ad"}`
+    }, `(${"46597ad"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6757,6 +6768,7 @@ ${sourceUrl}`;
     authors: [Devs.Prism],
     settings: settings6,
     _hideDefault: () => settings6.store.hideDefaultPreviews,
+    _NullGrid: () => null,
     _autoPlay: () => !settings6.store.noAutoplay,
     _bypassPaywall: () => settings6.store.bypassPaywall,
     _hoverProps: () => settings6.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
@@ -6783,12 +6795,8 @@ ${sourceUrl}`;
         group: true,
         replacement: [
           {
-            match: /"default"===(\i)&&\(0,(\i)\.jsx\)\((\i),\{containerWidth:/,
-            replace: '"default"===$1&&!$self._hideDefault()&&(0,$2.jsx)($3,{containerWidth:'
-          },
-          {
             match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
-            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?()=>null:$2,{containerRef:$3,variant:$4,width:'
+            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
           },
           {
             match: /,(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
