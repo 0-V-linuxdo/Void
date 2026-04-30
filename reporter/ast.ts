@@ -134,7 +134,9 @@ export function parseArg(src: string): LiteralArg {
     const c = s[0];
     if (c === "\"" || c === "'" || c === "`") {
         const end = skipString(s, 0);
-        return { kind: "string", value: unescapeString(s.slice(1, end - 1)), raw: s, offset };
+        const body = s.slice(1, end - 1);
+        if (c === "`" && hasTemplateInterpolation(body)) return { kind: "identifier", value: s, raw: s, offset };
+        return { kind: "string", value: unescapeString(body), raw: s, offset };
     }
     if (c === "/") {
         const end = skipRegex(s, 0);
@@ -148,6 +150,14 @@ export function parseArg(src: string): LiteralArg {
     }
     if (/^[A-Za-z_$]/.test(c)) return { kind: "identifier", value: s, raw: s, offset };
     return { kind: "unknown", raw: s, offset };
+}
+
+function hasTemplateInterpolation(body: string): boolean {
+    for (let i = 0; i < body.length - 1; i++) {
+        if (body[i] === "\\") { i++; continue; }
+        if (body[i] === "$" && body[i + 1] === "{") return true;
+    }
+    return false;
 }
 
 const STR_ESCAPES: Record<string, string> = { "\\": "\\", "\"": "\"", "'": "'", "`": "`", n: "\n", r: "\r", t: "\t", 0: "\0", b: "\b", f: "\f", v: "\v" };
