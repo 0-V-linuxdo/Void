@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.3
+// @version      1.0.2.4
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.3 — A modification for grok.com
+ * Void v1.0.2.4 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -5629,9 +5629,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.3"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"46597ad"}`
-    }, `(${"46597ad"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.4"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"b521888"}`
+    }, `(${"b521888"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6847,7 +6847,7 @@ ${sourceUrl}`;
         }
       },
       {
-        find: "imagine-multiselect.add-to-tag",
+        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8'],
         group: true,
         replacement: [
           {
@@ -6970,8 +6970,8 @@ ${sourceUrl}`;
       {
         find: "chat-markdown-load-third-party",
         replacement: {
-          match: /singleDollarTextMath:!1\}],(\i),(\i),(\i)\],\[\]\)/,
-          replace: "singleDollarTextMath:!1}],$1,$2,$3,$self._remarkLinkify],[])"
+          match: /singleDollarTextMath:!1\}],(\i),(\i),(\i),(\i)\],\[\]\)/,
+          replace: "singleDollarTextMath:!1}],$1,$2,$3,$4,$self._remarkLinkify],[])"
         }
       }
     ],
@@ -7370,11 +7370,6 @@ ${sourceUrl}`;
       description: 'Hide the "Get notified when Grok finishes answering" banner.',
       default: true
     },
-    hideDictationHint: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Hold Ctrl+D to dictate" hint under the query bar.',
-      default: true
-    },
     hideConnectX: {
       type: 3 /* BOOLEAN */,
       description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
@@ -7419,13 +7414,6 @@ ${sourceUrl}`;
         }
       },
       {
-        find: "dictation-hint-dismissed",
-        replacement: {
-          match: /(\i)\.ENABLE_DICTATION&&!\i\.DISABLE_VOICE_MODE/,
-          replace: "!$self.settings.store.hideDictationHint&&$&"
-        }
-      },
-      {
         find: "connect-x-upsell-dismissed",
         replacement: {
           match: /(\i)\.ENABLE_X_INTEGRATION&&\i\.SHOW_CONNECT_X_UPSELL/,
@@ -7441,13 +7429,13 @@ ${sourceUrl}`;
         }
       },
       {
-        find: "mode-select.search-placeholder",
+        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
         all: true,
         group: true,
         replacement: [
           {
-            match: /(?<=useCheckSubscriptionOffer\)\(\);)(.{0,30}return null;)/,
-            replace: "if($self.settings.store.hideModelUpsell)return null;$1"
+            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
+            replace: "$&$self.settings.store.hideModelUpsell||"
           },
           {
             match: /(\i)(\.map\(\i=>\(0,\i\.jsx\).{0,60}"text-secondary opacity-75)/,
