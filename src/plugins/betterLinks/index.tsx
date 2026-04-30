@@ -119,8 +119,8 @@ export default definePlugin({
         {
             find: "chat-markdown-load-third-party",
             replacement: {
-                match: /singleDollarTextMath:!1\}],(\i),(\i),(\i)\],\[\]\)/,
-                replace: "singleDollarTextMath:!1}],$1,$2,$3,$self._remarkLinkify],[])",
+                match: /singleDollarTextMath:!1\}],(\i),(\i),(\i),(\i)\],\[\]\)/,
+                replace: "singleDollarTextMath:!1}],$1,$2,$3,$4,$self._remarkLinkify],[])",
             },
         },
     ],
