@@ -39,11 +39,6 @@ const settings = definePluginSettings({
         description: "Hide the \"Get notified when Grok finishes answering\" banner.",
         default: true,
     },
-    hideDictationHint: {
-        type: OptionType.BOOLEAN,
-        description: "Hide the \"Hold Ctrl+D to dictate\" hint under the query bar.",
-        default: true,
-    },
     hideConnectX: {
         type: OptionType.BOOLEAN,
         description: "Hide the \"Connect your 𝕏 account\" upsell popout.",
@@ -91,13 +86,6 @@ export default definePlugin({
             },
         },
         {
-            find: "dictation-hint-dismissed",
-            replacement: {
-                match: /(\i)\.ENABLE_DICTATION&&!\i\.DISABLE_VOICE_MODE/,
-                replace: "!$self.settings.store.hideDictationHint&&$&",
-            },
-        },
-        {
             find: "connect-x-upsell-dismissed",
             replacement: {
                 match: /(\i)\.ENABLE_X_INTEGRATION&&\i\.SHOW_CONNECT_X_UPSELL/,
@@ -114,13 +102,13 @@ export default definePlugin({
         },
         // hides upsell card and locked modes in the mode selector
         {
-            find: "mode-select.search-placeholder",
+            find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
             all: true,
             group: true,
             replacement: [
                 {
-                    match: /(?<=useCheckSubscriptionOffer\)\(\);)(.{0,30}return null;)/,
-                    replace: "if($self.settings.store.hideModelUpsell)return null;$1",
+                    match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
+                    replace: "$&$self.settings.store.hideModelUpsell||",
                 },
                 {
                     match: /(\i)(\.map\(\i=>\(0,\i\.jsx\).{0,60}"text-secondary opacity-75)/,

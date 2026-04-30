@@ -629,7 +629,7 @@ export default definePlugin({
             },
         },
         {
-            find: "imagine-multiselect.add-to-tag",
+            find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8'],
             group: true,
             replacement: [
                 {

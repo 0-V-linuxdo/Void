@@ -81,6 +81,7 @@ function moduleMatchesFinder(finder: FinderSpec, mod: ModuleEntry): boolean {
         case "byProps":
         case "exportedComponent":
             return finder.args.every(a => {
+                if (a.kind === "identifier" || a.kind === "unknown") return true;
                 if (a.kind !== "string" || !a.value) return false;
                 const n = a.value;
                 return mod.factory.includes(`"${n}",()=>`)
@@ -99,12 +100,16 @@ function moduleMatchesFinder(finder: FinderSpec, mod: ModuleEntry): boolean {
         case "byCode":
         case "componentByCode":
             return finder.args.every(a => {
+                if (a.kind === "identifier" || a.kind === "unknown") return true;
                 if (a.kind === "string" && a.value) return mod.factory.includes(a.value);
                 if (a.kind === "regex" && a.regex) { a.regex.lastIndex = 0; return a.regex.test(mod.factory); }
                 return false;
             });
         case "cssClasses":
-            return finder.args.every(a => a.kind === "string" && a.value && mod.factory.includes(a.value));
+            return finder.args.every(a => {
+                if (a.kind === "identifier" || a.kind === "unknown") return true;
+                return a.kind === "string" && !!a.value && mod.factory.includes(a.value);
+            });
         case "mapMangled": {
             const locator = finder.args[0];
             if (locator?.kind === "string" && locator.value) return mod.factory.includes(locator.value);
