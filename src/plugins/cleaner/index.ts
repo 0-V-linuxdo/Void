@@ -102,13 +102,13 @@ export default definePlugin({
         },
         // hides upsell card and locked modes in the mode selector
         {
-            find: "mode-select.search-placeholder",
+            find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
             all: true,
             group: true,
             replacement: [
                 {
-                    match: /(?<=useCheckSubscriptionOffer\)\(\);)(.{0,30}return null;)/,
-                    replace: "if($self.settings.store.hideModelUpsell)return null;$1",
+                    match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
+                    replace: "$&$self.settings.store.hideModelUpsell||",
                 },
                 {
                     match: /(\i)(\.map\(\i=>\(0,\i\.jsx\).{0,60}"text-secondary opacity-75)/,
