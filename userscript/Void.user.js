@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.4
+// @version      1.0.2.5
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.4 — A modification for grok.com
+ * Void v1.0.2.5 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -213,7 +213,6 @@
     SessionStore: () => SessionStore,
     ScrollStore: () => ScrollStore,
     RoutingStore: () => RoutingStore,
-    RocketStore: () => RocketStore,
     ResponseStore: () => ResponseStore,
     ReportStore: () => ReportStore,
     PersonalityStore: () => PersonalityStore,
@@ -1629,7 +1628,6 @@ ${sourceUrl}`;
   var ShareStore = findByPropsLazy("useShareStore");
   var ShopStore = findByPropsLazy("useShopStore");
   var SkillsStore = findByPropsLazy("useSkillsStore");
-  var RocketStore = findByPropsLazy("useRocketStore");
   var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
   var SuggestionStore = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");
   var TabsManagerStore = findByPropsLazy("useTabsManagerStore");
@@ -5629,9 +5627,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.4"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"b521888"}`
-    }, `(${"b521888"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.5"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"2749c94"}`
+    }, `(${"2749c94"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5848,7 +5846,7 @@ ${sourceUrl}`;
         all: true,
         replacement: [
           {
-            match: /ModeSelect,\{compact:(\i)\}\)\}\),/,
+            match: /\},"mode-select"\),/,
             replace: "$&$self.renderButtons(),"
           },
           {
@@ -6881,7 +6879,7 @@ ${sourceUrl}`;
   var DEFAULT_LINK = "#4a9eff";
   var DEFAULT_VISITED = "#9b59b6";
   var STYLE_NAME = "better-links-dynamic";
-  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top)(?:\/[^\s<>"'`)\]},]*)?/g;
+  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
   function isValidHex(c) {
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
@@ -6963,15 +6961,15 @@ ${sourceUrl}`;
         find: "chat-markdown:a:link",
         all: true,
         replacement: {
-          match: /target:"_blank",rel:"noopener noreferrer nofollow"/,
-          replace: '$&,className:"void-colored-link"'
+          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
+          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
         }
       },
       {
         find: "chat-markdown-load-third-party",
         replacement: {
-          match: /singleDollarTextMath:!1\}],(\i),(\i),(\i),(\i)\],\[\]\)/,
-          replace: "singleDollarTextMath:!1}],$1,$2,$3,$4,$self._remarkLinkify],[])"
+          match: /singleDollarTextMath:!1\}\],(.{0,60}?)\],\[\]\)/,
+          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify],[])"
         }
       }
     ],
@@ -8682,56 +8680,6 @@ button:has(> .void-rld-trigger) {
     }
   });
 
-  // src/plugins/rocketAnim/index.tsx
-  var settings14 = definePluginSettings({
-    variant: {
-      type: 4 /* SELECT */,
-      description: "Color variant for the rocket plume.",
-      options: [
-        { label: "Orange", value: "orange", default: true },
-        { label: "Blue", value: "blue" }
-      ]
-    },
-    fullWidth: {
-      type: 3 /* BOOLEAN */,
-      description: "Expand the animation beyond the chat column to fill the full page width.",
-      default: false
-    }
-  });
-  var rocketAnim_default = definePlugin({
-    name: "RocketAnim",
-    description: "Enables the rocket plume animation.",
-    authors: [Devs.Prism],
-    settings: settings14,
-    patches: [
-      {
-        find: ["useSuperGrokAnimations", "useRocketStore", "useSurveyLocation"],
-        all: true,
-        replacement: {
-          match: /(\i)=!!\(\i\.SUPERGROK_BRANDING_QUERY_BAR_ANIMATION_ENABLED&&\(\i\|\|\i\)\);return\{enabled:/,
-          replace: "$1=!0;return{enabled:"
-        }
-      },
-      {
-        find: ["RocketEngineAnimation", "TeamSwitchPrompt"],
-        replacement: {
-          match: /TriggeredError,\{hidden:!0\}\),(\i)&&\(0,(\i)\.jsx\)\((\i),\{isHeavy:\i\}\)/,
-          replace: "TriggeredError,{hidden:!0}),$1&&(0,$2.jsx)($3,{isHeavy:$self._isHeavy(),maxWidthClass:$self._maxWidth()})"
-        }
-      },
-      {
-        find: ["withRocketGlowBorder", "isSuperGrokProUser"],
-        all: true,
-        replacement: {
-          match: /withRocketGlowBorder:\i=!1\}=\i,.{0,60}\{isSuperGrokProUser:(\i)\}=\(0,(\i)\.useSubscriptions\)\(\)/,
-          replace: "$&;$1=$self._isHeavy()"
-        }
-      }
-    ],
-    _isHeavy: () => settings14.store.variant === "blue",
-    _maxWidth: () => settings14.store.fullWidth ? "" : "max-w-breakout"
-  });
-
   // src/plugins/starry/index.ts
   var starry_default = definePlugin({
     name: "Starry",
@@ -8862,7 +8810,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings15 = definePluginSettings({
+  var settings14 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -8907,14 +8855,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings15.store[key]);
+      classList.toggle(cls, !!settings14.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings14,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -8927,7 +8875,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME2 = "widerChat";
-  var settings16 = definePluginSettings({
+  var settings15 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem (default: 48).",
@@ -8935,14 +8883,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
   function applyWidth() {
-    const w = settings16.store.width ?? 64;
+    const w = settings15.store.width ?? 64;
     registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
-    settings: settings16,
+    settings: settings15,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
@@ -8953,7 +8901,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [responseNotification_default.name]: responseNotification_default, [rocketAnim_default.name]: rocketAnim_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [widerChat_default.name]: widerChat_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [responseNotification_default.name]: responseNotification_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [widerChat_default.name]: widerChat_default };
   // void-css:D:/Projects/Void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
@@ -9133,7 +9081,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     Select: () => Select,
     ScrollStore: () => ScrollStore,
     RoutingStore: () => RoutingStore,
-    RocketStore: () => RocketStore,
     ResponsiveDialog: () => ResponsiveDialog,
     ResponseStore: () => ResponseStore,
     ReportStore: () => ReportStore,
