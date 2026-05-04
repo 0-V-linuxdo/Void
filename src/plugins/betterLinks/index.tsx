@@ -19,7 +19,7 @@ const DEFAULT_LINK = "#4a9eff";
 const DEFAULT_VISITED = "#9b59b6";
 const STYLE_NAME = "better-links-dynamic";
 
-const DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top)(?:\/[^\s<>"'`)\]},]*)?/g;
+const DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
 
 function isValidHex(c: string) {
     return /^#[0-9a-fA-F]{6}$/.test(c);
@@ -112,15 +112,15 @@ export default definePlugin({
             find: "chat-markdown:a:link",
             all: true,
             replacement: {
-                match: /target:"_blank",rel:"noopener noreferrer nofollow"/,
-                replace: '$&,className:"void-colored-link"',
+                match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
+                replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:',
             },
         },
         {
             find: "chat-markdown-load-third-party",
             replacement: {
-                match: /singleDollarTextMath:!1\}],(\i),(\i),(\i),(\i)\],\[\]\)/,
-                replace: "singleDollarTextMath:!1}],$1,$2,$3,$4,$self._remarkLinkify],[])",
+                match: /singleDollarTextMath:!1\}\],(.{0,60}?)\],\[\]\)/,
+                replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify],[])",
             },
         },
     ],

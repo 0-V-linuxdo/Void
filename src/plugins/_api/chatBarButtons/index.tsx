@@ -35,7 +35,7 @@ export default definePlugin({
             all: true,
             replacement: [
                 {
-                    match: /ModeSelect,\{compact:(\i)\}\)\}\),/,
+                    match: /\},"mode-select"\),/,
                     replace: "$&$self.renderButtons(),",
                 },
                 {
