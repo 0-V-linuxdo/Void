@@ -20,7 +20,6 @@ export * from "./PersonalityStore";
 export * from "./PipelineExecutionStore";
 export * from "./ReportStore";
 export * from "./ResponseStore";
-export * from "./RocketStore";
 export * from "./RoutingStore";
 export * from "./ScrollStore";
 export * from "./SessionStore";
