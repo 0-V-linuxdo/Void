@@ -8,14 +8,16 @@ import { React } from "@turbopack/common/react";
 
 export interface IconProps {
     size?: number | string;
+    width?: number | string;
+    height?: number | string;
     strokeWidth?: number;
     className?: string;
 }
 
 const svg = (props: IconProps, ...children: React.ReactNode[]) => (
     <svg
-        width={props.size ?? "1em"}
-        height={props.size ?? "1em"}
+        width={props.width ?? props.size ?? "1em"}
+        height={props.height ?? props.size ?? "1em"}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -31,8 +33,8 @@ const svg = (props: IconProps, ...children: React.ReactNode[]) => (
 
 const filledSvg = (props: IconProps, viewBox: string, ...children: React.ReactNode[]) => (
     <svg
-        width={props.size ?? "1em"}
-        height={props.size ?? "1em"}
+        width={props.width ?? props.size ?? "1em"}
+        height={props.height ?? props.size ?? "1em"}
         viewBox={viewBox}
         fill="currentColor"
         className={props.className}
