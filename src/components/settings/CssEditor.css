@@ -13,12 +13,20 @@
     grid-area: 1 / 1;
     margin: 0;
     padding: 0.75rem;
-    font: inherit;
+    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 400;
     letter-spacing: normal;
     word-spacing: normal;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     tab-size: 4;
+}
+
+.void-css-input::placeholder {
+    font-family: inherit;
+    color: hsl(var(--fg-tertiary));
 }
 
 .void-css-highlight {
