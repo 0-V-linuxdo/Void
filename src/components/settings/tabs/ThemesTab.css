@@ -16,4 +16,5 @@
 .void-themes-local-footer {
     justify-content: flex-end;
     gap: 0.5rem;
+    margin-top: auto;
 }
