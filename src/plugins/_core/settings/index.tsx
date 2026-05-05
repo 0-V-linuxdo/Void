@@ -281,7 +281,7 @@ export default definePlugin({
         {
             find: "settings-account-card",
             replacement: {
-                match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,120}:\i\.userId\}\)/,
+                match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,200}?:\i\.userId\}\)/,
                 replace: "!$self._hideUserId()&&$&",
             },
         },
