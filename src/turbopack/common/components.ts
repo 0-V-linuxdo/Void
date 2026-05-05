@@ -6,7 +6,7 @@
 
 import type {
     AccordionContentProps, AccordionItemProps, AccordionProps, AccordionTriggerProps,
-    AlertDialogContentProps, AlertDialogProps, AvatarProps, BadgeProps, ButtonProps, ButtonWithTooltipProps,
+    AlertDialogContentProps, AlertDialogProps, AvatarProps, BadgeProps, ButtonProps, ButtonWithPopoverProps, ButtonWithTooltipProps,
     CardContentProps, CardHeaderProps, CardProps, CardTitleProps, CheckboxProps,
     CommandEmptyProps, CommandGroupProps, CommandInputProps, CommandItemProps, CommandListProps, CommandProps,
     DialogContentProps, DialogHeaderProps, DialogOverlayProps, DialogPortalProps, DialogProps, DialogTriggerProps,
@@ -48,6 +48,8 @@ function lazyExport<P = {}>(name: string): ComponentType<P> {
 const buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
 export const Button = buttonLazy<ButtonProps>("Button");
 export const ButtonWithTooltip = buttonLazy<ButtonWithTooltipProps>("ButtonWithTooltip");
+export const ButtonWithTooltipOptimized = buttonLazy<ButtonWithTooltipProps>("ButtonWithTooltipOptimized");
+export const ButtonWithPopover = buttonLazy<ButtonWithPopoverProps>("ButtonWithPopover");
 
 const cardLazy = createModuleLazy("Card", "CardContent", "CardHeader", "CardTitle");
 export const Card = cardLazy<CardProps>("Card");

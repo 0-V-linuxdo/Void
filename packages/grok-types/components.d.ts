@@ -85,8 +85,16 @@ export interface ButtonWithTooltipProps extends ButtonProps {
     stayOpenOnClick?: boolean;
 }
 
+export interface ButtonWithPopoverProps extends ButtonProps {
+    popoverContent?: ReactNode;
+    popoverContentProps?: Record<string, any>;
+    popoverProps?: Record<string, any>;
+}
+
 export type Button = ComponentType<ButtonProps>;
 export type ButtonWithTooltip = ComponentType<ButtonWithTooltipProps>;
+export type ButtonWithTooltipOptimized = ComponentType<ButtonWithTooltipProps>;
+export type ButtonWithPopover = ComponentType<ButtonWithPopoverProps>;
 
 // #endregion
 
