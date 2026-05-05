@@ -20,16 +20,12 @@ button:has(> .void-rld-trigger) {
     padding-inline: 0.5rem;
 }
 
-.void-rld-icon-limited {
-    color: inherit;
+.void-rld-icon {
+    width: 18px;
 }
 
-.void-rld-value,
-.void-rld-countdown {
-    font-size: 0.75rem;
-    font-weight: 500;
-    line-height: 1;
-    color: hsl(var(--fg-secondary));
+.void-rld-icon-limited {
+    color: inherit;
 }
 
 .void-rld-auto-label {
