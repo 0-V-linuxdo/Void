@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.5
+// @version      1.0.2.6
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.5 — A modification for grok.com
+ * Void v1.0.2.6 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -1870,6 +1870,8 @@ ${sourceUrl}`;
   var buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
   var Button = buttonLazy("Button");
   var ButtonWithTooltip = buttonLazy("ButtonWithTooltip");
+  var ButtonWithTooltipOptimized = buttonLazy("ButtonWithTooltipOptimized");
+  var ButtonWithPopover = buttonLazy("ButtonWithPopover");
   var cardLazy = createModuleLazy("Card", "CardContent", "CardHeader", "CardTitle");
   var Card = cardLazy("Card");
   var CardContent = cardLazy("CardContent");
@@ -2110,8 +2112,8 @@ ${sourceUrl}`;
   }
   // src/components/icons/index.tsx
   var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.size ?? "1em",
-    height: props.size ?? "1em",
+    width: props.width ?? props.size ?? "1em",
+    height: props.height ?? props.size ?? "1em",
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
@@ -2122,8 +2124,8 @@ ${sourceUrl}`;
     "aria-hidden": "true"
   }, children);
   var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.size ?? "1em",
-    height: props.size ?? "1em",
+    width: props.width ?? props.size ?? "1em",
+    height: props.height ?? props.size ?? "1em",
     viewBox,
     fill: "currentColor",
     className: props.className,
@@ -2430,17 +2432,46 @@ ${sourceUrl}`;
   // src/components/ChatBarButton.tsx
   var TOOLTIP_PROPS = { delayDuration: 600 };
   var TOOLTIP_CONTENT_PROPS = { side: "top" };
-  function ChatBarButton({ icon, tooltip, onClick, className, "aria-label": ariaLabel }) {
-    return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "md",
-      shape: "circle",
-      className: classes("text-primary", className),
+  var POPOVER_CONTENT_PROPS = { side: "top", align: "end" };
+  function ChatBarButton({
+    icon,
+    tooltip,
+    popover,
+    onClick,
+    variant = "tertiary",
+    size = "md",
+    shape = "circle",
+    disabled,
+    active,
+    className,
+    "aria-label": ariaLabel
+  }) {
+    const cls = classes(active && "bg-button-ghost-hover", className);
+    const label = ariaLabel ?? (typeof tooltip === "string" ? tooltip : undefined);
+    if (popover) {
+      return /* @__PURE__ */ React.createElement(ButtonWithPopover, {
+        variant,
+        size,
+        shape,
+        disabled,
+        className: cls,
+        popoverContent: popover,
+        popoverContentProps: POPOVER_CONTENT_PROPS,
+        onClick,
+        "aria-label": label
+      }, icon);
+    }
+    return /* @__PURE__ */ React.createElement(ButtonWithTooltipOptimized, {
+      variant,
+      size,
+      shape,
+      disabled,
+      className: cls,
       tooltipContent: tooltip,
       tooltipProps: TOOLTIP_PROPS,
       tooltipContentProps: TOOLTIP_CONTENT_PROPS,
       onClick,
-      "aria-label": typeof tooltip === "string" ? tooltip : ariaLabel
+      "aria-label": label
     }, icon);
   }
 
@@ -2747,19 +2778,27 @@ ${sourceUrl}`;
     buttons.delete(id);
     store.notify();
   }
+  var resolve = (v) => typeof v === "function" ? v() : v;
   function renderEntry(def) {
     return /* @__PURE__ */ React.createElement(ChatBarButton, {
       icon: resolveLazyNode(def.icon),
       tooltip: resolveLazyNode(def.tooltip),
-      onClick: def.onClick
+      popover: resolveLazyNode(def.popover),
+      onClick: def.onClick,
+      variant: def.variant,
+      size: def.size,
+      shape: def.shape,
+      disabled: resolve(def.disabled),
+      active: resolve(def.active),
+      "aria-label": def["aria-label"],
+      className: def.className
     });
   }
   function VoidChatBarButtons() {
     useExternalStore(store);
     if (!buttons.size)
       return null;
-    const sorted = sortedEntries(buttons);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, sortedEntries(buttons).map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: id
     }, renderEntry(def))));
   }
@@ -2810,14 +2849,14 @@ ${sourceUrl}`;
   function open() {
     if (dbPromise)
       return dbPromise;
-    const promise = new Promise((resolve, reject) => {
+    const promise = new Promise((resolve2, reject) => {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = () => {
         if (!req.result.objectStoreNames.contains(STORE_NAME)) {
           req.result.createObjectStore(STORE_NAME);
         }
       };
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve2(req.result);
       req.onerror = () => reject(req.error);
     });
     promise.catch((e) => {
@@ -2830,19 +2869,19 @@ ${sourceUrl}`;
   }
   async function idbGet(key) {
     const db = await open();
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       const tx = db.transaction(STORE_NAME, "readonly");
       const req = tx.objectStore(STORE_NAME).get(key);
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve2(req.result);
       req.onerror = () => reject(req.error);
     });
   }
   async function idbSet(key, value) {
     const db = await open();
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       const tx = db.transaction(STORE_NAME, "readwrite");
       tx.objectStore(STORE_NAME).put(value, key);
-      tx.oncomplete = () => resolve();
+      tx.oncomplete = () => resolve2();
       tx.onerror = () => reject(tx.error);
     });
   }
@@ -3858,12 +3897,20 @@ ${sourceUrl}`;
     grid-area: 1 / 1;
     margin: 0;
     padding: 0.75rem;
-    font: inherit;
+    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 400;
     letter-spacing: normal;
     word-spacing: normal;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     tab-size: 4;
+}
+
+.void-css-input::placeholder {
+    font-family: inherit;
+    color: hsl(var(--fg-tertiary));
 }
 
 .void-css-highlight {
@@ -4466,11 +4513,11 @@ ${sourceUrl}`;
   // src/components/settings/SettingField.tsx
   var cl6 = classNameFactory("void-setting-");
   function usePluginSetting(pluginName, id, setting) {
-    const resolve = () => (Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting);
-    const [value, setValue] = useState(resolve);
+    const resolve2 = () => (Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting);
+    const [value, setValue] = useState(resolve2);
     useEffect(() => {
       const path = pluginPath(pluginName, id);
-      const listener = () => setValue(resolve());
+      const listener = () => setValue(resolve2());
       SettingsStore3.addChangeListener(path, listener);
       return () => SettingsStore3.removeChangeListener(path, listener);
     }, [pluginName, id]);
@@ -4877,6 +4924,7 @@ ${sourceUrl}`;
 .void-themes-local-footer {
     justify-content: flex-end;
     gap: 0.5rem;
+    margin-top: auto;
 }
 `);
 
@@ -5627,9 +5675,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.5"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"2749c94"}`
-    }, `(${"2749c94"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"5616fb8"}`
+    }, `(${"5616fb8"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5776,7 +5824,7 @@ ${sourceUrl}`;
       {
         find: "settings-account-card",
         replacement: {
-          match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,120}:\i\.userId\}\)/,
+          match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,200}?:\i\.userId\}\)/,
           replace: "!$self._hideUserId()&&$&"
         }
       }
@@ -5878,15 +5926,15 @@ ${sourceUrl}`;
         group: true,
         replacement: [
           {
-            match: /onSaveEdit:(\i)\}\)/,
-            replace: "onSaveEdit:$1,id:arguments[0].id})"
+            match: /onSaveEdit:(\i),route:(\i)\}\)/,
+            replace: "onSaveEdit:$1,id:arguments[0].id,route:$2})"
           },
           {
-            match: /onEditClick:(\i)\}\)/,
-            replace: "onEditClick:$1,...arguments[0]})"
+            match: /onEditClick:(\i),route:(\i)\}\)/g,
+            replace: "onEditClick:$1,id:arguments[0].id,route:$2})"
           },
           {
-            match: /(\i)&&\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\(\)=>\{null==\1.{0,80}\.TrashIcon,.{0,80}\]\}\)/,
+            match: /(\i)&&\(0,\i\.jsxs?\)\(\i,\{onSelect:\(\)=>\1\(\),className:"gap-2",children:\[\(0,\i\.jsx\)\(\i\.TrashIcon,.{0,80}\]\}\)/,
             replace: '$self.renderItems("conversation",{conversationId:arguments[0].id}),$&'
           }
         ]
@@ -8337,7 +8385,9 @@ Original prompt:
     chatBarButton: {
       icon: () => WandSparklesIcon({ size: 18 }),
       tooltip: "Enhance prompt",
-      onClick: enhance
+      onClick: enhance,
+      order: 100,
+      className: "text-fg-primary"
     }
   });
 
@@ -8364,16 +8414,12 @@ button:has(> .void-rld-trigger) {
     padding-inline: 0.5rem;
 }
 
-.void-rld-icon-limited {
-    color: inherit;
+.void-rld-icon {
+    width: 18px;
 }
 
-.void-rld-value,
-.void-rld-countdown {
-    font-size: 0.75rem;
-    font-weight: 500;
-    line-height: 1;
-    color: hsl(var(--fg-secondary));
+.void-rld-icon-limited {
+    color: inherit;
 }
 
 .void-rld-auto-label {
@@ -8448,10 +8494,12 @@ button:has(> .void-rld-trigger) {
     return /* @__PURE__ */ React.createElement("span", {
       className: cl19("trigger")
     }, limited ? /* @__PURE__ */ React.createElement(ClockAlertIcon, {
-      size: 20,
+      width: 18,
+      height: 20,
       className: cl19("icon-limited")
     }) : /* @__PURE__ */ React.createElement(GaugeIcon, {
-      size: 20
+      width: 20,
+      height: 20
     }), /* @__PURE__ */ React.createElement(ButtonLabel, {
       mode
     }));
@@ -8459,14 +8507,14 @@ button:has(> .void-rld-trigger) {
   function renderRemaining(data) {
     if (!data)
       return /* @__PURE__ */ React.createElement("span", {
-        className: cl19("value")
+        className: "truncate text-sm font-semibold"
       }, "—");
     if (data.remainingQueries === 0 && data.waitTimeSeconds)
       return /* @__PURE__ */ React.createElement(CountdownTimer, {
         seconds: data.waitTimeSeconds
       });
     return /* @__PURE__ */ React.createElement("span", {
-      className: cl19("value")
+      className: "truncate text-sm font-semibold"
     }, data.remainingQueries);
   }
   function ButtonLabel({ mode }) {
@@ -8478,7 +8526,7 @@ button:has(> .void-rld-trigger) {
       return /* @__PURE__ */ React.createElement("span", {
         className: cl19("auto-label")
       }, renderRemaining(expert), /* @__PURE__ */ React.createElement("span", {
-        className: cl19("value")
+        className: "truncate text-sm font-semibold"
       }, "·"), renderRemaining(fast));
     }
     const data = limits[mode];
@@ -8489,7 +8537,7 @@ button:has(> .void-rld-trigger) {
         seconds: data.waitTimeSeconds
       });
     return /* @__PURE__ */ React.createElement("span", {
-      className: cl19("value")
+      className: "truncate text-sm font-semibold"
     }, data.remainingQueries, "/", data.totalQueries);
   }
   function CountdownTimer({ seconds }) {
@@ -8508,7 +8556,7 @@ button:has(> .void-rld-trigger) {
       return () => clearInterval(id);
     }, [seconds]);
     return /* @__PURE__ */ React.createElement("span", {
-      className: cl19("countdown")
+      className: "truncate text-sm font-semibold"
     }, formatCountdown(left));
   }
   function ModeRow({ mode, data, active }) {
@@ -8561,7 +8609,8 @@ button:has(> .void-rld-trigger) {
       icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
       tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
       onClick: refresh,
-      order: 100
+      order: 0,
+      className: "text-fg-primary"
     },
     stop() {
       limits = {};
@@ -9155,7 +9204,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     CardHeader: () => CardHeader,
     CardContent: () => CardContent,
     Card: () => Card,
+    ButtonWithTooltipOptimized: () => ButtonWithTooltipOptimized,
     ButtonWithTooltip: () => ButtonWithTooltip,
+    ButtonWithPopover: () => ButtonWithPopover,
     Button: () => Button,
     Badge: () => Badge,
     Avatar: () => Avatar,
