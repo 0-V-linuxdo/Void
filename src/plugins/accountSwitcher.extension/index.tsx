@@ -35,25 +35,16 @@ const PlusIcon = findExportedComponentLazy("PlusIcon");
 const AVATAR_FETCH_TIMEOUT_MS = 4000;
 const AVATAR_MAX_BYTES = 256 * 1024;
 
-const PER_ACCOUNT_KEYS = new Set([
-    "anonUserId",
-    "anonPrivateKey",
-    "user-settings",
-    "xai-ff-bu",
-    "xai-ff-overrides",
-    "hasPreviouslyInitUserSettings",
-    "chat_message_count",
-    "grok.notifications.userExposed",
-    "modes-selected-id",
-    "tour-guide-state",
-    "chat-preferences",
-    "settings-store",
-    "highlights-storage",
-    "sources-selector-preferences",
-    "notifications-toast-dismiss-count",
-]);
-const PER_ACCOUNT_PREFIXES = ["__mpq_", "mp_", "new-feature-user:"];
-const EPHEMERAL_IDB_DATABASES = ["mixpanelBrowserDb"];
+// Keys (or prefixes) we never wipe — Void's own state.
+// Anything else in localStorage/sessionStorage is treated as account-scoped.
+const PRESERVE_PREFIXES = ["Void"];
+
+interface AccountPayload {
+    readonly schemaVersion: 2;
+    readonly cookies: readonly CookieDomainSnapshot[];
+    readonly local: Record<string, string>;
+    readonly session: Record<string, string>;
+}
 
 interface SavedAccount {
     readonly id: string;
@@ -71,39 +62,54 @@ interface SavedAccount {
 const settings = definePluginSettings({}).withPrivateSettings<{ accounts: SavedAccount[] }>();
 
 
-function isPerAccountKey(key: string) {
-    if (PER_ACCOUNT_KEYS.has(key)) return true;
-    for (const prefix of PER_ACCOUNT_PREFIXES) if (key.startsWith(prefix)) return true;
+function shouldPreserve(key: string) {
+    for (const p of PRESERVE_PREFIXES) if (key.startsWith(p)) return true;
     return false;
 }
 
-async function clearUserScopedStorage() {
-    try {
-        for (const key of Object.keys(localStorage)) {
-            if (isPerAccountKey(key)) localStorage.removeItem(key);
-        }
-    } catch (e) {
-        logger.warn("localStorage cleanup failed", e);
+function snapshotStorage(store: Storage): Record<string, string> {
+    const out: Record<string, string> = {};
+    for (let i = 0; i < store.length; i++) {
+        const key = store.key(i);
+        if (key == null || shouldPreserve(key)) continue;
+        const v = store.getItem(key);
+        if (v != null) out[key] = v;
     }
+    return out;
+}
 
-    try {
-        for (const key of Object.keys(sessionStorage)) {
-            if (isPerAccountKey(key)) sessionStorage.removeItem(key);
-        }
-    } catch (e) {
-        logger.warn("sessionStorage cleanup failed", e);
+function restoreStorage(store: Storage, entries: Record<string, string>) {
+    for (const key of Object.keys(store)) {
+        if (!shouldPreserve(key)) store.removeItem(key);
     }
+    for (const [key, value] of Object.entries(entries)) {
+        try { store.setItem(key, value); }
+        catch (e) { logger.warn("storage restore failed", key, e); }
+    }
+}
 
+const EPHEMERAL_IDB_DATABASES = ["mixpanelBrowserDb"];
+
+async function wipeEphemeralDbs() {
     await Promise.all(EPHEMERAL_IDB_DATABASES.map(name =>
         new Promise<void>(resolve => {
             try {
                 const req = indexedDB.deleteDatabase(name);
-                req.onsuccess = () => resolve();
-                req.onerror = () => resolve();
-                req.onblocked = () => resolve();
+                req.onsuccess = req.onerror = req.onblocked = () => resolve();
             } catch { resolve(); }
         }),
     ));
+}
+
+function decodePayload(plaintext: string): AccountPayload {
+    const parsed = JSON.parse(plaintext) as unknown;
+    if (Array.isArray(parsed)) {
+        // schemaVersion 1: just cookie snapshots.
+        return { schemaVersion: 2, cookies: parsed as CookieDomainSnapshot[], local: {}, session: {} };
+    }
+    const p = parsed as AccountPayload;
+    if (!Array.isArray(p?.cookies)) throw new Error("Stored session is corrupt.");
+    return { schemaVersion: 2, cookies: p.cookies, local: p.local ?? {}, session: p.session ?? {} };
 }
 
 async function snapshotAvatar(url: string): Promise<string | null> {
@@ -132,15 +138,22 @@ async function snapshotAvatar(url: string): Promise<string | null> {
 }
 
 async function persistCurrent(user: GrokUser): Promise<SavedAccount> {
-    const snapshots = await captureSnapshots();
-    const totalCookies = snapshots.reduce((n, s) => n + s.cookies.length, 0);
+    const cookies = await captureSnapshots();
+    const totalCookies = cookies.reduce((n, s) => n + s.cookies.length, 0);
     if (!totalCookies) throw new CookieAccessError("No cookies returned for grok.com or accounts.x.ai.");
+
+    const payload: AccountPayload = {
+        schemaVersion: 2,
+        cookies,
+        local: snapshotStorage(localStorage),
+        session: snapshotStorage(sessionStorage),
+    };
 
     const accounts = settings.plain.accounts ?? [];
     const existingIdx = accounts.findIndex(a => a.userId === user.userId);
     const id = existingIdx >= 0 ? accounts[existingIdx].id : randomId();
     const [encryptedCookies, profileImageData] = await Promise.all([
-        encryptForAccount(id, JSON.stringify(snapshots)),
+        encryptForAccount(id, JSON.stringify(payload)),
         snapshotAvatar(user.profileImageUrl),
     ]);
     const fallbackLabel = user.givenName || user.email.split("@")[0] || "Account";
@@ -189,12 +202,14 @@ async function switchTo(account: SavedAccount) {
         }
 
         const plaintext = await decryptForAccount(account.id, account.encryptedCookies);
-        const snapshots = JSON.parse(plaintext) as CookieDomainSnapshot[];
-        if (!Array.isArray(snapshots) || !snapshots.length) throw new Error("Stored session is empty or corrupt.");
+        const payload = decodePayload(plaintext);
+        if (!payload.cookies.length) throw new Error("Stored session is empty or corrupt.");
 
         showToast(`Switching to ${account.label}…`, ToastType.LOADING);
-        await clearUserScopedStorage();
-        const result = await replaceAllCookies(snapshots);
+        await wipeEphemeralDbs();
+        restoreStorage(localStorage, payload.local);
+        restoreStorage(sessionStorage, payload.session);
+        const result = await replaceAllCookies(payload.cookies);
         if (result.failures.length) throw new Error(`Cookie swap had ${result.failures.length} failure(s): ${result.failures.join("; ")}`);
 
         location.reload();

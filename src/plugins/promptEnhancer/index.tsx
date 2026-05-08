@@ -131,5 +131,7 @@ export default definePlugin({
         icon: () => WandSparklesIcon({ size: 18 }),
         tooltip: "Enhance prompt",
         onClick: enhance,
+        order: 100,
+        className: "text-fg-primary",
     },
 });

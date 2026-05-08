@@ -82,17 +82,17 @@ function ButtonIcon() {
     return (
         <span className={cl("trigger")}>
             {limited
-                ? <ClockAlertIcon size={20} className={cl("icon-limited")} />
-                : <GaugeIcon size={20} />}
+                ? <ClockAlertIcon width={18} height={20} className={cl("icon-limited")} />
+                : <GaugeIcon width={20} height={20} />}
             <ButtonLabel mode={mode} />
         </span>
     );
 }
 
 function renderRemaining(data: RateLimitData | undefined) {
-    if (!data) return <span className={cl("value")}>—</span>;
+    if (!data) return <span className="truncate text-sm font-semibold">—</span>;
     if (data.remainingQueries === 0 && data.waitTimeSeconds) return <CountdownTimer seconds={data.waitTimeSeconds} />;
-    return <span className={cl("value")}>{data.remainingQueries}</span>;
+    return <span className="truncate text-sm font-semibold">{data.remainingQueries}</span>;
 }
 
 function ButtonLabel({ mode }: { mode: ModeName }) {
@@ -104,7 +104,7 @@ function ButtonLabel({ mode }: { mode: ModeName }) {
         return (
             <span className={cl("auto-label")}>
                 {renderRemaining(expert)}
-                <span className={cl("value")}>·</span>
+                <span className="truncate text-sm font-semibold">·</span>
                 {renderRemaining(fast)}
             </span>
         );
@@ -113,7 +113,7 @@ function ButtonLabel({ mode }: { mode: ModeName }) {
     const data = limits[mode];
     if (!data) return null;
     if (data.remainingQueries === 0 && data.waitTimeSeconds) return <CountdownTimer seconds={data.waitTimeSeconds} />;
-    return <span className={cl("value")}>{data.remainingQueries}/{data.totalQueries}</span>;
+    return <span className="truncate text-sm font-semibold">{data.remainingQueries}/{data.totalQueries}</span>;
 }
 
 function CountdownTimer({ seconds }: { seconds: number }) {
@@ -133,7 +133,7 @@ function CountdownTimer({ seconds }: { seconds: number }) {
         return () => clearInterval(id);
     }, [seconds]);
 
-    return <span className={cl("countdown")}>{formatCountdown(left)}</span>;
+    return <span className="truncate text-sm font-semibold">{formatCountdown(left)}</span>;
 }
 
 function ModeRow({ mode, data, active }: { mode: ModeName; data?: RateLimitData; active: boolean }) {
@@ -181,7 +181,8 @@ export default definePlugin({
         icon: () => <ButtonIcon />,
         tooltip: () => <TooltipPanel />,
         onClick: refresh,
-        order: 100,
+        order: 0,
+        className: "text-fg-primary",
     },
 
     stop() {

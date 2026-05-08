@@ -32,15 +32,15 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /onSaveEdit:(\i)\}\)/,
-                    replace: "onSaveEdit:$1,id:arguments[0].id})",
+                    match: /onSaveEdit:(\i),route:(\i)\}\)/,
+                    replace: "onSaveEdit:$1,id:arguments[0].id,route:$2})",
                 },
                 {
-                    match: /onEditClick:(\i)\}\)/,
-                    replace: "onEditClick:$1,...arguments[0]})",
+                    match: /onEditClick:(\i),route:(\i)\}\)/g,
+                    replace: "onEditClick:$1,id:arguments[0].id,route:$2})",
                 },
                 {
-                    match: /(\i)&&\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\(\)=>\{null==\1.{0,80}\.TrashIcon,.{0,80}\]\}\)/,
+                    match: /(\i)&&\(0,\i\.jsxs?\)\(\i,\{onSelect:\(\)=>\1\(\),className:"gap-2",children:\[\(0,\i\.jsx\)\(\i\.TrashIcon,.{0,80}\]\}\)/,
                     replace: '$self.renderItems("conversation",{conversationId:arguments[0].id}),$&',
                 },
             ],
