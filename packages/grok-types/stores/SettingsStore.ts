@@ -1,5 +1,4 @@
 import type { ModelId } from "../enums/models";
-import type { ToolName } from "../enums/tools";
 import type { ZustandStore } from "../zustand";
 
 /**
@@ -111,10 +110,6 @@ export interface SettingsStoreState {
 export interface SettingsStoreModule {
     /** Zustand store hook for user settings state. */
     useSettingsStore: ZustandStore<SettingsStoreState>;
-    /** Map of tool name identifiers to their display names. */
-    TOOL_NAMES: Record<ToolName, string>;
-    /** Check if a dev model config override exists for the given model ID. */
-    hasModelConfigOverride: (model: ModelId) => boolean;
     /** Zod-like validation schema for model config override objects. */
     modelConfigOverrideSchema: any;
 }
