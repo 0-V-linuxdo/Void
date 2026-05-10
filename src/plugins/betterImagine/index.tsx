@@ -12,13 +12,13 @@ import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CopyIcon, ScalingIcon, SquareMousePointerIcon } from "@components/icons";
 import type { MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
-import { Fragment, React, useEffect, useRef, useState } from "@turbopack/common/react";
+import { Fragment, React, useRef, useState } from "@turbopack/common/react";
 import { MediaStore, RoutingStore } from "@turbopack/common/stores";
 import { Toaster } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { copyToClipboard, createExternalStore, sanitizeFilename } from "@utils/misc";
+import { copyToClipboard, createExternalStore, debounce, sanitizeFilename } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
@@ -159,7 +159,7 @@ function persist() {
 }
 
 function setFilter(f: MediaFilter) { currentFilter = f; filterStore.notify(); persist(); }
-function setSearch(s: string) { currentSearch = s; filterStore.notify(); persist(); }
+const setSearch = debounce((s: string) => { currentSearch = s; filterStore.notify(); persist(); }, 200);
 function setDate(d: DateFilter) { currentDate = d; filterStore.notify(); persist(); }
 function setSort(s: SortMode) {
     if (s === "random" && currentSort === "random") randomSeed = Date.now();
@@ -185,17 +185,46 @@ function isModerated(p: MediaItem): boolean {
     return !!(p.moderated || p.isModerated) && !p.mediaUrl;
 }
 
+const haystackCache = new WeakMap<MediaItem, string>();
+const tsCache = new WeakMap<MediaItem, number>();
+const promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+
+function getHaystack(p: MediaItem): string {
+    let h = haystackCache.get(p);
+    if (h === undefined) {
+        h = `${p.prompt ?? ""}\n${p.originalPrompt ?? ""}`.toLowerCase();
+        haystackCache.set(p, h);
+    }
+    return h;
+}
+
+function getTs(p: MediaItem): number {
+    let t = tsCache.get(p);
+    if (t === undefined) {
+        t = new Date(p.createTime).getTime();
+        tsCache.set(p, t);
+    }
+    return t;
+}
+
 function matchesFilters(p: MediaItem, target: MediaPostType | null, q: string, cutoff: number, hideModerated: boolean): boolean {
     if (!p) return false;
     if (hideModerated && isModerated(p)) return false;
     if (target && p.mediaType !== target) return false;
-    if (cutoff && new Date(p.createTime).getTime() < cutoff) return false;
-    if (q && !(p.prompt ?? "").toLowerCase().includes(q) && !(p.originalPrompt ?? "").toLowerCase().includes(q)) return false;
+    if (cutoff && getTs(p) < cutoff) return false;
+    if (q && !getHaystack(p).includes(q)) return false;
     return true;
 }
 
+let cacheKey: string | null = null;
+let cacheList: MediaItem[] | null = null;
+let cacheResult: MediaItem[] = [];
+
 function filterItems(items: MediaItem[]): MediaItem[] {
     const { hideModerated } = settings.store;
+    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
+    if (cacheList === items && cacheKey === key) return cacheResult;
+
     const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
     let out = items;
     if (needsFilter) {
@@ -204,7 +233,10 @@ function filterItems(items: MediaItem[]): MediaItem[] {
         const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
         out = items.filter(p => matchesFilters(p, target, q, cutoff, hideModerated));
     }
-    return currentSort === "newest" ? out : sortItems(out);
+    cacheList = items;
+    cacheKey = key;
+    cacheResult = currentSort === "newest" ? out : sortItems(out);
+    return cacheResult;
 }
 
 function mulberry32(seed: number): () => number {
@@ -222,11 +254,11 @@ function sortItems(items: MediaItem[]): MediaItem[] {
     const arr = [...items];
     switch (currentSort) {
         case "oldest":
-            return arr.toSorted((a, b) => new Date(a.createTime).getTime() - new Date(b.createTime).getTime());
+            return arr.toSorted((a, b) => getTs(a) - getTs(b));
         case "prompt-az":
-            return arr.toSorted((a, b) => (a.prompt ?? "").localeCompare(b.prompt ?? ""));
+            return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
         case "prompt-za":
-            return arr.toSorted((a, b) => (b.prompt ?? "").localeCompare(a.prompt ?? ""));
+            return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
         case "random": {
             const rand = mulberry32(randomSeed);
             for (let i = arr.length - 1; i > 0; i--) {
@@ -376,15 +408,17 @@ async function bulkUpscaleSelected() {
 
 function FilterButtons() {
     useExternalStore(filterStore);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const [searchInput, setSearchInput] = useState(currentSearch);
     const { total, visible } = useFavoritesStats();
     const hidden = total - visible;
-    const showClear = hasActiveFilters() || currentSort !== "newest";
+    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
     const sortActive = currentSort !== "newest";
 
-    useEffect(() => {
-        (inputRef.current as HTMLInputElement & { __voidSearch?: boolean } | null)?.classList?.add?.(cl("search-marker"));
-    }, []);
+    const lastSync = useRef(currentSearch);
+    if (lastSync.current !== currentSearch) {
+        lastSync.current = currentSearch;
+        setSearchInput(currentSearch);
+    }
 
     return (
         <Fragment>
@@ -409,13 +443,11 @@ function FilterButtons() {
                 </SelectContent>
             </Select>
             <Input
-                ref={inputRef}
                 type="text"
                 placeholder="Search..."
-                value={currentSearch}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setSearchInput(e.target.value); setSearch(e.target.value); }}
                 className={cl("search")}
-                data-void-search="true"
             />
             {(["image", "video"] as const).map(f => (
                 <Button
@@ -501,8 +533,7 @@ function isTypingTarget(t: EventTarget | null): boolean {
     if (!(t instanceof HTMLElement)) return false;
     if (t.isContentEditable) return true;
     const tag = t.tagName;
-    if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") return false;
-    return (t as HTMLInputElement).dataset.voidSearch !== "true";
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -581,8 +612,8 @@ export default definePlugin({
                     replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:',
                 },
                 {
-                    match: /,(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
-                    replace: ",$1=$self._useFilteredFavorites()",
+                    match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
+                    replace: "=$self._useFilteredFavorites()",
                 },
             ],
         },
@@ -616,8 +647,8 @@ export default definePlugin({
             all: true,
             noWarn: true,
             replacement: {
-                match: /(\i)&&!(\i)\?(\i)\.play\(\)\.catch\(\(\)=>\{\}\):\3\.pause\(\)/,
-                replace: "$1&&!$2&&$self._autoPlay()?$3.play().catch(()=>{}):$3.pause()",
+                match: /\?(\i)\.play\(\)\.catch\(\(\)=>\{\}\):\1\.pause\(\)/,
+                replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()",
             },
         },
         {
