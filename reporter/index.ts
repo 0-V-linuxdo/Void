@@ -118,7 +118,7 @@ export async function run(): Promise<void> {
 
     const slow = summariseTimings(patchEntries);
     if (slow.length) {
-        console.log(ansi.bold("\nSlow replacements (>10ms)"));
+        console.log(ansi.bold("\nSlow replacements (>20ms)"));
         for (const s of slow.slice(0, 10)) {
             console.log(`  ${ansi.yellow(formatDuration(s.timeMs).padStart(7))}  ${ansi.bold(s.patch.plugin)}  ${ansi.dim(String(s.patch.find[0]?.raw ?? "").slice(0, 60))}`);
         }

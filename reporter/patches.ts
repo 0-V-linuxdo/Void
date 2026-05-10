@@ -28,7 +28,7 @@ export interface PatchReportEntry {
 }
 
 const MAX_MODULE_AMBIGUITY = 10;
-const SLOW_THRESHOLD_MS = 10;
+const SLOW_THRESHOLD_MS = 20;
 const BACKREF_RE = /\$(\d)/g;
 const SELF_RE = /\$self/g;
 
