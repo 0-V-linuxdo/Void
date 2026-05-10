@@ -31,6 +31,7 @@ const cl = classNameFactory("void-as-");
 const UsersIcon = findExportedComponentLazy("UsersIcon");
 const CheckIcon = findExportedComponentLazy("CheckIcon");
 const PlusIcon = findExportedComponentLazy("PlusIcon");
+const RefreshCwIcon = findExportedComponentLazy("RefreshCwIcon");
 
 const AVATAR_FETCH_TIMEOUT_MS = 4000;
 const AVATAR_MAX_BYTES = 256 * 1024;
@@ -277,7 +278,7 @@ function AccountMenu() {
                 <DropdownMenuSubContent className={cl("content")}>
                     {accounts.length > 0 && (
                         <div className={cl("heading")}>
-                            <Text as="span" size="xs" color="secondary">Saved accounts</Text>
+                            <Text as="span" size="xs" color="secondary">Saved Accounts</Text>
                         </div>
                     )}
                     {accounts.map(a => (
@@ -291,7 +292,7 @@ function AccountMenu() {
                     ))}
                     {accounts.length > 0 && <DropdownMenuSeparator />}
                     <DropdownMenuItem onSelect={() => user && void saveCurrent(user)} disabled={!user} className={cl("save")}>
-                        <PlusIcon className={cl("icon-lead")} />
+                        {hasCurrent ? <RefreshCwIcon className={cl("icon-lead")} /> : <PlusIcon className={cl("icon-lead")} />}
                         <Text as="span" size="sm">{hasCurrent ? "Update current account" : "Save current account"}</Text>
                     </DropdownMenuItem>
                 </DropdownMenuSubContent>
