@@ -6,8 +6,7 @@
 
 import "./styles.css";
 
-import type { ContextMenuLocationMap } from "@api/ContextMenus";
-import { DropdownMenuItem } from "@components";
+import { type ContextMenuLocationMap, MenuItem } from "@api/ContextMenus";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CopyIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
@@ -45,10 +44,10 @@ function CloneItem({ conversationId }: ContextMenuLocationMap["conversation"]) {
     const streaming = useIsStreaming(conversationId);
 
     return (
-        <DropdownMenuItem onSelect={() => cloneChat(conversationId).catch(e => logger.error("Failed to clone chat:", e))} disabled={streaming}>
+        <MenuItem onSelect={() => cloneChat(conversationId).catch(e => logger.error("Failed to clone chat:", e))} disabled={streaming}>
             <CopyIcon size={16} className="void-clone-icon" />
             Clone
-        </DropdownMenuItem>
+        </MenuItem>
     );
 }
 

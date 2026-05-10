@@ -6,13 +6,7 @@
 
 import "./styles.css";
 
-import type { ContextMenuLocationMap } from "@api/ContextMenus";
-import {
-    DropdownMenuItem,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-} from "@components";
+import { type ContextMenuLocationMap, MenuItem, MenuSub, MenuSubContent, MenuSubTrigger } from "@api/ContextMenus";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { DownloadIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
@@ -201,19 +195,19 @@ function ExportMenu({ conversationId }: ContextMenuLocationMap["conversation"]) 
     const streaming = useIsStreaming(conversationId);
 
     return (
-        <DropdownMenuSub>
-            <DropdownMenuSubTrigger disabled={streaming} className="void-export-trigger">
+        <MenuSub>
+            <MenuSubTrigger disabled={streaming} className="void-export-trigger">
                 <DownloadIcon size={16} className="void-export-icon" />
                 Export
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
+            </MenuSubTrigger>
+            <MenuSubContent>
                 {FORMATS.map(({ fmt, label }) => (
-                    <DropdownMenuItem key={fmt} onSelect={() => exportChat(conversationId, fmt).catch(e => logger.error("Failed to export chat", e))}>
+                    <MenuItem key={fmt} onSelect={() => exportChat(conversationId, fmt).catch(e => logger.error("Failed to export chat", e))}>
                         {label}
-                    </DropdownMenuItem>
+                    </MenuItem>
                 ))}
-            </DropdownMenuSubContent>
-        </DropdownMenuSub>
+            </MenuSubContent>
+        </MenuSub>
     );
 }
 

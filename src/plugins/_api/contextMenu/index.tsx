@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { type ContextMenuLocation, VoidContextMenuItems } from "@api/ContextMenus";
+import { type ContextMenuLocation, type MenuPrimitives, VoidContextMenuItems } from "@api/ContextMenus";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
@@ -17,10 +17,10 @@ export default definePlugin({
     required: true,
     hidden: true,
 
-    renderItems(location: ContextMenuLocation, ctx?: Record<string, any>) {
+    renderItems(location: ContextMenuLocation, ctx?: Record<string, any>, menu?: MenuPrimitives) {
         return (
             <ErrorBoundary>
-                <VoidContextMenuItems location={location} {...ctx} />
+                <VoidContextMenuItems location={location} menu={menu} {...ctx} />
             </ErrorBoundary>
         );
     },
@@ -40,8 +40,12 @@ export default definePlugin({
                     replace: "onEditClick:$1,id:arguments[0].id,route:$2})",
                 },
                 {
+                    match: /Item:(\i)\.(Dropdown|Context)MenuItem,/g,
+                    replace: "$&VoidMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},",
+                },
+                {
                     match: /(\i)&&\(0,\i\.jsxs?\)\(\i,\{onSelect:\(\)=>\1\(\),className:"gap-2",children:\[\(0,\i\.jsx\)\(\i\.TrashIcon,.{0,80}\]\}\)/,
-                    replace: '$self.renderItems("conversation",{conversationId:arguments[0].id}),$&',
+                    replace: '$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$&',
                 },
             ],
         },
