@@ -9,7 +9,9 @@ rules:
     - ALWAYS explore @utils/, @components/, @api/ BEFORE writing anything — reuse existing, NEVER reimplement
     - if a helper/component/pattern exists elsewhere, import it, NEVER copy-paste or recreate
     - use void-mcp to inspect live code, NEVER guess module structure
-    - run `bun run lint:fix` + `bun run lint:styles:fix` + `bun run tsc` after changes, NEVER `bun run build` unless asked
+    - run `bun run lint:oxlint:fix` + `bun run tsc` after code changes, `bun run lint:styles:fix` after css changes
+    - eslint is SLOW (only checks license headers), run `bun run lint:eslint:fix` ONLY when adding new files
+    - NEVER run `bun run lint:fix` (full) or `bun run build` unless asked
     - NEVER commit/push without explicit user instruction
     - NEVER commit design specs/plans/docs to the repo
   code:
@@ -111,20 +113,55 @@ patching:
   core:
     - minimum code, stability over cleverness, one patch per concern
     - ALWAYS MCP patch test, NEVER guess
+    - patch ONLY what changes behavior, leave the rest alone
     - try multiple approaches, keep simplifying
     - remove any regex char that doesnt change the match
-  tokens: \i (minified id), $self (plugin ref), $& (entire match), .{0,N} (bounded gap ~1.5x)
+  tokens:
+    - \i — minified id (single mangled var)
+    - $self — plugin ref, $1..$9 — captures, $& — full match
+    - (?=X) lookahead — anchor without consuming, use to insert PREFIX without $&
+    - (?<=X) lookbehind — anchor preceding context, use to insert SUFFIX without $&
+    - .{0,N} bounded gap (~1.5x expected), prefer char-class gap over dot
+  stableAnchors{prefer > avoid}:
+    - intl/i18n keys ("settings-account-card", "#{intl::FOO}") > minified css classes
+    - dispatcher action types, store names, displayName > class hashes
+    - source JS property names (userId, conversationId, expanded) > Tailwind utility soup
+    - function/component names in source > minified \i tokens
+    - data-* attributes, aria roles > visual class names
+    - rule of thumb — would a Grok build flip rewrite this? if yes, do not anchor on it
   find:
-    - exactly 1 module match, verify with MCP
-    - anchors: i18n keys, displayName, feature flags, prop names
-    - semantic and close to match target
+    - exactly 1 module match, verify with MCP analyze+test before edit
+    - shortest unique literal substring of factory source
+    - close to match target so module locator and regex anchor agree
+    - NEVER use minified css classes, hex hashes, or generated ids as the find string
   match:
-    - must contain stable string literal
-    - $& to append/prepend, capture groups only when reusing
-    - .{0,N} not .+? or .*?, minimize \i count
-    - group:true for multi-step transforms
+    - PERF #1 — regex MUST start with a literal char (not \i/character-class). Literal-at-start = 100-1000x faster, V8 fast-scans for it. \i at start = byte-by-byte scan of ~600KB factory.
+    - if forced to start with identifier, anchor on the literal portion via lookbehind OR rewrite replace to consume the literal prefix and emit it back via $1/literal text
+    - char-class gaps [^}]+ [^,]+ [^"]+ [^)]+ are GOOD — verified faster than .+? in benches (no abort, linear scan)
+    - .+? lazy gap only when the next literal terminator is short and unique
+    - lookahead/lookbehind for non-consuming anchors when start is already literal
+    - capture groups ONLY when reused in replace, drop unused parens
+    - minimize \i count, every \i is a build-flip risk
+    - group:true for multi-step transforms on same module
+  replace:
+    - smallest possible diff, lookahead/behind beats `$&` for additive edits
+    - never echo huge `$&` chunks back, anchor narrower instead
+    - $self._method only — never inline complex logic in replace
   flags: all:true (shared factories), noWarn:true (lazy modules), group:true (multi-replace)
-  NEVER: hardcoded minified vars, unbounded gaps, pure identifier chains, massive regex
+  workflow:
+    - 1. mcp__void-mcp__search to locate live module
+    - 2. mcp__void-mcp__module action=source to read factory body around target
+    - 3. pick stable anchor (see stableAnchors), draft narrowest regex
+    - 4. mcp__void-mcp__patch action=test → MUST be VALID + uniqueModule
+    - 5. mcp__void-mcp__patch action=analyze for find uniqueness
+    - 6. mcp__void-mcp__patch action=bench when slow patches reported
+  NEVER:
+    - hardcoded minified vars, unbounded gaps (.+ .* without bound)
+    - pure identifier chains with no string literal
+    - anchoring on tailwind/css class strings ("text-xs flex flex-row...")
+    - long `$&` reprints when lookahead/behind works
+    - massive regex, nested quantifiers (ReDoS)
+    - chaining .+? over more than one logical hop, split into multiple patches instead
 
 plugin:
   - src/plugins/<name>/index.ts(x), styles.css optional

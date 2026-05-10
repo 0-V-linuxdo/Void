@@ -88,8 +88,8 @@ export default definePlugin({
         {
             find: "connect-x-upsell-dismissed",
             replacement: {
-                match: /(\i)\.ENABLE_X_INTEGRATION&&\i\.SHOW_CONNECT_X_UPSELL/,
-                replace: "!$self.settings.store.hideConnectX&&$&",
+                match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
+                replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1",
             },
         },
         {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.6
+// @version      1.0.2.7
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.6 — A modification for grok.com
+ * Void v1.0.2.7 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -1624,7 +1624,7 @@ ${sourceUrl}`;
   var ScrollStore = findByPropsLazy("useScrollStore");
   var SessionStore = findByPropsLazy("useSession", "SessionStoreProvider");
   var SettingsDialogStore = findByPropsLazy("useSettingsDialogStore");
-  var SettingsStore = findByPropsLazy("useSettingsStore", "hasModelConfigOverride");
+  var SettingsStore = findByPropsLazy("useSettingsStore", "modelConfigOverrideSchema");
   var ShareStore = findByPropsLazy("useShareStore");
   var ShopStore = findByPropsLazy("useShopStore");
   var SkillsStore = findByPropsLazy("useSkillsStore");
@@ -5675,9 +5675,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"5616fb8"}`
-    }, `(${"5616fb8"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.7"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"4b3f9d4"}`
+    }, `(${"4b3f9d4"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5824,8 +5824,8 @@ ${sourceUrl}`;
       {
         find: "settings-account-card",
         replacement: {
-          match: /\i\.user&&\(0,\i\.jsx\)\("div",.{0,200}?:\i\.userId\}\)/,
-          replace: "!$self._hideUserId()&&$&"
+          match: /\(0,\i\.jsx\)\("div",\{[^}]*\.userId\}\)/,
+          replace: "($self._hideUserId()?null:$&)"
         }
       }
     ]
@@ -6436,11 +6436,11 @@ ${sourceUrl}`;
     filterStore.notify();
     persist();
   }
-  function setSearch(s) {
+  var setSearch = debounce((s) => {
     currentSearch = s;
     filterStore.notify();
     persist();
-  }
+  }, 200);
   function setDate(d) {
     currentDate = d;
     filterStore.notify();
@@ -6467,6 +6467,26 @@ ${sourceUrl}`;
   function isModerated(p) {
     return !!(p.moderated || p.isModerated) && !p.mediaUrl;
   }
+  var haystackCache = new WeakMap;
+  var tsCache = new WeakMap;
+  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+  function getHaystack(p) {
+    let h = haystackCache.get(p);
+    if (h === undefined) {
+      h = `${p.prompt ?? ""}
+${p.originalPrompt ?? ""}`.toLowerCase();
+      haystackCache.set(p, h);
+    }
+    return h;
+  }
+  function getTs(p) {
+    let t = tsCache.get(p);
+    if (t === undefined) {
+      t = new Date(p.createTime).getTime();
+      tsCache.set(p, t);
+    }
+    return t;
+  }
   function matchesFilters(p, target, q, cutoff, hideModerated) {
     if (!p)
       return false;
@@ -6474,14 +6494,20 @@ ${sourceUrl}`;
       return false;
     if (target && p.mediaType !== target)
       return false;
-    if (cutoff && new Date(p.createTime).getTime() < cutoff)
+    if (cutoff && getTs(p) < cutoff)
       return false;
-    if (q && !(p.prompt ?? "").toLowerCase().includes(q) && !(p.originalPrompt ?? "").toLowerCase().includes(q))
+    if (q && !getHaystack(p).includes(q))
       return false;
     return true;
   }
+  var cacheKey = null;
+  var cacheList = null;
+  var cacheResult = [];
   function filterItems(items2) {
     const { hideModerated } = settings6.store;
+    const key = `${items2.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
+    if (cacheList === items2 && cacheKey === key)
+      return cacheResult;
     const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
     let out = items2;
     if (needsFilter) {
@@ -6490,7 +6516,10 @@ ${sourceUrl}`;
       const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
       out = items2.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
     }
-    return currentSort === "newest" ? out : sortItems(out);
+    cacheList = items2;
+    cacheKey = key;
+    cacheResult = currentSort === "newest" ? out : sortItems(out);
+    return cacheResult;
   }
   function mulberry32(seed) {
     let a = seed;
@@ -6508,11 +6537,11 @@ ${sourceUrl}`;
     const arr = [...items2];
     switch (currentSort) {
       case "oldest":
-        return arr.toSorted((a, b) => new Date(a.createTime).getTime() - new Date(b.createTime).getTime());
+        return arr.toSorted((a, b) => getTs(a) - getTs(b));
       case "prompt-az":
-        return arr.toSorted((a, b) => (a.prompt ?? "").localeCompare(b.prompt ?? ""));
+        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
       case "prompt-za":
-        return arr.toSorted((a, b) => (b.prompt ?? "").localeCompare(a.prompt ?? ""));
+        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
       case "random": {
         const rand = mulberry32(randomSeed);
         for (let i = arr.length - 1;i > 0; i--) {
@@ -6660,14 +6689,16 @@ ${sourceUrl}`;
   }
   function FilterButtons() {
     useExternalStore(filterStore);
-    const inputRef = useRef(null);
+    const [searchInput, setSearchInput] = useState(currentSearch);
     const { total, visible } = useFavoritesStats();
     const hidden = total - visible;
-    const showClear = hasActiveFilters() || currentSort !== "newest";
+    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
     const sortActive = currentSort !== "newest";
-    useEffect(() => {
-      inputRef.current?.classList?.add?.(cl14("search-marker"));
-    }, []);
+    const lastSync = useRef(currentSearch);
+    if (lastSync.current !== currentSearch) {
+      lastSync.current = currentSearch;
+      setSearchInput(currentSearch);
+    }
     return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
       value: currentDate,
       onValueChange: (v) => setDate(v)
@@ -6685,13 +6716,14 @@ ${sourceUrl}`;
       key: s,
       value: s
     }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
-      ref: inputRef,
       type: "text",
       placeholder: "Search...",
-      value: currentSearch,
-      onChange: (e) => setSearch(e.target.value),
-      className: cl14("search"),
-      "data-void-search": "true"
+      value: searchInput,
+      onChange: (e) => {
+        setSearchInput(e.target.value);
+        setSearch(e.target.value);
+      },
+      className: cl14("search")
     }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
       key: f,
       variant: currentFilter === f ? "primary" : "tertiary",
@@ -6760,9 +6792,7 @@ ${sourceUrl}`;
     if (t.isContentEditable)
       return true;
     const tag = t.tagName;
-    if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT")
-      return false;
-    return t.dataset.voidSearch !== "true";
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
   }
   function onKeyDown(e) {
     if (!isImaginePage())
@@ -6845,8 +6875,8 @@ ${sourceUrl}`;
             replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
           },
           {
-            match: /,(\i)=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
-            replace: ",$1=$self._useFilteredFavorites()"
+            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
+            replace: "=$self._useFilteredFavorites()"
           }
         ]
       },
@@ -6880,8 +6910,8 @@ ${sourceUrl}`;
         all: true,
         noWarn: true,
         replacement: {
-          match: /(\i)&&!(\i)\?(\i)\.play\(\)\.catch\(\(\)=>\{\}\):\3\.pause\(\)/,
-          replace: "$1&&!$2&&$self._autoPlay()?$3.play().catch(()=>{}):$3.pause()"
+          match: /\?(\i)\.play\(\)\.catch\(\(\)=>\{\}\):\1\.pause\(\)/,
+          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
         }
       },
       {
@@ -7331,18 +7361,11 @@ ${sourceUrl}`;
     },
     patches: [
       {
-        find: "AvatarDropdownMenu,{}),",
-        group: true,
-        replacement: [
-          {
-            match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{\}\)/,
-            replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu})"
-          },
-          {
-            match: /className:"min-w-0 flex-1",children:\(0,\i\.jsx\)\(\i,\{\}\)\},"sidebar-footer-details"/,
-            replace: 'className:"hidden",children:null},"sidebar-footer-details"'
-          }
-        ]
+        find: "AvatarDropdownMenu,{expanded:",
+        replacement: {
+          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
+          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
+        }
       },
       {
         find: "useSidebar must be used within a SidebarProvider",
@@ -7462,8 +7485,8 @@ ${sourceUrl}`;
       {
         find: "connect-x-upsell-dismissed",
         replacement: {
-          match: /(\i)\.ENABLE_X_INTEGRATION&&\i\.SHOW_CONNECT_X_UPSELL/,
-          replace: "!$self.settings.store.hideConnectX&&$&"
+          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
+          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
         }
       },
       {

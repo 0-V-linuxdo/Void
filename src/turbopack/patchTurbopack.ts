@@ -532,7 +532,7 @@ export function reportOrphanedPatches(): void {
     if (IS_DEV) {
         for (const t of patchTimings!) {
             const patchTime = t.findTime + t.replaceTime;
-            if (patchTime <= 10) continue;
+            if (patchTime <= 20) continue;
             logger.warn(`Slow patch: ${t.plugin} on ${t.moduleId} (find: ${t.findTime.toFixed(1)}ms, replace: ${t.replaceTime.toFixed(1)}ms) ${String(t.match)}`);
         }
         patchTimings!.length = 0;
