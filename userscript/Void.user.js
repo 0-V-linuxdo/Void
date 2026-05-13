@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.7
+// @version      1.0.2.8
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.7 — A modification for grok.com
+ * Void v1.0.2.8 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -2380,7 +2380,7 @@ ${sourceUrl}`;
   var ApiClients = findByPropsLazy("chatApi", "modelsApi");
   var Toaster = findByPropsLazy("Toaster", "toast");
   var ClassNames = findByPropsLazy("cn", "middleTruncate");
-  var FileUtils = findByPropsLazy("downloadBlob", "downloadUri");
+  var FileUtils = findByPropsLazy("downloadBlob", "extractFiles");
 
   // src/components/Text.tsx
   var sizeClasses = {
@@ -2804,6 +2804,38 @@ ${sourceUrl}`;
   }
 
   // src/api/ContextMenus.tsx
+  var menuPrimitivesContext = null;
+  function getMenuPrimitivesContext() {
+    return menuPrimitivesContext ??= React.createContext(null);
+  }
+  function useMenuPrimitive(key, fallback) {
+    const ctx = React.useContext(getMenuPrimitivesContext());
+    return ctx?.[key] ?? fallback;
+  }
+  var MenuItem = (props) => {
+    const C = useMenuPrimitive("Item", DropdownMenuItem);
+    return /* @__PURE__ */ React.createElement(C, {
+      ...props
+    });
+  };
+  var MenuSub = (props) => {
+    const C = useMenuPrimitive("Sub", DropdownMenuSub);
+    return /* @__PURE__ */ React.createElement(C, {
+      ...props
+    });
+  };
+  var MenuSubTrigger = (props) => {
+    const C = useMenuPrimitive("SubTrigger", DropdownMenuSubTrigger);
+    return /* @__PURE__ */ React.createElement(C, {
+      ...props
+    });
+  };
+  var MenuSubContent = (props) => {
+    const C = useMenuPrimitive("SubContent", DropdownMenuSubContent);
+    return /* @__PURE__ */ React.createElement(C, {
+      ...props
+    });
+  };
   var items = new Map;
   var store2 = createExternalStore();
   function getItems(location2) {
@@ -2824,20 +2856,27 @@ ${sourceUrl}`;
         ...ctx
       });
     }
-    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+    return /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => def.onSelect?.(ctx)
     }, resolveLazyNode(def.icon), resolveLazyNode(def.label));
   }
-  function VoidContextMenuItems({ location: location2, ...ctx }) {
+  function VoidContextMenuItems({ location: location2, menu, ...ctx }) {
     useExternalStore(store2);
     const map = items.get(location2);
     if (!map?.size)
       return null;
     const sorted = sortedEntries(map);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    const content = /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: id,
       fallback: null
     }, renderEntry2(def, ctx))));
+    if (menu) {
+      const Ctx = getMenuPrimitivesContext();
+      return /* @__PURE__ */ React.createElement(Ctx.Provider, {
+        value: menu
+      }, content);
+    }
+    return content;
   }
 
   // src/utils/idb.ts
@@ -5619,7 +5658,7 @@ ${sourceUrl}`;
 
   // src/plugins/_core/settings/index.tsx
   var logger14 = new Logger("Settings");
-  var GhostIcon = findExportedComponentLazy("GhostIcon");
+  var MoonIcon = findExportedComponentLazy("MoonIcon");
   var cl12 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     hideUserId: {
@@ -5675,9 +5714,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.7"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"4b3f9d4"}`
-    }, `(${"4b3f9d4"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"570621a"}`
+    }, `(${"570621a"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5722,7 +5761,7 @@ ${sourceUrl}`;
     if (!settings3.store.showVoidMenu)
       return null;
     const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).toSorted((a, b) => a.localeCompare(b));
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(GhostIcon, {
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(MoonIcon, {
       className: cl12("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl12("menu-icon")
@@ -5913,9 +5952,10 @@ ${sourceUrl}`;
     authors: [Devs.Prism],
     required: true,
     hidden: true,
-    renderItems(location2, ctx) {
+    renderItems(location2, ctx, menu) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VoidContextMenuItems, {
         location: location2,
+        menu,
         ...ctx
       }));
     },
@@ -5934,8 +5974,12 @@ ${sourceUrl}`;
             replace: "onEditClick:$1,id:arguments[0].id,route:$2})"
           },
           {
+            match: /Item:(\i)\.(Dropdown|Context)MenuItem,/g,
+            replace: "$&VoidMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},"
+          },
+          {
             match: /(\i)&&\(0,\i\.jsxs?\)\(\i,\{onSelect:\(\)=>\1\(\),className:"gap-2",children:\[\(0,\i\.jsx\)\(\i\.TrashIcon,.{0,80}\]\}\)/,
-            replace: '$self.renderItems("conversation",{conversationId:arguments[0].id}),$&'
+            replace: '$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$&'
           }
         ]
       },
@@ -7544,7 +7588,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+    return /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => cloneChat(conversationId).catch((e) => logger19.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
@@ -7574,7 +7618,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,2000}"\)/, replace: "void 0" } },
       { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
       { find: 'displayName="DialogFooter"', all: true, replacement: warnNoop },
-      { find: "pressure_observer", replacement: { match: /"PressureObserver"in window/, replace: "false" } },
+      { find: "pressure_observer", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
       { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
     ]
   });
@@ -7889,18 +7933,18 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }, [conversationId]);
     if (!presets.length)
       return null;
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, {
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
       className: cl17("trigger")
     }, /* @__PURE__ */ React.createElement(BookIcon, {
       size: 16
-    }), " Instructions"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => assign(),
       className: cl17("menu-item")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm"
     }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
       className: "size-3.5 shrink-0"
-    })), presets.map((p) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: p.id,
       onSelect: () => assign(p.id),
       className: cl17("menu-item")
@@ -8174,13 +8218,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function ExportMenu({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, {
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
       disabled: streaming,
       className: "void-export-trigger"
     }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
       className: "void-export-icon"
-    }), "Export"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+    }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
       onSelect: () => exportChat(conversationId, fmt).catch((e) => logger21.error("Failed to export chat", e))
     }, label))));
