@@ -6,6 +6,7 @@
 
 import "./styles.css";
 
+import { definePluginSettings } from "@api/Settings";
 import { Flex } from "@components/Flex";
 import { ClockAlertIcon, GaugeIcon } from "@components/icons";
 import { Text } from "@components/Text";
@@ -18,10 +19,18 @@ import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { createExternalStore, formatCountdown, formatDuration } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
-import definePlugin from "@utils/types";
+import definePlugin, { OptionType } from "@utils/types";
 
 const logger = new Logger("RateLimitDisplay");
 const cl = classNameFactory("void-rld-");
+
+const settings = definePluginSettings({
+    hideTotal: {
+        type: OptionType.BOOLEAN,
+        description: "Show only remaining queries instead of remaining/total.",
+        default: true,
+    },
+});
 
 const MODES = ["auto", "fast", "expert", "heavy", "grok-420-computer-use-sa"] as const;
 type ModeName = typeof MODES[number];
@@ -97,6 +106,7 @@ function renderRemaining(data: RateLimitData | undefined) {
 
 function ButtonLabel({ mode }: { mode: ModeName }) {
     useExternalStore(store);
+    const { hideTotal } = settings.use(["hideTotal"]);
 
     if (mode === "auto") {
         const { expert, fast } = limits;
@@ -113,7 +123,7 @@ function ButtonLabel({ mode }: { mode: ModeName }) {
     const data = limits[mode];
     if (!data) return null;
     if (data.remainingQueries === 0 && data.waitTimeSeconds) return <CountdownTimer seconds={data.waitTimeSeconds} />;
-    return <span className="truncate text-sm font-semibold">{data.remainingQueries}/{data.totalQueries}</span>;
+    return <span className="truncate text-sm font-semibold">{hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`}</span>;
 }
 
 function CountdownTimer({ seconds }: { seconds: number }) {
@@ -137,6 +147,7 @@ function CountdownTimer({ seconds }: { seconds: number }) {
 }
 
 function ModeRow({ mode, data, active }: { mode: ModeName; data?: RateLimitData; active: boolean }) {
+    const { hideTotal } = settings.use(["hideTotal"]);
     const limited = data != null && data.remainingQueries === 0;
 
     return (
@@ -148,7 +159,7 @@ function ModeRow({ mode, data, active }: { mode: ModeName; data?: RateLimitData;
                 {data ? (
                     limited && data.waitTimeSeconds
                         ? <CountdownTimer seconds={data.waitTimeSeconds} />
-                        : <Text size="xs" color="secondary">{data.remainingQueries}/{data.totalQueries}</Text>
+                        : <Text size="xs" color="secondary">{hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`}</Text>
                 ) : (
                     <Text size="xs" color="muted">—</Text>
                 )}
@@ -176,6 +187,7 @@ export default definePlugin({
     description: "Shows rate limit usage for the current model mode in the chat bar.",
     authors: [Devs.Prism],
     tags: ["chat"],
+    settings,
 
     chatBarButton: {
         icon: () => <ButtonIcon />,
