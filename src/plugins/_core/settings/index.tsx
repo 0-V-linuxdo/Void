@@ -32,7 +32,7 @@ import type { ComponentType, ReactNode } from "react";
 
 const logger = new Logger("Settings");
 
-const GhostIcon = findExportedComponentLazy("GhostIcon");
+const MoonIcon = findExportedComponentLazy("MoonIcon");
 
 const cl = classNameFactory("void-settings-");
 
@@ -171,7 +171,7 @@ function VoidMenu() {
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-                <GhostIcon className={cl("menu-icon")} />
+                <MoonIcon className={cl("menu-icon")} />
                 Void
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
