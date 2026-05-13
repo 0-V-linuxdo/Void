@@ -98,10 +98,10 @@ function ButtonIcon() {
     );
 }
 
-function renderRemaining(data: RateLimitData | undefined) {
+function renderRemaining(data: RateLimitData | undefined, hideTotal: boolean) {
     if (!data) return <span className="truncate text-sm font-semibold">—</span>;
     if (data.remainingQueries === 0 && data.waitTimeSeconds) return <CountdownTimer seconds={data.waitTimeSeconds} />;
-    return <span className="truncate text-sm font-semibold">{data.remainingQueries}</span>;
+    return <span className="truncate text-sm font-semibold">{hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`}</span>;
 }
 
 function ButtonLabel({ mode }: { mode: ModeName }) {
@@ -113,9 +113,9 @@ function ButtonLabel({ mode }: { mode: ModeName }) {
         if (!expert && !fast) return null;
         return (
             <span className={cl("auto-label")}>
-                {renderRemaining(expert)}
+                {renderRemaining(expert, hideTotal)}
                 <span className="truncate text-sm font-semibold">·</span>
-                {renderRemaining(fast)}
+                {renderRemaining(fast, hideTotal)}
             </span>
         );
     }
