@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { DropdownMenuItem } from "@components";
+import {
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+} from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
 import { createExternalStore, mapGetOrCreate, sortedEntries } from "@utils/misc";
@@ -26,6 +32,45 @@ export interface ContextMenuItemDef<L extends ContextMenuLocation = ContextMenuL
     render?: ComponentType<ContextMenuLocationMap[L]>;
     onSelect?: (ctx: ContextMenuLocationMap[L]) => void;
 }
+
+export interface MenuPrimitives {
+    Item: ComponentType<any>;
+    Sub: ComponentType<any>;
+    SubTrigger: ComponentType<any>;
+    SubContent: ComponentType<any>;
+    Separator: ComponentType<any>;
+}
+
+let menuPrimitivesContext: React.Context<MenuPrimitives | null> | null = null;
+function getMenuPrimitivesContext(): React.Context<MenuPrimitives | null> {
+    return menuPrimitivesContext ??= React.createContext<MenuPrimitives | null>(null);
+}
+
+function useMenuPrimitive<K extends keyof MenuPrimitives>(key: K, fallback: MenuPrimitives[K]): MenuPrimitives[K] {
+    const ctx = React.useContext(getMenuPrimitivesContext());
+    return ctx?.[key] ?? fallback;
+}
+
+export const MenuItem: ComponentType<any> = props => {
+    const C = useMenuPrimitive("Item", DropdownMenuItem);
+    return <C {...props} />;
+};
+export const MenuSub: ComponentType<any> = props => {
+    const C = useMenuPrimitive("Sub", DropdownMenuSub);
+    return <C {...props} />;
+};
+export const MenuSubTrigger: ComponentType<any> = props => {
+    const C = useMenuPrimitive("SubTrigger", DropdownMenuSubTrigger);
+    return <C {...props} />;
+};
+export const MenuSubContent: ComponentType<any> = props => {
+    const C = useMenuPrimitive("SubContent", DropdownMenuSubContent);
+    return <C {...props} />;
+};
+export const MenuSeparator: ComponentType<any> = props => {
+    const C = useMenuPrimitive("Separator", DropdownMenuSeparator);
+    return <C {...props} />;
+};
 
 const items = new Map<ContextMenuLocation, Map<string, ContextMenuItemDef<any>>>();
 const store = createExternalStore();
@@ -50,14 +95,14 @@ function renderEntry(def: ContextMenuItemDef<any>, ctx: ContextMenuLocationMap[C
         return <Render {...ctx} />;
     }
     return (
-        <DropdownMenuItem onSelect={() => def.onSelect?.(ctx)}>
+        <MenuItem onSelect={() => def.onSelect?.(ctx)}>
             {resolveLazyNode(def.icon)}
             {resolveLazyNode(def.label)}
-        </DropdownMenuItem>
+        </MenuItem>
     );
 }
 
-export function VoidContextMenuItems<L extends ContextMenuLocation>({ location, ...ctx }: { location: L } & ContextMenuLocationMap[L]): ReactNode {
+export function VoidContextMenuItems<L extends ContextMenuLocation>({ location, menu, ...ctx }: { location: L; menu?: MenuPrimitives } & ContextMenuLocationMap[L]): ReactNode {
     useExternalStore(store);
 
     const map = items.get(location);
@@ -65,7 +110,7 @@ export function VoidContextMenuItems<L extends ContextMenuLocation>({ location, 
 
     const sorted = sortedEntries(map);
 
-    return (
+    const content = (
         <>
             {sorted.map(([id, def]) => (
                 <ErrorBoundary key={id} fallback={null}>
@@ -74,4 +119,10 @@ export function VoidContextMenuItems<L extends ContextMenuLocation>({ location, 
             ))}
         </>
     );
+
+    if (menu) {
+        const Ctx = getMenuPrimitivesContext();
+        return <Ctx.Provider value={menu}>{content}</Ctx.Provider>;
+    }
+    return content;
 }

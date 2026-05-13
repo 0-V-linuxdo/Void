@@ -6,15 +6,11 @@
 
 import "./styles.css";
 
-import type { ContextMenuLocationMap } from "@api/ContextMenus";
+import { type ContextMenuLocationMap, MenuItem, MenuSub, MenuSubContent, MenuSubTrigger } from "@api/ContextMenus";
 import { definePluginSettings } from "@api/Settings";
 import {
     Button,
     ButtonWithTooltip,
-    DropdownMenuItem,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
     Text,
     Textarea,
 } from "@components";
@@ -183,23 +179,23 @@ function InstructionsMenu({ conversationId }: ContextMenuLocationMap["conversati
     if (!presets.length) return null;
 
     return (
-        <DropdownMenuSub>
-            <DropdownMenuSubTrigger className={cl("trigger")}>
+        <MenuSub>
+            <MenuSubTrigger className={cl("trigger")}>
                 <BookIcon size={16} /> Instructions
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-                <DropdownMenuItem onSelect={() => assign()} className={cl("menu-item")}>
+            </MenuSubTrigger>
+            <MenuSubContent>
+                <MenuItem onSelect={() => assign()} className={cl("menu-item")}>
                     <Text size="sm">None</Text>
                     {!activePresetId && <CheckIcon className="size-3.5 shrink-0" />}
-                </DropdownMenuItem>
+                </MenuItem>
                 {presets.map(p => (
-                    <DropdownMenuItem key={p.id} onSelect={() => assign(p.id)} className={cl("menu-item")}>
+                    <MenuItem key={p.id} onSelect={() => assign(p.id)} className={cl("menu-item")}>
                         <Text size="sm">{p.name || "Untitled"}</Text>
                         {activePresetId === p.id && <CheckIcon className="size-3.5 shrink-0" />}
-                    </DropdownMenuItem>
+                    </MenuItem>
                 ))}
-            </DropdownMenuSubContent>
-        </DropdownMenuSub>
+            </MenuSubContent>
+        </MenuSub>
     );
 }
 
