@@ -15,7 +15,7 @@ export default definePlugin({
     authors: [Devs.Prism],
 
     patches: [
-        { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,2000}"\)/, replace: "void 0" } },
+        { find: "x.ai/careers", replacement: { match: /console\.info\(`[^`]{0,2000}`\)/, replace: "void 0" } },
         { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
         { find: 'displayName="DialogFooter"', all: true, replacement: warnNoop },
         { find: "pressure_observer", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
