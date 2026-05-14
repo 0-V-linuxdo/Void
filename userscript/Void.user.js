@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.8
+// @version      1.0.2.9
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.8 — A modification for grok.com
+ * Void v1.0.2.9 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -3625,8 +3625,8 @@ ${sourceUrl}`;
       {
         find: '"opentelemetry.js.api."',
         replacement: {
-          match: /(\i\.s\(\["onRouterTransitionStart",\(\)=>)\i\],(\d+)\);var/,
-          replace: "$1function(){}],$2);return;var"
+          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
+          replace: "$1function(){}"
         }
       },
       {
@@ -3638,12 +3638,12 @@ ${sourceUrl}`;
             replace: "$1return}function _ignore(){"
           },
           {
-            match: /function (\i)\(\)\{\i&&\(clearTimeout\(\i\),\i=null\),\i\.default\.set_config\(.{0,120}\),\i\.default\.start_session_recording\(\)\}/,
-            replace: "function $1(){}"
+            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
+            replace: '"startRecordingImagineSession",0,function(){}'
           },
           {
-            match: /function (\i)\(\)\{\i&&\(clearTimeout\(\i\),\i=null\),\i=setTimeout\(\(\)=>\{\i\.default\.stop_session_recording\(\)\},\d+e?\d*\)\}/,
-            replace: "function $1(){}"
+            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
+            replace: '"stopRecordingImagineSession",0,function(){}'
           }
         ]
       },
@@ -3653,18 +3653,21 @@ ${sourceUrl}`;
         group: true,
         replacement: [
           {
-            match: /"sendBatchLogEvent",\i=>\{\i\(this\.address\+.{0,40},\i\)\}/,
-            replace: '"sendBatchLogEvent",()=>{}'
+            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogEvent=()=>{}"
           },
           {
-            match: /"sendBatchLogExperimentExposure",\i=>\{\i\(this\.address\+.{0,50},\i\)\}/,
-            replace: '"sendBatchLogExperimentExposure",()=>{}'
-          },
-          {
-            match: /"\/api\/log_metric",\i\)/,
-            replace: '"/api/log_metric",[])'
+            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogExperimentExposure=()=>{}"
           }
         ]
+      },
+      {
+        find: '"/api/log_metric"',
+        replacement: {
+          match: /"\/api\/log_metric",\i\)/,
+          replace: '"/api/log_metric",[])'
+        }
       },
       {
         find: "isEnvVarsSet(){return void 0!=",
@@ -5714,9 +5717,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"570621a"}`
-    }, `(${"570621a"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"3160820"}`
+    }, `(${"3160820"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5840,7 +5843,7 @@ ${sourceUrl}`;
         }
       },
       {
-        find: 'DialogOverlay",()=>',
+        find: '"DialogOverlay"',
         all: true,
         replacement: {
           match: /dark:border-border-l1 duration-200/,
@@ -5937,8 +5940,8 @@ ${sourceUrl}`;
             replace: "$&$self.renderButtons(),"
           },
           {
-            match: /paddingInlineEnd:\i\?void 0:(\i)\?/,
-            replace: "paddingInlineEnd:$1?"
+            match: /paddingInlineEnd:\i\?void 0:(\i)/,
+            replace: "paddingInlineEnd:$1"
           }
         ]
       }
@@ -5966,11 +5969,11 @@ ${sourceUrl}`;
         group: true,
         replacement: [
           {
-            match: /onSaveEdit:(\i),route:(\i)\}\)/,
+            match: /onSaveEdit:(\i),route:(\i)\}\)(?!\{)/,
             replace: "onSaveEdit:$1,id:arguments[0].id,route:$2})"
           },
           {
-            match: /onEditClick:(\i),route:(\i)\}\)/g,
+            match: /onEditClick:(\i),route:(\i)\}\)(?!\{)/g,
             replace: "onEditClick:$1,id:arguments[0].id,route:$2})"
           },
           {
@@ -6937,8 +6940,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
             replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
           },
           {
-            match: /if\(((?:\i)&&(?:\i))\)return void (\i)\(e\);(let \i=\{imagine:"home-grid")/,
-            replace: "if($1||e.ctrlKey||e.metaKey)return void $2(e);$3"
+            match: /if\(((?:\i)&&(?:\i))\)return void (\i)\((\i)\);(?=(?:let|var|const) \i=\{imagine:"home-grid")/,
+            replace: "if($1||$3.ctrlKey||$3.metaKey)return void $2($3);"
           }
         ]
       },
@@ -6975,8 +6978,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
             replace: '(0,$1.jsxs)($2.DropdownMenuContent,{align:"end",sideOffset:8,children:[$self._renderUpscaleItem(),$self._renderCopyActions(),'
           },
           {
-            match: /"imagine-"\.concat\((\i)\.slice\(0,8\),"\."\)\.concat\((\i)\?"mp4":"png"\)/,
-            replace: '($self._buildFilename(e.byId[$1],$2)||"imagine-".concat($1.slice(0,8),".").concat($2?"mp4":"png"))'
+            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
+            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
           }
         ]
       }
@@ -7504,26 +7507,26 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         }
       },
       {
-        find: '"UpsellCard",()=>',
+        find: '"UpsellCard",0,',
         all: true,
         replacement: {
-          match: /"UpsellCard",\(\)=>(\i)/,
-          replace: '"UpsellCard",()=>$self.settings.store.hideUpsellCard?()=>null:$1'
+          match: /"UpsellCard",0,/,
+          replace: '"UpsellCard",0,$self.settings.store.hideUpsellCard?()=>null:'
         }
       },
       {
-        find: '"UpsellSuperGrokSmall",()=>',
+        find: '"UpsellSuperGrokSmall",0,',
         all: true,
         replacement: {
-          match: /"UpsellSuperGrokSmall",\(\)=>(\i)/,
-          replace: '"UpsellSuperGrokSmall",()=>$self.settings.store.hideUpsellSmall?()=>null:$1'
+          match: /"UpsellSuperGrokSmall",0,/,
+          replace: '"UpsellSuperGrokSmall",0,$self.settings.store.hideUpsellSmall?()=>null:'
         }
       },
       {
-        find: '"UpsellButton",()=>',
+        find: '"UpsellButton",0,',
         replacement: {
-          match: /"UpsellButton",\(\)=>(\i)/,
-          replace: '"UpsellButton",()=>$self.settings.store.hideUpsellSmall?()=>null:$1'
+          match: /"UpsellButton",0,/,
+          replace: '"UpsellButton",0,$self.settings.store.hideUpsellSmall?()=>null:'
         }
       },
       {
@@ -7534,11 +7537,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         }
       },
       {
-        find: '"BrowserNotificationBanner",()=>',
+        find: '"BrowserNotificationBanner",0,',
         all: true,
         replacement: {
-          match: /"BrowserNotificationBanner",\(\)=>(\i)/,
-          replace: '"BrowserNotificationBanner",()=>$self.settings.store.hideNotificationBanner?()=>null:$1'
+          match: /"BrowserNotificationBanner",0,/,
+          replace: '"BrowserNotificationBanner",0,$self.settings.store.hideNotificationBanner?()=>null:'
         }
       },
       {
@@ -7615,7 +7618,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Silences noisy warnings and info logs in the browser console.",
     authors: [Devs.Prism],
     patches: [
-      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,2000}"\)/, replace: "void 0" } },
+      { find: "x.ai/careers", replacement: { match: /console\.info\(`[^`]{0,2000}`\)/, replace: "void 0" } },
       { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
       { find: 'displayName="DialogFooter"', all: true, replacement: warnNoop },
       { find: "pressure_observer", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
@@ -8517,6 +8520,13 @@ button:has(> .void-rld-trigger) {
   // src/plugins/rateLimitDisplay/index.tsx
   var logger23 = new Logger("RateLimitDisplay");
   var cl19 = classNameFactory("void-rld-");
+  var settings13 = definePluginSettings({
+    hideTotal: {
+      type: 3 /* BOOLEAN */,
+      description: "Show only remaining queries instead of remaining/total.",
+      default: true
+    }
+  });
   var MODES = ["auto", "fast", "expert", "heavy", "grok-420-computer-use-sa"];
   var MODE_LABELS = {
     auto: "auto",
@@ -8571,7 +8581,7 @@ button:has(> .void-rld-trigger) {
       mode
     }));
   }
-  function renderRemaining(data) {
+  function renderRemaining(data, hideTotal) {
     if (!data)
       return /* @__PURE__ */ React.createElement("span", {
         className: "truncate text-sm font-semibold"
@@ -8582,19 +8592,20 @@ button:has(> .void-rld-trigger) {
       });
     return /* @__PURE__ */ React.createElement("span", {
       className: "truncate text-sm font-semibold"
-    }, data.remainingQueries);
+    }, hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`);
   }
   function ButtonLabel({ mode }) {
     useExternalStore(store5);
+    const { hideTotal } = settings13.use(["hideTotal"]);
     if (mode === "auto") {
       const { expert, fast } = limits;
       if (!expert && !fast)
         return null;
       return /* @__PURE__ */ React.createElement("span", {
         className: cl19("auto-label")
-      }, renderRemaining(expert), /* @__PURE__ */ React.createElement("span", {
+      }, renderRemaining(expert, hideTotal), /* @__PURE__ */ React.createElement("span", {
         className: "truncate text-sm font-semibold"
-      }, "·"), renderRemaining(fast));
+      }, "·"), renderRemaining(fast, hideTotal));
     }
     const data = limits[mode];
     if (!data)
@@ -8605,7 +8616,7 @@ button:has(> .void-rld-trigger) {
       });
     return /* @__PURE__ */ React.createElement("span", {
       className: "truncate text-sm font-semibold"
-    }, data.remainingQueries, "/", data.totalQueries);
+    }, hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`);
   }
   function CountdownTimer({ seconds }) {
     const [left, setLeft] = useState(seconds);
@@ -8627,6 +8638,7 @@ button:has(> .void-rld-trigger) {
     }, formatCountdown(left));
   }
   function ModeRow({ mode, data, active }) {
+    const { hideTotal } = settings13.use(["hideTotal"]);
     const limited = data != null && data.remainingQueries === 0;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
@@ -8645,7 +8657,7 @@ button:has(> .void-rld-trigger) {
     }) : /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       color: "secondary"
-    }, data.remainingQueries, "/", data.totalQueries) : /* @__PURE__ */ React.createElement(Text, {
+    }, hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`) : /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       color: "muted"
     }, "—")), data && /* @__PURE__ */ React.createElement(Text, {
@@ -8672,6 +8684,7 @@ button:has(> .void-rld-trigger) {
     description: "Shows rate limit usage for the current model mode in the chat bar.",
     authors: [Devs.Prism],
     tags: ["chat"],
+    settings: settings13,
     chatBarButton: {
       icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
       tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
@@ -8698,7 +8711,7 @@ button:has(> .void-rld-trigger) {
   });
 
   // src/plugins/responseNotification/index.ts
-  var settings13 = definePluginSettings({
+  var settings14 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -8747,7 +8760,7 @@ button:has(> .void-rld-trigger) {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings13.store.soundUrl?.trim();
+    const url = settings14.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -8760,11 +8773,11 @@ button:has(> .void-rld-trigger) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings13.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings14.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings13.store.sound)
+    if (settings14.store.sound)
       playSound();
-    if (settings13.store.browserNotification)
+    if (settings14.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -8772,7 +8785,7 @@ button:has(> .void-rld-trigger) {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings13,
+    settings: settings14,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -8926,7 +8939,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings14 = definePluginSettings({
+  var settings15 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -8971,14 +8984,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings14.store[key]);
+      classList.toggle(cls, !!settings15.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings14,
+    settings: settings15,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -8991,7 +9004,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME2 = "widerChat";
-  var settings15 = definePluginSettings({
+  var settings16 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem (default: 48).",
@@ -8999,14 +9012,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
   function applyWidth() {
-    const w = settings15.store.width ?? 64;
+    const w = settings16.store.width ?? 64;
     registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings16,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
