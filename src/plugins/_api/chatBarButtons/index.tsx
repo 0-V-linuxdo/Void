@@ -39,8 +39,8 @@ export default definePlugin({
                     replace: "$&$self.renderButtons(),",
                 },
                 {
-                    match: /paddingInlineEnd:\i\?void 0:(\i)\?/,
-                    replace: "paddingInlineEnd:$1?",
+                    match: /paddingInlineEnd:\i\?void 0:(\i)/,
+                    replace: "paddingInlineEnd:$1",
                 },
             ],
         },
