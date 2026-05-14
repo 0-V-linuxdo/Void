@@ -86,6 +86,7 @@ function moduleMatchesFinder(finder: FinderSpec, mod: ModuleEntry): boolean {
                 const n = a.value;
                 return mod.factory.includes(`"${n}",()=>`)
                     || mod.factory.includes(`"${n}",function`)
+                    || mod.factory.includes(`"${n}",0,`)
                     || mod.factory.includes(`.${n}=`)
                     || mod.factory.includes(`${n}:function`);
             });

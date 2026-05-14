@@ -17,8 +17,8 @@ export default definePlugin({
         {
             find: '"opentelemetry.js.api."',
             replacement: {
-                match: /(\i\.s\(\["onRouterTransitionStart",\(\)=>)\i\],(\d+)\);var/,
-                replace: "$1function(){}],$2);return;var",
+                match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
+                replace: "$1function(){}",
             },
         },
         {
@@ -30,12 +30,12 @@ export default definePlugin({
                     replace: "$1return}function _ignore(){",
                 },
                 {
-                    match: /function (\i)\(\)\{\i&&\(clearTimeout\(\i\),\i=null\),\i\.default\.set_config\(.{0,120}\),\i\.default\.start_session_recording\(\)\}/,
-                    replace: "function $1(){}",
+                    match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
+                    replace: '"startRecordingImagineSession",0,function(){}',
                 },
                 {
-                    match: /function (\i)\(\)\{\i&&\(clearTimeout\(\i\),\i=null\),\i=setTimeout\(\(\)=>\{\i\.default\.stop_session_recording\(\)\},\d+e?\d*\)\}/,
-                    replace: "function $1(){}",
+                    match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
+                    replace: '"stopRecordingImagineSession",0,function(){}',
                 },
             ],
         },
@@ -45,18 +45,21 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /"sendBatchLogEvent",\i=>\{\i\(this\.address\+.{0,40},\i\)\}/,
-                    replace: '"sendBatchLogEvent",()=>{}',
+                    match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
+                    replace: "sendBatchLogEvent=()=>{}",
                 },
                 {
-                    match: /"sendBatchLogExperimentExposure",\i=>\{\i\(this\.address\+.{0,50},\i\)\}/,
-                    replace: '"sendBatchLogExperimentExposure",()=>{}',
-                },
-                {
-                    match: /"\/api\/log_metric",\i\)/,
-                    replace: '"/api/log_metric",[])',
+                    match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
+                    replace: "sendBatchLogExperimentExposure=()=>{}",
                 },
             ],
+        },
+        {
+            find: '"/api/log_metric"',
+            replacement: {
+                match: /"\/api\/log_metric",\i\)/,
+                replace: '"/api/log_metric",[])',
+            },
         },
         {
             find: "isEnvVarsSet(){return void 0!=",

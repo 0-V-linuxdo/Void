@@ -62,27 +62,27 @@ export default definePlugin({
             },
         },
         {
-            find: '"UpsellCard",()=>',
+            find: '"UpsellCard",0,',
             all: true,
             replacement: {
-                match: /"UpsellCard",\(\)=>(\i)/,
-                replace: '"UpsellCard",()=>$self.settings.store.hideUpsellCard?()=>null:$1',
+                match: /"UpsellCard",0,/,
+                replace: '"UpsellCard",0,$self.settings.store.hideUpsellCard?()=>null:',
             },
         },
         {
-            find: '"UpsellSuperGrokSmall",()=>',
+            find: '"UpsellSuperGrokSmall",0,',
             all: true,
             replacement: {
-                match: /"UpsellSuperGrokSmall",\(\)=>(\i)/,
-                replace: '"UpsellSuperGrokSmall",()=>$self.settings.store.hideUpsellSmall?()=>null:$1',
+                match: /"UpsellSuperGrokSmall",0,/,
+                replace: '"UpsellSuperGrokSmall",0,$self.settings.store.hideUpsellSmall?()=>null:',
             },
         },
         // replaces upgrade/try free button (imagine page, sidebar, new chat)
         {
-            find: '"UpsellButton",()=>',
+            find: '"UpsellButton",0,',
             replacement: {
-                match: /"UpsellButton",\(\)=>(\i)/,
-                replace: '"UpsellButton",()=>$self.settings.store.hideUpsellSmall?()=>null:$1',
+                match: /"UpsellButton",0,/,
+                replace: '"UpsellButton",0,$self.settings.store.hideUpsellSmall?()=>null:',
             },
         },
         {
@@ -93,11 +93,11 @@ export default definePlugin({
             },
         },
         {
-            find: '"BrowserNotificationBanner",()=>',
+            find: '"BrowserNotificationBanner",0,',
             all: true,
             replacement: {
-                match: /"BrowserNotificationBanner",\(\)=>(\i)/,
-                replace: '"BrowserNotificationBanner",()=>$self.settings.store.hideNotificationBanner?()=>null:$1',
+                match: /"BrowserNotificationBanner",0,/,
+                replace: '"BrowserNotificationBanner",0,$self.settings.store.hideNotificationBanner?()=>null:',
             },
         },
         // hides upsell card and locked modes in the mode selector
