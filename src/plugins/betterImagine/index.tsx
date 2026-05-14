@@ -669,7 +669,7 @@ export default definePlugin({
                 },
                 {
                     match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
-                    // eslint-disable-next-line no-template-curly-in-string
+                    // oxlint-disable-next-line no-template-curly-in-string
                     replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)',
                 },
             ],
