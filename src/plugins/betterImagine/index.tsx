@@ -630,8 +630,8 @@ export default definePlugin({
                     replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:",
                 },
                 {
-                    match: /if\(((?:\i)&&(?:\i))\)return void (\i)\(e\);(let \i=\{imagine:"home-grid")/,
-                    replace: "if($1||e.ctrlKey||e.metaKey)return void $2(e);$3",
+                    match: /if\(((?:\i)&&(?:\i))\)return void (\i)\((\i)\);(?=(?:let|var|const) \i=\{imagine:"home-grid")/,
+                    replace: "if($1||$3.ctrlKey||$3.metaKey)return void $2($3);",
                 },
             ],
         },
@@ -668,8 +668,9 @@ export default definePlugin({
                     replace: '(0,$1.jsxs)($2.DropdownMenuContent,{align:"end",sideOffset:8,children:[$self._renderUpscaleItem(),$self._renderCopyActions(),',
                 },
                 {
-                    match: /"imagine-"\.concat\((\i)\.slice\(0,8\),"\."\)\.concat\((\i)\?"mp4":"png"\)/,
-                    replace: '($self._buildFilename(e.byId[$1],$2)||"imagine-".concat($1.slice(0,8),".").concat($2?"mp4":"png"))',
+                    match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
+                    // eslint-disable-next-line no-template-curly-in-string
+                    replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)',
                 },
             ],
         },
