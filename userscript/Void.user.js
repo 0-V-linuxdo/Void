@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.9
+// @version      1.0.2.10
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.9 — A modification for grok.com
+ * Void v1.0.2.10 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -2302,11 +2302,6 @@ ${sourceUrl}`;
     d: "M12 9v4"
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 17h.01"
-  }));
-  var SquareMousePointerIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"
   }));
   var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
@@ -5717,9 +5712,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"3160820"}`
-    }, `(${"3160820"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.2.10"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"f3068b2"}`
+    }, `(${"f3068b2"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5843,7 +5838,7 @@ ${sourceUrl}`;
         }
       },
       {
-        find: '"DialogOverlay"',
+        find: '"DialogContent",0,',
         all: true,
         replacement: {
           match: /dark:border-border-l1 duration-200/,
@@ -6406,6 +6401,11 @@ ${sourceUrl}`;
       type: 3 /* BOOLEAN */,
       description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
       default: false
+    },
+    ctrlClickSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
+      default: true
     }
   });
   function buildFilename(post, isVideo) {
@@ -6632,12 +6632,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     useExternalStore(filterStore);
     return filterItems(list);
   }
-  function useFavoritesStats() {
-    const list = MediaStore.useMediaStore((s) => s.favoritesList);
-    useExternalStore(filterStore);
-    const filtered = list?.length ? filterItems(list) : [];
-    return { total: list?.length ?? 0, visible: filtered.length, filtered };
-  }
   function mediaState() {
     return MediaStore.useMediaStore.getState();
   }
@@ -6737,8 +6731,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   function FilterButtons() {
     useExternalStore(filterStore);
     const [searchInput, setSearchInput] = useState(currentSearch);
-    const { total, visible } = useFavoritesStats();
-    const hidden = total - visible;
     const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
     const sortActive = currentSort !== "newest";
     const lastSync = useRef(currentSearch);
@@ -6778,27 +6770,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       shape: "pill",
       className: currentFilter !== f ? cl14("chip") : undefined,
       onClick: () => setFilter(currentFilter === f ? "all" : f)
-    }, f === "image" ? "Images" : "Videos")), hasActiveFilters() && visible > 0 && /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: cl14("chip"),
-      onClick: selectVisible
-    }, /* @__PURE__ */ React.createElement(SquareMousePointerIcon, {
-      className: "size-4"
-    }), " Select visible"), showClear && /* @__PURE__ */ React.createElement(Button, {
+    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "pill",
       className: cl14("chip"),
       onClick: resetFilters
-    }, "Clear"), total > 0 && hasActiveFilters() && /* @__PURE__ */ React.createElement("span", {
-      className: cl14("hidden-count"),
-      title: `${visible} of ${total} items match`
-    }, visible, " / ", total), !hasActiveFilters() && hidden > 0 && /* @__PURE__ */ React.createElement("span", {
-      className: cl14("hidden-count"),
-      title: `${hidden} moderated item${hidden === 1 ? "" : "s"} hidden`
-    }, pluralize(hidden, "hidden")));
+    }, "Clear"));
   }
   function UpscaleItem() {
     const [open2, setOpen] = useState(false);
@@ -6894,6 +6872,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     _NullGrid: () => null,
     _autoPlay: () => !settings6.store.noAutoplay,
     _bypassPaywall: () => settings6.store.bypassPaywall,
+    _ctrlClickSelect: () => settings6.store.ctrlClickSelect,
     _hoverProps: () => settings6.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
     _useFilteredFavorites: useFilteredFavorites,
     _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
@@ -6941,15 +6920,15 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           },
           {
             match: /if\(((?:\i)&&(?:\i))\)return void (\i)\((\i)\);(?=(?:let|var|const) \i=\{imagine:"home-grid")/,
-            replace: "if($1||$3.ctrlKey||$3.metaKey)return void $2($3);"
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
           }
         ]
       },
       {
         find: 'imagine-folder.all","All"',
         replacement: {
-          match: /"imagine-folder.all","All"\)}\)]\}\)/,
-          replace: "$&,$self._renderFilterButtons({})"
+          match: /("imagine-folder\.all","All".{0,300}?,children:\[\i,\i,\i)\]/,
+          replace: "$1,$self._renderFilterButtons({})]"
         }
       },
       {
@@ -6957,7 +6936,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         all: true,
         noWarn: true,
         replacement: {
-          match: /\?(\i)\.play\(\)\.catch\(\(\)=>\{\}\):\1\.pause\(\)/,
+          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
           replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
         }
       },
@@ -7093,8 +7072,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       {
         find: "chat-markdown-load-third-party",
         replacement: {
-          match: /singleDollarTextMath:!1\}\],(.{0,60}?)\],\[\]\)/,
-          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify],[])"
+          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
+          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
         }
       }
     ],
@@ -7314,8 +7293,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function SelectCheckbox({ id }) {
     const enabled = settings8.use(["batchSelect"]).batchSelect;
-    const checked = useSelectionHas(selection2, id);
-    if (!enabled)
+    const checked = useSelectionHas(selection2, id ?? "");
+    if (!enabled || !id)
       return null;
     return /* @__PURE__ */ React.createElement("div", {
       onClick: (e) => {
@@ -7371,13 +7350,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
     _wrapSidebarClick(onClick, id) {
       return (e) => {
-        if (settings8.store.batchSelect && (e.ctrlKey || e.metaKey)) {
+        if (id && settings8.store.batchSelect && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
           return;
         }
-        onClick();
+        onClick?.(e);
       };
     },
     _defaultOpen() {
@@ -7420,8 +7399,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         group: true,
         replacement: [
           {
-            match: /defaultOpen:\i=!0/,
-            replace: "defaultOpen:_=$self._defaultOpen()"
+            match: /\{defaultOpen:(\i),open:/,
+            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
           },
           {
             match: /data-sidebar":"sidebar",className:/,
@@ -7435,8 +7414,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         group: true,
         replacement: [
           {
-            match: /,\(0,(\i)\.jsx\)\((\i),\{title:(\i),editing:/,
-            replace: ",(0,$1.jsx)($self._renderCheckbox,{id:arguments[0].id}),(0,$1.jsx)($2,{title:$3,editing:"
+            match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,inputProps:\i,inputRef:\i,validationErrorMessage:\i\}\))/,
+            replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id}),$1]})"
           },
           {
             match: /\((\i),\{route:(\i),onClick:(\i),onDragStart:(\i),className:/,
@@ -7489,6 +7468,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     hideConnectX: {
       type: 3 /* BOOLEAN */,
       description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
+      default: true
+    },
+    hideConnectorsBanner: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Connectors are now available" banner above the chat bar.',
       default: true
     }
   });
@@ -7545,6 +7529,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         }
       },
       {
+        find: "connectors_upsell_dismissed",
+        replacement: {
+          match: /if\((!\i\.length\|\|\i)\)return null;(?=.{0,200}"connectors-upsell\.a11y-label")/,
+          replace: "if($1||$self.settings.store.hideConnectorsBanner)return null;"
+        }
+      },
+      {
         find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
         all: true,
         group: true,
@@ -7554,7 +7545,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
             replace: "$&$self.settings.store.hideModelUpsell||"
           },
           {
-            match: /(\i)(\.map\(\i=>\(0,\i\.jsx\).{0,60}"text-secondary opacity-75)/,
+            match: /(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}\),onSelect:\(\)=>\i\(\i\),children:\(0,\i\.jsx\)\("div",\{className:[^}]{0,200}\),children:\(0,\i\.jsx\)\(\i,\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
             replace: "($self.settings.store.hideInaccessibleModels?[]:$1)$2"
           }
         ]
@@ -7618,7 +7609,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Silences noisy warnings and info logs in the browser console.",
     authors: [Devs.Prism],
     patches: [
-      { find: "x.ai/careers", replacement: { match: /console\.info\(`[^`]{0,2000}`\)/, replace: "void 0" } },
+      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
       { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
       { find: 'displayName="DialogFooter"', all: true, replacement: warnNoop },
       { find: "pressure_observer", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
@@ -8041,11 +8032,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Add a download button to the TTS playback controls.",
     authors: [Devs.Prism],
     patches: [{
-      find: 'tts-controls.play.label","Play"),onClick',
+      find: 'tts-controls.stop.label","Stop"',
       all: true,
       replacement: {
-        match: /\(0,\i\.jsx\)\(\i\.Button,\{"aria-label":\i\("tts-controls\.stop\.label"/,
-        replace: "$self._renderDownloadButton(),$&"
+        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[\i,\i,\i,\i)\]/,
+        replace: "$1,$self._renderDownloadButton()]"
       }
     }],
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
