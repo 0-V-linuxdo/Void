@@ -1,0 +1,62 @@
+name: Autofix
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch or ref to autofix
+        required: true
+        default: dev
+
+concurrency:
+  group: autofix-${{ github.event.pull_request.number || github.event.inputs.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  autofix:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'autofix'
+    name: Run autofix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.event.inputs.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run lint:oxlint:fix
+        continue-on-error: true
+
+      - run: bun run lint:eslint:fix
+        continue-on-error: true
+
+      - run: bun run lint:styles:fix
+        continue-on-error: true
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: autofix lint"
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Remove autofix label
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              name: "autofix",
+            }).catch(() => {});
