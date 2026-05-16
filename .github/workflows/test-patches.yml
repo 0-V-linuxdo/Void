@@ -1,0 +1,26 @@
+name: Test Patches
+
+on:
+  push:
+    branches: [main, dev]
+    paths: [src/plugins/**, scripts/test-patches.mjs]
+  pull_request:
+    branches: [main, dev]
+    paths: [src/plugins/**, scripts/test-patches.mjs]
+
+concurrency:
+  group: test-patches-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-patches:
+    name: Validate plugin patches
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run test:patches

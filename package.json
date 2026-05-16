@@ -27,6 +27,7 @@
         "lint:styles:fix": "stylelint \"src/**/*.css\" --fix",
         "tsc": "tsc --noEmit",
         "mcp": "bun run src/plugins/mcp.dev/server.ts",
+        "test:patches": "bun run scripts/test-patches.mjs",
         "reporter": "bun run reporter.ts"
     },
     "devDependencies": {
