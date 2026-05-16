@@ -258,7 +258,7 @@ export default definePlugin({
             },
         },
         {
-            find: '"DialogOverlay"',
+            find: '"DialogContent",0,',
             all: true,
             replacement: {
                 match: /dark:border-border-l1 duration-200/,
