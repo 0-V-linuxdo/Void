@@ -9,7 +9,7 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import { Button, ConfirmDialog, DropdownMenuItem, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { CopyIcon, ScalingIcon, SquareMousePointerIcon } from "@components/icons";
+import { CopyIcon, ScalingIcon } from "@components/icons";
 import type { MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
 import { Fragment, React, useRef, useState } from "@turbopack/common/react";
@@ -66,6 +66,11 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
         default: false,
+    },
+    ctrlClickSelect: {
+        type: OptionType.BOOLEAN,
+        description: "Ctrl/Cmd-click an image to add it to the multi-select.",
+        default: true,
     },
 });
 
@@ -305,13 +310,6 @@ function useFilteredFavorites(): MediaItem[] {
     return filterItems(list);
 }
 
-function useFavoritesStats() {
-    const list = MediaStore.useMediaStore((s: { favoritesList: MediaItem[] }) => s.favoritesList);
-    useExternalStore(filterStore);
-    const filtered = list?.length ? filterItems(list) : [];
-    return { total: list?.length ?? 0, visible: filtered.length, filtered };
-}
-
 type VideoInfo = { id: string; hdMediaUrl?: string; upscalingInProgress?: boolean };
 type MediaStoreHandle = {
     favoritesList?: MediaItem[];
@@ -409,8 +407,6 @@ async function bulkUpscaleSelected() {
 function FilterButtons() {
     useExternalStore(filterStore);
     const [searchInput, setSearchInput] = useState(currentSearch);
-    const { total, visible } = useFavoritesStats();
-    const hidden = total - visible;
     const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
     const sortActive = currentSort !== "newest";
 
@@ -461,25 +457,10 @@ function FilterButtons() {
                     {f === "image" ? "Images" : "Videos"}
                 </Button>
             ))}
-            {hasActiveFilters() && visible > 0 && (
-                <Button variant="tertiary" size="sm" shape="pill" className={cl("chip")} onClick={selectVisible}>
-                    <SquareMousePointerIcon className="size-4" /> Select visible
-                </Button>
-            )}
             {showClear && (
                 <Button variant="tertiary" size="sm" shape="pill" className={cl("chip")} onClick={resetFilters}>
                     Clear
                 </Button>
-            )}
-            {total > 0 && hasActiveFilters() && (
-                <span className={cl("hidden-count")} title={`${visible} of ${total} items match`}>
-                    {visible} / {total}
-                </span>
-            )}
-            {!hasActiveFilters() && hidden > 0 && (
-                <span className={cl("hidden-count")} title={`${hidden} moderated item${hidden === 1 ? "" : "s"} hidden`}>
-                    {pluralize(hidden, "hidden")}
-                </span>
             )}
         </Fragment>
     );
@@ -582,6 +563,7 @@ export default definePlugin({
     _NullGrid: () => null,
     _autoPlay: () => !settings.store.noAutoplay,
     _bypassPaywall: () => settings.store.bypassPaywall,
+    _ctrlClickSelect: () => settings.store.ctrlClickSelect,
     _hoverProps: () => settings.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
     _useFilteredFavorites: useFilteredFavorites,
     _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
@@ -631,15 +613,15 @@ export default definePlugin({
                 },
                 {
                     match: /if\(((?:\i)&&(?:\i))\)return void (\i)\((\i)\);(?=(?:let|var|const) \i=\{imagine:"home-grid")/,
-                    replace: "if($1||$3.ctrlKey||$3.metaKey)return void $2($3);",
+                    replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);",
                 },
             ],
         },
         {
             find: 'imagine-folder.all","All"',
             replacement: {
-                match: /"imagine-folder.all","All"\)}\)]\}\)/,
-                replace: "$&,$self._renderFilterButtons({})",
+                match: /("imagine-folder\.all","All".{0,300}?,children:\[\i,\i,\i)\]/,
+                replace: "$1,$self._renderFilterButtons({})]",
             },
         },
         {
@@ -647,7 +629,7 @@ export default definePlugin({
             all: true,
             noWarn: true,
             replacement: {
-                match: /\?(\i)\.play\(\)\.catch\(\(\)=>\{\}\):\1\.pause\(\)/,
+                match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
                 replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()",
             },
         },
