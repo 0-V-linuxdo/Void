@@ -44,6 +44,11 @@ const settings = definePluginSettings({
         description: "Hide the \"Connect your 𝕏 account\" upsell popout.",
         default: true,
     },
+    hideConnectorsBanner: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the \"Connectors are now available\" banner above the chat bar.",
+        default: true,
+    },
 });
 
 export default definePlugin({
@@ -100,6 +105,13 @@ export default definePlugin({
                 replace: '"BrowserNotificationBanner",0,$self.settings.store.hideNotificationBanner?()=>null:',
             },
         },
+        {
+            find: "connectors_upsell_dismissed",
+            replacement: {
+                match: /if\((!\i\.length\|\|\i)\)return null;(?=.{0,200}"connectors-upsell\.a11y-label")/,
+                replace: "if($1||$self.settings.store.hideConnectorsBanner)return null;",
+            },
+        },
         // hides upsell card and locked modes in the mode selector
         {
             find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
@@ -111,7 +123,7 @@ export default definePlugin({
                     replace: "$&$self.settings.store.hideModelUpsell||",
                 },
                 {
-                    match: /(\i)(\.map\(\i=>\(0,\i\.jsx\).{0,60}"text-secondary opacity-75)/,
+                    match: /(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}\),onSelect:\(\)=>\i\(\i\),children:\(0,\i\.jsx\)\("div",\{className:[^}]{0,200}\),children:\(0,\i\.jsx\)\(\i,\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
                     replace: "($self.settings.store.hideInaccessibleModels?[]:$1)$2",
                 },
             ],
