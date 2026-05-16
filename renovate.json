@@ -1,0 +1,36 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["config:recommended", ":dependencyDashboard", ":semanticCommitsDisabled"],
+    "baseBranches": ["dev"],
+    "labels": ["dependencies"],
+    "prHourlyLimit": 3,
+    "prConcurrentLimit": 5,
+    "schedule": ["before 6am on monday"],
+    "timezone": "UTC",
+    "rangeStrategy": "bump",
+    "lockFileMaintenance": {
+        "enabled": true,
+        "schedule": ["before 6am on monday"]
+    },
+    "packageRules": [
+        {
+            "matchManagers": ["npm"],
+            "matchDepTypes": ["devDependencies"],
+            "matchUpdateTypes": ["minor", "patch"],
+            "groupName": "dev dependencies (non-major)"
+        },
+        {
+            "matchPackagePatterns": ["^eslint", "^@stylistic/", "^typescript-eslint$"],
+            "groupName": "eslint"
+        },
+        {
+            "matchPackagePatterns": ["^@types/"],
+            "groupName": "type definitions"
+        },
+        {
+            "matchManagers": ["github-actions"],
+            "groupName": "github actions",
+            "labels": ["dependencies", "ci"]
+        }
+    ]
+}
