@@ -66,11 +66,11 @@ export default definePlugin({
     authors: [Devs.Prism],
 
     patches: [{
-        find: "tts-controls.play.label\",\"Play\"),onClick",
+        find: "tts-controls.stop.label\",\"Stop\"",
         all: true,
         replacement: {
-            match: /\(0,\i\.jsx\)\(\i\.Button,\{"aria-label":\i\("tts-controls\.stop\.label"/,
-            replace: "$self._renderDownloadButton(),$&",
+            match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[\i,\i,\i,\i)\]/,
+            replace: "$1,$self._renderDownloadButton()]",
         },
     }],
 
