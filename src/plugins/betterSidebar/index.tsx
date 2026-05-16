@@ -92,11 +92,11 @@ async function deleteSelected() {
     ));
 }
 
-function SelectCheckbox({ id }: { id: string }) {
+function SelectCheckbox({ id }: { id: string | undefined }) {
     const enabled = settings.use(["batchSelect"]).batchSelect;
-    const checked = useSelectionHas(selection, id);
+    const checked = useSelectionHas(selection, id ?? "");
 
-    if (!enabled) return null;
+    if (!enabled || !id) return null;
 
     return (
         <div onClick={e => { e.stopPropagation(); e.preventDefault(); }} className={bdCl("wrap")}>
@@ -148,15 +148,15 @@ export default definePlugin({
     _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
 
-    _wrapSidebarClick(onClick: () => void, id: string) {
+    _wrapSidebarClick(onClick: ((e: MouseEvent) => void) | undefined, id: string | undefined) {
         return (e: MouseEvent) => {
-            if (settings.store.batchSelect && (e.ctrlKey || e.metaKey)) {
+            if (id && settings.store.batchSelect && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
                 e.stopPropagation();
                 selection.toggle(id);
                 return;
             }
-            onClick();
+            onClick?.(e);
         };
     },
 
@@ -203,8 +203,8 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /defaultOpen:\i=!0/,
-                    replace: "defaultOpen:_=$self._defaultOpen()",
+                    match: /\{defaultOpen:(\i),open:/,
+                    replace: "{defaultOpen:$1=$self._defaultOpen(),open:",
                 },
                 {
                     match: /data-sidebar":"sidebar",className:/,
@@ -218,8 +218,8 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /,\(0,(\i)\.jsx\)\((\i),\{title:(\i),editing:/,
-                    replace: ",(0,$1.jsx)($self._renderCheckbox,{id:arguments[0].id}),(0,$1.jsx)($2,{title:$3,editing:",
+                    match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,inputProps:\i,inputRef:\i,validationErrorMessage:\i\}\))/,
+                    replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id}),$1]})",
                 },
                 {
                     match: /\((\i),\{route:(\i),onClick:(\i),onDragStart:(\i),className:/,
