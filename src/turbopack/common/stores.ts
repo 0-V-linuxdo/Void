@@ -42,7 +42,7 @@ import type {
     WorkspaceStoreModule,
 } from "@grok-types/stores";
 
-import { findByPropsLazy } from "../turbopack";
+import { findByPropsLazy, findLazy } from "../turbopack";
 
 export const AssetStore: AssetStoreModule = findByPropsLazy("useAssetStore");
 export const ChatPageStore: ChatPageStoreModule = findByPropsLazy("useChatPageStore", "getLatestThreadMessageId");
@@ -53,7 +53,10 @@ export const DictationStore: DictationStoreModule = findByPropsLazy("useDictatio
 export const FeatureStore: FeatureStoreModule = findByPropsLazy("useFeatureStore");
 export const FilesPageStore: FilesPageStoreModule = findByPropsLazy("useFilesPageStore", "useAssetsList");
 export const FileStore: FileStoreModule = findByPropsLazy("useFileStore");
-export const ImageEditorStore: ImageEditorStoreModule = findByPropsLazy("useImageEditorStore");
+export const ImageEditorStore: ImageEditorStoreModule = findLazy(m => {
+    const hook = m?.useImageEditorStore;
+    return typeof hook === "function" && typeof hook.getState === "function" && typeof hook.getState()?.setUploadedImage === "function";
+});
 export const ImagineModelOverrideStore: ImagineModelOverrideStoreModule = findByPropsLazy("useImagineModelOverrideStore");
 export const MediaStore: MediaStoreModule = findByPropsLazy("useMediaStore", "useImagineModeStore");
 export const MentionMenuStore: MentionMenuStoreModule = findByPropsLazy("useMentionMenuStore");
