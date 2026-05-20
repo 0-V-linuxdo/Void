@@ -14,10 +14,14 @@ import definePlugin from "@utils/types";
 function Buttons() {
     return (
         <Fragment>
-            <VoidChatBarButtons />
+            <VoidChatBarButtons location="chat" />
             <ModalContainer />
         </Fragment>
     );
+}
+
+function ImagineButtons() {
+    return <VoidChatBarButtons location="imagine" />;
 }
 
 export default definePlugin({
@@ -28,6 +32,7 @@ export default definePlugin({
     hidden: true,
 
     renderButtons: ErrorBoundary.wrap(Buttons),
+    renderImagineButtons: ErrorBoundary.wrap(ImagineButtons),
 
     patches: [
         {
@@ -43,6 +48,13 @@ export default definePlugin({
                     replace: "paddingInlineEnd:$1",
                 },
             ],
+        },
+        {
+            find: 'imagine-query-bar-placeholder","Type to imagine"',
+            replacement: {
+                match: /(\i&&!\i&&!\i&&\(0,\i\.jsx\)\(\i+\.DictationButton,)/,
+                replace: "$self.renderImagineButtons(),$1",
+            },
         },
     ],
 });

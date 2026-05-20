@@ -12,8 +12,9 @@ import { ClockAlertIcon, GaugeIcon } from "@components/icons";
 import { Text } from "@components/Text";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React, useEffect, useState } from "@turbopack/common/react";
-import { ModesStore } from "@turbopack/common/stores";
+import { ModesStore, RoutingStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
+import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -22,6 +23,7 @@ import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 
 const logger = new Logger("RateLimitDisplay");
+const TriangleExclamationIcon = findExportedComponentLazy<React.ComponentType<{ width?: number; height?: number; className?: string; }>>("TriangleExclamationIcon");
 const cl = classNameFactory("void-rld-");
 
 const settings = definePluginSettings({
@@ -52,8 +54,29 @@ interface RateLimitData {
 
 type LimitsMap = Partial<Record<ModeName, RateLimitData>>;
 
+const IMAGINE_BUCKETS = ["image", "imagePro", "imageEdit", "video", "video720p"] as const;
+type ImagineBucket = typeof IMAGINE_BUCKETS[number];
+
+const IMAGINE_LABELS: Record<ImagineBucket, string> = {
+    image: "Speed Images",
+    imagePro: "Quality Images",
+    imageEdit: "Image Edits",
+    video: "Videos 480p",
+    video720p: "Videos 720p",
+};
+
+interface ImagineBucketData {
+    remainingQueries: number;
+    windowSizeSeconds: number;
+}
+type ImagineQuota = Partial<Record<ImagineBucket, ImagineBucketData>>;
+
 const store = createExternalStore();
 let limits: LimitsMap = {};
+let imagineQuota: ImagineQuota | null = null;
+let imagineError: string | null = null;
+let imagineLastAttempt = 0;
+const IMAGINE_ERROR_BACKOFF_MS = 60_000;
 
 async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
     try {
@@ -64,8 +87,24 @@ async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
     }
 }
 
-async function refresh() {
-    const results = await Promise.all(MODES.map(async m => [m, await fetchLimit(m)] as const));
+async function fetchImagineQuota(force = false): Promise<void> {
+    if (!force && imagineError && Date.now() - imagineLastAttempt < IMAGINE_ERROR_BACKOFF_MS) return;
+    imagineLastAttempt = Date.now();
+    try {
+        const data = await ApiClients.mediaApi.mediaGetImagineQuotaInfo({ body: {} }) as ImagineQuota;
+        imagineQuota = data;
+        imagineError = null;
+    } catch (e) {
+        imagineQuota = null;
+        imagineError = (e as { message?: string; })?.message ?? "Imagine quota info is temporarily disabled";
+    }
+}
+
+async function refresh(force = false) {
+    const modeResults = Promise.all(MODES.map(async m => [m, await fetchLimit(m)] as const));
+    const imagineResult = fetchImagineQuota(force);
+    const results = await modeResults;
+    await imagineResult;
     const next = { ...limits };
     for (const [m, data] of results) {
         if (data) next[m] = data;
@@ -75,6 +114,7 @@ async function refresh() {
 }
 
 const useMode = (): ModeName => (ModesStore.useModesStore(s => s.selectedModeId) as ModeName) ?? "auto";
+const useIsImagine = (): boolean => RoutingStore.useRoutingStore(s => s.route.page === "imagine");
 
 function isLimited(mode: ModeName): boolean {
     if (mode === "auto") return limits.expert?.remainingQueries === 0 || limits.fast?.remainingQueries === 0;
@@ -84,18 +124,36 @@ function isLimited(mode: ModeName): boolean {
 function ButtonIcon() {
     useExternalStore(store);
     const mode = useMode();
-    const limited = isLimited(mode);
+    const isImagine = useIsImagine();
+    const disabled = isImagine && imagineError != null;
+    const limited = isImagine ? isImagineLimited() : isLimited(mode);
 
     useEffect(() => { refresh(); }, []);
 
+    let icon;
+    if (disabled) icon = <TriangleExclamationIcon width={18} height={20} className={cl("icon-limited")} />;
+    else if (limited) icon = <ClockAlertIcon width={18} height={20} className={cl("icon-limited")} />;
+    else icon = <GaugeIcon width={20} height={20} />;
+
     return (
         <span className={cl("trigger")}>
-            {limited
-                ? <ClockAlertIcon width={18} height={20} className={cl("icon-limited")} />
-                : <GaugeIcon width={20} height={20} />}
-            <ButtonLabel mode={mode} />
+            {icon}
+            {isImagine ? <ImagineButtonLabel /> : <ButtonLabel mode={mode} />}
         </span>
     );
+}
+
+function isImagineLimited(): boolean {
+    if (!imagineQuota) return false;
+    return IMAGINE_BUCKETS.some(b => imagineQuota?.[b]?.remainingQueries === 0);
+}
+
+function ImagineButtonLabel() {
+    useExternalStore(store);
+    if (imagineError) return <span className={classes("truncate text-sm font-semibold", cl("icon-limited"))}>Disabled</span>;
+    const img = imagineQuota?.image;
+    if (!img) return null;
+    return <span className="truncate text-sm font-semibold">{img.remainingQueries}</span>;
 }
 
 function renderRemaining(data: RateLimitData | undefined, hideTotal: boolean) {
@@ -172,12 +230,48 @@ function ModeRow({ mode, data, active }: { mode: ModeName; data?: RateLimitData;
 function TooltipPanel() {
     useExternalStore(store);
     const mode = useMode();
+    const isImagine = useIsImagine();
+
+    if (isImagine) return <ImagineTooltipPanel />;
 
     return (
         <Flex flexDirection="column" gap={2} className={cl("panel")}>
             {MODES.map(m => (
                 <ModeRow key={m} mode={m} data={limits[m]} active={m === mode} />
             ))}
+        </Flex>
+    );
+}
+
+function ImagineTooltipPanel() {
+    useExternalStore(store);
+
+    if (imagineError) {
+        return (
+            <Flex flexDirection="column" gap={4} className={cl("panel")}>
+                <Text size="sm" weight="semibold">Imagine quota</Text>
+                <Text size="xs" color="muted">{imagineError}</Text>
+            </Flex>
+        );
+    }
+
+    const windowSec = imagineQuota?.image?.windowSizeSeconds ?? 0;
+
+    return (
+        <Flex flexDirection="column" gap={2} className={cl("panel")}>
+            {IMAGINE_BUCKETS.map(b => {
+                const data = imagineQuota?.[b];
+                const limited = data?.remainingQueries === 0;
+                return (
+                    <Flex key={b} justifyContent="space-between" alignItems="center" gap={8} className={cl("row")}>
+                        <Text size="sm" weight="medium" className={cl("mode-label")}>{IMAGINE_LABELS[b]}</Text>
+                        {data
+                            ? <Text size="xs" color={limited ? "secondary" : "secondary"}>{data.remainingQueries}</Text>
+                            : <Text size="xs" color="muted">—</Text>}
+                    </Flex>
+                );
+            })}
+            {windowSec > 0 && <Text size="xs" color="muted">Resets in {formatDuration(windowSec)}</Text>}
         </Flex>
     );
 }
@@ -192,13 +286,16 @@ export default definePlugin({
     chatBarButton: {
         icon: () => <ButtonIcon />,
         tooltip: () => <TooltipPanel />,
-        onClick: refresh,
+        onClick: () => refresh(true),
         order: 0,
         className: "text-fg-primary",
+        locations: ["chat", "imagine"],
     },
 
     stop() {
         limits = {};
+        imagineQuota = null;
+        imagineError = null;
     },
 
     zustand: {

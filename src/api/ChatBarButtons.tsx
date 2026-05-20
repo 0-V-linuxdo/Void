@@ -12,6 +12,8 @@ import { createExternalStore, sortedEntries } from "@utils/misc";
 import { type LazyNode, resolveLazyNode, useExternalStore } from "@utils/react";
 import type { ReactNode } from "react";
 
+export type ChatBarLocation = "chat" | "imagine";
+
 export interface ChatBarButtonDef {
     icon?: LazyNode;
     tooltip?: LazyNode;
@@ -25,6 +27,7 @@ export interface ChatBarButtonDef {
     active?: boolean | (() => boolean);
     "aria-label"?: string;
     className?: string;
+    locations?: ChatBarLocation[];
 }
 
 const buttons = new Map<string, ChatBarButtonDef>();
@@ -68,14 +71,17 @@ function renderEntry(def: ChatBarButtonDef): ReactNode {
     );
 }
 
-export function VoidChatBarButtons(): ReactNode {
+export function VoidChatBarButtons({ location = "chat" }: { location?: ChatBarLocation; }): ReactNode {
     useExternalStore(store);
 
     if (!buttons.size) return null;
 
+    const entries = sortedEntries(buttons).filter(([, def]) => (def.locations ?? ["chat"]).includes(location));
+    if (!entries.length) return null;
+
     return (
         <>
-            {sortedEntries(buttons).map(([id, def]) => (
+            {entries.map(([id, def]) => (
                 <ErrorBoundary key={id}>{renderEntry(def)}</ErrorBoundary>
             ))}
         </>
