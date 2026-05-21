@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.2.10
+// @version      1.0.3.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.2.10 — A modification for grok.com
+ * Void v1.0.3.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -1611,7 +1611,10 @@ ${sourceUrl}`;
   var FeatureStore = findByPropsLazy("useFeatureStore");
   var FilesPageStore = findByPropsLazy("useFilesPageStore", "useAssetsList");
   var FileStore = findByPropsLazy("useFileStore");
-  var ImageEditorStore = findByPropsLazy("useImageEditorStore");
+  var ImageEditorStore = findLazy((m) => {
+    const hook = m?.useImageEditorStore;
+    return typeof hook === "function" && typeof hook.getState === "function" && typeof hook.getState()?.setUploadedImage === "function";
+  });
   var ImagineModelOverrideStore = findByPropsLazy("useImagineModelOverrideStore");
   var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
   var MentionMenuStore = findByPropsLazy("useMentionMenuStore");
@@ -2789,11 +2792,14 @@ ${sourceUrl}`;
       className: def.className
     });
   }
-  function VoidChatBarButtons() {
+  function VoidChatBarButtons({ location: location2 = "chat" }) {
     useExternalStore(store);
     if (!buttons.size)
       return null;
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, sortedEntries(buttons).map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    const entries = sortedEntries(buttons).filter(([, def]) => (def.locations ?? ["chat"]).includes(location2));
+    if (!entries.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, entries.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: id
     }, renderEntry(def))));
   }
@@ -5712,9 +5718,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.2.10"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"f3068b2"}`
-    }, `(${"f3068b2"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.0"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"00c70c8"}`
+    }, `(${"00c70c8"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5916,7 +5922,14 @@ ${sourceUrl}`;
 
   // src/plugins/_api/chatBarButtons/index.tsx
   function Buttons() {
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(VoidChatBarButtons, null), /* @__PURE__ */ React.createElement(ModalContainer, null));
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(VoidChatBarButtons, {
+      location: "chat"
+    }), /* @__PURE__ */ React.createElement(ModalContainer, null));
+  }
+  function ImagineButtons() {
+    return /* @__PURE__ */ React.createElement(VoidChatBarButtons, {
+      location: "imagine"
+    });
   }
   var chatBarButtons_default = definePlugin({
     name: "ChatBarButtonAPI",
@@ -5925,6 +5938,7 @@ ${sourceUrl}`;
     required: true,
     hidden: true,
     renderButtons: ErrorBoundary.wrap(Buttons),
+    renderImagineButtons: ErrorBoundary.wrap(ImagineButtons),
     patches: [
       {
         find: "ImagineSelector,{iconOnlyTrigger",
@@ -5939,6 +5953,13 @@ ${sourceUrl}`;
             replace: "paddingInlineEnd:$1"
           }
         ]
+      },
+      {
+        find: 'imagine-query-bar-placeholder","Type to imagine"',
+        replacement: {
+          match: /(\i&&!\i&&!\i&&\(0,\i\.jsx\)\(\i+\.DictationButton,)/,
+          replace: "$self.renderImagineButtons(),$1"
+        }
       }
     ]
   });
@@ -8510,6 +8531,7 @@ button:has(> .void-rld-trigger) {
 
   // src/plugins/rateLimitDisplay/index.tsx
   var logger23 = new Logger("RateLimitDisplay");
+  var TriangleExclamationIcon = findExportedComponentLazy("TriangleExclamationIcon");
   var cl19 = classNameFactory("void-rld-");
   var settings13 = definePluginSettings({
     hideTotal: {
@@ -8526,8 +8548,20 @@ button:has(> .void-rld-trigger) {
     heavy: "heavy",
     "grok-420-computer-use-sa": "grok 4.3"
   };
+  var IMAGINE_BUCKETS = ["image", "imagePro", "imageEdit", "video", "video720p"];
+  var IMAGINE_LABELS = {
+    image: "Speed Images",
+    imagePro: "Quality Images",
+    imageEdit: "Image Edits",
+    video: "Videos 480p",
+    video720p: "Videos 720p"
+  };
   var store5 = createExternalStore();
   var limits = {};
+  var imagineQuota = null;
+  var imagineError = null;
+  var imagineLastAttempt = 0;
+  var IMAGINE_ERROR_BACKOFF_MS = 60000;
   async function fetchLimit(mode) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
@@ -8536,8 +8570,24 @@ button:has(> .void-rld-trigger) {
       return null;
     }
   }
-  async function refresh() {
-    const results = await Promise.all(MODES.map(async (m) => [m, await fetchLimit(m)]));
+  async function fetchImagineQuota(force = false) {
+    if (!force && imagineError && Date.now() - imagineLastAttempt < IMAGINE_ERROR_BACKOFF_MS)
+      return;
+    imagineLastAttempt = Date.now();
+    try {
+      const data = await ApiClients.mediaApi.mediaGetImagineQuotaInfo({ body: {} });
+      imagineQuota = data;
+      imagineError = null;
+    } catch (e) {
+      imagineQuota = null;
+      imagineError = e?.message ?? "Imagine quota info is temporarily disabled";
+    }
+  }
+  async function refresh(force = false) {
+    const modeResults = Promise.all(MODES.map(async (m) => [m, await fetchLimit(m)]));
+    const imagineResult = fetchImagineQuota(force);
+    const results = await modeResults;
+    await imagineResult;
     const next = { ...limits };
     for (const [m, data] of results) {
       if (data)
@@ -8547,6 +8597,7 @@ button:has(> .void-rld-trigger) {
     store5.notify();
   }
   var useMode = () => ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
+  var useIsImagine = () => RoutingStore.useRoutingStore((s) => s.route.page === "imagine");
   function isLimited(mode) {
     if (mode === "auto")
       return limits.expert?.remainingQueries === 0 || limits.fast?.remainingQueries === 0;
@@ -8555,22 +8606,53 @@ button:has(> .void-rld-trigger) {
   function ButtonIcon() {
     useExternalStore(store5);
     const mode = useMode();
-    const limited = isLimited(mode);
+    const isImagine = useIsImagine();
+    const disabled = isImagine && imagineError != null;
+    const limited = isImagine ? isImagineLimited() : isLimited(mode);
     useEffect(() => {
       refresh();
     }, []);
+    let icon;
+    if (disabled)
+      icon = /* @__PURE__ */ React.createElement(TriangleExclamationIcon, {
+        width: 18,
+        height: 20,
+        className: cl19("icon-limited")
+      });
+    else if (limited)
+      icon = /* @__PURE__ */ React.createElement(ClockAlertIcon, {
+        width: 18,
+        height: 20,
+        className: cl19("icon-limited")
+      });
+    else
+      icon = /* @__PURE__ */ React.createElement(GaugeIcon, {
+        width: 20,
+        height: 20
+      });
     return /* @__PURE__ */ React.createElement("span", {
       className: cl19("trigger")
-    }, limited ? /* @__PURE__ */ React.createElement(ClockAlertIcon, {
-      width: 18,
-      height: 20,
-      className: cl19("icon-limited")
-    }) : /* @__PURE__ */ React.createElement(GaugeIcon, {
-      width: 20,
-      height: 20
-    }), /* @__PURE__ */ React.createElement(ButtonLabel, {
+    }, icon, isImagine ? /* @__PURE__ */ React.createElement(ImagineButtonLabel, null) : /* @__PURE__ */ React.createElement(ButtonLabel, {
       mode
     }));
+  }
+  function isImagineLimited() {
+    if (!imagineQuota)
+      return false;
+    return IMAGINE_BUCKETS.some((b) => imagineQuota?.[b]?.remainingQueries === 0);
+  }
+  function ImagineButtonLabel() {
+    useExternalStore(store5);
+    if (imagineError)
+      return /* @__PURE__ */ React.createElement("span", {
+        className: classes("truncate text-sm font-semibold", cl19("icon-limited"))
+      }, "Disabled");
+    const img = imagineQuota?.image;
+    if (!img)
+      return null;
+    return /* @__PURE__ */ React.createElement("span", {
+      className: "truncate text-sm font-semibold"
+    }, img.remainingQueries);
   }
   function renderRemaining(data, hideTotal) {
     if (!data)
@@ -8659,6 +8741,9 @@ button:has(> .void-rld-trigger) {
   function TooltipPanel() {
     useExternalStore(store5);
     const mode = useMode();
+    const isImagine = useIsImagine();
+    if (isImagine)
+      return /* @__PURE__ */ React.createElement(ImagineTooltipPanel, null);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
@@ -8670,6 +8755,51 @@ button:has(> .void-rld-trigger) {
       active: m === mode
     })));
   }
+  function ImagineTooltipPanel() {
+    useExternalStore(store5);
+    if (imagineError) {
+      return /* @__PURE__ */ React.createElement(Flex, {
+        flexDirection: "column",
+        gap: 4,
+        className: cl19("panel")
+      }, /* @__PURE__ */ React.createElement(Text, {
+        size: "sm",
+        weight: "semibold"
+      }, "Imagine quota"), /* @__PURE__ */ React.createElement(Text, {
+        size: "xs",
+        color: "muted"
+      }, imagineError));
+    }
+    const windowSec = imagineQuota?.image?.windowSizeSeconds ?? 0;
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: 2,
+      className: cl19("panel")
+    }, IMAGINE_BUCKETS.map((b) => {
+      const data = imagineQuota?.[b];
+      const limited = data?.remainingQueries === 0;
+      return /* @__PURE__ */ React.createElement(Flex, {
+        key: b,
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 8,
+        className: cl19("row")
+      }, /* @__PURE__ */ React.createElement(Text, {
+        size: "sm",
+        weight: "medium",
+        className: cl19("mode-label")
+      }, IMAGINE_LABELS[b]), data ? /* @__PURE__ */ React.createElement(Text, {
+        size: "xs",
+        color: limited ? "secondary" : "secondary"
+      }, data.remainingQueries) : /* @__PURE__ */ React.createElement(Text, {
+        size: "xs",
+        color: "muted"
+      }, "—"));
+    }), windowSec > 0 && /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "muted"
+    }, "Resets in ", formatDuration(windowSec)));
+  }
   var rateLimitDisplay_default = definePlugin({
     name: "RateLimitDisplay",
     description: "Shows rate limit usage for the current model mode in the chat bar.",
@@ -8679,12 +8809,15 @@ button:has(> .void-rld-trigger) {
     chatBarButton: {
       icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
       tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
-      onClick: refresh,
+      onClick: () => refresh(true),
       order: 0,
-      className: "text-fg-primary"
+      className: "text-fg-primary",
+      locations: ["chat", "imagine"]
     },
     stop() {
       limits = {};
+      imagineQuota = null;
+      imagineError = null;
     },
     zustand: {
       ModesStore: {
