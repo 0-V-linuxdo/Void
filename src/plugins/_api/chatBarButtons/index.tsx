@@ -36,7 +36,7 @@ export default definePlugin({
 
     patches: [
         {
-            find: "ImagineSelector,{iconOnlyTrigger",
+            find: "data-query-bar-mode-select",
             all: true,
             replacement: [
                 {
@@ -44,8 +44,8 @@ export default definePlugin({
                     replace: "$&$self.renderButtons(),",
                 },
                 {
-                    match: /paddingInlineEnd:\i\?void 0:(\i)/,
-                    replace: "paddingInlineEnd:$1",
+                    match: /style:\i(?:\|\|\i)*\?void 0:(\{paddingInlineEnd:\i\})/,
+                    replace: "style:$1",
                 },
             ],
         },
