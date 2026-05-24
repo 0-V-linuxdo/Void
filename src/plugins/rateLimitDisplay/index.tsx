@@ -10,11 +10,11 @@ import { definePluginSettings } from "@api/Settings";
 import { Flex } from "@components/Flex";
 import { ClockAlertIcon, GaugeIcon } from "@components/icons";
 import { Text } from "@components/Text";
+import type { CreditQuotaStoreState, ImagineCreditBucket, ImagineCreditQuota } from "@grok-types/stores/CreditQuotaStore";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React, useEffect, useState } from "@turbopack/common/react";
-import { ModesStore, RoutingStore } from "@turbopack/common/stores";
+import { CreditQuotaStore, ModesStore, RoutingStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
-import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -23,7 +23,6 @@ import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 
 const logger = new Logger("RateLimitDisplay");
-const TriangleExclamationIcon = findExportedComponentLazy<React.ComponentType<{ width?: number; height?: number; className?: string; }>>("TriangleExclamationIcon");
 const cl = classNameFactory("void-rld-");
 
 const settings = definePluginSettings({
@@ -54,10 +53,9 @@ interface RateLimitData {
 
 type LimitsMap = Partial<Record<ModeName, RateLimitData>>;
 
-const IMAGINE_BUCKETS = ["image", "imagePro", "imageEdit", "video", "video720p"] as const;
-type ImagineBucket = typeof IMAGINE_BUCKETS[number];
+const IMAGINE_BUCKETS: readonly ImagineCreditBucket[] = ["image", "imagePro", "imageEdit", "video", "video720p"] as const;
 
-const IMAGINE_LABELS: Record<ImagineBucket, string> = {
+const IMAGINE_LABELS: Record<ImagineCreditBucket, string> = {
     image: "Speed Images",
     imagePro: "Quality Images",
     imageEdit: "Image Edits",
@@ -65,18 +63,10 @@ const IMAGINE_LABELS: Record<ImagineBucket, string> = {
     video720p: "Videos 720p",
 };
 
-interface ImagineBucketData {
-    remainingQueries: number;
-    windowSizeSeconds: number;
-}
-type ImagineQuota = Partial<Record<ImagineBucket, ImagineBucketData>>;
+const UNLIMITED_THRESHOLD = Number.MAX_SAFE_INTEGER;
 
 const store = createExternalStore();
 let limits: LimitsMap = {};
-let imagineQuota: ImagineQuota | null = null;
-let imagineError: string | null = null;
-let imagineLastAttempt = 0;
-const IMAGINE_ERROR_BACKOFF_MS = 60_000;
 
 async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
     try {
@@ -87,24 +77,13 @@ async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
     }
 }
 
-async function fetchImagineQuota(force = false): Promise<void> {
-    if (!force && imagineError && Date.now() - imagineLastAttempt < IMAGINE_ERROR_BACKOFF_MS) return;
-    imagineLastAttempt = Date.now();
-    try {
-        const data = await ApiClients.mediaApi.mediaGetImagineQuotaInfo({ body: {} }) as ImagineQuota;
-        imagineQuota = data;
-        imagineError = null;
-    } catch (e) {
-        imagineQuota = null;
-        imagineError = (e as { message?: string; })?.message ?? "Imagine quota info is temporarily disabled";
-    }
+function refreshImagineQuota() {
+    CreditQuotaStore.useCreditQuotaStore.getState().fetchQuotas();
 }
 
-async function refresh(force = false) {
-    const modeResults = Promise.all(MODES.map(async m => [m, await fetchLimit(m)] as const));
-    const imagineResult = fetchImagineQuota(force);
-    const results = await modeResults;
-    await imagineResult;
+async function refresh() {
+    refreshImagineQuota();
+    const results = await Promise.all(MODES.map(async m => [m, await fetchLimit(m)] as const));
     const next = { ...limits };
     for (const [m, data] of results) {
         if (data) next[m] = data;
@@ -114,7 +93,8 @@ async function refresh(force = false) {
 }
 
 const useMode = (): ModeName => (ModesStore.useModesStore(s => s.selectedModeId) as ModeName) ?? "auto";
-const useIsImagine = (): boolean => RoutingStore.useRoutingStore(s => s.route.page === "imagine");
+const useIsImagine = (): boolean => RoutingStore.useRoutingStore(s => typeof s.route.page === "string" && s.route.page.startsWith("imagine"));
+const useImagineQuotas = (): CreditQuotaStoreState["quotas"] => CreditQuotaStore.useCreditQuotaStore(s => s.quotas);
 
 function isLimited(mode: ModeName): boolean {
     if (mode === "auto") return limits.expert?.remainingQueries === 0 || limits.fast?.remainingQueries === 0;
@@ -125,35 +105,41 @@ function ButtonIcon() {
     useExternalStore(store);
     const mode = useMode();
     const isImagine = useIsImagine();
-    const disabled = isImagine && imagineError != null;
-    const limited = isImagine ? isImagineLimited() : isLimited(mode);
+    const quotas = useImagineQuotas();
+    const limited = isImagine ? isImagineLimited(quotas) : isLimited(mode);
 
     useEffect(() => { refresh(); }, []);
 
-    let icon;
-    if (disabled) icon = <TriangleExclamationIcon width={18} height={20} className={cl("icon-limited")} />;
-    else if (limited) icon = <ClockAlertIcon width={18} height={20} className={cl("icon-limited")} />;
-    else icon = <GaugeIcon width={20} height={20} />;
+    const icon = limited
+        ? <ClockAlertIcon width={18} height={20} className={cl("icon-limited")} />
+        : <GaugeIcon width={20} height={20} />;
 
     return (
         <span className={cl("trigger")}>
             {icon}
-            {isImagine ? <ImagineButtonLabel /> : <ButtonLabel mode={mode} />}
+            {isImagine ? <ImagineButtonLabel quotas={quotas} /> : <ButtonLabel mode={mode} />}
         </span>
     );
 }
 
-function isImagineLimited(): boolean {
-    if (!imagineQuota) return false;
-    return IMAGINE_BUCKETS.some(b => imagineQuota?.[b]?.remainingQueries === 0);
+function isImagineLimited(quotas: CreditQuotaStoreState["quotas"] | undefined): boolean {
+    if (!quotas) return false;
+    return IMAGINE_BUCKETS.some(b => {
+        const d = quotas[b];
+        return d != null && d.available && d.remainingQueries === 0;
+    });
 }
 
-function ImagineButtonLabel() {
-    useExternalStore(store);
-    if (imagineError) return <span className={classes("truncate text-sm font-semibold", cl("icon-limited"))}>Disabled</span>;
-    const img = imagineQuota?.image;
+function formatImagineCount(data: ImagineCreditQuota | undefined): string {
+    if (!data || !data.available) return "—";
+    if (data.remainingQueries >= UNLIMITED_THRESHOLD) return "—";
+    return String(data.remainingQueries);
+}
+
+function ImagineButtonLabel({ quotas }: { quotas: CreditQuotaStoreState["quotas"] | undefined }) {
+    const img = quotas?.image;
     if (!img) return null;
-    return <span className="truncate text-sm font-semibold">{img.remainingQueries}</span>;
+    return <span className="truncate text-sm font-semibold">{formatImagineCount(img)}</span>;
 }
 
 function renderRemaining(data: RateLimitData | undefined, hideTotal: boolean) {
@@ -231,8 +217,9 @@ function TooltipPanel() {
     useExternalStore(store);
     const mode = useMode();
     const isImagine = useIsImagine();
+    const quotas = useImagineQuotas();
 
-    if (isImagine) return <ImagineTooltipPanel />;
+    if (isImagine) return <ImagineTooltipPanel quotas={quotas} />;
 
     return (
         <Flex flexDirection="column" gap={2} className={cl("panel")}>
@@ -243,37 +230,45 @@ function TooltipPanel() {
     );
 }
 
-function ImagineTooltipPanel() {
-    useExternalStore(store);
-
-    if (imagineError) {
-        return (
-            <Flex flexDirection="column" gap={4} className={cl("panel")}>
-                <Text size="sm" weight="semibold">Imagine quota</Text>
-                <Text size="xs" color="muted">{imagineError}</Text>
-            </Flex>
-        );
-    }
-
-    const windowSec = imagineQuota?.image?.windowSizeSeconds ?? 0;
+function ImagineTooltipPanel({ quotas }: { quotas: CreditQuotaStoreState["quotas"] | undefined }) {
+    const windowSec = quotas?.image?.windowSizeSeconds ?? 0;
 
     return (
         <Flex flexDirection="column" gap={2} className={cl("panel")}>
             {IMAGINE_BUCKETS.map(b => {
-                const data = imagineQuota?.[b];
-                const limited = data?.remainingQueries === 0;
+                const data = quotas?.[b];
+                const exhausted = data?.available && data.remainingQueries === 0;
                 return (
                     <Flex key={b} justifyContent="space-between" alignItems="center" gap={8} className={cl("row")}>
                         <Text size="sm" weight="medium" className={cl("mode-label")}>{IMAGINE_LABELS[b]}</Text>
-                        {data
-                            ? <Text size="xs" color={limited ? "secondary" : "secondary"}>{data.remainingQueries}</Text>
-                            : <Text size="xs" color="muted">—</Text>}
+                        {exhausted && data?.nextAvailableAt
+                            ? <NextAvailableCountdown ts={data.nextAvailableAt} />
+                            : <Text size="xs" color={!data?.available ? "muted" : "secondary"}>{formatImagineCount(data)}</Text>}
                     </Flex>
                 );
             })}
-            {windowSec > 0 && <Text size="xs" color="muted">Resets in {formatDuration(windowSec)}</Text>}
+            {windowSec > 0 && <Text size="xs" color="muted">Rolling window: {formatDuration(windowSec)}</Text>}
         </Flex>
     );
+}
+
+function NextAvailableCountdown({ ts }: { ts: number }) {
+    const [left, setLeft] = useState(Math.max(0, Math.floor((ts - Date.now()) / 1000)));
+
+    useEffect(() => {
+        setLeft(Math.max(0, Math.floor((ts - Date.now()) / 1000)));
+        const id = setInterval(() => {
+            const remaining = Math.max(0, Math.floor((ts - Date.now()) / 1000));
+            setLeft(remaining);
+            if (remaining <= 0) {
+                clearInterval(id);
+                refreshImagineQuota();
+            }
+        }, 1000);
+        return () => clearInterval(id);
+    }, [ts]);
+
+    return <Text size="xs" color="secondary">{formatCountdown(left)}</Text>;
 }
 
 export default definePlugin({
@@ -286,7 +281,7 @@ export default definePlugin({
     chatBarButton: {
         icon: () => <ButtonIcon />,
         tooltip: () => <TooltipPanel />,
-        onClick: () => refresh(true),
+        onClick: () => refresh(),
         order: 0,
         className: "text-fg-primary",
         locations: ["chat", "imagine"],
@@ -294,14 +289,16 @@ export default definePlugin({
 
     stop() {
         limits = {};
-        imagineQuota = null;
-        imagineError = null;
     },
 
     zustand: {
         ModesStore: {
             selector: (s: ModesStoreState) => s.selectedModeId,
             handler() { refresh(); },
+        },
+        CreditQuotaStore: {
+            selector: (s: CreditQuotaStoreState) => s.generationSeq,
+            handler() { store.notify(); },
         },
     },
 
