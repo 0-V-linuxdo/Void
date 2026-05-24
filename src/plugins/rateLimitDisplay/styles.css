@@ -13,7 +13,7 @@
     white-space: nowrap;
 }
 
-button:has(> .void-rld-trigger) {
+button:has(> .void-rld-trigger > :nth-child(2)) {
     width: auto;
     border-radius: 1.25rem;
     overflow: visible;

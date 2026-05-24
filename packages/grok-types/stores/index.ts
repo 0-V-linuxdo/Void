@@ -5,6 +5,7 @@ export * from "./CodePageStore";
 export * from "./CommandMenuStore";
 export * from "./ConnectorFeedbackStore";
 export * from "./ConversationStore";
+export * from "./CreditQuotaStore";
 export * from "./DictationStore";
 export * from "./EnterpriseOnboardingStore";
 export * from "./FeatureStore";
