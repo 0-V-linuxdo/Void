@@ -30,7 +30,6 @@ import type {
     SettingsDialogStoreModule,
     SettingsStoreModule,
     ShareStoreModule,
-    ShopStoreModule,
     SkillsStoreModule,
     SubscriptionsStoreModule,
     SuggestionStoreModule,
@@ -64,7 +63,7 @@ export const MediaStore: MediaStoreModule = findByPropsLazy("useMediaStore", "us
 export const MentionMenuStore: MentionMenuStoreModule = findByPropsLazy("useMentionMenuStore");
 export const ModesStore: ModesStoreModule = findByPropsLazy("useModesStore");
 export const NotificationsStore: NotificationsStoreModule = findByPropsLazy("useNotificationsStore", "useNotificationsStoreInit");
-export const PersonalityStore: PersonalityStoreModule = findByPropsLazy("usePersonalityStore", "DEFAULT_CUSTOM_PERSONALITY");
+export const PersonalityStore: PersonalityStoreModule = findByPropsLazy("usePersonalityStore", "personalitySchema");
 export const ReportStore: ReportStoreModule = findByPropsLazy("useReportStore");
 export const ResponseStore: ResponseStoreModule = findByPropsLazy("useResponseStore", "createOptimisticResponse");
 export const RoutingStore: RoutingStoreModule = findByPropsLazy("useRoutingStore", "formatUrl");
@@ -73,7 +72,6 @@ export const SessionStore: SessionStoreModule = findByPropsLazy("useSession", "S
 export const SettingsDialogStore: SettingsDialogStoreModule = findByPropsLazy("useSettingsDialogStore");
 export const SettingsStore: SettingsStoreModule = findByPropsLazy("useSettingsStore", "modelConfigOverrideSchema");
 export const ShareStore: ShareStoreModule = findByPropsLazy("useShareStore");
-export const ShopStore: ShopStoreModule = findByPropsLazy("useShopStore");
 export const SkillsStore: SkillsStoreModule = findByPropsLazy("useSkillsStore");
 export const SubscriptionsStore: SubscriptionsStoreModule = findByPropsLazy("useSubscriptionsStore");
 export const SuggestionStore: SuggestionStoreModule = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");

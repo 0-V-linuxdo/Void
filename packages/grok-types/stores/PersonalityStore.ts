@@ -45,8 +45,6 @@ export interface PersonalityStoreState {
 
 /** Module exports for the Personality store. */
 export interface PersonalityStoreModule {
-    /** Default custom personality template object. */
-    DEFAULT_CUSTOM_PERSONALITY: GrokPersonality;
     /** Check if a personality is a custom (non-preset) personality. */
     isCustomPersonality: (personality: GrokPersonality) => boolean;
     /** Zod-like schema for validating personality objects. */

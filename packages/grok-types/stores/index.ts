@@ -28,7 +28,6 @@ export * from "./SettingsDialogStore";
 export * from "./SettingsStore";
 export * from "./SettingsSubscriptionCancelFlowStore";
 export * from "./ShareStore";
-export * from "./ShopStore";
 export * from "./SkillsStore";
 export * from "./SubscriptionsStore";
 export * from "./SuggestionStore";
