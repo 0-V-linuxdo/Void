@@ -107,8 +107,9 @@ export default definePlugin({
         },
         {
             find: "connectors_upsell_dismissed",
+            all: true,
             replacement: {
-                match: /if\((!\i\.length\|\|\i)\)return null;(?=.{0,200}"connectors-upsell\.a11y-label")/,
+                match: /if\((!\i\.length\|\|\i)\)return null;/,
                 replace: "if($1||$self.settings.store.hideConnectorsBanner)return null;",
             },
         },
