@@ -77,6 +77,9 @@ function UserCard({ AvatarMenu }: { AvatarMenu: ComponentType }) {
 
 const selection = createSelectionStore<string>();
 
+const CONVERSATION_PAGE = "chat";
+const isConversationRoute = (route?: { page?: string }) => route?.page === CONVERSATION_PAGE;
+
 async function deleteSelected() {
     const ids = selection.all();
     selection.clear();
@@ -92,11 +95,11 @@ async function deleteSelected() {
     ));
 }
 
-function SelectCheckbox({ id }: { id: string | undefined }) {
+function SelectCheckbox({ id, route }: { id: string | undefined; route?: { page?: string } }) {
     const enabled = settings.use(["batchSelect"]).batchSelect;
     const checked = useSelectionHas(selection, id ?? "");
 
-    if (!enabled || !id) return null;
+    if (!enabled || !id || !isConversationRoute(route)) return null;
 
     return (
         <div onClick={e => { e.stopPropagation(); e.preventDefault(); }} className={bdCl("wrap")}>
@@ -148,9 +151,9 @@ export default definePlugin({
     _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
 
-    _wrapSidebarClick(onClick: ((e: MouseEvent) => void) | undefined, id: string | undefined) {
+    _wrapSidebarClick(onClick: ((e: MouseEvent) => void) | undefined, id: string | undefined, route?: { page?: string }) {
         return (e: MouseEvent) => {
-            if (id && settings.store.batchSelect && (e.ctrlKey || e.metaKey)) {
+            if (id && settings.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
                 e.stopPropagation();
                 selection.toggle(id);
@@ -219,18 +222,18 @@ export default definePlugin({
             replacement: [
                 {
                     match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,inputProps:\i,inputRef:\i,validationErrorMessage:\i\}\))/,
-                    replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id}),$1]})",
+                    replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id,route:arguments[0].route}),$1]})",
                 },
                 {
                     match: /\((\i),\{route:(\i),onClick:(\i),onDragStart:(\i),className:/,
-                    replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id),onDragStart:$4,className:",
+                    replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),onDragStart:$4,className:",
                 },
             ],
         },
         {
             find: "\"sidebar-expand\",\"Expand\"",
             replacement: {
-                match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
+                match: /\(0,\i\.jsx\)\(\i,\{title:\i\("sidebar-history"/,
                 replace: "$self._renderActionBar(),$&",
             },
         },
