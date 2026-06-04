@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.1
+// @version      1.0.3.2
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.1 — A modification for grok.com
+ * Void v1.0.3.2 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -206,7 +206,6 @@
     SuggestionStore: () => SuggestionStore,
     SubscriptionsStore: () => SubscriptionsStore,
     SkillsStore: () => SkillsStore,
-    ShopStore: () => ShopStore,
     ShareStore: () => ShareStore,
     SettingsStore: () => SettingsStore,
     SettingsDialogStore: () => SettingsDialogStore,
@@ -1604,7 +1603,7 @@ ${sourceUrl}`;
 
   // src/turbopack/common/stores.ts
   var AssetStore = findByPropsLazy("useAssetStore");
-  var ChatPageStore = findByPropsLazy("useChatPageStore", "getLatestThreadMessageId");
+  var ChatPageStore = findByPropsLazy("useChatPageStore");
   var CodePageStore = findByPropsLazy("useCodePageStore");
   var CommandMenuStore = findByPropsLazy("useCommandMenuStore", "createSelection");
   var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
@@ -1622,7 +1621,7 @@ ${sourceUrl}`;
   var MentionMenuStore = findByPropsLazy("useMentionMenuStore");
   var ModesStore = findByPropsLazy("useModesStore");
   var NotificationsStore = findByPropsLazy("useNotificationsStore", "useNotificationsStoreInit");
-  var PersonalityStore = findByPropsLazy("usePersonalityStore", "DEFAULT_CUSTOM_PERSONALITY");
+  var PersonalityStore = findByPropsLazy("usePersonalityStore", "personalitySchema");
   var ReportStore = findByPropsLazy("useReportStore");
   var ResponseStore = findByPropsLazy("useResponseStore", "createOptimisticResponse");
   var RoutingStore = findByPropsLazy("useRoutingStore", "formatUrl");
@@ -1631,7 +1630,6 @@ ${sourceUrl}`;
   var SettingsDialogStore = findByPropsLazy("useSettingsDialogStore");
   var SettingsStore = findByPropsLazy("useSettingsStore", "modelConfigOverrideSchema");
   var ShareStore = findByPropsLazy("useShareStore");
-  var ShopStore = findByPropsLazy("useShopStore");
   var SkillsStore = findByPropsLazy("useSkillsStore");
   var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
   var SuggestionStore = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");
@@ -5720,9 +5718,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.1"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"836ef17"}`
-    }, `(${"836ef17"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.2"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"82a13a4"}`
+    }, `(${"82a13a4"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -7304,6 +7302,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }, getPlanName(bestSubscription, user.xSubscriptionType))));
   }
   var selection2 = createSelectionStore();
+  var CONVERSATION_PAGE = "chat";
+  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
   async function deleteSelected2() {
     const ids = selection2.all();
     selection2.clear();
@@ -7314,10 +7314,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
     await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger18.error("Failed to delete", id, e))));
   }
-  function SelectCheckbox({ id }) {
+  function SelectCheckbox({ id, route }) {
     const enabled = settings8.use(["batchSelect"]).batchSelect;
     const checked = useSelectionHas(selection2, id ?? "");
-    if (!enabled || !id)
+    if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement("div", {
       onClick: (e) => {
@@ -7371,9 +7371,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
-    _wrapSidebarClick(onClick, id) {
+    _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings8.store.batchSelect && (e.ctrlKey || e.metaKey)) {
+        if (id && settings8.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -7438,18 +7438,18 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         replacement: [
           {
             match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,inputProps:\i,inputRef:\i,validationErrorMessage:\i\}\))/,
-            replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id}),$1]})"
+            replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id,route:arguments[0].route}),$1]})"
           },
           {
             match: /\((\i),\{route:(\i),onClick:(\i),onDragStart:(\i),className:/,
-            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id),onDragStart:$4,className:"
+            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),onDragStart:$4,className:"
           }
         ]
       },
       {
         find: '"sidebar-expand","Expand"',
         replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
+          match: /\(0,\i\.jsx\)\(\i,\{title:\i\("sidebar-history"/,
           replace: "$self._renderActionBar(),$&"
         }
       }
@@ -7553,8 +7553,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       },
       {
         find: "connectors_upsell_dismissed",
+        all: true,
         replacement: {
-          match: /if\((!\i\.length\|\|\i)\)return null;(?=.{0,200}"connectors-upsell\.a11y-label")/,
+          match: /if\((!\i\.length\|\|\i)\)return null;/,
           replace: "if($1||$self.settings.store.hideConnectorsBanner)return null;"
         }
       },
@@ -9313,7 +9314,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     SkillsStore: () => SkillsStore,
     Skeleton: () => Skeleton,
     SidebarComponents: () => SidebarComponents,
-    ShopStore: () => ShopStore,
     ShareStore: () => ShareStore,
     SettingsTitle: () => SettingsTitle,
     SettingsStore: () => SettingsStore,
