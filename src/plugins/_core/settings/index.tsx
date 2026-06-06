@@ -42,11 +42,6 @@ const settings = definePluginSettings({
         description: "Hide your user ID from the account settings page.",
         default: true,
     },
-    fixDialogFlash: {
-        type: OptionType.BOOLEAN,
-        description: "Fix the white border flash when clicking inside dialogs.",
-        default: true,
-    },
     showVoidMenu: {
         type: OptionType.BOOLEAN,
         description: "Show the Void sub-menu in the avatar dropdown.",
@@ -213,10 +208,6 @@ export default definePlugin({
         return settings.store.hideUserId;
     },
 
-    _fixDialogFlash() {
-        return settings.store.fixDialogFlash;
-    },
-
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
 
     renderTabs(jsx: typeof createElement, TabButton: ComponentType<TabButtonProps>) {
@@ -255,14 +246,6 @@ export default definePlugin({
             replacement: {
                 match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{children:\[.{0,100}"user-dropdown\.help"/,
                 replace: "(0,$1.jsx)($self._VoidMenu,{}),$&",
-            },
-        },
-        {
-            find: '"DialogContent",0,',
-            all: true,
-            replacement: {
-                match: /dark:border-border-l1 duration-200/,
-                replace: 'dark:border-border-l1 "+($self._fixDialogFlash()?"outline-none ":"")+"duration-200',
             },
         },
         {
