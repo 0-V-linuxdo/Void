@@ -18,8 +18,8 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /\.SHOW_STARRY_IDLE&&.{0,11}"main"===.{0,3}\.page&&/,
-                    replace: "&&",
+                    match: /!\i&&"off"!==\i&&"main"===\i\.page&&/,
+                    replace: "",
                 },
                 {
                     match: /inactivityDelay:1e4,fadeInDuration:1e4/,
