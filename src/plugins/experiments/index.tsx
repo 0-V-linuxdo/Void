@@ -246,12 +246,29 @@ function ExperimentsTab() {
 
 export const Tab = ErrorBoundary.wrap(ExperimentsTab);
 
+type Config = FeatureStoreState["config"];
+
+function overrideProxy(config: Config, getState: () => FeatureStoreState): Config {
+    try {
+        return new Proxy(config, {
+            get(target, key) {
+                const {overrides} = getState();
+                return overrides && typeof key === "string" && key in overrides ? overrides[key] : Reflect.get(target, key);
+            },
+        });
+    } catch {
+        return config;
+    }
+}
+
 export default definePlugin({
     name: "Experiments",
     description: "Unlock and toggle unreleased Grok features.",
     authors: [Devs.Prism],
     settings,
     startAt: StartAt.TurbopackReady,
+
+    _proxy: overrideProxy,
 
     start() {
         if (settings.store.browserNotifications && Notification.permission === "default") Notification.requestPermission().catch(() => {});
@@ -283,6 +300,21 @@ export default definePlugin({
                 match: /\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
                 replace: "&&void 0",
             },
+        },
+        {
+            find: "feature-store-set-override",
+            all: true,
+            group: true,
+            replacement: [
+                {
+                    match: /config:("ready"===\i\.status\?\i\.serverConfig:\{\})/,
+                    replace: "config:$self._proxy($1,this.get)",
+                },
+                {
+                    match: /"ready"===\i\.status\)B\(this\.config\)/,
+                    replace: "$&,this.config=$self._proxy(this.config,this.get)",
+                },
+            ],
         },
     ],
 });
