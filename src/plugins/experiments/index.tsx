@@ -249,16 +249,12 @@ export const Tab = ErrorBoundary.wrap(ExperimentsTab);
 type Config = FeatureStoreState["config"];
 
 function overrideProxy(config: Config, getState: () => FeatureStoreState): Config {
-    try {
-        return new Proxy(config, {
-            get(target, key) {
-                const {overrides} = getState();
-                return overrides && typeof key === "string" && key in overrides ? overrides[key] : Reflect.get(target, key);
-            },
-        });
-    } catch {
-        return config;
-    }
+    return new Proxy(config, {
+        get(target, key) {
+            const { overrides } = getState();
+            return overrides && typeof key === "string" && key in overrides ? overrides[key] : Reflect.get(target, key);
+        },
+    });
 }
 
 export default definePlugin({
@@ -311,7 +307,7 @@ export default definePlugin({
                     replace: "config:$self._proxy($1,this.get)",
                 },
                 {
-                    match: /"ready"===\i\.status\)B\(this\.config\)/,
+                    match: /"ready"===\i\.status\)\i\(this\.config\)/,
                     replace: "$&,this.config=$self._proxy(this.config,this.get)",
                 },
             ],
