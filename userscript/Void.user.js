@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.2
+// @version      1.0.3.3
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.2 — A modification for grok.com
+ * Void v1.0.3.3 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -5619,12 +5619,21 @@ ${sourceUrl}`;
     }, search2 ? `No flags matching "${search2}"` : `No ${filter} flags`));
   }
   var Tab = ErrorBoundary.wrap(ExperimentsTab);
+  function overrideProxy(config, getState) {
+    return new Proxy(config, {
+      get(target, key) {
+        const { overrides } = getState();
+        return overrides && typeof key === "string" && key in overrides ? overrides[key] : Reflect.get(target, key);
+      }
+    });
+  }
   var experiments_default = definePlugin({
     name: "Experiments",
     description: "Unlock and toggle unreleased Grok features.",
     authors: [Devs.Prism],
     settings: settings2,
     startAt: "TurbopackReady" /* TurbopackReady */,
+    _proxy: overrideProxy,
     start() {
       if (settings2.store.browserNotifications && Notification.permission === "default")
         Notification.requestPermission().catch(() => {});
@@ -5656,6 +5665,21 @@ ${sourceUrl}`;
           match: /\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
           replace: "&&void 0"
         }
+      },
+      {
+        find: "feature-store-set-override",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /config:("ready"===\i\.status\?\i\.serverConfig:\{\})/,
+            replace: "config:$self._proxy($1,this.get)"
+          },
+          {
+            match: /"ready"===\i\.status\)\i\(this\.config\)/,
+            replace: "$&,this.config=$self._proxy(this.config,this.get)"
+          }
+        ]
       }
     ]
   });
@@ -5668,11 +5692,6 @@ ${sourceUrl}`;
     hideUserId: {
       type: 3 /* BOOLEAN */,
       description: "Hide your user ID from the account settings page.",
-      default: true
-    },
-    fixDialogFlash: {
-      type: 3 /* BOOLEAN */,
-      description: "Fix the white border flash when clicking inside dialogs.",
       default: true
     },
     showVoidMenu: {
@@ -5718,9 +5737,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.2"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"82a13a4"}`
-    }, `(${"82a13a4"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.3"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"c65c0dd"}`
+    }, `(${"c65c0dd"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5791,9 +5810,6 @@ ${sourceUrl}`;
     _hideUserId() {
       return settings3.store.hideUserId;
     },
-    _fixDialogFlash() {
-      return settings3.store.fixDialogFlash;
-    },
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
     renderTabs(jsx, TabButton) {
       try {
@@ -5841,14 +5857,6 @@ ${sourceUrl}`;
         replacement: {
           match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{children:\[.{0,100}"user-dropdown\.help"/,
           replace: "(0,$1.jsx)($self._VoidMenu,{}),$&"
-        }
-      },
-      {
-        find: '"DialogContent",0,',
-        all: true,
-        replacement: {
-          match: /dark:border-border-l1 duration-200/,
-          replace: 'dark:border-border-l1 "+($self._fixDialogFlash()?"outline-none ":"")+"duration-200'
         }
       },
       {
@@ -7635,7 +7643,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     patches: [
       { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
       { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
-      { find: 'displayName="DialogFooter"', all: true, replacement: warnNoop },
+      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
       { find: "pressure_observer", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
       { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
     ]
@@ -8940,8 +8948,8 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
         group: true,
         replacement: [
           {
-            match: /\.SHOW_STARRY_IDLE&&.{0,11}"main"===.{0,3}\.page&&/,
-            replace: "&&"
+            match: /!\i&&"off"!==\i&&"main"===\i\.page&&/,
+            replace: ""
           },
           {
             match: /inactivityDelay:1e4,fadeInDuration:1e4/,

@@ -17,7 +17,7 @@ export default definePlugin({
     patches: [
         { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
         { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
-        { find: 'displayName="DialogFooter"', all: true, replacement: warnNoop },
+        { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
         { find: "pressure_observer", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
         { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } },
     ],
