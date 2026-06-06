@@ -10,7 +10,7 @@
         "@types/react": "19.2.14",
         "eslint-plugin-simple-header": "1.2.2",
         "eslint-plugin-simple-import-sort": "12.1.1",
-        "oxlint": "^1.68.0",
+        "oxlint": "1.68.0",
         "stylelint": "17.4.0",
         "stylelint-config-standard": "40.0.0",
         "typescript": "5.9.3",
