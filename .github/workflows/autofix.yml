@@ -34,10 +34,7 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - run: bun run lint:oxlint:fix
-        continue-on-error: true
-
-      - run: bun run lint:eslint:fix
+      - run: bun run lint:fix
         continue-on-error: true
 
       - run: bun run lint:styles:fix
