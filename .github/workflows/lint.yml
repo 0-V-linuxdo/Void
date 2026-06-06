@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches: [main, dev]
-    paths: [src/**, eslint.config.mjs, .stylelintrc.json, tsconfig.json, package.json, build.ts]
+    paths: [src/**, .oxlintrc.json, .stylelintrc.json, tsconfig.json, package.json, build.ts]
   pull_request:
     branches: [main, dev]
-    paths: [src/**, eslint.config.mjs, .stylelintrc.json, tsconfig.json, package.json, build.ts]
+    paths: [src/**, .oxlintrc.json, .stylelintrc.json, tsconfig.json, package.json, build.ts]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -16,8 +16,8 @@ permissions:
   contents: read
 
 jobs:
-  eslint:
-    name: ESLint
+  oxlint:
+    name: Oxlint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

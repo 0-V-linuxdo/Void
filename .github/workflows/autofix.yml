@@ -37,9 +37,6 @@ jobs:
       - run: bun run lint:oxlint:fix
         continue-on-error: true
 
-      - run: bun run lint:eslint:fix
-        continue-on-error: true
-
       - run: bun run lint:styles:fix
         continue-on-error: true
 

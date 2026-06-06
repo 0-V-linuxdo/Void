@@ -10,8 +10,8 @@ rules:
     - if a helper/component/pattern exists elsewhere, import it, NEVER copy-paste or recreate
     - use void-mcp to inspect live code, NEVER guess module structure
     - run `bun run lint:oxlint:fix` + `bun run tsc` after code changes, `bun run lint:styles:fix` after css changes
-    - eslint is SLOW (only checks license headers), run `bun run lint:eslint:fix` ONLY when adding new files
-    - NEVER run `bun run lint:fix` (full) or `bun run build` unless asked
+    - oxlint covers everything (license headers, stylistic, import sort, unused imports) via jsPlugins — eslint is gone
+    - NEVER run `bun run build` unless asked
     - NEVER commit/push without explicit user instruction
     - NEVER commit design specs/plans/docs to the repo
   code:

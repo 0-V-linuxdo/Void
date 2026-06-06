@@ -1,6 +1,11 @@
 {
     "$schema": "./node_modules/oxlint/configuration_schema.json",
     "plugins": ["typescript", "react", "import", "unicorn", "oxc"],
+    "jsPlugins": [
+        { "name": "simple-header", "specifier": "eslint-plugin-simple-header" },
+        { "name": "simple-import-sort", "specifier": "eslint-plugin-simple-import-sort" },
+        { "name": "stylistic", "specifier": "@stylistic/eslint-plugin" }
+    ],
     "categories": {
         "correctness": "error",
         "suspicious": "warn",
@@ -8,6 +13,31 @@
     },
     "ignorePatterns": ["dist", "browser", "packages", "src/plugins/mcp.dev/server.ts"],
     "rules": {
+        "simple-header/header": ["error", {
+            "text": "/*\n * Void, a modification for grok.com\n * Copyright (c) {year} {author}\n * SPDX-License-Identifier: GPL-3.0-or-later\n */",
+            "templates": { "author": [".*", "Void contributors"] }
+        }],
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
+        "no-unused-vars": ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_", "fix": { "imports": "safe-fix", "variables": "off" } }],
+        "no-underscore-dangle": "off",
+        "stylistic/jsx-quotes": ["error", "prefer-double"],
+        "stylistic/quotes": ["error", "double", { "avoidEscape": true }],
+        "stylistic/no-mixed-spaces-and-tabs": "error",
+        "stylistic/arrow-parens": ["error", "as-needed"],
+        "stylistic/eol-last": ["error", "always"],
+        "stylistic/no-multi-spaces": "error",
+        "stylistic/no-trailing-spaces": "error",
+        "stylistic/no-whitespace-before-property": "error",
+        "stylistic/semi": ["error", "always"],
+        "stylistic/semi-style": ["error", "last"],
+        "stylistic/space-in-parens": ["error", "never"],
+        "stylistic/block-spacing": ["error", "always"],
+        "stylistic/object-curly-spacing": ["error", "always"],
+        "stylistic/spaced-comment": ["error", "always", { "markers": ["!"] }],
+        "stylistic/no-extra-semi": "error",
+        "stylistic/function-call-spacing": ["error", "never"],
+
         "yoda": "error",
         "eqeqeq": ["error", "always", { "null": "ignore" }],
         "prefer-destructuring": ["error", {
