@@ -37,11 +37,6 @@ const MoonIcon = findExportedComponentLazy("MoonIcon");
 const cl = classNameFactory("void-settings-");
 
 const settings = definePluginSettings({
-    hideUserId: {
-        type: OptionType.BOOLEAN,
-        description: "Hide your user ID from the account settings page.",
-        default: true,
-    },
     showVoidMenu: {
         type: OptionType.BOOLEAN,
         description: "Show the Void sub-menu in the avatar dropdown.",
@@ -204,10 +199,6 @@ export default definePlugin({
     required: true,
     settings,
 
-    _hideUserId() {
-        return settings.store.hideUserId;
-    },
-
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
 
     renderTabs(jsx: typeof createElement, TabButton: ComponentType<TabButtonProps>) {
@@ -260,13 +251,6 @@ export default definePlugin({
                     replace: "...$self.renderPanels($2,$1,$3),$&",
                 },
             ],
-        },
-        {
-            find: "settings-account-card",
-            replacement: {
-                match: /\(0,\i\.jsx\)\("div",\{[^}]*\.userId\}\)/,
-                replace: "($self._hideUserId()?null:$&)",
-            },
         },
     ],
 });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.3
+// @version      1.0.3.4
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.3 — A modification for grok.com
+ * Void v1.0.3.4 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -5689,11 +5689,6 @@ ${sourceUrl}`;
   var MoonIcon = findExportedComponentLazy("MoonIcon");
   var cl12 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
-    hideUserId: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide your user ID from the account settings page.",
-      default: true
-    },
     showVoidMenu: {
       type: 3 /* BOOLEAN */,
       description: "Show the Void sub-menu in the avatar dropdown.",
@@ -5737,9 +5732,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.3"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"c65c0dd"}`
-    }, `(${"c65c0dd"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.4"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8af2192"}`
+    }, `(${"8af2192"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5807,9 +5802,6 @@ ${sourceUrl}`;
     authors: [Devs.Prism],
     required: true,
     settings: settings3,
-    _hideUserId() {
-      return settings3.store.hideUserId;
-    },
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
     renderTabs(jsx, TabButton) {
       try {
@@ -5871,13 +5863,6 @@ ${sourceUrl}`;
             replace: "...$self.renderPanels($2,$1,$3),$&"
           }
         ]
-      },
-      {
-        find: "settings-account-card",
-        replacement: {
-          match: /\(0,\i\.jsx\)\("div",\{[^}]*\.userId\}\)/,
-          replace: "($self._hideUserId()?null:$&)"
-        }
       }
     ]
   });
@@ -8937,27 +8922,90 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }
   });
 
-  // src/plugins/starry/index.ts
+  // void-css:D:/Projects/Void/src/plugins/starry/styles.css
+  registerStyle("starry", `.void-starry-picker {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.375rem;
+    cursor: pointer;
+    padding: 0.125rem;
+    background-color: transparent;
+}
+`);
+
+  // src/plugins/starry/index.tsx
+  var cl20 = classNameFactory("void-starry-");
+  var DEFAULT_COLOR = "#ffffff";
+  var StarsBackground = findExportedComponentLazy("StarsBackground");
+  function hexToRgb(hex) {
+    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
+    if (!m)
+      return [255, 255, 255];
+    const n = parseInt(m[1], 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  function ColorPicker2() {
+    const { starColor } = settings15.use(["starColor"]);
+    const value = starColor ?? DEFAULT_COLOR;
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Flex, {
+        alignItems: "center",
+        gap: "0.5rem"
+      }, /* @__PURE__ */ React.createElement("input", {
+        type: "color",
+        className: cl20("picker"),
+        value,
+        onChange: (e) => {
+          settings15.store.starColor = e.target.value;
+        }
+      }), /* @__PURE__ */ React.createElement(Text, {
+        size: "sm",
+        color: "muted"
+      }, value))
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Star color"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Color of the twinkling stars.")));
+  }
+  function StarryBackground() {
+    const { starColor } = settings15.use(["starColor"]);
+    return /* @__PURE__ */ React.createElement("div", {
+      "aria-hidden": true,
+      className: "fixed inset-0 -z-10 pointer-events-none"
+    }, /* @__PURE__ */ React.createElement(StarsBackground, {
+      starColor: hexToRgb(starColor ?? DEFAULT_COLOR)
+    }));
+  }
+  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
+  var settings15 = definePluginSettings({
+    starColor: {
+      type: 6 /* COMPONENT */,
+      component: ColorPicker2
+    }
+  }).withPrivateSettings();
   var starry_default = definePlugin({
     name: "Starry",
-    description: "Enables Grok's native starry idle background with shooting stars.",
+    description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
+    settings: settings15,
+    _StarryBg() {
+      return /* @__PURE__ */ React.createElement(WrappedStarry, {
+        key: "void-starry-bg"
+      });
+    },
     patches: [
       {
-        find: "fadeOutDuration:200",
-        group: true,
-        replacement: [
-          {
-            match: /!\i&&"off"!==\i&&"main"===\i\.page&&/,
-            replace: ""
-          },
-          {
-            match: /inactivityDelay:1e4,fadeInDuration:1e4/,
-            replace: "inactivityDelay:0,fadeInDuration:0"
-          }
-        ]
+        find: '"chat-page")',
+        replacement: {
+          match: /(children:\[)(\i,\i,\i,\i\]\},"chat-page"\))/,
+          replace: "$1$self._StarryBg(),$2"
+        }
       }
-    ]
+    ],
+    start() {
+      settings15.store.starColor ??= DEFAULT_COLOR;
+    }
   });
 
   // void-css:D:/Projects/Void/src/plugins/streamerMode/styles.css
@@ -9067,7 +9115,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings15 = definePluginSettings({
+  var settings16 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -9112,14 +9160,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings15.store[key]);
+      classList.toggle(cls, !!settings16.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings16,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -9132,7 +9180,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME2 = "widerChat";
-  var settings16 = definePluginSettings({
+  var settings17 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem (default: 48).",
@@ -9140,14 +9188,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
   function applyWidth() {
-    const w = settings16.store.width ?? 64;
+    const w = settings17.store.width ?? 64;
     registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
-    settings: settings16,
+    settings: settings17,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
@@ -9213,7 +9261,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     NoticeType2["ERROR"] = "error";
     NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var cl20 = classNameFactory("void-notice-");
+  var cl21 = classNameFactory("void-notice-");
   var ICONS = {
     ["info" /* INFO */]: (size) => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
       size
@@ -9231,11 +9279,11 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl20("root")
+      className: cl21("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl20("icon")
+      className: cl21("icon")
     }, ICONS[type ?? "info" /* INFO */](18)), /* @__PURE__ */ React.createElement("span", {
-      className: cl20("message")
+      className: cl21("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
@@ -9245,7 +9293,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       variant: "tertiary",
       size: "sm",
       shape: "square",
-      className: cl20("close"),
+      className: cl21("close"),
       onClick: onClose
     }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
