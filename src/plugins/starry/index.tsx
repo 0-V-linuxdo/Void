@@ -13,11 +13,9 @@ import { React } from "@turbopack/common/react";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
-import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 
 const cl = classNameFactory("void-starry-");
-const logger = new Logger("Starry");
 
 const DEFAULT_COLOR = "#ffffff";
 
@@ -79,12 +77,7 @@ export default definePlugin({
     settings,
 
     _StarryBg() {
-        try {
-            return <WrappedStarry key="void-starry-bg" />;
-        } catch (e) {
-            logger.error("Failed to render starry background:", e);
-            return null;
-        }
+        return <WrappedStarry key="void-starry-bg" />;
     },
 
     patches: [
