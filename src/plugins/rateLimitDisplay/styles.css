@@ -13,6 +13,13 @@
     white-space: nowrap;
 }
 
+/* match the native mode-select label (14px / 550) with stable digit widths */
+.void-rld-trigger span {
+    font-size: 14px !important;
+    font-weight: 550 !important;
+    font-variant-numeric: tabular-nums;
+}
+
 button:has(> .void-rld-trigger > :nth-child(2)) {
     width: auto;
     border-radius: 1.25rem;

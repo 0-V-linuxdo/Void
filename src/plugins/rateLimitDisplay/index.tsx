@@ -8,13 +8,14 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { Flex } from "@components/Flex";
-import { ClockAlertIcon, GaugeIcon } from "@components/icons";
+import { ClockAlertIcon } from "@components/icons";
 import { Text } from "@components/Text";
 import type { CreditQuotaStoreState, ImagineCreditBucket, ImagineCreditQuota } from "@grok-types/stores/CreditQuotaStore";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React, useEffect, useState } from "@turbopack/common/react";
 import { CreditQuotaStore, ModesStore, RoutingStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
+import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -24,6 +25,8 @@ import definePlugin, { OptionType } from "@utils/types";
 
 const logger = new Logger("RateLimitDisplay");
 const cl = classNameFactory("void-rld-");
+
+const UsageProgressIcon = findExportedComponentLazy("UsageProgressIcon");
 
 const settings = definePluginSettings({
     hideTotal: {
@@ -112,7 +115,7 @@ function ButtonIcon() {
 
     const icon = limited
         ? <ClockAlertIcon width={18} height={20} className={cl("icon-limited")} />
-        : <GaugeIcon width={20} height={20} />;
+        : <UsageProgressIcon width={18} height={18} />;
 
     return (
         <span className={cl("trigger")}>

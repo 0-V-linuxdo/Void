@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { isObject } from "@utils/guards";
 import { idbGet, idbSet } from "@utils/idb";
 
 const ROOT_KEY_ID = "VoidCryptoRootHKDF";
@@ -23,26 +24,24 @@ export type EncryptedBlob = {
 
 type Bytes = Uint8Array<ArrayBuffer>;
 
+const utf8 = new TextEncoder();
+
 let rootKeyPromise: Promise<CryptoKey> | null = null;
 
 function randomBytes(n: number): Bytes {
-    const buf = new Uint8Array(new ArrayBuffer(n));
-    crypto.getRandomValues(buf);
-    return buf;
+    return crypto.getRandomValues(new Uint8Array(n));
 }
 
 function toBytes(b64: string): Bytes {
-    const bin = atob(b64);
-    const out = new Uint8Array(new ArrayBuffer(bin.length));
-    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-    return out;
+    return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
 }
 
 function fromBytes(bytes: ArrayBuffer | Uint8Array): string {
     const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-    let s = "";
-    for (let i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
-    return btoa(s);
+    // chunked to stay under the engine argument limit for large ciphertexts
+    let bin = "";
+    for (let i = 0; i < arr.length; i += 0x8000) bin += String.fromCharCode(...arr.subarray(i, i + 0x8000));
+    return btoa(bin);
 }
 
 async function generateRootKey(): Promise<CryptoKey> {
@@ -75,10 +74,7 @@ async function deriveAccountKey(root: CryptoKey, salt: Bytes, aad: Bytes, usage:
 }
 
 function encodeUtf8(s: string): Bytes {
-    const enc = new TextEncoder().encode(s);
-    const buf = new Uint8Array(new ArrayBuffer(enc.length));
-    buf.set(enc);
-    return buf;
+    return utf8.encode(s) as Bytes;
 }
 
 function buildAad(accountId: string): Bytes {
@@ -123,8 +119,7 @@ export async function decryptForAccount(accountId: string, blob: EncryptedBlob):
 }
 
 export function isEncryptedBlob(value: unknown): value is EncryptedBlob {
-    if (value == null || typeof value !== "object") return false;
-    const v = value as Record<string, unknown>;
-    return v.v === CURRENT_VERSION && v.alg === "AES-GCM-256" && v.kdf === "HKDF-SHA256"
-        && typeof v.iv === "string" && typeof v.salt === "string" && typeof v.ct === "string";
+    return isObject(value)
+        && value.v === CURRENT_VERSION && value.alg === "AES-GCM-256" && value.kdf === "HKDF-SHA256"
+        && typeof value.iv === "string" && typeof value.salt === "string" && typeof value.ct === "string";
 }

@@ -54,6 +54,20 @@ export function getThemes(): ThemeData[] {
     return Array.isArray(themes) ? themes : [];
 }
 
+function setThemes(themes: ThemeData[]) {
+    updateSettingsPluginData({ themes });
+}
+
+function patchTheme(url: string, patch: Partial<ThemeData>) {
+    setThemes(getThemes().map(t => (t.url === url ? { ...t, ...patch } : t)));
+}
+
+// Re-checked after an async CSS fetch: the user may have disabled the theme (or all
+// themes) while the request was in flight, in which case we must not inject the style.
+function isThemeStillActive(url: string): boolean {
+    return isThemesEnabled() && (getThemes().find(t => t.url === url)?.enabled ?? false);
+}
+
 export function isThemesEnabled(): boolean {
     return getSettingsPluginData().themesEnabled !== false;
 }
@@ -114,7 +128,7 @@ export async function addTheme(url: string): Promise<ThemeData> {
 
     registerDisabledStyle(themeStyleId(url), css);
 
-    updateSettingsPluginData({ themes: [...getThemes(), theme] });
+    setThemes([...getThemes(), theme]);
     logger.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
 }
@@ -137,7 +151,7 @@ export function addLocalTheme(name: string, css: string): ThemeData {
 
     registerDisabledStyle(themeStyleId(id), css);
 
-    updateSettingsPluginData({ themes: [...getThemes(), theme] });
+    setThemes([...getThemes(), theme]);
     logger.info(`Added local theme "${theme.name}"`);
     return theme;
 }
@@ -155,16 +169,16 @@ export function updateLocalTheme(url: string, data: { name?: string; css?: strin
         }
         return updated;
     });
-    updateSettingsPluginData({ themes });
+    setThemes(themes);
 }
 
 export function removeTheme(url: string) {
     unregisterStyle(themeStyleId(url));
-    updateSettingsPluginData({ themes: getThemes().filter(t => t.url !== url) });
+    setThemes(getThemes().filter(t => t.url !== url));
 }
 
 export async function enableTheme(url: string) {
-    updateSettingsPluginData({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: true } : t)) });
+    patchTheme(url, { enabled: true });
     if (!isThemesEnabled()) return;
 
     const theme = getThemes().find(t => t.url === url);
@@ -179,8 +193,6 @@ export async function enableTheme(url: string) {
         return;
     }
 
-    const isStillEnabled = () => getThemes().find(t => t.url === url)?.enabled && isThemesEnabled();
-
     let css: string;
     try {
         const resp = await fetchExternal(url);
@@ -188,7 +200,7 @@ export async function enableTheme(url: string) {
             logger.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
             return;
         }
-        if (!isStillEnabled()) return;
+        if (!isThemeStillActive(url)) return;
 
         css = await resp.text();
     } catch (e) {
@@ -196,13 +208,13 @@ export async function enableTheme(url: string) {
         return;
     }
 
-    if (!isStillEnabled()) return;
+    if (!isThemeStillActive(url)) return;
 
     registerStyle(id, css);
 }
 
 export function disableTheme(url: string) {
-    updateSettingsPluginData({ themes: getThemes().map(t => (t.url === url ? { ...t, enabled: false } : t)) });
+    patchTheme(url, { enabled: false });
     disableStyle(themeStyleId(url));
 }
 
@@ -223,7 +235,7 @@ export async function loadSavedThemes() {
             const resp = await fetchExternal(t.url);
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const css = await resp.text();
-            if (!getThemes().some(th => th.url === t.url && th.enabled) || !isThemesEnabled()) return;
+            if (!isThemeStillActive(t.url)) return;
             registerStyle(themeStyleId(t.url), css);
         }),
     );

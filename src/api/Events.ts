@@ -13,30 +13,27 @@ export interface VoidEventMap {
     streamEnd: { responseId: string };
 }
 
-export type VoidEvent = keyof VoidEventMap | (string & {});
+export type VoidEvent = keyof VoidEventMap;
 
 const logger = new Logger("Events");
 
 type Handler = (data: unknown) => void;
 
-const listeners = new Map<string, Set<Handler>>();
+const listeners = new Map<VoidEvent, Set<Handler>>();
 
-export function subscribe<E extends keyof VoidEventMap>(event: E, handler: (data: VoidEventMap[E]) => void): () => void;
-export function subscribe(event: VoidEvent, handler: (data: unknown) => void): () => void;
-export function subscribe(event: VoidEvent, handler: (data: unknown) => void): () => void {
-    const set = mapGetOrCreate(listeners, event, () => new Set());
-    set.add(handler);
+export function subscribe<E extends VoidEvent>(event: E, handler: (data: VoidEventMap[E]) => void): () => void {
+    const set = mapGetOrCreate(listeners, event, () => new Set<Handler>());
+    set.add(handler as Handler);
     return () => {
-        set.delete(handler);
+        set.delete(handler as Handler);
         if (!set.size) listeners.delete(event);
     };
 }
 
-export function dispatch<E extends keyof VoidEventMap>(event: E, ...args: VoidEventMap[E] extends void ? [] : [data: VoidEventMap[E]]): void;
-export function dispatch(event: VoidEvent, data?: unknown): void;
-export function dispatch(event: VoidEvent, data?: unknown) {
+export function dispatch<E extends VoidEvent>(event: E, ...args: VoidEventMap[E] extends void ? [] : [data: VoidEventMap[E]]): void {
     const set = listeners.get(event);
     if (!set?.size) return;
+    const data = args[0];
     for (const handler of Array.from(set)) {
         try { handler(data); } catch (e) { logger.error(`Event handler error (${event}):`, e); }
     }

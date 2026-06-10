@@ -14,7 +14,7 @@ import { type Patch, type Plugin, StartAt } from "@utils/types";
 
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
 import { addContextMenuItem, type ContextMenuItemDef, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
-import { subscribe as subscribeEvent } from "./Events";
+import { subscribe as subscribeEvent, type VoidEvent } from "./Events";
 import { getSettingsPluginData, mergePluginSettings, PlainSettings, pluginPath, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
 
 const logger = new Logger("PluginManager", "#b4befe");
@@ -32,6 +32,11 @@ function runUnsubs(pluginName: string) {
         try { unsub(); } catch (e) { logger.error(`Unsub error in ${pluginName}:`, e); }
     }
     pluginUnsubscribers.delete(pluginName);
+}
+
+function markAsEnabledDependency(plugin: Plugin) {
+    mergePluginSettings(plugin.name, { enabled: true });
+    plugin.isDependency = true;
 }
 
 function removePluginContextMenuItems(plugin: Plugin) {
@@ -85,8 +90,7 @@ function startDependenciesRecursive(plugin: Plugin, visiting = new Set<string>()
             return false;
         }
 
-        dep.isDependency = true;
-        mergePluginSettings(depName, { enabled: true });
+        markAsEnabledDependency(dep);
 
         visiting.add(depName);
         if (!startDependenciesRecursive(dep, visiting)) return false;
@@ -96,7 +100,7 @@ function startDependenciesRecursive(plugin: Plugin, visiting = new Set<string>()
     return true;
 }
 
-type Subscribable = { subscribe: (...args: unknown[]) => unknown };
+type Subscribable = { subscribe: (...args: unknown[]) => () => void };
 
 function isSubscribable(val: unknown): val is Subscribable {
     return val != null && typeof (val as { subscribe?: unknown }).subscribe === "function";
@@ -159,8 +163,8 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
         pluginUnsubscribers.set(plugin.name, unsubs);
 
         if (plugin.events) {
-            for (const [event, handler] of Object.entries(plugin.events)) {
-                if (handler) unsubs.push(subscribeEvent(event, handler as (data: unknown) => void));
+            for (const [event, handler] of Object.entries(plugin.events) as [VoidEvent, ((data: unknown) => void) | undefined][]) {
+                if (handler) unsubs.push(subscribeEvent(event, handler));
             }
         }
 
@@ -175,8 +179,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
                 };
 
                 const attach = (store: Subscribable) => {
-                    const unsub = sub.selector ? store.subscribe(sub.selector, wrappedHandler) : store.subscribe(wrappedHandler);
-                    unsubs.push(unsub as () => void);
+                    unsubs.push(sub.selector ? store.subscribe(sub.selector, wrappedHandler) : store.subscribe(wrappedHandler));
                 };
 
                 const store = resolveStoreHook(storeName);
@@ -305,8 +308,7 @@ export function initPluginManager() {
                 logger.warn(`Plugin ${name} has unresolved dependency ${d}`);
                 continue;
             }
-            mergePluginSettings(d, { enabled: true });
-            dep.isDependency = true;
+            markAsEnabledDependency(dep);
         }
 
         if (plugin.chatBarButton) neededApis.add("ChatBarButtonAPI");
@@ -315,9 +317,7 @@ export function initPluginManager() {
 
     for (const api of neededApis) {
         const dep = plugins[api];
-        if (!dep) continue;
-        mergePluginSettings(api, { enabled: true });
-        dep.isDependency = true;
+        if (dep) markAsEnabledDependency(dep);
     }
 
     for (const [name, plugin] of Object.entries(plugins)) {
@@ -336,5 +336,4 @@ export function initPluginManager() {
             }
         }
     }
-
 }

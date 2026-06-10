@@ -60,16 +60,16 @@ handler.get = (target, p, receiver) => {
 
 const MAX_RETRIES = 50;
 
-export function makeLazy<T>(factory: () => T): () => T {
+export function makeLazy<T>(factory: () => T, maxRetries = MAX_RETRIES): () => T {
     let cache: T;
     let resolved = false;
     let attempts = 0;
     return () => {
         if (!resolved) {
-            if (attempts >= MAX_RETRIES) {
-                if (IS_DEV && attempts === MAX_RETRIES) {
+            if (attempts >= maxRetries) {
+                if (IS_DEV && attempts === maxRetries) {
                     attempts++;
-                    logger.warn("proxyLazy: factory failed to resolve after", MAX_RETRIES, "attempts");
+                    logger.warn("proxyLazy: factory failed to resolve after", maxRetries, "attempts");
                 }
                 return cache;
             }
