@@ -38,7 +38,10 @@ function toBytes(b64: string): Bytes {
 
 function fromBytes(bytes: ArrayBuffer | Uint8Array): string {
     const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-    return btoa(String.fromCharCode(...arr));
+    // chunked to stay under the engine argument limit for large ciphertexts
+    let bin = "";
+    for (let i = 0; i < arr.length; i += 0x8000) bin += String.fromCharCode(...arr.subarray(i, i + 0x8000));
+    return btoa(bin);
 }
 
 async function generateRootKey(): Promise<CryptoKey> {
