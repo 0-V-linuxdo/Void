@@ -8,14 +8,14 @@ import "../shared.css";
 import "./PluginDialog.css";
 
 import { Settings } from "@api/Settings";
-import { Button, Dialog, DialogFooter, Flex, Paragraph, Separator, Text } from "@components";
+import { Button, Dialog, DialogFooter, Flex, Paragraph, Separator } from "@components";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import type { Plugin } from "@utils/types";
 
 import SettingField from "../SettingField";
 import { isVisibleSetting } from "../utils";
-import { VoidDialogShell } from "./VoidDialogShell";
+import { DialogField, VoidDialogShell } from "./VoidDialogShell";
 
 const cl = classNameFactory("void-plugin-dialog-");
 
@@ -44,13 +44,11 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
             <VoidDialogShell title={plugin.name} subtitle={plugin.description}>
                 <Separator />
                 {!!plugin.authors?.length && (
-                    <Flex flexDirection="column" gap="0.25rem">
-                        <Text size="sm" weight="medium">Authors</Text>
+                    <DialogField label="Authors">
                         <Paragraph>{plugin.authors.join(", ")}</Paragraph>
-                    </Flex>
+                    </DialogField>
                 )}
-                <Flex flexDirection="column" gap="0.25rem">
-                    <Text size="sm" weight="medium">Settings</Text>
+                <DialogField label="Settings">
                     {entries.length ? (
                         <Flex flexDirection="column" gap="0.75rem" className={cl("settings-list")}>
                             {entries.map(([key, setting]) => (
@@ -60,7 +58,7 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
                     ) : (
                         <Paragraph>No configurable settings.</Paragraph>
                     )}
-                </Flex>
+                </DialogField>
                 {!!entries.length && (
                     <DialogFooter className={cl("footer")}>
                         <Button

@@ -12,18 +12,12 @@ import {
     Button,
     ConfirmDialog,
     Dialog,
-    DialogFooter,
     ErrorBoundary,
     Flex,
     Grid,
     Input,
     Paragraph,
     SectionHeader,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
     Text,
 } from "@components";
 import { React, useMemo, useState } from "@turbopack/common/react";
@@ -34,11 +28,20 @@ import { useFiltered } from "@utils/react";
 import { CssEditor } from "../CssEditor";
 import ThemeCard from "../ThemeCard";
 import { type InputChangeEvent } from "../utils";
-import { VoidDialogShell } from "./VoidDialogShell";
+import { SearchFilterBar } from "./SearchFilterBar";
+import { DialogActions, DialogField, VoidDialogShell } from "./VoidDialogShell";
 
 type ThemeFilter = "all" | "enabled" | "disabled" | "online" | "local";
 
 const cl = classNameFactory("void-themes-");
+
+const FILTER_OPTIONS: readonly { value: ThemeFilter; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "enabled", label: "Enabled" },
+    { value: "disabled", label: "Disabled" },
+    { value: "online", label: "Online" },
+    { value: "local", label: "Local" },
+];
 
 const getThemeKey = (t: ThemeData) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
 
@@ -79,8 +82,7 @@ function OnlineThemeDialog({ open, onClose, onSave }: OnlineThemeDialogProps) {
     return (
         <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
             <VoidDialogShell title="Add Online Theme">
-                <Flex flexDirection="column" gap="0.25rem">
-                    <Text size="sm" weight="medium">URL</Text>
+                <DialogField label="URL">
                     <Input
                         type="text"
                         placeholder="https://raw.githubusercontent.com/..."
@@ -88,14 +90,15 @@ function OnlineThemeDialog({ open, onClose, onSave }: OnlineThemeDialogProps) {
                         onChange={(e: InputChangeEvent) => { setUrl(e.target.value); setError(""); }}
                         onKeyDown={(e: { key: string }) => { if (e.key === "Enter") handleImport(); }}
                     />
-                </Flex>
+                </DialogField>
                 {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
-                <DialogFooter className={cl("local-footer")}>
-                    <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
-                    <Button variant="primary" size="sm" onClick={handleImport} disabled={loading || !url.trim()}>
-                        {loading ? "Importing..." : "Import"}
-                    </Button>
-                </DialogFooter>
+                <DialogActions
+                    className={cl("local-footer")}
+                    onCancel={onClose}
+                    confirmLabel={loading ? "Importing..." : "Import"}
+                    onConfirm={handleImport}
+                    confirmDisabled={loading || !url.trim()}
+                />
             </VoidDialogShell>
         </Dialog>
     );
@@ -124,26 +127,25 @@ function LocalThemeDialog({ open, onClose, theme, onSave }: LocalThemeDialogProp
     return (
         <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
             <VoidDialogShell title={theme ? "Edit Local Theme" : "New Local Theme"}>
-                <Flex flexDirection="column" gap="0.25rem">
-                    <Text size="sm" weight="medium">Name</Text>
+                <DialogField label="Name">
                     <Input
                         type="text"
                         placeholder="My Theme"
                         value={name}
                         onChange={(e: InputChangeEvent) => setName(e.target.value)}
                     />
-                </Flex>
-                <Flex flexDirection="column" gap="0.25rem" className={cl("local-css-field")}>
-                    <Text size="sm" weight="medium">CSS</Text>
+                </DialogField>
+                <DialogField label="CSS" className={cl("local-css-field")}>
                     <CssEditor className={cl("local-editor")} value={css} onChange={setCss} placeholder="Paste your CSS here..." />
-                </Flex>
+                </DialogField>
                 {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
-                <DialogFooter className={cl("local-footer")}>
-                    <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
-                    <Button variant="primary" size="sm" onClick={handleSave} disabled={!name.trim() || !css.trim()}>
-                        {theme ? "Save" : "Create"}
-                    </Button>
-                </DialogFooter>
+                <DialogActions
+                    className={cl("local-footer")}
+                    onCancel={onClose}
+                    confirmLabel={theme ? "Save" : "Create"}
+                    onConfirm={handleSave}
+                    confirmDisabled={!name.trim() || !css.trim()}
+                />
             </VoidDialogShell>
         </Dialog>
     );
@@ -196,27 +198,15 @@ export default function ThemesTab() {
                 </Button>
             </Flex>
             {themes.length > 0 && (
-                <Flex alignItems="center" gap="0.75rem">
-                    <Input
-                        type="text"
-                        placeholder={`Search ${themes.length} themes...`}
-                        value={search}
-                        onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
-                        className="void-search-bar-input"
-                    />
-                    <Select value={filter} onValueChange={(v: string) => setFilter(v as ThemeFilter)}>
-                        <SelectTrigger className="void-search-bar-select">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="enabled">Enabled</SelectItem>
-                            <SelectItem value="disabled">Disabled</SelectItem>
-                            <SelectItem value="online">Online</SelectItem>
-                            <SelectItem value="local">Local</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </Flex>
+                <SearchFilterBar
+                    placeholder={`Search ${themes.length} themes...`}
+                    search={search}
+                    onSearchChange={setSearch}
+                    filter={filter}
+                    onFilterChange={f => setFilter(f)}
+                    options={FILTER_OPTIONS}
+                    selectClassName="void-search-bar-select"
+                />
             )}
             {filtered.length > 0 && (
                 <Grid columns="repeat(2, 1fr)">

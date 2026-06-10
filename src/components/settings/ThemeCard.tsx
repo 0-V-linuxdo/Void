@@ -7,23 +7,15 @@
 import "./ThemeCard.css";
 
 import { disableTheme, enableTheme, type ThemeData } from "@api/Themes";
-import { Button, Switch } from "@components";
-import { CopyIcon, FolderIcon, GlobeIcon, type IconProps, PencilIcon, Trash2Icon } from "@components/icons";
+import { Switch } from "@components";
+import { CopyIcon, FolderIcon, GlobeIcon, PencilIcon, Trash2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { copyToClipboard } from "@utils/misc";
-import type { ComponentType } from "react";
 
 import BaseCard from "./BaseCard";
-
-function IconButton({ icon: Icon, label, onClick }: { icon: ComponentType<IconProps>; label: string; onClick?(): void }) {
-    return (
-        <Button variant="tertiary" size="xs" shape="square" aria-label={label} onClick={onClick}>
-            <Icon size={14} />
-        </Button>
-    );
-}
+import { IconButton } from "./IconButton";
 
 const logger = new Logger("ThemeCard");
 const cl = classNameFactory("void-theme-card-");

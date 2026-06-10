@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Button, DialogClose, DialogContent, DialogHeader, DialogTitle, Paragraph } from "@components";
+import { Button, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, Flex, Paragraph, Text } from "@components";
 import { Cross2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import type { ReactNode } from "react";
@@ -23,5 +23,29 @@ export function VoidDialogShell({ title, subtitle, children }: { title: ReactNod
             </DialogHeader>
             {children}
         </DialogContent>
+    );
+}
+
+export function DialogField({ label, className, children }: { label: string; className?: string; children: ReactNode }) {
+    return (
+        <Flex flexDirection="column" gap="0.25rem" className={className}>
+            <Text size="sm" weight="medium">{label}</Text>
+            {children}
+        </Flex>
+    );
+}
+
+export function DialogActions({ className, onCancel, confirmLabel, onConfirm, confirmDisabled }: {
+    className?: string;
+    onCancel(): void;
+    confirmLabel: string;
+    onConfirm(): void;
+    confirmDisabled?: boolean;
+}) {
+    return (
+        <DialogFooter className={className}>
+            <Button variant="secondary" size="sm" onClick={onCancel}>Cancel</Button>
+            <Button variant="primary" size="sm" onClick={onConfirm} disabled={confirmDisabled}>{confirmLabel}</Button>
+        </DialogFooter>
     );
 }
