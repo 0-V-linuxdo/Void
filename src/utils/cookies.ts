@@ -5,7 +5,7 @@
  */
 
 import { Logger } from "@utils/Logger";
-import { randomId } from "@utils/misc";
+import { errorMessage, randomId } from "@utils/misc";
 
 const logger = new Logger("Cookies");
 
@@ -17,6 +17,7 @@ export const ALLOWED_ORIGINS = [GROK_URL, XAI_URL, XAI_ACCOUNTS_URL] as const;
 const ALLOWED_HOSTS = [".grok.com", ".x.ai"] as const;
 const BRIDGE_TIMEOUT_MS = 5000;
 const DOMAIN_DOT_PREFIX = /^\./;
+const ALLOWED_BARE_HOSTS = ALLOWED_HOSTS.map(h => h.replace(DOMAIN_DOT_PREFIX, ""));
 const NO_BRIDGE_MSG = "AccountSwitcher needs the Void browser extension. Install or reload it after the cookies permission was added.";
 
 export interface CookiePartitionKey {
@@ -83,9 +84,8 @@ function bridgeRequest<T>(op: "list" | "set" | "remove", payload: unknown): Prom
 function ensureAllowedDomain(cookie: { domain?: string }) {
     const d = (cookie.domain ?? "").replace(DOMAIN_DOT_PREFIX, "");
     if (!d) return;
-    for (const host of ALLOWED_HOSTS) {
-        const bare = host.replace(DOMAIN_DOT_PREFIX, "");
-        if (d === bare || d.endsWith(host)) return;
+    for (const bare of ALLOWED_BARE_HOSTS) {
+        if (d === bare || d.endsWith(`.${bare}`)) return;
     }
     throw new CookieAccessError(`Refusing cookie for non-allowed domain: ${cookie.domain}`);
 }
@@ -127,23 +127,21 @@ export async function replaceAllCookies(snapshots: readonly CookieDomainSnapshot
     let deleted = 0;
     let set = 0;
 
+    const tally = (op: "delete" | "set", url: string, cookies: readonly CookieData[], results: PromiseSettledResult<unknown>[]) => {
+        let ok = 0;
+        results.forEach((r, i) => {
+            if (r.status === "rejected") {
+                failures.push(`${op} ${url}/${cookies[i].name}: ${errorMessage(r.reason)}`);
+                logger.warn(`${op} failed`, url, cookies[i].name, r.reason);
+            } else ok++;
+        });
+        return ok;
+    };
+
     for (const { url, cookies: next } of snapshots) {
         const current = await listCookies(url);
-        const deletes = await Promise.allSettled(current.map(c => deleteCookie(c, url)));
-        deletes.forEach((r, i) => {
-            if (r.status === "rejected") {
-                failures.push(`delete ${url}/${current[i].name}: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`);
-                logger.warn("delete failed", url, current[i].name, r.reason);
-            } else deleted++;
-        });
-
-        const sets = await Promise.allSettled(next.map(c => setCookie(c, url)));
-        sets.forEach((r, i) => {
-            if (r.status === "rejected") {
-                failures.push(`set ${url}/${next[i].name}: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`);
-                logger.warn("set failed", url, next[i].name, r.reason);
-            } else set++;
-        });
+        deleted += tally("delete", url, current, await Promise.allSettled(current.map(c => deleteCookie(c, url))));
+        set += tally("set", url, next, await Promise.allSettled(next.map(c => setCookie(c, url))));
     }
 
     return { deleted, set, failures };

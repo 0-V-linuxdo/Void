@@ -134,18 +134,19 @@ export function createSelectionStore<T>(): SelectionStore<T> {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+function hms(totalSeconds: number): [h: number, m: number, s: number] {
+    return [Math.floor(totalSeconds / 3600), Math.floor((totalSeconds % 3600) / 60), totalSeconds % 60];
+}
+
 export function formatCountdown(totalSeconds: number): string {
     if (totalSeconds <= 0) return "0:00";
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
+    const [h, m, s] = hms(totalSeconds);
     return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }
 
 export function formatDuration(totalSeconds: number): string {
     if (totalSeconds <= 0) return "0m";
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
+    const [h, m] = hms(totalSeconds);
     if (h > 0 && m > 0) return `${h}h ${m}m`;
     return h > 0 ? `${h}h` : `${m}m`;
 }
@@ -158,8 +159,11 @@ export function errorMessage(err: unknown): string {
     return err instanceof Error ? err.message : String(err);
 }
 
+const FILENAME_ILLEGAL = /[<>:"/\\|?*\x00-\x1f]/g;
+const WHITESPACE_RUN = /\s+/g;
+
 export function sanitizeFilename(title: string, fallback = "file"): string {
-    return title.replaceAll(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replaceAll(/\s+/g, "-") || fallback;
+    return title.replaceAll(FILENAME_ILLEGAL, "").trim().replaceAll(WHITESPACE_RUN, "-") || fallback;
 }
 
 export function mapGetOrCreate<K, V>(map: Map<K, V>, key: K, create: () => V): V {

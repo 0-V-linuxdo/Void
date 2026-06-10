@@ -4,12 +4,17 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+const CAMEL_BOUNDARY = /([a-z])([A-Z])/g;
+const WORD_SEPARATOR = /[-_]/g;
+const WORD_START = /\b\w/g;
+const REGEXP_SPECIALS = /[.*+?^${}()|[\]\\]/g;
+
 /** Convert any identifier (camelCase, snake_case, kebab-case) to Title Case. */
 export function humanizeKey(key: string, acronyms?: Record<string, string>): string {
     const title = key
-        .replaceAll(/([a-z])([A-Z])/g, "$1 $2")
-        .replaceAll(/[-_]/g, " ")
-        .replaceAll(/\b\w/g, c => c.toUpperCase());
+        .replaceAll(CAMEL_BOUNDARY, "$1 $2")
+        .replaceAll(WORD_SEPARATOR, " ")
+        .replaceAll(WORD_START, c => c.toUpperCase());
     if (!acronyms) return title;
     let result = title;
     for (const [from, to] of Object.entries(acronyms)) {
@@ -20,7 +25,7 @@ export function humanizeKey(key: string, acronyms?: Record<string, string>): str
 
 /** Escape special regex characters in a string. */
 export function escapeRegExp(s: string): string {
-    return s.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return s.replaceAll(REGEXP_SPECIALS, "\\$&");
 }
 
 /** Pluralize a word: `pluralize(1, "item")` -> "1 item", `pluralize(5, "item")` -> "5 items" */

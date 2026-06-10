@@ -31,22 +31,25 @@ function open(): Promise<IDBDatabase> {
     return promise;
 }
 
-export async function idbGet<T = unknown>(key: string): Promise<T | undefined> {
+async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore, resolve: (value: T) => void) => void): Promise<T> {
     const db = await open();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readonly");
-        const req = tx.objectStore(STORE_NAME).get(key);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
+    return new Promise<T>((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, mode);
+        run(tx.objectStore(STORE_NAME), resolve);
+        tx.onerror = () => reject(tx.error);
     });
 }
 
-export async function idbSet(key: string, value: unknown): Promise<void> {
-    const db = await open();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        tx.objectStore(STORE_NAME).put(value, key);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
+export function idbGet<T = unknown>(key: string): Promise<T | undefined> {
+    return withStore("readonly", (store, resolve) => {
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result);
+    });
+}
+
+export function idbSet(key: string, value: unknown): Promise<void> {
+    return withStore("readwrite", (store, resolve) => {
+        store.put(value, key);
+        store.transaction.oncomplete = () => resolve();
     });
 }
