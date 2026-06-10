@@ -12,17 +12,19 @@ import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectVa
 import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { humanizeKey } from "@utils/text";
-import { OptionType, type PluginSettingComponentDef, type PluginSettingDef, type PluginSettingSelectOption, type PluginSettingValue } from "@utils/types";
+import { OptionType, type PluginSettingBigIntDef, type PluginSettingBooleanDef, type PluginSettingCommon, type PluginSettingComponentDef, type PluginSettingDef, type PluginSettingNumberDef, type PluginSettingSelectDef, type PluginSettingSliderDef, type PluginSettingStringDef, type PluginSettingValue } from "@utils/types";
 
 import { type InputChangeEvent } from "./utils";
 
 const cl = classNameFactory("void-setting-");
 
-interface SettingFieldProps {
+interface SettingFieldProps<S extends PluginSettingDef = PluginSettingDef> {
     id: string;
-    setting: PluginSettingDef;
+    setting: S;
     pluginName: string;
 }
+
+type Field<S extends PluginSettingDef> = (props: SettingFieldProps<S>) => React.ReactNode;
 
 function usePluginSetting(pluginName: string, id: string, setting: PluginSettingDef) {
     const resolve = () => (Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting);
@@ -48,7 +50,7 @@ function usePluginSetting(pluginName: string, id: string, setting: PluginSetting
     return [value, update] as const;
 }
 
-function SettingLabel({ id, setting }: { id: string; setting: PluginSettingDef }) {
+function SettingLabel({ id, setting }: { id: string; setting: Partial<Pick<PluginSettingCommon, "description">> }) {
     return (
         <Flex flexDirection="column" gap="0">
             <SettingsTitle>{humanizeKey(id)}</SettingsTitle>
@@ -57,20 +59,19 @@ function SettingLabel({ id, setting }: { id: string; setting: PluginSettingDef }
     );
 }
 
-function BooleanField({ id, setting, pluginName }: SettingFieldProps) {
+const BooleanField: Field<PluginSettingBooleanDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return (
         <SettingsRow action={<Switch checked={!!value} onCheckedChange={update} />}>
             <SettingLabel id={id} setting={setting} />
         </SettingsRow>
     );
-}
+};
 
-function SelectField({ id, setting, pluginName }: SettingFieldProps) {
+const SelectField: Field<PluginSettingSelectDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    const options = "options" in setting ? (setting as { options: readonly PluginSettingSelectOption[] }).options : null;
-    const valueMap = useMemo(() => new Map(options?.map(o => [String(o.value), o.value])), [options]);
-    if (!options) return null;
+    const { options } = setting;
+    const valueMap = useMemo(() => new Map(options.map(o => [String(o.value), o.value])), [options]);
 
     return (
         <SettingsRow action={
@@ -79,7 +80,7 @@ function SelectField({ id, setting, pluginName }: SettingFieldProps) {
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                    {options.map((o: PluginSettingSelectOption) => (
+                    {options.map(o => (
                         <SelectItem key={String(o.value)} value={String(o.value)}>
                             {o.label}
                         </SelectItem>
@@ -90,13 +91,11 @@ function SelectField({ id, setting, pluginName }: SettingFieldProps) {
             <SettingLabel id={id} setting={setting} />
         </SettingsRow>
     );
-}
+};
 
-function SliderField({ id, setting, pluginName }: SettingFieldProps) {
+const SliderField: Field<PluginSettingSliderDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    if (!("min" in setting)) return null;
-
-    const { min, max } = setting as { min: number; max: number };
+    const { min, max } = setting;
 
     return (
         <Flex flexDirection="column" gap="0.5rem">
@@ -114,17 +113,15 @@ function SliderField({ id, setting, pluginName }: SettingFieldProps) {
             </Flex>
         </Flex>
     );
-}
+};
 
-function ComponentField({ setting, pluginName }: SettingFieldProps) {
+const ComponentField: Field<PluginSettingComponentDef> = ({ setting, pluginName }) => {
     const [, update] = usePluginSetting(pluginName, "component", setting);
-    if (!("component" in setting)) return null;
-
-    const Comp = (setting as PluginSettingComponentDef).component;
+    const Comp = setting.component;
     return <Comp setValue={update} option={setting} />;
-}
+};
 
-function NumberField({ id, setting, pluginName }: SettingFieldProps) {
+const NumberField: Field<PluginSettingNumberDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return (
         <Flex flexDirection="column" gap="0.5rem">
@@ -140,9 +137,9 @@ function NumberField({ id, setting, pluginName }: SettingFieldProps) {
             />
         </Flex>
     );
-}
+};
 
-function BigIntField({ id, setting, pluginName }: SettingFieldProps) {
+const BigIntField: Field<PluginSettingBigIntDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const display = value == null ? "" : String(value);
     return (
@@ -161,9 +158,9 @@ function BigIntField({ id, setting, pluginName }: SettingFieldProps) {
             />
         </Flex>
     );
-}
+};
 
-function StringField({ id, setting, pluginName }: SettingFieldProps) {
+const StringField: Field<PluginSettingStringDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return (
         <Flex flexDirection="column" gap="0.5rem">
@@ -177,11 +174,9 @@ function StringField({ id, setting, pluginName }: SettingFieldProps) {
             />
         </Flex>
     );
-}
+};
 
-type FieldComponent = React.ComponentType<SettingFieldProps>;
-
-const FIELD_MAP: Record<OptionType, FieldComponent | null> = {
+const FIELD_MAP = {
     [OptionType.BOOLEAN]: BooleanField,
     [OptionType.SELECT]: SelectField,
     [OptionType.SLIDER]: SliderField,
@@ -190,10 +185,10 @@ const FIELD_MAP: Record<OptionType, FieldComponent | null> = {
     [OptionType.BIGINT]: BigIntField,
     [OptionType.STRING]: StringField,
     [OptionType.CUSTOM]: null,
-};
+} as const satisfies Record<OptionType, Field<never> | null>;
 
 export default function SettingField({ id, setting, pluginName }: SettingFieldProps) {
-    const Field = FIELD_MAP[setting.type];
+    const Field = FIELD_MAP[setting.type] as Field<PluginSettingDef> | null;
     if (!Field) return null;
     return <Field id={id} setting={setting} pluginName={pluginName} />;
 }
