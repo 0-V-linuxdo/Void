@@ -18,6 +18,7 @@ import {
     Input,
     Paragraph,
     SectionHeader,
+    Separator,
     Text,
 } from "@components";
 import { React, useMemo, useState } from "@turbopack/common/react";
@@ -197,6 +198,7 @@ export default function ThemesTab() {
                     Manage
                 </Button>
             </Flex>
+            <Separator />
             {themes.length > 0 && (
                 <SearchFilterBar
                     placeholder={`Search ${themes.length} themes...`}
