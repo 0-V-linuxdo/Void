@@ -191,6 +191,7 @@ export default definePlugin({
     description: "Connects AI coding agents to Grok via WebSocket for live inspection.",
     authors: [Devs.Prism],
     dev: true,
+    required: true,
     settings,
     start() {
         connect();

@@ -151,11 +151,12 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
 
         if (plugin.contextMenuItems) {
             for (const [location, def] of Object.entries(plugin.contextMenuItems)) {
-                addContextMenuItem(location as ContextMenuLocation, plugin.name, def as ContextMenuItemDef<any>);
+                addContextMenuItem(location as ContextMenuLocation, plugin.name, def as ContextMenuItemDef);
             }
         }
 
         const unsubs: Array<() => void> = [];
+        pluginUnsubscribers.set(plugin.name, unsubs);
 
         if (plugin.events) {
             for (const [event, handler] of Object.entries(plugin.events)) {
@@ -201,8 +202,6 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
             SettingsStore.addPrefixChangeListener(prefix, listener);
             unsubs.push(() => SettingsStore.removePrefixChangeListener(prefix, listener));
         }
-
-        if (unsubs.length) pluginUnsubscribers.set(plugin.name, unsubs);
 
         plugin.started = true;
         return true;

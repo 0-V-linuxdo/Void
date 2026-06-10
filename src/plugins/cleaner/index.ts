@@ -66,12 +66,13 @@ export default definePlugin({
                 replace: "$self.settings.store.hideUpgradePlan||$1",
             },
         },
+        // covers the standalone upsell card and the copy inlined in the settings dialog
         {
-            find: '"UpsellCard",0,',
+            find: "UPSELL_CARD_PRIORITY)",
             all: true,
             replacement: {
-                match: /"UpsellCard",0,/,
-                replace: '"UpsellCard",0,$self.settings.store.hideUpsellCard?()=>null:',
+                match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
+                replace: "$1&&!$self.settings.store.hideUpsellCard",
             },
         },
         {
@@ -124,7 +125,7 @@ export default definePlugin({
                     replace: "$&$self.settings.store.hideModelUpsell||",
                 },
                 {
-                    match: /(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}\),onSelect:\(\)=>\i\(\i\),children:\(0,\i\.jsx\)\("div",\{className:[^}]{0,200}\),children:\(0,\i\.jsx\)\(\i,\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
+                    match: /(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
                     replace: "($self.settings.store.hideInaccessibleModels?[]:$1)$2",
                 },
             ],

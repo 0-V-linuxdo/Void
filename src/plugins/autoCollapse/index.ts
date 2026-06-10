@@ -17,7 +17,7 @@ export default definePlugin({
 
     patches: [
         {
-            find: ["isInitiallyCollapsed", "MarkdownChunkContext"],
+            find: ["isInitiallyCollapsed", "showRunCode"],
             all: true,
             replacement: {
                 match: /isInitiallyCollapsed:(\i)=!1/g,

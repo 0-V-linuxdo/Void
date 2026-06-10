@@ -80,8 +80,9 @@ function snapshotStorage(store: Storage): Record<string, string> {
 }
 
 function restoreStorage(store: Storage, entries: Record<string, string>) {
-    for (const key of Object.keys(store)) {
-        if (!shouldPreserve(key)) store.removeItem(key);
+    for (let i = store.length - 1; i >= 0; i--) {
+        const key = store.key(i);
+        if (key != null && !shouldPreserve(key)) store.removeItem(key);
     }
     for (const [key, value] of Object.entries(entries)) {
         try { store.setItem(key, value); }

@@ -171,10 +171,6 @@ export function mapGetOrCreate<K, V>(map: Map<K, V>, key: K, create: () => V): V
     return value;
 }
 
-export function extractUrlExtension(url: string, fallback = "jpg"): string {
-    return url.split(".").pop()?.split("?")[0] ?? fallback;
-}
-
 export function safeUrl(url: string): string | null {
     try {
         const { protocol } = new URL(url);

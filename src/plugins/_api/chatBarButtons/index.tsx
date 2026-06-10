@@ -52,7 +52,7 @@ export default definePlugin({
         {
             find: 'imagine-query-bar-placeholder","Type to imagine"',
             replacement: {
-                match: /(\i&&!\i&&!\i&&\(0,\i\.jsx\)\(\i+\.DictationButton,)/,
+                match: /(\i(?:&&!?\i){0,4}&&\(0,\i\.jsx\)\(\i+\.DictationButton,)/,
                 replace: "$self.renderImagineButtons(),$1",
             },
         },

@@ -45,12 +45,14 @@ export interface TurbopackHelpers {
      */
     R(moduleId: number): any;
     /**
-     * Define ESM exports on the current module. Takes an array of `["ExportName", () => value]` tuples.
+     * Define ESM exports on the current module. Takes a flat array of `name, flag, getter` triples
+     * repeated for each export (`flag` is `0` for a plain value getter). A getter may also be the
+     * arrow form `() => value` for the `default` export.
      * Optional second arg is the module ID, used by shared factories that serve multiple module IDs
      * (e.g. icon factories where the same source handles 157+ different icon modules).
-     * @example `e.s([["Button", () => Button], ["ButtonGroup", () => ButtonGroup]], 12345)`
+     * @example `e.s(["Button", 0, () => Button, "ButtonGroup", 0, () => ButtonGroup], 12345)`
      */
-    s(exports: [string, () => any][], moduleId?: number): void;
+    s(exports: unknown[], moduleId?: number): void;
     /**
      * Define CJS exports via a Proxy-based merge. Supports re-exports by merging the source
      * objects properties onto the current modules exports through a Proxy getter.
