@@ -9,23 +9,20 @@ import type { Patch, PatchReplacement, ReplaceFn } from "./types";
 const iToken = "(?:[A-Za-z_$][\\w$]*)";
 
 export function canonicalizeMatch<T extends RegExp | string>(match: T): T {
-    const isString = typeof match === "string";
-    let canonSource = isString ? match : match.source;
-
-    canonSource = canonSource.replaceAll(/#{i18n::([^}]+)}/g, (_, key: string) => (isString ? `"${key}"` : `"${key.replaceAll(".", "\\.")}"`));
-
-    if (!isString) {
-        canonSource = canonSource.replaceAll(/(\\*)\\i/g, (_m, leadingEscapes: string) => (leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : `${leadingEscapes}\\i`));
-
-        canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],(?:\\d+,|\\(\\)=>${iToken})`);
+    if (typeof match === "string") {
+        const canon = match.replaceAll(/#{i18n::([^}]+)}/g, (_, key: string) => `"${key}"`);
+        return (canon === match ? match : canon) as T;
     }
 
-    if (canonSource === (isString ? match : (match as RegExp).source)) return match;
-    if (isString) return canonSource as T;
+    const {source} = match;
+    let canonSource = source.replaceAll(/#{i18n::([^}]+)}/g, (_, key: string) => `"${key.replaceAll(".", "\\.")}"`);
+    canonSource = canonSource.replaceAll(/(\\*)\\i/g, (_m, leadingEscapes: string) => (leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : `${leadingEscapes}\\i`));
+    canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],(?:\\d+,|\\(\\)=>${iToken})`);
 
-    const re = match as RegExp;
-    const canonRegex = new RegExp(canonSource, re.flags);
-    canonRegex.toString = re.toString.bind(re);
+    if (canonSource === source) return match;
+
+    const canonRegex = new RegExp(canonSource, match.flags);
+    canonRegex.toString = match.toString.bind(match);
     return canonRegex as T;
 }
 
