@@ -128,8 +128,8 @@ export function addLocalTheme(name: string, css: string): ThemeData {
     const theme: ThemeData = {
         url: id,
         name: name.trim(),
-        author: meta.author ?? "Local",
-        description: meta.description ?? "",
+        author: meta.author || "Local",
+        description: meta.description,
         enabled: false,
         local: true,
         css,
