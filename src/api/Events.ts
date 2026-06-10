@@ -37,7 +37,7 @@ export function dispatch(event: VoidEvent, data?: unknown): void;
 export function dispatch(event: VoidEvent, data?: unknown) {
     const set = listeners.get(event);
     if (!set?.size) return;
-    for (const handler of set) {
+    for (const handler of Array.from(set)) {
         try { handler(data); } catch (e) { logger.error(`Event handler error (${event}):`, e); }
     }
 }
