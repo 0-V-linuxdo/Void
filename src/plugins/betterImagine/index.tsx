@@ -206,7 +206,7 @@ function getHaystack(p: MediaItem): string {
 function getTs(p: MediaItem): number {
     let t = tsCache.get(p);
     if (t === undefined) {
-        t = new Date(p.createTime).getTime();
+        t = new Date(p.createTime).getTime() || 0;
         tsCache.set(p, t);
     }
     return t;
@@ -642,7 +642,7 @@ export default definePlugin({
             },
         },
         {
-            find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8'],
+            find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
             group: true,
             replacement: [
                 {

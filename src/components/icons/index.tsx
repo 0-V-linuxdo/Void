@@ -81,12 +81,6 @@ export const PaletteIcon = (props: IconProps = {}) =>
         <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />,
     );
 
-export const GaugeIcon = (props: IconProps = {}) =>
-    svg(props,
-        <path d="m12 14 4-4" />,
-        <path d="M3.34 19a10 10 0 1 1 17.32 0" />,
-    );
-
 export const TrashIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />,

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.4
+// @version      1.0.3.5
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.4 — A modification for grok.com
+ * Void v1.0.3.5 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -150,7 +150,6 @@
     find: () => find,
     filters: () => filters,
     fetchExternal: () => fetchExternal,
-    extractUrlExtension: () => extractUrlExtension,
     extractAndLoadChunksLazy: () => extractAndLoadChunksLazy,
     extractAndLoadChunks: () => extractAndLoadChunks,
     escapeRegExp: () => escapeRegExp,
@@ -326,13 +325,13 @@
     throw new Error("proxyLazy: factory returned a primitive value");
   };
   var MAX_RETRIES = 50;
-  function makeLazy(factory) {
+  function makeLazy(factory, maxRetries = MAX_RETRIES) {
     let cache;
     let resolved = false;
     let attempts = 0;
     return () => {
       if (!resolved) {
-        if (attempts >= MAX_RETRIES) {
+        if (attempts >= maxRetries) {
           if (false) {}
           return cache;
         }
@@ -364,16 +363,9 @@
   }
   var LAZY_MAX_RETRIES = 200;
   function LazyComponent(name, factory) {
-    let cached = null;
-    let attempts = 0;
-    const tryResolve = () => {
-      if (!cached && attempts < LAZY_MAX_RETRIES) {
-        cached = factory();
-        attempts++;
-      }
-    };
+    const resolve = makeLazy(factory, LAZY_MAX_RETRIES);
     const wrapper = (props) => {
-      tryResolve();
+      const cached = resolve();
       if (!cached || !_createElement)
         return null;
       return _createElement(cached, props);
@@ -381,7 +373,7 @@
     Object.defineProperty(wrapper, "name", { value: name });
     return new Proxy(wrapper, {
       get(target, prop, receiver) {
-        tryResolve();
+        const cached = resolve();
         if (cached && Reflect.has(cached, prop))
           return Reflect.get(cached, prop);
         return Reflect.get(target, prop, receiver);
@@ -390,8 +382,12 @@
   }
 
   // src/utils/text.ts
+  var CAMEL_BOUNDARY = /([a-z])([A-Z])/g;
+  var WORD_SEPARATOR = /[-_]/g;
+  var WORD_START = /\b\w/g;
+  var REGEXP_SPECIALS = /[.*+?^${}()|[\]\\]/g;
   function humanizeKey(key, acronyms) {
-    const title = key.replaceAll(/([a-z])([A-Z])/g, "$1 $2").replaceAll(/[-_]/g, " ").replaceAll(/\b\w/g, (c) => c.toUpperCase());
+    const title = key.replaceAll(CAMEL_BOUNDARY, "$1 $2").replaceAll(WORD_SEPARATOR, " ").replaceAll(WORD_START, (c) => c.toUpperCase());
     if (!acronyms)
       return title;
     let result = title;
@@ -401,7 +397,7 @@
     return result;
   }
   function escapeRegExp(s) {
-    return s.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return s.replaceAll(REGEXP_SPECIALS, "\\$&");
   }
   function pluralize(count, singular, plural) {
     return `${count} ${count === 1 ? singular : plural ?? singular + "s"}`;
@@ -982,32 +978,25 @@ ${sourceUrl}`;
     if (runtimeFactoryRegistry) {
       const registry = runtimeFactoryRegistry;
       const wrapped = new Map;
+      const ensureWrapped = (id, factory) => {
+        const existing = wrapped.get(factory);
+        const w = existing ?? wrapFactory(id, factory);
+        if (!existing)
+          wrapped.set(factory, w);
+        registry.set(id, w);
+        return w;
+      };
       const origGet = registry.get.bind(registry);
       registry.get = function(id) {
         const factory = origGet(id);
         if (factory == null || factory[SYM_ORIGINAL])
           return factory;
-        const existing = wrapped.get(factory);
-        if (existing) {
-          registry.set(id, existing);
-          return existing;
-        }
-        const w = wrapFactory(id, factory);
-        wrapped.set(factory, w);
-        registry.set(id, w);
-        return w;
+        return ensureWrapped(id, factory);
       };
       for (const [id, factory] of registry) {
         if (factory[SYM_ORIGINAL])
           continue;
-        const existing = wrapped.get(factory);
-        if (existing) {
-          registry.set(id, existing);
-        } else {
-          const w = wrapFactory(id, factory);
-          wrapped.set(factory, w);
-          registry.set(id, w);
-        }
+        ensureWrapped(id, factory);
       }
     }
     if (!runtimeModuleCache && runtimeFactoryRegistry) {
@@ -1160,46 +1149,51 @@ ${sourceUrl}`;
       return scan();
     });
   }
+  var STOP = Symbol("stop");
+  function forEachModuleValue(visit, topLevelOnly = false) {
+    for (const [, exports] of getModuleCache()) {
+      if (exports == null || isBlacklisted(exports))
+        continue;
+      try {
+        if (visit(exports) === STOP)
+          return;
+      } catch {}
+      if (topLevelOnly || typeof exports !== "object")
+        continue;
+      for (const key in exports) {
+        try {
+          const nested = exports[key];
+          if (nested == null || isBlacklisted(nested))
+            continue;
+          if (visit(nested) === STOP)
+            return;
+        } catch {}
+      }
+    }
+  }
   function searchCache(filter, collectAll = false, topLevelOnly = false) {
     return withLazySync(() => scanModuleCache(filter, collectAll, topLevelOnly), (result) => collectAll ? !result.length : !result);
   }
   function scanModuleCache(filter, collectAll, topLevelOnly) {
-    const results = [];
-    const seen = collectAll ? new Set : null;
-    const cache = getModuleCache();
-    for (const [, exports] of cache) {
-      if (exports == null || isBlacklisted(exports))
-        continue;
-      try {
-        if (filter(exports)) {
-          if (!collectAll)
-            return exports;
-          if (!seen.has(exports)) {
-            seen.add(exports);
-            results.push(exports);
-          }
-          continue;
+    if (!collectAll) {
+      let match = null;
+      forEachModuleValue((value) => {
+        if (filter(value)) {
+          match = value;
+          return STOP;
         }
-      } catch {}
-      if (!topLevelOnly && typeof exports === "object") {
-        for (const key in exports) {
-          try {
-            const nested = exports[key];
-            if (nested == null || isBlacklisted(nested))
-              continue;
-            if (filter(nested)) {
-              if (!collectAll)
-                return nested;
-              if (!seen.has(nested)) {
-                seen.add(nested);
-                results.push(nested);
-              }
-            }
-          } catch {}
-        }
-      }
+      }, topLevelOnly);
+      return match;
     }
-    return collectAll ? results : null;
+    const results = [];
+    const seen = new Set;
+    forEachModuleValue((value) => {
+      if (filter(value) && !seen.has(value)) {
+        seen.add(value);
+        results.push(value);
+      }
+    }, topLevelOnly);
+    return results;
   }
   function find(filter) {
     return searchCache(filter);
@@ -1344,46 +1338,21 @@ ${sourceUrl}`;
       const activeFilters = [...filterFns];
       const results = new Array(length).fill(null);
       let found = 0;
-      const cache = getModuleCache();
-      outer:
-        for (const [, exports] of cache) {
-          if (exports == null || isBlacklisted(exports))
+      forEachModuleValue((value) => {
+        for (let j = 0;j < length; j++) {
+          const filter = activeFilters[j];
+          if (!filter)
             continue;
-          for (let j = 0;j < length; j++) {
-            const filter = activeFilters[j];
-            if (!filter)
-              continue;
-            try {
-              if (filter(exports)) {
-                results[j] = exports;
-                activeFilters[j] = undefined;
-                if (++found === length)
-                  break outer;
-              }
-            } catch {}
-          }
-          if (typeof exports === "object") {
-            for (const key in exports) {
-              try {
-                const nested = exports[key];
-                if (nested == null || isBlacklisted(nested))
-                  continue;
-                for (let j = 0;j < length; j++) {
-                  const filter = activeFilters[j];
-                  if (!filter)
-                    continue;
-                  if (filter(nested)) {
-                    results[j] = nested;
-                    activeFilters[j] = undefined;
-                    if (++found === length)
-                      break outer;
-                    break;
-                  }
-                }
-              } catch {}
+          try {
+            if (filter(value)) {
+              results[j] = value;
+              activeFilters[j] = undefined;
+              if (++found === length)
+                return STOP;
             }
-          }
+          } catch {}
         }
+      });
       return { results, found };
     };
     return silenceWarns(() => {
@@ -1399,15 +1368,22 @@ ${sourceUrl}`;
       return results;
     });
   }
-  function findModuleFactory(...code) {
+  function forEachMatchingFactory(code, visit) {
     const registry = getRuntimeFactoryRegistry();
     if (!registry)
-      return null;
+      return;
     for (const [id, factory] of registry) {
-      if (matchesAllPatterns(getFnSource(factory), code))
-        return [id, factory];
+      if (matchesAllPatterns(getFnSource(factory), code) && visit(id, factory) === STOP)
+        return;
     }
-    return null;
+  }
+  function findModuleFactory(...code) {
+    let result = null;
+    forEachMatchingFactory(code, (id, factory) => {
+      result = [id, factory];
+      return STOP;
+    });
+    return result;
   }
   function findModuleId(...code) {
     return findModuleFactory(...code)?.[0] ?? null;
@@ -1510,13 +1486,9 @@ ${sourceUrl}`;
   }
   function search(...code) {
     const results = {};
-    const registry = getRuntimeFactoryRegistry();
-    if (!registry)
-      return results;
-    for (const [id, factory] of registry) {
-      if (matchesAllPatterns(getFnSource(factory), code))
-        results[id] = factory;
-    }
+    forEachMatchingFactory(code, (id, factory) => {
+      results[id] = factory;
+    });
     return results;
   }
   function requireModule(moduleId) {
@@ -1768,20 +1740,18 @@ ${sourceUrl}`;
   // src/utils/patches.ts
   var iToken = "(?:[A-Za-z_$][\\w$]*)";
   function canonicalizeMatch(match) {
-    const isString = typeof match === "string";
-    let canonSource = isString ? match : match.source;
-    canonSource = canonSource.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => isString ? `"${key}"` : `"${key.replaceAll(".", "\\.")}"`);
-    if (!isString) {
-      canonSource = canonSource.replaceAll(/(\\*)\\i/g, (_m, leadingEscapes) => leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : `${leadingEscapes}\\i`);
-      canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],\\(\\)=>${iToken}`);
+    if (typeof match === "string") {
+      const canon = match.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => `"${key}"`);
+      return canon === match ? match : canon;
     }
-    if (canonSource === (isString ? match : match.source))
+    const { source } = match;
+    let canonSource = source.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => `"${key.replaceAll(".", "\\.")}"`);
+    canonSource = canonSource.replaceAll(/(\\*)\\i/g, (_m, leadingEscapes) => leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : `${leadingEscapes}\\i`);
+    canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],(?:\\d+,|\\(\\)=>${iToken})`);
+    if (canonSource === source)
       return match;
-    if (isString)
-      return canonSource;
-    const re = match;
-    const canonRegex = new RegExp(canonSource, re.flags);
-    canonRegex.toString = re.toString.bind(re);
+    const canonRegex = new RegExp(canonSource, match.flags);
+    canonRegex.toString = match.toString.bind(match);
     return canonRegex;
   }
   function canonicalizeReplace(replace, pluginPath) {
@@ -2205,11 +2175,6 @@ ${sourceUrl}`;
     r: ".5",
     fill: "currentColor"
   }));
-  var GaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m12 14 4-4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3.34 19a10 10 0 1 1 17.32 0"
-  }));
   var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -2628,19 +2593,19 @@ ${sourceUrl}`;
     };
   }
   var pad = (n) => String(n).padStart(2, "0");
+  function hms(totalSeconds) {
+    return [Math.floor(totalSeconds / 3600), Math.floor(totalSeconds % 3600 / 60), totalSeconds % 60];
+  }
   function formatCountdown(totalSeconds) {
     if (totalSeconds <= 0)
       return "0:00";
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor(totalSeconds % 3600 / 60);
-    const s = totalSeconds % 60;
+    const [h, m, s] = hms(totalSeconds);
     return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
   }
   function formatDuration(totalSeconds) {
     if (totalSeconds <= 0)
       return "0m";
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor(totalSeconds % 3600 / 60);
+    const [h, m] = hms(totalSeconds);
     if (h > 0 && m > 0)
       return `${h}h ${m}m`;
     return h > 0 ? `${h}h` : `${m}m`;
@@ -2651,8 +2616,10 @@ ${sourceUrl}`;
   function errorMessage(err) {
     return err instanceof Error ? err.message : String(err);
   }
+  var FILENAME_ILLEGAL = /[<>:"/\\|?*\x00-\x1f]/g;
+  var WHITESPACE_RUN = /\s+/g;
   function sanitizeFilename(title, fallback = "file") {
-    return title.replaceAll(/[<>:"/\\|?*\x00-\x1f]/g, "").trim().replaceAll(/\s+/g, "-") || fallback;
+    return title.replaceAll(FILENAME_ILLEGAL, "").trim().replaceAll(WHITESPACE_RUN, "-") || fallback;
   }
   function mapGetOrCreate(map, key, create) {
     let value = map.get(key);
@@ -2661,9 +2628,6 @@ ${sourceUrl}`;
       map.set(key, value);
     }
     return value;
-  }
-  function extractUrlExtension(url, fallback = "jpg") {
-    return url.split(".").pop()?.split("?")[0] ?? fallback;
   }
   function safeUrl(url) {
     try {
@@ -2703,11 +2667,12 @@ ${sourceUrl}`;
         listeners.delete(event);
     };
   }
-  function dispatch(event, data) {
+  function dispatch(event, ...args) {
     const set = listeners.get(event);
     if (!set?.size)
       return;
-    for (const handler2 of set) {
+    const data = args[0];
+    for (const handler2 of Array.from(set)) {
       try {
         handler2(data);
       } catch (e) {
@@ -2765,16 +2730,45 @@ ${sourceUrl}`;
     return [busy, execute];
   }
 
+  // src/api/registry.ts
+  function createRegistry() {
+    const map = new Map;
+    const store = createExternalStore();
+    return {
+      store,
+      set(id, value) {
+        map.set(id, value);
+        store.notify();
+      },
+      get: (id) => map.get(id),
+      delete(id) {
+        const had = map.delete(id);
+        if (had)
+          store.notify();
+        return had;
+      },
+      update(id, patch) {
+        const existing = map.get(id);
+        if (!existing)
+          return;
+        map.set(id, { ...existing, ...patch });
+        store.notify();
+      },
+      has: (id) => map.has(id),
+      get size() {
+        return map.size;
+      },
+      sorted: () => sortedEntries(map)
+    };
+  }
+
   // src/api/ChatBarButtons.tsx
-  var buttons = new Map;
-  var store = createExternalStore();
+  var buttons = createRegistry();
   function addChatBarButton(id, def) {
     buttons.set(id, def);
-    store.notify();
   }
   function removeChatBarButton(id) {
     buttons.delete(id);
-    store.notify();
   }
   var resolve = (v) => typeof v === "function" ? v() : v;
   function renderEntry(def) {
@@ -2793,10 +2787,10 @@ ${sourceUrl}`;
     });
   }
   function VoidChatBarButtons({ location: location2 = "chat" }) {
-    useExternalStore(store);
+    useExternalStore(buttons.store);
     if (!buttons.size)
       return null;
-    const entries = sortedEntries(buttons).filter(([, def]) => (def.locations ?? ["chat"]).includes(location2));
+    const entries = buttons.sorted().filter(([, def]) => (def.locations ?? ["chat"]).includes(location2));
     if (!entries.length)
       return null;
     return /* @__PURE__ */ React.createElement(React.Fragment, null, entries.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
@@ -2809,46 +2803,29 @@ ${sourceUrl}`;
   function getMenuPrimitivesContext() {
     return menuPrimitivesContext ??= React.createContext(null);
   }
-  function useMenuPrimitive(key, fallback) {
-    const ctx = React.useContext(getMenuPrimitivesContext());
-    return ctx?.[key] ?? fallback;
+  function makeMenuPrimitive(key, fallback) {
+    return (props) => {
+      const ctx = React.useContext(getMenuPrimitivesContext());
+      const C = ctx?.[key] ?? fallback;
+      return /* @__PURE__ */ React.createElement(C, {
+        ...props
+      });
+    };
   }
-  var MenuItem = (props) => {
-    const C = useMenuPrimitive("Item", DropdownMenuItem);
-    return /* @__PURE__ */ React.createElement(C, {
-      ...props
-    });
-  };
-  var MenuSub = (props) => {
-    const C = useMenuPrimitive("Sub", DropdownMenuSub);
-    return /* @__PURE__ */ React.createElement(C, {
-      ...props
-    });
-  };
-  var MenuSubTrigger = (props) => {
-    const C = useMenuPrimitive("SubTrigger", DropdownMenuSubTrigger);
-    return /* @__PURE__ */ React.createElement(C, {
-      ...props
-    });
-  };
-  var MenuSubContent = (props) => {
-    const C = useMenuPrimitive("SubContent", DropdownMenuSubContent);
-    return /* @__PURE__ */ React.createElement(C, {
-      ...props
-    });
-  };
-  var items = new Map;
-  var store2 = createExternalStore();
-  function getItems(location2) {
-    return mapGetOrCreate(items, location2, () => new Map);
+  var MenuItem = makeMenuPrimitive("Item", DropdownMenuItem);
+  var MenuSub = makeMenuPrimitive("Sub", DropdownMenuSub);
+  var MenuSubTrigger = makeMenuPrimitive("SubTrigger", DropdownMenuSubTrigger);
+  var MenuSubContent = makeMenuPrimitive("SubContent", DropdownMenuSubContent);
+  var MenuSeparator = makeMenuPrimitive("Separator", DropdownMenuSeparator);
+  var registries = new Map;
+  function getRegistry(location2) {
+    return mapGetOrCreate(registries, location2, () => createRegistry());
   }
   function addContextMenuItem(location2, id, def) {
-    getItems(location2).set(id, def);
-    store2.notify();
+    getRegistry(location2).set(id, def);
   }
   function removeContextMenuItem(location2, id) {
-    getItems(location2).delete(id);
-    store2.notify();
+    getRegistry(location2).delete(id);
   }
   function renderEntry2(def, ctx) {
     if (def.render) {
@@ -2862,11 +2839,11 @@ ${sourceUrl}`;
     }, resolveLazyNode(def.icon), resolveLazyNode(def.label));
   }
   function VoidContextMenuItems({ location: location2, menu, ...ctx }) {
-    useExternalStore(store2);
-    const map = items.get(location2);
-    if (!map?.size)
+    const registry = getRegistry(location2);
+    useExternalStore(registry.store);
+    if (!registry.size)
       return null;
-    const sorted = sortedEntries(map);
+    const sorted = registry.sorted();
     const content = /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: id,
       fallback: null
@@ -2907,22 +2884,24 @@ ${sourceUrl}`;
     dbPromise = promise;
     return promise;
   }
-  async function idbGet(key) {
+  async function withStore(mode, run) {
     const db = await open();
     return new Promise((resolve2, reject) => {
-      const tx = db.transaction(STORE_NAME, "readonly");
-      const req = tx.objectStore(STORE_NAME).get(key);
-      req.onsuccess = () => resolve2(req.result);
-      req.onerror = () => reject(req.error);
+      const tx = db.transaction(STORE_NAME, mode);
+      run(tx.objectStore(STORE_NAME), resolve2);
+      tx.onerror = () => reject(tx.error);
     });
   }
-  async function idbSet(key, value) {
-    const db = await open();
-    return new Promise((resolve2, reject) => {
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      tx.objectStore(STORE_NAME).put(value, key);
-      tx.oncomplete = () => resolve2();
-      tx.onerror = () => reject(tx.error);
+  function idbGet(key) {
+    return withStore("readonly", (store, resolve2) => {
+      const req = store.get(key);
+      req.onsuccess = () => resolve2(req.result);
+    });
+  }
+  function idbSet(key, value) {
+    return withStore("readwrite", (store, resolve2) => {
+      store.put(value, key);
+      store.transaction.oncomplete = () => resolve2();
     });
   }
 
@@ -3002,7 +2981,7 @@ ${sourceUrl}`;
       return proxy;
     }
     invokeListeners(listeners2, path) {
-      for (const l of listeners2) {
+      for (const l of Array.from(listeners2)) {
         try {
           l(path);
         } catch (e) {
@@ -3015,7 +2994,7 @@ ${sourceUrl}`;
       const listeners2 = this.pathListeners.get(path);
       if (listeners2)
         this.invokeListeners(listeners2, path);
-      for (const [prefix, set] of this.prefixListeners) {
+      for (const [prefix, set] of Array.from(this.prefixListeners)) {
         if (path.startsWith(prefix))
           this.invokeListeners(set, path);
       }
@@ -3236,10 +3215,14 @@ ${sourceUrl}`;
         const forceUpdate = useForceUpdater();
         useEffect(() => {
           const prefix = pluginPath(_pluginName);
-          const listener = keys?.length ? ((paths) => (path) => {
-            if (paths.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
-              forceUpdate();
-          })(keys.map((k) => `${prefix}.${String(k)}`)) : forceUpdate;
+          let listener = forceUpdate;
+          if (keys?.length) {
+            const watched = keys.map((k) => `${prefix}.${String(k)}`);
+            listener = (path) => {
+              if (watched.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
+                forceUpdate();
+            };
+          }
           SettingsStore3.addPrefixChangeListener(prefix, listener);
           return () => SettingsStore3.removePrefixChangeListener(prefix, listener);
         }, []);
@@ -3270,6 +3253,10 @@ ${sourceUrl}`;
       }
     }
     pluginUnsubscribers.delete(pluginName);
+  }
+  function markAsEnabledDependency(plugin) {
+    mergePluginSettings(plugin.name, { enabled: true });
+    plugin.isDependency = true;
   }
   function removePluginContextMenuItems(plugin) {
     if (!plugin.contextMenuItems)
@@ -3316,8 +3303,7 @@ ${sourceUrl}`;
         logger9.error(`Circular dependency detected: ${plugin.name} -> ${depName}`);
         return false;
       }
-      dep.isDependency = true;
-      mergePluginSettings(depName, { enabled: true });
+      markAsEnabledDependency(dep);
       visiting.add(depName);
       if (!startDependenciesRecursive(dep, visiting))
         return false;
@@ -3377,6 +3363,7 @@ ${sourceUrl}`;
         }
       }
       const unsubs = [];
+      pluginUnsubscribers.set(plugin.name, unsubs);
       if (plugin.events) {
         for (const [event, handler2] of Object.entries(plugin.events)) {
           if (handler2)
@@ -3392,13 +3379,12 @@ ${sourceUrl}`;
               logger9.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
             }
           };
-          const attach = (store4) => {
-            const unsub = sub.selector ? store4.subscribe(sub.selector, wrappedHandler) : store4.subscribe(wrappedHandler);
-            unsubs.push(unsub);
+          const attach = (store2) => {
+            unsubs.push(sub.selector ? store2.subscribe(sub.selector, wrappedHandler) : store2.subscribe(wrappedHandler));
           };
-          const store3 = resolveStoreHook(storeName);
-          if (store3) {
-            attach(store3);
+          const store = resolveStoreHook(storeName);
+          if (store) {
+            attach(store);
             continue;
           }
           let cancelled = false;
@@ -3423,8 +3409,6 @@ ${sourceUrl}`;
         SettingsStore3.addPrefixChangeListener(prefix, listener);
         unsubs.push(() => SettingsStore3.removePrefixChangeListener(prefix, listener));
       }
-      if (unsubs.length)
-        pluginUnsubscribers.set(plugin.name, unsubs);
       plugin.started = true;
       return true;
     } catch (e) {
@@ -3540,8 +3524,7 @@ ${sourceUrl}`;
           logger9.warn(`Plugin ${name} has unresolved dependency ${d}`);
           continue;
         }
-        mergePluginSettings(d, { enabled: true });
-        dep.isDependency = true;
+        markAsEnabledDependency(dep);
       }
       if (plugin.chatBarButton)
         neededApis.add("ChatBarButtonAPI");
@@ -3550,10 +3533,8 @@ ${sourceUrl}`;
     }
     for (const api of neededApis) {
       const dep = plugins[api];
-      if (!dep)
-        continue;
-      mergePluginSettings(api, { enabled: true });
-      dep.isDependency = true;
+      if (dep)
+        markAsEnabledDependency(dep);
     }
     for (const [name, plugin] of Object.entries(plugins)) {
       const enabled = isPluginEnabled(name);
@@ -3742,6 +3723,15 @@ ${sourceUrl}`;
     const { themes } = getSettingsPluginData();
     return Array.isArray(themes) ? themes : [];
   }
+  function setThemes(themes) {
+    updateSettingsPluginData({ themes });
+  }
+  function patchTheme(url, patch) {
+    setThemes(getThemes().map((t) => t.url === url ? { ...t, ...patch } : t));
+  }
+  function isThemeStillActive(url) {
+    return isThemesEnabled() && (getThemes().find((t) => t.url === url)?.enabled ?? false);
+  }
   function isThemesEnabled() {
     return getSettingsPluginData().themesEnabled !== false;
   }
@@ -3798,7 +3788,7 @@ ${sourceUrl}`;
       enabled: false
     };
     registerDisabledStyle(themeStyleId(url), css);
-    updateSettingsPluginData({ themes: [...getThemes(), theme] });
+    setThemes([...getThemes(), theme]);
     logger11.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
   }
@@ -3812,14 +3802,14 @@ ${sourceUrl}`;
     const theme = {
       url: id,
       name: name.trim(),
-      author: meta.author ?? "Local",
-      description: meta.description ?? "",
+      author: meta.author || "Local",
+      description: meta.description,
       enabled: false,
       local: true,
       css
     };
     registerDisabledStyle(themeStyleId(id), css);
-    updateSettingsPluginData({ themes: [...getThemes(), theme] });
+    setThemes([...getThemes(), theme]);
     logger11.info(`Added local theme "${theme.name}"`);
     return theme;
   }
@@ -3840,14 +3830,14 @@ ${sourceUrl}`;
       }
       return updated;
     });
-    updateSettingsPluginData({ themes });
+    setThemes(themes);
   }
   function removeTheme(url) {
     unregisterStyle(themeStyleId(url));
-    updateSettingsPluginData({ themes: getThemes().filter((t) => t.url !== url) });
+    setThemes(getThemes().filter((t) => t.url !== url));
   }
   async function enableTheme(url) {
-    updateSettingsPluginData({ themes: getThemes().map((t) => t.url === url ? { ...t, enabled: true } : t) });
+    patchTheme(url, { enabled: true });
     if (!isThemesEnabled())
       return;
     const theme = getThemes().find((t) => t.url === url);
@@ -3863,7 +3853,6 @@ ${sourceUrl}`;
         registerStyle(id, theme.css);
       return;
     }
-    const isStillEnabled = () => getThemes().find((t) => t.url === url)?.enabled && isThemesEnabled();
     let css;
     try {
       const resp = await fetchExternal(url);
@@ -3871,19 +3860,19 @@ ${sourceUrl}`;
         logger11.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
         return;
       }
-      if (!isStillEnabled())
+      if (!isThemeStillActive(url))
         return;
       css = await resp.text();
     } catch (e) {
       logger11.warn("Failed to fetch theme CSS:", url, e);
       return;
     }
-    if (!isStillEnabled())
+    if (!isThemeStillActive(url))
       return;
     registerStyle(id, css);
   }
   function disableTheme(url) {
-    updateSettingsPluginData({ themes: getThemes().map((t) => t.url === url ? { ...t, enabled: false } : t) });
+    patchTheme(url, { enabled: false });
     disableStyle(themeStyleId(url));
   }
   async function loadSavedThemes() {
@@ -3901,7 +3890,7 @@ ${sourceUrl}`;
       if (!resp.ok)
         throw new Error(`HTTP ${resp.status}`);
       const css = await resp.text();
-      if (!getThemes().some((th) => th.url === t.url && th.enabled) || !isThemesEnabled())
+      if (!isThemeStillActive(t.url))
         return;
       registerStyle(themeStyleId(t.url), css);
     }));
@@ -4425,6 +4414,20 @@ ${sourceUrl}`;
     }, footer));
   }
 
+  // src/components/settings/IconButton.tsx
+  function IconButton({ icon: Icon, label, size = 14, className, onClick }) {
+    return /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      "aria-label": label,
+      className,
+      onClick
+    }, /* @__PURE__ */ React.createElement(Icon, {
+      size
+    }));
+  }
+
   // src/components/settings/pluginBadges.tsx
   function TooltipIcon({ icon: Icon, tooltip, className, as = "span" }) {
     return /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
@@ -4493,15 +4496,11 @@ ${sourceUrl}`;
         variant: "accent"
       }, "New")),
       description: plugin.description,
-      controls: /* @__PURE__ */ React.createElement(React.Fragment, null, hasVisibleSettings(plugin) && /* @__PURE__ */ React.createElement(Button, {
-        variant: "tertiary",
-        size: "xs",
-        shape: "square",
-        "aria-label": "Plugin settings",
+      controls: /* @__PURE__ */ React.createElement(React.Fragment, null, hasVisibleSettings(plugin) && /* @__PURE__ */ React.createElement(IconButton, {
+        icon: EllipsisVertical,
+        label: "Plugin settings",
         onClick: () => onSettings(name)
-      }, /* @__PURE__ */ React.createElement(EllipsisVertical, {
-        size: 14
-      })), /* @__PURE__ */ React.createElement(Switch, {
+      }), /* @__PURE__ */ React.createElement(Switch, {
         checked: enabled,
         disabled: plugin.required,
         onCheckedChange: handleToggle
@@ -4579,7 +4578,7 @@ ${sourceUrl}`;
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, humanizeKey(id)), setting.description && /* @__PURE__ */ React.createElement(SettingsDescription, null, setting.description));
   }
-  function BooleanField({ id, setting, pluginName }) {
+  var BooleanField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return /* @__PURE__ */ React.createElement(SettingsRow, {
       action: /* @__PURE__ */ React.createElement(Switch, {
@@ -4590,13 +4589,11 @@ ${sourceUrl}`;
       id,
       setting
     }));
-  }
-  function SelectField({ id, setting, pluginName }) {
+  };
+  var SelectField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    const options = "options" in setting ? setting.options : null;
-    const valueMap = useMemo(() => new Map(options?.map((o) => [String(o.value), o.value])), [options]);
-    if (!options)
-      return null;
+    const { options } = setting;
+    const valueMap = useMemo(() => new Map(options.map((o) => [String(o.value), o.value])), [options]);
     return /* @__PURE__ */ React.createElement(SettingsRow, {
       action: /* @__PURE__ */ React.createElement(Select, {
         value: String(value ?? ""),
@@ -4609,11 +4606,9 @@ ${sourceUrl}`;
       id,
       setting
     }));
-  }
-  function SliderField({ id, setting, pluginName }) {
+  };
+  var SliderField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    if (!("min" in setting))
-      return null;
     const { min, max } = setting;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
@@ -4636,18 +4631,16 @@ ${sourceUrl}`;
       color: "secondary",
       className: cl6("slider-value")
     }, value)));
-  }
-  function ComponentField({ setting, pluginName }) {
+  };
+  var ComponentField = ({ setting, pluginName }) => {
     const [, update] = usePluginSetting(pluginName, "component", setting);
-    if (!("component" in setting))
-      return null;
     const Comp = setting.component;
     return /* @__PURE__ */ React.createElement(Comp, {
       setValue: update,
       option: setting
     });
-  }
-  function NumberField({ id, setting, pluginName }) {
+  };
+  var NumberField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
@@ -4665,8 +4658,8 @@ ${sourceUrl}`;
       },
       className: cl6("number-input")
     }));
-  }
-  function BigIntField({ id, setting, pluginName }) {
+  };
+  var BigIntField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const display = value == null ? "" : String(value);
     return /* @__PURE__ */ React.createElement(Flex, {
@@ -4689,8 +4682,8 @@ ${sourceUrl}`;
       },
       className: cl6("number-input")
     }));
-  }
-  function StringField({ id, setting, pluginName }) {
+  };
+  var StringField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
@@ -4705,7 +4698,7 @@ ${sourceUrl}`;
       placeholder: setting.placeholder,
       className: cl6("string-input")
     }));
-  }
+  };
   var FIELD_MAP = {
     [3 /* BOOLEAN */]: BooleanField,
     [4 /* SELECT */]: SelectField,
@@ -4744,6 +4737,30 @@ ${sourceUrl}`;
       className: "void-dialog-header"
     }, /* @__PURE__ */ React.createElement(DialogTitle, null, title), subtitle && /* @__PURE__ */ React.createElement(Paragraph, null, subtitle)), children);
   }
+  function DialogField({ label, className, children }) {
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.25rem",
+      className
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, label), children);
+  }
+  function DialogActions({ className, onCancel, confirmLabel, onConfirm, confirmDisabled }) {
+    return /* @__PURE__ */ React.createElement(DialogFooter, {
+      className
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      onClick: onCancel
+    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
+      variant: "primary",
+      size: "sm",
+      onClick: onConfirm,
+      disabled: confirmDisabled
+    }, confirmLabel));
+  }
 
   // src/components/settings/tabs/PluginDialog.tsx
   var cl7 = classNameFactory("void-plugin-dialog-");
@@ -4767,19 +4784,11 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(VoidDialogShell, {
       title: plugin.name,
       subtitle: plugin.description
-    }, /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "Authors"), /* @__PURE__ */ React.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "Settings"), entries.length ? /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(DialogField, {
+      label: "Authors"
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(DialogField, {
+      label: "Settings"
+    }, entries.length ? /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
       className: cl7("settings-list")
@@ -4798,8 +4807,35 @@ ${sourceUrl}`;
     }, confirming ? "Are you sure?" : "Reset"))));
   }
 
+  // src/components/settings/tabs/SearchFilterBar.tsx
+  function SearchFilterBar({ placeholder, search: search2, onSearchChange, filter, onFilterChange, options, selectClassName }) {
+    return /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder,
+      value: search2,
+      onChange: (e) => onSearchChange(e.target.value),
+      className: "void-search-bar-input"
+    }), /* @__PURE__ */ React.createElement(Select, {
+      value: filter,
+      onValueChange: (v) => onFilterChange(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: selectClassName
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: o.value,
+      value: o.value
+    }, o.label)))));
+  }
+
   // src/components/settings/tabs/PluginsTab.tsx
   var cl8 = classNameFactory("void-plugins-");
+  var FILTER_OPTIONS = [
+    { value: "all", label: "All" },
+    { value: "enabled", label: "Enabled" },
+    { value: "disabled", label: "Disabled" }
+  ];
   var getPluginKey = (name) => `${name} ${plugins[name].description ?? ""}`;
   function filterByEnabled(list, filter) {
     if (filter === "all")
@@ -4812,6 +4848,7 @@ ${sourceUrl}`;
     const [filter, setFilter] = useState("all");
     const [dialogName, setDialogName] = useState(null);
     const [showReload, setShowReload] = useState(false);
+    const [needsReload, setNeedsReload] = useState(false);
     const [toggleTick, setToggleTick] = useState(0);
     const { userPlugins, requiredPlugins } = useMemo(() => {
       const userPlugins2 = [];
@@ -4842,6 +4879,7 @@ ${sourceUrl}`;
     useEffect(() => subscribe("pluginToggle", () => setToggleTick((t) => t + 1)), []);
     useEffect(() => subscribe("reloadNeeded", () => {
       changedPluginsRef.current.add("__settings__");
+      setNeedsReload(true);
       if (!dismissedRef.current)
         setShowReload(true);
     }), []);
@@ -4851,7 +4889,6 @@ ${sourceUrl}`;
     const filteredRequired = useFiltered(visibleRequired, search2, getPluginKey);
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
     const hasResults = filteredUser.length > 0 || filteredRequired.length > 0;
-    const needsReload = changedPluginsRef.current.size > 0;
     const onReload = useCallback((pluginName) => {
       const initialStates = initialStatesRef.current;
       if (!initialStates)
@@ -4862,10 +4899,13 @@ ${sourceUrl}`;
       else
         changed.add(pluginName);
       if (!changed.size) {
+        setNeedsReload(false);
         setShowReload(false);
         dismissedRef.current = false;
-      } else if (!dismissedRef.current) {
-        setShowReload(true);
+      } else {
+        setNeedsReload(true);
+        if (!dismissedRef.current)
+          setShowReload(true);
       }
     }, []);
     const onDismiss = useCallback(() => {
@@ -4889,27 +4929,15 @@ ${sourceUrl}`;
       variant: "secondary",
       size: "sm",
       onClick: () => location.reload()
-    }, "Reload")), /* @__PURE__ */ React.createElement(Flex, {
-      alignItems: "center",
-      gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
+    }, "Reload")), /* @__PURE__ */ React.createElement(SearchFilterBar, {
       placeholder: `Search ${visibleUser.length + visibleRequired.length} plugins...`,
-      value: search2,
-      onChange: (e) => setSearch(e.target.value),
-      className: "void-search-bar-input"
-    }), /* @__PURE__ */ React.createElement(Select, {
-      value: filter,
-      onValueChange: (v) => setFilter(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl8("filter-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
-      value: "all"
-    }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
-      value: "enabled"
-    }, "Enabled"), /* @__PURE__ */ React.createElement(SelectItem, {
-      value: "disabled"
-    }, "Disabled")))), filteredUser.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
+      search: search2,
+      onSearchChange: setSearch,
+      filter,
+      onFilterChange: (f) => setFilter(f),
+      options: FILTER_OPTIONS,
+      selectClassName: cl8("filter-select")
+    }), filteredUser.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)"
     }, filteredUser.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: n,
@@ -4994,17 +5022,6 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/ThemeCard.tsx
-  function IconButton({ icon: Icon, label, onClick }) {
-    return /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      "aria-label": label,
-      onClick
-    }, /* @__PURE__ */ React.createElement(Icon, {
-      size: 14
-    }));
-  }
   var logger12 = new Logger("ThemeCard");
   var cl9 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, onRemove, onToggle, onEdit }) {
@@ -5049,6 +5066,13 @@ ${sourceUrl}`;
 
   // src/components/settings/tabs/ThemesTab.tsx
   var cl10 = classNameFactory("void-themes-");
+  var FILTER_OPTIONS2 = [
+    { value: "all", label: "All" },
+    { value: "enabled", label: "Enabled" },
+    { value: "disabled", label: "Disabled" },
+    { value: "online", label: "Online" },
+    { value: "local", label: "Local" }
+  ];
   var getThemeKey = (t) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
   function OnlineThemeDialog({ open: open2, onClose, onSave }) {
     const [url, setUrl] = useState("");
@@ -5078,13 +5102,9 @@ ${sourceUrl}`;
       }
     }, /* @__PURE__ */ React.createElement(VoidDialogShell, {
       title: "Add Online Theme"
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "URL"), /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(DialogField, {
+      label: "URL"
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "https://raw.githubusercontent.com/...",
       value: url,
@@ -5099,18 +5119,13 @@ ${sourceUrl}`;
     })), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       className: cl10("add-error")
-    }, error), /* @__PURE__ */ React.createElement(DialogFooter, {
-      className: cl10("local-footer")
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      onClick: onClose
-    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
-      variant: "primary",
-      size: "sm",
-      onClick: handleImport,
-      disabled: loading || !url.trim()
-    }, loading ? "Importing..." : "Import"))));
+    }, error), /* @__PURE__ */ React.createElement(DialogActions, {
+      className: cl10("local-footer"),
+      onCancel: onClose,
+      confirmLabel: loading ? "Importing..." : "Import",
+      onConfirm: handleImport,
+      confirmDisabled: loading || !url.trim()
+    })));
   }
   function LocalThemeDialog({ open: open2, onClose, theme, onSave }) {
     const [name, setName] = useState(theme?.name ?? "");
@@ -5138,25 +5153,17 @@ ${sourceUrl}`;
       }
     }, /* @__PURE__ */ React.createElement(VoidDialogShell, {
       title: theme ? "Edit Local Theme" : "New Local Theme"
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(DialogField, {
+      label: "Name"
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "My Theme",
       value: name,
       onChange: (e) => setName(e.target.value)
-    })), /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.25rem",
+    })), /* @__PURE__ */ React.createElement(DialogField, {
+      label: "CSS",
       className: cl10("local-css-field")
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, "CSS"), /* @__PURE__ */ React.createElement(CssEditor, {
+    }, /* @__PURE__ */ React.createElement(CssEditor, {
       className: cl10("local-editor"),
       value: css,
       onChange: setCss,
@@ -5164,27 +5171,22 @@ ${sourceUrl}`;
     })), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       className: cl10("add-error")
-    }, error), /* @__PURE__ */ React.createElement(DialogFooter, {
-      className: cl10("local-footer")
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      onClick: onClose
-    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
-      variant: "primary",
-      size: "sm",
-      onClick: handleSave,
-      disabled: !name.trim() || !css.trim()
-    }, theme ? "Save" : "Create"))));
+    }, error), /* @__PURE__ */ React.createElement(DialogActions, {
+      className: cl10("local-footer"),
+      onCancel: onClose,
+      confirmLabel: theme ? "Save" : "Create",
+      onConfirm: handleSave,
+      confirmDisabled: !name.trim() || !css.trim()
+    })));
   }
   function ThemesTab() {
     const [search2, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
-    const [themes, setThemes] = useState(getThemes);
+    const [themes, setThemes2] = useState(getThemes);
     const [localDialogOpen, setLocalDialogOpen] = useState(false);
     const [onlineDialogOpen, setOnlineDialogOpen] = useState(false);
     const [editingTheme, setEditingTheme] = useState();
-    const refreshThemes = () => setThemes(getThemes());
+    const refreshThemes = () => setThemes2(getThemes());
     const visible = useMemo(() => {
       switch (filter) {
         case "enabled":
@@ -5238,31 +5240,15 @@ ${sourceUrl}`;
         setEditingTheme(undefined);
         setLocalDialogOpen(true);
       }
-    }, "Manage")), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
-      alignItems: "center",
-      gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
+    }, "Manage")), /* @__PURE__ */ React.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React.createElement(SearchFilterBar, {
       placeholder: `Search ${themes.length} themes...`,
-      value: search2,
-      onChange: (e) => setSearch(e.target.value),
-      className: "void-search-bar-input"
-    }), /* @__PURE__ */ React.createElement(Select, {
-      value: filter,
-      onValueChange: (v) => setFilter(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: "void-search-bar-select"
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
-      value: "all"
-    }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
-      value: "enabled"
-    }, "Enabled"), /* @__PURE__ */ React.createElement(SelectItem, {
-      value: "disabled"
-    }, "Disabled"), /* @__PURE__ */ React.createElement(SelectItem, {
-      value: "online"
-    }, "Online"), /* @__PURE__ */ React.createElement(SelectItem, {
-      value: "local"
-    }, "Local")))), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
+      search: search2,
+      onSearchChange: setSearch,
+      filter,
+      onFilterChange: (f) => setFilter(f),
+      options: FILTER_OPTIONS2,
+      selectClassName: "void-search-bar-select"
+    }), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)"
     }, filtered.map((t) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: t.url,
@@ -5662,7 +5648,7 @@ ${sourceUrl}`;
       {
         find: '"Feature flag overrides active","Feature flag overrides active"',
         replacement: {
-          match: /\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\)\)/,
+          match: /\.toast\.warning\(\i\("Feature flag overrides active","Feature flag overrides active"\).{0,60}?\)/,
           replace: "&&void 0"
         }
       },
@@ -5732,9 +5718,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.4"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8af2192"}`
-    }, `(${"8af2192"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.5"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"b46b81e"}`
+    }, `(${"b46b81e"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5745,23 +5731,10 @@ ${sourceUrl}`;
       color: "secondary"
     }, "Userscript")));
   }
-  function VoidTabs({ jsx, TabButton }) {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
-    return /* @__PURE__ */ React.createElement(Fragment, null, getVisibleTabs().map((t) => jsx(TabButton, { key: t.id, icon: t.icon, text: t.name, tab: t.id })));
-  }
-  function VoidPanels({ jsx, activeTab, Wrapper }) {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
-    const tab = getVisibleTabs().find((t) => t.id === activeTab);
-    if (!tab)
-      return null;
-    return jsx(Wrapper, { key: tab.id, children: jsx(tab.component, {}) });
-  }
   function openSettingsTab(tab) {
-    const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
-    store3.setTab(tab);
-    store3.setOpen(true);
+    const store = SettingsDialogStore.useSettingsDialogStore.getState();
+    store.setTab(tab);
+    store.setOpen(true);
   }
   var pendingPluginDialog = null;
   function consumePendingPluginDialog() {
@@ -5803,32 +5776,20 @@ ${sourceUrl}`;
     required: true,
     settings: settings3,
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
-    renderTabs(jsx, TabButton) {
-      try {
-        return [/* @__PURE__ */ React.createElement(VoidTabs, {
-          key: "void-tabs",
-          jsx,
-          TabButton
-        }), /* @__PURE__ */ React.createElement(VersionInfo, {
-          key: "void-version"
-        })];
-      } catch (e) {
-        logger14.error("Failed to render tabs:", e);
-        return [];
-      }
+    _tabEntries() {
+      return getVisibleTabs().map((t) => ({
+        id: t.id,
+        icon: t.icon,
+        i18nKey: t.name,
+        defaultLabel: t.name,
+        visible: () => true,
+        component: t.component
+      }));
     },
-    renderPanels(jsx, activeTab, Wrapper) {
-      try {
-        return [/* @__PURE__ */ React.createElement(VoidPanels, {
-          key: "void-panels",
-          jsx,
-          activeTab,
-          Wrapper
-        })];
-      } catch (e) {
-        logger14.error("Failed to render panels:", e);
-        return [];
-      }
+    _renderVersion() {
+      return /* @__PURE__ */ React.createElement(VersionInfo, {
+        key: "void-version"
+      });
     },
     start() {
       registerStyle("void-global", "[data-sonner-toast] [data-title]{font-weight:400}");
@@ -5855,12 +5816,12 @@ ${sourceUrl}`;
         find: "pressed_cmd_settings",
         replacement: [
           {
-            match: /(?<=(\i\.jsx)\)\((\i),\{icon:\i\.)DatabaseIcon,.{0,80}tab:"data"\}\)/,
-            replace: "$&,...$self.renderTabs($1,$2)"
+            match: /(useMemo\)\(\(\)=>)(\i\.filter\(\i=>\i\.visible\(\i\)\))/,
+            replace: "$1[...$2,...$self._tabEntries()]"
           },
           {
-            match: /"data"===(\i)&&\i\.user&&\(0,(\i\.jsx)\)\((\i),\{children:/,
-            replace: "...$self.renderPanels($2,$1,$3),$&"
+            match: /children:(\i\.map\(\i=>\(0,\i\.jsx\)\(\i,\{enterprise:\i\.enterprise,children:.{0,160}?\},\i\.id\)\))\}\)/,
+            replace: "children:[...$1,$self._renderVersion()]})"
           }
         ]
       }
@@ -5870,26 +5831,26 @@ ${sourceUrl}`;
   // src/api/Modals.tsx
   var nextId = 0;
   var modalStack = [];
-  var store3 = createExternalStore();
+  var store = createExternalStore();
   function openModal(render, options) {
     const key = options?.modalKey ?? `void-modal-${nextId++}`;
     const idx = modalStack.findIndex((m) => m.key === key);
     if (idx !== -1)
       modalStack.splice(idx, 1);
     modalStack.push({ key, render });
-    store3.notify();
+    store.notify();
     return key;
   }
   function closeModal(key) {
     const idx = modalStack.findIndex((m) => m.key === key);
     if (idx !== -1) {
       modalStack.splice(idx, 1);
-      store3.notify();
+      store.notify();
     }
   }
   function closeAllModals() {
     modalStack.length = 0;
-    store3.notify();
+    store.notify();
   }
   var ModalInstance = ErrorBoundary.wrap(function ModalInstance2({ entry }) {
     const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
@@ -5904,7 +5865,7 @@ ${sourceUrl}`;
     }, entry.render({ onClose })));
   });
   function ModalContainer() {
-    useExternalStore(store3);
+    useExternalStore(store);
     if (!modalStack.length)
       return null;
     return /* @__PURE__ */ React.createElement(React.Fragment, null, modalStack.map((entry) => /* @__PURE__ */ React.createElement(ModalInstance, {
@@ -5950,8 +5911,8 @@ ${sourceUrl}`;
       {
         find: 'imagine-query-bar-placeholder","Type to imagine"',
         replacement: {
-          match: /(\i&&!\i&&!\i&&\(0,\i\.jsx\)\(\i+\.DictationButton,)/,
-          replace: "$self.renderImagineButtons(),$1"
+          match: /("Generation mode"\)\}\)\}\),)(\i(?:&&!?\i){0,4}&&\(0,\i\.jsx\)\(\i\.DictationButton,)/,
+          replace: "$1$self.renderImagineButtons(),$2"
         }
       }
     ]
@@ -6023,7 +5984,7 @@ ${sourceUrl}`;
     _collapse: () => true,
     patches: [
       {
-        find: ["isInitiallyCollapsed", "MarkdownChunkContext"],
+        find: ["isInitiallyCollapsed", "showRunCode"],
         all: true,
         replacement: {
           match: /isInitiallyCollapsed:(\i)=!1/g,
@@ -6141,13 +6102,6 @@ ${sourceUrl}`;
   // src/plugins/betterFiles/index.tsx
   var logger16 = new Logger("BetterFiles");
   var cl13 = classNameFactory("void-bf-");
-  var settings5 = definePluginSettings({
-    skipDeleteConfirm: {
-      type: 3 /* BOOLEAN */,
-      description: "Skip the delete confirmation when deleting files from the list.",
-      default: false
-    }
-  });
   var selection = createSelectionStore();
   async function deleteSelected() {
     const ids = selection.all();
@@ -6237,16 +6191,14 @@ ${sourceUrl}`;
   var HOVER_STYLE = "betterFiles-hover";
   var betterFiles_default = definePlugin({
     name: "BetterFiles",
-    description: "Adds bulk delete and optional skip of delete confirmation on the files page.",
+    description: "Adds bulk delete to the files page.",
     authors: [Devs.Prism],
-    settings: settings5,
     start() {
       selection.clear();
       registerStyle(HOVER_STYLE, [
         ".void-bf-wrap{display:none;align-items:center}",
         ".void-bf-wrap:has([data-state=checked]){display:inline-flex}",
-        ".group\\/file-row:hover .void-bf-wrap{display:inline-flex}",
-        ".group\\/file:hover .void-bf-wrap{display:inline-flex}",
+        ".group:hover .void-bf-wrap{display:inline-flex}",
         ".void-bf-checkbox{border-color:oklch(.9924 0 none/.15)!important}",
         ".void-bf-action-bar{display:flex;flex-direction:column;gap:0.5rem;padding:0.75rem}",
         ".void-bf-count{font-size:0.75rem;font-weight:600;color:var(--color-text-tertiary)}",
@@ -6272,55 +6224,24 @@ ${sourceUrl}`;
         onClick();
       };
     },
-    _wrapFileLinkClick(assetId) {
-      return (e) => {
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection.toggle(assetId);
-        }
-      };
-    },
-    _deleteFile(assetId) {
-      Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId)).catch((e) => logger16.error("Failed to delete asset", assetId, e));
-    },
     patches: [
       {
-        find: "title-and-button",
+        find: `files.no-results",'No files matching`,
+        all: true,
         noWarn: true,
         group: true,
         replacement: [
           {
-            match: /"files-search-open-button.label".{0,25}\)\}\)\]\}\)/,
-            replace: "$&,$self.renderDeleteAllButton()"
+            match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
+            replace: "$1,$self.renderDeleteAllButton()]"
           },
           {
-            match: /(\i)\(\{type:"delete",assetId:(\i)\.assetId\}\)/,
-            replace: '$self.settings.store.skipDeleteConfirm?$self._deleteFile($2.assetId):$1({type:"delete",assetId:$2.assetId})'
+            match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
+            replace: 'role:"button",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),'
           },
           {
-            match: /(?<=")flex flex-shrink-0 items-center gap-4 p-2/,
-            replace: "group/file-row $&"
-          },
-          {
-            match: /tabIndex:0,onClick:(\i),children:\[\(0,(\i)\.jsx\)\((\i)\.AssetIcon,\{metadata:\(0,(\i)\.convertAssetMetadataToFileMetadata\)\((\i),/,
-            replace: "tabIndex:0,onClick:$self._wrapFileClick($1,$5),children:[(0,$2.jsx)($self._renderFileCheckbox,{id:$5.assetId}),(0,$2.jsx)($3.AssetIcon,{metadata:(0,$4.convertAssetMetadataToFileMetadata)($5,"
-          },
-          {
-            match: /\(0,(\i)\.jsxs\)\((\i)\.FadeScrollContainer,\{children:\[\(0,(\i)\.jsxs\)\((\i)\.AnimatePresence,/,
-            replace: "$self._renderFileActionBar(),(0,$1.jsxs)($2.FadeScrollContainer,{children:[(0,$3.jsxs)($4.AnimatePresence,"
-          },
-          {
-            match: /items-center min-h-10",children:\[/,
-            replace: "$&$self._renderFileCheckbox({id:arguments[0].asset.assetId}),"
-          },
-          {
-            match: /\((\i)\.Link,\{route:\{page:"files",fileId:null!=\((\i)=null!=\((\i)=(\i)\.rootAssetId\)/,
-            replace: '($1.Link,{onClick:$self._wrapFileLinkClick($4.assetId),route:{page:"files",fileId:null!=($2=null!=($3=$4.rootAssetId)'
-          },
-          {
-            match: /FadeScrollContainer,\{className:(\i),fadeSize:"md","aria-busy":"loading"===(\i),children:\[/,
-            replace: 'FadeScrollContainer,{className:$1,fadeSize:"md","aria-busy":"loading"===$2,children:[$self._renderFileActionBar(),'
+            match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
+            replace: "$1,$self._renderFileActionBar()]"
           }
         ]
       }
@@ -6375,7 +6296,7 @@ ${sourceUrl}`;
   // src/plugins/betterImagine/index.tsx
   var logger17 = new Logger("BetterImagine");
   var cl14 = classNameFactory("void-imagine-");
-  var settings6 = definePluginSettings({
+  var settings5 = definePluginSettings({
     hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
       description: "Hide the community image grid and templates on the Imagine home page.",
@@ -6423,7 +6344,7 @@ ${sourceUrl}`;
     }
   });
   function buildFilename(post, isVideo) {
-    if (!settings6.store.smartFilenames || !post)
+    if (!settings5.store.smartFilenames || !post)
       return null;
     const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
     const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
@@ -6486,7 +6407,7 @@ ${sourceUrl}`;
   var randomSeed = Date.now();
   var filterStore = createExternalStore();
   function persist() {
-    if (!settings6.store.persistFilters)
+    if (!settings5.store.persistFilters)
       return;
     try {
       sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
@@ -6543,7 +6464,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   function getTs(p) {
     let t = tsCache.get(p);
     if (t === undefined) {
-      t = new Date(p.createTime).getTime();
+      t = new Date(p.createTime).getTime() || 0;
       tsCache.set(p, t);
     }
     return t;
@@ -6564,20 +6485,20 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var cacheKey = null;
   var cacheList = null;
   var cacheResult = [];
-  function filterItems(items2) {
-    const { hideModerated } = settings6.store;
-    const key = `${items2.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
-    if (cacheList === items2 && cacheKey === key)
+  function filterItems(items) {
+    const { hideModerated } = settings5.store;
+    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
+    if (cacheList === items && cacheKey === key)
       return cacheResult;
     const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
-    let out = items2;
+    let out = items;
     if (needsFilter) {
       const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
       const q = currentSearch.toLowerCase();
       const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
-      out = items2.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
+      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
     }
-    cacheList = items2;
+    cacheList = items;
     cacheKey = key;
     cacheResult = currentSort === "newest" ? out : sortItems(out);
     return cacheResult;
@@ -6592,10 +6513,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
-  function sortItems(items2) {
-    if (items2.length < 2)
-      return items2;
-    const arr = [...items2];
+  function sortItems(items) {
+    if (items.length < 2)
+      return items;
+    const arr = [...items];
     switch (currentSort) {
       case "oldest":
         return arr.toSorted((a, b) => getTs(a) - getTs(b));
@@ -6867,7 +6788,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   }
   function onVisibilityChange() {
-    if (!settings6.store.pauseWhenHidden)
+    if (!settings5.store.pauseWhenHidden)
       return;
     if (document.visibilityState !== "hidden")
       return;
@@ -6881,13 +6802,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "BetterImagine",
     description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
-    settings: settings6,
-    _hideDefault: () => settings6.store.hideDefaultPreviews,
+    settings: settings5,
+    _hideDefault: () => settings5.store.hideDefaultPreviews,
     _NullGrid: () => null,
-    _autoPlay: () => !settings6.store.noAutoplay,
-    _bypassPaywall: () => settings6.store.bypassPaywall,
-    _ctrlClickSelect: () => settings6.store.ctrlClickSelect,
-    _hoverProps: () => settings6.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _autoPlay: () => !settings5.store.noAutoplay,
+    _bypassPaywall: () => settings5.store.bypassPaywall,
+    _ctrlClickSelect: () => settings5.store.ctrlClickSelect,
+    _hoverProps: () => settings5.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
     _useFilteredFavorites: useFilteredFavorites,
     _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
     _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
@@ -6963,7 +6884,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         }
       },
       {
-        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8'],
+        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
         group: true,
         replacement: [
           {
@@ -7002,13 +6923,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings7.store[key];
+    const val = settings6.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
     const link = getColor("linkColor", DEFAULT_LINK);
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings7.store.enableVisitedColor) {
+    if (settings6.store.enableVisitedColor) {
       const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
@@ -7026,7 +6947,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         value,
         onChange: (e) => {
           setValue(e.target.value);
-          settings7.store[settingKey] = e.target.value;
+          settings6.store[settingKey] = e.target.value;
           applyColors();
         }
       }), /* @__PURE__ */ React.createElement(Text, {
@@ -7038,7 +6959,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  var settings7 = definePluginSettings({
+  var settings6 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -7073,7 +6994,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "BetterLinks",
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
-    settings: settings7,
+    settings: settings6,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -7092,10 +7013,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       }
     ],
     _remarkLinkify() {
-      const { store: store4 } = settings7;
+      const { store: store2 } = settings6;
       return (tree) => {
         try {
-          if (!store4.linkifyDomains)
+          if (!store2.linkifyDomains)
             return;
           const walk = (node) => {
             if (!node.children)
@@ -7136,8 +7057,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       };
     },
     start() {
-      settings7.store.linkColor ??= DEFAULT_LINK;
-      settings7.store.visitedColor ??= DEFAULT_VISITED;
+      settings6.store.linkColor ??= DEFAULT_LINK;
+      settings6.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
       enableStyle(STYLE_NAME);
     },
@@ -7243,7 +7164,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var logger18 = new Logger("BetterSidebar");
   var cl16 = classNameFactory("void-sidebar-");
   var bdCl = classNameFactory("void-bd-");
-  var settings8 = definePluginSettings({
+  var settings7 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -7308,7 +7229,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger18.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings8.use(["batchSelect"]).batchSelect;
+    const enabled = settings7.use(["batchSelect"]).batchSelect;
     const checked = useSelectionHas(selection2, id ?? "");
     if (!enabled || !id || !isConversationRoute(route))
       return null;
@@ -7359,14 +7280,14 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
-    settings: settings8,
+    settings: settings7,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings8.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings7.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -7376,10 +7297,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       };
     },
     _defaultOpen() {
-      return !settings8.store.defaultCollapsed;
+      return !settings7.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings8.store.clickToToggle)
+      if (!settings7.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -7430,12 +7351,12 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         group: true,
         replacement: [
           {
-            match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,inputProps:\i,inputRef:\i,validationErrorMessage:\i\}\))/,
+            match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,.{0,80}?validationErrorMessage:\i\}\))/,
             replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id,route:arguments[0].route}),$1]})"
           },
           {
-            match: /\((\i),\{route:(\i),onClick:(\i),onDragStart:(\i),className:/,
-            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),onDragStart:$4,className:"
+            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
+            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
           }
         ]
       },
@@ -7450,7 +7371,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   });
 
   // src/plugins/cleaner/index.ts
-  var settings9 = definePluginSettings({
+  var settings8 = definePluginSettings({
     hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
       description: "Hide the upgrade plan button in the user menu.",
@@ -7496,7 +7417,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "Cleaner",
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
-    settings: settings9,
+    settings: settings8,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
@@ -7507,11 +7428,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         }
       },
       {
-        find: '"UpsellCard",0,',
+        find: "UPSELL_CARD_PRIORITY)",
         all: true,
         replacement: {
-          match: /"UpsellCard",0,/,
-          replace: '"UpsellCard",0,$self.settings.store.hideUpsellCard?()=>null:'
+          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
+          replace: "$1&&!$self.settings.store.hideUpsellCard"
         }
       },
       {
@@ -7562,7 +7483,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
             replace: "$&$self.settings.store.hideModelUpsell||"
           },
           {
-            match: /(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}\),onSelect:\(\)=>\i\(\i\),children:\(0,\i\.jsx\)\("div",\{className:[^}]{0,200}\),children:\(0,\i\.jsx\)\(\i,\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
+            match: /(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
             replace: "($self.settings.store.hideInaccessibleModels?[]:$1)$2"
           }
         ]
@@ -7792,20 +7713,20 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var TrashIcon2 = findExportedComponentLazy("TrashIcon");
   var PlusIcon = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings10 = definePluginSettings({
+  var settings9 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings10.plain.presets ?? [];
+    return settings9.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings10.store.presets = presets;
+    settings9.store.presets = presets;
   }
   function getAssignments() {
-    return settings10.plain.assignments ?? {};
+    return settings9.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
@@ -7884,7 +7805,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings10.use(["presets"]).presets ?? [];
+    const presets = settings9.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -7896,7 +7817,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         if (v === id)
           delete a[k];
       }
-      settings10.store.assignments = a;
+      settings9.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -7931,8 +7852,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings10.use(["presets"]).presets ?? [];
-    const assignments = settings10.use(["assignments"]).assignments ?? {};
+    const presets = settings9.use(["presets"]).presets ?? [];
+    const assignments = settings9.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -7940,7 +7861,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings10.store.assignments = a;
+      settings9.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
@@ -7970,7 +7891,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings10,
+    settings: settings9,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -8052,7 +7973,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       find: 'tts-controls.stop.label","Stop"',
       all: true,
       replacement: {
-        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[\i,\i,\i,\i)\]/,
+        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
         replace: "$1,$self._renderDownloadButton()]"
       }
     }],
@@ -8253,11 +8174,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   });
 
   // src/plugins/incognito/index.ts
-  var store4 = () => SettingsStore.useSettingsStore.getState();
+  var store2 = () => SettingsStore.useSettingsStore.getState();
   var unsubscribe = null;
   function enforce() {
-    if (!store4().isIncognito)
-      store4().setIsIncognito(true);
+    if (!store2().isIncognito)
+      store2().setIsIncognito(true);
   }
   var incognito_default = definePlugin({
     name: "Incognito",
@@ -8271,7 +8192,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     stop() {
       unsubscribe?.();
       unsubscribe = null;
-      store4().setIsIncognito(false);
+      store2().setIsIncognito(false);
     }
   });
 
@@ -8288,7 +8209,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings11 = definePluginSettings({
+  var settings10 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -8313,18 +8234,18 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings11,
+    settings: settings10,
     _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
       if (!response?.createTime)
         return null;
-      if (settings11.store.hideOwnMessages && response.sender === "human")
+      if (settings10.store.hideOwnMessages && response.sender === "human")
         return null;
       return /* @__PURE__ */ React.createElement(Text, {
         as: "span",
         size: "xs",
         color: "muted",
         className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings11.store.showDate));
+      }, formatTimestamp(response.createTime, settings10.store.showDate));
     }),
     patches: [
       {
@@ -8370,7 +8291,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var logger22 = new Logger("PromptEnhancer");
   var PLUGIN_NAME = "PromptEnhancer";
   var DEFAULT_INSTRUCTIONS = "Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler.";
-  var settings12 = definePluginSettings({
+  var settings11 = definePluginSettings({
     customInstructions: {
       type: 0 /* STRING */,
       description: "Custom instructions for how Grok should enhance your prompts.",
@@ -8379,7 +8300,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
   function buildSystemPrompt() {
-    const instructions = settings12.store.customInstructions?.trim() || DEFAULT_INSTRUCTIONS;
+    const instructions = settings11.store.customInstructions?.trim() || DEFAULT_INSTRUCTIONS;
     return `${instructions} Do NOT add any preamble, commentary, labels, or quotes. Output ONLY the rewritten prompt text and absolutely nothing else.
 
 Original prompt:
@@ -8459,7 +8380,7 @@ Original prompt:
     description: "Enhance and rewrite your prompts with one click.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings12,
+    settings: settings11,
     chatBarButton: {
       icon: () => WandSparklesIcon({ size: 18 }),
       tooltip: "Enhance prompt",
@@ -8483,6 +8404,13 @@ Original prompt:
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
+}
+
+/* match the native mode-select label (14px / 550) with stable digit widths */
+.void-rld-trigger span {
+    font-size: 14px !important;
+    font-weight: 550 !important;
+    font-variant-numeric: tabular-nums;
 }
 
 button:has(> .void-rld-trigger > :nth-child(2)) {
@@ -8528,7 +8456,8 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   // src/plugins/rateLimitDisplay/index.tsx
   var logger23 = new Logger("RateLimitDisplay");
   var cl19 = classNameFactory("void-rld-");
-  var settings13 = definePluginSettings({
+  var UsageProgressIcon = findExportedComponentLazy("UsageProgressIcon");
+  var settings12 = definePluginSettings({
     hideTotal: {
       type: 3 /* BOOLEAN */,
       description: "Show only remaining queries instead of remaining/total.",
@@ -8552,7 +8481,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     video720p: "Videos 720p"
   };
   var UNLIMITED_THRESHOLD = Number.MAX_SAFE_INTEGER;
-  var store5 = createExternalStore();
+  var store3 = createExternalStore();
   var limits = {};
   async function fetchLimit(mode) {
     try {
@@ -8574,7 +8503,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
         next[m] = data;
     }
     limits = next;
-    store5.notify();
+    store3.notify();
   }
   var useMode = () => ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
   var useIsImagine = () => RoutingStore.useRoutingStore((s) => typeof s.route.page === "string" && s.route.page.startsWith("imagine"));
@@ -8585,7 +8514,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     return limits[mode]?.remainingQueries === 0;
   }
   function ButtonIcon() {
-    useExternalStore(store5);
+    useExternalStore(store3);
     const mode = useMode();
     const isImagine = useIsImagine();
     const quotas = useImagineQuotas();
@@ -8597,9 +8526,9 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       width: 18,
       height: 20,
       className: cl19("icon-limited")
-    }) : /* @__PURE__ */ React.createElement(GaugeIcon, {
-      width: 20,
-      height: 20
+    }) : /* @__PURE__ */ React.createElement(UsageProgressIcon, {
+      width: 18,
+      height: 18
     });
     return /* @__PURE__ */ React.createElement("span", {
       className: cl19("trigger")
@@ -8646,8 +8575,8 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`);
   }
   function ButtonLabel({ mode }) {
-    useExternalStore(store5);
-    const { hideTotal } = settings13.use(["hideTotal"]);
+    useExternalStore(store3);
+    const { hideTotal } = settings12.use(["hideTotal"]);
     if (mode === "auto") {
       const { expert, fast } = limits;
       if (!expert && !fast)
@@ -8689,7 +8618,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, formatCountdown(left));
   }
   function ModeRow({ mode, data, active }) {
-    const { hideTotal } = settings13.use(["hideTotal"]);
+    const { hideTotal } = settings12.use(["hideTotal"]);
     const limited = data != null && data.remainingQueries === 0;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
@@ -8717,7 +8646,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, "Resets in ", formatDuration(data.windowSizeSeconds)));
   }
   function TooltipPanel() {
-    useExternalStore(store5);
+    useExternalStore(store3);
     const mode = useMode();
     const isImagine = useIsImagine();
     const quotas = useImagineQuotas();
@@ -8790,7 +8719,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     description: "Shows rate limit usage for the current model mode in the chat bar.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings13,
+    settings: settings12,
     chatBarButton: {
       icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
       tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
@@ -8812,7 +8741,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       CreditQuotaStore: {
         selector: (s) => s.generationSeq,
         handler() {
-          store5.notify();
+          store3.notify();
         }
       }
     },
@@ -8824,7 +8753,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   });
 
   // src/plugins/responseNotification/index.ts
-  var settings14 = definePluginSettings({
+  var settings13 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -8873,7 +8802,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings14.store.soundUrl?.trim();
+    const url = settings13.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -8886,11 +8815,11 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings14.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings13.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings14.store.sound)
+    if (settings13.store.sound)
       playSound();
-    if (settings14.store.browserNotification)
+    if (settings13.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -8898,7 +8827,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings14,
+    settings: settings13,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -8946,7 +8875,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorPicker2() {
-    const { starColor } = settings15.use(["starColor"]);
+    const { starColor } = settings14.use(["starColor"]);
     const value = starColor ?? DEFAULT_COLOR;
     return /* @__PURE__ */ React.createElement(SettingsRow, {
       action: /* @__PURE__ */ React.createElement(Flex, {
@@ -8957,7 +8886,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
         className: cl20("picker"),
         value,
         onChange: (e) => {
-          settings15.store.starColor = e.target.value;
+          settings14.store.starColor = e.target.value;
         }
       }), /* @__PURE__ */ React.createElement(Text, {
         size: "sm",
@@ -8969,7 +8898,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Star color"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Color of the twinkling stars.")));
   }
   function StarryBackground() {
-    const { starColor } = settings15.use(["starColor"]);
+    const { starColor } = settings14.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -8978,7 +8907,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings15 = definePluginSettings({
+  var settings14 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       component: ColorPicker2
@@ -8988,7 +8917,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     name: "Starry",
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings14,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -8998,13 +8927,13 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       {
         find: '"chat-page")',
         replacement: {
-          match: /(children:\[)(\i,\i,\i,\i\]\},"chat-page"\))/,
+          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
           replace: "$1$self._StarryBg(),$2"
         }
       }
     ],
     start() {
-      settings15.store.starColor ??= DEFAULT_COLOR;
+      settings14.store.starColor ??= DEFAULT_COLOR;
     }
   });
 
@@ -9115,7 +9044,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings16 = definePluginSettings({
+  var settings15 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -9160,14 +9089,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings16.store[key]);
+      classList.toggle(cls, !!settings15.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings16,
+    settings: settings15,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -9180,7 +9109,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME2 = "widerChat";
-  var settings17 = definePluginSettings({
+  var settings16 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem (default: 48).",
@@ -9188,14 +9117,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
   function applyWidth() {
-    const w = settings17.store.width ?? 64;
+    const w = settings16.store.width ?? 64;
     registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
-    settings: settings17,
+    settings: settings16,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {

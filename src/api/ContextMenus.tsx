@@ -13,9 +13,11 @@ import {
 } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
-import { createExternalStore, mapGetOrCreate, sortedEntries } from "@utils/misc";
+import { mapGetOrCreate } from "@utils/misc";
 import { type LazyNode, resolveLazyNode, useExternalStore } from "@utils/react";
 import type { ComponentType, ReactNode } from "react";
+
+import { createRegistry, type Registry } from "./registry";
 
 export interface ContextMenuLocationMap {
     conversation: { conversationId: string };
@@ -33,12 +35,16 @@ export interface ContextMenuItemDef<L extends ContextMenuLocation = ContextMenuL
     onSelect?: (ctx: ContextMenuLocationMap[L]) => void;
 }
 
+// Radix menu primitives injected by the ContextMenuAPI patch; their prop shapes
+// live in grok's bundle and aren't importable here, so props stay untyped.
+type MenuPrimitive = ComponentType<Record<string, unknown>>;
+
 export interface MenuPrimitives {
-    Item: ComponentType<any>;
-    Sub: ComponentType<any>;
-    SubTrigger: ComponentType<any>;
-    SubContent: ComponentType<any>;
-    Separator: ComponentType<any>;
+    Item: MenuPrimitive;
+    Sub: MenuPrimitive;
+    SubTrigger: MenuPrimitive;
+    SubContent: MenuPrimitive;
+    Separator: MenuPrimitive;
 }
 
 let menuPrimitivesContext: React.Context<MenuPrimitives | null> | null = null;
@@ -46,47 +52,32 @@ function getMenuPrimitivesContext(): React.Context<MenuPrimitives | null> {
     return menuPrimitivesContext ??= React.createContext<MenuPrimitives | null>(null);
 }
 
-function useMenuPrimitive<K extends keyof MenuPrimitives>(key: K, fallback: MenuPrimitives[K]): MenuPrimitives[K] {
-    const ctx = React.useContext(getMenuPrimitivesContext());
-    return ctx?.[key] ?? fallback;
+function makeMenuPrimitive(key: keyof MenuPrimitives, fallback: MenuPrimitive): MenuPrimitive {
+    return props => {
+        const ctx = React.useContext(getMenuPrimitivesContext());
+        const C = ctx?.[key] ?? fallback;
+        return <C {...props} />;
+    };
 }
 
-export const MenuItem: ComponentType<any> = props => {
-    const C = useMenuPrimitive("Item", DropdownMenuItem);
-    return <C {...props} />;
-};
-export const MenuSub: ComponentType<any> = props => {
-    const C = useMenuPrimitive("Sub", DropdownMenuSub);
-    return <C {...props} />;
-};
-export const MenuSubTrigger: ComponentType<any> = props => {
-    const C = useMenuPrimitive("SubTrigger", DropdownMenuSubTrigger);
-    return <C {...props} />;
-};
-export const MenuSubContent: ComponentType<any> = props => {
-    const C = useMenuPrimitive("SubContent", DropdownMenuSubContent);
-    return <C {...props} />;
-};
-export const MenuSeparator: ComponentType<any> = props => {
-    const C = useMenuPrimitive("Separator", DropdownMenuSeparator);
-    return <C {...props} />;
-};
+export const MenuItem = makeMenuPrimitive("Item", DropdownMenuItem);
+export const MenuSub = makeMenuPrimitive("Sub", DropdownMenuSub);
+export const MenuSubTrigger = makeMenuPrimitive("SubTrigger", DropdownMenuSubTrigger);
+export const MenuSubContent = makeMenuPrimitive("SubContent", DropdownMenuSubContent);
+export const MenuSeparator = makeMenuPrimitive("Separator", DropdownMenuSeparator);
 
-const items = new Map<ContextMenuLocation, Map<string, ContextMenuItemDef<any>>>();
-const store = createExternalStore();
+const registries = new Map<ContextMenuLocation, Registry<ContextMenuItemDef<any>>>();
 
-function getItems(location: ContextMenuLocation): Map<string, ContextMenuItemDef<any>> {
-    return mapGetOrCreate(items, location, () => new Map());
+function getRegistry(location: ContextMenuLocation): Registry<ContextMenuItemDef<any>> {
+    return mapGetOrCreate(registries, location, () => createRegistry<ContextMenuItemDef<any>>());
 }
 
 export function addContextMenuItem<L extends ContextMenuLocation>(location: L, id: string, def: ContextMenuItemDef<L>) {
-    getItems(location).set(id, def);
-    store.notify();
+    getRegistry(location).set(id, def);
 }
 
 export function removeContextMenuItem(location: ContextMenuLocation, id: string) {
-    getItems(location).delete(id);
-    store.notify();
+    getRegistry(location).delete(id);
 }
 
 function renderEntry(def: ContextMenuItemDef<any>, ctx: ContextMenuLocationMap[ContextMenuLocation]) {
@@ -103,12 +94,12 @@ function renderEntry(def: ContextMenuItemDef<any>, ctx: ContextMenuLocationMap[C
 }
 
 export function VoidContextMenuItems<L extends ContextMenuLocation>({ location, menu, ...ctx }: { location: L; menu?: MenuPrimitives } & ContextMenuLocationMap[L]): ReactNode {
-    useExternalStore(store);
+    const registry = getRegistry(location);
+    useExternalStore(registry.store);
 
-    const map = items.get(location);
-    if (!map?.size) return null;
+    if (!registry.size) return null;
 
-    const sorted = sortedEntries(map);
+    const sorted = registry.sorted();
 
     const content = (
         <>

@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { definePluginSettings } from "@api/Settings";
 import { Button, Checkbox, ConfirmDialog } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { TrashIcon } from "@components/icons";
@@ -16,18 +15,10 @@ import { Logger } from "@utils/Logger";
 import { createSelectionStore } from "@utils/misc";
 import { useSelectionHas, useSelectionSize } from "@utils/react";
 import { pluralize } from "@utils/text";
-import definePlugin, { OptionType } from "@utils/types";
+import definePlugin from "@utils/types";
 
 const logger = new Logger("BetterFiles");
 const cl = classNameFactory("void-bf-");
-
-const settings = definePluginSettings({
-    skipDeleteConfirm: {
-        type: OptionType.BOOLEAN,
-        description: "Skip the delete confirmation when deleting files from the list.",
-        default: false,
-    },
-});
 
 const selection = createSelectionStore<string>();
 
@@ -118,17 +109,16 @@ const HOVER_STYLE = "betterFiles-hover";
 
 export default definePlugin({
     name: "BetterFiles",
-    description: "Adds bulk delete and optional skip of delete confirmation on the files page.",
+    description: "Adds bulk delete to the files page.",
     authors: [Devs.Prism],
-    settings,
 
     start() {
         selection.clear();
         registerStyle(HOVER_STYLE, [
             ".void-bf-wrap{display:none;align-items:center}",
             ".void-bf-wrap:has([data-state=checked]){display:inline-flex}",
-            ".group\\/file-row:hover .void-bf-wrap{display:inline-flex}",
-            ".group\\/file:hover .void-bf-wrap{display:inline-flex}",
+            // file rows use a bare `group` class, so reveal the checkbox on row hover
+            ".group:hover .void-bf-wrap{display:inline-flex}",
             ".void-bf-checkbox{border-color:oklch(.9924 0 none/.15)!important}",
             ".void-bf-action-bar{display:flex;flex-direction:column;gap:0.5rem;padding:0.75rem}",
             ".void-bf-count{font-size:0.75rem;font-weight:600;color:var(--color-text-tertiary)}",
@@ -158,58 +148,27 @@ export default definePlugin({
         };
     },
 
-    _wrapFileLinkClick(assetId: string) {
-        return (e: MouseEvent) => {
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                selection.toggle(assetId);
-            }
-        };
-    },
-
-    _deleteFile(assetId: string) {
-        Promise.resolve(FilesPageStore.useFilesPageStore.getState().deleteAsset(assetId))
-            .catch(e => logger.error("Failed to delete asset", assetId, e));
-    },
-
     patches: [
         {
-            find: "title-and-button",
+            find: "files.no-results\",'No files matching",
+            all: true,
             noWarn: true,
             group: true,
             replacement: [
+                // bulk "delete all" button next to the files search input
                 {
-                    match: /"files-search-open-button.label".{0,25}\)\}\)\]\}\)/,
-                    replace: "$&,$self.renderDeleteAllButton()",
+                    match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
+                    replace: "$1,$self.renderDeleteAllButton()]",
                 },
+                // selection checkbox + ctrl/meta-click multi-select on each file row
                 {
-                    match: /(\i)\(\{type:"delete",assetId:(\i)\.assetId\}\)/,
-                    replace: "$self.settings.store.skipDeleteConfirm?$self._deleteFile($2.assetId):$1({type:\"delete\",assetId:$2.assetId})",
+                    match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
+                    replace: "role:\"button\",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),",
                 },
+                // action bar at the bottom of the list root, below the scroll container
                 {
-                    match: /(?<=")flex flex-shrink-0 items-center gap-4 p-2/,
-                    replace: "group/file-row $&",
-                },
-                {
-                    match: /tabIndex:0,onClick:(\i),children:\[\(0,(\i)\.jsx\)\((\i)\.AssetIcon,\{metadata:\(0,(\i)\.convertAssetMetadataToFileMetadata\)\((\i),/,
-                    replace: "tabIndex:0,onClick:$self._wrapFileClick($1,$5),children:[(0,$2.jsx)($self._renderFileCheckbox,{id:$5.assetId}),(0,$2.jsx)($3.AssetIcon,{metadata:(0,$4.convertAssetMetadataToFileMetadata)($5,",
-                },
-                {
-                    match: /\(0,(\i)\.jsxs\)\((\i)\.FadeScrollContainer,\{children:\[\(0,(\i)\.jsxs\)\((\i)\.AnimatePresence,/,
-                    replace: "$self._renderFileActionBar(),(0,$1.jsxs)($2.FadeScrollContainer,{children:[(0,$3.jsxs)($4.AnimatePresence,",
-                },
-                {
-                    match: /items-center min-h-10",children:\[/,
-                    replace: "$&$self._renderFileCheckbox({id:arguments[0].asset.assetId}),",
-                },
-                {
-                    match: /\((\i)\.Link,\{route:\{page:"files",fileId:null!=\((\i)=null!=\((\i)=(\i)\.rootAssetId\)/,
-                    replace: "($1.Link,{onClick:$self._wrapFileLinkClick($4.assetId),route:{page:\"files\",fileId:null!=($2=null!=($3=$4.rootAssetId)",
-                },
-                {
-                    match: /FadeScrollContainer,\{className:(\i),fadeSize:"md","aria-busy":"loading"===(\i),children:\[/,
-                    replace: 'FadeScrollContainer,{className:$1,fadeSize:"md","aria-busy":"loading"===$2,children:[$self._renderFileActionBar(),',
+                    match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
+                    replace: "$1,$self._renderFileActionBar()]",
                 },
             ],
         },

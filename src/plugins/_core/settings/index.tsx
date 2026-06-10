@@ -20,7 +20,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@turbopack/common/components";
-import { createElement, Fragment, React } from "@turbopack/common/react";
+import { React } from "@turbopack/common/react";
 import { SettingsDialogStore } from "@turbopack/common/stores";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
@@ -98,36 +98,6 @@ function VersionInfo() {
     );
 }
 
-interface TabButtonProps {
-    icon: ComponentType;
-    text: string;
-    tab: string;
-}
-
-interface WrapperProps {
-    children: ReactNode;
-}
-
-function VoidTabs({ jsx, TabButton }: { jsx: typeof createElement; TabButton: ComponentType<TabButtonProps> }) {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
-
-    return (
-        <Fragment>
-            {getVisibleTabs().map(t => jsx(TabButton, { key: t.id, icon: t.icon, text: t.name, tab: t.id }))}
-        </Fragment>
-    );
-}
-
-function VoidPanels({ jsx, activeTab, Wrapper }: { jsx: typeof createElement; activeTab: string; Wrapper: ComponentType<WrapperProps> }) {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
-
-    const tab = getVisibleTabs().find(t => t.id === activeTab);
-    if (!tab) return null;
-    return jsx(Wrapper, { key: tab.id, children: jsx(tab.component, {}) });
-}
-
 function openSettingsTab(tab: string) {
     const store = SettingsDialogStore.useSettingsDialogStore.getState();
     store.setTab(tab);
@@ -201,22 +171,19 @@ export default definePlugin({
 
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
 
-    renderTabs(jsx: typeof createElement, TabButton: ComponentType<TabButtonProps>) {
-        try {
-            return [<VoidTabs key="void-tabs" jsx={jsx} TabButton={TabButton} />, <VersionInfo key="void-version" />];
-        } catch (e) {
-            logger.error("Failed to render tabs:", e);
-            return [];
-        }
+    _tabEntries() {
+        return getVisibleTabs().map(t => ({
+            id: t.id,
+            icon: t.icon,
+            i18nKey: t.name,
+            defaultLabel: t.name,
+            visible: () => true,
+            component: t.component,
+        }));
     },
 
-    renderPanels(jsx: typeof createElement, activeTab: string, Wrapper: ComponentType<WrapperProps>) {
-        try {
-            return [<VoidPanels key="void-panels" jsx={jsx} activeTab={activeTab} Wrapper={Wrapper} />];
-        } catch (e) {
-            logger.error("Failed to render panels:", e);
-            return [];
-        }
+    _renderVersion() {
+        return <VersionInfo key="void-version" />;
     },
 
     start() {
@@ -243,12 +210,12 @@ export default definePlugin({
             find: "pressed_cmd_settings",
             replacement: [
                 {
-                    match: /(?<=(\i\.jsx)\)\((\i),\{icon:\i\.)DatabaseIcon,.{0,80}tab:"data"\}\)/,
-                    replace: "$&,...$self.renderTabs($1,$2)",
+                    match: /(useMemo\)\(\(\)=>)(\i\.filter\(\i=>\i\.visible\(\i\)\))/,
+                    replace: "$1[...$2,...$self._tabEntries()]",
                 },
                 {
-                    match: /"data"===(\i)&&\i\.user&&\(0,(\i\.jsx)\)\((\i),\{children:/,
-                    replace: "...$self.renderPanels($2,$1,$3),$&",
+                    match: /children:(\i\.map\(\i=>\(0,\i\.jsx\)\(\i,\{enterprise:\i\.enterprise,children:.{0,160}?\},\i\.id\)\))\}\)/,
+                    replace: "children:[...$1,$self._renderVersion()]})",
                 },
             ],
         },

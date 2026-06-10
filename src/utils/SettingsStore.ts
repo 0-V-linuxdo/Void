@@ -90,8 +90,8 @@ export class SettingsStore<T extends object> {
         return proxy as T;
     }
 
-    private invokeListeners(listeners: Iterable<Listener>, path: string) {
-        for (const l of listeners) {
+    private invokeListeners(listeners: Set<Listener>, path: string) {
+        for (const l of Array.from(listeners)) {
             try { l(path); } catch (e) { logger.error("Settings listener error:", e); }
         }
     }
@@ -102,7 +102,7 @@ export class SettingsStore<T extends object> {
         const listeners = this.pathListeners.get(path);
         if (listeners) this.invokeListeners(listeners, path);
 
-        for (const [prefix, set] of this.prefixListeners) {
+        for (const [prefix, set] of Array.from(this.prefixListeners)) {
             if (path.startsWith(prefix)) this.invokeListeners(set, path);
         }
 

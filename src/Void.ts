@@ -35,7 +35,7 @@ export { isNonNullish, isObject, isTruthy } from "@utils/guards";
 export { makeLazy, proxyLazy } from "@utils/lazy";
 export { Logger } from "@utils/Logger";
 export { type LogLevel } from "@utils/Logger";
-export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, extractUrlExtension, fetchExternal, formatCountdown, formatDuration, mapGetOrCreate, mergeDefaults, onlyOnce, sanitizeFilename, sendBrowserNotification, sleep, sortedEntries } from "@utils/misc";
+export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, fetchExternal, formatCountdown, formatDuration, mapGetOrCreate, mergeDefaults, onlyOnce, sanitizeFilename, sendBrowserNotification, sleep, sortedEntries } from "@utils/misc";
 export { useEventSubscription, useExternalStore, useForceUpdater, useIsStreaming, useSelectionHas, useSelectionSize } from "@utils/react";
 export { escapeHtml, escapeRegExp, humanizeKey, pluralize } from "@utils/text";
 export { default as definePlugin, OptionType, type PluginSettingValue, StartAt } from "@utils/types";

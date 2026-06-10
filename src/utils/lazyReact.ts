@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { makeLazy } from "@utils/lazy";
 import type { ComponentType } from "react";
 
 export type AnyComponent = ComponentType & Record<string, any>;
@@ -19,18 +20,10 @@ export function setCreateElement(fn: CreateElementFn) {
 const LAZY_MAX_RETRIES = 200;
 
 export function LazyComponent<T extends AnyComponent = AnyComponent>(name: string, factory: () => T | null): T {
-    let cached: T | null = null;
-    let attempts = 0;
-
-    const tryResolve = () => {
-        if (!cached && attempts < LAZY_MAX_RETRIES) {
-            cached = factory();
-            attempts++;
-        }
-    };
+    const resolve = makeLazy(factory, LAZY_MAX_RETRIES);
 
     const wrapper = ((props: Record<string, any>) => {
-        tryResolve();
+        const cached = resolve();
         if (!cached || !_createElement) return null;
         return _createElement(cached, props);
     }) as unknown as T;
@@ -39,7 +32,7 @@ export function LazyComponent<T extends AnyComponent = AnyComponent>(name: strin
 
     return new Proxy(wrapper, {
         get(target, prop, receiver) {
-            tryResolve();
+            const cached = resolve();
             if (cached && Reflect.has(cached as object, prop)) return Reflect.get(cached as object, prop);
             return Reflect.get(target, prop, receiver);
         },

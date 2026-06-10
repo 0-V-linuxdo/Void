@@ -221,12 +221,12 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,inputProps:\i,inputRef:\i,validationErrorMessage:\i\}\))/,
+                    match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,.{0,80}?validationErrorMessage:\i\}\))/,
                     replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id,route:arguments[0].route}),$1]})",
                 },
                 {
-                    match: /\((\i),\{route:(\i),onClick:(\i),onDragStart:(\i),className:/,
-                    replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),onDragStart:$4,className:",
+                    match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
+                    replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4",
                 },
             ],
         },

@@ -34,7 +34,7 @@ function trackFinder(type: string, args: string[], resolve: () => any): void {
     finderRegistry?.push({ type, args, resolve });
 }
 
-function isEmptyResult(value: any): boolean {
+function isEmptyResult(value: unknown): boolean {
     if (value == null) return true;
     return typeof value === "object" && Object.keys(value).length === 0;
 }
@@ -121,6 +121,33 @@ function withLazySync<T>(scan: () => T, isEmpty: (result: T) => boolean): T {
     });
 }
 
+const STOP = Symbol("stop");
+
+/**
+ * Walks every module's top-level export and (unless `topLevelOnly`) each nested
+ * export value, skipping nullish/blacklisted entries and swallowing getter throws.
+ * The visitor returns `STOP` to halt iteration early. Shared by all cache scans.
+ */
+function forEachModuleValue(visit: (value: any) => typeof STOP | void, topLevelOnly = false): void {
+    for (const [, exports] of getModuleCache()) {
+        if (exports == null || isBlacklisted(exports)) continue;
+
+        try {
+            if (visit(exports) === STOP) return;
+        } catch {}
+
+        if (topLevelOnly || typeof exports !== "object") continue;
+
+        for (const key in exports) {
+            try {
+                const nested = exports[key];
+                if (nested == null || isBlacklisted(nested)) continue;
+                if (visit(nested) === STOP) return;
+            } catch {}
+        }
+    }
+}
+
 function searchCache(filter: FilterFn, collectAll: true, topLevelOnly?: boolean): any[];
 function searchCache(filter: FilterFn, collectAll?: false, topLevelOnly?: boolean): any;
 function searchCache(filter: FilterFn, collectAll = false, topLevelOnly = false): any {
@@ -131,42 +158,26 @@ function searchCache(filter: FilterFn, collectAll = false, topLevelOnly = false)
 }
 
 function scanModuleCache(filter: FilterFn, collectAll: boolean, topLevelOnly: boolean): any {
-    const results: any[] = [];
-    const seen: Set<any> | null = collectAll ? new Set() : null;
-    const cache = getModuleCache();
-
-    for (const [, exports] of cache) {
-        if (exports == null || isBlacklisted(exports)) continue;
-
-        try {
-            if (filter(exports)) {
-                if (!collectAll) return exports;
-                if (!seen!.has(exports)) {
-                    seen!.add(exports);
-                    results.push(exports);
-                }
-                continue;
+    if (!collectAll) {
+        let match: any = null;
+        forEachModuleValue(value => {
+            if (filter(value)) {
+                match = value;
+                return STOP;
             }
-        } catch {}
-
-        if (!topLevelOnly && typeof exports === "object") {
-            for (const key in exports) {
-                try {
-                    const nested = exports[key];
-                    if (nested == null || isBlacklisted(nested)) continue;
-                    if (filter(nested)) {
-                        if (!collectAll) return nested;
-                        if (!seen!.has(nested)) {
-                            seen!.add(nested);
-                            results.push(nested);
-                        }
-                    }
-                } catch {}
-            }
-        }
+        }, topLevelOnly);
+        return match;
     }
 
-    return collectAll ? results : null;
+    const results: any[] = [];
+    const seen = new Set<any>();
+    forEachModuleValue(value => {
+        if (filter(value) && !seen.has(value)) {
+            seen.add(value);
+            results.push(value);
+        }
+    }, topLevelOnly);
+    return results;
 }
 
 export function find<T = any>(filter: FilterFn): T {
@@ -316,42 +327,20 @@ export function findBulk(...filterFns: FilterFn[]): any[] {
         const activeFilters: Array<FilterFn | undefined> = [...filterFns];
         const results = new Array(length).fill(null);
         let found = 0;
-        const cache = getModuleCache();
 
-        outer: for (const [, exports] of cache) {
-            if (exports == null || isBlacklisted(exports)) continue;
-
+        forEachModuleValue(value => {
             for (let j = 0; j < length; j++) {
                 const filter = activeFilters[j];
                 if (!filter) continue;
                 try {
-                    if (filter(exports)) {
-                        results[j] = exports;
+                    if (filter(value)) {
+                        results[j] = value;
                         activeFilters[j] = undefined;
-                        if (++found === length) break outer;
+                        if (++found === length) return STOP;
                     }
                 } catch {}
             }
-
-            if (typeof exports === "object") {
-                for (const key in exports) {
-                    try {
-                        const nested = exports[key];
-                        if (nested == null || isBlacklisted(nested)) continue;
-                        for (let j = 0; j < length; j++) {
-                            const filter = activeFilters[j];
-                            if (!filter) continue;
-                            if (filter(nested)) {
-                                results[j] = nested;
-                                activeFilters[j] = undefined;
-                                if (++found === length) break outer;
-                                break;
-                            }
-                        }
-                    } catch {}
-                }
-            }
-        }
+        });
 
         return { results, found };
     };
@@ -370,13 +359,22 @@ export function findBulk(...filterFns: FilterFn[]): any[] {
     });
 }
 
-export function findModuleFactory(...code: (string | RegExp)[]): [id: number, factory: ModuleFactory] | null {
+/** Iterate the factory registry, invoking `visit` for each factory whose source matches all `code` patterns. Returns `STOP` to halt. */
+function forEachMatchingFactory(code: (string | RegExp)[], visit: (id: number, factory: ModuleFactory) => typeof STOP | void): void {
     const registry = getRuntimeFactoryRegistry();
-    if (!registry) return null;
+    if (!registry) return;
     for (const [id, factory] of registry) {
-        if (matchesAllPatterns(getFnSource(factory), code)) return [id, factory];
+        if (matchesAllPatterns(getFnSource(factory), code) && visit(id, factory) === STOP) return;
     }
-    return null;
+}
+
+export function findModuleFactory(...code: (string | RegExp)[]): [id: number, factory: ModuleFactory] | null {
+    let result: [number, ModuleFactory] | null = null;
+    forEachMatchingFactory(code, (id, factory) => {
+        result = [id, factory];
+        return STOP;
+    });
+    return result;
 }
 
 export function findModuleId(...code: (string | RegExp)[]): number | null {
@@ -483,11 +481,7 @@ export function extractAndLoadChunksLazy(code: (string | RegExp)[], matcher = De
 
 export function search(...code: (string | RegExp)[]): Record<number, ModuleFactory> {
     const results: Record<number, ModuleFactory> = {};
-    const registry = getRuntimeFactoryRegistry();
-    if (!registry) return results;
-    for (const [id, factory] of registry) {
-        if (matchesAllPatterns(getFnSource(factory), code)) results[id] = factory;
-    }
+    forEachMatchingFactory(code, (id, factory) => { results[id] = factory; });
     return results;
 }
 

@@ -9,13 +9,14 @@ import "./PluginCard.css";
 import { dispatch } from "@api/Events";
 import { isNewPlugin, isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
 import { mergePluginSettings } from "@api/Settings";
-import { Badge, Button, Switch } from "@components";
+import { Badge, Switch } from "@components";
 import { CircleAlertIcon, EllipsisVertical, TriangleAlert } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { useForceUpdater } from "@utils/react";
 
 import BaseCard from "./BaseCard";
+import { IconButton } from "./IconButton";
 import { PluginBadges, TooltipIcon } from "./pluginBadges";
 import { hasVisibleSettings } from "./utils";
 
@@ -59,9 +60,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
             controls={
                 <>
                     {hasVisibleSettings(plugin) && (
-                        <Button variant="tertiary" size="xs" shape="square" aria-label="Plugin settings" onClick={() => onSettings(name)}>
-                            <EllipsisVertical size={14} />
-                        </Button>
+                        <IconButton icon={EllipsisVertical} label="Plugin settings" onClick={() => onSettings(name)} />
                     )}
                     <Switch checked={enabled} disabled={plugin.required} onCheckedChange={handleToggle} />
                 </>

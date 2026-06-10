@@ -84,7 +84,7 @@ export default definePlugin({
         {
             find: "\"chat-page\")",
             replacement: {
-                match: /(children:\[)(\i,\i,\i,\i\]\},"chat-page"\))/,
+                match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
                 replace: "$1$self._StarryBg(),$2",
             },
         },

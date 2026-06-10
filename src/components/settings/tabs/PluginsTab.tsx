@@ -15,14 +15,8 @@ import {
     ErrorBoundary,
     Flex,
     Grid,
-    Input,
     Paragraph,
     SectionHeader,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
     Separator,
     Text,
 } from "@components";
@@ -32,10 +26,17 @@ import { classNameFactory } from "@utils/css";
 import { useFiltered } from "@utils/react";
 
 import PluginCard from "../PluginCard";
-import { type InputChangeEvent, type ListFilter } from "../utils";
+import { type ListFilter } from "../utils";
 import PluginDialog from "./PluginDialog";
+import { SearchFilterBar } from "./SearchFilterBar";
 
 const cl = classNameFactory("void-plugins-");
+
+const FILTER_OPTIONS: readonly { value: ListFilter; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "enabled", label: "Enabled" },
+    { value: "disabled", label: "Disabled" },
+];
 
 const getPluginKey = (name: string) => `${name} ${plugins[name].description ?? ""}`;
 
@@ -50,6 +51,7 @@ export default function PluginsTab() {
     const [filter, setFilter] = useState<ListFilter>("all");
     const [dialogName, setDialogName] = useState<string | null>(null);
     const [showReload, setShowReload] = useState(false);
+    const [needsReload, setNeedsReload] = useState(false);
     const [toggleTick, setToggleTick] = useState(0);
 
     const { userPlugins, requiredPlugins } = useMemo(() => {
@@ -82,6 +84,7 @@ export default function PluginsTab() {
 
     useEffect(() => subscribe("reloadNeeded", () => {
         changedPluginsRef.current.add("__settings__");
+        setNeedsReload(true);
         if (!dismissedRef.current) setShowReload(true);
     }), []);
 
@@ -93,7 +96,6 @@ export default function PluginsTab() {
 
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
     const hasResults = filteredUser.length > 0 || filteredRequired.length > 0;
-    const needsReload = changedPluginsRef.current.size > 0;
 
     const onReload = useCallback((pluginName: string) => {
         const initialStates = initialStatesRef.current;
@@ -104,10 +106,12 @@ export default function PluginsTab() {
         else changed.add(pluginName);
 
         if (!changed.size) {
+            setNeedsReload(false);
             setShowReload(false);
             dismissedRef.current = false;
-        } else if (!dismissedRef.current) {
-            setShowReload(true);
+        } else {
+            setNeedsReload(true);
+            if (!dismissedRef.current) setShowReload(true);
         }
     }, []);
 
@@ -129,25 +133,15 @@ export default function PluginsTab() {
                     </Button>
                 </Flex>
             )}
-            <Flex alignItems="center" gap="0.75rem">
-                <Input
-                    type="text"
-                    placeholder={`Search ${visibleUser.length + visibleRequired.length} plugins...`}
-                    value={search}
-                    onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
-                    className="void-search-bar-input"
-                />
-                <Select value={filter} onValueChange={(v: string) => setFilter(v as ListFilter)}>
-                    <SelectTrigger className={cl("filter-select")}>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="enabled">Enabled</SelectItem>
-                        <SelectItem value="disabled">Disabled</SelectItem>
-                    </SelectContent>
-                </Select>
-            </Flex>
+            <SearchFilterBar
+                placeholder={`Search ${visibleUser.length + visibleRequired.length} plugins...`}
+                search={search}
+                onSearchChange={setSearch}
+                filter={filter}
+                onFilterChange={f => setFilter(f)}
+                options={FILTER_OPTIONS}
+                selectClassName={cl("filter-select")}
+            />
             {filteredUser.length > 0 && (
                 <Grid columns="repeat(2, 1fr)">
                     {filteredUser.map(n => (

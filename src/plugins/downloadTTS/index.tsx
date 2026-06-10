@@ -69,7 +69,7 @@ export default definePlugin({
         find: "tts-controls.stop.label\",\"Stop\"",
         all: true,
         replacement: {
-            match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[\i,\i,\i,\i)\]/,
+            match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
             replace: "$1,$self._renderDownloadButton()]",
         },
     }],

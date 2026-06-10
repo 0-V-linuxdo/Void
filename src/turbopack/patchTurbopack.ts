@@ -617,6 +617,14 @@ function wrapExistingFactories() {
         const registry = runtimeFactoryRegistry;
         const wrapped = new Map<ModuleFactory, ModuleFactory>();
 
+        const ensureWrapped = (id: number, factory: ModuleFactory): ModuleFactory => {
+            const existing = wrapped.get(factory);
+            const w = existing ?? wrapFactory(id, factory);
+            if (!existing) wrapped.set(factory, w);
+            registry.set(id, w);
+            return w;
+        };
+
         // Hook Map.get so any factory read by the runtime during or after
         // iteration is guaranteed to be wrapped before execution. This closes
         // the race where Turbopack instantiates a module from the registry
@@ -625,27 +633,12 @@ function wrapExistingFactories() {
         registry.get = function (id: number) {
             const factory = origGet(id);
             if (factory == null || (factory as PatchedModuleFactory)[SYM_ORIGINAL]) return factory;
-            const existing = wrapped.get(factory);
-            if (existing) {
-                registry.set(id, existing);
-                return existing;
-            }
-            const w = wrapFactory(id, factory);
-            wrapped.set(factory, w);
-            registry.set(id, w);
-            return w;
+            return ensureWrapped(id, factory);
         } as any;
 
         for (const [id, factory] of registry) {
             if ((factory as PatchedModuleFactory)[SYM_ORIGINAL]) continue;
-            const existing = wrapped.get(factory);
-            if (existing) {
-                registry.set(id, existing);
-            } else {
-                const w = wrapFactory(id, factory);
-                wrapped.set(factory, w);
-                registry.set(id, w);
-            }
+            ensureWrapped(id, factory);
         }
     }
     if (!runtimeModuleCache && runtimeFactoryRegistry) {
