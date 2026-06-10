@@ -50,6 +50,7 @@ export default function PluginsTab() {
     const [filter, setFilter] = useState<ListFilter>("all");
     const [dialogName, setDialogName] = useState<string | null>(null);
     const [showReload, setShowReload] = useState(false);
+    const [needsReload, setNeedsReload] = useState(false);
     const [toggleTick, setToggleTick] = useState(0);
 
     const { userPlugins, requiredPlugins } = useMemo(() => {
@@ -82,6 +83,7 @@ export default function PluginsTab() {
 
     useEffect(() => subscribe("reloadNeeded", () => {
         changedPluginsRef.current.add("__settings__");
+        setNeedsReload(true);
         if (!dismissedRef.current) setShowReload(true);
     }), []);
 
@@ -93,7 +95,6 @@ export default function PluginsTab() {
 
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
     const hasResults = filteredUser.length > 0 || filteredRequired.length > 0;
-    const needsReload = changedPluginsRef.current.size > 0;
 
     const onReload = useCallback((pluginName: string) => {
         const initialStates = initialStatesRef.current;
@@ -104,10 +105,12 @@ export default function PluginsTab() {
         else changed.add(pluginName);
 
         if (!changed.size) {
+            setNeedsReload(false);
             setShowReload(false);
             dismissedRef.current = false;
-        } else if (!dismissedRef.current) {
-            setShowReload(true);
+        } else {
+            setNeedsReload(true);
+            if (!dismissedRef.current) setShowReload(true);
         }
     }, []);
 
