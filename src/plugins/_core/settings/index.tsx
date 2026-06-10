@@ -210,8 +210,8 @@ export default definePlugin({
             find: "pressed_cmd_settings",
             replacement: [
                 {
-                    match: /(\i\.filter\(\i=>\i\.visible\(\i\)\))/,
-                    replace: "[...$1,...$self._tabEntries()]",
+                    match: /(useMemo\)\(\(\)=>)(\i\.filter\(\i=>\i\.visible\(\i\)\))/,
+                    replace: "$1[...$2,...$self._tabEntries()]",
                 },
                 {
                     match: /children:(\i\.map\(\i=>\(0,\i\.jsx\)\(\i,\{enterprise:\i\.enterprise,children:.{0,160}?\},\i\.id\)\))\}\)/,
