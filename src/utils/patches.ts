@@ -14,7 +14,7 @@ export function canonicalizeMatch<T extends RegExp | string>(match: T): T {
         return (canon === match ? match : canon) as T;
     }
 
-    const {source} = match;
+    const { source } = match;
     let canonSource = source.replaceAll(/#{i18n::([^}]+)}/g, (_, key: string) => `"${key.replaceAll(".", "\\.")}"`);
     canonSource = canonSource.replaceAll(/(\\*)\\i/g, (_m, leadingEscapes: string) => (leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : `${leadingEscapes}\\i`));
     canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],(?:\\d+,|\\(\\)=>${iToken})`);
