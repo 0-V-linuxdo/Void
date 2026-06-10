@@ -11,7 +11,7 @@ import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
 import { SettingsStore as SettingsStoreClass, STORAGE_KEY } from "@utils/SettingsStore";
-import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingSelectOption, type PluginSettingValue, type SettingsChecks, type SettingsDefinition } from "@utils/types";
+import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingValue, type SettingsChecks, type SettingsDefinition } from "@utils/types";
 
 const logger = new Logger("Settings");
 
@@ -172,7 +172,7 @@ export function mergePluginSettings(name: string, patch: Record<string, unknown>
 
 export function resolveDefault(setting: PluginSettingDef): PluginSettingValue | undefined {
     if ("default" in setting) return setting.default as PluginSettingValue;
-    if (setting.type === OptionType.SELECT) return (setting as { options: readonly PluginSettingSelectOption[] }).options.find(o => o.default)?.value;
+    if (setting.type === OptionType.SELECT) return setting.options.find(o => o.default)?.value;
     return undefined;
 }
 
@@ -211,11 +211,13 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
 
             useEffect(() => {
                 const prefix = pluginPath(_pluginName);
-                const listener = keys?.length
-                    ? ((paths: string[]) => (path: string) => {
-                        if (paths.some(p => path.startsWith(p) || p.startsWith(path + "."))) forceUpdate();
-                    })(keys.map(k => `${prefix}.${String(k)}`))
-                    : forceUpdate;
+                let listener: (path: string) => void = forceUpdate;
+                if (keys?.length) {
+                    const watched = keys.map(k => `${prefix}.${String(k)}`);
+                    listener = path => {
+                        if (watched.some(p => path.startsWith(p) || p.startsWith(path + "."))) forceUpdate();
+                    };
+                }
                 SettingsStore.addPrefixChangeListener(prefix, listener);
                 return () => SettingsStore.removePrefixChangeListener(prefix, listener);
             }, []);
