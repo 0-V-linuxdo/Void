@@ -118,17 +118,18 @@ function wrapJsx(original: JsxFn): JsxFn {
     };
 }
 
-waitFor(filters.byProps("jsx", "jsxs"), (mod: { jsx: JsxFn }) => {
-    const original = mod.jsx;
-    const jsx = wrapJsx(original);
+waitFor(filters.byProps("jsx", "jsxs"), (mod: { jsx: JsxFn; jsxs: JsxFn }) => {
+    const origJsx = mod.jsx;
+    const origJsxs = mod.jsxs;
+    const jsx = wrapJsx(origJsx);
+    const jsxs = origJsxs === origJsx ? jsx : wrapJsx(origJsxs);
     for (const cache of [getRuntimeModuleCache(), getModuleCache()]) {
         if (!cache) continue;
         const entries = cache instanceof Map ? cache.values() : Object.values(cache).map(m => (m as { exports?: unknown }).exports);
         for (const exp of entries) {
-            if (exp != null && typeof exp === "object" && (exp as { jsx?: unknown }).jsx === original) {
-                (exp as { jsx: JsxFn; jsxs: JsxFn }).jsx = jsx;
-                (exp as { jsx: JsxFn; jsxs: JsxFn }).jsxs = jsx;
-            }
+            if (exp == null || typeof exp !== "object") continue;
+            if ((exp as { jsx?: unknown }).jsx === origJsx) (exp as { jsx: JsxFn }).jsx = jsx;
+            if ((exp as { jsxs?: unknown }).jsxs === origJsxs) (exp as { jsxs: JsxFn }).jsxs = jsxs;
         }
     }
 });
