@@ -237,11 +237,11 @@ export default definePlugin({
             find: /,\{children:\i,action:\i,hidden:\i,className:\i\}=\i,\i=\(0,\i\.useId\)\(\)/,
             replacement: [
                 {
-                    match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,className:\i\}=\i;(?!return)/,
+                    match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,className:\i\}=\i;(?!return)(?=.{0,450}?\(0,\i\.jsx\)\("h3")/,
                     replace: "try{$self._setTitle($1)}catch{}$&",
                 },
                 {
-                    match: /function (\i)\(\i\)\{let \i,\i=\(0,\i\.c\)\(\d\),\{children:\i\}=\i;/,
+                    match: /function (\i)\(\i\)\{let \i,\i=\(0,\i\.c\)\(\d\),\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
                     replace: "try{$self._setDescription($1)}catch{}$&",
                 },
                 {
