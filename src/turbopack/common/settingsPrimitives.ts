@@ -15,14 +15,8 @@ export interface SettingsPrimitives {
 
 const captured: Partial<SettingsPrimitives> = {};
 
-export function setSettingsPrimitives(
-    title: ComponentType<SettingsTitleProps>,
-    description: ComponentType<SettingsDescriptionProps>,
-    row: ComponentType<SettingsRowProps>,
-): void {
-    captured.SettingsTitle = title;
-    captured.SettingsDescription = description;
-    captured.SettingsRow = row;
+export function setSettingsPrimitive<K extends keyof SettingsPrimitives>(name: K, component: SettingsPrimitives[K]): void {
+    captured[name] = component;
 }
 
 export function getSettingsPrimitive<K extends keyof SettingsPrimitives>(name: K): SettingsPrimitives[K] | null {

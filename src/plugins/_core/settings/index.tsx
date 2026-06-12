@@ -22,7 +22,7 @@ import {
     DropdownMenuSubTrigger,
 } from "@turbopack/common/components";
 import { React } from "@turbopack/common/react";
-import { setSettingsPrimitives } from "@turbopack/common/settingsPrimitives";
+import { setSettingsPrimitive } from "@turbopack/common/settingsPrimitives";
 import { SettingsDialogStore } from "@turbopack/common/stores";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
@@ -173,12 +173,16 @@ export default definePlugin({
 
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
 
-    exposeSettingsComponents(
-        title: ComponentType<SettingsTitleProps>,
-        description: ComponentType<SettingsDescriptionProps>,
-        row: ComponentType<SettingsRowProps>,
-    ) {
-        setSettingsPrimitives(title, description, row);
+    _setTitle(title: ComponentType<SettingsTitleProps>) {
+        setSettingsPrimitive("SettingsTitle", title);
+    },
+
+    _setDescription(description: ComponentType<SettingsDescriptionProps>) {
+        setSettingsPrimitive("SettingsDescription", description);
+    },
+
+    _setRow(row: ComponentType<SettingsRowProps>) {
+        setSettingsPrimitive("SettingsRow", row);
     },
 
     _tabEntries() {
@@ -231,10 +235,20 @@ export default definePlugin({
         },
         {
             find: /,\{children:\i,action:\i,hidden:\i,className:\i\}=\i,\i=\(0,\i\.useId\)\(\)/,
-            replacement: {
-                match: /function (\i)\(\i\)\{let [\w,]{0,12}=\(0,\i\.c\)\(5\),\{children:\i,className:\i\}=\i;[^Z]{0,90}?;let \i=\i;return[^Z]{0,420}?function (\i)\(\i\)\{let [\w,]{0,8}=\(0,\i\.c\)\(2\),\{children:\i\}=\i;[^Z]{0,220}?function (\i)\(\i\)\{let [\w,]{0,16}=\(0,\i\.c\)\(15\),\{children:\i,action:\i,hidden:/,
-                replace: "try{$self.exposeSettingsComponents($1,$2,$3)}catch{}$&",
-            },
+            replacement: [
+                {
+                    match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,className:\i\}=\i;(?!return)/,
+                    replace: "try{$self._setTitle($1)}catch{}$&",
+                },
+                {
+                    match: /function (\i)\(\i\)\{let \i,\i=\(0,\i\.c\)\(\d\),\{children:\i\}=\i;/,
+                    replace: "try{$self._setDescription($1)}catch{}$&",
+                },
+                {
+                    match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,action:\i,hidden:\i,className:/,
+                    replace: "try{$self._setRow($1)}catch{}$&",
+                },
+            ],
         },
     ],
 });
