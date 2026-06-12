@@ -5,11 +5,11 @@
  */
 
 import * as allStores from "@turbopack/common/stores";
-import { patches } from "@turbopack/patchTurbopack";
+import { onModuleLoad, patches, rescanRuntimeModules } from "@turbopack/patchTurbopack";
 import { filters, waitFor } from "@turbopack/turbopack";
 import { disableStyle, enableStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { canonicalizeFind, canonicalizeReplacement } from "@utils/patches";
+import { canonicalizeFind, canonicalizeReplacement, countCaptureGroups } from "@utils/patches";
 import { type Patch, type Plugin, StartAt } from "@utils/types";
 
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
@@ -49,6 +49,7 @@ function removePluginContextMenuItems(plugin: Plugin) {
 export function isPluginEnabled(pluginName: string): boolean {
     const plugin = plugins[pluginName];
     if (!plugin) return false;
+    if (plugin.chrome && !(window as { chrome?: unknown }).chrome) return false;
     if (plugin.required || plugin.isDependency) return true;
     return Settings.plugins[pluginName]?.enabled ?? plugin.enabledByDefault ?? false;
 }
@@ -67,6 +68,12 @@ export function addPatch(newPatch: Omit<Patch, "plugin">, pluginName: string) {
 
     const pluginPath = `Void.plugins[${JSON.stringify(pluginName)}]`;
     for (const replacement of patch.replacement) {
+        if (IS_DEV && typeof replacement.replace === "string") {
+            const groups = countCaptureGroups(replacement.match instanceof RegExp ? replacement.match.source : String(replacement.match));
+            for (const ref of replacement.replace.matchAll(/\$(\d+)/g)) {
+                if (Number(ref[1]) > groups) logger.warn(`${pluginName}: replace references $${ref[1]} but match has ${groups} capture group(s)`);
+            }
+        }
         canonicalizeReplacement(replacement, pluginPath);
     }
 
@@ -336,4 +343,47 @@ export function initPluginManager() {
             }
         }
     }
+}
+
+const RETRY_TIMEOUT_MS = 15_000;
+const RETRY_DEBOUNCE_MS = 200;
+
+const getFailed = () =>
+    Object.values(plugins).filter(
+        p => !p.started && isPluginEnabled(p.name) && (p.startAt ?? StartAt.Init) === StartAt.TurbopackReady,
+    );
+
+export function retryFailedPlugins() {
+    if (!getFailed().length) return;
+
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const tryRetry = () => {
+        if (retryTimer) clearTimeout(retryTimer);
+        retryTimer = setTimeout(() => {
+            retryTimer = null;
+            rescanRuntimeModules();
+            for (const p of getFailed()) startPlugin(p, true);
+
+            if (!getFailed().length) {
+                unsub();
+                clearTimeout(timeout);
+                logger.info("All previously failed plugins started after late module load");
+            }
+        }, RETRY_DEBOUNCE_MS);
+    };
+
+    const unsub = onModuleLoad(tryRetry);
+
+    const timeout = setTimeout(() => {
+        unsub();
+        if (retryTimer) clearTimeout(retryTimer);
+        rescanRuntimeModules();
+        const remaining = getFailed();
+        for (const p of remaining) startPlugin(p, true);
+        const stillFailed = getFailed();
+        if (stillFailed.length) {
+            logger.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map(p => p.name).join(", ")}`);
+        }
+    }, RETRY_TIMEOUT_MS);
 }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.6
+// @version      1.0.3.7
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -14,10 +14,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @grant        GM_deleteValue
 // @grant        GM_setClipboard
-// @grant        GM_listValues
-// @connect      self
 // @connect      raw.githubusercontent.com
 // @connect      *
 // @compatible   chrome
@@ -31,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.6 — A modification for grok.com
+ * Void v1.0.3.7 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -55,6 +52,9 @@
   // src/Void.ts
   var exports_Void = {};
   __export(exports_Void, {
+    wrapComponent: () => wrapComponent,
+    walkFiberUp: () => walkFiberUp,
+    walkFiberTree: () => walkFiberTree,
     waitFor: () => waitFor,
     useSelectionSize: () => useSelectionSize,
     useSelectionHas: () => useSelectionHas,
@@ -114,6 +114,7 @@
     isObject: () => isObject,
     isNonNullish: () => isNonNullish,
     isBlacklisted: () => isBlacklisted,
+    injectExports: () => injectExports,
     initSettings: () => initSettings,
     init: () => init,
     importModule: () => importModule,
@@ -121,9 +122,11 @@
     getTurbopackHelpers: () => getTurbopackHelpers,
     getThemes: () => getThemes,
     getRuntimeModuleCache: () => getRuntimeModuleCache,
-    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry,
+    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry2,
+    getReactRoot: () => getReactRoot,
     getModuleCache: () => getModuleCache,
     getFnSource: () => getFnSource,
+    getFiber: () => getFiber,
     getAllStores: () => getAllStores,
     formatDuration: () => formatDuration,
     formatCountdown: () => formatCountdown,
@@ -133,6 +136,7 @@
     findModuleId: () => findModuleId,
     findModuleFactory: () => findModuleFactory,
     findLazy: () => findLazy,
+    findInReactTree: () => findInReactTree,
     findExportedComponentLazy: () => findExportedComponentLazy,
     findExportedComponent: () => findExportedComponent,
     findCssClassesLazy: () => findCssClassesLazy,
@@ -141,6 +145,8 @@
     findComponentByCode: () => findComponentByCode,
     findByPropsLazy: () => findByPropsLazy,
     findByProps: () => findByProps,
+    findByEventNameLazy: () => findByEventNameLazy,
+    findByEventName: () => findByEventName,
     findByDisplayNameLazy: () => findByDisplayNameLazy,
     findByDisplayName: () => findByDisplayName,
     findByCodeLazy: () => findByCodeLazy,
@@ -192,72 +198,39 @@
     ChunkPathRegex: () => ChunkPathRegex
   });
 
-  // src/turbopack/common/stores.ts
-  var exports_stores = {};
-  __export(exports_stores, {
-    WorkspaceStore: () => WorkspaceStore,
-    WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
-    UpsellStore: () => UpsellStore,
-    TourGuideStore: () => TourGuideStore,
-    TextToSpeechStore: () => TextToSpeechStore,
-    TasksStore: () => TasksStore,
-    TabsManagerStore: () => TabsManagerStore,
-    SuggestionStore: () => SuggestionStore,
-    SubscriptionsStore: () => SubscriptionsStore,
-    SkillsStore: () => SkillsStore,
-    ShareStore: () => ShareStore,
-    SettingsStore: () => SettingsStore,
-    SettingsDialogStore: () => SettingsDialogStore,
-    SessionStore: () => SessionStore,
-    ScrollStore: () => ScrollStore,
-    RoutingStore: () => RoutingStore,
-    ResponseStore: () => ResponseStore,
-    ReportStore: () => ReportStore,
-    PersonalityStore: () => PersonalityStore,
-    NotificationsStore: () => NotificationsStore,
-    ModesStore: () => ModesStore,
-    MentionMenuStore: () => MentionMenuStore,
-    MediaStore: () => MediaStore,
-    ImagineModelOverrideStore: () => ImagineModelOverrideStore,
-    ImageEditorStore: () => ImageEditorStore,
-    FilesPageStore: () => FilesPageStore,
-    FileStore: () => FileStore,
-    FeatureStore: () => FeatureStore,
-    DictationStore: () => DictationStore,
-    CreditQuotaStore: () => CreditQuotaStore,
-    ConversationStore: () => ConversationStore,
-    CommandMenuStore: () => CommandMenuStore,
-    CodePageStore: () => CodePageStore,
-    ChatPageStore: () => ChatPageStore,
-    AssetStore: () => AssetStore
-  });
-
   // src/utils/Logger.ts
   var isBrowser = typeof window !== "undefined";
-  var ANSI = {
-    reset: "\x1B[0m",
-    bold: "\x1B[1m",
-    green: "\x1B[32m",
-    red: "\x1B[31m",
-    yellow: "\x1B[33m"
+  var CAP_GRADIENT = {
+    log: "linear-gradient(135deg,#b4befe,#cba6f7)",
+    info: "linear-gradient(135deg,#89b4fa,#74c7ec)",
+    warn: "linear-gradient(135deg,#f9e2af,#fab387)",
+    error: "linear-gradient(135deg,#f38ba8,#eba0ac)",
+    debug: "linear-gradient(135deg,#6c7086,#9399b2)"
   };
-  var LEVEL_ANSI = { error: ANSI.red, warn: ANSI.yellow };
+  var LEVEL_ANSI = {
+    log: "\x1B[32m",
+    info: "\x1B[34m",
+    warn: "\x1B[33m",
+    error: "\x1B[31m",
+    debug: "\x1B[90m"
+  };
+  var CAP = "color:#11111b;font-weight:700;padding:2px 7px;border-radius:7px 0 0 7px;";
+  var BODY = "background:#1e1e2e;font-weight:600;padding:2px 8px;border-radius:0 7px 7px 0;";
 
   class Logger {
     name;
     color;
-    constructor(name, color = "white") {
+    constructor(name, color = "#cdd6f4") {
       this.name = name;
       this.color = color;
     }
     _log(level, args) {
       if (isBrowser) {
-        console[level](`%c Void %c %c ${this.name} `, "background: white; color: black; font-weight: bold; border-radius: 5px;", "", `background: ${this.color}; color: black; font-weight: bold; border-radius: 5px;`, ...args);
+        const sink = level === "debug" ? console.debug : console.log;
+        sink(`%cVoid%c${this.name}%c`, `${CAP}background:${CAP_GRADIENT[level]};`, `${BODY}color:${this.color};`, "", ...args);
         return;
       }
-      const levelAnsi = LEVEL_ANSI[level] ?? ANSI.green;
-      const prefix = `${ANSI.bold}${levelAnsi}[${this.name}]${ANSI.reset}`;
-      console[level](prefix, ...args);
+      console[level](`${LEVEL_ANSI[level]}\x1B[1m${this.name}\x1B[0m`, ...args);
     }
     log(...args) {
       this._log("log", args);
@@ -276,8 +249,821 @@
     }
   }
 
+  // src/turbopack/fnSource.ts
+  var fnSourceCache = new WeakMap;
+  function getFnSource(fn) {
+    let src = fnSourceCache.get(fn);
+    if (src === undefined) {
+      src = String(fn);
+      fnSourceCache.set(fn, src);
+    }
+    return src;
+  }
+
+  // src/turbopack/match.ts
+  function matchesPattern(text, pattern) {
+    if (typeof pattern === "string")
+      return text.includes(pattern);
+    pattern.lastIndex = 0;
+    return pattern.test(text);
+  }
+  function matchesAllPatterns(text, patterns) {
+    return patterns.every((p) => matchesPattern(text, p));
+  }
+
+  // src/utils/patches.ts
+  var iToken = "(?:[A-Za-z_$][\\w$]*)";
+  function canonicalizeMatch(match) {
+    if (typeof match === "string") {
+      const canon = match.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => `"${key}"`);
+      return canon === match ? match : canon;
+    }
+    const { source } = match;
+    let canonSource = source.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => `"${key.replaceAll(".", "\\.")}"`);
+    canonSource = canonSource.replaceAll(/\\jsx\{([^}]*)\}/g, (_, comp) => `\\(0,\\i\\.jsxs?\\)\\(${comp},`);
+    canonSource = canonSource.replaceAll(/\\jsx(?![\w{])/g, "\\(0,\\i\\.jsxs?\\)\\(");
+    canonSource = canonSource.replaceAll(/\\c\{(\d+)\}/g, (_, n) => `\\(0,\\i\\.c\\)\\(${n}\\)`);
+    canonSource = canonSource.replaceAll(/\\c(?![\w{])/g, "\\(0,\\i\\.c\\)\\(\\d+\\)");
+    canonSource = canonSource.replaceAll(/(\\*)\\i/g, (_m, leadingEscapes) => leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : `${leadingEscapes}\\i`);
+    canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],(?:\\d+,|\\(\\)=>${iToken})`);
+    if (canonSource === source)
+      return match;
+    const canonRegex = new RegExp(canonSource, match.flags);
+    canonRegex.toString = match.toString.bind(match);
+    return canonRegex;
+  }
+  function canonicalizeReplace(replace, pluginPath) {
+    if (typeof replace !== "function")
+      return replace.replaceAll("$self", pluginPath);
+    return (match, ...groups) => replace(match, ...groups).replaceAll("$self", pluginPath);
+  }
+  function canonicalizeReplacement(replacement, pluginPath) {
+    replacement.match = canonicalizeMatch(replacement.match);
+    replacement.replace = canonicalizeReplace(replacement.replace, pluginPath);
+  }
+  function canonicalizeFind(patch) {
+    patch.find = Array.isArray(patch.find) ? patch.find.map((f) => canonicalizeMatch(f)) : canonicalizeMatch(patch.find);
+  }
+
+  // src/turbopack/injection.ts
+  var exportInjections = [];
+  var injectionsById = new Map;
+  var injectionProxies = new Map;
+  var injectionTargets = new Map;
+  var injectionSeamInstalled = false;
+  var moduleCache;
+  var getRuntimeFactoryRegistry = () => null;
+  function setInjectionContext(cache, registry) {
+    moduleCache = cache;
+    getRuntimeFactoryRegistry = registry;
+  }
+  function injectExports(find, exports) {
+    const injection = { find: canonicalizeMatch(find), exports };
+    exportInjections.push(injection);
+    injectionsById.clear();
+    const registry = getRuntimeFactoryRegistry();
+    if (!registry || !moduleCache)
+      return;
+    for (const [id, factory] of registry) {
+      if (!matchesPattern(getFnSource(factory), injection.find))
+        continue;
+      const cached = moduleCache.get(id);
+      if (cached == null)
+        continue;
+      const ns = injectionTargets.get(id) ?? cached;
+      injectionProxies.delete(id);
+      injectionTargets.delete(id);
+      const injected = resolveInjections(id);
+      moduleCache.set(id, injected ? proxyWithInjections(ns, id, injected) : ns);
+    }
+  }
+  function resolveInjections(id) {
+    const registry = getRuntimeFactoryRegistry();
+    if (!exportInjections.length || !registry)
+      return null;
+    const cached = injectionsById.get(id);
+    if (cached !== undefined)
+      return cached;
+    const factory = registry.get(id);
+    if (!factory)
+      return null;
+    const source = getFnSource(factory);
+    const merged = {};
+    let any = false;
+    for (const inj of exportInjections) {
+      if (!matchesPattern(source, inj.find))
+        continue;
+      Object.assign(merged, inj.exports);
+      any = true;
+    }
+    const result = any ? merged : null;
+    injectionsById.set(id, result);
+    return result;
+  }
+  function proxyWithInjections(ns, id, injected) {
+    const cached = injectionProxies.get(id);
+    if (cached)
+      return cached;
+    const proxy = new Proxy(ns, {
+      get(target, key, receiver) {
+        if (typeof key === "string" && key in injected)
+          return injected[key](ns);
+        return Reflect.get(target, key, receiver);
+      },
+      has(target, key) {
+        return typeof key === "string" && key in injected || Reflect.has(target, key);
+      }
+    });
+    injectionProxies.set(id, proxy);
+    injectionTargets.set(id, ns);
+    return proxy;
+  }
+  function installInjectionSeam(helpers) {
+    if (injectionSeamInstalled)
+      return;
+    const proto = Object.getPrototypeOf(helpers);
+    if (!proto || typeof proto.i !== "function")
+      return;
+    injectionSeamInstalled = true;
+    const originalImport = proto.i;
+    proto.i = function(id) {
+      const ns = originalImport.call(this, id);
+      if (ns == null)
+        return ns;
+      const injected = resolveInjections(id);
+      if (!injected)
+        return ns;
+      const proxy = proxyWithInjections(ns, id, injected);
+      if (moduleCache.get(id) === ns)
+        moduleCache.set(id, proxy);
+      return proxy;
+    };
+  }
+
+  // src/turbopack/types.ts
+  var SYM_ORIGINAL = Symbol("Void.originalFactory");
+  var SYM_PATCHED = Symbol("Void.patched");
+  var SYM_PATCHED_BY = Symbol("Void.patchedBy");
+  var SYM_PATCHED_CODE = Symbol("Void.patchedCode");
+
+  // src/turbopack/patchTurbopack.ts
+  var logger = new Logger("TurbopackPatcher", "#e78284");
+  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  var FACTORY_PROBE_ID = 2147483646;
+  var motionSymbol = Symbol.for("motionComponentSymbol");
+  var compileCounter = 0;
+  var compileFactory = (code, header, sourceUrl) => {
+    const key = `__void_eval_${compileCounter++}`;
+    const script = document.createElement("script");
+    let src = `window["${key}"]=(${code});`;
+    if (header)
+      src = `${header}
+${src}`;
+    if (sourceUrl)
+      src += `
+${sourceUrl}`;
+    script.textContent = src;
+    try {
+      (document.head ?? document.documentElement).appendChild(script);
+    } finally {
+      script.remove();
+    }
+    const fn = pageWindow[key];
+    pageWindow[key] = undefined;
+    if (!fn)
+      throw new Error("Factory compilation failed (CSP?)");
+    return fn;
+  };
+  var patches = [];
+  var moduleCache2 = new Map;
+  var waitForSubscriptions = new Map;
+  var originalPush = null;
+  var runtimeModuleCache = null;
+  var runtimeFactoryRegistry = null;
+  var turbopackHelpers = null;
+  var _resolveReady;
+  var onceReady = new Promise((r) => _resolveReady = r);
+  function getModuleCache() {
+    return moduleCache2;
+  }
+  function getRuntimeModuleCache() {
+    return runtimeModuleCache;
+  }
+  var lastSyncRtCount = 0;
+  function syncLazyModules() {
+    if (!runtimeModuleCache)
+      return;
+    const keys = Object.keys(runtimeModuleCache);
+    if (keys.length === lastSyncRtCount)
+      return;
+    for (const id of keys) {
+      const numId = Number(id);
+      const mod = runtimeModuleCache[numId];
+      if (mod?.exports == null)
+        continue;
+      if (!moduleCache2.has(numId))
+        notifyModuleLoaded(mod.exports, numId);
+    }
+    lastSyncRtCount = keys.length;
+  }
+  function getRuntimeFactoryRegistry2() {
+    return runtimeFactoryRegistry;
+  }
+  function getTurbopackHelpers() {
+    return turbopackHelpers;
+  }
+  setInjectionContext(moduleCache2, getRuntimeFactoryRegistry2);
+  function addWaitForSubscription(filter, cb) {
+    waitForSubscriptions.set(filter, cb);
+  }
+  function removeWaitForSubscription(filter) {
+    waitForSubscriptions.delete(filter);
+  }
+  var moduleLoadListeners = new Set;
+  function onModuleLoad(cb) {
+    moduleLoadListeners.add(cb);
+    return () => moduleLoadListeners.delete(cb);
+  }
+  var badExports = new WeakSet;
+  var IGNORED_TYPES = [HTMLElement, ArrayBuffer, MessagePort, Map, Set, WeakMap, WeakSet];
+  function shouldIgnoreValue(value) {
+    if (value == null)
+      return true;
+    const t = typeof value;
+    if (t !== "object" && t !== "function")
+      return true;
+    if (value === window || value === document || value === document.documentElement)
+      return true;
+    try {
+      if (value[Symbol.toStringTag] === "DOMTokenList")
+        return true;
+      if (value[motionSymbol])
+        return true;
+    } catch {
+      return true;
+    }
+    return IGNORED_TYPES.some((T) => value instanceof T) || ArrayBuffer.isView(value) || typeof WebSocket !== "undefined" && value instanceof WebSocket;
+  }
+  var warnsSuppressed = false;
+  function silenceWarns(fn) {
+    if (warnsSuppressed)
+      return fn();
+    warnsSuppressed = true;
+    const orig = console.warn;
+    console.warn = (...args) => {
+      if (args.some((a) => typeof a === "string" && (a.includes("has been renamed to") || a.includes("silence this warning"))))
+        return;
+      if (args.length === 1 && args[0] === "")
+        return;
+      orig.apply(console, args);
+    };
+    try {
+      return fn();
+    } finally {
+      console.warn = orig;
+      warnsSuppressed = false;
+    }
+  }
+  function blacklistBadModules() {
+    silenceWarns(() => {
+      for (const [, exports] of moduleCache2) {
+        if (shouldIgnoreValue(exports)) {
+          if (exports != null && (typeof exports === "object" || typeof exports === "function"))
+            badExports.add(exports);
+          continue;
+        }
+        if (typeof exports !== "object")
+          continue;
+        for (const key in exports) {
+          try {
+            const v = exports[key];
+            if (shouldIgnoreValue(v) && v != null && (typeof v === "object" || typeof v === "function"))
+              badExports.add(v);
+          } catch {}
+        }
+      }
+    });
+  }
+  function isBlacklisted(value) {
+    if (value == null)
+      return false;
+    const t = typeof value;
+    if (t !== "object" && t !== "function")
+      return false;
+    if (badExports.has(value))
+      return true;
+    if (shouldIgnoreValue(value)) {
+      badExports.add(value);
+      return true;
+    }
+    return false;
+  }
+  function notifyModuleLoaded(exports, id) {
+    if (exports == null || typeof exports.then === "function")
+      return;
+    const existing = moduleCache2.get(id);
+    if (existing === exports || existing != null && existing === injectionProxies.get(id))
+      return;
+    const injected = resolveInjections(id);
+    const value = injected ? proxyWithInjections(exports, id, injected) : exports;
+    moduleCache2.set(id, value);
+    if (waitForSubscriptions.size) {
+      for (const [filter, callback] of waitForSubscriptions) {
+        try {
+          if (!waitForSubscriptions.has(filter))
+            continue;
+          if (filter(exports)) {
+            waitForSubscriptions.delete(filter);
+            callback(exports, id);
+          }
+        } catch (e) {
+          logger.error("WaitFor listener error:", e);
+        }
+      }
+    }
+    if (moduleLoadListeners.size) {
+      for (const cb of moduleLoadListeners) {
+        try {
+          cb();
+        } catch (e) {
+          logger.error("Module load listener error:", e);
+        }
+      }
+    }
+  }
+  function patchFactory(moduleId, factory) {
+    if (!patches.length)
+      return null;
+    const originalCode = getFnSource(factory);
+    const codeLen = originalCode.length;
+    let code = originalCode;
+    const patchedBy = new Set;
+    for (let i = 0;i < patches.length; i++) {
+      const patch = patches[i];
+      if (patch.predicate) {
+        try {
+          if (!patch.predicate())
+            continue;
+        } catch (e) {
+          logger.error(`predicate threw for ${patch.plugin}:`, e);
+          continue;
+        }
+      }
+      const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
+      const maxFindLen = Math.max(0, ...finds.map((f) => typeof f === "string" ? f.length : 0));
+      if (maxFindLen > codeLen)
+        continue;
+      const findStart = 0;
+      const findMatches = Array.isArray(patch.find) ? matchesAllPatterns(originalCode, patch.find) : matchesPattern(originalCode, patch.find);
+      const findElapsed = 0;
+      if (!findMatches)
+        continue;
+      const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
+      if (patch.validateOnly) {
+        for (const replacement of replacements) {
+          if (replacement.predicate && !replacement.predicate())
+            continue;
+          const { match } = replacement;
+          let matches;
+          if (match instanceof RegExp) {
+            match.lastIndex = 0;
+            matches = match.test(originalCode);
+          } else {
+            matches = originalCode.includes(match);
+          }
+          if (!matches && !patch.noWarn && !replacement.noWarn) {
+            validateMisses.add(`${patch.plugin}: ${String(match)}`);
+          }
+        }
+        if (!patch.all)
+          patches.splice(i--, 1);
+        continue;
+      }
+      const previousCode = code;
+      let allSucceeded = true;
+      let groupApplied = 0;
+      let groupNoEffect = 0;
+      let groupErrors = 0;
+      const result = {
+        plugin: patch.plugin,
+        find: String(patch.find),
+        moduleId,
+        noWarn: patch.noWarn,
+        replacements: []
+      };
+      for (const replacement of replacements) {
+        if (replacement.predicate) {
+          try {
+            if (!replacement.predicate())
+              continue;
+          } catch (e) {
+            logger.error(`replacement predicate threw for ${patch.plugin}:`, e);
+            continue;
+          }
+        }
+        const lastCode = code;
+        try {
+          const { match } = replacement;
+          const start = 0;
+          const newCode = code.replace(match, replacement.replace);
+          if (false)
+            ;
+          if (newCode === code) {
+            groupNoEffect++;
+            result.replacements.push({ match: String(match), status: "noEffect" });
+            if (patch.group) {
+              allSucceeded = false;
+              break;
+            }
+            continue;
+          }
+          code = newCode;
+          patchedBy.add(patch.plugin);
+          groupApplied++;
+          result.replacements.push({ match: String(match), status: "applied" });
+        } catch (err) {
+          groupErrors++;
+          result.replacements.push({ match: String(replacement.match), status: "error" });
+          logger.error(`Error in patch by ${patch.plugin} on module ${moduleId}:`, err);
+          code = lastCode;
+          if (patch.group) {
+            allSucceeded = false;
+            break;
+          }
+        }
+      }
+      if (patch.group && !allSucceeded) {
+        code = previousCode;
+        patchedBy.delete(patch.plugin);
+        for (const r of result.replacements) {
+          if (r.status === "applied")
+            r.status = "reverted";
+        }
+        patchResults.push(result);
+        if (!patch.noWarn)
+          logger.warn(`Group patch by ${patch.plugin} failed, reverting`);
+        continue;
+      }
+      patchResults.push(result);
+      patchStats.applied += groupApplied;
+      patchStats.noEffect += groupNoEffect;
+      patchStats.errors += groupErrors;
+      if (groupApplied)
+        patchStats.patchedModules.add(moduleId);
+      if (!patch.all)
+        patches.splice(i--, 1);
+    }
+    if (!patchedBy.size)
+      return null;
+    return { code, plugins: [...patchedBy] };
+  }
+  function createLazyFactory(moduleId, patchResult, original) {
+    const { code, plugins } = patchResult;
+    let compiled = null;
+    const lazy = function(helpers, mod, exports) {
+      if (!compiled) {
+        try {
+          compiled = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins.join(", ")}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
+        } catch (err) {
+          logger.error(`Failed to compile patched module ${moduleId} (${plugins.join(", ")}), using original:`, err);
+          patchStats.errors++;
+          compiled = original;
+        }
+      }
+      compiled.call(this, helpers, mod, exports);
+    };
+    Object.defineProperty(lazy, "name", { value: `VoidPatched_${moduleId}` });
+    lazy.toString = () => getFnSource(original);
+    lazy[SYM_ORIGINAL] = original;
+    lazy[SYM_PATCHED] = true;
+    lazy[SYM_PATCHED_BY] = plugins;
+    lazy[SYM_PATCHED_CODE] = code;
+    return lazy;
+  }
+  function createFactoryWrapper(moduleId, factory, exec) {
+    const wrapped = function(helpers, mod, exports) {
+      captureRuntimeState(helpers);
+      try {
+        exec(this, helpers, mod, exports);
+      } finally {
+        try {
+          const actualId = mod?.id ?? moduleId;
+          if (mod?.exports != null)
+            notifyModuleLoaded(mod.exports, actualId);
+        } catch (e) {
+          logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+        }
+        fnSourceCache.delete(factory);
+      }
+    };
+    wrapped.toString = () => getFnSource(factory);
+    return wrapped;
+  }
+  function wrapFactory(moduleId, factory) {
+    const patchResult = patchFactory(moduleId, factory);
+    const patched = patchResult ? createLazyFactory(moduleId, patchResult, factory) : factory;
+    const original = patched[SYM_ORIGINAL] ?? factory;
+    const isPatched = !!patched[SYM_PATCHED];
+    const wrapped = createFactoryWrapper(moduleId, factory, (ctx, helpers, mod, exports) => {
+      try {
+        patched.call(ctx, helpers, mod, exports);
+      } catch (err) {
+        if (!isPatched)
+          throw err;
+        patchStats.runtimeFallbacks++;
+        logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
+        try {
+          original.call(ctx, helpers, mod, exports);
+        } catch (origErr) {
+          logger.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
+          throw origErr;
+        }
+      }
+    });
+    wrapped[SYM_ORIGINAL] = original;
+    if (isPatched) {
+      wrapped[SYM_PATCHED] = true;
+      wrapped[SYM_PATCHED_BY] = patched[SYM_PATCHED_BY];
+      wrapped[SYM_PATCHED_CODE] = patched[SYM_PATCHED_CODE];
+    }
+    return wrapped;
+  }
+  var chunksWithFactories = 0;
+  var chunksWithoutFactories = 0;
+  function patchChunkEntry(entry) {
+    if (typeof entry[0] === "string")
+      chunkFingerprint.add(entry[0]);
+    const hasPatches = patches.length > 0;
+    let patchedEntry = null;
+    const wrappedInChunk = new Map;
+    for (let i = 1;i < entry.length; i++) {
+      if (typeof entry[i] !== "function")
+        continue;
+      const prev = entry[i - 1];
+      if (typeof prev !== "number")
+        continue;
+      if (!patchedEntry)
+        patchedEntry = [...entry];
+      const factory = entry[i];
+      const existing = wrappedInChunk.get(factory);
+      if (existing) {
+        patchedEntry[i] = existing;
+      } else {
+        const wrapped = hasPatches ? wrapFactory(prev, factory) : createFactoryWrapper(prev, factory, (ctx, helpers, mod, exports) => {
+          factory.call(ctx, helpers, mod, exports);
+        });
+        wrappedInChunk.set(factory, wrapped);
+        patchedEntry[i] = wrapped;
+      }
+    }
+    if (entry.length > 2) {
+      if (wrappedInChunk.size)
+        chunksWithFactories++;
+      else
+        chunksWithoutFactories++;
+      if (false)
+        ;
+    }
+    return patchedEntry ?? entry;
+  }
+  function handleChunkPush(...args) {
+    for (let i = 0;i < args.length; i++) {
+      if (Array.isArray(args[i])) {
+        try {
+          args[i] = patchChunkEntry(args[i]);
+        } catch (e) {
+          logger.error("Failed to patch chunk entry:", e);
+        }
+      }
+    }
+    return originalPush(...args);
+  }
+  function scanCache(cache) {
+    let count = 0;
+    for (const id in cache) {
+      const mod = cache[id];
+      if (mod?.exports == null)
+        continue;
+      const numId = Number(id);
+      if (moduleCache2.get(numId) !== mod.exports) {
+        notifyModuleLoaded(mod.exports, numId);
+        count++;
+      }
+    }
+    return count;
+  }
+  function rescanRuntimeModules() {
+    if (!runtimeModuleCache)
+      return;
+    const count = scanCache(runtimeModuleCache);
+    if (count > 0)
+      logger.info(`Rescan found ${count} new/updated modules`);
+  }
+  function captureFactoryRegistry() {
+    const origMapSet = Map.prototype.set;
+    let captured = null;
+    Map.prototype.set = function(key, value) {
+      if (!captured && key === FACTORY_PROBE_ID && typeof value === "function") {
+        captured = this;
+      }
+      return origMapSet.call(this, key, value);
+    };
+    try {
+      originalPush(["void-factory-probe", FACTORY_PROBE_ID, () => {}]);
+    } finally {
+      Map.prototype.set = origMapSet;
+    }
+    const registry = captured;
+    registry?.delete(FACTORY_PROBE_ID);
+    if (registry) {
+      let valid = 0;
+      for (const [k, v] of registry) {
+        if (typeof k === "number" && typeof v === "function" && ++valid >= 3)
+          break;
+      }
+      if (valid < 3) {
+        logger.debug("Captured Map doesn't look like a factory registry, discarding");
+        return null;
+      }
+    }
+    return registry;
+  }
+  var LOAD_BEARING_HELPERS = ["i", "r", "s", "v", "l", "c", "M"];
+  var helperContractChecked = false;
+  function checkHelperContract(helpers) {
+    helperContractChecked = true;
+    const missing = LOAD_BEARING_HELPERS.filter((h) => helpers[h] == null);
+    if (missing.length)
+      logger.warn(`Turbopack runtime contract changed, missing helper(s): ${missing.join(", ")} — patching may be degraded.`);
+  }
+  function captureRuntimeState(helpers) {
+    if (!turbopackHelpers)
+      turbopackHelpers = helpers;
+    if (!helperContractChecked)
+      checkHelperContract(helpers);
+    installInjectionSeam(helpers);
+    if (!runtimeModuleCache && helpers.c) {
+      runtimeModuleCache = helpers.c;
+      const count = scanCache(runtimeModuleCache);
+      if (false)
+        ;
+    }
+    if (!runtimeFactoryRegistry && helpers.M)
+      runtimeFactoryRegistry = helpers.M;
+  }
+  function captureModuleCache(factoryRegistry) {
+    const PROBE_ID = FACTORY_PROBE_ID - 1;
+    factoryRegistry.set(PROBE_ID, (helpers) => captureRuntimeState(helpers));
+    originalPush(["void-cache-probe", { otherChunks: [], runtimeModuleIds: [PROBE_ID] }]);
+    queueMicrotask(() => factoryRegistry.delete(PROBE_ID));
+  }
+  function wrapExistingFactories() {
+    runtimeFactoryRegistry = captureFactoryRegistry();
+    if (runtimeFactoryRegistry) {
+      const registry = runtimeFactoryRegistry;
+      const wrapped = new Map;
+      const ensureWrapped = (id, factory) => {
+        const existing = wrapped.get(factory);
+        const w = existing ?? wrapFactory(id, factory);
+        if (!existing)
+          wrapped.set(factory, w);
+        registry.set(id, w);
+        return w;
+      };
+      const origGet = registry.get.bind(registry);
+      registry.get = function(id) {
+        const factory = origGet(id);
+        if (factory == null || factory[SYM_ORIGINAL])
+          return factory;
+        return ensureWrapped(id, factory);
+      };
+      for (const [id, factory] of registry) {
+        if (factory[SYM_ORIGINAL])
+          continue;
+        ensureWrapped(id, factory);
+      }
+    }
+    if (!runtimeModuleCache && runtimeFactoryRegistry) {
+      captureModuleCache(runtimeFactoryRegistry);
+    }
+  }
+  function patchTurbopack() {
+    const existingTp = pageWindow.TURBOPACK;
+    if (existingTp && !Array.isArray(existingTp) && typeof existingTp.push === "function") {
+      originalPush = existingTp.push.bind(existingTp);
+      existingTp.push = (...args) => handleChunkPush(...args);
+      try {
+        wrapExistingFactories();
+      } catch (e) {
+        logger.error("Failed to wrap existing factories:", e);
+      }
+      return;
+    }
+    const queuedChunks = [];
+    if (Array.isArray(existingTp))
+      queuedChunks.push(...existingTp);
+    let currentTurbopack = existingTp ?? [];
+    Object.defineProperty(pageWindow, "TURBOPACK", {
+      configurable: true,
+      get() {
+        return currentTurbopack;
+      },
+      set(newValue) {
+        if (newValue && !Array.isArray(newValue) && typeof newValue.push === "function") {
+          const tp = newValue;
+          originalPush = tp.push.bind(tp);
+          tp.push = (...args) => handleChunkPush(...args);
+          currentTurbopack = tp;
+          for (const chunk of queuedChunks) {
+            try {
+              handleChunkPush(chunk);
+            } catch (e) {
+              logger.error("Failed to process queued chunk:", e);
+            }
+          }
+          queuedChunks.length = 0;
+          try {
+            wrapExistingFactories();
+          } catch (e) {
+            logger.error("Failed to wrap existing factories:", e);
+          }
+        } else {
+          currentTurbopack = newValue;
+        }
+      }
+    });
+    if (Array.isArray(currentTurbopack)) {
+      const origPush = currentTurbopack.push.bind(currentTurbopack);
+      currentTurbopack.push = (...args) => {
+        queuedChunks.push(...args);
+        return origPush(...args);
+      };
+    }
+  }
+
+  // src/turbopack/patchReport.ts
+  var logger2 = new Logger("TurbopackPatcher", "#e78284");
+  var patchResults = [];
+  var validateMisses = new Set;
+  var patchStats = {
+    applied: 0,
+    noEffect: 0,
+    errors: 0,
+    runtimeFallbacks: 0,
+    patchedModules: new Set
+  };
+  var chunkFingerprint = new Set;
+  function getChunkFingerprint() {
+    return [...chunkFingerprint];
+  }
+  function isFactoryPending(patch) {
+    const registry = getRuntimeFactoryRegistry2();
+    if (!registry)
+      return false;
+    const find = Array.isArray(patch.find) ? patch.find : [patch.find];
+    for (const [, factory] of registry) {
+      if (matchesAllPatterns(getFnSource(factory), find))
+        return true;
+    }
+    return false;
+  }
+  function patchReport() {
+    const orphaned = [];
+    const pending = [];
+    for (const p of patches) {
+      if (p.all)
+        continue;
+      const entry = { plugin: p.plugin, find: String(p.find) };
+      (isFactoryPending(p) ? pending : orphaned).push(entry);
+    }
+    return { stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] }, results: patchResults, orphaned, pending };
+  }
+  function reportOrphanedPatches() {
+    const orphaned = patches.filter((p) => !p.all && !isFactoryPending(p));
+    const warnOrphaned = orphaned.filter((p) => !p.noWarn);
+    if (warnOrphaned.length)
+      logger2.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
+    if (!patchStats.applied && (warnOrphaned.length || patchStats.noEffect)) {
+      logger2.warn("Zero patches applied this session — grok build likely changed, run the reporter.");
+    }
+    if (validateMisses.size) {
+      logger2.warn(`${validateMisses.size} disabled-plugin patch(es) no longer match:`, [...validateMisses]);
+    }
+    if (patchStats.noEffect || patchStats.errors) {
+      for (const result of patchResults) {
+        for (const rep of result.replacements) {
+          if (rep.status === "noEffect" && !result.noWarn)
+            logger2.debug(`[no effect] ${result.plugin}: ${rep.match}`);
+          else if (rep.status === "error")
+            logger2.debug(`[error] ${result.plugin}: ${rep.match}`);
+        }
+      }
+    }
+    if (false) {}
+  }
+
   // src/utils/lazy.ts
-  var logger = new Logger("Lazy");
+  var logger3 = new Logger("Lazy");
   var unconfigurable = ["arguments", "caller", "prototype"];
   var SYM_LAZY_GET = Symbol.for("void.lazy.get");
   var SYM_LAZY_CACHED = Symbol.for("void.lazy.cached");
@@ -407,658 +1193,8 @@
     return quotes ? base.replaceAll('"', "&quot;") : base;
   }
 
-  // src/turbopack/fnSource.ts
-  var fnSourceCache = new WeakMap;
-  function getFnSource(fn) {
-    let src = fnSourceCache.get(fn);
-    if (src === undefined) {
-      src = String(fn);
-      fnSourceCache.set(fn, src);
-    }
-    return src;
-  }
-
-  // src/turbopack/match.ts
-  function matchesPattern(text, pattern) {
-    if (typeof pattern === "string")
-      return text.includes(pattern);
-    pattern.lastIndex = 0;
-    return pattern.test(text);
-  }
-  function matchesAllPatterns(text, patterns) {
-    return patterns.every((p) => matchesPattern(text, p));
-  }
-
-  // src/turbopack/types.ts
-  var SYM_ORIGINAL = Symbol("Void.originalFactory");
-  var SYM_PATCHED = Symbol("Void.patched");
-  var SYM_PATCHED_BY = Symbol("Void.patchedBy");
-  var SYM_PATCHED_CODE = Symbol("Void.patchedCode");
-
-  // src/turbopack/patchTurbopack.ts
-  var logger2 = new Logger("TurbopackPatcher", "#e78284");
-  var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-  var FACTORY_PROBE_ID = 2147483646;
-  var motionSymbol = Symbol.for("motionComponentSymbol");
-  var compileCounter = 0;
-  var compileFactory = (code, header, sourceUrl) => {
-    const key = `__void_eval_${compileCounter++}`;
-    const script = document.createElement("script");
-    let src = `window["${key}"]=(${code});`;
-    if (header)
-      src = `${header}
-${src}`;
-    if (sourceUrl)
-      src += `
-${sourceUrl}`;
-    script.textContent = src;
-    try {
-      (document.head ?? document.documentElement).appendChild(script);
-    } finally {
-      script.remove();
-    }
-    const fn = pageWindow[key];
-    pageWindow[key] = undefined;
-    if (!fn)
-      throw new Error("Factory compilation failed (CSP?)");
-    return fn;
-  };
-  var patches = [];
-  var moduleCache = new Map;
-  var waitForSubscriptions = new Map;
-  var originalPush = null;
-  var runtimeModuleCache = null;
-  var runtimeFactoryRegistry = null;
-  var turbopackHelpers = null;
-  var _resolveReady;
-  var onceReady = new Promise((r) => _resolveReady = r);
-  var patchResults = [];
-  var patchStats = {
-    applied: 0,
-    noEffect: 0,
-    errors: 0,
-    runtimeFallbacks: 0,
-    patchedModules: new Set
-  };
-  function getModuleCache() {
-    return moduleCache;
-  }
-  function getRuntimeModuleCache() {
-    return runtimeModuleCache;
-  }
-  var lastSyncRtCount = 0;
-  function syncLazyModules() {
-    if (!runtimeModuleCache)
-      return;
-    const keys = Object.keys(runtimeModuleCache);
-    if (keys.length === lastSyncRtCount)
-      return;
-    for (const id of keys) {
-      const numId = Number(id);
-      const mod = runtimeModuleCache[numId];
-      if (mod?.exports == null)
-        continue;
-      if (!moduleCache.has(numId))
-        notifyModuleLoaded(mod.exports, numId);
-    }
-    lastSyncRtCount = keys.length;
-  }
-  function getRuntimeFactoryRegistry() {
-    return runtimeFactoryRegistry;
-  }
-  function getTurbopackHelpers() {
-    return turbopackHelpers;
-  }
-  function addWaitForSubscription(filter, cb) {
-    waitForSubscriptions.set(filter, cb);
-  }
-  function removeWaitForSubscription(filter) {
-    waitForSubscriptions.delete(filter);
-  }
-  var moduleLoadListeners = new Set;
-  function onModuleLoad(cb) {
-    moduleLoadListeners.add(cb);
-    return () => moduleLoadListeners.delete(cb);
-  }
-  var badExports = new WeakSet;
-  var IGNORED_TYPES = [HTMLElement, ArrayBuffer, MessagePort, Map, Set, WeakMap, WeakSet];
-  function shouldIgnoreValue(value) {
-    if (value == null)
-      return true;
-    const t = typeof value;
-    if (t !== "object" && t !== "function")
-      return true;
-    if (value === window || value === document || value === document.documentElement)
-      return true;
-    try {
-      if (value[Symbol.toStringTag] === "DOMTokenList")
-        return true;
-      if (value[motionSymbol])
-        return true;
-    } catch {
-      return true;
-    }
-    return IGNORED_TYPES.some((T) => value instanceof T) || ArrayBuffer.isView(value) || typeof WebSocket !== "undefined" && value instanceof WebSocket;
-  }
-  var warnsSuppressed = false;
-  function silenceWarns(fn) {
-    if (warnsSuppressed)
-      return fn();
-    warnsSuppressed = true;
-    const orig = console.warn;
-    console.warn = (...args) => {
-      if (args.some((a) => typeof a === "string" && (a.includes("has been renamed to") || a.includes("silence this warning"))))
-        return;
-      if (args.length === 1 && args[0] === "")
-        return;
-      orig.apply(console, args);
-    };
-    try {
-      return fn();
-    } finally {
-      console.warn = orig;
-      warnsSuppressed = false;
-    }
-  }
-  function blacklistBadModules() {
-    silenceWarns(() => {
-      for (const [, exports] of moduleCache) {
-        if (shouldIgnoreValue(exports)) {
-          if (exports != null && (typeof exports === "object" || typeof exports === "function"))
-            badExports.add(exports);
-          continue;
-        }
-        if (typeof exports !== "object")
-          continue;
-        for (const key in exports) {
-          try {
-            const v = exports[key];
-            if (shouldIgnoreValue(v) && v != null && (typeof v === "object" || typeof v === "function"))
-              badExports.add(v);
-          } catch {}
-        }
-      }
-    });
-  }
-  function isBlacklisted(value) {
-    if (value == null)
-      return false;
-    const t = typeof value;
-    if (t !== "object" && t !== "function")
-      return false;
-    if (badExports.has(value))
-      return true;
-    if (shouldIgnoreValue(value)) {
-      badExports.add(value);
-      return true;
-    }
-    return false;
-  }
-  function notifyModuleLoaded(exports, id) {
-    if (exports == null)
-      return;
-    if (moduleCache.get(id) === exports)
-      return;
-    moduleCache.set(id, exports);
-    if (waitForSubscriptions.size) {
-      for (const [filter, callback] of waitForSubscriptions) {
-        try {
-          if (!waitForSubscriptions.has(filter))
-            continue;
-          if (filter(exports)) {
-            waitForSubscriptions.delete(filter);
-            callback(exports, id);
-          }
-        } catch (e) {
-          logger2.error("WaitFor listener error:", e);
-        }
-      }
-    }
-    if (moduleLoadListeners.size) {
-      for (const cb of moduleLoadListeners) {
-        try {
-          cb();
-        } catch (e) {
-          logger2.error("Module load listener error:", e);
-        }
-      }
-    }
-  }
-  function patchFactory(moduleId, factory) {
-    if (!patches.length)
-      return null;
-    const originalCode = getFnSource(factory);
-    const codeLen = originalCode.length;
-    let code = originalCode;
-    const patchedBy = new Set;
-    for (let i = 0;i < patches.length; i++) {
-      const patch = patches[i];
-      if (patch.predicate) {
-        try {
-          if (!patch.predicate())
-            continue;
-        } catch (e) {
-          logger2.error(`predicate threw for ${patch.plugin}:`, e);
-          continue;
-        }
-      }
-      const finds = Array.isArray(patch.find) ? patch.find : [patch.find];
-      const maxFindLen = Math.max(0, ...finds.map((f) => typeof f === "string" ? f.length : 0));
-      if (maxFindLen > codeLen)
-        continue;
-      const findStart = 0;
-      const findMatches = Array.isArray(patch.find) ? matchesAllPatterns(originalCode, patch.find) : matchesPattern(originalCode, patch.find);
-      const findElapsed = 0;
-      if (!findMatches)
-        continue;
-      const replacements = Array.isArray(patch.replacement) ? patch.replacement : [patch.replacement];
-      if (patch.validateOnly) {
-        for (const replacement of replacements) {
-          if (replacement.predicate && !replacement.predicate())
-            continue;
-          const { match } = replacement;
-          let matches;
-          if (match instanceof RegExp) {
-            match.lastIndex = 0;
-            matches = match.test(originalCode);
-          } else {
-            matches = originalCode.includes(match);
-          }
-          if (!matches && !patch.noWarn && !replacement.noWarn) {
-            logger2.debug(`[validate] ${patch.plugin}: ${String(match)}`);
-          }
-        }
-        if (!patch.all)
-          patches.splice(i--, 1);
-        continue;
-      }
-      const previousCode = code;
-      let allSucceeded = true;
-      let groupApplied = 0;
-      let groupNoEffect = 0;
-      let groupErrors = 0;
-      const result = {
-        plugin: patch.plugin,
-        find: String(patch.find),
-        moduleId,
-        noWarn: patch.noWarn,
-        replacements: []
-      };
-      for (const replacement of replacements) {
-        if (replacement.predicate) {
-          try {
-            if (!replacement.predicate())
-              continue;
-          } catch (e) {
-            logger2.error(`replacement predicate threw for ${patch.plugin}:`, e);
-            continue;
-          }
-        }
-        const lastCode = code;
-        try {
-          const { match } = replacement;
-          const start = 0;
-          const newCode = code.replace(match, replacement.replace);
-          if (false)
-            ;
-          if (newCode === code) {
-            groupNoEffect++;
-            result.replacements.push({ match: String(match), status: "noEffect" });
-            if (patch.group) {
-              allSucceeded = false;
-              break;
-            }
-            continue;
-          }
-          code = newCode;
-          patchedBy.add(patch.plugin);
-          groupApplied++;
-          result.replacements.push({ match: String(match), status: "applied" });
-        } catch (err) {
-          groupErrors++;
-          result.replacements.push({ match: String(replacement.match), status: "error" });
-          logger2.error(`Error in patch by ${patch.plugin} on module ${moduleId}:`, err);
-          code = lastCode;
-          if (patch.group) {
-            allSucceeded = false;
-            break;
-          }
-        }
-      }
-      if (patch.group && !allSucceeded) {
-        code = previousCode;
-        patchedBy.delete(patch.plugin);
-        for (const r of result.replacements) {
-          if (r.status === "applied")
-            r.status = "reverted";
-        }
-        patchResults.push(result);
-        if (!patch.noWarn)
-          logger2.warn(`Group patch by ${patch.plugin} failed, reverting`);
-        continue;
-      }
-      patchResults.push(result);
-      patchStats.applied += groupApplied;
-      patchStats.noEffect += groupNoEffect;
-      patchStats.errors += groupErrors;
-      if (groupApplied)
-        patchStats.patchedModules.add(moduleId);
-      if (!patch.all)
-        patches.splice(i--, 1);
-    }
-    if (!patchedBy.size)
-      return null;
-    return { code, plugins: [...patchedBy] };
-  }
-  function createLazyFactory(moduleId, patchResult, original) {
-    const { code, plugins } = patchResult;
-    let compiled = null;
-    const lazy = function(helpers, mod, exports) {
-      if (!compiled) {
-        try {
-          compiled = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins.join(", ")}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
-        } catch (err) {
-          logger2.error(`Failed to compile patched module ${moduleId} (${plugins.join(", ")}), using original:`, err);
-          patchStats.errors++;
-          compiled = original;
-        }
-      }
-      compiled.call(this, helpers, mod, exports);
-    };
-    lazy.toString = () => getFnSource(original);
-    lazy[SYM_ORIGINAL] = original;
-    lazy[SYM_PATCHED] = true;
-    lazy[SYM_PATCHED_BY] = plugins;
-    lazy[SYM_PATCHED_CODE] = code;
-    return lazy;
-  }
-  function createFactoryWrapper(moduleId, factory, exec) {
-    const wrapped = function(helpers, mod, exports) {
-      captureRuntimeState(helpers);
-      try {
-        exec(this, helpers, mod, exports);
-      } finally {
-        try {
-          const actualId = mod?.id ?? moduleId;
-          if (mod?.exports != null)
-            notifyModuleLoaded(mod.exports, actualId);
-        } catch (e) {
-          logger2.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
-        }
-        fnSourceCache.delete(factory);
-      }
-    };
-    wrapped.toString = () => getFnSource(factory);
-    return wrapped;
-  }
-  function wrapFactory(moduleId, factory) {
-    const patchResult = patchFactory(moduleId, factory);
-    const patched = patchResult ? createLazyFactory(moduleId, patchResult, factory) : factory;
-    const original = patched[SYM_ORIGINAL] ?? factory;
-    const isPatched = !!patched[SYM_PATCHED];
-    const wrapped = createFactoryWrapper(moduleId, factory, (ctx, helpers, mod, exports) => {
-      try {
-        patched.call(ctx, helpers, mod, exports);
-      } catch (err) {
-        if (!isPatched)
-          throw err;
-        patchStats.runtimeFallbacks++;
-        logger2.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
-        try {
-          original.call(ctx, helpers, mod, exports);
-        } catch (origErr) {
-          logger2.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
-          throw origErr;
-        }
-      }
-    });
-    wrapped[SYM_ORIGINAL] = original;
-    if (isPatched) {
-      wrapped[SYM_PATCHED] = true;
-      wrapped[SYM_PATCHED_BY] = patched[SYM_PATCHED_BY];
-      wrapped[SYM_PATCHED_CODE] = patched[SYM_PATCHED_CODE];
-    }
-    return wrapped;
-  }
-  var chunksWithFactories = 0;
-  var chunksWithoutFactories = 0;
-  function patchChunkEntry(entry) {
-    const hasPatches = patches.length > 0;
-    let patchedEntry = null;
-    const wrappedInChunk = new Map;
-    for (let i = 1;i < entry.length; i++) {
-      if (typeof entry[i] !== "function")
-        continue;
-      const prev = entry[i - 1];
-      if (typeof prev !== "number")
-        continue;
-      if (!patchedEntry)
-        patchedEntry = [...entry];
-      const factory = entry[i];
-      const existing = wrappedInChunk.get(factory);
-      if (existing) {
-        patchedEntry[i] = existing;
-      } else {
-        const wrapped = hasPatches ? wrapFactory(prev, factory) : createFactoryWrapper(prev, factory, (ctx, helpers, mod, exports) => {
-          factory.call(ctx, helpers, mod, exports);
-        });
-        wrappedInChunk.set(factory, wrapped);
-        patchedEntry[i] = wrapped;
-      }
-    }
-    if (entry.length > 2) {
-      if (wrappedInChunk.size)
-        chunksWithFactories++;
-      else
-        chunksWithoutFactories++;
-      if (false)
-        ;
-    }
-    return patchedEntry ?? entry;
-  }
-  function handleChunkPush(...args) {
-    for (let i = 0;i < args.length; i++) {
-      if (Array.isArray(args[i])) {
-        try {
-          args[i] = patchChunkEntry(args[i]);
-        } catch (e) {
-          logger2.error("Failed to patch chunk entry:", e);
-        }
-      }
-    }
-    return originalPush(...args);
-  }
-  function isFactoryPending(patch) {
-    if (!runtimeFactoryRegistry)
-      return false;
-    const find = Array.isArray(patch.find) ? patch.find : [patch.find];
-    for (const [, factory] of runtimeFactoryRegistry) {
-      if (matchesAllPatterns(getFnSource(factory), find))
-        return true;
-    }
-    return false;
-  }
-  function patchReport() {
-    const orphaned = [];
-    const pending = [];
-    for (const p of patches) {
-      if (p.all)
-        continue;
-      const entry = { plugin: p.plugin, find: String(p.find) };
-      (isFactoryPending(p) ? pending : orphaned).push(entry);
-    }
-    return { stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] }, results: patchResults, orphaned, pending };
-  }
-  function reportOrphanedPatches() {
-    const orphaned = patches.filter((p) => !p.all && !isFactoryPending(p));
-    const warnOrphaned = orphaned.filter((p) => !p.noWarn);
-    if (warnOrphaned.length)
-      logger2.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
-    if (patchStats.noEffect || patchStats.errors) {
-      for (const result of patchResults) {
-        for (const rep of result.replacements) {
-          if (rep.status === "noEffect" && !result.noWarn)
-            logger2.debug(`[no effect] ${result.plugin}: ${rep.match}`);
-          else if (rep.status === "error")
-            logger2.debug(`[error] ${result.plugin}: ${rep.match}`);
-        }
-      }
-    }
-    if (false) {}
-  }
-  function scanCache(cache) {
-    let count = 0;
-    for (const id in cache) {
-      const mod = cache[id];
-      if (mod?.exports == null)
-        continue;
-      const numId = Number(id);
-      if (moduleCache.get(numId) !== mod.exports) {
-        notifyModuleLoaded(mod.exports, numId);
-        count++;
-      }
-    }
-    return count;
-  }
-  function rescanRuntimeModules() {
-    if (!runtimeModuleCache)
-      return;
-    const count = scanCache(runtimeModuleCache);
-    if (count > 0)
-      logger2.info(`Rescan found ${count} new/updated modules`);
-  }
-  function captureFactoryRegistry() {
-    const origMapSet = Map.prototype.set;
-    let captured = null;
-    Map.prototype.set = function(key, value) {
-      if (!captured && key === FACTORY_PROBE_ID && typeof value === "function") {
-        captured = this;
-      }
-      return origMapSet.call(this, key, value);
-    };
-    try {
-      originalPush(["void-factory-probe", FACTORY_PROBE_ID, () => {}]);
-    } finally {
-      Map.prototype.set = origMapSet;
-    }
-    captured?.delete(FACTORY_PROBE_ID);
-    if (captured) {
-      let valid = 0;
-      for (const [k, v] of captured) {
-        if (typeof k === "number" && typeof v === "function" && ++valid >= 3)
-          break;
-      }
-      if (valid < 3) {
-        logger2.debug("Captured Map doesn't look like a factory registry, discarding");
-        return null;
-      }
-    }
-    return captured;
-  }
-  function captureRuntimeState(helpers) {
-    if (!turbopackHelpers)
-      turbopackHelpers = helpers;
-    if (!runtimeModuleCache && helpers.c) {
-      runtimeModuleCache = helpers.c;
-      const count = scanCache(runtimeModuleCache);
-      if (false)
-        ;
-    }
-    if (!runtimeFactoryRegistry && helpers.M)
-      runtimeFactoryRegistry = helpers.M;
-  }
-  function captureModuleCache(factoryRegistry) {
-    const PROBE_ID = FACTORY_PROBE_ID - 1;
-    factoryRegistry.set(PROBE_ID, (helpers) => captureRuntimeState(helpers));
-    originalPush(["void-cache-probe", { otherChunks: [], runtimeModuleIds: [PROBE_ID] }]);
-    queueMicrotask(() => factoryRegistry.delete(PROBE_ID));
-  }
-  function wrapExistingFactories() {
-    runtimeFactoryRegistry = captureFactoryRegistry();
-    if (runtimeFactoryRegistry) {
-      const registry = runtimeFactoryRegistry;
-      const wrapped = new Map;
-      const ensureWrapped = (id, factory) => {
-        const existing = wrapped.get(factory);
-        const w = existing ?? wrapFactory(id, factory);
-        if (!existing)
-          wrapped.set(factory, w);
-        registry.set(id, w);
-        return w;
-      };
-      const origGet = registry.get.bind(registry);
-      registry.get = function(id) {
-        const factory = origGet(id);
-        if (factory == null || factory[SYM_ORIGINAL])
-          return factory;
-        return ensureWrapped(id, factory);
-      };
-      for (const [id, factory] of registry) {
-        if (factory[SYM_ORIGINAL])
-          continue;
-        ensureWrapped(id, factory);
-      }
-    }
-    if (!runtimeModuleCache && runtimeFactoryRegistry) {
-      captureModuleCache(runtimeFactoryRegistry);
-    }
-  }
-  function patchTurbopack() {
-    const existingTp = pageWindow.TURBOPACK;
-    if (existingTp && !Array.isArray(existingTp) && typeof existingTp.push === "function") {
-      originalPush = existingTp.push.bind(existingTp);
-      existingTp.push = (...args) => handleChunkPush(...args);
-      try {
-        wrapExistingFactories();
-      } catch (e) {
-        logger2.error("Failed to wrap existing factories:", e);
-      }
-      return;
-    }
-    const queuedChunks = [];
-    if (Array.isArray(existingTp))
-      queuedChunks.push(...existingTp);
-    let currentTurbopack = existingTp ?? [];
-    Object.defineProperty(pageWindow, "TURBOPACK", {
-      configurable: true,
-      get() {
-        return currentTurbopack;
-      },
-      set(newValue) {
-        if (newValue && !Array.isArray(newValue) && typeof newValue.push === "function") {
-          const tp = newValue;
-          originalPush = tp.push.bind(tp);
-          tp.push = (...args) => handleChunkPush(...args);
-          currentTurbopack = tp;
-          for (const chunk of queuedChunks) {
-            try {
-              handleChunkPush(chunk);
-            } catch (e) {
-              logger2.error("Failed to process queued chunk:", e);
-            }
-          }
-          queuedChunks.length = 0;
-          try {
-            wrapExistingFactories();
-          } catch (e) {
-            logger2.error("Failed to wrap existing factories:", e);
-          }
-        } else {
-          currentTurbopack = newValue;
-        }
-      }
-    });
-    if (Array.isArray(currentTurbopack)) {
-      const origPush = currentTurbopack.push.bind(currentTurbopack);
-      currentTurbopack.push = (...args) => {
-        queuedChunks.push(...args);
-        return origPush(...args);
-      };
-    }
-  }
-
   // src/turbopack/turbopack.ts
-  var logger3 = new Logger("TurbopackFinder", "#a6d189");
+  var logger4 = new Logger("TurbopackFinder", "#a6d189");
   var zustandStoreCache = new Map;
   var finderRegistry = null;
   function trackFinder(type, args, resolve) {
@@ -1078,11 +1214,11 @@ ${sourceUrl}`;
         if (isEmptyResult(record.resolve()))
           failed.push(`${record.type}(${record.args.map((a) => JSON.stringify(a)).join(", ")})`);
       } catch (e) {
-        logger3.warn("Finder resolution error:", e);
+        logger4.warn("Finder resolution error:", e);
       }
     }
     if (failed.length)
-      logger3.debug(`${failed.length} finder(s) resolved to nothing:`, failed);
+      logger4.debug(`${failed.length} finder(s) resolved to nothing:`, failed);
   }
   function toZustandHookName(name) {
     if (name.startsWith("use"))
@@ -1297,6 +1433,15 @@ ${sourceUrl}`;
     trackFinder("findStore", [name], resolve);
     return proxyLazy(resolve);
   }
+  function findByEventName(name) {
+    const id = findModuleId(`logEventGlobal)("${name}"`);
+    return id == null ? undefined : requireModule(id) ?? undefined;
+  }
+  function findByEventNameLazy(name) {
+    const resolve = () => findByEventName(name);
+    trackFinder("findByEventName", [name], resolve);
+    return proxyLazy(resolve);
+  }
   function getAllStores() {
     if (!zustandStoreCache.size)
       populateStoreCache();
@@ -1324,14 +1469,14 @@ ${sourceUrl}`;
         }
       }
       if (!(name in result))
-        logger3.warn(`mapMangledCssClasses: class "${name}" not found in module`);
+        logger4.warn(`mapMangledCssClasses: class "${name}" not found in module`);
     }
     return result;
   }
   function findBulk(...filterFns) {
     const { length } = filterFns;
     if (length < 2) {
-      logger3.warn("findBulk called with fewer than 2 filters, use find instead.");
+      logger4.warn("findBulk called with fewer than 2 filters, use find instead.");
       return length === 1 ? [find(filterFns[0])] : [];
     }
     const scan = () => {
@@ -1364,12 +1509,12 @@ ${sourceUrl}`;
           ({ results, found } = scan());
       }
       if (found !== length)
-        logger3.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
+        logger4.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
       return results;
     });
   }
   function forEachMatchingFactory(code, visit) {
-    const registry = getRuntimeFactoryRegistry();
+    const registry = getRuntimeFactoryRegistry2();
     if (!registry)
       return;
     for (const [id, factory] of registry) {
@@ -1430,22 +1575,22 @@ ${sourceUrl}`;
   async function extractAndLoadChunks(code, matcher = DefaultChunkLoadRegex) {
     const factory = findModuleFactory(...code);
     if (!factory) {
-      logger3.warn("extractAndLoadChunks: no module factory found for:", code);
+      logger4.warn("extractAndLoadChunks: no module factory found for:", code);
       return false;
     }
     const match = getFnSource(factory[1]).match(matcher);
     if (!match) {
-      logger3.warn("extractAndLoadChunks: no chunk loading pattern found in factory for:", code);
+      logger4.warn("extractAndLoadChunks: no chunk loading pattern found in factory for:", code);
       return false;
     }
     const [, rawChunkPaths, entryPointId] = match;
     if (entryPointId == null) {
-      logger3.warn("extractAndLoadChunks: matcher did not capture entry point ID for:", code);
+      logger4.warn("extractAndLoadChunks: matcher did not capture entry point ID for:", code);
       return false;
     }
     const helpers = getTurbopackHelpers();
     if (!helpers) {
-      logger3.warn("extractAndLoadChunks: Turbopack helpers not available.");
+      logger4.warn("extractAndLoadChunks: Turbopack helpers not available.");
       return false;
     }
     if (rawChunkPaths) {
@@ -1454,7 +1599,7 @@ ${sourceUrl}`;
         try {
           await Promise.all(chunkPaths.map((path) => helpers.l(path)));
         } catch (e) {
-          logger3.warn("extractAndLoadChunks: chunk loading failed:", e);
+          logger4.warn("extractAndLoadChunks: chunk loading failed:", e);
           return false;
         }
       }
@@ -1463,7 +1608,7 @@ ${sourceUrl}`;
     try {
       requireModule(entryPoint);
     } catch (e) {
-      logger3.warn("extractAndLoadChunks: entry point module failed:", e);
+      logger4.warn("extractAndLoadChunks: entry point module failed:", e);
       return false;
     }
     return true;
@@ -1501,7 +1646,7 @@ ${sourceUrl}`;
     try {
       return helpers.i(moduleId);
     } catch (e) {
-      logger3.warn(`Failed to require module ${moduleId}:`, e);
+      logger4.warn(`Failed to require module ${moduleId}:`, e);
       return null;
     }
   }
@@ -1552,7 +1697,7 @@ ${sourceUrl}`;
           callback(lastMatch, id);
         lastMatch = null;
       } catch (e) {
-        logger3.error("waitFor callback error:", e);
+        logger4.error("waitFor callback error:", e);
       }
     };
     addWaitForSubscription(wrappedFilter, wrappedCallback);
@@ -1566,14 +1711,370 @@ ${sourceUrl}`;
         timeoutId = null;
         cancel();
         if (!searchCache(filter)) {
-          logger3.warn(`waitFor timed out after ${timeout}ms:`, filter);
+          logger4.warn(`waitFor timed out after ${timeout}ms:`, filter);
         }
       }, timeout);
     }
     return cancel;
   }
 
+  // src/turbopack/common/react.tsx
+  var React;
+  var useState;
+  var useEffect;
+  var useLayoutEffect;
+  var useMemo;
+  var useRef;
+  var useReducer;
+  var useCallback;
+  var useContext;
+  var useId;
+  var useTransition;
+  var useDeferredValue;
+  var useSyncExternalStore;
+  var createElement;
+  var useReducedMotion;
+  waitFor(filters.byProps("useReducedMotion"), (mod) => {
+    ({ useReducedMotion } = mod);
+  });
+  waitFor(filters.byProps("useState", "createElement"), (mod) => {
+    const m = mod;
+    React = m;
+    ({ useState, useEffect, useLayoutEffect, useMemo, useRef, useReducer, useCallback, useContext, useId, useTransition, useDeferredValue, useSyncExternalStore, createElement } = m);
+    setCreateElement(m.createElement);
+  });
+  var Fragment = Symbol.for("react.fragment");
+
+  // src/utils/guards.ts
+  function isTruthy(item) {
+    return Boolean(item);
+  }
+  function isNonNullish(item) {
+    return item != null;
+  }
+  function isObject(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
+  // src/utils/idb.ts
+  var logger5 = new Logger("IDB");
+  var DB_NAME = "Void";
+  var STORE_NAME = "kv";
+  var DB_VERSION = 1;
+  var dbPromise = null;
+  function open() {
+    if (dbPromise)
+      return dbPromise;
+    const promise = new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = () => {
+        if (!req.result.objectStoreNames.contains(STORE_NAME)) {
+          req.result.createObjectStore(STORE_NAME);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    promise.catch((e) => {
+      dbPromise = null;
+      if (false)
+        ;
+    });
+    dbPromise = promise;
+    return promise;
+  }
+  async function withStore(mode, run) {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, mode);
+      run(tx.objectStore(STORE_NAME), resolve);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  function idbGet(key) {
+    return withStore("readonly", (store, resolve) => {
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result);
+    });
+  }
+  function idbSet(key, value) {
+    return withStore("readwrite", (store, resolve) => {
+      store.put(value, key);
+      store.transaction.oncomplete = () => resolve();
+    });
+  }
+
+  // src/utils/misc.ts
+  function mergeDefaults(target, defaults) {
+    for (const [key, defaultValue] of Object.entries(defaults)) {
+      const value = target[key];
+      if (isObject(value)) {
+        mergeDefaults(value, defaultValue);
+      } else if (value === undefined) {
+        target[key] = defaultValue;
+      }
+    }
+    return target;
+  }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      if (typeof GM_setClipboard === "function") {
+        GM_setClipboard(text);
+      }
+    }
+  }
+  function onlyOnce(fn) {
+    let result;
+    let f = fn;
+    return (...args) => {
+      if (!f)
+        return result;
+      result = f(...args);
+      f = null;
+      return result;
+    };
+  }
+  function debounce(fn, ms) {
+    let timer;
+    let lastArgs;
+    const debounced = (...args) => {
+      lastArgs = args;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        lastArgs = undefined;
+        fn(...args);
+      }, ms);
+    };
+    debounced.cancel = () => {
+      clearTimeout(timer);
+      lastArgs = undefined;
+    };
+    debounced.flush = () => {
+      if (lastArgs) {
+        clearTimeout(timer);
+        const a = lastArgs;
+        lastArgs = undefined;
+        fn(...a);
+      }
+    };
+    return debounced;
+  }
+  function fetchExternal(url) {
+    if (typeof GM_xmlhttpRequest === "undefined") {
+      const controller = new AbortController;
+      const timer = setTimeout(() => controller.abort(), 30000);
+      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+    }
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        responseType: "blob",
+        timeout: 30000,
+        onload(resp) {
+          resolve(new Response(resp.response, {
+            status: resp.status,
+            statusText: resp.statusText
+          }));
+        },
+        ontimeout() {
+          reject(new Error("fetch timeout"));
+        },
+        onerror() {
+          reject(new Error("fetch error"));
+        },
+        onabort() {
+          reject(new Error("fetch aborted"));
+        }
+      });
+    });
+  }
+  function createExternalStore() {
+    const listeners = new Set;
+    let version = 0;
+    return {
+      notify() {
+        version++;
+        for (const fn of listeners)
+          fn();
+      },
+      subscribe(callback) {
+        listeners.add(callback);
+        return () => {
+          listeners.delete(callback);
+        };
+      },
+      getSnapshot() {
+        return version;
+      }
+    };
+  }
+  function createSelectionStore() {
+    const set = new Set;
+    const store = createExternalStore();
+    return {
+      ...store,
+      has: (id) => set.has(id),
+      toggle(id) {
+        if (set.has(id))
+          set.delete(id);
+        else
+          set.add(id);
+        store.notify();
+      },
+      add(id) {
+        if (!set.has(id)) {
+          set.add(id);
+          store.notify();
+        }
+      },
+      remove(id) {
+        if (set.delete(id))
+          store.notify();
+      },
+      clear() {
+        if (set.size) {
+          set.clear();
+          store.notify();
+        }
+      },
+      all: () => [...set],
+      size: () => set.size
+    };
+  }
+  var pad = (n) => String(n).padStart(2, "0");
+  function hms(totalSeconds) {
+    return [Math.floor(totalSeconds / 3600), Math.floor(totalSeconds % 3600 / 60), totalSeconds % 60];
+  }
+  function formatCountdown(totalSeconds) {
+    if (totalSeconds <= 0)
+      return "0:00";
+    const [h, m, s] = hms(totalSeconds);
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  }
+  function formatDuration(totalSeconds) {
+    if (totalSeconds <= 0)
+      return "0m";
+    const [h, m] = hms(totalSeconds);
+    if (h > 0 && m > 0)
+      return `${h}h ${m}m`;
+    return h > 0 ? `${h}h` : `${m}m`;
+  }
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+  function errorMessage(err) {
+    return err instanceof Error ? err.message : String(err);
+  }
+  var FILENAME_ILLEGAL = /[<>:"/\\|?*\x00-\x1f]/g;
+  var WHITESPACE_RUN = /\s+/g;
+  function sanitizeFilename(title, fallback = "file") {
+    return title.replaceAll(FILENAME_ILLEGAL, "").trim().replaceAll(WHITESPACE_RUN, "-") || fallback;
+  }
+  function mapGetOrCreate(map, key, create) {
+    let value = map.get(key);
+    if (value === undefined) {
+      value = create();
+      map.set(key, value);
+    }
+    return value;
+  }
+  function safeUrl(url) {
+    try {
+      const { protocol } = new URL(url);
+      return protocol === "https:" || protocol === "http:" || protocol === "mailto:" ? url : null;
+    } catch {
+      return null;
+    }
+  }
+  function randomId(prefix = "") {
+    const tail = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return prefix ? `${prefix}-${tail}` : tail;
+  }
+  function sortedEntries(map) {
+    return [...map.entries()].toSorted(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
+  }
+  function sendBrowserNotification(title, body, icon = "/favicon.ico") {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body, icon });
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then((p) => {
+        if (p === "granted")
+          new Notification(title, { body, icon });
+      }).catch(() => {});
+    }
+  }
+
+  // src/api/Events.ts
+  var logger6 = new Logger("Events");
+  var listeners = new Map;
+  function subscribe(event, handler2) {
+    const set = mapGetOrCreate(listeners, event, () => new Set);
+    set.add(handler2);
+    return () => {
+      set.delete(handler2);
+      if (!set.size)
+        listeners.delete(event);
+    };
+  }
+  function dispatch(event, ...args) {
+    const set = listeners.get(event);
+    if (!set?.size)
+      return;
+    const data = args[0];
+    for (const handler2 of Array.from(set)) {
+      try {
+        handler2(data);
+      } catch (e) {
+        logger6.error(`Event handler error (${event}):`, e);
+      }
+    }
+  }
+
   // src/turbopack/common/stores.ts
+  var exports_stores = {};
+  __export(exports_stores, {
+    WorkspaceStore: () => WorkspaceStore,
+    WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
+    UpsellStore: () => UpsellStore,
+    TourGuideStore: () => TourGuideStore,
+    TextToSpeechStore: () => TextToSpeechStore,
+    TasksStore: () => TasksStore,
+    TabsManagerStore: () => TabsManagerStore,
+    SuggestionStore: () => SuggestionStore,
+    SubscriptionsStore: () => SubscriptionsStore,
+    SkillsStore: () => SkillsStore,
+    ShareStore: () => ShareStore,
+    SettingsStore: () => SettingsStore,
+    SettingsDialogStore: () => SettingsDialogStore,
+    SessionStore: () => SessionStore,
+    ScrollStore: () => ScrollStore,
+    RoutingStore: () => RoutingStore,
+    ResponseStore: () => ResponseStore,
+    ReportStore: () => ReportStore,
+    PersonalityStore: () => PersonalityStore,
+    NotificationsStore: () => NotificationsStore,
+    ModesStore: () => ModesStore,
+    MentionMenuStore: () => MentionMenuStore,
+    MediaStore: () => MediaStore,
+    ImagineModelOverrideStore: () => ImagineModelOverrideStore,
+    ImageEditorStore: () => ImageEditorStore,
+    FilesPageStore: () => FilesPageStore,
+    FileStore: () => FileStore,
+    FeatureStore: () => FeatureStore,
+    DictationStore: () => DictationStore,
+    CreditQuotaStore: () => CreditQuotaStore,
+    ConversationStore: () => ConversationStore,
+    CommandMenuStore: () => CommandMenuStore,
+    CodePageStore: () => CodePageStore,
+    ChatPageStore: () => ChatPageStore,
+    AssetStore: () => AssetStore
+  });
   var AssetStore = findByPropsLazy("useAssetStore");
   var ChatPageStore = findByPropsLazy("useChatPageStore");
   var CodePageStore = findByPropsLazy("useCodePageStore");
@@ -1613,8 +2114,536 @@ ${sourceUrl}`;
   var WorkspaceConnectorsStore = findByPropsLazy("useWorkspaceConnectorsStore", "useWorkspaceActiveConnectorIds");
   var WorkspaceStore = findByPropsLazy("useWorkspaceStore", "useWorkspacesList");
 
+  // src/utils/react.ts
+  function findFiberKey(el) {
+    for (const k in el) {
+      if (k.startsWith("__reactFiber$"))
+        return k;
+    }
+    return null;
+  }
+  function getFiber(el) {
+    let cur = el;
+    while (cur) {
+      const k = findFiberKey(cur);
+      if (k)
+        return cur[k];
+      cur = cur.parentElement;
+    }
+    return null;
+  }
+  function getReactRoot() {
+    for (const el of [document.body, document.getElementById("__next"), document.getElementById("root")]) {
+      if (!el)
+        continue;
+      const k = findFiberKey(el);
+      if (k)
+        return el[k];
+    }
+    return null;
+  }
+  function walkFiberTree(root, visit, maxProcessed) {
+    const visited = new WeakSet;
+    const queue = [root];
+    let processed = 0;
+    while (queue.length && processed < maxProcessed) {
+      const fiber = queue.shift();
+      if (visited.has(fiber))
+        continue;
+      visited.add(fiber);
+      processed++;
+      if (visit(fiber) === false)
+        return;
+      if (fiber.child)
+        queue.push(fiber.child);
+      if (fiber.sibling)
+        queue.push(fiber.sibling);
+    }
+  }
+  function walkFiberUp(fiber, max, test) {
+    const seen = new WeakSet;
+    let cur = fiber;
+    let d = 0;
+    while (cur && d < max) {
+      if (seen.has(cur))
+        return null;
+      seen.add(cur);
+      if (test(cur))
+        return cur;
+      cur = cur.return;
+      d++;
+    }
+    return null;
+  }
+  function findInReactTree(node, predicate) {
+    const stack = [node];
+    while (stack.length) {
+      const cur = stack.pop();
+      if (cur == null || typeof cur !== "object")
+        continue;
+      if (Array.isArray(cur)) {
+        for (const c of cur)
+          stack.push(c);
+        continue;
+      }
+      const el = cur;
+      if (predicate(el))
+        return el;
+      const children = el.props?.children;
+      if (children != null)
+        stack.push(children);
+    }
+    return null;
+  }
+  var jsxTransforms = new WeakMap;
+  function wrapComponent(type, wrapper) {
+    jsxTransforms.set(type, wrapper);
+  }
+  function wrapJsx(original) {
+    return function(type, props, key) {
+      const wrapper = typeof type === "object" || typeof type === "function" ? jsxTransforms.get(type) : undefined;
+      return wrapper ? original(wrapper, props, key) : original(type, props, key);
+    };
+  }
+  waitFor(filters.byProps("jsx", "jsxs"), (mod) => {
+    const origJsx = mod.jsx;
+    const origJsxs = mod.jsxs;
+    const jsx = wrapJsx(origJsx);
+    const jsxs = origJsxs === origJsx ? jsx : wrapJsx(origJsxs);
+    for (const cache of [getRuntimeModuleCache(), getModuleCache()]) {
+      if (!cache)
+        continue;
+      const entries = cache instanceof Map ? cache.values() : Object.values(cache).map((m) => m.exports);
+      for (const exp of entries) {
+        if (exp == null || typeof exp !== "object")
+          continue;
+        if (exp.jsx === origJsx)
+          exp.jsx = jsx;
+        if (exp.jsxs === origJsxs)
+          exp.jsxs = jsxs;
+      }
+    }
+  });
+  function resolveLazyNode(node) {
+    return typeof node === "function" ? node() : node;
+  }
+  function useExternalStore(store) {
+    useSyncExternalStore(store.subscribe, store.getSnapshot);
+  }
+  function useSelectionHas(store, id) {
+    useExternalStore(store);
+    return store.has(id);
+  }
+  function useSelectionSize(store) {
+    useExternalStore(store);
+    return store.size();
+  }
+  function useIsStreaming(conversationId) {
+    return ChatPageStore.useChatPageStore((s) => !!s.streamedMessageId && (conversationId == null || s.conversationId === conversationId));
+  }
+  function useForceUpdater() {
+    return useReducer((x) => x + 1, 0)[1];
+  }
+  function useEventSubscription(event, handler2) {
+    const ref = useRef(handler2);
+    ref.current = handler2;
+    useEffect(() => subscribe(event, () => ref.current()), [event]);
+  }
+  function useFiltered(list, search2, getKey) {
+    return useMemo(() => {
+      const q = search2.toLowerCase().trim();
+      if (!q)
+        return list;
+      return list.filter((item) => getKey(item).toLowerCase().includes(q));
+    }, [list, search2, getKey]);
+  }
+  function useAsyncAction(fn) {
+    const [busy, setBusy] = useState(false);
+    const fnRef = useRef(fn);
+    fnRef.current = fn;
+    const execute = useCallback(async () => {
+      setBusy(true);
+      try {
+        await fnRef.current();
+      } finally {
+        setBusy(false);
+      }
+    }, []);
+    return [busy, execute];
+  }
+
+  // src/utils/SettingsStore.ts
+  var logger7 = new Logger("SettingsStore");
+  var STORAGE_KEY = "VoidSettings";
+  var SAVE_DEBOUNCE_MS = 100;
+
+  class SettingsStore2 {
+    globalListeners = new Set;
+    pathListeners = new Map;
+    prefixListeners = new Map;
+    defaultGetters = new Map;
+    saveTimer = null;
+    proxyCache = new WeakMap;
+    constructor(plain) {
+      this.plain = plain;
+      this.store = this.makeProxy(plain);
+      window.addEventListener("beforeunload", () => this.flush(), { once: true });
+    }
+    flush() {
+      if (this.saveTimer) {
+        clearTimeout(this.saveTimer);
+        this.saveTimer = null;
+      }
+      this.save();
+    }
+    setDefaultGetter(prefix, getter) {
+      this.defaultGetters.set(prefix, getter);
+    }
+    makeProxy(target, path = "") {
+      const cached = this.proxyCache.get(target);
+      if (cached)
+        return cached;
+      const proxy = new Proxy(target, {
+        get: (t, key) => {
+          let value = t[key];
+          if (value === undefined && key !== "__proto__") {
+            const fullPath = path ? `${path}.${key}` : key;
+            for (const [prefix, getter] of this.defaultGetters) {
+              if (fullPath.startsWith(prefix)) {
+                const settingKey = fullPath.slice(prefix.length + 1);
+                if (settingKey && !settingKey.includes(".")) {
+                  const defaultVal = getter(settingKey);
+                  if (defaultVal !== undefined) {
+                    t[key] = defaultVal;
+                    value = defaultVal;
+                  }
+                }
+                break;
+              }
+            }
+          }
+          if (isObject(value)) {
+            return this.makeProxy(value, path ? `${path}.${key}` : key);
+          }
+          return value;
+        },
+        set: (t, key, value) => {
+          if (t[key] === value)
+            return true;
+          t[key] = value;
+          const fullPath = path ? `${path}.${key}` : key;
+          this.notifyListeners(fullPath);
+          return true;
+        },
+        deleteProperty: (t, key) => {
+          if (!(key in t))
+            return true;
+          delete t[key];
+          const fullPath = path ? `${path}.${key}` : key;
+          this.notifyListeners(fullPath);
+          return true;
+        }
+      });
+      this.proxyCache.set(target, proxy);
+      return proxy;
+    }
+    invokeListeners(listeners2, path) {
+      for (const l of Array.from(listeners2)) {
+        try {
+          l(path);
+        } catch (e) {
+          logger7.error("Settings listener error:", e);
+        }
+      }
+    }
+    notifyListeners(path) {
+      this.invokeListeners(this.globalListeners, path);
+      const listeners2 = this.pathListeners.get(path);
+      if (listeners2)
+        this.invokeListeners(listeners2, path);
+      for (const [prefix, set] of Array.from(this.prefixListeners)) {
+        if (path.startsWith(prefix))
+          this.invokeListeners(set, path);
+      }
+      this.scheduleSave();
+    }
+    scheduleSave() {
+      if (this.saveTimer)
+        return;
+      this.saveTimer = setTimeout(() => {
+        this.saveTimer = null;
+        this.save();
+      }, SAVE_DEBOUNCE_MS);
+    }
+    save() {
+      try {
+        const json = JSON.stringify(this.plain);
+        if (typeof GM_setValue === "function") {
+          GM_setValue(STORAGE_KEY, json);
+        } else {
+          try {
+            localStorage.setItem(STORAGE_KEY, json);
+          } catch {}
+          idbSet(STORAGE_KEY, json).catch((e) => logger7.warn("Failed to save settings to IndexedDB:", e));
+        }
+      } catch (e) {
+        logger7.error("Failed to save settings:", e);
+      }
+    }
+    markAsChanged() {
+      this.notifyListeners("");
+    }
+    addGlobalChangeListener(listener) {
+      this.globalListeners.add(listener);
+    }
+    removeGlobalChangeListener(listener) {
+      this.globalListeners.delete(listener);
+    }
+    addToMap(map, key, listener) {
+      mapGetOrCreate(map, key, () => new Set).add(listener);
+    }
+    removeFromMap(map, key, listener) {
+      const set = map.get(key);
+      if (set) {
+        set.delete(listener);
+        if (!set.size)
+          map.delete(key);
+      }
+    }
+    addChangeListener(path, listener) {
+      this.addToMap(this.pathListeners, path, listener);
+    }
+    removeChangeListener(path, listener) {
+      this.removeFromMap(this.pathListeners, path, listener);
+    }
+    addPrefixChangeListener(prefix, listener) {
+      this.addToMap(this.prefixListeners, prefix, listener);
+    }
+    removePrefixChangeListener(prefix, listener) {
+      this.removeFromMap(this.prefixListeners, prefix, listener);
+    }
+  }
+
+  // src/utils/types.ts
+  function definePlugin(p) {
+    return p;
+  }
+  var StartAt;
+  ((StartAt2) => {
+    StartAt2["Init"] = "Init";
+    StartAt2["DOMContentLoaded"] = "DOMContentLoaded";
+    StartAt2["TurbopackReady"] = "TurbopackReady";
+  })(StartAt ||= {});
+  var OptionType;
+  ((OptionType2) => {
+    OptionType2[OptionType2["STRING"] = 0] = "STRING";
+    OptionType2[OptionType2["NUMBER"] = 1] = "NUMBER";
+    OptionType2[OptionType2["BIGINT"] = 2] = "BIGINT";
+    OptionType2[OptionType2["BOOLEAN"] = 3] = "BOOLEAN";
+    OptionType2[OptionType2["SELECT"] = 4] = "SELECT";
+    OptionType2[OptionType2["SLIDER"] = 5] = "SLIDER";
+    OptionType2[OptionType2["COMPONENT"] = 6] = "COMPONENT";
+    OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
+  })(OptionType ||= {});
+
+  // src/api/Settings.ts
+  var logger8 = new Logger("Settings");
+  var DefaultSettings = {
+    plugins: {},
+    notifications: {
+      timeout: 5000,
+      position: "bottom-right"
+    }
+  };
+  var settings = {};
+  mergeDefaults(settings, DefaultSettings);
+  var SettingsStore3 = new SettingsStore2(settings);
+  var PlainSettings = settings;
+  var Settings = SettingsStore3.store;
+  var pluginPath = (name, key) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
+  async function initSettings() {
+    if (typeof GM_getValue === "function") {
+      try {
+        const raw2 = GM_getValue(STORAGE_KEY, null);
+        if (raw2) {
+          const parsed = JSON.parse(raw2);
+          if (isObject(parsed))
+            Object.assign(settings, parsed);
+        }
+      } catch (e) {
+        logger8.error("Failed to load settings:", e);
+      }
+      mergeDefaults(settings, DefaultSettings);
+      return;
+    }
+    let raw = null;
+    try {
+      raw = await idbGet(STORAGE_KEY) ?? null;
+    } catch (e) {
+      logger8.warn("Failed to read IndexedDB:", e);
+    }
+    if (!raw) {
+      raw = migrateFromLocalStorage();
+      if (raw)
+        idbSet(STORAGE_KEY, raw).then(() => {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch {}
+        }).catch((e) => logger8.debug("Failed to persist settings to IndexedDB:", e));
+    }
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (isObject(parsed))
+          Object.assign(settings, parsed);
+      } catch (e) {
+        logger8.error("Failed to parse settings:", e);
+      }
+    }
+    mergeDefaults(settings, DefaultSettings);
+  }
+  function migrateFromLocalStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        logger8.info("Migrating settings from localStorage to IndexedDB");
+        return raw;
+      }
+    } catch (e) {
+      logger8.warn("Failed to read localStorage:", e);
+    }
+    return null;
+  }
+  function migratePluginSettings(name, ...oldNames) {
+    const { plugins } = SettingsStore3.plain;
+    if (name in plugins)
+      return;
+    for (const oldName of oldNames) {
+      if (oldName in plugins) {
+        logger8.info(`Migrating settings from old name ${oldName} to ${name}`);
+        plugins[name] = plugins[oldName];
+        delete plugins[oldName];
+        SettingsStore3.markAsChanged();
+        break;
+      }
+    }
+  }
+  function migratePluginSetting(pluginName, newKey, oldKey) {
+    const pluginSettings = SettingsStore3.plain.plugins[pluginName];
+    if (!pluginSettings || !(oldKey in pluginSettings) || newKey in pluginSettings)
+      return;
+    logger8.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
+    pluginSettings[newKey] = pluginSettings[oldKey];
+    delete pluginSettings[oldKey];
+    SettingsStore3.markAsChanged();
+  }
+  function migrateSettingsToPlugin(targetPlugin, sourcePlugin, ...settingKeys) {
+    const source = SettingsStore3.plain.plugins[sourcePlugin];
+    if (!source)
+      return;
+    const target = SettingsStore3.plain.plugins[targetPlugin] ??= { enabled: false };
+    let changed = false;
+    for (const key of settingKeys) {
+      if (key in source && !(key in target)) {
+        target[key] = source[key];
+        delete source[key];
+        changed = true;
+      }
+    }
+    if (changed) {
+      logger8.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
+      SettingsStore3.markAsChanged();
+    }
+  }
+  function getSettingsPluginData() {
+    return Settings.plugins.Settings ?? {};
+  }
+  function updateSettingsPluginData(patch) {
+    Settings.plugins.Settings = { ...Settings.plugins.Settings ?? { enabled: true }, ...patch };
+  }
+  function mergePluginSettings(name, patch) {
+    Settings.plugins[name] = { ...Settings.plugins[name] ?? { enabled: false }, ...patch };
+  }
+  function resolveDefault(setting) {
+    if ("default" in setting)
+      return setting.default;
+    if (setting.type === 4 /* SELECT */)
+      return setting.options.find((o) => o.default)?.value;
+    return;
+  }
+  function definePluginSettings(def, checks) {
+    let _pluginName = "";
+    const definedSettings = {
+      get store() {
+        if (!_pluginName)
+          throw new Error("Cannot access settings before plugin is initialized");
+        return Settings.plugins[_pluginName];
+      },
+      get plain() {
+        if (!_pluginName)
+          throw new Error("Cannot access settings before plugin is initialized");
+        return PlainSettings.plugins[_pluginName];
+      },
+      def,
+      checks: checks ?? {},
+      get pluginName() {
+        return _pluginName;
+      },
+      set pluginName(name) {
+        _pluginName = name;
+        if (!name)
+          return;
+        if (!PlainSettings.plugins[name])
+          PlainSettings.plugins[name] = { enabled: false };
+        SettingsStore3.setDefaultGetter(pluginPath(name), (key) => {
+          const setting = def[key];
+          return setting ? resolveDefault(setting) : undefined;
+        });
+      },
+      use(keys) {
+        const forceUpdate = useForceUpdater();
+        useEffect(() => {
+          const prefix = pluginPath(_pluginName);
+          let listener = forceUpdate;
+          if (keys?.length) {
+            const watched = keys.map((k) => `${prefix}.${String(k)}`);
+            listener = (path) => {
+              if (watched.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
+                forceUpdate();
+            };
+          }
+          SettingsStore3.addPrefixChangeListener(prefix, listener);
+          return () => SettingsStore3.removePrefixChangeListener(prefix, listener);
+        }, []);
+        return definedSettings.store;
+      },
+      withPrivateSettings() {
+        return this;
+      }
+    };
+    return definedSettings;
+  }
+
+  // src/api/BuildHealth.ts
+  var logger9 = new Logger("TurbopackPatcher", "#e78284");
+  var chunkBasename = (path) => path.slice(path.lastIndexOf("/") + 1);
+  function checkBuildFingerprint() {
+    const domChunks = [...document.querySelectorAll('script[src*="/_next/static/chunks/"]')].map((s) => chunkBasename(s.src));
+    const current = [...new Set([...domChunks, ...getChunkFingerprint().map(chunkBasename)])];
+    if (!current.length)
+      return;
+    const previous = getSettingsPluginData().chunkFingerprint;
+    if (previous?.length) {
+      const prev = new Set(previous);
+      const overlap = current.filter((c) => prev.has(c)).length / current.length;
+      if (overlap < 0.5)
+        logger9.warn("grok build changed (chunk fingerprint shifted)");
+    }
+    updateSettingsPluginData({ chunkFingerprint: current });
+  }
+
   // src/utils/css.ts
-  var logger4 = new Logger("Styles", "#a6d189");
+  var logger10 = new Logger("Styles", "#a6d189");
   var styleRegistry = new Map;
   var activeStyles = new Map;
   var container = null;
@@ -1693,7 +2722,7 @@ ${sourceUrl}`;
     }
     const css = styleRegistry.get(name);
     if (!css) {
-      logger4.warn(`Style "${name}" not registered.`);
+      logger10.warn(`Style "${name}" not registered.`);
       return false;
     }
     const root = getContainer();
@@ -1736,58 +2765,6 @@ ${sourceUrl}`;
   function classes(...names) {
     return names.filter(Boolean).join(" ");
   }
-
-  // src/utils/patches.ts
-  var iToken = "(?:[A-Za-z_$][\\w$]*)";
-  function canonicalizeMatch(match) {
-    if (typeof match === "string") {
-      const canon = match.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => `"${key}"`);
-      return canon === match ? match : canon;
-    }
-    const { source } = match;
-    let canonSource = source.replaceAll(/#{i18n::([^}]+)}/g, (_, key) => `"${key.replaceAll(".", "\\.")}"`);
-    canonSource = canonSource.replaceAll(/(\\*)\\i/g, (_m, leadingEscapes) => leadingEscapes.length % 2 === 0 ? `${leadingEscapes}${iToken}` : `${leadingEscapes}\\i`);
-    canonSource = canonSource.replaceAll(/\\e\{(\w+)\}/g, (_, name) => `["']${name}["'],(?:\\d+,|\\(\\)=>${iToken})`);
-    if (canonSource === source)
-      return match;
-    const canonRegex = new RegExp(canonSource, match.flags);
-    canonRegex.toString = match.toString.bind(match);
-    return canonRegex;
-  }
-  function canonicalizeReplace(replace, pluginPath) {
-    if (typeof replace !== "function")
-      return replace.replaceAll("$self", pluginPath);
-    return (match, ...groups) => replace(match, ...groups).replaceAll("$self", pluginPath);
-  }
-  function canonicalizeReplacement(replacement, pluginPath) {
-    replacement.match = canonicalizeMatch(replacement.match);
-    replacement.replace = canonicalizeReplace(replacement.replace, pluginPath);
-  }
-  function canonicalizeFind(patch) {
-    patch.find = Array.isArray(patch.find) ? patch.find.map((f) => canonicalizeMatch(f)) : canonicalizeMatch(patch.find);
-  }
-
-  // src/utils/types.ts
-  function definePlugin(p) {
-    return p;
-  }
-  var StartAt;
-  ((StartAt2) => {
-    StartAt2["Init"] = "Init";
-    StartAt2["DOMContentLoaded"] = "DOMContentLoaded";
-    StartAt2["TurbopackReady"] = "TurbopackReady";
-  })(StartAt ||= {});
-  var OptionType;
-  ((OptionType2) => {
-    OptionType2[OptionType2["STRING"] = 0] = "STRING";
-    OptionType2[OptionType2["NUMBER"] = 1] = "NUMBER";
-    OptionType2[OptionType2["BIGINT"] = 2] = "BIGINT";
-    OptionType2[OptionType2["BOOLEAN"] = 3] = "BOOLEAN";
-    OptionType2[OptionType2["SELECT"] = 4] = "SELECT";
-    OptionType2[OptionType2["SLIDER"] = 5] = "SLIDER";
-    OptionType2[OptionType2["COMPONENT"] = 6] = "COMPONENT";
-    OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
-  })(OptionType ||= {});
   // void-css:D:/Projects/Void/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     contain: content;
@@ -1801,33 +2778,6 @@ ${sourceUrl}`;
     gap: 1.5rem;
 }
 `);
-
-  // src/turbopack/common/react.tsx
-  var React;
-  var useState;
-  var useEffect;
-  var useLayoutEffect;
-  var useMemo;
-  var useRef;
-  var useReducer;
-  var useCallback;
-  var useContext;
-  var useId;
-  var useTransition;
-  var useDeferredValue;
-  var useSyncExternalStore;
-  var createElement;
-  var useReducedMotion;
-  waitFor(filters.byProps("useReducedMotion"), (mod) => {
-    ({ useReducedMotion } = mod);
-  });
-  waitFor(filters.byProps("useState", "createElement"), (mod) => {
-    const m = mod;
-    React = m;
-    ({ useState, useEffect, useLayoutEffect, useMemo, useRef, useReducer, useCallback, useContext, useId, useTransition, useDeferredValue, useSyncExternalStore, createElement } = m);
-    setCreateElement(m.createElement);
-  });
-  var Fragment = Symbol.for("react.fragment");
 
   // src/turbopack/common/settingsPrimitives.ts
   var captured = {};
@@ -1969,9 +2919,9 @@ ${sourceUrl}`;
   var AnimatePresence = lazyExport("AnimatePresence");
 
   // src/components/ConfirmDialog.tsx
-  function ConfirmDialog({ open, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
+  function ConfirmDialog({ open: open2, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
     return /* @__PURE__ */ React.createElement(AlertDialog, {
-      open,
+      open: open2,
       onOpenChange
     }, /* @__PURE__ */ React.createElement(AlertDialogContent, {
       className: "void-confirm-dialog"
@@ -2288,23 +3238,6 @@ ${sourceUrl}`;
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M21 3 9 15"
   }));
-  var WandSparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m14 7 3 3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M5 6v4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M19 14v4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M10 2v2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M7 8H3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M21 16h-4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M11 3H9"
-  }));
   var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -2446,298 +3379,6 @@ ${sourceUrl}`;
     }, icon);
   }
 
-  // src/utils/guards.ts
-  function isTruthy(item) {
-    return Boolean(item);
-  }
-  function isNonNullish(item) {
-    return item != null;
-  }
-  function isObject(value) {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-  }
-
-  // src/utils/misc.ts
-  function mergeDefaults(target, defaults) {
-    for (const [key, defaultValue] of Object.entries(defaults)) {
-      const value = target[key];
-      if (isObject(value)) {
-        mergeDefaults(value, defaultValue);
-      } else if (value === undefined) {
-        target[key] = defaultValue;
-      }
-    }
-    return target;
-  }
-  function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-  async function copyToClipboard(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      if (typeof GM_setClipboard === "function") {
-        GM_setClipboard(text);
-      }
-    }
-  }
-  function onlyOnce(fn) {
-    let result;
-    let f = fn;
-    return (...args) => {
-      if (!f)
-        return result;
-      result = f(...args);
-      f = null;
-      return result;
-    };
-  }
-  function debounce(fn, ms) {
-    let timer;
-    let lastArgs;
-    const debounced = (...args) => {
-      lastArgs = args;
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        lastArgs = undefined;
-        fn(...args);
-      }, ms);
-    };
-    debounced.cancel = () => {
-      clearTimeout(timer);
-      lastArgs = undefined;
-    };
-    debounced.flush = () => {
-      if (lastArgs) {
-        clearTimeout(timer);
-        const a = lastArgs;
-        lastArgs = undefined;
-        fn(...a);
-      }
-    };
-    return debounced;
-  }
-  function fetchExternal(url) {
-    if (typeof GM_xmlhttpRequest === "undefined") {
-      const controller = new AbortController;
-      const timer = setTimeout(() => controller.abort(), 30000);
-      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
-    }
-    return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
-        method: "GET",
-        url,
-        responseType: "blob",
-        timeout: 30000,
-        onload(resp) {
-          resolve(new Response(resp.response, {
-            status: resp.status,
-            statusText: resp.statusText
-          }));
-        },
-        ontimeout() {
-          reject(new Error("fetch timeout"));
-        },
-        onerror() {
-          reject(new Error("fetch error"));
-        },
-        onabort() {
-          reject(new Error("fetch aborted"));
-        }
-      });
-    });
-  }
-  function createExternalStore() {
-    const listeners = new Set;
-    let version = 0;
-    return {
-      notify() {
-        version++;
-        for (const fn of listeners)
-          fn();
-      },
-      subscribe(callback) {
-        listeners.add(callback);
-        return () => {
-          listeners.delete(callback);
-        };
-      },
-      getSnapshot() {
-        return version;
-      }
-    };
-  }
-  function createSelectionStore() {
-    const set = new Set;
-    const store = createExternalStore();
-    return {
-      ...store,
-      has: (id) => set.has(id),
-      toggle(id) {
-        if (set.has(id))
-          set.delete(id);
-        else
-          set.add(id);
-        store.notify();
-      },
-      add(id) {
-        if (!set.has(id)) {
-          set.add(id);
-          store.notify();
-        }
-      },
-      remove(id) {
-        if (set.delete(id))
-          store.notify();
-      },
-      clear() {
-        if (set.size) {
-          set.clear();
-          store.notify();
-        }
-      },
-      all: () => [...set],
-      size: () => set.size
-    };
-  }
-  var pad = (n) => String(n).padStart(2, "0");
-  function hms(totalSeconds) {
-    return [Math.floor(totalSeconds / 3600), Math.floor(totalSeconds % 3600 / 60), totalSeconds % 60];
-  }
-  function formatCountdown(totalSeconds) {
-    if (totalSeconds <= 0)
-      return "0:00";
-    const [h, m, s] = hms(totalSeconds);
-    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
-  }
-  function formatDuration(totalSeconds) {
-    if (totalSeconds <= 0)
-      return "0m";
-    const [h, m] = hms(totalSeconds);
-    if (h > 0 && m > 0)
-      return `${h}h ${m}m`;
-    return h > 0 ? `${h}h` : `${m}m`;
-  }
-  function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  }
-  function errorMessage(err) {
-    return err instanceof Error ? err.message : String(err);
-  }
-  var FILENAME_ILLEGAL = /[<>:"/\\|?*\x00-\x1f]/g;
-  var WHITESPACE_RUN = /\s+/g;
-  function sanitizeFilename(title, fallback = "file") {
-    return title.replaceAll(FILENAME_ILLEGAL, "").trim().replaceAll(WHITESPACE_RUN, "-") || fallback;
-  }
-  function mapGetOrCreate(map, key, create) {
-    let value = map.get(key);
-    if (value === undefined) {
-      value = create();
-      map.set(key, value);
-    }
-    return value;
-  }
-  function safeUrl(url) {
-    try {
-      const { protocol } = new URL(url);
-      return protocol === "https:" || protocol === "http:" || protocol === "mailto:" ? url : null;
-    } catch {
-      return null;
-    }
-  }
-  function randomId(prefix = "") {
-    const tail = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    return prefix ? `${prefix}-${tail}` : tail;
-  }
-  function sortedEntries(map) {
-    return [...map.entries()].toSorted(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
-  }
-  function sendBrowserNotification(title, body, icon = "/favicon.ico") {
-    if (Notification.permission === "granted") {
-      new Notification(title, { body, icon });
-    } else if (Notification.permission !== "denied") {
-      Notification.requestPermission().then((p) => {
-        if (p === "granted")
-          new Notification(title, { body, icon });
-      }).catch(() => {});
-    }
-  }
-
-  // src/api/Events.ts
-  var logger5 = new Logger("Events");
-  var listeners = new Map;
-  function subscribe(event, handler2) {
-    const set = mapGetOrCreate(listeners, event, () => new Set);
-    set.add(handler2);
-    return () => {
-      set.delete(handler2);
-      if (!set.size)
-        listeners.delete(event);
-    };
-  }
-  function dispatch(event, ...args) {
-    const set = listeners.get(event);
-    if (!set?.size)
-      return;
-    const data = args[0];
-    for (const handler2 of Array.from(set)) {
-      try {
-        handler2(data);
-      } catch (e) {
-        logger5.error(`Event handler error (${event}):`, e);
-      }
-    }
-  }
-
-  // src/utils/react.ts
-  function resolveLazyNode(node) {
-    return typeof node === "function" ? node() : node;
-  }
-  function useExternalStore(store) {
-    useSyncExternalStore(store.subscribe, store.getSnapshot);
-  }
-  function useSelectionHas(store, id) {
-    useExternalStore(store);
-    return store.has(id);
-  }
-  function useSelectionSize(store) {
-    useExternalStore(store);
-    return store.size();
-  }
-  function useIsStreaming(conversationId) {
-    return ChatPageStore.useChatPageStore((s) => !!s.streamedMessageId && (conversationId == null || s.conversationId === conversationId));
-  }
-  function useForceUpdater() {
-    return useReducer((x) => x + 1, 0)[1];
-  }
-  function useEventSubscription(event, handler2) {
-    const ref = useRef(handler2);
-    ref.current = handler2;
-    useEffect(() => subscribe(event, () => ref.current()), [event]);
-  }
-  function useFiltered(list, search2, getKey) {
-    return useMemo(() => {
-      const q = search2.toLowerCase().trim();
-      if (!q)
-        return list;
-      return list.filter((item) => getKey(item).toLowerCase().includes(q));
-    }, [list, search2, getKey]);
-  }
-  function useAsyncAction(fn) {
-    const [busy, setBusy] = useState(false);
-    const fnRef = useRef(fn);
-    fnRef.current = fn;
-    const execute = useCallback(async () => {
-      setBusy(true);
-      try {
-        await fnRef.current();
-      } finally {
-        setBusy(false);
-      }
-    }, []);
-    return [busy, execute];
-  }
-
   // src/api/registry.ts
   function createRegistry() {
     const map = new Map;
@@ -2865,386 +3506,8 @@ ${sourceUrl}`;
     return content;
   }
 
-  // src/utils/idb.ts
-  var logger6 = new Logger("IDB");
-  var DB_NAME = "Void";
-  var STORE_NAME = "kv";
-  var DB_VERSION = 1;
-  var dbPromise = null;
-  function open() {
-    if (dbPromise)
-      return dbPromise;
-    const promise = new Promise((resolve2, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = () => {
-        if (!req.result.objectStoreNames.contains(STORE_NAME)) {
-          req.result.createObjectStore(STORE_NAME);
-        }
-      };
-      req.onsuccess = () => resolve2(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    promise.catch((e) => {
-      dbPromise = null;
-      if (false)
-        ;
-    });
-    dbPromise = promise;
-    return promise;
-  }
-  async function withStore(mode, run) {
-    const db = await open();
-    return new Promise((resolve2, reject) => {
-      const tx = db.transaction(STORE_NAME, mode);
-      run(tx.objectStore(STORE_NAME), resolve2);
-      tx.onerror = () => reject(tx.error);
-    });
-  }
-  function idbGet(key) {
-    return withStore("readonly", (store, resolve2) => {
-      const req = store.get(key);
-      req.onsuccess = () => resolve2(req.result);
-    });
-  }
-  function idbSet(key, value) {
-    return withStore("readwrite", (store, resolve2) => {
-      store.put(value, key);
-      store.transaction.oncomplete = () => resolve2();
-    });
-  }
-
-  // src/utils/SettingsStore.ts
-  var logger7 = new Logger("SettingsStore");
-  var STORAGE_KEY = "VoidSettings";
-  var SAVE_DEBOUNCE_MS = 100;
-
-  class SettingsStore2 {
-    globalListeners = new Set;
-    pathListeners = new Map;
-    prefixListeners = new Map;
-    defaultGetters = new Map;
-    saveTimer = null;
-    proxyCache = new WeakMap;
-    constructor(plain) {
-      this.plain = plain;
-      this.store = this.makeProxy(plain);
-      window.addEventListener("beforeunload", () => this.flush(), { once: true });
-    }
-    flush() {
-      if (this.saveTimer) {
-        clearTimeout(this.saveTimer);
-        this.saveTimer = null;
-      }
-      this.save();
-    }
-    setDefaultGetter(prefix, getter) {
-      this.defaultGetters.set(prefix, getter);
-    }
-    makeProxy(target, path = "") {
-      const cached = this.proxyCache.get(target);
-      if (cached)
-        return cached;
-      const proxy = new Proxy(target, {
-        get: (t, key) => {
-          let value = t[key];
-          if (value === undefined && key !== "__proto__") {
-            const fullPath = path ? `${path}.${key}` : key;
-            for (const [prefix, getter] of this.defaultGetters) {
-              if (fullPath.startsWith(prefix)) {
-                const settingKey = fullPath.slice(prefix.length + 1);
-                if (settingKey && !settingKey.includes(".")) {
-                  const defaultVal = getter(settingKey);
-                  if (defaultVal !== undefined) {
-                    t[key] = defaultVal;
-                    value = defaultVal;
-                  }
-                }
-                break;
-              }
-            }
-          }
-          if (isObject(value)) {
-            return this.makeProxy(value, path ? `${path}.${key}` : key);
-          }
-          return value;
-        },
-        set: (t, key, value) => {
-          if (t[key] === value)
-            return true;
-          t[key] = value;
-          const fullPath = path ? `${path}.${key}` : key;
-          this.notifyListeners(fullPath);
-          return true;
-        },
-        deleteProperty: (t, key) => {
-          if (!(key in t))
-            return true;
-          delete t[key];
-          const fullPath = path ? `${path}.${key}` : key;
-          this.notifyListeners(fullPath);
-          return true;
-        }
-      });
-      this.proxyCache.set(target, proxy);
-      return proxy;
-    }
-    invokeListeners(listeners2, path) {
-      for (const l of Array.from(listeners2)) {
-        try {
-          l(path);
-        } catch (e) {
-          logger7.error("Settings listener error:", e);
-        }
-      }
-    }
-    notifyListeners(path) {
-      this.invokeListeners(this.globalListeners, path);
-      const listeners2 = this.pathListeners.get(path);
-      if (listeners2)
-        this.invokeListeners(listeners2, path);
-      for (const [prefix, set] of Array.from(this.prefixListeners)) {
-        if (path.startsWith(prefix))
-          this.invokeListeners(set, path);
-      }
-      this.scheduleSave();
-    }
-    scheduleSave() {
-      if (this.saveTimer)
-        return;
-      this.saveTimer = setTimeout(() => {
-        this.saveTimer = null;
-        this.save();
-      }, SAVE_DEBOUNCE_MS);
-    }
-    save() {
-      try {
-        const json = JSON.stringify(this.plain);
-        if (typeof GM_setValue === "function") {
-          GM_setValue(STORAGE_KEY, json);
-        } else {
-          try {
-            localStorage.setItem(STORAGE_KEY, json);
-          } catch {}
-          idbSet(STORAGE_KEY, json).catch((e) => logger7.warn("Failed to save settings to IndexedDB:", e));
-        }
-      } catch (e) {
-        logger7.error("Failed to save settings:", e);
-      }
-    }
-    markAsChanged() {
-      this.notifyListeners("");
-    }
-    addGlobalChangeListener(listener) {
-      this.globalListeners.add(listener);
-    }
-    removeGlobalChangeListener(listener) {
-      this.globalListeners.delete(listener);
-    }
-    addToMap(map, key, listener) {
-      mapGetOrCreate(map, key, () => new Set).add(listener);
-    }
-    removeFromMap(map, key, listener) {
-      const set = map.get(key);
-      if (set) {
-        set.delete(listener);
-        if (!set.size)
-          map.delete(key);
-      }
-    }
-    addChangeListener(path, listener) {
-      this.addToMap(this.pathListeners, path, listener);
-    }
-    removeChangeListener(path, listener) {
-      this.removeFromMap(this.pathListeners, path, listener);
-    }
-    addPrefixChangeListener(prefix, listener) {
-      this.addToMap(this.prefixListeners, prefix, listener);
-    }
-    removePrefixChangeListener(prefix, listener) {
-      this.removeFromMap(this.prefixListeners, prefix, listener);
-    }
-  }
-
-  // src/api/Settings.ts
-  var logger8 = new Logger("Settings");
-  var DefaultSettings = {
-    plugins: {},
-    notifications: {
-      timeout: 5000,
-      position: "bottom-right"
-    }
-  };
-  var settings = {};
-  mergeDefaults(settings, DefaultSettings);
-  var SettingsStore3 = new SettingsStore2(settings);
-  var PlainSettings = settings;
-  var Settings = SettingsStore3.store;
-  var pluginPath = (name, key) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
-  async function initSettings() {
-    if (typeof GM_getValue === "function") {
-      try {
-        const raw2 = GM_getValue(STORAGE_KEY, null);
-        if (raw2) {
-          const parsed = JSON.parse(raw2);
-          if (isObject(parsed))
-            Object.assign(settings, parsed);
-        }
-      } catch (e) {
-        logger8.error("Failed to load settings:", e);
-      }
-      mergeDefaults(settings, DefaultSettings);
-      return;
-    }
-    let raw = null;
-    try {
-      raw = await idbGet(STORAGE_KEY) ?? null;
-    } catch (e) {
-      logger8.warn("Failed to read IndexedDB:", e);
-    }
-    if (!raw) {
-      raw = migrateFromLocalStorage();
-      if (raw)
-        idbSet(STORAGE_KEY, raw).then(() => {
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch {}
-        }).catch((e) => logger8.debug("Failed to persist settings to IndexedDB:", e));
-    }
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (isObject(parsed))
-          Object.assign(settings, parsed);
-      } catch (e) {
-        logger8.error("Failed to parse settings:", e);
-      }
-    }
-    mergeDefaults(settings, DefaultSettings);
-  }
-  function migrateFromLocalStorage() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        logger8.info("Migrating settings from localStorage to IndexedDB");
-        return raw;
-      }
-    } catch (e) {
-      logger8.warn("Failed to read localStorage:", e);
-    }
-    return null;
-  }
-  function migratePluginSettings(name, ...oldNames) {
-    const { plugins } = SettingsStore3.plain;
-    if (name in plugins)
-      return;
-    for (const oldName of oldNames) {
-      if (oldName in plugins) {
-        logger8.info(`Migrating settings from old name ${oldName} to ${name}`);
-        plugins[name] = plugins[oldName];
-        delete plugins[oldName];
-        SettingsStore3.markAsChanged();
-        break;
-      }
-    }
-  }
-  function migratePluginSetting(pluginName, newKey, oldKey) {
-    const pluginSettings = SettingsStore3.plain.plugins[pluginName];
-    if (!pluginSettings || !(oldKey in pluginSettings) || newKey in pluginSettings)
-      return;
-    logger8.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
-    pluginSettings[newKey] = pluginSettings[oldKey];
-    delete pluginSettings[oldKey];
-    SettingsStore3.markAsChanged();
-  }
-  function migrateSettingsToPlugin(targetPlugin, sourcePlugin, ...settingKeys) {
-    const source = SettingsStore3.plain.plugins[sourcePlugin];
-    if (!source)
-      return;
-    const target = SettingsStore3.plain.plugins[targetPlugin] ??= { enabled: false };
-    let changed = false;
-    for (const key of settingKeys) {
-      if (key in source && !(key in target)) {
-        target[key] = source[key];
-        delete source[key];
-        changed = true;
-      }
-    }
-    if (changed) {
-      logger8.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
-      SettingsStore3.markAsChanged();
-    }
-  }
-  function getSettingsPluginData() {
-    return Settings.plugins.Settings ?? {};
-  }
-  function updateSettingsPluginData(patch) {
-    Settings.plugins.Settings = { ...Settings.plugins.Settings ?? { enabled: true }, ...patch };
-  }
-  function mergePluginSettings(name, patch) {
-    Settings.plugins[name] = { ...Settings.plugins[name] ?? { enabled: false }, ...patch };
-  }
-  function resolveDefault(setting) {
-    if ("default" in setting)
-      return setting.default;
-    if (setting.type === 4 /* SELECT */)
-      return setting.options.find((o) => o.default)?.value;
-    return;
-  }
-  function definePluginSettings(def, checks) {
-    let _pluginName = "";
-    const definedSettings = {
-      get store() {
-        if (!_pluginName)
-          throw new Error("Cannot access settings before plugin is initialized");
-        return Settings.plugins[_pluginName];
-      },
-      get plain() {
-        if (!_pluginName)
-          throw new Error("Cannot access settings before plugin is initialized");
-        return PlainSettings.plugins[_pluginName];
-      },
-      def,
-      checks: checks ?? {},
-      get pluginName() {
-        return _pluginName;
-      },
-      set pluginName(name) {
-        _pluginName = name;
-        if (!name)
-          return;
-        if (!PlainSettings.plugins[name])
-          PlainSettings.plugins[name] = { enabled: false };
-        SettingsStore3.setDefaultGetter(pluginPath(name), (key) => {
-          const setting = def[key];
-          return setting ? resolveDefault(setting) : undefined;
-        });
-      },
-      use(keys) {
-        const forceUpdate = useForceUpdater();
-        useEffect(() => {
-          const prefix = pluginPath(_pluginName);
-          let listener = forceUpdate;
-          if (keys?.length) {
-            const watched = keys.map((k) => `${prefix}.${String(k)}`);
-            listener = (path) => {
-              if (watched.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
-                forceUpdate();
-            };
-          }
-          SettingsStore3.addPrefixChangeListener(prefix, listener);
-          return () => SettingsStore3.removePrefixChangeListener(prefix, listener);
-        }, []);
-        return definedSettings.store;
-      },
-      withPrivateSettings() {
-        return this;
-      }
-    };
-    return definedSettings;
-  }
-
   // src/api/PluginManager.ts
-  var logger9 = new Logger("PluginManager", "#b4befe");
+  var logger11 = new Logger("PluginManager", "#b4befe");
   var plugins = {};
   var pluginUnsubscribers = new Map;
   var initialized = false;
@@ -3257,7 +3520,7 @@ ${sourceUrl}`;
       try {
         unsub();
       } catch (e) {
-        logger9.error(`Unsub error in ${pluginName}:`, e);
+        logger11.error(`Unsub error in ${pluginName}:`, e);
       }
     }
     pluginUnsubscribers.delete(pluginName);
@@ -3277,6 +3540,8 @@ ${sourceUrl}`;
     const plugin = plugins[pluginName];
     if (!plugin)
       return false;
+    if (plugin.chrome && !window.chrome)
+      return false;
     if (plugin.required || plugin.isDependency)
       return true;
     return Settings.plugins[pluginName]?.enabled ?? plugin.enabledByDefault ?? false;
@@ -3292,6 +3557,7 @@ ${sourceUrl}`;
     }
     const pluginPath2 = `Void.plugins[${JSON.stringify(pluginName)}]`;
     for (const replacement of patch.replacement) {
+      if (false) {}
       canonicalizeReplacement(replacement, pluginPath2);
     }
     patches.push(patch);
@@ -3302,13 +3568,13 @@ ${sourceUrl}`;
     for (const depName of plugin.dependencies) {
       const dep = plugins[depName];
       if (!dep) {
-        logger9.warn(`Missing dependency ${depName} for ${plugin.name}`);
+        logger11.warn(`Missing dependency ${depName} for ${plugin.name}`);
         return false;
       }
       if (dep.started)
         continue;
       if (visiting.has(depName)) {
-        logger9.error(`Circular dependency detected: ${plugin.name} -> ${depName}`);
+        logger11.error(`Circular dependency detected: ${plugin.name} -> ${depName}`);
         return false;
       }
       markAsEnabledDependency(dep);
@@ -3353,14 +3619,14 @@ ${sourceUrl}`;
       return true;
     try {
       if (!startDependenciesRecursive(plugin)) {
-        logger9.error(`Failed to start dependencies for ${plugin.name}`);
+        logger11.error(`Failed to start dependencies for ${plugin.name}`);
         return false;
       }
       ensureMethodsBound(plugin);
       if (plugin.managedStyle)
         enableStyle(plugin.managedStyle);
       if (!plugin.hidden && !silent)
-        logger9.info(`Starting plugin ${plugin.name}`);
+        logger11.info(`Starting plugin ${plugin.name}`);
       plugin.start?.();
       if (plugin.chatBarButton) {
         addChatBarButton(plugin.name, plugin.chatBarButton);
@@ -3384,7 +3650,7 @@ ${sourceUrl}`;
             try {
               sub.handler(current, prev);
             } catch (e) {
-              logger9.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
+              logger11.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
             }
           };
           const attach = (store2) => {
@@ -3403,7 +3669,7 @@ ${sourceUrl}`;
             if (resolved)
               attach(resolved);
             else
-              logger9.warn(`Store "${storeName}" resolved module missing hook for plugin ${plugin.name}`);
+              logger11.warn(`Store "${storeName}" resolved module missing hook for plugin ${plugin.name}`);
           });
           unsubs.push(() => {
             cancelled = true;
@@ -3420,7 +3686,7 @@ ${sourceUrl}`;
       plugin.started = true;
       return true;
     } catch (e) {
-      logger9.error(`Failed to start plugin ${plugin.name}:`, e);
+      logger11.error(`Failed to start plugin ${plugin.name}:`, e);
       if (plugin.managedStyle)
         disableStyle(plugin.managedStyle);
       removeChatBarButton(plugin.name);
@@ -3435,7 +3701,7 @@ ${sourceUrl}`;
     try {
       plugin.stop?.();
     } catch (e) {
-      logger9.error(`Error in ${plugin.name}.stop():`, e);
+      logger11.error(`Error in ${plugin.name}.stop():`, e);
     }
     runUnsubs(plugin.name);
     const tryCleanup = (fn) => {
@@ -3443,7 +3709,7 @@ ${sourceUrl}`;
         fn();
         return false;
       } catch (e) {
-        logger9.error(`Cleanup error in ${plugin.name}:`, e);
+        logger11.error(`Cleanup error in ${plugin.name}:`, e);
         return true;
       }
     };
@@ -3463,7 +3729,7 @@ ${sourceUrl}`;
     ].some(Boolean);
     plugin.started = false;
     if (failed)
-      logger9.error(`Plugin ${plugin.name} stopped with errors`);
+      logger11.error(`Plugin ${plugin.name} stopped with errors`);
     return !failed;
   }
   function startAllPlugins(target) {
@@ -3475,7 +3741,7 @@ ${sourceUrl}`;
       try {
         startPlugin(plugin);
       } catch (e) {
-        logger9.error(`Unexpected error starting ${name}:`, e);
+        logger11.error(`Unexpected error starting ${name}:`, e);
       }
     }
   }
@@ -3510,7 +3776,7 @@ ${sourceUrl}`;
     const stored = PlainSettings.plugins;
     const orphaned = Object.keys(stored).filter((name) => !plugins[name]);
     for (const name of orphaned) {
-      logger9.info(`Pruning settings for removed plugin: ${name}`);
+      logger11.info(`Pruning settings for removed plugin: ${name}`);
       delete stored[name];
     }
     if (orphaned.length)
@@ -3529,7 +3795,7 @@ ${sourceUrl}`;
       for (const d of plugin.dependencies ?? []) {
         const dep = plugins[d];
         if (!dep) {
-          logger9.warn(`Plugin ${name} has unresolved dependency ${d}`);
+          logger11.warn(`Plugin ${name} has unresolved dependency ${d}`);
           continue;
         }
         markAsEnabledDependency(dep);
@@ -3557,10 +3823,47 @@ ${sourceUrl}`;
               ;
           }
         } catch (e) {
-          logger9.error(`Failed to register patches for ${name}`, e);
+          logger11.error(`Failed to register patches for ${name}`, e);
         }
       }
     }
+  }
+  var RETRY_TIMEOUT_MS = 15000;
+  var RETRY_DEBOUNCE_MS = 200;
+  var getFailed = () => Object.values(plugins).filter((p) => !p.started && isPluginEnabled(p.name) && (p.startAt ?? "Init" /* Init */) === "TurbopackReady" /* TurbopackReady */);
+  function retryFailedPlugins() {
+    if (!getFailed().length)
+      return;
+    let retryTimer = null;
+    const tryRetry = () => {
+      if (retryTimer)
+        clearTimeout(retryTimer);
+      retryTimer = setTimeout(() => {
+        retryTimer = null;
+        rescanRuntimeModules();
+        for (const p of getFailed())
+          startPlugin(p, true);
+        if (!getFailed().length) {
+          unsub();
+          clearTimeout(timeout);
+          logger11.info("All previously failed plugins started after late module load");
+        }
+      }, RETRY_DEBOUNCE_MS);
+    };
+    const unsub = onModuleLoad(tryRetry);
+    const timeout = setTimeout(() => {
+      unsub();
+      if (retryTimer)
+        clearTimeout(retryTimer);
+      rescanRuntimeModules();
+      const remaining = getFailed();
+      for (const p of remaining)
+        startPlugin(p, true);
+      const stillFailed = getFailed();
+      if (stillFailed.length) {
+        logger11.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+      }
+    }, RETRY_TIMEOUT_MS);
   }
 
   // src/api/StreamEvents.ts
@@ -3703,7 +4006,7 @@ ${sourceUrl}`;
 `);
 
   // src/api/Themes.ts
-  var logger10 = new Logger("Themes", "#c6a0f6");
+  var logger12 = new Logger("Themes", "#c6a0f6");
   function themeStyleId(url) {
     let hash = 0;
     for (let i = 0;i < url.length; i++) {
@@ -3793,7 +4096,7 @@ ${sourceUrl}`;
     };
     registerDisabledStyle(themeStyleId(url), css);
     setThemes([...getThemes(), theme]);
-    logger10.info(`Added theme "${theme.name}" from ${url}`);
+    logger12.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
   }
   function addLocalTheme(name, css) {
@@ -3814,7 +4117,7 @@ ${sourceUrl}`;
     };
     registerDisabledStyle(themeStyleId(id), css);
     setThemes([...getThemes(), theme]);
-    logger10.info(`Added local theme "${theme.name}"`);
+    logger12.info(`Added local theme "${theme.name}"`);
     return theme;
   }
   function updateLocalTheme(url, data) {
@@ -3861,14 +4164,14 @@ ${sourceUrl}`;
     try {
       const resp = await fetchExternal(url);
       if (!resp.ok) {
-        logger10.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+        logger12.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
         return;
       }
       if (!isThemeStillActive(url))
         return;
       css = await resp.text();
     } catch (e) {
-      logger10.warn("Failed to fetch theme CSS:", url, e);
+      logger12.warn("Failed to fetch theme CSS:", url, e);
       return;
     }
     if (!isThemeStillActive(url))
@@ -3900,7 +4203,7 @@ ${sourceUrl}`;
     }));
     for (const [i, result] of results.entries()) {
       if (result.status === "rejected") {
-        logger10.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
+        logger12.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
       }
     }
   }
@@ -5026,14 +5329,14 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/ThemeCard.tsx
-  var logger11 = new Logger("ThemeCard");
+  var logger13 = new Logger("ThemeCard");
   var cl9 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, onRemove, onToggle, onEdit }) {
     const handleToggle = () => {
       if (theme.enabled)
         disableTheme(theme.url);
       else
-        enableTheme(theme.url).catch((e) => logger11.error("Failed to enable theme:", e));
+        enableTheme(theme.url).catch((e) => logger13.error("Failed to enable theme:", e));
       onToggle();
     };
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
@@ -5049,7 +5352,7 @@ ${sourceUrl}`;
         icon: CopyIcon,
         label: "Copy URL",
         onClick: () => {
-          copyToClipboard(theme.url).catch((e) => logger11.error("Failed to copy URL:", e));
+          copyToClipboard(theme.url).catch((e) => logger13.error("Failed to copy URL:", e));
         }
       }), /* @__PURE__ */ React.createElement(IconButton, {
         icon: Trash2Icon,
@@ -5363,10 +5666,10 @@ ${sourceUrl}`;
     [4 /* WARNING */]: "warning",
     [5 /* LOADING */]: "loading"
   };
-  var logger12 = new Logger("Notifications");
+  var logger14 = new Logger("Notifications");
   function showToast(message, type = 0 /* MESSAGE */, options) {
     if (!Toaster.toast) {
-      logger12.warn("showToast called before Toaster initialized, discarding:", message);
+      logger14.warn("showToast called before Toaster initialized, discarding:", message);
       return -1;
     }
     const { toast } = Toaster;
@@ -5675,7 +5978,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/_core/settings/index.tsx
-  var logger13 = new Logger("Settings");
+  var logger15 = new Logger("Settings");
   var MoonIcon = findExportedComponentLazy("MoonIcon");
   var cl12 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
@@ -5722,9 +6025,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"0e5a141"}`
-    }, `(${"0e5a141"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.7"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"0290ee2"}`
+    }, `(${"0290ee2"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5773,13 +6076,14 @@ ${sourceUrl}`;
       }), t.name);
     })));
   }
+  var WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
   var settings_default = definePlugin({
     name: "Settings",
     description: "Adds Void settings UI.",
     authors: [Devs.Prism],
     required: true,
     settings: settings3,
-    _VoidMenu: ErrorBoundary.wrap(VoidMenu),
+    _renderVoidMenu: () => createElement(WrappedVoidMenu),
     _setTitle(title) {
       setSettingsPrimitive("SettingsTitle", title);
     },
@@ -5812,9 +6116,9 @@ ${sourceUrl}`;
         else
           document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
       } catch (e) {
-        logger13.error("Failed to load saved CSS:", e);
+        logger15.error("Failed to load saved CSS:", e);
       }
-      loadSavedThemes().catch((e) => logger13.error("Failed to load saved themes:", e));
+      loadSavedThemes().catch((e) => logger15.error("Failed to load saved themes:", e));
     },
     patches: [
       {
@@ -5822,7 +6126,7 @@ ${sourceUrl}`;
         all: true,
         replacement: {
           match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{children:\[.{0,100}"user-dropdown\.help"/,
-          replace: "(0,$1.jsx)($self._VoidMenu,{}),$&"
+          replace: "$self._renderVoidMenu(),$&"
         }
       },
       {
@@ -5846,7 +6150,7 @@ ${sourceUrl}`;
             replace: "$self._setTitle($1);$&"
           },
           {
-            match: /function (\i)\(\i\)\{let \i,\i=\(0,\i\.c\)\(\d\),\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
+            match: /function (\i)\(\i\)\{let \i,\i=\c,\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
             replace: "$self._setDescription($1);$&"
           },
           {
@@ -5981,8 +6285,8 @@ ${sourceUrl}`;
             replace: "$&VoidMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},"
           },
           {
-            match: /(\i)&&\(0,\i\.jsxs?\)\(\i,\{onSelect:\(\)=>\1\(\),(?=.{0,80}TrashIcon)/,
-            replace: '$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$&'
+            match: /=(\i)&&(\jsx{\i}\{onSelect:\(\)=>\1\(\),)(?=.{0,80}TrashIcon)/,
+            replace: '=$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$1&&$2'
           }
         ]
       },
@@ -5998,7 +6302,7 @@ ${sourceUrl}`;
         find: '"user-dropdown.upgrade","Upgrade plan"',
         all: true,
         replacement: {
-          match: /(\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{)(?=[^}]{0,60}SignOutIcon)/,
+          match: /(\jsx{\i\.DropdownMenuItem}\{)(?=[^}]{0,60}SignOutIcon)/,
           replace: '$self.renderItems("user"),$1'
         }
       }
@@ -6025,7 +6329,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/autoRetry/index.ts
-  var logger14 = new Logger("AutoRetry");
+  var logger16 = new Logger("AutoRetry");
   var CONTENT_MODERATED = "grok:content-moderated";
   var settings4 = definePluginSettings({
     retryModeration: {
@@ -6076,7 +6380,7 @@ ${sourceUrl}`;
     retryCounts.set(conversationId, count);
     const delaySec = settings4.store.delay ?? 2;
     showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger14.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    logger16.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
     clearPending();
     pendingTimer = setTimeout(() => {
       pendingTimer = null;
@@ -6130,14 +6434,14 @@ ${sourceUrl}`;
   });
 
   // src/plugins/betterFiles/index.tsx
-  var logger15 = new Logger("BetterFiles");
+  var logger17 = new Logger("BetterFiles");
   var cl13 = classNameFactory("void-bf-");
   var selection = createSelectionStore();
   async function deleteSelected() {
     const ids = selection.all();
     selection.clear();
     const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
-    await Promise.allSettled(ids.map((id) => deleteAsset(id).catch((e) => logger15.error("Failed to delete asset", id, e))));
+    await Promise.allSettled(ids.map((id) => deleteAsset(id).catch((e) => logger17.error("Failed to delete asset", id, e))));
   }
   function DeleteAllButton() {
     const [open2, setOpen] = useState(false);
@@ -6151,7 +6455,7 @@ ${sourceUrl}`;
         try {
           await deleteAsset(id);
         } catch (e) {
-          logger15.error("Failed to delete asset", id, e);
+          logger17.error("Failed to delete asset", id, e);
         }
       }
     };
@@ -6324,7 +6628,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/betterImagine/index.tsx
-  var logger16 = new Logger("BetterImagine");
+  var logger18 = new Logger("BetterImagine");
   var cl14 = classNameFactory("void-imagine-");
   var settings5 = definePluginSettings({
     hideDefaultPreviews: {
@@ -6576,7 +6880,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           return;
         video.pause();
         video.currentTime = 0;
-      }).catch((e) => logger16.warn("Failed to pause video:", e));
+      }).catch((e) => logger18.warn("Failed to pause video:", e));
     } else {
       video.pause();
       video.currentTime = 0;
@@ -6585,7 +6889,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var onMouseEnter = (e) => {
     const video = e.currentTarget.querySelector("video");
     if (video)
-      pending.set(video, video.play().catch((e2) => logger16.error("Failed to play video", e2)));
+      pending.set(video, video.play().catch((e2) => logger18.error("Failed to play video", e2)));
   };
   var onMouseLeave = (e) => {
     const video = e.currentTarget.querySelector("video");
@@ -6635,7 +6939,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `));
       Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
     } catch (e) {
-      logger16.error(`Failed to copy ${label}s`, e);
+      logger18.error(`Failed to copy ${label}s`, e);
       Toaster.toast.error(`Failed to copy ${label}s.`);
     }
   }
@@ -6680,7 +6984,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           await state.upscaleVideo(id, video.id);
           upscaled++;
         } catch (e) {
-          logger16.error("Failed to upscale video:", id, video.id, e);
+          logger18.error("Failed to upscale video:", id, video.id, e);
         }
       }
     }
@@ -6918,8 +7222,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         group: true,
         replacement: [
           {
-            match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[/,
-            replace: '(0,$1.jsxs)($2.DropdownMenuContent,{align:"end",sideOffset:8,children:[$self._renderUpscaleItem(),$self._renderCopyActions(),'
+            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
+            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
           },
           {
             match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
@@ -7191,7 +7495,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
 
   // src/plugins/betterSidebar/index.tsx
-  var logger17 = new Logger("BetterSidebar");
+  var logger19 = new Logger("BetterSidebar");
   var cl16 = classNameFactory("void-sidebar-");
   var bdCl = classNameFactory("void-bd-");
   var settings7 = definePluginSettings({
@@ -7256,7 +7560,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
     }
     const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger17.error("Failed to delete", id, e))));
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger19.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
     const enabled = settings7.use(["batchSelect"]).batchSelect;
@@ -7275,6 +7579,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       className: bdCl("checkbox")
     }));
   }
+  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
   function ActionBar() {
     const count = useSelectionSize(selection2);
     const [open2, setOpen] = useState(false);
@@ -7313,8 +7618,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     settings: settings7,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
+    _wrapCheckbox(item, id, route) {
+      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
+    },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
         if (id && settings7.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
@@ -7381,8 +7688,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         group: true,
         replacement: [
           {
-            match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,.{0,80}?validationErrorMessage:\i\}\))/,
-            replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id,route:arguments[0].route}),$1]})"
+            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,.{0,80}?validationErrorMessage:\i\}\))/,
+            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
           },
           {
             match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
@@ -7453,8 +7760,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         find: '"user-dropdown.upgrade","Upgrade plan"',
         all: true,
         replacement: {
-          match: /(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
-          replace: "$self.settings.store.hideUpgradePlan||$1"
+          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          replace: ",$self.settings.store.hideUpgradePlan||$1"
         }
       },
       {
@@ -7513,8 +7820,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
             replace: "$&$self.settings.store.hideModelUpsell||"
           },
           {
-            match: /(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
-            replace: "($self.settings.store.hideInaccessibleModels?[]:$1)$2"
+            match: /,(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
+            replace: ",($self.settings.store.hideInaccessibleModels?[]:$1)$2"
           }
         ]
       }
@@ -7528,7 +7835,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/cloneChats/index.tsx
-  var logger18 = new Logger("CloneChats");
+  var logger20 = new Logger("CloneChats");
   async function cloneChat(conversationId) {
     const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
     if (!lastResponseId)
@@ -7551,7 +7858,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
     return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger18.error("Failed to clone chat:", e)),
+      onSelect: () => cloneChat(conversationId).catch((e) => logger20.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
@@ -7940,7 +8247,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     },
     patches: [
       {
-        find: ["sendFinalMetadata", "customInstructions"],
+        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
         all: true,
         replacement: {
           match: /customInstructions:(\i)\.customInstructions/g,
@@ -7958,7 +8265,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 
   // src/plugins/downloadTTS/index.tsx
   var cl18 = classNameFactory("void-download-tts-");
-  var logger19 = new Logger("DownloadTTS");
+  var logger21 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -7978,7 +8285,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger19.error("Failed to download TTS audio:", e);
+        logger21.error("Failed to download TTS audio:", e);
       }
     });
     return /* @__PURE__ */ React.createElement(Button, {
@@ -8017,7 +8324,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger20 = new Logger("ExportChat");
+  var logger22 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -8188,7 +8495,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       className: "void-export-icon"
     }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger20.error("Failed to export chat", e))
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger22.error("Failed to export chat", e))
     }, label))));
   }
   var exportChat_default = definePlugin({
@@ -8309,117 +8616,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // src/utils/editor.ts
-  function getEditor() {
-    return document.querySelector(".ProseMirror")?.editor ?? null;
-  }
-  function getEditorText() {
-    return document.querySelector(".ProseMirror")?.textContent?.trim() ?? "";
-  }
-
-  // src/plugins/promptEnhancer/index.tsx
-  var logger21 = new Logger("PromptEnhancer");
-  var PLUGIN_NAME = "PromptEnhancer";
-  var DEFAULT_INSTRUCTIONS = "Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler.";
-  var settings11 = definePluginSettings({
-    customInstructions: {
-      type: 0 /* STRING */,
-      description: "Custom instructions for how Grok should enhance your prompts.",
-      default: DEFAULT_INSTRUCTIONS,
-      multiline: true
-    }
-  });
-  function buildSystemPrompt() {
-    const instructions = settings11.store.customInstructions?.trim() || DEFAULT_INSTRUCTIONS;
-    return `${instructions} Do NOT add any preamble, commentary, labels, or quotes. Output ONLY the rewritten prompt text and absolutely nothing else.
-
-Original prompt:
-`;
-  }
-  function updateButton(loading) {
-    addChatBarButton(PLUGIN_NAME, {
-      icon: () => loading ? createElement(Spinner, { size: "xs" }) : WandSparklesIcon({ size: 18 }),
-      tooltip: "Enhance prompt",
-      onClick: enhance
-    });
-  }
-  var _enhancing = false;
-  async function enhance() {
-    if (_enhancing)
-      return;
-    const originalText = getEditorText();
-    if (!originalText) {
-      Toaster.toast.error("Type a prompt first.");
-      return;
-    }
-    _enhancing = true;
-    updateButton(true);
-    try {
-      const response = await ApiClients.chatApi.request({
-        path: "/rest/app-chat/conversations/new",
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: {
-          message: buildSystemPrompt() + originalText,
-          temporary: true,
-          disableSearch: true,
-          disableMemory: true,
-          forceConcise: true
-        }
-      });
-      const text = await response.text();
-      const lines = text.split(`
-`).filter((l) => l.trim());
-      let convId = "";
-      let message = "";
-      for (const line of lines) {
-        try {
-          const obj = JSON.parse(line);
-          if (obj.result?.conversation?.conversationId)
-            convId = obj.result.conversation.conversationId;
-          if (obj.result?.response?.token)
-            message += obj.result.response.token;
-        } catch {
-          continue;
-        }
-      }
-      const improved = message.trim();
-      if (convId) {
-        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger21.warn("Failed to delete throwaway conversation:", e));
-      }
-      const editor = getEditor();
-      if (!editor) {
-        Toaster.toast.error("Editor not found.");
-        return;
-      }
-      editor.commands.setContent(improved ?? originalText);
-      editor.commands.focus();
-      if (improved)
-        Toaster.toast.success("Prompt enhanced!");
-      else
-        Toaster.toast.error("Got empty response, restored original.");
-    } catch (err) {
-      Toaster.toast.error(`Enhancement failed: ${errorMessage(err)}`);
-    } finally {
-      _enhancing = false;
-      updateButton(false);
-    }
-  }
-  var promptEnhancer_default = definePlugin({
-    name: PLUGIN_NAME,
-    description: "Enhance and rewrite your prompts with one click.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings11,
-    chatBarButton: {
-      icon: () => WandSparklesIcon({ size: 18 }),
-      tooltip: "Enhance prompt",
-      onClick: enhance,
-      order: 100,
-      className: "text-fg-primary"
-    }
-  });
-
   // void-css:D:/Projects/Void/src/plugins/rateLimitDisplay/styles.css
   registerStyle("rateLimitDisplay", `/*
  * Void, a modification for grok.com
@@ -8484,10 +8680,10 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
-  var logger22 = new Logger("RateLimitDisplay");
+  var logger23 = new Logger("RateLimitDisplay");
   var cl19 = classNameFactory("void-rld-");
   var UsageProgressIcon = findExportedComponentLazy("UsageProgressIcon");
-  var settings12 = definePluginSettings({
+  var settings11 = definePluginSettings({
     hideTotal: {
       type: 3 /* BOOLEAN */,
       description: "Show only remaining queries instead of remaining/total.",
@@ -8517,7 +8713,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
     } catch (e) {
-      logger22.warn("Failed to fetch rate limits for", mode, e);
+      logger23.warn("Failed to fetch rate limits for", mode, e);
       return null;
     }
   }
@@ -8606,7 +8802,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   }
   function ButtonLabel({ mode }) {
     useExternalStore(store3);
-    const { hideTotal } = settings12.use(["hideTotal"]);
+    const { hideTotal } = settings11.use(["hideTotal"]);
     if (mode === "auto") {
       const { expert, fast } = limits;
       if (!expert && !fast)
@@ -8648,7 +8844,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, formatCountdown(left));
   }
   function ModeRow({ mode, data, active }) {
-    const { hideTotal } = settings12.use(["hideTotal"]);
+    const { hideTotal } = settings11.use(["hideTotal"]);
     const limited = data != null && data.remainingQueries === 0;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
@@ -8749,7 +8945,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     description: "Shows rate limit usage for the current model mode in the chat bar.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings12,
+    settings: settings11,
     chatBarButton: {
       icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
       tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
@@ -8783,7 +8979,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   });
 
   // src/plugins/responseNotification/index.ts
-  var settings13 = definePluginSettings({
+  var settings12 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -8832,7 +9028,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings13.store.soundUrl?.trim();
+    const url = settings12.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -8845,11 +9041,11 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings13.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings12.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings13.store.sound)
+    if (settings12.store.sound)
       playSound();
-    if (settings13.store.browserNotification)
+    if (settings12.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -8857,7 +9053,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings13,
+    settings: settings12,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -8905,7 +9101,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorPicker2() {
-    const { starColor } = settings14.use(["starColor"]);
+    const { starColor } = settings13.use(["starColor"]);
     const value = starColor ?? DEFAULT_COLOR;
     return /* @__PURE__ */ React.createElement(SettingsRow, {
       action: /* @__PURE__ */ React.createElement(Flex, {
@@ -8916,7 +9112,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
         className: cl20("picker"),
         value,
         onChange: (e) => {
-          settings14.store.starColor = e.target.value;
+          settings13.store.starColor = e.target.value;
         }
       }), /* @__PURE__ */ React.createElement(Text, {
         size: "sm",
@@ -8928,7 +9124,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Star color"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Color of the twinkling stars.")));
   }
   function StarryBackground() {
-    const { starColor } = settings14.use(["starColor"]);
+    const { starColor } = settings13.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -8937,7 +9133,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings14 = definePluginSettings({
+  var settings13 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       component: ColorPicker2
@@ -8947,7 +9143,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     name: "Starry",
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
-    settings: settings14,
+    settings: settings13,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -8963,7 +9159,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       }
     ],
     start() {
-      settings14.store.starColor ??= DEFAULT_COLOR;
+      settings13.store.starColor ??= DEFAULT_COLOR;
     }
   });
 
@@ -9074,7 +9270,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings15 = definePluginSettings({
+  var settings14 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -9119,14 +9315,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings15.store[key]);
+      classList.toggle(cls, !!settings14.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings14,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -9139,7 +9335,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME2 = "widerChat";
-  var settings16 = definePluginSettings({
+  var settings15 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem (default: 48).",
@@ -9147,14 +9343,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
   function applyWidth() {
-    const w = settings16.store.width ?? 64;
+    const w = settings15.store.width ?? 64;
     registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
-    settings: settings16,
+    settings: settings15,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
@@ -9165,7 +9361,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [promptEnhancer_default.name]: promptEnhancer_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [responseNotification_default.name]: responseNotification_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [widerChat_default.name]: widerChat_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [responseNotification_default.name]: responseNotification_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [widerChat_default.name]: widerChat_default };
   // void-css:D:/Projects/Void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
@@ -9444,16 +9640,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger23 = new Logger("TurbopackPatcher", "#e78284");
+  var logger24 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
-  var RETRY_TIMEOUT_MS = 15000;
-  var RETRY_DEBOUNCE_MS = 200;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger23.error(`${name} failed:`, e);
+      logger24.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -9463,41 +9657,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       reportOrphanedPatches();
       reportFailedFinders();
     }, ORPHAN_REPORT_DELAY_MS);
-  }
-  function retryFailedPlugins() {
-    const getFailed = () => Object.values(plugins).filter((p) => !p.started && isPluginEnabled(p.name) && (p.startAt ?? "Init" /* Init */) === "TurbopackReady" /* TurbopackReady */);
-    if (!getFailed().length)
-      return;
-    let retryTimer = null;
-    const tryRetry = () => {
-      if (retryTimer)
-        clearTimeout(retryTimer);
-      retryTimer = setTimeout(() => {
-        retryTimer = null;
-        rescanRuntimeModules();
-        for (const p of getFailed())
-          startPlugin(p, true);
-        if (!getFailed().length) {
-          unsub();
-          clearTimeout(timeout);
-          logger23.info("All previously failed plugins started after late module load");
-        }
-      }, RETRY_DEBOUNCE_MS);
-    };
-    const unsub = onModuleLoad(tryRetry);
-    const timeout = setTimeout(() => {
-      unsub();
-      if (retryTimer)
-        clearTimeout(retryTimer);
-      rescanRuntimeModules();
-      const remaining = getFailed();
-      for (const p of remaining)
-        startPlugin(p, true);
-      const stillFailed = getFailed();
-      if (stillFailed.length) {
-        logger23.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
-      }
-    }, RETRY_TIMEOUT_MS);
   }
   function waitForModulesStable() {
     const fire = onlyOnce(() => {
@@ -9509,9 +9668,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger23.info(`${getModuleCache().size} modules loaded, ready`);
+      logger24.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
+      safely("checkBuildFingerprint", checkBuildFingerprint);
     });
     const cancelWaitFor = waitFor(filters.byProps("useRoutingStore", "formatUrl"), fire);
     const fallbackTimer = setTimeout(fire, FALLBACK_MS);

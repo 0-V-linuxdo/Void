@@ -646,8 +646,8 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[/,
-                    replace: '(0,$1.jsxs)($2.DropdownMenuContent,{align:"end",sideOffset:8,children:[$self._renderUpscaleItem(),$self._renderCopyActions(),',
+                    match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
+                    replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),",
                 },
                 {
                     match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,

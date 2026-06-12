@@ -29,7 +29,7 @@ export interface ReplacementSpec {
 }
 
 export type FinderKind =
-    | "byProps" | "byCode" | "byDisplayName" | "byStoreName" | "componentByCode"
+    | "byProps" | "byCode" | "byDisplayName" | "byStoreName" | "byEventName" | "componentByCode"
     | "exportedComponent" | "cssClasses" | "bulk" | "mapMangled" | "unknown";
 
 export interface FinderSpec {
@@ -55,7 +55,8 @@ const FINDER_CALLS: Record<string, FinderKind> = {
     findByDisplayNameLazy: "byDisplayName",
     findStore: "byStoreName",
     findStoreLazy: "byStoreName",
-    findByStoreName: "byStoreName",
+    findByEventName: "byEventName",
+    findByEventNameLazy: "byEventName",
     findComponentByCode: "componentByCode",
     findComponentByCodeLazy: "componentByCode",
     findExportedComponent: "exportedComponent",
@@ -75,7 +76,7 @@ const FILTER_CALLS: Record<string, FinderKind> = {
     componentByCode: "componentByCode",
 };
 
-const FINDER_CALL_RE = /(?:\b|\.)(findByProps(?:Lazy)?|findByCode(?:Lazy)?|findByDisplayName(?:Lazy)?|findStore(?:Lazy)?|findByStoreName|findComponentByCode(?:Lazy)?|findExportedComponent(?:Lazy)?|findCssClasses(?:Lazy)?|findBulk|mapMangledModule(?:Lazy)?)\s*\(/g;
+const FINDER_CALL_RE = /(?:\b|\.)(findByProps(?:Lazy)?|findByCode(?:Lazy)?|findByDisplayName(?:Lazy)?|findStore(?:Lazy)?|findByEventName(?:Lazy)?|findComponentByCode(?:Lazy)?|findExportedComponent(?:Lazy)?|findCssClasses(?:Lazy)?|findBulk|mapMangledModule(?:Lazy)?)\s*\(/g;
 const FILTER_CALL_RE = /\bfilters\.(byProps|byCode|byDisplayName|byStoreName|componentByCode)\s*\(/g;
 const FINDER_DETECT_RE = /find(?:By|Store|Exported|Component|Css|Bulk|ModuleFactory)|mapMangledModule|filters\.|waitFor\b/;
 const WRAPPED_BY_RE = /\b(find(?:All|Lazy)?|waitFor|findBulk)\s*\($/;

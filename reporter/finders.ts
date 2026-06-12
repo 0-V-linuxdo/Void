@@ -27,6 +27,7 @@ const HELP: Partial<Record<FinderSpec["kind"], string>> = {
     byProps: "No module exports every prop. Check each literal in chunks or drop renamed ones.",
     exportedComponent: "No module exports every prop. Check each literal in chunks or drop renamed ones.",
     byStoreName: "No `use<Name>Store` found. Store got renamed or split.",
+    byEventName: "No `logEventGlobal` call with this event name. Event got renamed or inlined.",
     byDisplayName: "No React component has this displayName. Production usually strips it. Use byCode or byProps.",
     byCode: "No module contains every code pattern. Widen with `\\i` or `.{0,N}` gaps.",
     componentByCode: "No module contains every code pattern. Widen with `\\i` or `.{0,N}` gaps.",
@@ -84,19 +85,24 @@ function moduleMatchesFinder(finder: FinderSpec, mod: ModuleEntry): boolean {
                 if (a.kind === "identifier" || a.kind === "unknown") return true;
                 if (a.kind !== "string" || !a.value) return false;
                 const n = a.value;
-                return mod.factory.includes(`"${n}",()=>`)
-                    || mod.factory.includes(`"${n}",function`)
-                    || mod.factory.includes(`"${n}",0,`)
+                return mod.factory.includes(`"${n}",0,`)
+                    || mod.factory.includes(`"${n}",()=>`)
+                    || mod.factory.includes(`'${n}',0,`)
+                    || mod.factory.includes(`'${n}',()=>`)
                     || mod.factory.includes(`.${n}=`)
-                    || mod.factory.includes(`${n}:function`);
+                    || mod.factory.includes(`${n}:function(){return `);
             });
         case "byDisplayName":
             return finder.args.some(a => a.kind === "string" && a.value && mod.factory.includes(`displayName:"${a.value}"`));
         case "byStoreName": {
             const a = finder.args[0];
             if (a?.kind !== "string" || !a.value) return false;
-            const canonical = a.value.startsWith("use") ? a.value : `use${a.value}Store`;
+            const canonical = a.value.startsWith("use") ? a.value : a.value.endsWith("Store") ? `use${a.value}` : `use${a.value}Store`;
             return mod.factory.includes(`"${canonical}"`) || mod.factory.includes(canonical + "=");
+        }
+        case "byEventName": {
+            const a = finder.args[0];
+            return a?.kind === "string" && !!a.value && mod.factory.includes(`logEventGlobal)("${a.value}"`);
         }
         case "byCode":
         case "componentByCode":

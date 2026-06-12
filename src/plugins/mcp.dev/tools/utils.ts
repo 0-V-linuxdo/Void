@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { getModuleCache, getRuntimeFactoryRegistry, patchStats } from "@turbopack/patchTurbopack";
+import { patchStats } from "@turbopack/patchReport";
+import { getModuleCache, getRuntimeFactoryRegistry } from "@turbopack/patchTurbopack";
 import { type PatchedModuleFactory, SYM_PATCHED_BY, SYM_PATCHED_CODE } from "@turbopack/types";
 
 import { EVAL, MODULE, SERIALIZE } from "./constants";

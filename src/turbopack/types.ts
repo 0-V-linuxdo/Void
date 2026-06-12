@@ -53,6 +53,8 @@ export interface TurbopackHelpers {
      * @example `e.s(["Button", 0, () => Button, "ButtonGroup", 0, () => ButtonGroup], 12345)`
      */
     s(exports: unknown[], moduleId?: number): void;
+    /** Path-prefixed export value. Defines a single export named `${path}${suffix}` on the current module. */
+    q(path: string, value: unknown): void;
     /**
      * Define CJS exports via a Proxy-based merge. Supports re-exports by merging the source
      * objects properties onto the current modules exports through a Proxy getter.
