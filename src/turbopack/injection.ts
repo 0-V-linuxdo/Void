@@ -20,6 +20,7 @@ interface ExportInjection {
 const exportInjections: ExportInjection[] = [];
 const injectionsById = new Map<number, InjectedExports | null>();
 export const injectionProxies = new Map<number, object>();
+const injectionTargets = new Map<number, Record<string, unknown>>();
 let injectionSeamInstalled = false;
 
 let moduleCache!: Map<number, any>;
@@ -31,9 +32,22 @@ export function setInjectionContext(cache: Map<number, any>, registry: () => Map
 }
 
 export function injectExports(find: string | RegExp, exports: InjectedExports): void {
-    exportInjections.push({ find: canonicalizeMatch(find), exports });
+    const injection = { find: canonicalizeMatch(find), exports };
+    exportInjections.push(injection);
     injectionsById.clear();
-    injectionProxies.clear();
+
+    const registry = getRuntimeFactoryRegistry();
+    if (!registry || !moduleCache) return;
+    for (const [id, factory] of registry) {
+        if (!matchesPattern(getFnSource(factory), injection.find)) continue;
+        const cached = moduleCache.get(id);
+        if (cached == null) continue;
+        const ns = injectionTargets.get(id) ?? cached;
+        injectionProxies.delete(id);
+        injectionTargets.delete(id);
+        const injected = resolveInjections(id);
+        moduleCache.set(id, injected ? proxyWithInjections(ns, id, injected) : ns);
+    }
 }
 
 export function resolveInjections(id: number): InjectedExports | null {
@@ -72,6 +86,7 @@ export function proxyWithInjections(ns: Record<string, unknown>, id: number, inj
         },
     });
     injectionProxies.set(id, proxy);
+    injectionTargets.set(id, ns);
     return proxy;
 }
 
