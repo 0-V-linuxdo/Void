@@ -8,37 +8,45 @@ export type LogLevel = "log" | "error" | "warn" | "info" | "debug";
 
 const isBrowser = typeof window !== "undefined";
 
-const ANSI = {
-    reset: "\x1b[0m",
-    bold: "\x1b[1m",
-    green: "\x1b[32m",
-    red: "\x1b[31m",
-    yellow: "\x1b[33m",
-} as const;
+const CAP_GRADIENT: Record<LogLevel, string> = {
+    log: "linear-gradient(135deg,#b4befe,#cba6f7)",
+    info: "linear-gradient(135deg,#89b4fa,#74c7ec)",
+    warn: "linear-gradient(135deg,#f9e2af,#fab387)",
+    error: "linear-gradient(135deg,#f38ba8,#eba0ac)",
+    debug: "linear-gradient(135deg,#6c7086,#9399b2)",
+};
 
-const LEVEL_ANSI: Record<string, string> = { error: ANSI.red, warn: ANSI.yellow };
+const LEVEL_ANSI: Record<LogLevel, string> = {
+    log: "\x1b[32m",
+    info: "\x1b[34m",
+    warn: "\x1b[33m",
+    error: "\x1b[31m",
+    debug: "\x1b[90m",
+};
+
+const CAP = "color:#11111b;font-weight:700;padding:2px 7px;border-radius:7px 0 0 7px;";
+const BODY = "background:#1e1e2e;font-weight:600;padding:2px 8px;border-radius:0 7px 7px 0;";
 
 export class Logger {
     constructor(
         public name: string,
-        public color = "white",
+        public color = "#cdd6f4",
     ) {}
 
     private _log(level: LogLevel, args: unknown[]) {
         if (isBrowser) {
-            console[level](
-                `%c Void %c %c ${this.name} `,
-                "background: white; color: black; font-weight: bold; border-radius: 5px;",
+            const sink = level === "debug" ? console.debug : console.log;
+            sink(
+                `%cVoid%c${this.name}%c`,
+                `${CAP}background:${CAP_GRADIENT[level]};`,
+                `${BODY}color:${this.color};`,
                 "",
-                `background: ${this.color}; color: black; font-weight: bold; border-radius: 5px;`,
                 ...args,
             );
             return;
         }
 
-        const levelAnsi = LEVEL_ANSI[level] ?? ANSI.green;
-        const prefix = `${ANSI.bold}${levelAnsi}[${this.name}]${ANSI.reset}`;
-        console[level](prefix, ...args);
+        console[level](`${LEVEL_ANSI[level]}\x1b[1m${this.name}\x1b[0m`, ...args);
     }
 
     public log(...args: unknown[]) { this._log("log", args); }
