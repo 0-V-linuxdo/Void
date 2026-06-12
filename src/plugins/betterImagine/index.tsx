@@ -620,8 +620,8 @@ export default definePlugin({
         {
             find: 'imagine-folder.all","All"',
             replacement: {
-                match: /("imagine-folder\.all","All".{0,300}?,children:\[\i,\i,\i)\]/,
-                replace: "$1,$self._renderFilterButtons({})]",
+                match: /"imagine-folder\.all","All"\)\}\)(?=\]\}\)\]\}\),\i&&)/,
+                replace: "$&,$self._renderFilterButtons({})",
             },
         },
         {

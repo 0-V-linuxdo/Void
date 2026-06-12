@@ -13,6 +13,7 @@ import { ErrorBoundary, Flex, Text } from "@components";
 import { BracesIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, ThemesTab } from "@components/settings/tabs";
 import { hasVisibleSettings } from "@components/settings/utils";
+import type { SettingsDescriptionProps, SettingsRowProps, SettingsTitleProps } from "@grok-types";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import {
     DropdownMenuItem,
@@ -21,6 +22,7 @@ import {
     DropdownMenuSubTrigger,
 } from "@turbopack/common/components";
 import { React } from "@turbopack/common/react";
+import { setSettingsPrimitive } from "@turbopack/common/settingsPrimitives";
 import { SettingsDialogStore } from "@turbopack/common/stores";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
@@ -171,6 +173,18 @@ export default definePlugin({
 
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
 
+    _setTitle(title: ComponentType<SettingsTitleProps>) {
+        setSettingsPrimitive("SettingsTitle", title);
+    },
+
+    _setDescription(description: ComponentType<SettingsDescriptionProps>) {
+        setSettingsPrimitive("SettingsDescription", description);
+    },
+
+    _setRow(row: ComponentType<SettingsRowProps>) {
+        setSettingsPrimitive("SettingsRow", row);
+    },
+
     _tabEntries() {
         return getVisibleTabs().map(t => ({
             id: t.id,
@@ -216,6 +230,23 @@ export default definePlugin({
                 {
                     match: /children:(\i\.map\(\i=>\(0,\i\.jsx\)\(\i,\{enterprise:\i\.enterprise,children:.{0,160}?\},\i\.id\)\))\}\)/,
                     replace: "children:[...$1,$self._renderVersion()]})",
+                },
+            ],
+        },
+        {
+            find: /,\{children:\i,action:\i,hidden:\i,className:\i\}=\i,\i=\(0,\i\.useId\)\(\)/,
+            replacement: [
+                {
+                    match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,className:\i\}=\i;(?!return)(?=.{0,450}?\(0,\i\.jsx\)\("h3")/,
+                    replace: "$self._setTitle($1);$&",
+                },
+                {
+                    match: /function (\i)\(\i\)\{let \i,\i=\(0,\i\.c\)\(\d\),\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
+                    replace: "$self._setDescription($1);$&",
+                },
+                {
+                    match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,action:\i,hidden:\i,className:/,
+                    replace: "$self._setRow($1);$&",
                 },
             ],
         },

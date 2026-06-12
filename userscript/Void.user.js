@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.5
+// @version      1.0.3.6
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -31,7 +31,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.5 — A modification for grok.com
+ * Void v1.0.3.6 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -1829,6 +1829,15 @@ ${sourceUrl}`;
   });
   var Fragment = Symbol.for("react.fragment");
 
+  // src/turbopack/common/settingsPrimitives.ts
+  var captured = {};
+  function setSettingsPrimitive(name, component) {
+    captured[name] = component;
+  }
+  function getSettingsPrimitive(name) {
+    return captured[name] ?? null;
+  }
+
   // src/turbopack/common/components.ts
   function createModuleLazy(...filterProps) {
     let mod = null;
@@ -1898,10 +1907,9 @@ ${sourceUrl}`;
   var SelectItem = selectLazy("SelectItem");
   var SelectValue = selectLazy("SelectValue");
   var Separator = lazyExport("Separator");
-  var settingsLazy = createModuleLazy("SettingsRow", "SettingsTitle", "SettingsDescription");
-  var SettingsRow = settingsLazy("SettingsRow");
-  var SettingsTitle = settingsLazy("SettingsTitle");
-  var SettingsDescription = settingsLazy("SettingsDescription");
+  var SettingsRow = LazyComponent("SettingsRow", () => getSettingsPrimitive("SettingsRow"));
+  var SettingsTitle = LazyComponent("SettingsTitle", () => getSettingsPrimitive("SettingsTitle"));
+  var SettingsDescription = LazyComponent("SettingsDescription", () => getSettingsPrimitive("SettingsDescription"));
   var Skeleton = lazyExport("Skeleton");
   var Slider = lazyExport("Slider");
   var Switch = lazyExport("Switch");
@@ -2343,7 +2351,7 @@ ${sourceUrl}`;
   var ApiClients = findByPropsLazy("chatApi", "modelsApi");
   var Toaster = findByPropsLazy("Toaster", "toast");
   var ClassNames = findByPropsLazy("cn", "middleTruncate");
-  var FileUtils = findByPropsLazy("downloadBlob", "extractFiles");
+  var FileUtils = findByPropsLazy("downloadBlob");
 
   // src/components/Text.tsx
   var sizeClasses = {
@@ -3556,21 +3564,17 @@ ${sourceUrl}`;
   }
 
   // src/api/StreamEvents.ts
-  var logger10 = new Logger("StreamEvents");
   var started = false;
   function initStreamEvents() {
     if (started)
       return;
     started = true;
-    try {
-      const hook = ChatPageStore.useChatPageStore;
-      hook.subscribe((s) => s.streamedMessageId, (current, prev) => {
+    waitFor(filters.byProps("useChatPageStore"), (mod) => {
+      mod.useChatPageStore.subscribe((s) => s.streamedMessageId, (current, prev) => {
         if (!current && prev)
           dispatch("streamEnd", { responseId: prev });
       });
-    } catch (e) {
-      logger10.error("Failed to subscribe to ChatPageStore:", e);
-    }
+    });
   }
 
   // src/utils/constants.ts
@@ -3699,7 +3703,7 @@ ${sourceUrl}`;
 `);
 
   // src/api/Themes.ts
-  var logger11 = new Logger("Themes", "#c6a0f6");
+  var logger10 = new Logger("Themes", "#c6a0f6");
   function themeStyleId(url) {
     let hash = 0;
     for (let i = 0;i < url.length; i++) {
@@ -3789,7 +3793,7 @@ ${sourceUrl}`;
     };
     registerDisabledStyle(themeStyleId(url), css);
     setThemes([...getThemes(), theme]);
-    logger11.info(`Added theme "${theme.name}" from ${url}`);
+    logger10.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
   }
   function addLocalTheme(name, css) {
@@ -3810,7 +3814,7 @@ ${sourceUrl}`;
     };
     registerDisabledStyle(themeStyleId(id), css);
     setThemes([...getThemes(), theme]);
-    logger11.info(`Added local theme "${theme.name}"`);
+    logger10.info(`Added local theme "${theme.name}"`);
     return theme;
   }
   function updateLocalTheme(url, data) {
@@ -3857,14 +3861,14 @@ ${sourceUrl}`;
     try {
       const resp = await fetchExternal(url);
       if (!resp.ok) {
-        logger11.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+        logger10.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
         return;
       }
       if (!isThemeStillActive(url))
         return;
       css = await resp.text();
     } catch (e) {
-      logger11.warn("Failed to fetch theme CSS:", url, e);
+      logger10.warn("Failed to fetch theme CSS:", url, e);
       return;
     }
     if (!isThemeStillActive(url))
@@ -3896,7 +3900,7 @@ ${sourceUrl}`;
     }));
     for (const [i, result] of results.entries()) {
       if (result.status === "rejected") {
-        logger11.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
+        logger10.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
       }
     }
   }
@@ -5022,14 +5026,14 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/ThemeCard.tsx
-  var logger12 = new Logger("ThemeCard");
+  var logger11 = new Logger("ThemeCard");
   var cl9 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, onRemove, onToggle, onEdit }) {
     const handleToggle = () => {
       if (theme.enabled)
         disableTheme(theme.url);
       else
-        enableTheme(theme.url).catch((e) => logger12.error("Failed to enable theme:", e));
+        enableTheme(theme.url).catch((e) => logger11.error("Failed to enable theme:", e));
       onToggle();
     };
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
@@ -5045,7 +5049,7 @@ ${sourceUrl}`;
         icon: CopyIcon,
         label: "Copy URL",
         onClick: () => {
-          copyToClipboard(theme.url).catch((e) => logger12.error("Failed to copy URL:", e));
+          copyToClipboard(theme.url).catch((e) => logger11.error("Failed to copy URL:", e));
         }
       }), /* @__PURE__ */ React.createElement(IconButton, {
         icon: Trash2Icon,
@@ -5359,10 +5363,10 @@ ${sourceUrl}`;
     [4 /* WARNING */]: "warning",
     [5 /* LOADING */]: "loading"
   };
-  var logger13 = new Logger("Notifications");
+  var logger12 = new Logger("Notifications");
   function showToast(message, type = 0 /* MESSAGE */, options) {
     if (!Toaster.toast) {
-      logger13.warn("showToast called before Toaster initialized, discarding:", message);
+      logger12.warn("showToast called before Toaster initialized, discarding:", message);
       return -1;
     }
     const { toast } = Toaster;
@@ -5638,11 +5642,11 @@ ${sourceUrl}`;
     },
     patches: [
       {
-        find: "local_feature_flags",
+        find: "xai-ff-overrides",
         all: true,
         replacement: {
-          match: /("ready"===\i\.\i\).{0,60})\i&&(void 0!==\i\[\i\])/,
-          replace: "$1$2"
+          match: /return \i\.overridesEnabled&&(void 0!==\i\.overrides\[\i\])/,
+          replace: "return $1"
         }
       },
       {
@@ -5671,7 +5675,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/_core/settings/index.tsx
-  var logger14 = new Logger("Settings");
+  var logger13 = new Logger("Settings");
   var MoonIcon = findExportedComponentLazy("MoonIcon");
   var cl12 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
@@ -5718,9 +5722,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.5"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"b46b81e"}`
-    }, `(${"b46b81e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.6"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"0e5a141"}`
+    }, `(${"0e5a141"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5776,6 +5780,15 @@ ${sourceUrl}`;
     required: true,
     settings: settings3,
     _VoidMenu: ErrorBoundary.wrap(VoidMenu),
+    _setTitle(title) {
+      setSettingsPrimitive("SettingsTitle", title);
+    },
+    _setDescription(description) {
+      setSettingsPrimitive("SettingsDescription", description);
+    },
+    _setRow(row) {
+      setSettingsPrimitive("SettingsRow", row);
+    },
     _tabEntries() {
       return getVisibleTabs().map((t) => ({
         id: t.id,
@@ -5799,9 +5812,9 @@ ${sourceUrl}`;
         else
           document.addEventListener("DOMContentLoaded", loadSavedCSS, { once: true });
       } catch (e) {
-        logger14.error("Failed to load saved CSS:", e);
+        logger13.error("Failed to load saved CSS:", e);
       }
-      loadSavedThemes().catch((e) => logger14.error("Failed to load saved themes:", e));
+      loadSavedThemes().catch((e) => logger13.error("Failed to load saved themes:", e));
     },
     patches: [
       {
@@ -5822,6 +5835,23 @@ ${sourceUrl}`;
           {
             match: /children:(\i\.map\(\i=>\(0,\i\.jsx\)\(\i,\{enterprise:\i\.enterprise,children:.{0,160}?\},\i\.id\)\))\}\)/,
             replace: "children:[...$1,$self._renderVersion()]})"
+          }
+        ]
+      },
+      {
+        find: /,\{children:\i,action:\i,hidden:\i,className:\i\}=\i,\i=\(0,\i\.useId\)\(\)/,
+        replacement: [
+          {
+            match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,className:\i\}=\i;(?!return)(?=.{0,450}?\(0,\i\.jsx\)\("h3")/,
+            replace: "$self._setTitle($1);$&"
+          },
+          {
+            match: /function (\i)\(\i\)\{let \i,\i=\(0,\i\.c\)\(\d\),\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
+            replace: "$self._setDescription($1);$&"
+          },
+          {
+            match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,action:\i,hidden:\i,className:/,
+            replace: "$self._setRow($1);$&"
           }
         ]
       }
@@ -5951,7 +5981,7 @@ ${sourceUrl}`;
             replace: "$&VoidMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},"
           },
           {
-            match: /(\i)&&\(0,\i\.jsxs?\)\(\i,\{onSelect:\(\)=>\1\(\),className:"gap-2",children:\[\(0,\i\.jsx\)\(\i\.TrashIcon,.{0,80}\]\}\)/,
+            match: /(\i)&&\(0,\i\.jsxs?\)\(\i,\{onSelect:\(\)=>\1\(\),(?=.{0,80}TrashIcon)/,
             replace: '$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$&'
           }
         ]
@@ -5968,7 +5998,7 @@ ${sourceUrl}`;
         find: '"user-dropdown.upgrade","Upgrade plan"',
         all: true,
         replacement: {
-          match: /(\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{onSelect:\i,children:\[\(0,\i\.jsx\)\(\i\.SignOutIcon)/,
+          match: /(\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{)(?=[^}]{0,60}SignOutIcon)/,
           replace: '$self.renderItems("user"),$1'
         }
       }
@@ -5995,7 +6025,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/autoRetry/index.ts
-  var logger15 = new Logger("AutoRetry");
+  var logger14 = new Logger("AutoRetry");
   var CONTENT_MODERATED = "grok:content-moderated";
   var settings4 = definePluginSettings({
     retryModeration: {
@@ -6046,7 +6076,7 @@ ${sourceUrl}`;
     retryCounts.set(conversationId, count);
     const delaySec = settings4.store.delay ?? 2;
     showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger15.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    logger14.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
     clearPending();
     pendingTimer = setTimeout(() => {
       pendingTimer = null;
@@ -6100,14 +6130,14 @@ ${sourceUrl}`;
   });
 
   // src/plugins/betterFiles/index.tsx
-  var logger16 = new Logger("BetterFiles");
+  var logger15 = new Logger("BetterFiles");
   var cl13 = classNameFactory("void-bf-");
   var selection = createSelectionStore();
   async function deleteSelected() {
     const ids = selection.all();
     selection.clear();
     const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
-    await Promise.allSettled(ids.map((id) => deleteAsset(id).catch((e) => logger16.error("Failed to delete asset", id, e))));
+    await Promise.allSettled(ids.map((id) => deleteAsset(id).catch((e) => logger15.error("Failed to delete asset", id, e))));
   }
   function DeleteAllButton() {
     const [open2, setOpen] = useState(false);
@@ -6121,7 +6151,7 @@ ${sourceUrl}`;
         try {
           await deleteAsset(id);
         } catch (e) {
-          logger16.error("Failed to delete asset", id, e);
+          logger15.error("Failed to delete asset", id, e);
         }
       }
     };
@@ -6294,7 +6324,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/betterImagine/index.tsx
-  var logger17 = new Logger("BetterImagine");
+  var logger16 = new Logger("BetterImagine");
   var cl14 = classNameFactory("void-imagine-");
   var settings5 = definePluginSettings({
     hideDefaultPreviews: {
@@ -6546,7 +6576,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           return;
         video.pause();
         video.currentTime = 0;
-      }).catch((e) => logger17.warn("Failed to pause video:", e));
+      }).catch((e) => logger16.warn("Failed to pause video:", e));
     } else {
       video.pause();
       video.currentTime = 0;
@@ -6555,7 +6585,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var onMouseEnter = (e) => {
     const video = e.currentTarget.querySelector("video");
     if (video)
-      pending.set(video, video.play().catch((e2) => logger17.error("Failed to play video", e2)));
+      pending.set(video, video.play().catch((e2) => logger16.error("Failed to play video", e2)));
   };
   var onMouseLeave = (e) => {
     const video = e.currentTarget.querySelector("video");
@@ -6605,7 +6635,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `));
       Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
     } catch (e) {
-      logger17.error(`Failed to copy ${label}s`, e);
+      logger16.error(`Failed to copy ${label}s`, e);
       Toaster.toast.error(`Failed to copy ${label}s.`);
     }
   }
@@ -6650,7 +6680,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           await state.upscaleVideo(id, video.id);
           upscaled++;
         } catch (e) {
-          logger17.error("Failed to upscale video:", id, video.id, e);
+          logger16.error("Failed to upscale video:", id, video.id, e);
         }
       }
     }
@@ -6862,8 +6892,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       {
         find: 'imagine-folder.all","All"',
         replacement: {
-          match: /("imagine-folder\.all","All".{0,300}?,children:\[\i,\i,\i)\]/,
-          replace: "$1,$self._renderFilterButtons({})]"
+          match: /"imagine-folder\.all","All"\)\}\)(?=\]\}\)\]\}\),\i&&)/,
+          replace: "$&,$self._renderFilterButtons({})"
         }
       },
       {
@@ -7161,7 +7191,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
 
   // src/plugins/betterSidebar/index.tsx
-  var logger18 = new Logger("BetterSidebar");
+  var logger17 = new Logger("BetterSidebar");
   var cl16 = classNameFactory("void-sidebar-");
   var bdCl = classNameFactory("void-bd-");
   var settings7 = definePluginSettings({
@@ -7226,7 +7256,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
     }
     const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger18.error("Failed to delete", id, e))));
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger17.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
     const enabled = settings7.use(["batchSelect"]).batchSelect;
@@ -7498,7 +7528,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/cloneChats/index.tsx
-  var logger19 = new Logger("CloneChats");
+  var logger18 = new Logger("CloneChats");
   async function cloneChat(conversationId) {
     const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
     if (!lastResponseId)
@@ -7521,7 +7551,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
     return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger19.error("Failed to clone chat:", e)),
+      onSelect: () => cloneChat(conversationId).catch((e) => logger18.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
@@ -7928,7 +7958,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 
   // src/plugins/downloadTTS/index.tsx
   var cl18 = classNameFactory("void-download-tts-");
-  var logger20 = new Logger("DownloadTTS");
+  var logger19 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -7948,7 +7978,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger20.error("Failed to download TTS audio:", e);
+        logger19.error("Failed to download TTS audio:", e);
       }
     });
     return /* @__PURE__ */ React.createElement(Button, {
@@ -7987,7 +8017,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger21 = new Logger("ExportChat");
+  var logger20 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -8158,7 +8188,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       className: "void-export-icon"
     }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger21.error("Failed to export chat", e))
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger20.error("Failed to export chat", e))
     }, label))));
   }
   var exportChat_default = definePlugin({
@@ -8288,7 +8318,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
 
   // src/plugins/promptEnhancer/index.tsx
-  var logger22 = new Logger("PromptEnhancer");
+  var logger21 = new Logger("PromptEnhancer");
   var PLUGIN_NAME = "PromptEnhancer";
   var DEFAULT_INSTRUCTIONS = "Rewrite this prompt to be clearer, more specific, and more effective. Fix grammar and spelling. If something is vague, clarify it. Keep it concise, human, and to the point — no filler.";
   var settings11 = definePluginSettings({
@@ -8355,7 +8385,7 @@ Original prompt:
       }
       const improved = message.trim();
       if (convId) {
-        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger22.warn("Failed to delete throwaway conversation:", e));
+        ApiClients.chatApi.chatSoftDeleteConversation({ conversationId: convId }).catch((e) => logger21.warn("Failed to delete throwaway conversation:", e));
       }
       const editor = getEditor();
       if (!editor) {
@@ -8454,7 +8484,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
-  var logger23 = new Logger("RateLimitDisplay");
+  var logger22 = new Logger("RateLimitDisplay");
   var cl19 = classNameFactory("void-rld-");
   var UsageProgressIcon = findExportedComponentLazy("UsageProgressIcon");
   var settings12 = definePluginSettings({
@@ -8487,7 +8517,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
     } catch (e) {
-      logger23.warn("Failed to fetch rate limits for", mode, e);
+      logger22.warn("Failed to fetch rate limits for", mode, e);
       return null;
     }
   }
@@ -9414,7 +9444,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger24 = new Logger("TurbopackPatcher", "#e78284");
+  var logger23 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var RETRY_TIMEOUT_MS = 15000;
   var RETRY_DEBOUNCE_MS = 200;
@@ -9423,7 +9453,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     try {
       fn();
     } catch (e) {
-      logger24.error(`${name} failed:`, e);
+      logger23.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -9450,7 +9480,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (!getFailed().length) {
           unsub();
           clearTimeout(timeout);
-          logger24.info("All previously failed plugins started after late module load");
+          logger23.info("All previously failed plugins started after late module load");
         }
       }, RETRY_DEBOUNCE_MS);
     };
@@ -9465,7 +9495,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         startPlugin(p, true);
       const stillFailed = getFailed();
       if (stillFailed.length) {
-        logger24.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
+        logger23.warn(`${stillFailed.length} plugin(s) still failed after retry window: ${stillFailed.map((p) => p.name).join(", ")}`);
       }
     }, RETRY_TIMEOUT_MS);
   }
@@ -9479,7 +9509,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger24.info(`${getModuleCache().size} modules loaded, ready`);
+      logger23.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
     });

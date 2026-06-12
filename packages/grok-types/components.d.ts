@@ -399,22 +399,19 @@ export type Separator = ComponentType<SeparatorProps>;
 // #region Settings
 
 export interface SettingsRowProps {
+    children?: ReactNode;
     action?: ReactNode;
     hidden?: boolean;
     className?: string;
-    children?: ReactNode;
-    [key: string]: any;
 }
 
 export interface SettingsTitleProps {
-    className?: string;
     children?: ReactNode;
-    [key: string]: any;
+    className?: string;
 }
 
 export interface SettingsDescriptionProps {
     children?: ReactNode;
-    [key: string]: any;
 }
 
 export type SettingsRow = ComponentType<SettingsRowProps>;

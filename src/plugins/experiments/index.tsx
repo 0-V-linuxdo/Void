@@ -283,11 +283,11 @@ export default definePlugin({
 
     patches: [
         {
-            find: "local_feature_flags",
+            find: "xai-ff-overrides",
             all: true,
             replacement: {
-                match: /("ready"===\i\.\i\).{0,60})\i&&(void 0!==\i\[\i\])/,
-                replace: "$1$2",
+                match: /return \i\.overridesEnabled&&(void 0!==\i\.overrides\[\i\])/,
+                replace: "return $1",
             },
         },
         {
