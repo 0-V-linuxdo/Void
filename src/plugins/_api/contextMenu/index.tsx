@@ -44,8 +44,8 @@ export default definePlugin({
                     replace: "$&VoidMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},",
                 },
                 {
-                    match: /(\i)&&\(0,\i\.jsxs?\)\(\i,\{onSelect:\(\)=>\1\(\),(?=.{0,80}TrashIcon)/,
-                    replace: '$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$&',
+                    match: /=(\i)&&(\jsx{\i}\{onSelect:\(\)=>\1\(\),)(?=.{0,80}TrashIcon)/,
+                    replace: '=$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$1&&$2',
                 },
             ],
         },
@@ -61,7 +61,7 @@ export default definePlugin({
             find: '"user-dropdown.upgrade","Upgrade plan"',
             all: true,
             replacement: {
-                match: /(\(0,\i\.jsxs?\)\(\i\.DropdownMenuItem,\{)(?=[^}]{0,60}SignOutIcon)/,
+                match: /(\jsx{\i\.DropdownMenuItem}\{)(?=[^}]{0,60}SignOutIcon)/,
                 replace: '$self.renderItems("user"),$1',
             },
         },
