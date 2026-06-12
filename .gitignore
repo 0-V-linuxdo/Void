@@ -1,5 +1,11 @@
 dist
 node_modules
+assets/*
+!assets/logos/
+assets/logos/*
+!assets/logos/app-icon/
+assets/logos/app-icon/*
+!assets/logos/app-icon/void-icon-256.png
 *.log
 *.tsbuildinfo
 .DS_Store
