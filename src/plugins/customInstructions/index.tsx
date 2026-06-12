@@ -224,7 +224,7 @@ export default definePlugin({
 
     patches: [
         {
-            find: ["sendFinalMetadata", "customInstructions"],
+            find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
             all: true,
             replacement: {
                 match: /customInstructions:(\i)\.customInstructions/g,

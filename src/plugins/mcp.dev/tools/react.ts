@@ -4,8 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { type Fiber, type FiberState, getFiber, getReactRoot, walkFiberTree, walkFiberUp } from "@utils/react";
+
 import { REACT } from "./constants";
-import type { Fiber, FiberState, ReactArgs } from "./types";
+import type { ReactArgs } from "./types";
 import { clampConfig, serialize } from "./utils";
 
 const NO_FIBER = "No React fiber found on this element";
@@ -18,65 +20,10 @@ function walkHookStates(fiber: Fiber, visitor: (state: FiberState, index: number
     }
 }
 
-function findFiberKey(el: Element): string | null {
-    for (const k in el) {
-        if (k.startsWith("__reactFiber$")) return k;
-    }
-    return null;
-}
-
-function getRoot(): Fiber | null {
-    for (const el of [document.body, document.getElementById("__next"), document.getElementById("root")]) {
-        if (!el) continue;
-        const k = findFiberKey(el);
-        if (k) return (el as unknown as Record<string, Fiber>)[k];
-    }
-    return null;
-}
-
-function getFiber(el: Element): Fiber | null {
-    let cur: Element | null = el;
-    while (cur) {
-        const k = findFiberKey(cur);
-        if (k) return (cur as unknown as Record<string, Fiber>)[k];
-        cur = cur.parentElement;
-    }
-    return null;
-}
-
 function fiberName(f: Fiber): string | null {
     const t = f.type;
     if (!t || typeof t === "string") return null;
     return t.displayName ?? t.name ?? null;
-}
-
-function walkUp(f: Fiber | null, max: number, test: (f: Fiber) => boolean): Fiber | null {
-    const seen = new WeakSet<Fiber>();
-    let cur = f;
-    let d = 0;
-    while (cur && d < max) {
-        if (seen.has(cur)) return null;
-        seen.add(cur);
-        if (test(cur)) return cur;
-        cur = cur.return;
-        d++;
-    }
-    return null;
-}
-
-function walkFibers(root: Fiber, visit: (fiber: Fiber) => boolean | void, maxProcessed: number): void {
-    const visited = new WeakSet<Fiber>();
-    const queue: Fiber[] = [root];
-    let processed = 0;
-    while (queue.length && processed < maxProcessed) {
-        const fiber = queue.shift()!;
-        if (visited.has(fiber)) continue;
-        visited.add(fiber);
-        processed++;
-        if (visit(fiber) === false) return;
-        if (fiber.child) queue.push(fiber.child);
-        if (fiber.sibling) queue.push(fiber.sibling);
-    }
 }
 
 function resolveEl(selector: string): Element | string {
@@ -98,7 +45,7 @@ function bounds(args: ReactArgs): { maxD: number; lim: number } {
 function actionFind(args: ReactArgs): unknown {
     const { componentName } = args;
     if (!componentName) return { error: "Provide componentName." };
-    const root = getRoot();
+    const root = getReactRoot();
     if (!root) return { error: "No React root found. Is grok.com loaded?" };
 
     const { lim } = bounds(args);
@@ -106,7 +53,7 @@ function actionFind(args: ReactArgs): unknown {
     type Entry = { name: string; d: number; props?: string[]; s?: boolean; count?: number };
     const found: Entry[] = [];
     const byName = args.includeProps ? null : new Map<string, Entry>();
-    walkFibers(root, f => {
+    walkFiberTree(root, f => {
         if (found.length >= lim) return false;
         const nm = fiberName(f);
         if (!nm?.toLowerCase().includes(lower)) return;
@@ -128,11 +75,11 @@ function actionFind(args: ReactArgs): unknown {
 }
 
 function actionRoot(): unknown {
-    const root = getRoot();
+    const root = getReactRoot();
     if (!root) return { error: "No React root found. Is grok.com loaded?" };
 
     const seen = new Set<string>();
-    walkFibers(root, f => {
+    walkFiberTree(root, f => {
         const nm = fiberName(f);
         if (nm && nm.length >= REACT.MIN_COMPONENT_NAME && seen.size < REACT.MAX_NAMED) seen.add(nm);
     }, REACT.MAX_PROCESS);
@@ -167,7 +114,7 @@ function actionQuery(args: ReactArgs): unknown {
         item.rect = [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)];
         const fiber = getFiber(e);
         if (fiber) {
-            const comp = walkUp(fiber, REACT.WALK_UP_DEPTH, f => !!fiberName(f));
+            const comp = walkFiberUp(fiber, REACT.WALK_UP_DEPTH, f => !!fiberName(f));
             if (comp) item.component = fiberName(comp);
         }
         out.push(item);
@@ -183,7 +130,7 @@ function actionFiber(args: ReactArgs): unknown {
 
     const { maxD } = bounds(args);
     const nodes: Array<Record<string, unknown>> = [];
-    walkUp(fiber, maxD, cur => {
+    walkFiberUp(fiber, maxD, cur => {
         const nm = fiberName(cur);
         const node: Record<string, unknown> = nm ? { n: nm } : { t: cur.tag };
         if (args.includeProps && cur.memoizedProps) {
@@ -203,7 +150,7 @@ function actionProps(args: ReactArgs): unknown {
     const fiber = getFiber(el);
     if (!fiber) return { error: NO_FIBER };
     const { maxD } = bounds(args);
-    const target = walkUp(fiber, maxD, f => !!f.memoizedProps && !!fiberName(f));
+    const target = walkFiberUp(fiber, maxD, f => !!f.memoizedProps && !!fiberName(f));
     if (!target) return { error: "No component with props found walking up from this element" };
     return { c: fiberName(target), props: serialize(target.memoizedProps) };
 }
@@ -231,7 +178,7 @@ function actionHooks(args: ReactArgs): unknown {
     const fiber = getFiber(el);
     if (!fiber) return { error: NO_FIBER };
     const { maxD } = bounds(args);
-    const target = walkUp(fiber, maxD, hasHooks);
+    const target = walkFiberUp(fiber, maxD, hasHooks);
     if (!target) return { error: "No function component with hooks found" };
 
     const hooks: Array<Record<string, unknown>> = [];
@@ -245,7 +192,7 @@ function actionState(args: ReactArgs): unknown {
     const fiber = getFiber(el);
     if (!fiber) return { error: NO_FIBER };
     const { maxD } = bounds(args);
-    const target = walkUp(fiber, maxD, hasHooks);
+    const target = walkFiberUp(fiber, maxD, hasHooks);
     if (!target) return { error: "No useState hooks found on nearest function component" };
 
     const vals: unknown[] = [];
@@ -286,7 +233,7 @@ function actionOwner(args: ReactArgs): unknown {
     const owners: string[] = [];
     const start = fiber._debugOwner ?? fiber.return ?? null;
     if (start) {
-        walkUp(start, maxD, cur => {
+        walkFiberUp(start, maxD, cur => {
             const nm = fiberName(cur);
             if (nm) owners.push(nm);
             return owners.length >= lim;

@@ -62,8 +62,8 @@ export default definePlugin({
             find: '"user-dropdown.upgrade","Upgrade plan"',
             all: true,
             replacement: {
-                match: /(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
-                replace: "$self.settings.store.hideUpgradePlan||$1",
+                match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+                replace: ",$self.settings.store.hideUpgradePlan||$1",
             },
         },
         // covers the standalone upsell card and the copy inlined in the settings dialog
@@ -125,8 +125,8 @@ export default definePlugin({
                     replace: "$&$self.settings.store.hideModelUpsell||",
                 },
                 {
-                    match: /(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
-                    replace: "($self.settings.store.hideInaccessibleModels?[]:$1)$2",
+                    match: /,(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
+                    replace: ",($self.settings.store.hideInaccessibleModels?[]:$1)$2",
                 },
             ],
         },

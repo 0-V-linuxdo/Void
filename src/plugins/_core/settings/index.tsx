@@ -21,7 +21,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@turbopack/common/components";
-import { React } from "@turbopack/common/react";
+import { createElement, React } from "@turbopack/common/react";
 import { setSettingsPrimitive } from "@turbopack/common/settingsPrimitives";
 import { SettingsDialogStore } from "@turbopack/common/stores";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
@@ -164,6 +164,8 @@ function VoidMenu() {
     );
 }
 
+const WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
+
 export default definePlugin({
     name: "Settings",
     description: "Adds Void settings UI.",
@@ -171,7 +173,7 @@ export default definePlugin({
     required: true,
     settings,
 
-    _VoidMenu: ErrorBoundary.wrap(VoidMenu),
+    _renderVoidMenu: () => createElement(WrappedVoidMenu),
 
     _setTitle(title: ComponentType<SettingsTitleProps>) {
         setSettingsPrimitive("SettingsTitle", title);
@@ -217,7 +219,7 @@ export default definePlugin({
             all: true,
             replacement: {
                 match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{children:\[.{0,100}"user-dropdown\.help"/,
-                replace: "(0,$1.jsx)($self._VoidMenu,{}),$&",
+                replace: "$self._renderVoidMenu(),$&",
             },
         },
         {
@@ -241,7 +243,7 @@ export default definePlugin({
                     replace: "$self._setTitle($1);$&",
                 },
                 {
-                    match: /function (\i)\(\i\)\{let \i,\i=\(0,\i\.c\)\(\d\),\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
+                    match: /function (\i)\(\i\)\{let \i,\i=\c,\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
                     replace: "$self._setDescription($1);$&",
                 },
                 {

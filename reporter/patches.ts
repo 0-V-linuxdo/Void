@@ -13,6 +13,7 @@ import type { Diagnostic } from "./fmt";
 export type PatchIssueCode =
     | "patch::find::no-module"
     | "patch::find::ambiguous"
+    | "patch::perf::identifier-start"
     | "patch::replace::match-miss"
     | "patch::replace::backref-invalid"
     | "patch::replace::syntax-error"
@@ -36,6 +37,11 @@ interface MatchHit {
     text: string;
     index: number;
     groups: string[];
+}
+
+function startsNonLiteral(source: string): boolean {
+    const head = source.replace(/^\(+(?:\?:)?/, "");
+    return /^(?:\[|\\[wdsWDSbB]|\.)/.test(head);
 }
 
 export function testPatch(patch: PatchSpec, map: ChunkMap): PatchReportEntry {
@@ -181,6 +187,16 @@ function testReplacement(rep: ReplacementSpec, mod: ModuleEntry, patch: PatchSpe
             primary: { span: rep.match.span, label: error },
         });
         return { diagnostics, ok: false, timeMs: performance.now() - start };
+    }
+
+    if (compiled && startsNonLiteral(compiled.source)) {
+        diagnostics.push({
+            severity: "warn",
+            code: "patch::perf::identifier-start",
+            title: "match regex starts with an identifier or character class",
+            primary: { span: rep.match.span, label: "no literal first char" },
+            help: "Literal-at-start lets V8 fast-scan (~400x faster, prevents aborts). Anchor on a literal, or consume a literal prefix and re-emit it in replace.",
+        });
     }
 
     if (!hit) {

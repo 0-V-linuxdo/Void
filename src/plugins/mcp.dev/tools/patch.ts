@@ -5,7 +5,8 @@
  */
 
 import { isPluginEnabled } from "@api/PluginManager";
-import { getRuntimeFactoryRegistry, patches, patchReport, patchResults, patchStats } from "@turbopack/patchTurbopack";
+import { patchReport, patchResults, patchStats } from "@turbopack/patchReport";
+import { getRuntimeFactoryRegistry, patches } from "@turbopack/patchTurbopack";
 import { search } from "@turbopack/turbopack";
 import { type PatchedModuleFactory, SYM_PATCHED_BY } from "@turbopack/types";
 import { canonicalizeMatch } from "@utils/patches";

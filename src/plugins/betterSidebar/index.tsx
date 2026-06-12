@@ -13,7 +13,7 @@ import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
 import { SidebarComponents } from "@turbopack/common/components";
 import { getPlanName } from "@turbopack/common/plan";
-import { Fragment, React, useRef, useState } from "@turbopack/common/react";
+import { createElement, Fragment, React, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle, unregisterStyle } from "@utils/css";
@@ -22,7 +22,7 @@ import { createSelectionStore } from "@utils/misc";
 import { useSelectionHas, useSelectionSize } from "@utils/react";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 const logger = new Logger("BetterSidebar");
 const cl = classNameFactory("void-sidebar-");
@@ -112,6 +112,8 @@ function SelectCheckbox({ id, route }: { id: string | undefined; route?: { page?
     );
 }
 
+const WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
+
 function ActionBar() {
     const count = useSelectionSize(selection);
     const [open, setOpen] = useState(false);
@@ -148,8 +150,11 @@ export default definePlugin({
     managedStyle: "betterSidebar",
 
     _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderCheckbox: ErrorBoundary.wrap(SelectCheckbox, null),
     _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
+
+    _wrapCheckbox(item: ReactNode, id: string | undefined, route?: { page?: string }) {
+        return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
+    },
 
     _wrapSidebarClick(onClick: ((e: MouseEvent) => void) | undefined, id: string | undefined, route?: { page?: string }) {
         return (e: MouseEvent) => {
@@ -221,8 +226,8 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /=(\(0,(\i)\.jsx\)\(\i,\{title:\i,editing:\i,.{0,80}?validationErrorMessage:\i\}\))/,
-                    replace: "=(0,$2.jsxs)($2.Fragment,{children:[(0,$2.jsx)($self._renderCheckbox,{id:arguments[0].id,route:arguments[0].route}),$1]})",
+                    match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,.{0,80}?validationErrorMessage:\i\}\))/,
+                    replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)",
                 },
                 {
                     match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,

@@ -36,10 +36,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @grant        GM_deleteValue
 // @grant        GM_setClipboard
-// @grant        GM_listValues
-// @connect      self
 // @connect      raw.githubusercontent.com
 // @connect      *
 // @compatible   chrome
