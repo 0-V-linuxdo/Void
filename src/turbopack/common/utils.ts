@@ -42,4 +42,4 @@ export const ClassNames: {
 
 export const FileUtils: {
     downloadBlob: (blob: Blob, filename: string) => Promise<void>;
-} = findByPropsLazy("downloadBlob", "extractFiles");
+} = findByPropsLazy("downloadBlob");
