@@ -85,11 +85,12 @@ function moduleMatchesFinder(finder: FinderSpec, mod: ModuleEntry): boolean {
                 if (a.kind === "identifier" || a.kind === "unknown") return true;
                 if (a.kind !== "string" || !a.value) return false;
                 const n = a.value;
-                return mod.factory.includes(`"${n}",()=>`)
-                    || mod.factory.includes(`"${n}",function`)
-                    || mod.factory.includes(`"${n}",0,`)
+                return mod.factory.includes(`"${n}",0,`)
+                    || mod.factory.includes(`"${n}",()=>`)
+                    || mod.factory.includes(`'${n}',0,`)
+                    || mod.factory.includes(`'${n}',()=>`)
                     || mod.factory.includes(`.${n}=`)
-                    || mod.factory.includes(`${n}:function`);
+                    || mod.factory.includes(`${n}:function(){return `);
             });
         case "byDisplayName":
             return finder.args.some(a => a.kind === "string" && a.value && mod.factory.includes(`displayName:"${a.value}"`));
