@@ -47,7 +47,7 @@ function collectIcons(): IconEntry[] {
                 const val = exports[key];
                 if (typeof val !== "function") continue;
                 seen.add(key);
-                icons.push({ name: key, component: val });
+                icons.push({ name: key, component: val as ComponentType<any> });
             } catch {}
         }
     }

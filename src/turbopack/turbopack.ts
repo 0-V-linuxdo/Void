@@ -229,7 +229,7 @@ function scanExportedComponent(props: string[]): any {
         if (exports == null || typeof exports !== "object" || isBlacklisted(exports)) continue;
         for (const prop of props) {
             try {
-                const comp = exports[prop];
+                const comp = exports[prop] as any;
                 if (comp == null || isBlacklisted(comp)) continue;
                 if (typeof comp === "function" || comp?.$$typeof) return comp;
             } catch {}
@@ -281,6 +281,17 @@ export function findStore<T = any>(name: string): T | undefined {
 export function findStoreLazy<T = any>(name: string): T {
     const resolve = () => findStore<T>(name);
     trackFinder("findStore", [name], resolve);
+    return proxyLazy(resolve) as T;
+}
+
+export function findByEventName<T = any>(name: string): T | undefined {
+    const id = findModuleId(`logEventGlobal)("${name}"`);
+    return id == null ? undefined : (requireModule<T>(id) ?? undefined);
+}
+
+export function findByEventNameLazy<T = any>(name: string): T {
+    const resolve = () => findByEventName<T>(name);
+    trackFinder("findByEventName", [name], resolve);
     return proxyLazy(resolve) as T;
 }
 
@@ -487,7 +498,7 @@ export function search(...code: (string | RegExp)[]): Record<number, ModuleFacto
 
 export function requireModule<T = any>(moduleId: number): T | null {
     const cache = getModuleCache();
-    if (cache.has(moduleId)) return cache.get(moduleId);
+    if (cache.has(moduleId)) return cache.get(moduleId) as T;
 
     const helpers = getTurbopackHelpers();
     if (!helpers) return null;
