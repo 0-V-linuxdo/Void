@@ -5,7 +5,8 @@
  */
 
 import { plugins } from "@api/PluginManager";
-import { getModuleCache, getRuntimeFactoryRegistry, getRuntimeModuleCache, patches, patchStats } from "@turbopack/patchTurbopack";
+import { patchStats } from "@turbopack/patchReport";
+import { getModuleCache, getRuntimeFactoryRegistry, getRuntimeModuleCache, patches } from "@turbopack/patchTurbopack";
 import {
     extractAndLoadChunks,
     filters,

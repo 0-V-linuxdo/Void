@@ -5,11 +5,13 @@
  */
 
 import { Logger } from "@utils/Logger";
-import type { Patch, PatchReplacement } from "@utils/types";
+import type { Patch } from "@utils/types";
 
 import { fnSourceCache, getFnSource } from "./fnSource";
+import { injectionProxies, installInjectionSeam, proxyWithInjections, resolveInjections, setInjectionContext } from "./injection";
 import { matchesAllPatterns, matchesPattern } from "./match";
-import { type ModuleFactory, type PageWindow, type PatchedModuleFactory, type PatchReport, type PatchResult, type PatchStats, SYM_ORIGINAL, SYM_PATCHED, SYM_PATCHED_BY, SYM_PATCHED_CODE, type TurbopackHelpers, type TurbopackModule, type TurbopackPushable } from "./types";
+import { chunkFingerprint, patchResults, patchStats, patchTimings, validateMisses } from "./patchReport";
+import { type ModuleFactory, type PageWindow, type PatchedModuleFactory, type PatchResult, SYM_ORIGINAL, SYM_PATCHED, SYM_PATCHED_BY, SYM_PATCHED_CODE, type TurbopackHelpers, type TurbopackModule, type TurbopackPushable } from "./types";
 
 const logger = new Logger("TurbopackPatcher", "#e78284");
 const pageWindow = (typeof unsafeWindow !== "undefined" ? unsafeWindow : window) as PageWindow;
@@ -57,27 +59,7 @@ let turbopackHelpers: TurbopackHelpers | null = null;
 export let _resolveReady: () => void;
 export const onceReady = new Promise<void>(r => (_resolveReady = r));
 
-interface PatchTiming {
-    plugin: string;
-    moduleId: number;
-    match: PatchReplacement["match"];
-    findTime: number;
-    replaceTime: number;
-}
-
-const patchTimings: PatchTiming[] | null = IS_DEV ? [] : null;
-
-export const patchResults: PatchResult[] = [];
-
-export const patchStats: PatchStats = {
-    applied: 0,
-    noEffect: 0,
-    errors: 0,
-    runtimeFallbacks: 0,
-    patchedModules: new Set<number>(),
-};
-
-export function getModuleCache(): Map<number, any> {
+export function getModuleCache(): Map<number, Record<string, unknown>> {
     return moduleCache;
 }
 export function getRuntimeModuleCache(): Record<number, TurbopackModule> | null {
@@ -102,6 +84,8 @@ export function getRuntimeFactoryRegistry(): Map<number, ModuleFactory> | null {
 export function getTurbopackHelpers(): TurbopackHelpers | null {
     return turbopackHelpers;
 }
+
+setInjectionContext(moduleCache, getRuntimeFactoryRegistry);
 
 export function addWaitForSubscription(filter: (mod: any) => boolean, cb: (mod: any, id: number) => void) {
     waitForSubscriptions.set(filter, cb);
@@ -189,9 +173,13 @@ export function isBlacklisted(value: any): boolean {
 }
 
 function notifyModuleLoaded(exports: any, id: number) {
-    if (exports == null) return;
-    if (moduleCache.get(id) === exports) return;
-    moduleCache.set(id, exports);
+    if (exports == null || typeof exports.then === "function") return;
+    const existing = moduleCache.get(id);
+    if (existing === exports || (existing != null && existing === injectionProxies.get(id))) return;
+
+    const injected = resolveInjections(id);
+    const value = injected ? proxyWithInjections(exports, id, injected) : exports;
+    moduleCache.set(id, value);
 
     if (waitForSubscriptions.size) {
         for (const [filter, callback] of waitForSubscriptions) {
@@ -265,7 +253,7 @@ function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult
                     matches = originalCode.includes(match as string);
                 }
                 if (!matches && !patch.noWarn && !replacement.noWarn) {
-                    logger.debug(`[validate] ${patch.plugin}: ${String(match)}`);
+                    validateMisses.add(`${patch.plugin}: ${String(match)}`);
                 }
             }
             if (!patch.all) patches.splice(i--, 1);
@@ -376,6 +364,7 @@ function createLazyFactory(moduleId: number, patchResult: LazyPatchResult, origi
         compiled.call(this, helpers, mod, exports);
     };
 
+    Object.defineProperty(lazy, "name", { value: `VoidPatched_${moduleId}` });
     lazy.toString = () => getFnSource(original);
     lazy[SYM_ORIGINAL] = original;
     lazy[SYM_PATCHED] = true;
@@ -443,6 +432,8 @@ let chunksWithFactories = 0;
 let chunksWithoutFactories = 0;
 
 function patchChunkEntry(entry: any[]): any[] {
+    if (typeof entry[0] === "string") chunkFingerprint.add(entry[0]);
+
     const hasPatches = patches.length > 0;
     let patchedEntry: any[] | null = null;
     const wrappedInChunk = new Map<ModuleFactory, ModuleFactory>();
@@ -491,54 +482,6 @@ function handleChunkPush(...args: any[]) {
     return originalPush!(...args);
 }
 
-function isFactoryPending(patch: Patch): boolean {
-    if (!runtimeFactoryRegistry) return false;
-    const find = Array.isArray(patch.find) ? patch.find : [patch.find];
-    for (const [, factory] of runtimeFactoryRegistry) {
-        if (matchesAllPatterns(getFnSource(factory), find)) return true;
-    }
-    return false;
-}
-
-export function patchReport(): PatchReport {
-    const orphaned: { plugin: string; find: string }[] = [];
-    const pending: { plugin: string; find: string }[] = [];
-    for (const p of patches) {
-        if (p.all) continue;
-        const entry = { plugin: p.plugin, find: String(p.find) };
-        (isFactoryPending(p) ? pending : orphaned).push(entry);
-    }
-    return { stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] }, results: patchResults, orphaned, pending };
-}
-
-export function reportOrphanedPatches(): void {
-    const orphaned = patches.filter(p => !p.all && !isFactoryPending(p));
-    const warnOrphaned = orphaned.filter(p => !p.noWarn);
-    if (warnOrphaned.length)
-        logger.warn(
-            `${warnOrphaned.length} patch(es) found no module:`,
-            warnOrphaned.map(p => `${p.plugin}: ${String(p.find)}`),
-        );
-
-    if (patchStats.noEffect || patchStats.errors) {
-        for (const result of patchResults) {
-            for (const rep of result.replacements) {
-                if (rep.status === "noEffect" && !result.noWarn) logger.debug(`[no effect] ${result.plugin}: ${rep.match}`);
-                else if (rep.status === "error") logger.debug(`[error] ${result.plugin}: ${rep.match}`);
-            }
-        }
-    }
-
-    if (IS_DEV) {
-        for (const t of patchTimings!) {
-            const patchTime = t.findTime + t.replaceTime;
-            if (patchTime <= 20) continue;
-            logger.warn(`Slow patch: ${t.plugin} on ${t.moduleId} (find: ${t.findTime.toFixed(1)}ms, replace: ${t.replaceTime.toFixed(1)}ms) ${String(t.match)}`);
-        }
-        patchTimings!.length = 0;
-    }
-}
-
 function scanCache(cache: Record<number, TurbopackModule>): number {
     let count = 0;
     for (const id in cache) {
@@ -576,11 +519,12 @@ function captureFactoryRegistry(): Map<number, ModuleFactory> | null {
         Map.prototype.set = origMapSet;
     }
 
-    (captured as Map<number, any> | null)?.delete(FACTORY_PROBE_ID);
+    const registry = captured as Map<number, ModuleFactory> | null;
+    registry?.delete(FACTORY_PROBE_ID);
 
-    if (captured) {
+    if (registry) {
         let valid = 0;
-        for (const [k, v] of captured as Map<number, any>) {
+        for (const [k, v] of registry) {
             if (typeof k === "number" && typeof v === "function" && ++valid >= 3) break;
         }
         if (valid < 3) {
@@ -589,11 +533,22 @@ function captureFactoryRegistry(): Map<number, ModuleFactory> | null {
         }
     }
 
-    return captured as Map<number, ModuleFactory> | null;
+    return registry;
+}
+
+const LOAD_BEARING_HELPERS = ["i", "r", "s", "v", "l", "c", "M"] as const;
+let helperContractChecked = false;
+
+function checkHelperContract(helpers: TurbopackHelpers): void {
+    helperContractChecked = true;
+    const missing = LOAD_BEARING_HELPERS.filter(h => helpers[h] == null);
+    if (missing.length) logger.warn(`Turbopack runtime contract changed, missing helper(s): ${missing.join(", ")} — patching may be degraded.`);
 }
 
 function captureRuntimeState(helpers: TurbopackHelpers) {
     if (!turbopackHelpers) turbopackHelpers = helpers;
+    if (!helperContractChecked) checkHelperContract(helpers);
+    installInjectionSeam(helpers);
     if (!runtimeModuleCache && helpers.c) {
         runtimeModuleCache = helpers.c;
         const count = scanCache(runtimeModuleCache);

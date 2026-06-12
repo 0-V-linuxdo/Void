@@ -155,6 +155,7 @@ export interface SettingsPluginData {
     customCSS?: string;
     customCSSEnabled?: boolean;
     knownPlugins?: Record<string, number>;
+    chunkFingerprint?: string[];
     [key: string]: unknown;
 }
 
