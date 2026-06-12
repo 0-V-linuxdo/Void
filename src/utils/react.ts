@@ -8,8 +8,130 @@ import { subscribe, type VoidEvent } from "@api/Events";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
 import { ChatPageStore } from "@turbopack/common/stores";
+import { getModuleCache, getRuntimeModuleCache } from "@turbopack/patchTurbopack";
+import { filters, waitFor } from "@turbopack/turbopack";
 import type { ExternalStore, SelectionStore } from "@utils/misc";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactElement, ReactNode } from "react";
+
+export interface Fiber {
+    tag: number;
+    type: { displayName?: string; name?: string } | string | null;
+    stateNode: Element | null;
+    return: Fiber | null;
+    child: Fiber | null;
+    sibling: Fiber | null;
+    memoizedProps: Record<string, unknown> | null;
+    memoizedState: FiberState | null;
+    _debugOwner?: Fiber | null;
+}
+
+export interface FiberState {
+    memoizedState: unknown;
+    queue: { dispatch?: Function } | null;
+    next: FiberState | null;
+}
+
+function findFiberKey(el: Element): string | null {
+    for (const k in el) {
+        if (k.startsWith("__reactFiber$")) return k;
+    }
+    return null;
+}
+
+export function getFiber(el: Element): Fiber | null {
+    let cur: Element | null = el;
+    while (cur) {
+        const k = findFiberKey(cur);
+        if (k) return (cur as unknown as Record<string, Fiber>)[k];
+        cur = cur.parentElement;
+    }
+    return null;
+}
+
+export function getReactRoot(): Fiber | null {
+    for (const el of [document.body, document.getElementById("__next"), document.getElementById("root")]) {
+        if (!el) continue;
+        const k = findFiberKey(el);
+        if (k) return (el as unknown as Record<string, Fiber>)[k];
+    }
+    return null;
+}
+
+export function walkFiberTree(root: Fiber, visit: (fiber: Fiber) => boolean | void, maxProcessed: number): void {
+    const visited = new WeakSet<Fiber>();
+    const queue: Fiber[] = [root];
+    let processed = 0;
+    while (queue.length && processed < maxProcessed) {
+        const fiber = queue.shift()!;
+        if (visited.has(fiber)) continue;
+        visited.add(fiber);
+        processed++;
+        if (visit(fiber) === false) return;
+        if (fiber.child) queue.push(fiber.child);
+        if (fiber.sibling) queue.push(fiber.sibling);
+    }
+}
+
+export function walkFiberUp(fiber: Fiber | null, max: number, test: (fiber: Fiber) => boolean): Fiber | null {
+    const seen = new WeakSet<Fiber>();
+    let cur = fiber;
+    let d = 0;
+    while (cur && d < max) {
+        if (seen.has(cur)) return null;
+        seen.add(cur);
+        if (test(cur)) return cur;
+        cur = cur.return;
+        d++;
+    }
+    return null;
+}
+
+export function findInReactTree(node: ReactNode, predicate: (node: ReactElement) => boolean): ReactElement | null {
+    const stack: ReactNode[] = [node];
+    while (stack.length) {
+        const cur = stack.pop();
+        if (cur == null || typeof cur !== "object") continue;
+        if (Array.isArray(cur)) {
+            for (const c of cur) stack.push(c);
+            continue;
+        }
+        const el = cur as ReactElement;
+        if (predicate(el)) return el;
+        const children = (el.props as { children?: ReactNode } | null)?.children;
+        if (children != null) stack.push(children);
+    }
+    return null;
+}
+
+type JsxFn = (type: unknown, props: unknown, key?: unknown) => ReactElement;
+
+const jsxTransforms = new WeakMap<object, ComponentType<any>>();
+
+export function wrapComponent<P>(type: ComponentType<P> | object, wrapper: ComponentType<P>): void {
+    jsxTransforms.set(type as object, wrapper);
+}
+
+function wrapJsx(original: JsxFn): JsxFn {
+    return function (type, props, key) {
+        const wrapper = typeof type === "object" || typeof type === "function" ? jsxTransforms.get(type as object) : undefined;
+        return wrapper ? original(wrapper, props, key) : original(type, props, key);
+    };
+}
+
+waitFor(filters.byProps("jsx", "jsxs"), (mod: { jsx: JsxFn }) => {
+    const original = mod.jsx;
+    const jsx = wrapJsx(original);
+    for (const cache of [getRuntimeModuleCache(), getModuleCache()]) {
+        if (!cache) continue;
+        const entries = cache instanceof Map ? cache.values() : Object.values(cache).map(m => (m as { exports?: unknown }).exports);
+        for (const exp of entries) {
+            if (exp != null && typeof exp === "object" && (exp as { jsx?: unknown }).jsx === original) {
+                (exp as { jsx: JsxFn; jsxs: JsxFn }).jsx = jsx;
+                (exp as { jsx: JsxFn; jsxs: JsxFn }).jsxs = jsx;
+            }
+        }
+    }
+});
 
 export type LazyNode = ReactNode | (() => ReactNode);
 

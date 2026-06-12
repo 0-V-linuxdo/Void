@@ -205,23 +205,7 @@ export interface Anchor {
     dist?: number;
 }
 
-export interface Fiber {
-    tag: number;
-    type: { displayName?: string; name?: string } | string | null;
-    stateNode: Element | null;
-    return: Fiber | null;
-    child: Fiber | null;
-    sibling: Fiber | null;
-    memoizedProps: Record<string, unknown> | null;
-    memoizedState: FiberState | null;
-    _debugOwner?: Fiber | null;
-}
-
-export interface FiberState {
-    memoizedState: unknown;
-    queue: { dispatch?: Function } | null;
-    next: FiberState | null;
-}
+export type { Fiber, FiberState } from "@utils/react";
 
 export interface ZustandLike {
     getState(): Record<string, unknown>;
