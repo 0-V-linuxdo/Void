@@ -238,15 +238,15 @@ export default definePlugin({
             replacement: [
                 {
                     match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,className:\i\}=\i;(?!return)(?=.{0,450}?\(0,\i\.jsx\)\("h3")/,
-                    replace: "try{$self._setTitle($1)}catch{}$&",
+                    replace: "$self._setTitle($1);$&",
                 },
                 {
                     match: /function (\i)\(\i\)\{let \i,\i=\(0,\i\.c\)\(\d\),\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
-                    replace: "try{$self._setDescription($1)}catch{}$&",
+                    replace: "$self._setDescription($1);$&",
                 },
                 {
                     match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,action:\i,hidden:\i,className:/,
-                    replace: "try{$self._setRow($1)}catch{}$&",
+                    replace: "$self._setRow($1);$&",
                 },
             ],
         },
