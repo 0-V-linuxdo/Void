@@ -11,9 +11,11 @@ import { getSettingsPluginData, updateSettingsPluginData } from "./Settings";
 
 const logger = new Logger("TurbopackPatcher", "#e78284");
 
+const chunkBasename = (path: string) => path.slice(path.lastIndexOf("/") + 1);
+
 export function checkBuildFingerprint() {
-    const domChunks = [...document.querySelectorAll<HTMLScriptElement>('script[src*="/_next/static/chunks/"]')].map(s => s.src.slice(s.src.lastIndexOf("/") + 1));
-    const current = [...new Set([...domChunks, ...getChunkFingerprint()])];
+    const domChunks = [...document.querySelectorAll<HTMLScriptElement>('script[src*="/_next/static/chunks/"]')].map(s => chunkBasename(s.src));
+    const current = [...new Set([...domChunks, ...getChunkFingerprint().map(chunkBasename)])];
     if (!current.length) return;
 
     const previous = getSettingsPluginData().chunkFingerprint;
