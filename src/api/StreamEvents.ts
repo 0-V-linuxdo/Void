@@ -5,11 +5,9 @@
  */
 
 import { dispatch } from "@api/Events";
+import type { ChatPageStoreModule } from "@grok-types/stores";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
-import { ChatPageStore } from "@turbopack/common/stores";
-import { Logger } from "@utils/Logger";
-
-const logger = new Logger("StreamEvents");
+import { filters, waitFor } from "@turbopack/turbopack";
 
 let started = false;
 
@@ -21,15 +19,12 @@ export function initStreamEvents(): void {
     if (started) return;
     started = true;
 
-    try {
-        const hook = ChatPageStore.useChatPageStore as unknown as SelectorSubscribe<ChatPageStoreState>;
-        hook.subscribe(
+    waitFor<ChatPageStoreModule>(filters.byProps("useChatPageStore"), mod => {
+        (mod.useChatPageStore as unknown as SelectorSubscribe<ChatPageStoreState>).subscribe(
             s => s.streamedMessageId,
             (current, prev) => {
                 if (!current && prev) dispatch("streamEnd", { responseId: prev });
             },
         );
-    } catch (e) {
-        logger.error("Failed to subscribe to ChatPageStore:", e);
-    }
+    });
 }
