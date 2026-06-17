@@ -226,7 +226,7 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,.{0,80}?validationErrorMessage:\i\}\))/,
+                    match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
                     replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)",
                 },
                 {
