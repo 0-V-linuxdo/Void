@@ -612,7 +612,11 @@ export default definePlugin({
                     replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:",
                 },
                 {
-                    match: /if\(((?:\i)&&(?:\i))\)return void (\i)\((\i)\);(?=(?:let|var|const) \i=\{imagine:"home-grid")/,
+                    match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
+                    replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);",
+                },
+                {
+                    match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
                     replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);",
                 },
             ],
@@ -620,7 +624,7 @@ export default definePlugin({
         {
             find: 'imagine-folder.all","All"',
             replacement: {
-                match: /"imagine-folder\.all","All"\)\}\)(?=\]\}\)\]\}\),\i&&)/,
+                match: /"imagine-folder\.all","All"\)\}\)/,
                 replace: "$&,$self._renderFilterButtons({})",
             },
         },
