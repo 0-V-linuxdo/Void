@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.7
+// @version      1.0.3.8
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.7 — A modification for grok.com
+ * Void v1.0.3.8 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -6025,9 +6025,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.7"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"0290ee2"}`
-    }, `(${"0290ee2"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"20d4951"}`
+    }, `(${"20d4951"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6273,8 +6273,8 @@ ${sourceUrl}`;
         group: true,
         replacement: [
           {
-            match: /onSaveEdit:(\i),route:(\i)\}\)(?!\{)/,
-            replace: "onSaveEdit:$1,id:arguments[0].id,route:$2})"
+            match: /onSaveEdit:(\i),([^}]{0,80}?route:\i)\}\)(?!\{)/,
+            replace: "onSaveEdit:$1,id:arguments[0].id,$2})"
           },
           {
             match: /onEditClick:(\i),route:(\i)\}\)(?!\{)/g,
@@ -7188,7 +7188,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
             replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
           },
           {
-            match: /if\(((?:\i)&&(?:\i))\)return void (\i)\((\i)\);(?=(?:let|var|const) \i=\{imagine:"home-grid")/,
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
             replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
           }
         ]
@@ -7196,7 +7200,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       {
         find: 'imagine-folder.all","All"',
         replacement: {
-          match: /"imagine-folder\.all","All"\)\}\)(?=\]\}\)\]\}\),\i&&)/,
+          match: /"imagine-folder\.all","All"\)\}\)/,
           replace: "$&,$self._renderFilterButtons({})"
         }
       },
@@ -7688,7 +7692,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         group: true,
         replacement: [
           {
-            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,.{0,80}?validationErrorMessage:\i\}\))/,
+            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
             replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
           },
           {

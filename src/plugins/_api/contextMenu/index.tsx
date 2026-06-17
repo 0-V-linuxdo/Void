@@ -32,8 +32,8 @@ export default definePlugin({
             group: true,
             replacement: [
                 {
-                    match: /onSaveEdit:(\i),route:(\i)\}\)(?!\{)/,
-                    replace: "onSaveEdit:$1,id:arguments[0].id,route:$2})",
+                    match: /onSaveEdit:(\i),([^}]{0,80}?route:\i)\}\)(?!\{)/,
+                    replace: "onSaveEdit:$1,id:arguments[0].id,$2})",
                 },
                 {
                     match: /onEditClick:(\i),route:(\i)\}\)(?!\{)/g,
