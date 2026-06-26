@@ -57,7 +57,7 @@ export default definePlugin({
             find: "response-family:handleEditSave",
             all: true,
             replacement: {
-                match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,children:!\i&&\i\?\(0,\i\.jsx\)\(\i\.Editor,\{initialMessage:(\i)\./,
+                match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
                 replace: "$self._renderTimestamp({response:$1}),$&",
             },
         },

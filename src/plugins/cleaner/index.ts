@@ -44,11 +44,6 @@ const settings = definePluginSettings({
         description: "Hide the \"Connect your 𝕏 account\" upsell popout.",
         default: true,
     },
-    hideConnectorsBanner: {
-        type: OptionType.BOOLEAN,
-        description: "Hide the \"Connectors are now available\" banner above the chat bar.",
-        default: true,
-    },
 });
 
 export default definePlugin({
@@ -104,14 +99,6 @@ export default definePlugin({
             replacement: {
                 match: /"BrowserNotificationBanner",0,/,
                 replace: '"BrowserNotificationBanner",0,$self.settings.store.hideNotificationBanner?()=>null:',
-            },
-        },
-        {
-            find: "connectors_upsell_dismissed",
-            all: true,
-            replacement: {
-                match: /if\((!\i\.length\|\|\i)\)return null;/,
-                replace: "if($1||$self.settings.store.hideConnectorsBanner)return null;",
             },
         },
         // hides upsell card and locked modes in the mode selector

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.8
+// @version      1.0.3.9
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.8 — A modification for grok.com
+ * Void v1.0.3.9 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -6025,9 +6025,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.8"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"20d4951"}`
-    }, `(${"20d4951"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"7e22708"}`
+    }, `(${"7e22708"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -7704,7 +7704,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       {
         find: '"sidebar-expand","Expand"',
         replacement: {
-          match: /\(0,\i\.jsx\)\(\i,\{title:\i\("sidebar-history"/,
+          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
           replace: "$self._renderActionBar(),$&"
         }
       }
@@ -7746,11 +7746,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     hideConnectX: {
       type: 3 /* BOOLEAN */,
       description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
-      default: true
-    },
-    hideConnectorsBanner: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Connectors are now available" banner above the chat bar.',
       default: true
     }
   });
@@ -7804,14 +7799,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         replacement: {
           match: /"BrowserNotificationBanner",0,/,
           replace: '"BrowserNotificationBanner",0,$self.settings.store.hideNotificationBanner?()=>null:'
-        }
-      },
-      {
-        find: "connectors_upsell_dismissed",
-        all: true,
-        replacement: {
-          match: /if\((!\i\.length\|\|\i)\)return null;/,
-          replace: "if($1||$self.settings.store.hideConnectorsBanner)return null;"
         }
       },
       {
@@ -7891,7 +7878,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
       { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
       { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
-      { find: "pressure_observer", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
+      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
       { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
     ]
   });
@@ -8593,7 +8580,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         find: "response-family:handleEditSave",
         all: true,
         replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,children:!\i&&\i\?\(0,\i\.jsx\)\(\i\.Editor,\{initialMessage:(\i)\./,
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
           replace: "$self._renderTimestamp({response:$1}),$&"
         }
       }
