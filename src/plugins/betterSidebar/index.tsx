@@ -238,7 +238,7 @@ export default definePlugin({
         {
             find: "\"sidebar-expand\",\"Expand\"",
             replacement: {
-                match: /\(0,\i\.jsx\)\(\i,\{title:\i\("sidebar-history"/,
+                match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
                 replace: "$self._renderActionBar(),$&",
             },
         },
