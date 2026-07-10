@@ -32,8 +32,71 @@ interface WsResponse {
     error?: string;
 }
 
-const MCP_URL = `ws://localhost:${MCP_CONSTANTS.PORT}`;
+const MCP_URL = `ws://127.0.0.1:${MCP_CONSTANTS.PORT}`;
 const { SLOW_THRESHOLD, MAX_RESULT_SIZE, INITIAL_RECONNECT_DELAY, MAX_RECONNECT_DELAY } = MCP_CONSTANTS;
+
+// The socket lives in a blob worker: Firefox applies grok.com's upgrade-insecure-requests CSP
+// to document-created WebSockets regardless of loopback target (the exemption checks the page
+// URI, not the target — Bugzilla 1729897), force-upgrading ws:// to wss://. Worker-created
+// sockets skip that code path entirely.
+const WORKER_SRC = `let ws;
+onmessage = e => {
+    const [op, data] = e.data;
+    if (op === 0) {
+        ws = new WebSocket(data);
+        ws.onopen = () => postMessage([0]);
+        ws.onmessage = ev => postMessage([1, ev.data]);
+        ws.onclose = () => postMessage([2]);
+        ws.onerror = () => postMessage([3]);
+    } else if (op === 1) {
+        try { ws.send(data); } catch {}
+    }
+};`;
+
+class WorkerSocket {
+    onopen: (() => void) | null = null;
+    onmessage: ((event: { data: string }) => void) | null = null;
+    onclose: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    readyState: number = WebSocket.CONNECTING;
+    private worker: Worker;
+
+    constructor(url: string) {
+        const blobUrl = URL.createObjectURL(new Blob([WORKER_SRC], { type: "text/javascript" }));
+        try {
+            this.worker = new Worker(blobUrl);
+        } finally {
+            URL.revokeObjectURL(blobUrl);
+        }
+        this.worker.onmessage = e => {
+            const [op, data] = e.data as [number, string?];
+            if (op === 0) {
+                this.readyState = WebSocket.OPEN;
+                this.onopen?.();
+            } else if (op === 1) {
+                this.onmessage?.({ data: data! });
+            } else if (op === 2) {
+                this.readyState = WebSocket.CLOSED;
+                this.worker.terminate();
+                this.onclose?.();
+            } else if (op === 3) {
+                this.onerror?.();
+            }
+        };
+        this.worker.onerror = () => this.onerror?.();
+        this.worker.postMessage([0, url]);
+    }
+
+    send(data: string) {
+        this.worker.postMessage([1, data]);
+    }
+
+    close() {
+        this.readyState = WebSocket.CLOSED;
+        this.worker.terminate();
+        this.onclose?.();
+    }
+}
 
 const settings = definePluginSettings({
     logToolCalls: {
@@ -43,7 +106,7 @@ const settings = definePluginSettings({
     },
 });
 
-let ws: WebSocket | null = null;
+let ws: WorkerSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectDelay: number = INITIAL_RECONNECT_DELAY;
 let connectingLock = false;
@@ -102,7 +165,7 @@ function connect() {
     if (connectingLock || ws?.readyState === WebSocket.OPEN || ws?.readyState === WebSocket.CONNECTING) return;
     connectingLock = true;
     try {
-        ws = new WebSocket(MCP_URL);
+        ws = new WorkerSocket(MCP_URL);
     } catch {
         connectingLock = false;
         scheduleReconnect();
@@ -114,10 +177,10 @@ function connect() {
         const toolCount = Object.keys(toolHandlers).length;
         logger.info(`Connected to MCP session with ${toolCount} tools ready`);
     };
-    ws.onmessage = (event: MessageEvent) => {
+    ws.onmessage = (event: { data: string }) => {
         let msg: WsMessage;
         try {
-            msg = JSON.parse(event.data as string);
+            msg = JSON.parse(event.data);
         } catch (err: unknown) {
             logger.error("Failed to parse WebSocket message", err);
             return;
@@ -188,7 +251,7 @@ function disconnect() {
 }
 export default definePlugin({
     name: "MCP",
-    description: "Connects AI coding agents to Grok via WebSocket for live inspection.",
+    description: "Connects AI coding agents to Grok via a local bridge for live inspection.",
     authors: [Devs.Prism],
     dev: true,
     required: true,
