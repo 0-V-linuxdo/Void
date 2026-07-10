@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void
 // @namespace    https://github.com/imjustprism/Void
-// @version      1.0.3.9
+// @version      1.0.3.10
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.9 — A modification for grok.com
+ * Void v1.0.3.10 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/imjustprism/Void
@@ -2071,13 +2071,11 @@ ${sourceUrl}`;
     CreditQuotaStore: () => CreditQuotaStore,
     ConversationStore: () => ConversationStore,
     CommandMenuStore: () => CommandMenuStore,
-    CodePageStore: () => CodePageStore,
     ChatPageStore: () => ChatPageStore,
     AssetStore: () => AssetStore
   });
   var AssetStore = findByPropsLazy("useAssetStore");
   var ChatPageStore = findByPropsLazy("useChatPageStore");
-  var CodePageStore = findByPropsLazy("useCodePageStore");
   var CommandMenuStore = findByPropsLazy("useCommandMenuStore", "createSelection");
   var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
   var CreditQuotaStore = findByPropsLazy("useCreditQuotaStore");
@@ -3897,7 +3895,7 @@ ${sourceUrl}`;
         find: "backdrop-blur-",
         all: true,
         replacement: {
-          match: /backdrop-blur-(?:sm|md|lg|2?xl|\[\w+\]) ?/g,
+          match: /backdrop-blur-(?:\w+|\[[^\]]+\]) ?/g,
           replace: ""
         }
       }
@@ -6025,9 +6023,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
-    }, `v${"1.0.3.9"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"7e22708"}`
-    }, `(${"7e22708"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, `v${"1.0.3.10"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"953023d"}`
+    }, `(${"953023d"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6086,12 +6084,15 @@ ${sourceUrl}`;
     _renderVoidMenu: () => createElement(WrappedVoidMenu),
     _setTitle(title) {
       setSettingsPrimitive("SettingsTitle", title);
+      return title;
     },
     _setDescription(description) {
       setSettingsPrimitive("SettingsDescription", description);
+      return description;
     },
     _setRow(row) {
       setSettingsPrimitive("SettingsRow", row);
+      return row;
     },
     _tabEntries() {
       return getVisibleTabs().map((t) => ({
@@ -6133,8 +6134,8 @@ ${sourceUrl}`;
         find: "pressed_cmd_settings",
         replacement: [
           {
-            match: /(useMemo\)\(\(\)=>)(\i\.filter\(\i=>\i\.visible\(\i\)\))/,
-            replace: "$1[...$2,...$self._tabEntries()]"
+            match: /\i\.filter\(\i=>\i\.visible\(\i\)\)/,
+            replace: "[...$&,...$self._tabEntries()]"
           },
           {
             match: /children:(\i\.map\(\i=>\(0,\i\.jsx\)\(\i,\{enterprise:\i\.enterprise,children:.{0,160}?\},\i\.id\)\))\}\)/,
@@ -6144,18 +6145,19 @@ ${sourceUrl}`;
       },
       {
         find: /,\{children:\i,action:\i,hidden:\i,className:\i\}=\i,\i=\(0,\i\.useId\)\(\)/,
+        all: true,
         replacement: [
           {
-            match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,className:\i\}=\i;(?!return)(?=.{0,450}?\(0,\i\.jsx\)\("h3")/,
-            replace: "$self._setTitle($1);$&"
+            match: /("SettingsTitle",0,)(\i)/,
+            replace: "$1$self._setTitle($2)"
           },
           {
-            match: /function (\i)\(\i\)\{let \i,\i=\c,\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
-            replace: "$self._setDescription($1);$&"
+            match: /("SettingsDescription",0,)(\i)/,
+            replace: "$1$self._setDescription($2)"
           },
           {
-            match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,action:\i,hidden:\i,className:/,
-            replace: "$self._setRow($1);$&"
+            match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(,"SettingsSection")/,
+            replace: "$1$self._setRow($2)$3"
           }
         ]
       }
@@ -9598,7 +9600,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     CommandGroup: () => CommandGroup,
     CommandEmpty: () => CommandEmpty,
     Command: () => Command,
-    CodePageStore: () => CodePageStore,
     ClassNames: () => ClassNames,
     Checkbox: () => Checkbox,
     ChatPageStore: () => ChatPageStore,

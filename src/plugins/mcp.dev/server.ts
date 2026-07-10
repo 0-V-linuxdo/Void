@@ -78,6 +78,7 @@ function corsFor(req: Request) {
 
 const server = Bun.serve({
     port: MCP.PORT,
+    idleTimeout: REQUEST_TIMEOUT / 1000 + 10,
     async fetch(req): Promise<Response> {
         if (req.headers.get("upgrade") === "websocket") {
             if (server.upgrade(req)) return undefined as unknown as Response;

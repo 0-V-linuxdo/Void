@@ -18,7 +18,7 @@ export default definePlugin({
             find: "backdrop-blur-",
             all: true,
             replacement: {
-                match: /backdrop-blur-(?:sm|md|lg|2?xl|\[\w+\]) ?/g,
+                match: /backdrop-blur-(?:\w+|\[[^\]]+\]) ?/g,
                 replace: "",
             },
         },

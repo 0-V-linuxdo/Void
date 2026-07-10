@@ -1,7 +1,6 @@
 export * from "./AgeVerificationStore";
 export * from "./AssetStore";
 export * from "./ChatPageStore";
-export * from "./CodePageStore";
 export * from "./CommandMenuStore";
 export * from "./ConnectorFeedbackStore";
 export * from "./ConversationStore";

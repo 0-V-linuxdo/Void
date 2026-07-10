@@ -177,14 +177,17 @@ export default definePlugin({
 
     _setTitle(title: ComponentType<SettingsTitleProps>) {
         setSettingsPrimitive("SettingsTitle", title);
+        return title;
     },
 
     _setDescription(description: ComponentType<SettingsDescriptionProps>) {
         setSettingsPrimitive("SettingsDescription", description);
+        return description;
     },
 
     _setRow(row: ComponentType<SettingsRowProps>) {
         setSettingsPrimitive("SettingsRow", row);
+        return row;
     },
 
     _tabEntries() {
@@ -226,8 +229,8 @@ export default definePlugin({
             find: "pressed_cmd_settings",
             replacement: [
                 {
-                    match: /(useMemo\)\(\(\)=>)(\i\.filter\(\i=>\i\.visible\(\i\)\))/,
-                    replace: "$1[...$2,...$self._tabEntries()]",
+                    match: /\i\.filter\(\i=>\i\.visible\(\i\)\)/,
+                    replace: "[...$&,...$self._tabEntries()]",
                 },
                 {
                     match: /children:(\i\.map\(\i=>\(0,\i\.jsx\)\(\i,\{enterprise:\i\.enterprise,children:.{0,160}?\},\i\.id\)\))\}\)/,
@@ -237,18 +240,19 @@ export default definePlugin({
         },
         {
             find: /,\{children:\i,action:\i,hidden:\i,className:\i\}=\i,\i=\(0,\i\.useId\)\(\)/,
+            all: true,
             replacement: [
                 {
-                    match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,className:\i\}=\i;(?!return)(?=.{0,450}?\(0,\i\.jsx\)\("h3")/,
-                    replace: "$self._setTitle($1);$&",
+                    match: /("SettingsTitle",0,)(\i)/,
+                    replace: "$1$self._setTitle($2)",
                 },
                 {
-                    match: /function (\i)\(\i\)\{let \i,\i=\c,\{children:\i\}=\i;(?=.{0,300}?\{children:\i,action:\i,hidden:)/,
-                    replace: "$self._setDescription($1);$&",
+                    match: /("SettingsDescription",0,)(\i)/,
+                    replace: "$1$self._setDescription($2)",
                 },
                 {
-                    match: /function (\i)\(\i\)\{[^{}]{0,40}\{children:\i,action:\i,hidden:\i,className:/,
-                    replace: "$self._setRow($1);$&",
+                    match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(,"SettingsSection")/,
+                    replace: "$1$self._setRow($2)$3",
                 },
             ],
         },
