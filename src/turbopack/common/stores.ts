@@ -7,7 +7,6 @@
 import type {
     AssetStoreModule,
     ChatPageStoreModule,
-    CodePageStoreModule,
     CommandMenuStoreModule,
     ConversationStoreModule,
     CreditQuotaStoreModule,
@@ -46,7 +45,6 @@ import { findByPropsLazy, findLazy } from "../turbopack";
 
 export const AssetStore: AssetStoreModule = findByPropsLazy("useAssetStore");
 export const ChatPageStore: ChatPageStoreModule = findByPropsLazy("useChatPageStore");
-export const CodePageStore: CodePageStoreModule = findByPropsLazy("useCodePageStore");
 export const CommandMenuStore: CommandMenuStoreModule = findByPropsLazy("useCommandMenuStore", "createSelection");
 export const ConversationStore: ConversationStoreModule = findByPropsLazy("useConversationStore", "createOptimisticConversation");
 export const CreditQuotaStore: CreditQuotaStoreModule = findByPropsLazy("useCreditQuotaStore");
