@@ -5,78 +5,35 @@
  */
 
 import type {
-    AssetStoreModule,
     ChatPageStoreModule,
-    CommandMenuStoreModule,
     ConversationStoreModule,
     CreditQuotaStoreModule,
-    DictationStoreModule,
     FeatureStoreModule,
     FilesPageStoreModule,
-    FileStoreModule,
-    ImageEditorStoreModule,
-    ImagineModelOverrideStoreModule,
     MediaStoreModule,
-    MentionMenuStoreModule,
     ModesStoreModule,
-    NotificationsStoreModule,
-    PersonalityStoreModule,
-    ReportStoreModule,
     ResponseStoreModule,
     RoutingStoreModule,
-    ScrollStoreModule,
     SessionStoreModule,
     SettingsDialogStoreModule,
     SettingsStoreModule,
-    ShareStoreModule,
-    SkillsStoreModule,
     SubscriptionsStoreModule,
-    SuggestionStoreModule,
-    TabsManagerStoreModule,
-    TasksStoreModule,
     TextToSpeechStoreModule,
-    TourGuideStoreModule,
-    UpsellStoreModule,
-    WorkspaceConnectorsStoreModule,
-    WorkspaceStoreModule,
 } from "@grok-types/stores";
 
-import { findByPropsLazy, findLazy } from "../turbopack";
+import { findByPropsLazy } from "../turbopack";
 
-export const AssetStore: AssetStoreModule = findByPropsLazy("useAssetStore");
 export const ChatPageStore: ChatPageStoreModule = findByPropsLazy("useChatPageStore");
-export const CommandMenuStore: CommandMenuStoreModule = findByPropsLazy("useCommandMenuStore", "createSelection");
 export const ConversationStore: ConversationStoreModule = findByPropsLazy("useConversationStore", "createOptimisticConversation");
 export const CreditQuotaStore: CreditQuotaStoreModule = findByPropsLazy("useCreditQuotaStore");
-export const DictationStore: DictationStoreModule = findByPropsLazy("useDictationStore");
 export const FeatureStore: FeatureStoreModule = findByPropsLazy("useFeatureStore");
 export const FilesPageStore: FilesPageStoreModule = findByPropsLazy("useFilesPageStore", "useAssetsList");
-export const FileStore: FileStoreModule = findByPropsLazy("useFileStore");
-export const ImageEditorStore: ImageEditorStoreModule = findLazy(m => {
-    const hook = m?.useImageEditorStore;
-    return typeof hook === "function" && typeof hook.getState === "function" && typeof hook.getState()?.setUploadedImage === "function";
-});
-export const ImagineModelOverrideStore: ImagineModelOverrideStoreModule = findByPropsLazy("useImagineModelOverrideStore");
 export const MediaStore: MediaStoreModule = findByPropsLazy("useMediaStore", "useImagineModeStore");
-export const MentionMenuStore: MentionMenuStoreModule = findByPropsLazy("useMentionMenuStore");
 export const ModesStore: ModesStoreModule = findByPropsLazy("useModesStore");
-export const NotificationsStore: NotificationsStoreModule = findByPropsLazy("useNotificationsStore", "useNotificationsStoreInit");
-export const PersonalityStore: PersonalityStoreModule = findByPropsLazy("usePersonalityStore", "personalitySchema");
-export const ReportStore: ReportStoreModule = findByPropsLazy("useReportStore");
 export const ResponseStore: ResponseStoreModule = findByPropsLazy("useResponseStore", "createOptimisticResponse");
 export const RoutingStore: RoutingStoreModule = findByPropsLazy("useRoutingStore", "formatUrl");
-export const ScrollStore: ScrollStoreModule = findByPropsLazy("useScrollStore");
 export const SessionStore: SessionStoreModule = findByPropsLazy("useSession", "SessionStoreProvider");
 export const SettingsDialogStore: SettingsDialogStoreModule = findByPropsLazy("useSettingsDialogStore");
 export const SettingsStore: SettingsStoreModule = findByPropsLazy("useSettingsStore", "modelConfigOverrideSchema");
-export const ShareStore: ShareStoreModule = findByPropsLazy("useShareStore");
-export const SkillsStore: SkillsStoreModule = findByPropsLazy("useSkillsStore");
 export const SubscriptionsStore: SubscriptionsStoreModule = findByPropsLazy("useSubscriptionsStore");
-export const SuggestionStore: SuggestionStoreModule = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");
-export const TabsManagerStore: TabsManagerStoreModule = findByPropsLazy("useTabsManagerStore");
-export const TasksStore: TasksStoreModule = findByPropsLazy("useTasksStore");
 export const TextToSpeechStore: TextToSpeechStoreModule = findByPropsLazy("useTextToSpeechStore");
-export const TourGuideStore: TourGuideStoreModule = findByPropsLazy("useTourGuideStore", "useTourGuideTooltip");
-export const UpsellStore: UpsellStoreModule = findByPropsLazy("useUpsellStore", "useShouldShowUpgradeButton");
-export const WorkspaceConnectorsStore: WorkspaceConnectorsStoreModule = findByPropsLazy("useWorkspaceConnectorsStore", "useWorkspaceActiveConnectorIds");
-export const WorkspaceStore: WorkspaceStoreModule = findByPropsLazy("useWorkspaceStore", "useWorkspacesList");

@@ -4,25 +4,27 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Button, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, Flex, Paragraph, Text } from "@components";
+import { Button, Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, Flex, Paragraph, Text } from "@components";
 import { Cross2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import type { ReactNode } from "react";
 
-export function VoidDialogShell({ title, subtitle, children }: { title: ReactNode; subtitle?: string; children: ReactNode }) {
+export function VoidDialogShell({ title, subtitle, onClose, children }: { title: ReactNode; subtitle?: string; onClose(): void; children: ReactNode }) {
     return (
-        <DialogContent className="void-dialog-content" aria-describedby={undefined}>
-            <DialogClose asChild>
-                <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className="void-dialog-close">
-                    <Cross2Icon />
-                </Button>
-            </DialogClose>
-            <DialogHeader className="void-dialog-header">
-                <DialogTitle>{title}</DialogTitle>
-                {subtitle && <Paragraph>{subtitle}</Paragraph>}
-            </DialogHeader>
-            {children}
-        </DialogContent>
+        <Dialog open onOpenChange={v => { if (!v) onClose(); }}>
+            <DialogContent className="void-dialog-content" aria-describedby={undefined}>
+                <DialogClose asChild>
+                    <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className="void-dialog-close">
+                        <Cross2Icon />
+                    </Button>
+                </DialogClose>
+                <DialogHeader className="void-dialog-header">
+                    <DialogTitle>{title}</DialogTitle>
+                    {subtitle && <Paragraph>{subtitle}</Paragraph>}
+                </DialogHeader>
+                {children}
+            </DialogContent>
+        </Dialog>
     );
 }
 

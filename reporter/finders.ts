@@ -8,12 +8,6 @@ import type { ChunkMap, ModuleEntry } from "./chunks";
 import type { FinderSpec } from "./extract";
 import type { Diagnostic } from "./fmt";
 
-export type FinderIssueCode =
-    | "finder::no-match"
-    | "finder::ambiguous"
-    | "finder::args-unknown"
-    | "finder::partial";
-
 export interface FinderReportEntry {
     finder: FinderSpec;
     matchedModules: number[];

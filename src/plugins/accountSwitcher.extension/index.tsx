@@ -18,12 +18,13 @@ import { React, useState } from "@turbopack/common/react";
 import { SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
-import { captureSnapshots, CookieAccessError, type CookieDomainSnapshot, replaceAllCookies } from "@utils/cookies";
-import { decryptForAccount, type EncryptedBlob, encryptForAccount, isEncryptedBlob } from "@utils/crypto";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { randomId } from "@utils/misc";
 import definePlugin from "@utils/types";
+
+import { captureSnapshots, CookieAccessError, type CookieDomainSnapshot, replaceAllCookies } from "./cookies";
+import { decryptForAccount, type EncryptedBlob, encryptForAccount, isEncryptedBlob } from "./crypto";
 
 const logger = new Logger("AccountSwitcher");
 const cl = classNameFactory("void-as-");

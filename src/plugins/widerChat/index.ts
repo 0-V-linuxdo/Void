@@ -14,13 +14,13 @@ const STYLE_NAME = "widerChat";
 const settings = definePluginSettings({
     width: {
         type: OptionType.NUMBER,
-        description: "Maximum chat width in rem (default: 48).",
+        description: "Maximum chat width in rem.",
         default: 64,
     },
 });
 
 function applyWidth() {
-    const w = settings.store.width ?? 64;
+    const w = settings.store.width;
     registerStyle(
         STYLE_NAME,
         `.breakout{--content-max-width:${w}rem!important}`

@@ -1,12 +1,11 @@
 #!/usr/bin/env bun
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
+import { relative } from "node:path";
 import ts from "typescript";
 
-import { countCaptureGroups } from "../src/utils/patches.ts";
+import { scanPluginIndexFiles } from "../reporter/extract.ts";
+import { lintPatchMatch } from "../src/utils/patches.ts";
 
-const PLUGINS_DIR = "src/plugins";
-const MAX_CAPTURE_WARN = 5;
 const MATCH_LONG = 200;
 
 const isCI = process.env.GITHUB_ACTIONS === "true";
@@ -29,8 +28,9 @@ function lintMatch(file, line, kind, value, replaceValue) {
         try { new RegExp(value); }
         catch (e) { annotate("error", file, line, `Invalid regex: ${e.message}`); return; }
 
-        if (/(?<!\\)\.\+/.test(value)) annotate("error", file, line, "Unbounded .+ gap, use .{0,N}");
-        if (/(?<!\\)\.\*/.test(value)) annotate("error", file, line, "Unbounded .* gap, use .{0,N}");
+        for (const w of lintPatchMatch(value, typeof replaceValue === "string" ? replaceValue : undefined)) {
+            annotate(w.severity === "warn" ? "warning" : "error", file, line, w.fix ? `${w.message}, ${w.fix}` : w.message);
+        }
 
         const hasQuoted = /["'][^"']{2,}["']/.test(value);
         const hasLiteralRun = /[A-Za-z_$][A-Za-z0-9_$]{3,}/.test(value.replaceAll(/\\[A-Za-z]/g, ""));
@@ -39,16 +39,6 @@ function lintMatch(file, line, kind, value, replaceValue) {
         }
 
         if (value.length > MATCH_LONG) annotate("warning", file, line, `Long regex (${value.length} chars), consider splitting`);
-
-        const groups = countCaptureGroups(value);
-        if (groups > MAX_CAPTURE_WARN) annotate("warning", file, line, `${groups} capture groups, prefer (?:...) for unused`);
-
-        if (typeof replaceValue === "string") {
-            const refs = [...replaceValue.matchAll(/\$(\d+)/g)].map(m => Number(m[1]));
-            for (const r of refs) {
-                if (r > groups) annotate("error", file, line, `$${r} referenced but only ${groups} capture groups`);
-            }
-        }
     }
 
     if (typeof replaceValue === "string" && replaceValue.includes("$self") && !/\$self[._]/.test(replaceValue)) {
@@ -147,20 +137,9 @@ function walkPatches(file, sourceFile) {
     visit(sourceFile);
 }
 
-function* pluginEntries(dir) {
-    for (const entry of readdirSync(dir)) {
-        const path = join(dir, entry);
-        if (!statSync(path).isDirectory()) continue;
-        for (const f of ["index.ts", "index.tsx"]) {
-            const p = join(path, f);
-            try { statSync(p); yield p; break; }
-            catch { /* skip */ }
-        }
-    }
-}
-
-for (const file of pluginEntries(PLUGINS_DIR)) {
-    const text = readFileSync(file, "utf8");
+for (const abs of scanPluginIndexFiles()) {
+    const file = relative(process.cwd(), abs).replaceAll("\\", "/");
+    const text = readFileSync(abs, "utf8");
     if (!text.includes("patches:")) continue;
     const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     walkPatches(file, sourceFile);

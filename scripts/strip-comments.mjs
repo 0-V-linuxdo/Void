@@ -10,7 +10,7 @@ import { argv, cwd, exit } from "node:process";
 
 import ts from "typescript";
 
-const DEFAULT_ROOTS = ["src", "reporter", "browser", "build.ts", "reporter.ts"];
+const DEFAULT_ROOTS = ["src", "reporter", "browser", "build.ts"];
 const SOURCE_RE = /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/;
 const SKIP_DIRS = new Set(["node_modules", "dist", ".git", ".void-cache"]);
 const KEEP_RE = /SPDX-License-Identifier|oxlint-disable|eslint-disable|@ts-ignore|@ts-expect-error|@ts-nocheck|prettier-ignore|stylelint-disable|webpackChunkName|@preserve|@__PURE__/;

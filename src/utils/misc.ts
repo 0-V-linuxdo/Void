@@ -43,23 +43,20 @@ export function onlyOnce<T extends (...args: never[]) => unknown>(fn: T): T {
     }) as unknown as T;
 }
 
-export function debounce<T extends (...args: never[]) => void>(fn: T, ms: number): T & { cancel(): void; flush(): void } {
+export function debounce<T extends (...args: never[]) => void>(fn: T, ms: number): T {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    let lastArgs: unknown[] | undefined;
-    const debounced = ((...args: unknown[]) => {
-        lastArgs = args;
+    return ((...args: unknown[]) => {
         clearTimeout(timer);
-        timer = setTimeout(() => { lastArgs = undefined; fn(...(args as never[])); }, ms);
-    }) as unknown as T & { cancel(): void; flush(): void };
-    debounced.cancel = () => { clearTimeout(timer); lastArgs = undefined; };
-    debounced.flush = () => { if (lastArgs) { clearTimeout(timer); const a = lastArgs; lastArgs = undefined; fn(...(a as never[])); } };
-    return debounced;
+        timer = setTimeout(() => fn(...(args as never[])), ms);
+    }) as unknown as T;
 }
+
+const FETCH_TIMEOUT_MS = 30_000;
 
 export function fetchExternal(url: string): Promise<Response> {
     if (IS_EXTENSION || typeof GM_xmlhttpRequest === "undefined") {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 30_000);
+        const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
         return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
     }
 
@@ -68,7 +65,7 @@ export function fetchExternal(url: string): Promise<Response> {
             method: "GET",
             url,
             responseType: "blob",
-            timeout: 30_000,
+            timeout: FETCH_TIMEOUT_MS,
             onload(resp) {
                 resolve(new Response(resp.response, {
                     status: resp.status,
@@ -187,17 +184,6 @@ export function safeUrl(url: string): string | null {
 export function randomId(prefix = ""): string {
     const tail = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     return prefix ? `${prefix}-${tail}` : tail;
-}
-
-export function dedupeNames(names: string[]): string[] {
-    const counts = new Map<string, number>();
-    return names.map(name => {
-        const count = counts.get(name) ?? 0;
-        counts.set(name, count + 1);
-        if (!count) return name;
-        const dot = name.lastIndexOf(".");
-        return dot > 0 ? `${name.slice(0, dot)} (${count})${name.slice(dot)}` : `${name} (${count})`;
-    });
 }
 
 export function sortedEntries<V extends { order?: number }>(map: Map<string, V>): [string, V][] {

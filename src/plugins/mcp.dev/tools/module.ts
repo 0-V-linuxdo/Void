@@ -32,7 +32,7 @@ import {
     attachPatchInfo,
     clampConfig,
     createGenerationalCache,
-    describeValue,
+    describeKeys,
     dispatch,
     errorMessage,
     extractSuggestAnchors,
@@ -328,7 +328,7 @@ function resolveFilter(args: FilterDef): { filter: FilterFn; type: string } | { 
 function requireFactorySource(id: number | undefined): { src: string; id: number } | { error: string } {
     if (id == null) return { error: "Provide module id." };
     const src = getFactorySource(id);
-    if (!src) return { error: `Module ${id} not found.` };
+    if (!src) return { error: moduleNotFound(id) };
     return { src, id };
 }
 
@@ -486,18 +486,7 @@ function actionExports(args: ModuleArgs): unknown {
     if ("error" in check) return check;
     const { exports } = check;
     const target = (exports != null && typeof exports === "object" ? exports : { default: exports }) as Record<string, unknown>;
-    const keys = Object.keys(target);
-    const result: Record<string, string> = {};
-    const cap = clampConfig(args.limit, MODULE.DEFAULT_EXPORT_KEYS, MODULE.MAX_EXPORT_KEYS);
-    for (let i = 0, l = Math.min(keys.length, cap); i < l; i++) {
-        try {
-            result[keys[i]] = describeValue(target[keys[i]]);
-        } catch {
-            result[keys[i]] = "!";
-        }
-    }
-    if (keys.length > cap) result["\u2026"] = `+${keys.length - cap}`;
-    return result;
+    return describeKeys(target, clampConfig(args.limit, MODULE.DEFAULT_EXPORT_KEYS, MODULE.MAX_EXPORT_KEYS));
 }
 
 function actionSource(args: ModuleArgs): unknown {

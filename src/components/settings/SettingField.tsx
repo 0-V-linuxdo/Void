@@ -59,6 +59,15 @@ function SettingLabel({ id, setting }: { id: string; setting: Partial<Pick<Plugi
     );
 }
 
+function LabeledField({ id, setting, children }: { id: string; setting: Partial<Pick<PluginSettingCommon, "description">>; children: React.ReactNode }) {
+    return (
+        <Flex flexDirection="column" gap="0.5rem">
+            <SettingLabel id={id} setting={setting} />
+            {children}
+        </Flex>
+    );
+}
+
 const BooleanField: Field<PluginSettingBooleanDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return (
@@ -98,8 +107,7 @@ const SliderField: Field<PluginSettingSliderDef & PluginSettingCommon> = ({ id, 
     const { min, max } = setting;
 
     return (
-        <Flex flexDirection="column" gap="0.5rem">
-            <SettingLabel id={id} setting={setting} />
+        <LabeledField id={id} setting={setting}>
             <Flex gap="0.5rem" className={cl("slider-row")}>
                 <Slider
                     value={[(value as number) ?? min]}
@@ -111,7 +119,7 @@ const SliderField: Field<PluginSettingSliderDef & PluginSettingCommon> = ({ id, 
                 />
                 <Text size="sm" color="secondary" className={cl("slider-value")}>{value as number}</Text>
             </Flex>
-        </Flex>
+        </LabeledField>
     );
 };
 
@@ -124,31 +132,28 @@ const ComponentField: Field<PluginSettingComponentDef> = ({ setting, pluginName 
 const NumberField: Field<PluginSettingNumberDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return (
-        <Flex flexDirection="column" gap="0.5rem">
-            <SettingLabel id={id} setting={setting} />
+        <LabeledField id={id} setting={setting}>
             <Input
                 type="number"
-                value={value == null ? "" : String(value)}
+                value={String(value ?? "")}
                 onChange={(e: InputChangeEvent) => {
                     const n = Number(e.target.value);
                     if (!isNaN(n)) update(n);
                 }}
                 className={cl("number-input")}
             />
-        </Flex>
+        </LabeledField>
     );
 };
 
 const BigIntField: Field<PluginSettingBigIntDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    const display = value == null ? "" : String(value);
     return (
-        <Flex flexDirection="column" gap="0.5rem">
-            <SettingLabel id={id} setting={setting} />
+        <LabeledField id={id} setting={setting}>
             <Input
                 type="text"
                 inputMode="numeric"
-                value={display}
+                value={String(value ?? "")}
                 onChange={(e: InputChangeEvent) => {
                     const raw = e.target.value.trim();
                     if (!raw) return update(0n);
@@ -156,23 +161,22 @@ const BigIntField: Field<PluginSettingBigIntDef & PluginSettingCommon> = ({ id, 
                 }}
                 className={cl("number-input")}
             />
-        </Flex>
+        </LabeledField>
     );
 };
 
 const StringField: Field<PluginSettingStringDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     return (
-        <Flex flexDirection="column" gap="0.5rem">
-            <SettingLabel id={id} setting={setting} />
+        <LabeledField id={id} setting={setting}>
             <Input
                 type="text"
-                value={value == null ? "" : String(value)}
+                value={String(value ?? "")}
                 onChange={(e: InputChangeEvent) => update(e.target.value)}
                 placeholder={setting.placeholder}
                 className={cl("string-input")}
             />
-        </Flex>
+        </LabeledField>
     );
 };
 

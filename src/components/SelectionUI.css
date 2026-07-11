@@ -1,0 +1,40 @@
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-sel-wrap {
+    display: none;
+    align-items: center;
+}
+
+.void-sel-wrap:has([data-state="checked"]) {
+    display: inline-flex;
+}
+
+.void-sel-checkbox {
+    border-color: oklch(99.24% 0 none / 15%) !important;
+}
+
+.void-sel-action-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+.void-sel-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-tertiary);
+}
+
+.void-sel-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.void-sel-buttons > button {
+    flex: 1;
+}

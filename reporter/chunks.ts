@@ -7,17 +7,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 
-import { skipBalanced, skipTrivia } from "./ast";
+import { skipBalanced, skipToTopLevelComma } from "./ast";
 
 const CACHE_DIR = ".void-cache";
 const CHUNK_RE = /(?:\/_next\/)?static\/chunks\/[^"'\s)`<>]+\.js/g;
 const BUILD_ID_RE = /"buildId":"([^"]+)"/;
-
-export interface Chunk {
-    path: string;
-    name: string;
-    source: string;
-}
 
 export interface ModuleEntry {
     id: number;
@@ -26,11 +20,9 @@ export interface ModuleEntry {
 }
 
 export interface ChunkMap {
-    origin: string;
     buildId: string;
-    chunks: Map<string, Chunk>;
+    chunks: Map<string, string>;
     modules: Map<number, ModuleEntry>;
-    moduleOffsets: Map<number, { chunkName: string; offset: number }>;
     html: string;
 }
 
@@ -109,7 +101,7 @@ async function tryFetchManifests(origin: string, buildId: string): Promise<strin
     return [...out];
 }
 
-export function parseModulesFromChunk(src: string): Array<{ id: number; offset: number; length: number }> {
+function parseModulesFromChunk(src: string): Array<{ id: number; offset: number; length: number }> {
     const out: Array<{ id: number; offset: number; length: number }> = [];
     const pushIdx = src.indexOf(".push([");
     if (pushIdx === -1) return out;
@@ -155,24 +147,6 @@ export function parseModulesFromChunk(src: string): Array<{ id: number; offset: 
     return out;
 }
 
-function skipToTopLevelComma(src: string, start: number, end: number): number {
-    let i = start;
-    let depth = 0;
-    while (i < end) {
-        const before = i;
-        const after = skipTrivia(src, i);
-        if (after !== before) { i = after; continue; }
-        const c = src[i];
-        if (c === "(" || c === "{" || c === "[") depth++;
-        else if (c === ")" || c === "}" || c === "]") {
-            depth--;
-            if (depth < 0) return i;
-        } else if (c === "," && depth === 0) return i;
-        i++;
-    }
-    return end;
-}
-
 export async function loadChunkMap(origin: string, onPhase: (name: string, current?: number, total?: number) => void): Promise<ChunkMap> {
     onPhase("html");
     const res = await fetch(origin, { redirect: "follow" });
@@ -181,8 +155,7 @@ export async function loadChunkMap(origin: string, onPhase: (name: string, curre
 
     const initial = [...new Set((html.match(CHUNK_RE) ?? []).map(normalizeChunkPath))];
     const buildId = html.match(BUILD_ID_RE)?.[1]
-        ?? initial.map(p => p.split("/").pop()!.replace(/\.js$/, "")).sort().join("").slice(0, 12)
-        ?? "unknown";
+        ?? initial.map(p => p.split("/").pop()!.replace(/\.js$/, "")).sort().join("").slice(0, 12);
 
     onPhase("manifests");
     const manifestPaths = await tryFetchManifests(origin, buildId);
@@ -191,31 +164,21 @@ export async function loadChunkMap(origin: string, onPhase: (name: string, curre
     onPhase("crawl", 0, allInitial.length);
     const sources = await crawlChunks(origin, allInitial, buildId, (cur, total) => onPhase("crawl", cur, total));
 
-    const chunks = new Map<string, Chunk>();
+    const chunks = new Map<string, string>();
     const modules = new Map<number, ModuleEntry>();
-    const moduleOffsets = new Map<number, { chunkName: string; offset: number }>();
 
     onPhase("parse", 0, sources.size);
     let parsed = 0;
     for (const [path, source] of sources) {
         const name = path.split("/").pop()!.replace(/\.js$/, "");
-        chunks.set(name, { path, name, source });
+        chunks.set(name, source);
         for (const { id, offset, length } of parseModulesFromChunk(source)) {
-            if (!modules.has(id)) {
-                modules.set(id, { id, factory: source.slice(offset, offset + length), chunkName: name });
-                moduleOffsets.set(id, { chunkName: name, offset });
-            }
+            if (!modules.has(id)) modules.set(id, { id, factory: source.slice(offset, offset + length), chunkName: name });
         }
         parsed++;
         if (parsed % 50 === 0) onPhase("parse", parsed, sources.size);
     }
     onPhase("parse", sources.size, sources.size);
 
-    return { origin, buildId, chunks, modules, moduleOffsets, html };
-}
-
-export function chunkStats(map: ChunkMap): { chunks: number; modules: number; bytes: number } {
-    let bytes = 0;
-    for (const c of map.chunks.values()) bytes += c.source.length;
-    return { chunks: map.chunks.size, modules: map.modules.size, bytes };
+    return { buildId, chunks, modules, html };
 }

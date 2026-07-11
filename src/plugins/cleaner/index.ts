@@ -46,6 +46,15 @@ const settings = definePluginSettings({
     },
 });
 
+const hideComponentPatch = (name: string, setting: keyof typeof settings.store, all = true) => ({
+    find: `"${name}",0,`,
+    all,
+    replacement: {
+        match: new RegExp(`"${name}",0,`),
+        replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`,
+    },
+});
+
 export default definePlugin({
     name: "Cleaner",
     description: "Hides upgrade nags and upsell banners.",
@@ -69,21 +78,8 @@ export default definePlugin({
                 replace: "$1&&!$self.settings.store.hideUpsellCard",
             },
         },
-        {
-            find: '"UpsellSuperGrokSmall",0,',
-            all: true,
-            replacement: {
-                match: /"UpsellSuperGrokSmall",0,/,
-                replace: '"UpsellSuperGrokSmall",0,$self.settings.store.hideUpsellSmall?()=>null:',
-            },
-        },
-        {
-            find: '"UpsellButton",0,',
-            replacement: {
-                match: /"UpsellButton",0,/,
-                replace: '"UpsellButton",0,$self.settings.store.hideUpsellSmall?()=>null:',
-            },
-        },
+        hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
+        hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
         {
             find: "connect-x-upsell-dismissed",
             replacement: {
@@ -91,14 +87,7 @@ export default definePlugin({
                 replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1",
             },
         },
-        {
-            find: '"BrowserNotificationBanner",0,',
-            all: true,
-            replacement: {
-                match: /"BrowserNotificationBanner",0,/,
-                replace: '"BrowserNotificationBanner",0,$self.settings.store.hideNotificationBanner?()=>null:',
-            },
-        },
+        hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
         {
             find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
             all: true,

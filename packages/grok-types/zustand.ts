@@ -26,6 +26,7 @@ export interface ZustandStore<State extends object> {
     getInitialState(): State;
     /** Merge partial state or apply an updater function. Pass `replace: true` to replace state entirely. */
     setState(partial: Partial<State> | ((state: State) => Partial<State>), replace?: boolean): void;
+    subscribe<T>(selector: (state: State) => T, listener: (current: T, prev: T) => void, options?: { equalityFn?: (a: T, b: T) => boolean; fireImmediately?: boolean }): () => void;
     /** Subscribe to state changes. Returns an unsubscribe function. */
     subscribe(listener: (state: State, prevState: State) => void): () => void;
 }

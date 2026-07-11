@@ -11,7 +11,6 @@ import { addLocalTheme, addTheme, getThemes, removeTheme, type ThemeData, update
 import {
     Button,
     ConfirmDialog,
-    Dialog,
     ErrorBoundary,
     Flex,
     Grid,
@@ -47,19 +46,17 @@ const FILTER_OPTIONS: readonly { value: ThemeFilter; label: string }[] = [
 const getThemeKey = (t: ThemeData) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
 
 interface LocalThemeDialogProps {
-    open: boolean;
     onClose(): void;
     theme?: ThemeData;
     onSave(): void;
 }
 
 interface OnlineThemeDialogProps {
-    open: boolean;
     onClose(): void;
     onSave(): void;
 }
 
-function OnlineThemeDialog({ open, onClose, onSave }: OnlineThemeDialogProps) {
+function OnlineThemeDialog({ onClose, onSave }: OnlineThemeDialogProps) {
     const [url, setUrl] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -81,31 +78,29 @@ function OnlineThemeDialog({ open, onClose, onSave }: OnlineThemeDialogProps) {
     };
 
     return (
-        <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-            <VoidDialogShell title="Add Online Theme">
-                <DialogField label="URL">
-                    <Input
-                        type="text"
-                        placeholder="https://raw.githubusercontent.com/..."
-                        value={url}
-                        onChange={(e: InputChangeEvent) => { setUrl(e.target.value); setError(""); }}
-                        onKeyDown={(e: { key: string }) => { if (e.key === "Enter") handleImport(); }}
-                    />
-                </DialogField>
-                {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
-                <DialogActions
-                    className={cl("local-footer")}
-                    onCancel={onClose}
-                    confirmLabel={loading ? "Importing..." : "Import"}
-                    onConfirm={handleImport}
-                    confirmDisabled={loading || !url.trim()}
+        <VoidDialogShell title="Add Online Theme" onClose={onClose}>
+            <DialogField label="URL">
+                <Input
+                    type="text"
+                    placeholder="https://raw.githubusercontent.com/..."
+                    value={url}
+                    onChange={(e: InputChangeEvent) => { setUrl(e.target.value); setError(""); }}
+                    onKeyDown={(e: { key: string }) => { if (e.key === "Enter") handleImport(); }}
                 />
-            </VoidDialogShell>
-        </Dialog>
+            </DialogField>
+            {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
+            <DialogActions
+                className={cl("local-footer")}
+                onCancel={onClose}
+                confirmLabel={loading ? "Importing..." : "Import"}
+                onConfirm={handleImport}
+                confirmDisabled={loading || !url.trim()}
+            />
+        </VoidDialogShell>
     );
 }
 
-function LocalThemeDialog({ open, onClose, theme, onSave }: LocalThemeDialogProps) {
+function LocalThemeDialog({ onClose, theme, onSave }: LocalThemeDialogProps) {
     const [name, setName] = useState(theme?.name ?? "");
     const [css, setCss] = useState(theme?.css ?? "");
     const [error, setError] = useState("");
@@ -126,29 +121,27 @@ function LocalThemeDialog({ open, onClose, theme, onSave }: LocalThemeDialogProp
     };
 
     return (
-        <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-            <VoidDialogShell title={theme ? "Edit Local Theme" : "New Local Theme"}>
-                <DialogField label="Name">
-                    <Input
-                        type="text"
-                        placeholder="My Theme"
-                        value={name}
-                        onChange={(e: InputChangeEvent) => setName(e.target.value)}
-                    />
-                </DialogField>
-                <DialogField label="CSS" className={cl("local-css-field")}>
-                    <CssEditor className={cl("local-editor")} value={css} onChange={setCss} placeholder="Paste your CSS here..." />
-                </DialogField>
-                {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
-                <DialogActions
-                    className={cl("local-footer")}
-                    onCancel={onClose}
-                    confirmLabel={theme ? "Save" : "Create"}
-                    onConfirm={handleSave}
-                    confirmDisabled={!name.trim() || !css.trim()}
+        <VoidDialogShell title={theme ? "Edit Local Theme" : "New Local Theme"} onClose={onClose}>
+            <DialogField label="Name">
+                <Input
+                    type="text"
+                    placeholder="My Theme"
+                    value={name}
+                    onChange={(e: InputChangeEvent) => setName(e.target.value)}
                 />
-            </VoidDialogShell>
-        </Dialog>
+            </DialogField>
+            <DialogField label="CSS" className={cl("local-css-field")}>
+                <CssEditor className={cl("local-editor")} value={css} onChange={setCss} placeholder="Paste your CSS here..." />
+            </DialogField>
+            {error && <Text size="xs" className={cl("add-error")}>{error}</Text>}
+            <DialogActions
+                className={cl("local-footer")}
+                onCancel={onClose}
+                confirmLabel={theme ? "Save" : "Create"}
+                onConfirm={handleSave}
+                confirmDisabled={!name.trim() || !css.trim()}
+            />
+        </VoidDialogShell>
     );
 }
 
@@ -200,21 +193,20 @@ export default function ThemesTab() {
             </Flex>
             <Separator />
             {themes.length > 0 && (
-                <SearchFilterBar
+                <SearchFilterBar<ThemeFilter>
                     placeholder={`Search ${themes.length} themes...`}
                     search={search}
                     onSearchChange={setSearch}
                     filter={filter}
-                    onFilterChange={f => setFilter(f)}
+                    onFilterChange={setFilter}
                     options={FILTER_OPTIONS}
-                    selectClassName="void-search-bar-select"
                 />
             )}
             {filtered.length > 0 && (
                 <Grid columns="repeat(2, 1fr)">
                     {filtered.map(t => (
                         <ErrorBoundary key={t.url} fallback={null}>
-                            <ThemeCard theme={t} onRemove={setRemoveUrl} onToggle={() => refreshThemes()} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
+                            <ThemeCard theme={t} onRemove={setRemoveUrl} onToggle={refreshThemes} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
                         </ErrorBoundary>
                     ))}
                 </Grid>
@@ -236,17 +228,15 @@ export default function ThemesTab() {
             />
             {onlineDialogOpen && (
                 <OnlineThemeDialog
-                    open={onlineDialogOpen}
                     onClose={() => setOnlineDialogOpen(false)}
-                    onSave={() => refreshThemes()}
+                    onSave={refreshThemes}
                 />
             )}
             {localDialogOpen && (
                 <LocalThemeDialog
-                    open={localDialogOpen}
                     onClose={() => setLocalDialogOpen(false)}
                     theme={editingTheme}
-                    onSave={() => refreshThemes()}
+                    onSave={refreshThemes}
                 />
             )}
         </Flex>

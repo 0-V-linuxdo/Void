@@ -20,7 +20,7 @@ export const enum NoticeType {
     SUCCESS = "success",
 }
 
-export interface NoticeAction {
+interface NoticeAction {
     label: string;
     icon?: ReactNode;
     onClick: () => void;
@@ -35,11 +35,11 @@ export interface NoticeOptions {
 
 const cl = classNameFactory("void-notice-");
 
-const ICONS: Record<NoticeType, (size: number) => ReactNode> = {
-    [NoticeType.INFO]: size => <CircleAlertIcon size={size} />,
-    [NoticeType.WARNING]: size => <TriangleAlert size={size} />,
-    [NoticeType.ERROR]: size => <CircleXIcon size={size} />,
-    [NoticeType.SUCCESS]: size => <CircleCheckIcon size={size} />,
+const ICONS: Record<NoticeType, () => ReactNode> = {
+    [NoticeType.INFO]: () => <CircleAlertIcon size={18} />,
+    [NoticeType.WARNING]: () => <TriangleAlert size={18} />,
+    [NoticeType.ERROR]: () => <CircleXIcon size={18} />,
+    [NoticeType.SUCCESS]: () => <CircleCheckIcon size={18} />,
 };
 
 let activeNoticeId: string | number | null = null;
@@ -47,7 +47,7 @@ let activeNoticeId: string | number | null = null;
 function Notice({ message, type, action, onClose }: NoticeOptions & { onClose: () => void }) {
     return (
         <div className={cl("root")}>
-            <span className={cl("icon")}>{ICONS[type ?? NoticeType.INFO](18)}</span>
+            <span className={cl("icon")}>{ICONS[type ?? NoticeType.INFO]()}</span>
             <span className={cl("message")}>{message}</span>
             {action && (
                 <Button variant="primary" size="sm" shape="pill" onClick={action.onClick}>

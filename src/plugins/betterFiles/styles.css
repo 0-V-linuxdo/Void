@@ -4,9 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { run } from "./reporter/index";
-
-run().catch(e => {
-    console.error(e);
-    process.exitCode = 1;
-});
+.group:hover .void-sel-wrap {
+    display: inline-flex;
+}

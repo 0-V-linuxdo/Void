@@ -54,7 +54,7 @@ export default function ThemeCard({ theme, onRemove, onToggle, onEdit }: ThemeCa
             footer={
                 <>
                     <SourceIcon size={12} className={cl("footer-icon")} />
-                    <div className={cl("author")}>{theme.author ?? "\u00A0"}</div>
+                    <div className="void-card-author">{theme.author ?? "\u00A0"}</div>
                 </>
             }
         />

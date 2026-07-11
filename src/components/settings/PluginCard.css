@@ -1,11 +1,16 @@
 .void-plugin-card-required-icon,
-.void-plugin-card-badge {
+.void-plugin-card-badge,
+.void-plugin-card-crashed-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: hsl(var(--fg-tertiary));
     flex-shrink: 0;
     line-height: 0;
+}
+
+.void-plugin-card-crashed-icon {
+    color: hsl(var(--fg-danger));
 }
 
 .void-plugin-card-required {
@@ -17,25 +22,7 @@
     border-color: hsl(var(--red-700));
 }
 
-.void-plugin-card-crashed-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: hsl(var(--fg-danger));
-    flex-shrink: 0;
-    line-height: 0;
-}
-
 .void-plugin-card-crashed-icon svg {
     width: 1em;
     height: 1em;
-}
-
-.void-plugin-card-authors {
-    font-size: 0.7rem;
-    color: hsl(var(--fg-tertiary));
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }

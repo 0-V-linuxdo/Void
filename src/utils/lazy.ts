@@ -10,7 +10,7 @@ const logger = new Logger("Lazy");
 
 const unconfigurable = ["arguments", "caller", "prototype"];
 
-const SYM_LAZY_GET = Symbol.for("void.lazy.get");
+export const SYM_LAZY_GET = Symbol.for("void.lazy.get");
 const SYM_LAZY_CACHED = Symbol.for("void.lazy.cached");
 
 const handler: ProxyHandler<any> = {};

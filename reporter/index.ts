@@ -6,7 +6,7 @@
 
 import { readFileSync } from "fs";
 
-import { chunkStats, type ChunkMap, loadChunkMap } from "./chunks";
+import { type ChunkMap, loadChunkMap } from "./chunks";
 import { collectAllFinders, collectAllPatches } from "./extract";
 import { summariseFinders, testFinder } from "./finders";
 import { ansi, counter, type Diagnostic, renderDiagnostic } from "./fmt";
@@ -67,16 +67,17 @@ async function runPhases(origin: string): Promise<ChunkMap> {
     return map;
 }
 
-export async function run(): Promise<void> {
+async function run(): Promise<void> {
     console.log(ansi.bold("\nVoid Reporter"));
     console.log(ansi.dim(`  target: ${GROK_URL}`));
 
     const map = await runPhases(GROK_URL);
-    const stats = chunkStats(map);
+    let bytes = 0;
+    for (const src of map.chunks.values()) bytes += src.length;
 
     console.log(ansi.bold("\nBuild"));
     console.log(`  buildId: ${ansi.cyan(map.buildId)}`);
-    console.log(`  chunks: ${stats.chunks}  modules: ${stats.modules}  bytes: ${(stats.bytes / 1024 / 1024).toFixed(1)} MB`);
+    console.log(`  chunks: ${map.chunks.size}  modules: ${map.modules.size}  bytes: ${(bytes / 1024 / 1024).toFixed(1)} MB`);
 
     const sriCount = (map.html.match(/integrity="sha/g) ?? []).length;
     if (sriCount) console.log(`  ${ansi.yellow("SRI enforced")} on ${sriCount} script tag(s), runtime patching may break`);
@@ -113,7 +114,7 @@ export async function run(): Promise<void> {
     const allDiags = [...patchDiags, ...finderDiags];
     if (allDiags.length) {
         console.log(ansi.bold("\nDiagnostics"));
-        for (const d of allDiags) if (d.severity !== "info") console.log(renderDiagnostic(d, fileCache));
+        for (const d of allDiags) console.log(renderDiagnostic(d, fileCache));
     }
 
     const slow = summariseTimings(patchEntries);
@@ -148,4 +149,11 @@ function loadFileCache(patches: Array<{ file: string }>): Map<string, string> {
         catch { continue; }
     }
     return cache;
+}
+
+if (import.meta.main) {
+    run().catch(e => {
+        console.error(e);
+        process.exitCode = 1;
+    });
 }

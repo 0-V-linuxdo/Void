@@ -4,21 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { canonicalizeMatch, countCaptureGroups } from "../src/utils/patches";
+import { canonicalizeMatch, canonicalizeReplace, countCaptureGroups, invalidBackrefs } from "../src/utils/patches";
+import { positionOf } from "./ast";
 import type { ChunkMap, ModuleEntry } from "./chunks";
 import type { PatchSpec, ReplacementSpec } from "./extract";
 import type { Diagnostic } from "./fmt";
-
-export type PatchIssueCode =
-    | "patch::find::no-module"
-    | "patch::find::ambiguous"
-    | "patch::perf::identifier-start"
-    | "patch::replace::match-miss"
-    | "patch::replace::partial-groups"
-    | "patch::replace::backref-invalid"
-    | "patch::replace::syntax-error"
-    | "patch::replace::regex-invalid"
-    | "patch::group::failed";
 
 export interface PatchReportEntry {
     patch: PatchSpec;
@@ -30,8 +20,6 @@ export interface PatchReportEntry {
 
 const MAX_MODULE_AMBIGUITY = 10;
 const SLOW_THRESHOLD_MS = 20;
-const BACKREF_RE = /\$(\d)/g;
-const SELF_RE = /\$self/g;
 
 type CompiledFind = PatchSpec["find"][number] & { compiled?: RegExp };
 
@@ -237,17 +225,14 @@ function evaluateReplacement(rep: ReplacementSpec, mod: ModuleEntry, patch: Patc
 
     if (compiled && rep.replace.kind === "string") {
         const groups = countCaptureGroups(compiled.source);
-        for (const ref of rep.replace.value.matchAll(BACKREF_RE)) {
-            const n = Number(ref[1]);
-            if (n > groups) {
-                diagnostics.push({
-                    severity: "error",
-                    code: "patch::replace::backref-invalid",
-                    title: `replace uses $${n} but match only has ${groups} capture group(s)`,
-                    primary: { span: rep.replace.span, label: `$${n} has no group` },
-                    secondary: [{ span: rep.match.span, label: `match declares ${groups} group(s)` }],
-                });
-            }
+        for (const n of invalidBackrefs(rep.replace.value, groups)) {
+            diagnostics.push({
+                severity: "error",
+                code: "patch::replace::backref-invalid",
+                title: `replace uses $${n} but match only has ${groups} capture group(s)`,
+                primary: { span: rep.replace.span, label: `$${n} has no group` },
+                secondary: [{ span: rep.match.span, label: `match declares ${groups} group(s)` }],
+            });
         }
     }
 
@@ -255,7 +240,7 @@ function evaluateReplacement(rep: ReplacementSpec, mod: ModuleEntry, patch: Patc
         return { diagnostics, applied: diagnostics.every(d => d.severity !== "error"), timeMs: performance.now() - start };
     }
 
-    const replaceExpr = rep.replace.value.replace(SELF_RE, `Void.plugins[${JSON.stringify(patch.plugin)}]`);
+    const replaceExpr = canonicalizeReplace(rep.replace.value, `Void.plugins[${JSON.stringify(patch.plugin)}]`);
     const replaced = mod.factory.replace(compiled ?? m.text, replaceExpr);
 
     if (replaced !== mod.factory) {
@@ -279,10 +264,9 @@ function evaluateReplacement(rep: ReplacementSpec, mod: ModuleEntry, patch: Patc
 
 function moduleContext(mod: ModuleEntry, centerOff: number, label: string, patchedSource?: string): NonNullable<Diagnostic["secondary"]>[number] {
     const source = patchedSource ?? mod.factory;
-    let line = 1, last = 0;
-    for (let i = 0; i < centerOff && i < source.length; i++) if (source[i] === "\n") { line++; last = i + 1; }
+    const { line, col } = positionOf(source, centerOff);
     return {
-        span: { file: `module ${mod.id} (${mod.chunkName}.js)`, line, col: centerOff - last + 1 },
+        span: { file: `module ${mod.id} (${mod.chunkName}.js)`, line, col },
         label,
         context: source.split("\n"),
     };

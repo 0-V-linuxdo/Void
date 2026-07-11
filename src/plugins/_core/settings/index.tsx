@@ -11,9 +11,8 @@ import { definePluginSettings } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
 import { ErrorBoundary, Flex, Text } from "@components";
 import { BracesIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
-import { CustomCSSTab, loadSavedCSS, PluginsTab, ThemesTab } from "@components/settings/tabs";
+import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { hasVisibleSettings } from "@components/settings/utils";
-import type { SettingsDescriptionProps, SettingsRowProps, SettingsTitleProps } from "@grok-types";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import {
     DropdownMenuItem,
@@ -22,7 +21,7 @@ import {
     DropdownMenuSubTrigger,
 } from "@turbopack/common/components";
 import { createElement, React } from "@turbopack/common/react";
-import { setSettingsPrimitive } from "@turbopack/common/settingsPrimitives";
+import { setSettingsPrimitive, type SettingsPrimitives } from "@turbopack/common/settingsPrimitives";
 import { SettingsDialogStore } from "@turbopack/common/stores";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
@@ -46,7 +45,7 @@ const settings = definePluginSettings({
     },
 });
 
-export interface SettingsTab {
+interface SettingsTab {
     id: string;
     name: string;
     icon: ComponentType<any>;
@@ -54,8 +53,10 @@ export interface SettingsTab {
     plugin?: string;
 }
 
+const PLUGINS_TAB_ID = "void_plugins_tab";
+
 export const allTabs: SettingsTab[] = [
-    { id: "void_plugins_tab", name: "Plugins", icon: UnplugIcon, component: PluginsTab },
+    { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab },
     { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
     { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
     { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
@@ -106,17 +107,9 @@ function openSettingsTab(tab: string) {
     store.setOpen(true);
 }
 
-let pendingPluginDialog: string | null = null;
-
-export function consumePendingPluginDialog(): string | null {
-    const name = pendingPluginDialog;
-    pendingPluginDialog = null;
-    return name;
-}
-
 function openPluginSettings(name: string) {
-    pendingPluginDialog = name;
-    openSettingsTab("void_plugins_tab");
+    setPendingPluginDialog(name);
+    openSettingsTab(PLUGINS_TAB_ID);
 }
 
 function VoidMenu() {
@@ -149,7 +142,7 @@ function VoidMenu() {
                         ))}
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                {getVisibleTabs().filter(t => t.id !== "void_plugins_tab").map(t => {
+                {getVisibleTabs().filter(t => t.id !== PLUGINS_TAB_ID).map(t => {
                     const Icon = t.icon;
                     return (
                         <DropdownMenuItem key={t.id} onSelect={() => openSettingsTab(t.id)}>
@@ -174,19 +167,9 @@ export default definePlugin({
 
     _renderVoidMenu: () => createElement(WrappedVoidMenu),
 
-    _setTitle(title: ComponentType<SettingsTitleProps>) {
-        setSettingsPrimitive("SettingsTitle", title);
-        return title;
-    },
-
-    _setDescription(description: ComponentType<SettingsDescriptionProps>) {
-        setSettingsPrimitive("SettingsDescription", description);
-        return description;
-    },
-
-    _setRow(row: ComponentType<SettingsRowProps>) {
-        setSettingsPrimitive("SettingsRow", row);
-        return row;
+    _setPrimitive<K extends keyof SettingsPrimitives>(name: K, component: SettingsPrimitives[K]) {
+        setSettingsPrimitive(name, component);
+        return component;
     },
 
     _tabEntries() {
@@ -238,20 +221,20 @@ export default definePlugin({
             ],
         },
         {
-            find: /,\{children:\i,action:\i,hidden:\i,className:\i\}=\i,\i=\(0,\i\.useId\)\(\)/,
+            find: '"SettingsTitle",0,',
             all: true,
             replacement: [
                 {
                     match: /("SettingsTitle",0,)(\i)/,
-                    replace: "$1$self._setTitle($2)",
+                    replace: '$1$self._setPrimitive("SettingsTitle",$2)',
                 },
                 {
                     match: /("SettingsDescription",0,)(\i)/,
-                    replace: "$1$self._setDescription($2)",
+                    replace: '$1$self._setPrimitive("SettingsDescription",$2)',
                 },
                 {
                     match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(,"SettingsSection")/,
-                    replace: "$1$self._setRow($2)$3",
+                    replace: '$1$self._setPrimitive("SettingsRow",$2)$3',
                 },
             ],
         },

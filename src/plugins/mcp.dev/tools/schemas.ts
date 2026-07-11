@@ -196,7 +196,7 @@ export type NetworkArgs = ToolArgsFor<"network">;
 export type ReconArgs = ToolArgsFor<"recon">;
 export type RequestArgs = ToolArgsFor<"request">;
 
-export interface ToolDefinition {
+interface ToolDefinition {
     name: ToolName;
     description: string;
     inputSchema: Record<string, unknown>;

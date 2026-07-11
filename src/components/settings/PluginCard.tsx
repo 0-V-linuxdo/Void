@@ -12,7 +12,7 @@ import { mergePluginSettings } from "@api/Settings";
 import { Badge, Switch } from "@components";
 import { CircleAlertIcon, EllipsisVertical, TriangleAlert } from "@components/icons";
 import { React } from "@turbopack/common/react";
-import { classNameFactory } from "@utils/css";
+import { classes, classNameFactory } from "@utils/css";
 import { useForceUpdater } from "@utils/react";
 
 import BaseCard from "./BaseCard";
@@ -46,7 +46,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
 
     return (
         <BaseCard
-            className={plugin.required ? cl("required") : (crashed ? cl("crashed") : undefined)}
+            className={classes(plugin.required && cl("required"), crashed && cl("crashed"))}
             name={name}
             badges={
                 <>
@@ -65,7 +65,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
                     <Switch checked={enabled} disabled={plugin.required} onCheckedChange={handleToggle} />
                 </>
             }
-            footer={<div className={cl("authors")}>{plugin.authors?.join(", ") || "\u00A0"}</div>}
+            footer={<div className="void-card-author">{plugin.authors?.join(", ") || "\u00A0"}</div>}
         />
     );
 }

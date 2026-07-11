@@ -20,7 +20,6 @@ import {
     Separator,
     Text,
 } from "@components";
-import { consumePendingPluginDialog } from "@plugins/_core/settings";
 import { React, useCallback, useEffect, useMemo, useRef, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { useFiltered } from "@utils/react";
@@ -44,6 +43,18 @@ function filterByEnabled(list: string[], filter: ListFilter): string[] {
     if (filter === "all") return list;
     const enabled = filter === "enabled";
     return list.filter(n => isPluginEnabled(n) === enabled);
+}
+
+let pendingPluginDialog: string | null = null;
+
+export function setPendingPluginDialog(name: string): void {
+    pendingPluginDialog = name;
+}
+
+export function consumePendingPluginDialog(): string | null {
+    const name = pendingPluginDialog;
+    pendingPluginDialog = null;
+    return name;
 }
 
 export default function PluginsTab() {
@@ -133,14 +144,13 @@ export default function PluginsTab() {
                     </Button>
                 </Flex>
             )}
-            <SearchFilterBar
+            <SearchFilterBar<ListFilter>
                 placeholder={`Search ${visibleUser.length + visibleRequired.length} plugins...`}
                 search={search}
                 onSearchChange={setSearch}
                 filter={filter}
-                onFilterChange={f => setFilter(f)}
+                onFilterChange={setFilter}
                 options={FILTER_OPTIONS}
-                selectClassName={cl("filter-select")}
             />
             {filteredUser.length > 0 && (
                 <Grid columns="repeat(2, 1fr)">
@@ -168,7 +178,7 @@ export default function PluginsTab() {
                     {search ? "No plugins match your search." : "No plugins available."}
                 </Paragraph>
             )}
-            {dialogPlugin && <PluginDialog plugin={dialogPlugin} open onClose={() => setDialogName(null)} />}
+            {dialogPlugin && <PluginDialog plugin={dialogPlugin} onClose={() => setDialogName(null)} />}
             <ConfirmDialog
                 open={showReload}
                 onOpenChange={v => { if (!v) onDismiss(); }}

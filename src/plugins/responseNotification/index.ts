@@ -39,7 +39,6 @@ let userGestured = false;
 let gestureCtrl: AbortController | null = null;
 
 function playBeep() {
-    if (!userGestured) return;
     const ctx = new AudioContext();
     const start = () => {
         const osc = ctx.createOscillator();

@@ -25,7 +25,6 @@ export { closeNotice, NoticeType, showNotice } from "@api/Notices";
 export { dismissToast, showToast, ToastType } from "@api/Notifications";
 export { addPatch, isPluginEnabled, plugins, registerPlugin, startPlugin, stopPlugin } from "@api/PluginManager";
 export { definePluginSettings, initSettings, migratePluginSetting, migratePluginSettings, migrateSettingsToPlugin, PlainSettings, Settings, SettingsStore } from "@api/Settings";
-export { type NotificationPosition } from "@api/Settings";
 export { addLocalTheme, addTheme, disableTheme, enableTheme, getThemes, isOnlineThemesEnabled, isThemesEnabled, removeTheme, setOnlineThemesEnabled, setThemesEnabled, updateLocalTheme } from "@api/Themes";
 export { ErrorBoundary } from "@components/ErrorBoundary";
 export * as common from "@turbopack/common";
@@ -40,7 +39,7 @@ export { makeLazy, proxyLazy } from "@utils/lazy";
 export { Logger } from "@utils/Logger";
 export { type LogLevel } from "@utils/Logger";
 export { clamp, copyToClipboard, createExternalStore, debounce, errorMessage, fetchExternal, formatCountdown, formatDuration, mapGetOrCreate, mergeDefaults, onlyOnce, sanitizeFilename, sendBrowserNotification, sleep, sortedEntries } from "@utils/misc";
-export { findInReactTree, getFiber, getReactRoot, useEventSubscription, useExternalStore, useForceUpdater, useIsStreaming, useSelectionHas, useSelectionSize, walkFiberTree, walkFiberUp, wrapComponent } from "@utils/react";
+export { getFiber, getReactRoot, useEventSubscription, useExternalStore, useForceUpdater, useIsStreaming, useSelectionHas, useSelectionSize, walkFiberTree, walkFiberUp } from "@utils/react";
 export { escapeHtml, escapeRegExp, humanizeKey, pluralize } from "@utils/text";
 export { default as definePlugin, OptionType, type PluginSettingValue, StartAt } from "@utils/types";
 

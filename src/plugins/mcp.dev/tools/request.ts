@@ -6,7 +6,7 @@
 
 import { REQUEST } from "./constants";
 import type { RequestArgs } from "./types";
-import { clampConfig, dispatch, errorMessage, serialize } from "./utils";
+import { clampConfig, dispatch, errorMessage, serialize, truncate } from "./utils";
 
 type Role = "target" | "baseline" | "control";
 
@@ -103,7 +103,7 @@ async function runOne(spec: RequestSpec, allowWrite: boolean, timeout: number, m
         }
         out.empty = looksEmpty(json, text, marker);
         if (json !== undefined) out.json = serialize(json, REQUEST.JSON_DEPTH);
-        else out.body = text.length > REQUEST.MAX_BODY_LENGTH ? text.slice(0, REQUEST.MAX_BODY_LENGTH) + `…+${text.length - REQUEST.MAX_BODY_LENGTH}` : text;
+        else out.body = truncate(text, REQUEST.MAX_BODY_LENGTH);
     } catch (err: unknown) {
         out.error = errorMessage(err);
         out.ms = Math.round(performance.now() - start);

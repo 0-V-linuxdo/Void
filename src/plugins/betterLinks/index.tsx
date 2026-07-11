@@ -4,16 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./styles.css";
-
 import { definePluginSettings } from "@api/Settings";
-import { Flex, SettingsDescription, SettingsRow, SettingsTitle, Text } from "@components";
-import { React, useState } from "@turbopack/common/react";
+import { ColorSettingRow } from "@components";
+import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
-import { classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
+import { disableStyle, enableStyle, registerStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
-
-const cl = classNameFactory("void-better-links-");
 
 const DEFAULT_LINK = "#4a9eff";
 const DEFAULT_VISITED = "#9b59b6";
@@ -47,35 +43,21 @@ function applyColors() {
     registerStyle(STYLE_NAME, css);
 }
 
-function ColorPicker({ settingKey, title, description, fallback }: {
-    settingKey: "linkColor" | "visitedColor";
+function ColorRow({ settingKey, title, description, fallback }: {
+    settingKey: keyof PrivateColors;
     title: string;
     description: string;
     fallback: string;
 }) {
-    const [value, setValue] = useState(() => getColor(settingKey, fallback));
+    settings.use([settingKey]);
 
     return (
-        <SettingsRow action={
-            <Flex alignItems="center" gap="0.5rem">
-                <input
-                    type="color"
-                    className={cl("picker")}
-                    value={value}
-                    onChange={e => {
-                        setValue(e.target.value);
-                        settings.store[settingKey] = e.target.value;
-                        applyColors();
-                    }}
-                />
-                <Text size="sm" color="muted">{value}</Text>
-            </Flex>
-        }>
-            <Flex flexDirection="column" gap="0">
-                <SettingsTitle>{title}</SettingsTitle>
-                <SettingsDescription>{description}</SettingsDescription>
-            </Flex>
-        </SettingsRow>
+        <ColorSettingRow
+            value={getColor(settingKey, fallback)}
+            onChange={v => { settings.store[settingKey] = v; applyColors(); }}
+            title={title}
+            description={description}
+        />
     );
 }
 
@@ -93,11 +75,11 @@ const settings = definePluginSettings({
     },
     linkColor: {
         type: OptionType.COMPONENT,
-        component: () => <ColorPicker settingKey="linkColor" title="Link color" description="Colorize links in messages." fallback={DEFAULT_LINK} />,
+        component: () => <ColorRow settingKey="linkColor" title="Link color" description="Colorize links in messages." fallback={DEFAULT_LINK} />,
     },
     visitedColor: {
         type: OptionType.COMPONENT,
-        component: () => <ColorPicker settingKey="visitedColor" title="Visited color" description="Colorize links you already visited." fallback={DEFAULT_VISITED} />,
+        component: () => <ColorRow settingKey="visitedColor" title="Visited color" description="Colorize links you already visited." fallback={DEFAULT_VISITED} />,
     },
 }).withPrivateSettings<PrivateColors>();
 

@@ -9,14 +9,14 @@ import "./CustomCSSTab.css";
 import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
 import { Flex, SectionHeader, Switch } from "@components";
 import { React, useCallback, useState } from "@turbopack/common/react";
-import { classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
+import { classes, classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
 
 import { CssEditor } from "../CssEditor";
 
 const cl = classNameFactory("void-css-");
 const STYLE_ID = "void-custom-css";
 
-export function setCustomCSSEnabled(enabled: boolean) {
+function setCustomCSSEnabled(enabled: boolean) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
     if (!enabled) return disableStyle(STYLE_ID);
     const css = getSettingsPluginData().customCSS;
@@ -50,7 +50,7 @@ export default function CustomCSSTab() {
     };
 
     return (
-        <Flex flexDirection="column" gap="1rem" className={`${cl("root")} void-tab-root`}>
+        <Flex flexDirection="column" gap="1rem" className={classes(cl("root"), "void-tab-root")}>
             <Flex alignItems="center" justifyContent="space-between" className={cl("header")}>
                 <SectionHeader title="Quick CSS" description="Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it." />
                 <Switch checked={enabled} onCheckedChange={handleToggle} />

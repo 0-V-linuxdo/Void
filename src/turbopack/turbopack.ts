@@ -34,18 +34,14 @@ function trackFinder(type: string, args: string[], resolve: () => any): void {
     finderRegistry?.push({ type, args, resolve });
 }
 
-function isEmptyResult(value: unknown): boolean {
-    if (value == null) return true;
-    return typeof value === "object" && Object.keys(value).length === 0;
-}
-
 export function reportFailedFinders(): void {
     if (!finderRegistry?.length) return;
 
     const failed: string[] = [];
     for (const record of finderRegistry) {
         try {
-            if (isEmptyResult(record.resolve())) failed.push(`${record.type}(${record.args.map(a => JSON.stringify(a)).join(", ")})`);
+            const value = record.resolve();
+            if (value == null || (typeof value === "object" && !Object.keys(value).length)) failed.push(`${record.type}(${record.args.map(a => JSON.stringify(a)).join(", ")})`);
         } catch (e) {
             logger.warn("Finder resolution error:", e);
         }
@@ -123,24 +119,27 @@ function withLazySync<T>(scan: () => T, isEmpty: (result: T) => boolean): T {
 
 const STOP = Symbol("stop");
 
-function forEachModuleValue(visit: (value: any) => typeof STOP | void, topLevelOnly = false): void {
-    for (const [, exports] of getModuleCache()) {
-        if (exports == null || isBlacklisted(exports)) continue;
+function scanExports(exports: any, visit: (value: any) => typeof STOP | void, topLevelOnly = false): boolean {
+    if (exports == null || isBlacklisted(exports)) return false;
 
+    try {
+        if (visit(exports) === STOP) return true;
+    } catch {}
+
+    if (topLevelOnly || typeof exports !== "object") return false;
+
+    for (const key in exports) {
         try {
-            if (visit(exports) === STOP) return;
+            const nested = exports[key];
+            if (nested == null || isBlacklisted(nested)) continue;
+            if (visit(nested) === STOP) return true;
         } catch {}
-
-        if (topLevelOnly || typeof exports !== "object") continue;
-
-        for (const key in exports) {
-            try {
-                const nested = exports[key];
-                if (nested == null || isBlacklisted(nested)) continue;
-                if (visit(nested) === STOP) return;
-            } catch {}
-        }
     }
+    return false;
+}
+
+function forEachModuleValue(visit: (value: any) => typeof STOP | void, topLevelOnly = false): void {
+    for (const [, exports] of getModuleCache()) if (scanExports(exports, visit, topLevelOnly)) return;
 }
 
 function searchCache(filter: FilterFn, collectAll: true, topLevelOnly?: boolean): any[];
@@ -253,12 +252,7 @@ function collectStores(): void {
 }
 
 function populateStoreCache(): void {
-    silenceWarns(() => {
-        collectStores();
-        const prevSize = getModuleCache().size;
-        syncLazyModules();
-        if (getModuleCache().size !== prevSize) collectStores();
-    });
+    withLazySync(collectStores, () => true);
 }
 
 export function findStore<T = any>(name: string): T | undefined {
@@ -351,18 +345,9 @@ export function findBulk(...filterFns: FilterFn[]): any[] {
         return { results, found };
     };
 
-    return silenceWarns(() => {
-        let { results, found } = scan();
-
-        if (found < length) {
-            const prevSize = getModuleCache().size;
-            syncLazyModules();
-            if (getModuleCache().size > prevSize) ({ results, found } = scan());
-        }
-
-        if (found !== length) logger.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
-        return results;
-    });
+    const { results, found } = withLazySync(scan, r => r.found < length);
+    if (found !== length) logger.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
+    return results;
 }
 
 function forEachMatchingFactory(code: (string | RegExp)[], visit: (id: number, factory: ModuleFactory) => typeof STOP | void): void {
@@ -513,19 +498,14 @@ export function importModule<T = any>(moduleId: number): Promise<T> {
 
 function findMatchInExports(exports: any, filter: FilterFn): any {
     return silenceWarns(() => {
-        if (isBlacklisted(exports)) return null;
-        try {
-            if (filter(exports)) return exports;
-            if (typeof exports === "object" && exports !== null) {
-                for (const key in exports) {
-                    try {
-                        const nested = exports[key];
-                        if (nested != null && !isBlacklisted(nested) && filter(nested)) return nested;
-                    } catch {}
-                }
+        let match = null;
+        scanExports(exports, value => {
+            if (filter(value)) {
+                match = value;
+                return STOP;
             }
-        } catch {}
-        return null;
+        });
+        return match;
     });
 }
 

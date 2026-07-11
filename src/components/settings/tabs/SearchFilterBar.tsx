@@ -16,10 +16,9 @@ interface SearchFilterBarProps<F extends string> {
     filter: F;
     onFilterChange(value: F): void;
     options: readonly { value: F; label: string }[];
-    selectClassName: string;
 }
 
-export function SearchFilterBar<F extends string>({ placeholder, search, onSearchChange, filter, onFilterChange, options, selectClassName }: SearchFilterBarProps<F>) {
+export function SearchFilterBar<F extends string>({ placeholder, search, onSearchChange, filter, onFilterChange, options }: SearchFilterBarProps<F>) {
     return (
         <Flex alignItems="center" gap="0.75rem">
             <Input
@@ -30,7 +29,7 @@ export function SearchFilterBar<F extends string>({ placeholder, search, onSearc
                 className="void-search-bar-input"
             />
             <Select value={filter} onValueChange={(v: string) => onFilterChange(v as F)}>
-                <SelectTrigger className={selectClassName}>
+                <SelectTrigger className="void-search-bar-select">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

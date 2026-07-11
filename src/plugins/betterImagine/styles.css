@@ -32,11 +32,3 @@
     color: hsl(var(--fg-primary));
     background: hsl(var(--surface-l2));
 }
-
-.void-imagine-hidden-count {
-    flex-shrink: 0;
-    font-size: 0.75rem;
-    color: hsl(var(--fg-secondary));
-    padding-inline: 0.5rem;
-    align-self: center;
-}

@@ -7,26 +7,23 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { Button, Checkbox, ConfirmDialog } from "@components";
+import { SelectionActionBar, SelectionCheckbox } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
 import { SidebarComponents } from "@turbopack/common/components";
 import { getPlanName } from "@turbopack/common/plan";
-import { createElement, Fragment, React, useRef, useState } from "@turbopack/common/react";
+import { createElement, Fragment, React, useRef } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
-import { classNameFactory, registerStyle, unregisterStyle } from "@utils/css";
+import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { createSelectionStore } from "@utils/misc";
-import { useSelectionHas, useSelectionSize } from "@utils/react";
-import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType, ReactNode } from "react";
 
 const logger = new Logger("BetterSidebar");
 const cl = classNameFactory("void-sidebar-");
-const bdCl = classNameFactory("void-bd-");
 
 const settings = definePluginSettings({
     clickToToggle: {
@@ -80,10 +77,7 @@ const selection = createSelectionStore<string>();
 const CONVERSATION_PAGE = "chat";
 const isConversationRoute = (route?: { page?: string }) => route?.page === CONVERSATION_PAGE;
 
-async function deleteSelected() {
-    const ids = selection.all();
-    selection.clear();
-
+async function deleteConversations(ids: string[]) {
     const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
     if (currentConvId && ids.includes(currentConvId)) {
         ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
@@ -97,50 +91,13 @@ async function deleteSelected() {
 
 function SelectCheckbox({ id, route }: { id: string | undefined; route?: { page?: string } }) {
     const enabled = settings.use(["batchSelect"]).batchSelect;
-    const checked = useSelectionHas(selection, id ?? "");
 
     if (!enabled || !id || !isConversationRoute(route)) return null;
 
-    return (
-        <div onClick={e => { e.stopPropagation(); e.preventDefault(); }} className={bdCl("wrap")}>
-            <Checkbox
-                checked={checked}
-                onCheckedChange={() => selection.toggle(id)}
-                className={bdCl("checkbox")}
-            />
-        </div>
-    );
+    return <SelectionCheckbox selection={selection} id={id} />;
 }
 
 const WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
-
-function ActionBar() {
-    const count = useSelectionSize(selection);
-    const [open, setOpen] = useState(false);
-
-    if (!count) return null;
-
-    return (
-        <Fragment>
-            <div className={bdCl("action-bar")}>
-                <span className={bdCl("count")}>Selected · {count}</span>
-                <div className={bdCl("buttons")}>
-                    <Button variant="primary" size="sm" shape="pill" onClick={() => selection.clear()}>Cancel</Button>
-                    <Button variant="danger" size="sm" shape="pill" onClick={() => setOpen(true)}>Delete</Button>
-                </div>
-            </div>
-            <ConfirmDialog
-                open={open}
-                onOpenChange={setOpen}
-                title="Delete conversations"
-                description={`Are you sure you want to delete ${pluralize(count, "conversation")}? This cannot be undone.`}
-                confirmText="Delete"
-                danger
-                onConfirm={deleteSelected}
-            />
-        </Fragment>
-    );
-}
 
 export default definePlugin({
     name: "BetterSidebar",
@@ -150,7 +107,7 @@ export default definePlugin({
     managedStyle: "betterSidebar",
 
     _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
+    _renderActionBar: ErrorBoundary.wrap(() => <SelectionActionBar selection={selection} noun="conversation" title="Delete conversations" onDelete={deleteConversations} />, null),
 
     _wrapCheckbox(item: ReactNode, id: string | undefined, route?: { page?: string }) {
         return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
@@ -184,17 +141,10 @@ export default definePlugin({
 
     start() {
         selection.clear();
-        registerStyle("batchDelete-hover", [
-            ".void-bd-wrap{display:none}",
-            ".void-bd-wrap:has([data-state=checked]){display:inline-flex}",
-            ".group\\/sidebar-menu-item:hover .void-bd-wrap{display:inline-flex}",
-            ".void-bd-checkbox{border-color:oklch(.9924 0 none/.15)!important}",
-        ].join(""));
     },
 
     stop() {
         selection.clear();
-        unregisterStyle("batchDelete-hover");
     },
 
     patches: [

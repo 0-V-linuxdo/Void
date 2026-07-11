@@ -1,4 +1,3 @@
-/* SettingsRow has px-3 built in, strip it so fields align with the title */
 .void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;

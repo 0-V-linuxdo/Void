@@ -185,7 +185,8 @@ const server = Bun.serve({
                 logger.warn("Malformed WebSocket message", e);
             }
         },
-        close() {
+        close(ws) {
+            if (ws !== pageSocket) return;
             const uptime = connectedAt ? `${((Date.now() - connectedAt) / 1000).toFixed(0)}s uptime, ` : "";
             logger.info(`Page disconnected (${uptime}${totalCalls} total calls)`);
             pageSocket = null;

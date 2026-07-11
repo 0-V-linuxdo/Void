@@ -115,23 +115,11 @@ export const TelescopeIcon = (props: IconProps = {}) =>
         <circle cx="12" cy="13" r="2" />,
     );
 
-export const ClockIcon = (props: IconProps = {}) =>
-    svg(props,
-        <circle cx="12" cy="12" r="10" />,
-        <path d="M12 6v6l4 2" />,
-    );
-
 export const DownloadIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />,
         <polyline points="7 10 12 15 17 10" />,
         <line x1="12" x2="12" y1="15" y2="3" />,
-    );
-
-export const HeartCrackIcon = (props: IconProps = {}) =>
-    svg(props,
-        <path d="M12.409 5.824c-.702.792-1.15 1.496-1.415 2.166l2.153 2.156a.5.5 0 0 1 0 .707l-2.293 2.293a.5.5 0 0 0 0 .707L12 15" />,
-        <path d="M13.508 20.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.677.6.6 0 0 0 .818.001A5.5 5.5 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5z" />,
     );
 
 export const UnplugIcon = (props: IconProps = {}) =>
@@ -168,12 +156,6 @@ export const TriangleAlert = (props: IconProps = {}) =>
         <path d="M12 17h.01" />,
     );
 
-export const SquareMousePointerIcon = (props: IconProps = {}) =>
-    svg(props,
-        <path d="M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z" />,
-        <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />,
-    );
-
 export const ScalingIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />,
@@ -182,28 +164,10 @@ export const ScalingIcon = (props: IconProps = {}) =>
         <path d="M21 3 9 15" />,
     );
 
-export const WandSparklesIcon = (props: IconProps = {}) =>
-    svg(props,
-        <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72" />,
-        <path d="m14 7 3 3" />,
-        <path d="M5 6v4" />,
-        <path d="M19 14v4" />,
-        <path d="M10 2v2" />,
-        <path d="M7 8H3" />,
-        <path d="M21 16h-4" />,
-        <path d="M11 3H9" />,
-    );
-
 export const PencilIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />,
         <path d="m15 5 4 4" />,
-    );
-
-export const PlusIcon = (props: IconProps = {}) =>
-    svg(props,
-        <path d="M5 12h14" />,
-        <path d="M12 5v14" />,
     );
 
 export const GlobeIcon = (props: IconProps = {}) =>
@@ -229,15 +193,6 @@ export const CircleCheckIcon = (props: IconProps = {}) =>
 export const FolderIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />,
-    );
-
-export const AccessibilityIcon = (props: IconProps = {}) =>
-    svg(props,
-        <circle cx="16" cy="4" r="1" />,
-        <path d="m18 19 1-7-6 1" />,
-        <path d="m5 8 3-3 5.5 3-2.36 3.5" />,
-        <path d="M4.24 14.5a5 5 0 0 0 6.88 6" />,
-        <path d="M13.76 17.5a5 5 0 0 0-6.88-6" />,
     );
 
 export const ClockAlertIcon = (props: IconProps = {}) =>

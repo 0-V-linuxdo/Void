@@ -9,10 +9,10 @@ import { errorMessage, randomId } from "@utils/misc";
 
 const logger = new Logger("Cookies");
 
-export const GROK_URL = "https://grok.com";
-export const XAI_URL = "https://x.ai";
-export const XAI_ACCOUNTS_URL = "https://accounts.x.ai";
-export const ALLOWED_ORIGINS = [GROK_URL, XAI_URL, XAI_ACCOUNTS_URL] as const;
+const GROK_URL = "https://grok.com";
+const XAI_URL = "https://x.ai";
+const XAI_ACCOUNTS_URL = "https://accounts.x.ai";
+const ALLOWED_ORIGINS = [GROK_URL, XAI_URL, XAI_ACCOUNTS_URL] as const;
 
 const ALLOWED_HOSTS = [".grok.com", ".x.ai"] as const;
 const BRIDGE_TIMEOUT_MS = 5000;
@@ -20,11 +20,11 @@ const DOMAIN_DOT_PREFIX = /^\./;
 const ALLOWED_BARE_HOSTS = ALLOWED_HOSTS.map(h => h.replace(DOMAIN_DOT_PREFIX, ""));
 const NO_BRIDGE_MSG = "AccountSwitcher needs the Void browser extension. Install or reload it after the cookies permission was added.";
 
-export interface CookiePartitionKey {
+interface CookiePartitionKey {
     readonly topLevelSite?: string;
 }
 
-export interface CookieData {
+interface CookieData {
     readonly name: string;
     readonly value: string;
     readonly domain: string;
@@ -96,23 +96,23 @@ function ensureAllowedUrl(url: string) {
     }
 }
 
-export async function listCookies(url: string): Promise<CookieData[]> {
+async function listCookies(url: string): Promise<CookieData[]> {
     ensureAllowedUrl(url);
     return bridgeRequest<CookieData[]>("list", { url });
 }
 
-export async function setCookie(cookie: CookieData, url: string): Promise<void> {
+async function setCookie(cookie: CookieData, url: string): Promise<void> {
     ensureAllowedUrl(url);
     ensureAllowedDomain(cookie);
     await bridgeRequest<unknown>("set", { url, ...cookie });
 }
 
-export async function deleteCookie(cookie: CookieData, url: string): Promise<void> {
+async function deleteCookie(cookie: CookieData, url: string): Promise<void> {
     ensureAllowedUrl(url);
     await bridgeRequest<unknown>("remove", { url, name: cookie.name, partitionKey: cookie.partitionKey });
 }
 
-export interface CookieSwapResult {
+interface CookieSwapResult {
     readonly deleted: number;
     readonly set: number;
     readonly failures: readonly string[];

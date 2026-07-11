@@ -60,8 +60,8 @@ export class SettingsStore<T extends object> {
                                     t[key] = defaultVal;
                                     value = defaultVal;
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
                 }

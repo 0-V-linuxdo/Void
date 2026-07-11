@@ -8,7 +8,7 @@ import "../shared.css";
 import "./PluginDialog.css";
 
 import { Settings } from "@api/Settings";
-import { Button, Dialog, DialogFooter, Flex, Paragraph, Separator } from "@components";
+import { Button, DialogFooter, Flex, Paragraph, Separator } from "@components";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import type { Plugin } from "@utils/types";
@@ -21,11 +21,10 @@ const cl = classNameFactory("void-plugin-dialog-");
 
 interface PluginDialogProps {
     plugin: Plugin;
-    open: boolean;
     onClose(): void;
 }
 
-export default function PluginDialog({ plugin, open, onClose }: PluginDialogProps) {
+export default function PluginDialog({ plugin, onClose }: PluginDialogProps) {
     const entries = useMemo(() => Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting), [plugin.settings?.def]);
     const [confirming, setConfirming] = useState(false);
 
@@ -40,38 +39,36 @@ export default function PluginDialog({ plugin, open, onClose }: PluginDialogProp
     }, [plugin.name, entries]);
 
     return (
-        <Dialog open={open} onOpenChange={(v: boolean) => { if (!v) onClose(); }}>
-            <VoidDialogShell title={plugin.name} subtitle={plugin.description}>
-                <Separator />
-                {!!plugin.authors?.length && (
-                    <DialogField label="Authors">
-                        <Paragraph>{plugin.authors.join(", ")}</Paragraph>
-                    </DialogField>
-                )}
-                <DialogField label="Settings">
-                    {entries.length ? (
-                        <Flex flexDirection="column" gap="0.75rem" className={cl("settings-list")}>
-                            {entries.map(([key, setting]) => (
-                                <SettingField key={key} id={key} setting={setting} pluginName={plugin.name} />
-                            ))}
-                        </Flex>
-                    ) : (
-                        <Paragraph>No configurable settings.</Paragraph>
-                    )}
+        <VoidDialogShell title={plugin.name} subtitle={plugin.description} onClose={onClose}>
+            <Separator />
+            {!!plugin.authors?.length && (
+                <DialogField label="Authors">
+                    <Paragraph>{plugin.authors.join(", ")}</Paragraph>
                 </DialogField>
-                {!!entries.length && (
-                    <DialogFooter className={cl("footer")}>
-                        <Button
-                            variant={confirming ? "danger" : "secondary"}
-                            size="sm"
-                            onBlur={() => setConfirming(false)}
-                            onClick={() => confirming ? resetSettings() : setConfirming(true)}
-                        >
-                            {confirming ? "Are you sure?" : "Reset"}
-                        </Button>
-                    </DialogFooter>
+            )}
+            <DialogField label="Settings">
+                {entries.length ? (
+                    <Flex flexDirection="column" gap="0.75rem" className={cl("settings-list")}>
+                        {entries.map(([key, setting]) => (
+                            <SettingField key={key} id={key} setting={setting} pluginName={plugin.name} />
+                        ))}
+                    </Flex>
+                ) : (
+                    <Paragraph>No configurable settings.</Paragraph>
                 )}
-            </VoidDialogShell>
-        </Dialog>
+            </DialogField>
+            {!!entries.length && (
+                <DialogFooter className={cl("footer")}>
+                    <Button
+                        variant={confirming ? "danger" : "secondary"}
+                        size="sm"
+                        onBlur={() => setConfirming(false)}
+                        onClick={() => confirming ? resetSettings() : setConfirming(true)}
+                    >
+                        {confirming ? "Are you sure?" : "Reset"}
+                    </Button>
+                </DialogFooter>
+            )}
+        </VoidDialogShell>
     );
 }

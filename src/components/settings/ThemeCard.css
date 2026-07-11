@@ -8,12 +8,3 @@
     flex-shrink: 0;
     color: hsl(var(--fg-tertiary));
 }
-
-.void-theme-card-author {
-    font-size: 0.7rem;
-    color: hsl(var(--fg-tertiary));
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}

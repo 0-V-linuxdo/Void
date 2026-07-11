@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { MAX_CAPTURE_WARN } from "@utils/patches";
+
 export const SERIALIZE = {
     DEFAULT_DEPTH: 2,
     MAX_ARRAY: 20,
@@ -63,7 +65,7 @@ export const PATCH = {
     DEFAULT_CONTEXT_PAD: 120,
     MAX_CONTEXT_PAD: 500,
     HINT_LITERAL_SLICE: 25,
-    MAX_CAPTURE_WARN: 5,
+    MAX_CAPTURE_WARN,
     CONTEXT_DEFAULT_WINDOW: 1200,
     CONTEXT_MAX_WINDOW: 5000,
     CONTEXT_MIN_WINDOW: 50,

@@ -95,6 +95,24 @@ export function skipBalanced(src: string, start: number, open: string, close: st
     return src.length;
 }
 
+export function skipToTopLevelComma(src: string, start: number, end: number): number {
+    let i = start;
+    let depth = 0;
+    while (i < end) {
+        const before = i;
+        const after = skipTrivia(src, i);
+        if (after !== before) { i = after; continue; }
+        const c = src[i];
+        if (c === "(" || c === "{" || c === "[") depth++;
+        else if (c === ")" || c === "}" || c === "]") {
+            depth--;
+            if (depth < 0) return i;
+        } else if (c === "," && depth === 0) return i;
+        i++;
+    }
+    return end;
+}
+
 export function splitArgs(argsSrc: string): string[] {
     const out: string[] = [];
     let depth = 0;
@@ -124,32 +142,30 @@ export interface LiteralArg {
     regex?: { pattern: string; flags: string };
     array?: LiteralArg[];
     raw: string;
-    offset: number;
 }
 
 export function parseArg(src: string): LiteralArg {
     const s = src.trim();
-    const offset = src.indexOf(s);
-    if (!s) return { kind: "unknown", raw: src, offset };
+    if (!s) return { kind: "unknown", raw: src };
     const c = s[0];
     if (c === "\"" || c === "'" || c === "`") {
         const end = skipString(s, 0);
         const body = s.slice(1, end - 1);
-        if (c === "`" && hasTemplateInterpolation(body)) return { kind: "identifier", value: s, raw: s, offset };
-        return { kind: "string", value: unescapeString(body), raw: s, offset };
+        if (c === "`" && hasTemplateInterpolation(body)) return { kind: "identifier", value: s, raw: s };
+        return { kind: "string", value: unescapeString(body), raw: s };
     }
     if (c === "/") {
         const end = skipRegex(s, 0);
         const body = s.slice(0, end);
         const lastSlash = body.lastIndexOf("/");
-        return { kind: "regex", regex: { pattern: body.slice(1, lastSlash), flags: body.slice(lastSlash + 1) }, raw: s, offset };
+        return { kind: "regex", regex: { pattern: body.slice(1, lastSlash), flags: body.slice(lastSlash + 1) }, raw: s };
     }
     if (c === "[") {
         const end = skipBalanced(s, 0, "[", "]");
-        return { kind: "array", array: splitArgs(s.slice(1, end - 1)).map(parseArg), raw: s, offset };
+        return { kind: "array", array: splitArgs(s.slice(1, end - 1)).map(parseArg), raw: s };
     }
-    if (/^[A-Za-z_$]/.test(c)) return { kind: "identifier", value: s, raw: s, offset };
-    return { kind: "unknown", raw: s, offset };
+    if (/^[A-Za-z_$]/.test(c)) return { kind: "identifier", value: s, raw: s };
+    return { kind: "unknown", raw: s };
 }
 
 function hasTemplateInterpolation(body: string): boolean {
@@ -210,20 +226,7 @@ export function walkObjectEntries(body: string): Array<{ key: string; value: str
         else if (vc === "{") valueEnd = skipBalanced(body, j, "{", "}");
         else if (vc === "[") valueEnd = skipBalanced(body, j, "[", "]");
         else if (vc === "(") valueEnd = skipBalanced(body, j, "(", ")");
-        else {
-            valueEnd = j;
-            let d = 0;
-            while (valueEnd < body.length) {
-                const b = skipTrivia(body, valueEnd);
-                if (b !== valueEnd) { valueEnd = b; continue; }
-                const cc = body[valueEnd];
-                if (cc === "(" || cc === "[" || cc === "{") d++;
-                else if (cc === ")" || cc === "]" || cc === "}") d--;
-                else if (cc === "," && d === 0) break;
-                if (d < 0) break;
-                valueEnd++;
-            }
-        }
+        else valueEnd = skipToTopLevelComma(body, j, body.length);
 
         out.push({ key, value: body.slice(valueStart, valueEnd), valueOffset: valueStart });
         i = valueEnd;

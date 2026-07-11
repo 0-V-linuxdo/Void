@@ -7,7 +7,7 @@
 import "./CssEditor.css";
 
 import { React, useCallback, useLayoutEffect, useRef } from "@turbopack/common/react";
-import { classNameFactory } from "@utils/css";
+import { classes, classNameFactory } from "@utils/css";
 import { escapeHtml } from "@utils/text";
 
 const cl = classNameFactory("void-css-");
@@ -18,7 +18,7 @@ function span(cls: string, text: string): string {
     return `<span class="${cl(cls)}">${escapeHtml(text)}</span>`;
 }
 
-export function highlightCss(css: string): string {
+function highlightCss(css: string): string {
     let inBlock = 0;
     let afterColon = false;
     let result = "";
@@ -48,7 +48,7 @@ export function highlightCss(css: string): string {
     return result;
 }
 
-export function formatCss(raw: string): string {
+function formatCss(raw: string): string {
     let out = "";
     let indent = 0;
     const pad = () => "    ".repeat(indent);
@@ -103,7 +103,7 @@ export function CssEditor({ value, onChange, disabled, className, placeholder }:
     }, [onChange]);
 
     return (
-        <div className={className ? `${cl("wrap")} ${className}` : cl("wrap")}>
+        <div className={classes(cl("wrap"), className)}>
             <pre ref={highlightRef} className={cl("highlight")} aria-hidden="true" />
             <textarea
                 className={cl("input")}

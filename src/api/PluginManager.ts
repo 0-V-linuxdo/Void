@@ -8,8 +8,9 @@ import * as allStores from "@turbopack/common/stores";
 import { onModuleLoad, patches, rescanRuntimeModules } from "@turbopack/patchTurbopack";
 import { filters, waitFor } from "@turbopack/turbopack";
 import { disableStyle, enableStyle } from "@utils/css";
+import { SYM_LAZY_GET } from "@utils/lazy";
 import { Logger } from "@utils/Logger";
-import { canonicalizeFind, canonicalizeReplacement, countCaptureGroups } from "@utils/patches";
+import { canonicalizeFind, canonicalizeReplacement, countCaptureGroups, invalidBackrefs } from "@utils/patches";
 import { type Patch, type Plugin, StartAt } from "@utils/types";
 
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
@@ -70,8 +71,8 @@ export function addPatch(newPatch: Omit<Patch, "plugin">, pluginName: string) {
     for (const replacement of patch.replacement) {
         if (IS_DEV && typeof replacement.replace === "string") {
             const groups = countCaptureGroups(replacement.match instanceof RegExp ? replacement.match.source : String(replacement.match));
-            for (const ref of replacement.replace.matchAll(/\$(\d+)/g)) {
-                if (Number(ref[1]) > groups) logger.warn(`${pluginName}: replace references $${ref[1]} but match has ${groups} capture group(s)`);
+            for (const ref of invalidBackrefs(replacement.replace, groups)) {
+                logger.warn(`${pluginName}: replace references $${ref} but match has ${groups} capture group(s)`);
             }
         }
         canonicalizeReplacement(replacement, pluginPath);
@@ -112,8 +113,6 @@ type Subscribable = { subscribe: (...args: unknown[]) => () => void };
 function isSubscribable(val: unknown): val is Subscribable {
     return val != null && typeof (val as { subscribe?: unknown }).subscribe === "function";
 }
-
-const SYM_LAZY_GET = Symbol.for("void.lazy.get");
 
 function resolveStoreHook(storeName: string): Subscribable | null {
     const lazy = storeRegistry[storeName];

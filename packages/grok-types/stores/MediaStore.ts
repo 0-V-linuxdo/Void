@@ -157,6 +157,10 @@ export interface MediaStoreState {
 	favoritesList: MediaItem[];
 	/** Items favorited during this session. */
 	favoritedInApp: MediaItem[];
+	multiSelectIds: Record<string, boolean>;
+	multiSelectItems: MediaItem[];
+	setMultiSelectItems: (items: MediaItem[]) => void;
+	clearMultiSelect: () => void;
 	/** In-flight list fetch promises keyed by query. */
 	listPromiseByQuery: Record<string, Promise<any>>;
 	/** Pagination cursors keyed by query. */
@@ -617,7 +621,6 @@ export interface ScrollStoreState {
 	reset: () => void;
 }
 
-export type { PipelineExecutionStoreState } from "./PipelineExecutionStore";
 
 /** Module exports for the Media store. */
 export interface MediaStoreModule {

@@ -15,8 +15,6 @@ import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSet
 
 const logger = new Logger("Settings");
 
-export type NotificationPosition = "top-right" | "bottom-right";
-
 export interface Settings {
     plugins: {
         [plugin: string]: {
@@ -24,19 +22,9 @@ export interface Settings {
             [setting: string]: unknown;
         };
     };
-    notifications: {
-        timeout: number;
-        position: NotificationPosition;
-    };
 }
 
-const DefaultSettings: Settings = {
-    plugins: {},
-    notifications: {
-        timeout: 5000,
-        position: "bottom-right",
-    },
-};
+const DefaultSettings: Settings = { plugins: {} };
 
 const settings = {} as Settings;
 mergeDefaults(settings, DefaultSettings);
@@ -49,33 +37,28 @@ export const Settings = SettingsStore.store;
 export const pluginPath = (name: string, key?: string) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
 
 export async function initSettings(): Promise<void> {
-    if (typeof GM_getValue === "function") {
-        try {
-            const raw = GM_getValue(STORAGE_KEY, null);
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                if (isObject(parsed)) Object.assign(settings, parsed);
-            }
-        } catch (e) {
-            logger.error("Failed to load settings:", e);
-        }
-        mergeDefaults(settings, DefaultSettings);
-        return;
-    }
-
     let raw: string | null = null;
 
-    try {
-        raw = await idbGet<string>(STORAGE_KEY) ?? null;
-    } catch (e) {
-        logger.warn("Failed to read IndexedDB:", e);
-    }
+    if (typeof GM_getValue === "function") {
+        raw = GM_getValue(STORAGE_KEY, null);
+    } else {
+        try {
+            raw = await idbGet<string>(STORAGE_KEY) ?? null;
+        } catch (e) {
+            logger.warn("Failed to read IndexedDB:", e);
+        }
 
-    if (!raw) {
-        raw = migrateFromLocalStorage();
-        if (raw) idbSet(STORAGE_KEY, raw).then(() => {
-            try { localStorage.removeItem(STORAGE_KEY); } catch {}
-        }).catch((e: unknown) => logger.debug("Failed to persist settings to IndexedDB:", e));
+        if (!raw) {
+            try {
+                raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) logger.info("Migrating settings from localStorage to IndexedDB");
+            } catch (e) {
+                logger.warn("Failed to read localStorage:", e);
+            }
+            if (raw) idbSet(STORAGE_KEY, raw).then(() => {
+                try { localStorage.removeItem(STORAGE_KEY); } catch {}
+            }).catch((e: unknown) => logger.debug("Failed to persist settings to IndexedDB:", e));
+        }
     }
 
     if (raw) {
@@ -88,19 +71,6 @@ export async function initSettings(): Promise<void> {
     }
 
     mergeDefaults(settings, DefaultSettings);
-}
-
-function migrateFromLocalStorage(): string | null {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-            logger.info("Migrating settings from localStorage to IndexedDB");
-            return raw;
-        }
-    } catch (e) {
-        logger.warn("Failed to read localStorage:", e);
-    }
-    return null;
 }
 
 export function migratePluginSettings(name: string, ...oldNames: string[]) {

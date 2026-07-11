@@ -245,13 +245,7 @@ function patchFactory(moduleId: number, factory: ModuleFactory): LazyPatchResult
             for (const replacement of replacements) {
                 if (replacement.predicate && !replacement.predicate()) continue;
                 const { match } = replacement;
-                let matches: boolean;
-                if (match instanceof RegExp) {
-                    match.lastIndex = 0;
-                    matches = match.test(originalCode);
-                } else {
-                    matches = originalCode.includes(match as string);
-                }
+                const matches = matchesPattern(originalCode, match);
                 if (!matches && !patch.noWarn && !replacement.noWarn) {
                     validateMisses.add(`${patch.plugin}: ${String(match)}`);
                 }
@@ -434,7 +428,6 @@ let chunksWithoutFactories = 0;
 function patchChunkEntry(entry: any[]): any[] {
     if (typeof entry[0] === "string") chunkFingerprint.add(entry[0]);
 
-    const hasPatches = patches.length > 0;
     let patchedEntry: any[] | null = null;
     const wrappedInChunk = new Map<ModuleFactory, ModuleFactory>();
 
@@ -450,9 +443,7 @@ function patchChunkEntry(entry: any[]): any[] {
         if (existing) {
             patchedEntry[i] = existing;
         } else {
-            const wrapped = hasPatches ? wrapFactory(prev, factory) : createFactoryWrapper(prev, factory, (ctx, helpers, mod, exports) => {
-                factory.call(ctx, helpers, mod, exports);
-            });
+            const wrapped = wrapFactory(prev, factory);
             wrappedInChunk.set(factory, wrapped);
             patchedEntry[i] = wrapped;
         }
@@ -597,17 +588,22 @@ function wrapExistingFactories() {
     }
 }
 
+function adoptTurbopack(tp: TurbopackPushable, drain?: () => void): void {
+    originalPush = tp.push.bind(tp);
+    tp.push = handleChunkPush;
+    drain?.();
+    try {
+        wrapExistingFactories();
+    } catch (e) {
+        logger.error("Failed to wrap existing factories:", e);
+    }
+}
+
 export function patchTurbopack(): void {
     const existingTp = pageWindow.TURBOPACK;
 
     if (existingTp && !Array.isArray(existingTp) && typeof existingTp.push === "function") {
-        originalPush = existingTp.push.bind(existingTp);
-        existingTp.push = (...args: any[]) => handleChunkPush(...args);
-        try {
-            wrapExistingFactories();
-        } catch (e) {
-            logger.error("Failed to wrap existing factories:", e);
-        }
+        adoptTurbopack(existingTp);
         return;
     }
 
@@ -624,24 +620,17 @@ export function patchTurbopack(): void {
         set(newValue: any) {
             if (newValue && !Array.isArray(newValue) && typeof (newValue as TurbopackPushable).push === "function") {
                 const tp = newValue as TurbopackPushable;
-                originalPush = tp.push.bind(tp);
-                tp.push = (...args: any[]) => handleChunkPush(...args);
-                currentTurbopack = tp;
-
-                for (const chunk of queuedChunks) {
-                    try {
-                        handleChunkPush(chunk);
-                    } catch (e) {
-                        logger.error("Failed to process queued chunk:", e);
+                adoptTurbopack(tp, () => {
+                    currentTurbopack = tp;
+                    for (const chunk of queuedChunks) {
+                        try {
+                            handleChunkPush(chunk);
+                        } catch (e) {
+                            logger.error("Failed to process queued chunk:", e);
+                        }
                     }
-                }
-                queuedChunks.length = 0;
-
-                try {
-                    wrapExistingFactories();
-                } catch (e) {
-                    logger.error("Failed to wrap existing factories:", e);
-                }
+                    queuedChunks.length = 0;
+                });
             } else {
                 currentTurbopack = newValue as TurbopackPushable | any[];
             }

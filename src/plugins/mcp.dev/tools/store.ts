@@ -9,7 +9,7 @@ import { isObject } from "@utils/guards";
 
 import { SERIALIZE, STORE } from "./constants";
 import type { AnyFn, StoreArgs, StoreEntry, ZustandLike } from "./types";
-import { clampCaptureConfig, clampConfig, createGenerationalCache, describeValue, dispatch, errorMessage, getPath, isThenable, notFound, serialize } from "./utils";
+import { clampCaptureConfig, clampConfig, createGenerationalCache, describeKeys, dispatch, errorMessage, getPath, isThenable, notFound, serialize } from "./utils";
 
 const storeCacheHolder = createGenerationalCache<StoreEntry[]>(
     () => {
@@ -163,15 +163,7 @@ function actionKeys(args: StoreArgs): unknown {
     const state = result.store.getState();
     const target = args.path ? getPath(state, args.path) : state;
     if (!isObject(target)) return { _store: result.resolvedName, ...(args.path && { path: args.path }), keys: [] };
-    const keys: Record<string, string> = {};
-    for (const k of Object.keys(target)) {
-        try {
-            keys[k] = describeValue(target[k]);
-        } catch {
-            keys[k] = "!";
-        }
-    }
-    return { _store: result.resolvedName, ...(args.path && { path: args.path }), keys };
+    return { _store: result.resolvedName, ...(args.path && { path: args.path }), keys: describeKeys(target) };
 }
 
 function actionMethods(args: StoreArgs): unknown {

@@ -4,18 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./styles.css";
-
 import { definePluginSettings } from "@api/Settings";
-import { Flex, SettingsDescription, SettingsRow, SettingsTitle, Text } from "@components";
+import { ColorSettingRow } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
-import { classNameFactory } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
-
-const cl = classNameFactory("void-starry-");
 
 const DEFAULT_COLOR = "#ffffff";
 
@@ -28,27 +23,15 @@ function hexToRgb(hex: string): [number, number, number] {
     return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function ColorPicker() {
+function ColorRow() {
     const { starColor } = settings.use(["starColor"]);
-    const value = starColor ?? DEFAULT_COLOR;
-
     return (
-        <SettingsRow action={
-            <Flex alignItems="center" gap="0.5rem">
-                <input
-                    type="color"
-                    className={cl("picker")}
-                    value={value}
-                    onChange={e => { settings.store.starColor = e.target.value; }}
-                />
-                <Text size="sm" color="muted">{value}</Text>
-            </Flex>
-        }>
-            <Flex flexDirection="column" gap="0">
-                <SettingsTitle>Star color</SettingsTitle>
-                <SettingsDescription>Color of the twinkling stars.</SettingsDescription>
-            </Flex>
-        </SettingsRow>
+        <ColorSettingRow
+            value={starColor}
+            onChange={v => { settings.store.starColor = v; }}
+            title="Star color"
+            description="Color of the twinkling stars."
+        />
     );
 }
 
@@ -56,7 +39,7 @@ function StarryBackground() {
     const { starColor } = settings.use(["starColor"]);
     return (
         <div aria-hidden className="fixed inset-0 -z-10 pointer-events-none">
-            <StarsBackground starColor={hexToRgb(starColor ?? DEFAULT_COLOR)} />
+            <StarsBackground starColor={hexToRgb(starColor)} />
         </div>
     );
 }
@@ -66,7 +49,8 @@ const WrappedStarry = ErrorBoundary.wrap(StarryBackground);
 const settings = definePluginSettings({
     starColor: {
         type: OptionType.COMPONENT,
-        component: ColorPicker,
+        default: DEFAULT_COLOR,
+        component: ColorRow,
     },
 }).withPrivateSettings<{ starColor: string }>();
 
@@ -89,8 +73,4 @@ export default definePlugin({
             },
         },
     ],
-
-    start() {
-        settings.store.starColor ??= DEFAULT_COLOR;
-    },
 });

@@ -11,6 +11,7 @@ import { definePluginSettings } from "@api/Settings";
 import {
     Button,
     ButtonWithTooltip,
+    Input,
     Text,
     Textarea,
 } from "@components";
@@ -90,8 +91,8 @@ function PresetEditor({ preset, onUpdate, onClose }: { preset: Preset; onUpdate:
 
     return (
         <div className={cl("editor")}>
-            <label className={cl("label")}>Name</label>
-            <input
+            <Text size="sm" weight="medium" className={cl("label")}>Name</Text>
+            <Input
                 type="text"
                 className={cl("input")}
                 placeholder="Preset name"
@@ -99,8 +100,8 @@ function PresetEditor({ preset, onUpdate, onClose }: { preset: Preset; onUpdate:
                 onChange={e => onUpdate({ ...preset, name: e.target.value })}
                 autoComplete="off"
             />
-            <label className={cl("label")}>Instructions</label>
-            <div className={cl("textarea-wrap", { error: overLimit })}>
+            <Text size="sm" weight="medium" className={cl("label")}>Instructions</Text>
+            <div className={cl("textarea-wrap", { "textarea-wrap-error": overLimit })}>
                 <Textarea
                     className={cl("textarea")}
                     placeholder="How should Grok behave?"
@@ -152,7 +153,7 @@ function PresetsEditor() {
                 {presets.map(p => (
                     <PresetCard key={p.id} preset={p} onEdit={() => setEditingId(editingId === p.id ? null : p.id)} onDelete={() => deletePreset(p.id)} />
                 ))}
-                <div role="button" className={cl("card", "add")} onClick={addPreset}>
+                <div role="button" className={cl("card", "card-add")} onClick={addPreset}>
                     <PlusIcon className="size-4 text-secondary" />
                     <Text size="sm" weight="medium" color="muted">New</Text>
                 </div>

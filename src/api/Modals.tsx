@@ -15,7 +15,7 @@ export interface ModalProps {
     onClose(): void;
 }
 
-export interface ModalOptions {
+interface ModalOptions {
     modalKey?: string;
 }
 

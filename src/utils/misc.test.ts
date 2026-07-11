@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from "bun:test";
 
-import { clamp, dedupeNames, formatCountdown, formatDuration, safeUrl, sanitizeFilename } from "./misc";
+import { clamp, formatCountdown, formatDuration, safeUrl, sanitizeFilename } from "./misc";
 
 describe("safeUrl (scheme guard)", () => {
     test("allows http, https, and mailto", () => {
@@ -44,9 +44,5 @@ describe("misc formatting", () => {
     test("sanitizeFilename strips unsafe chars and falls back", () => {
         expect(sanitizeFilename("a/b:c*?.txt")).toBe("abc.txt");
         expect(sanitizeFilename("")).toBe("file");
-    });
-
-    test("dedupeNames disambiguates duplicates", () => {
-        expect(dedupeNames(["a", "a", "b", "a"])).toEqual(["a", "a (1)", "b", "a (2)"]);
     });
 });

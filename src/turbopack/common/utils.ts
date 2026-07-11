@@ -4,30 +4,18 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { GrokResponse, RateLimitResponse } from "@grok-types";
+
 import { findByPropsLazy } from "../turbopack";
 
 export const ApiClients: {
-    chatApi: any;
-    modelsApi: any;
-    mediaApi: any;
-    settingsApi: any;
-    subscriptionsApi: any;
-    rateLimitsApi: any;
-    grokTasksApi: any;
-    notificationsApi: any;
-    highlightsApi: any;
-    voiceApi: any;
-    livekitApi: any;
-    githubApi: any;
-    assetRepositoryApi: any;
-    workspaceRepositoryApi: any;
-    systemPromptRepositoryApi: any;
-    sandboxEnvironmentsApi: any;
-    authFrontendApi: any;
-    authMgmtApi: any;
-    devConfigApi: any;
-    grokForTeamsApi: any;
-    suggestionsApi: any;
+    chatApi: {
+        chatListResponses(a: { conversationId: string }): Promise<{ responses: GrokResponse[] }>;
+        chatShareConversation(a: { conversationId: string; body: { responseId: string; allowIndexing: boolean } }): Promise<{ shareLinkId: string }>;
+        chatCloneConversation(a: { shareLinkId: string; body: object }): Promise<{ conversation?: { conversationId: string } }>;
+        chatDeleteShareLink(a: { shareLinkId: string }): Promise<unknown>;
+    };
+    rateLimitsApi: { rateLimitsGetRateLimits(a: { body: { modelName: string } }): Promise<RateLimitResponse> };
 } = findByPropsLazy("chatApi", "modelsApi");
 
 export const Toaster: {

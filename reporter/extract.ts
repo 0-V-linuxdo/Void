@@ -10,20 +10,27 @@ import { resolve } from "path";
 import { parseArg, positionOf, skipBalanced, splitArgs, walkObjectEntries } from "./ast";
 import type { SourceSpan } from "./fmt";
 
+interface MatchLiteral {
+    kind: "string" | "regex";
+    value: string;
+    regex?: RegExp;
+    raw: string;
+    span: SourceSpan;
+}
+
 export interface PatchSpec {
     plugin: string;
     file: string;
     span: SourceSpan;
-    find: Array<{ kind: "string" | "regex"; value: string; regex?: RegExp; raw: string; span: SourceSpan }>;
+    find: MatchLiteral[];
     replacement: ReplacementSpec[];
     all: boolean;
     group: boolean;
     noWarn: boolean;
-    predicate: boolean;
 }
 
 export interface ReplacementSpec {
-    match: { kind: "string" | "regex"; value: string; regex?: RegExp; raw: string; span: SourceSpan };
+    match: MatchLiteral;
     replace: { kind: "string" | "function"; value: string; raw: string; span: SourceSpan };
     noWarn: boolean;
 }
@@ -39,8 +46,6 @@ export interface FinderSpec {
     kind: FinderKind;
     call: string;
     args: Array<{ kind: "string" | "regex" | "identifier" | "unknown"; value?: string; regex?: RegExp; raw: string }>;
-    lazy: boolean;
-    wrappedBy?: string;
 }
 
 const PLUGIN_DIR = resolve("src/plugins");
@@ -79,7 +84,6 @@ const FILTER_CALLS: Record<string, FinderKind> = {
 const FINDER_CALL_RE = /(?:\b|\.)(findByProps(?:Lazy)?|findByCode(?:Lazy)?|findByDisplayName(?:Lazy)?|findStore(?:Lazy)?|findByEventName(?:Lazy)?|findComponentByCode(?:Lazy)?|findExportedComponent(?:Lazy)?|findCssClasses(?:Lazy)?|findBulk|mapMangledModule(?:Lazy)?)\s*\(/g;
 const FILTER_CALL_RE = /\bfilters\.(byProps|byCode|byDisplayName|byStoreName|componentByCode)\s*\(/g;
 const FINDER_DETECT_RE = /find(?:By|Store|Exported|Component|Css|Bulk|ModuleFactory)|mapMangledModule|filters\.|waitFor\b/;
-const WRAPPED_BY_RE = /\b(find(?:All|Lazy)?|waitFor|findBulk)\s*\($/;
 const NAME_RE = /name:\s*"([^"]+)"/;
 
 function walkDir(dir: string, out: string[], predicate: (path: string) => boolean): void {
@@ -126,17 +130,7 @@ function pluginNameFromSource(src: string, fallback: string): string {
     return src.slice(idx).match(NAME_RE)?.[1] ?? fallback;
 }
 
-function litToFindEntry(raw: string, span: SourceSpan): PatchSpec["find"][number] | null {
-    const a = parseArg(raw);
-    if (a.kind === "string") return { kind: "string", value: a.value ?? "", raw, span };
-    if (a.kind === "regex") {
-        try { return { kind: "regex", value: a.raw, regex: new RegExp(a.regex!.pattern, a.regex!.flags), raw, span }; }
-        catch { return null; }
-    }
-    return null;
-}
-
-function litToMatch(raw: string, span: SourceSpan): ReplacementSpec["match"] | null {
+function litToFindEntry(raw: string, span: SourceSpan): MatchLiteral | null {
     const a = parseArg(raw);
     if (a.kind === "string") return { kind: "string", value: a.value ?? "", raw, span };
     if (a.kind === "regex") {
@@ -188,7 +182,6 @@ function buildPatchFromObject(innerBody: string, innerAbs: number, src: string, 
     let all = false;
     let group = false;
     let noWarn = false;
-    let predicate = false;
     let firstFindSpan: SourceSpan | null = null;
 
     for (const e of entries) {
@@ -228,12 +221,11 @@ function buildPatchFromObject(innerBody: string, innerAbs: number, src: string, 
             case "all": all = /^\s*true\b/.test(e.value); break;
             case "group": group = /^\s*true\b/.test(e.value); break;
             case "noWarn": noWarn = /^\s*true\b/.test(e.value); break;
-            case "predicate": predicate = true; break;
         }
     }
 
     if (!findEntries.length || !replacements.length) return null;
-    return { plugin: pluginName, file, span: firstFindSpan ?? { file, line: 1, col: 1 }, find: findEntries, replacement: replacements, all, group, noWarn, predicate };
+    return { plugin: pluginName, file, span: firstFindSpan ?? { file, line: 1, col: 1 }, find: findEntries, replacement: replacements, all, group, noWarn };
 }
 
 function parseReplacementObject(raw: string, offsetAbs: number, src: string, file: string): ReplacementSpec | null {
@@ -249,7 +241,7 @@ function parseReplacementObject(raw: string, offsetAbs: number, src: string, fil
         const absOff = bodyOffsetAbs + e.valueOffset;
         const pos = positionOf(src, absOff);
         const span: SourceSpan = { file, line: pos.line, col: pos.col, length: e.value.length };
-        if (e.key === "match") match = litToMatch(e.value, span);
+        if (e.key === "match") match = litToFindEntry(e.value, span);
         else if (e.key === "replace") replace = litToReplace(e.value, span);
         else if (e.key === "noWarn") noWarn = /^\s*true\b/.test(e.value);
     }
@@ -276,7 +268,7 @@ export function extractFinders(file: string): FinderSpec[] {
         out.push({
             plugin: pluginName, file,
             span: { file, line: pos.line, col: pos.col, length: m[0].length },
-            kind: FINDER_CALLS[callName], call: callName, args, lazy: callName.endsWith("Lazy"),
+            kind: FINDER_CALLS[callName], call: callName, args,
         });
     }
 
@@ -287,12 +279,10 @@ export function extractFinders(file: string): FinderSpec[] {
         if (closeParen === src.length) continue;
         const args = parseFinderArgs(src.slice(openParen + 1, closeParen - 1));
         const pos = positionOf(src, m.index);
-        const before = src.slice(Math.max(0, m.index - 80), m.index);
-        const wrappedBy = before.match(WRAPPED_BY_RE)?.[1];
         out.push({
             plugin: pluginName, file,
             span: { file, line: pos.line, col: pos.col, length: m[0].length },
-            kind: FILTER_CALLS[m[1]], call: `filters.${m[1]}`, args, lazy: false, wrappedBy,
+            kind: FILTER_CALLS[m[1]], call: `filters.${m[1]}`, args,
         });
     }
     return out;

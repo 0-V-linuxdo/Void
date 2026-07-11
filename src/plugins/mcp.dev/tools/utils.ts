@@ -7,7 +7,7 @@
 import { patchStats } from "@turbopack/patchReport";
 import { getModuleCache, getRuntimeFactoryRegistry } from "@turbopack/patchTurbopack";
 import { type PatchedModuleFactory, SYM_PATCHED_BY, SYM_PATCHED_CODE } from "@turbopack/types";
-import { errorMessage } from "@utils/misc";
+import { clamp, errorMessage } from "@utils/misc";
 
 import { EVAL, MODULE, SERIALIZE } from "./constants";
 import type { Anchor, AnyFn, SuggestCandidate } from "./types";
@@ -36,13 +36,8 @@ export function requireCode(code: string[] | undefined): { code: string[] } | { 
 }
 
 export function pageBounds(args: { limit?: number; offset?: number }, cfg: { default: number; max: number }): { off: number; cap: number } {
-    return { off: safeOffset(args.offset), cap: clampConfig(args.limit, cfg) };
+    return { off: Math.max(0, Math.floor(args.offset ?? 0)), cap: clampConfig(args.limit, cfg) };
 }
-
-const RE_BACKREF = /\$(\d+)/g;
-
-export const invalidBackrefs = (replaceStr: string, groups: number): number[] =>
-    [...replaceStr.matchAll(RE_BACKREF)].map(m => Number(m[1])).filter(n => n > groups);
 
 interface CaptureConfig {
     dur: { default: number; min: number; max: number };
@@ -79,7 +74,7 @@ export function clampConfig(raw: number | undefined, config: { default: number; 
 export function clampConfig(raw: number | undefined, configOrDefault: number | { default: number; min?: number; max: number }, max?: number): number {
     const cfg = typeof configOrDefault === "number" ? { default: configOrDefault, min: 0, max: max! } : configOrDefault;
     const v = raw != null && Number.isFinite(raw) ? raw : cfg.default;
-    return Math.max(cfg.min ?? 0, Math.min(v, cfg.max));
+    return clamp(v, cfg.min ?? 0, cfg.max);
 }
 
 export function notFound(kind: string, query: string, allNames: Iterable<string>): { error: string; similar?: string[] } {
@@ -96,7 +91,7 @@ export function requireModuleExports(id: number): { exports: Record<string, unkn
     if (exports != null) return { exports };
     const registry = getRuntimeFactoryRegistry();
     if (registry?.has(id)) return { error: `Module ${id} exists but is not yet loaded. Use the "load" action first.` };
-    return { error: `Module ${id} not found.` };
+    return { error: moduleNotFound(id) };
 }
 
 const INTERNAL_FRAME_RE = /tryEval|evalAsync|handleEval|ws\.onmessage|<anonymous>:\d+:\d+\)$/;
@@ -132,6 +127,22 @@ export function describeValue(val: unknown, maxSlice = MODULE.EXPORT_VALUE_SLICE
     }
 }
 
+export function describeKeys(obj: Record<string, unknown>, cap = Infinity): Record<string, string> {
+    const keys = Object.keys(obj);
+    const result: Record<string, string> = {};
+    for (let i = 0, l = Math.min(keys.length, cap); i < l; i++) {
+        try {
+            result[keys[i]] = describeValue(obj[keys[i]]);
+        } catch {
+            result[keys[i]] = "!";
+        }
+    }
+    if (keys.length > cap) result["…"] = `+${keys.length - cap}`;
+    return result;
+}
+
+export const truncate = (s: string, max: number): string => s.length > max ? s.slice(0, max) + `…+${s.length - max}` : s;
+
 export function serialize(value: unknown, depth: number = SERIALIZE.DEFAULT_DEPTH): unknown {
     return serializeInner(value, depth, new WeakSet());
 }
@@ -148,8 +159,7 @@ function serializeInner(value: unknown, depth: number, seen: WeakSet<object>): u
         if (!Number.isFinite(value as number)) return value === Infinity ? "[Infinity]" : "[-Infinity]";
     }
     if (t !== "object") {
-        if (t === "string" && (value as string).length > SERIALIZE.MAX_STRING_LENGTH)
-            return (value as string).slice(0, SERIALIZE.MAX_STRING_LENGTH) + `…+${(value as string).length - SERIALIZE.MAX_STRING_LENGTH}`;
+        if (t === "string") return truncate(value as string, SERIALIZE.MAX_STRING_LENGTH);
         return value;
     }
     if (depth <= 0) return "[…]";
@@ -213,19 +223,19 @@ export function getPath(obj: unknown, path: string): unknown {
     return current;
 }
 
-export function parseRegexPattern(pattern: string): { regex: RegExp | null; literal: string } {
+export function parseRegexPattern(pattern: string): RegExp | null {
     const rm = pattern.match(/^\/(.+)\/([dgimsuyv]*)$/);
     if (rm) {
         try {
-            return { regex: new RegExp(rm[1], rm[2].includes("g") ? rm[2] : `${rm[2]}g`), literal: pattern };
+            return new RegExp(rm[1], rm[2].includes("g") ? rm[2] : `${rm[2]}g`);
         } catch {
-            return { regex: null, literal: pattern };
+            return null;
         }
     }
-    return { regex: null, literal: pattern };
+    return null;
 }
 
-export { countCaptureGroups } from "@utils/patches";
+export { countCaptureGroups, invalidBackrefs } from "@utils/patches";
 
 const RE_I18N_KEY = /\w\("([a-z][a-z0-9]*(?:[-.][a-z0-9]+)+)","([^"]+)"\)/g;
 const RE_DISPLAY_NAME = /displayName="([^"]+)"/g;
@@ -242,7 +252,8 @@ const RE_TURBOPACK_SYNC_IMPORT = /\.[irR]\((\d+)\)/g;
 const RE_TURBOPACK_ASYNC_IMPORT = /\.A\((\d+)\)/g;
 const RE_TURBOPACK_EXPORT_DEF = /\.s\(\[([^\]]*)\](?:,(\d+))?\)/g;
 const RE_CODEGEN = /"(idsert\w*|lisert\w*)"/g;
-const RE_PROP_ACCESS_CACHE = new Map<number, RegExp>();
+const RE_PROP_ACCESS_4 = /\.([a-zA-Z_$][\w$]{4,})[=(]/g;
+const RE_PROP_ACCESS_5 = /\.([a-zA-Z_$][\w$]{5,})[=(]/g;
 
 function resetRe(r: RegExp): RegExp {
     r.lastIndex = 0;
@@ -265,15 +276,7 @@ export const re = {
     turbopackAsyncImport: () => resetRe(RE_TURBOPACK_ASYNC_IMPORT),
     turbopackExportDef: () => resetRe(RE_TURBOPACK_EXPORT_DEF),
     codegen: () => resetRe(RE_CODEGEN),
-    propAccess: (minLen = 4) => {
-        let r = RE_PROP_ACCESS_CACHE.get(minLen);
-        if (!r) {
-            r = new RegExp(`\\.([a-zA-Z_$][\\w$]{${minLen},})[=(]`, "g");
-            RE_PROP_ACCESS_CACHE.set(minLen, r);
-        }
-        r.lastIndex = 0;
-        return r;
-    },
+    propAccess: (minLen = 4) => resetRe(minLen >= 5 ? RE_PROP_ACCESS_5 : RE_PROP_ACCESS_4),
 };
 
 const registrySize = () => getRuntimeFactoryRegistry()?.size ?? 0;
@@ -290,8 +293,6 @@ export const getFactorySourceCache = (): Map<number, string> => factorySourceHol
 const allFactorySourcesHolder = createGenerationalCache(() => [...new Set(getFactorySourceCache().values())], registrySize);
 
 export const getAllFactorySources = (): string[] => allFactorySourcesHolder.get();
-
-export const safeOffset = (raw: number | undefined) => Math.max(0, Math.floor(raw ?? 0));
 
 export const asArray = <T>(v: T | T[]): T[] => Array.isArray(v) ? v : [v];
 

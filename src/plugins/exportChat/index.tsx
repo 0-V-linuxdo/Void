@@ -163,11 +163,11 @@ function toHtml(title: string, messages: ExportMessage[]): string {
 
 type Format = "json" | "md" | "txt" | "html";
 
-const FORMATS: { fmt: Format; label: string; mime: string }[] = [
-    { fmt: "json", label: "JSON", mime: "application/json" },
-    { fmt: "md", label: "Markdown", mime: "text/markdown" },
-    { fmt: "txt", label: "Plain Text", mime: "text/plain" },
-    { fmt: "html", label: "HTML", mime: "text/html" },
+const FORMATS: { fmt: Format; label: string }[] = [
+    { fmt: "json", label: "JSON" },
+    { fmt: "md", label: "Markdown" },
+    { fmt: "txt", label: "Plain Text" },
+    { fmt: "html", label: "HTML" },
 ];
 
 async function exportChat(conversationId: string, format: Format) {
@@ -180,14 +180,14 @@ async function exportChat(conversationId: string, format: Format) {
     const filename = sanitizeFilename(title, "chat");
 
     let content: string;
+    let mime: string;
     switch (format) {
-        case "md": content = toMarkdown(title, messages); break;
-        case "txt": content = toPlainText(title, messages); break;
-        case "html": content = toHtml(title, messages); break;
-        default: content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
+        case "json": content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2); mime = "application/json"; break;
+        case "md": content = toMarkdown(title, messages); mime = "text/markdown"; break;
+        case "txt": content = toPlainText(title, messages); mime = "text/plain"; break;
+        case "html": content = toHtml(title, messages); mime = "text/html"; break;
     }
 
-    const { mime } = FORMATS.find(f => f.fmt === format)!;
     await FileUtils.downloadBlob(new Blob([content], { type: mime }), `${filename}.${format}`);
 }
 
@@ -196,7 +196,7 @@ function ExportMenu({ conversationId }: ContextMenuLocationMap["conversation"]) 
 
     return (
         <MenuSub>
-            <MenuSubTrigger disabled={streaming} className="void-export-trigger">
+            <MenuSubTrigger disabled={streaming}>
                 <DownloadIcon size={16} className="void-export-icon" />
                 Export
             </MenuSubTrigger>

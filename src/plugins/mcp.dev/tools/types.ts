@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import type { ModuleArgs } from "./schemas";
+
 export type {
     EvalArgs,
     InterceptArgs,
@@ -34,7 +36,7 @@ export interface PageResponse {
     error?: string;
 }
 
-export type ValidationCode =
+type ValidationCode =
     | "find::no-module"
     | "find::ambiguous"
     | "replace::regex-invalid"
@@ -54,13 +56,7 @@ export interface ValidationIssue {
     detail?: string;
 }
 
-export interface FilterDef {
-    props?: string[];
-    code?: string[];
-    displayName?: string;
-    storeName?: string;
-    componentByCode?: boolean;
-}
+export type FilterDef = Pick<ModuleArgs, "props" | "code" | "displayName" | "storeName" | "componentByCode">;
 
 export interface SuggestCandidate {
     text: string;

@@ -1,4 +1,10 @@
-.void-better-links-picker {
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-color-picker-input {
     width: 2rem;
     height: 2rem;
     border: 1px solid hsl(var(--border-l2));
@@ -7,4 +13,3 @@
     padding: 0.125rem;
     background-color: transparent;
 }
-

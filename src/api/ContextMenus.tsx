@@ -6,7 +6,6 @@
 
 import {
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
@@ -14,7 +13,7 @@ import {
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
 import { mapGetOrCreate } from "@utils/misc";
-import { type LazyNode, resolveLazyNode, useExternalStore } from "@utils/react";
+import { type LazyNode, resolveLazy, useExternalStore } from "@utils/react";
 import type { ComponentType, ReactNode } from "react";
 
 import { createRegistry, type Registry } from "./registry";
@@ -42,7 +41,6 @@ export interface MenuPrimitives {
     Sub: MenuPrimitive;
     SubTrigger: MenuPrimitive;
     SubContent: MenuPrimitive;
-    Separator: MenuPrimitive;
 }
 
 let menuPrimitivesContext: React.Context<MenuPrimitives | null> | null = null;
@@ -62,7 +60,6 @@ export const MenuItem = makeMenuPrimitive("Item", DropdownMenuItem);
 export const MenuSub = makeMenuPrimitive("Sub", DropdownMenuSub);
 export const MenuSubTrigger = makeMenuPrimitive("SubTrigger", DropdownMenuSubTrigger);
 export const MenuSubContent = makeMenuPrimitive("SubContent", DropdownMenuSubContent);
-export const MenuSeparator = makeMenuPrimitive("Separator", DropdownMenuSeparator);
 
 const registries = new Map<ContextMenuLocation, Registry<ContextMenuItemDef<any>>>();
 
@@ -85,8 +82,8 @@ function renderEntry(def: ContextMenuItemDef<any>, ctx: ContextMenuLocationMap[C
     }
     return (
         <MenuItem onSelect={() => def.onSelect?.(ctx)}>
-            {resolveLazyNode(def.icon)}
-            {resolveLazyNode(def.label)}
+            {resolveLazy(def.icon)}
+            {resolveLazy(def.label)}
         </MenuItem>
     );
 }

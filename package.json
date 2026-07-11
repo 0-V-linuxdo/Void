@@ -29,7 +29,7 @@
         "mcp:b": "MCP_PORT=7891 bun run src/plugins/mcp.dev/server.ts",
         "test:patches": "bun run scripts/test-patches.mjs",
         "test:build": "bun run scripts/test-build.mjs",
-        "reporter": "bun run reporter.ts"
+        "reporter": "bun run reporter/index.ts"
     },
     "devDependencies": {
         "@stylistic/eslint-plugin": "5.9.0",

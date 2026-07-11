@@ -53,8 +53,7 @@
         "src/**/*.tsx",
         "packages/**/*.ts",
         "packages/**/*.d.ts",
-        "reporter/**/*.ts",
-        "reporter.ts"
+        "reporter/**/*.ts"
     ],
     "exclude": [
         "node_modules",

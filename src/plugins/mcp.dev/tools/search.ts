@@ -145,7 +145,7 @@ function singlePatternHint(ctx: SearchContext, targetId: number | undefined, pat
 function parsePatterns(raws: string[], isAnd: boolean): { patterns: (string | RegExp)[] } | { error: string } {
     const patterns: (string | RegExp)[] = [];
     for (const raw of raws) {
-        const { regex } = parseRegexPattern(raw);
+        const regex = parseRegexPattern(raw);
         if (!regex && raw.startsWith("/")) {
             return { error: isAnd ? `Invalid regex in and[]: could not parse ${raw}. Use /pattern/flags syntax.` : `Invalid regex: could not parse ${raw}. Use /pattern/flags syntax.` };
         }

@@ -61,7 +61,7 @@ function shouldRetry(response: GrokResponse): boolean {
 
 function retry(responseId: string, conversationId: string, response: GrokResponse) {
     const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings.store.maxRetries ?? 3;
+    const max = settings.store.maxRetries;
 
     if (count > max) {
         showToast("Max retries reached.", ToastType.ERROR);
@@ -70,7 +70,7 @@ function retry(responseId: string, conversationId: string, response: GrokRespons
     }
 
     retryCounts.set(conversationId, count);
-    const delaySec = settings.store.delay ?? 2;
+    const delaySec = settings.store.delay;
 
     showToast(`Retrying... (${count}/${max})`, ToastType.MESSAGE);
     logger.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);

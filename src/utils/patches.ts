@@ -70,3 +70,22 @@ export function countCaptureGroups(matchStr: string): number {
     }
     return count;
 }
+
+const RE_BACKREF = /\$(\d+)/g;
+
+export const invalidBackrefs = (replaceStr: string, groups: number): number[] =>
+    [...replaceStr.matchAll(RE_BACKREF)].map(m => Number(m[1])).filter(n => n > groups);
+
+export const MAX_CAPTURE_WARN = 5;
+
+export function lintPatchMatch(matchStr: string, replaceStr?: string): { severity: "error" | "warn"; message: string; fix?: string }[] {
+    const warnings: { severity: "error" | "warn"; message: string; fix?: string }[] = [];
+    if (/(?<!\\)\.\+/.test(matchStr)) warnings.push({ severity: "error", message: "Unbounded .+ gap", fix: "Use .{0,N}" });
+    if (/(?<!\\)\.\*/.test(matchStr)) warnings.push({ severity: "error", message: "Unbounded .* gap", fix: "Use .{0,N}" });
+    const groups = countCaptureGroups(matchStr);
+    if (groups > MAX_CAPTURE_WARN) warnings.push({ severity: "warn", message: `${groups} capture groups`, fix: "Use (?:...) for unused groups" });
+    if (replaceStr) {
+        for (const n of invalidBackrefs(replaceStr, groups)) warnings.push({ severity: "error", message: `$${n} referenced but only ${groups} groups` });
+    }
+    return warnings;
+}

@@ -47,26 +47,7 @@
     user-select: none;
 }
 
-/* Batch delete */
-
-.void-bd-action-bar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.75rem;
-}
-
-.void-bd-count {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-text-tertiary);
-}
-
-.void-bd-buttons {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.void-bd-buttons > button {
-    flex: 1;
+/* stylelint-disable-next-line selector-class-pattern */
+.group\/sidebar-menu-item:hover .void-sel-wrap {
+    display: inline-flex;
 }

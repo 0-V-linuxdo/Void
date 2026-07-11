@@ -61,7 +61,6 @@ interface FolderConvention {
 const FOLDER_CONVENTIONS: FolderConvention[] = [
     { suffix: ".dev", skip: () => !isDev, mutations: v => `${v}.dev=true;` },
     { suffix: ".chrome", mutations: v => `${v}.chrome=true;${v}.hidden=!window.chrome;` },
-    { suffix: ".preview", mutations: v => `${v}.preview=true;` },
     { suffix: ".extension", skip: ({ isExt }) => !isExt, mutations: v => `${v}.extension=true;` },
 ];
 

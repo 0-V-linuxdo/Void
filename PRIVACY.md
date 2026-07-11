@@ -18,7 +18,7 @@ All settings stay on your device. Nothing ever leaves it.
 - **AccountSwitcher snapshots** *(browser extension only)* — if you use this plugin, your Grok and xAI SSO session cookies (both `grok.com` and `accounts.x.ai`) are captured and stored locally so you can switch between accounts without logging out. Snapshots are encrypted at rest with AES-GCM-256 using a non-extractable HKDF key that is generated once per install and kept in IndexedDB. The key is never transmitted or derivable from the source code — it is random per installation. Encryption defends against other extensions, synced profile backups, and casual storage inspection. It does **not** defend against malicious code running on grok.com itself, which already has access to your live session.
 - **Storage cleanup on switch** — when you switch accounts, AccountSwitcher clears per-account `localStorage` keys (feature-flag bucketing, cached user settings, mixpanel queues, etc.), wipes `sessionStorage`, and deletes the `mixpanelBrowserDb` IndexedDB so Grok's UI doesn't show the previous user's state. Global preferences (theme, language, sidebar layout, Void settings) are preserved.
 
-Void is open source. Anyone can audit the storage and crypto code at [src/utils/crypto.ts](src/utils/crypto.ts) and [src/plugins/accountSwitcher.extension/](src/plugins/accountSwitcher.extension/).
+Void is open source. Anyone can audit the storage and crypto code at [src/plugins/accountSwitcher.extension/crypto.ts](src/plugins/accountSwitcher.extension/crypto.ts) and [src/plugins/accountSwitcher.extension/](src/plugins/accountSwitcher.extension/).
 
 ## Network Requests
 

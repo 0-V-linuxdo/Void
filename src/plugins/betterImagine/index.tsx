@@ -305,24 +305,13 @@ const onMouseLeave = (e: { currentTarget: HTMLElement }) => {
 };
 
 function useFilteredFavorites(): MediaItem[] {
-    const list = MediaStore.useMediaStore((s: { favoritesList: MediaItem[] }) => s.favoritesList);
+    const list = MediaStore.useMediaStore(s => s.favoritesList);
     useExternalStore(filterStore);
     return filterItems(list);
 }
 
-type VideoInfo = { id: string; hdMediaUrl?: string; upscalingInProgress?: boolean };
-type MediaStoreHandle = {
-    favoritesList?: MediaItem[];
-    multiSelectIds?: Record<string, unknown>;
-    byId: Record<string, MediaItem | undefined>;
-    setMultiSelectItems?: (items: MediaItem[]) => void;
-    clearMultiSelect?: () => void;
-    videoByMediaId: Record<string, VideoInfo[]>;
-    upscaleVideo: (mediaId: string, videoId: string) => Promise<void>;
-};
-
-function mediaState(): MediaStoreHandle {
-    return MediaStore.useMediaStore.getState() as unknown as MediaStoreHandle;
+function mediaState() {
+    return MediaStore.useMediaStore.getState();
 }
 
 function selectVisible() {
@@ -330,13 +319,7 @@ function selectVisible() {
     const list = state.favoritesList ?? [];
     const visible = filterItems(list);
     if (!visible.length) return;
-    if (typeof state.setMultiSelectItems === "function") {
-        state.setMultiSelectItems(visible);
-    } else {
-        const ids: Record<string, MediaItem> = {};
-        for (const item of visible) ids[item.id] = item;
-        (MediaStore.useMediaStore.setState as (p: Record<string, unknown>) => void)({ multiSelectIds: ids });
-    }
+    state.setMultiSelectItems(visible);
     Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
 }
 

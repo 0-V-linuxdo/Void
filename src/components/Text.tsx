@@ -36,7 +36,7 @@ const weightClasses = {
     bold: "font-bold",
 } as const satisfies Record<TextWeight, string>;
 
-export const colorClasses = {
+const colorClasses = {
     primary: "",
     secondary: "text-secondary",
     muted: "text-muted-foreground",

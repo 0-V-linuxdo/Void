@@ -12,15 +12,13 @@ import type { ComponentType } from "react";
 interface IconButtonProps {
     icon: ComponentType<IconProps>;
     label: string;
-    size?: number;
-    className?: string;
     onClick?(): void;
 }
 
-export function IconButton({ icon: Icon, label, size = 14, className, onClick }: IconButtonProps) {
+export function IconButton({ icon: Icon, label, onClick }: IconButtonProps) {
     return (
-        <Button variant="tertiary" size="xs" shape="square" aria-label={label} className={className} onClick={onClick}>
-            <Icon size={size} />
+        <Button variant="tertiary" size="xs" shape="square" aria-label={label} onClick={onClick}>
+            <Icon size={14} />
         </Button>
     );
 }

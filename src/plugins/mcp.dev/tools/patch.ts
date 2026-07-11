@@ -9,7 +9,7 @@ import { patchReport, patchResults, patchStats } from "@turbopack/patchReport";
 import { getRuntimeFactoryRegistry, patches } from "@turbopack/patchTurbopack";
 import { search } from "@turbopack/turbopack";
 import { type PatchedModuleFactory, SYM_PATCHED_BY } from "@turbopack/types";
-import { canonicalizeMatch } from "@utils/patches";
+import { canonicalizeMatch, lintPatchMatch } from "@utils/patches";
 
 import { PATCH } from "./constants";
 import type { LintWarning, PatchArgs, ValidationIssue } from "./types";
@@ -52,8 +52,7 @@ function patchedSyntaxError(patchedSrc: string): string | null {
 function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
     const warnings: LintWarning[] = [];
 
-    if (/(?<!\\)\.\+/.test(matchStr)) warnings.push({ severity: "error", message: "Unbounded .+ gap", fix: "Use .{0,N}" });
-    if (/(?<!\\)\.\*/.test(matchStr)) warnings.push({ severity: "error", message: "Unbounded .* gap", fix: "Use .{0,N}" });
+    warnings.push(...lintPatchMatch(matchStr, replaceStr));
 
     const varRe = /(?:^|[^\\a-zA-Z_$\w])([etrnioslcu])(?=[.,()[\]{}=!<>?:])/g;
     const foundVars = new Set<string>();
@@ -79,17 +78,12 @@ function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
         warnings.push({ severity: "info", message: `Match regex is ${matchStr.length} chars (>${PATCH.MATCH_WARN_LENGTH})`, fix: "Simplify: use .{0,N}, $&, or lookbehind" });
     }
 
-    const groups = countCaptureGroups(matchStr);
-    if (groups > PATCH.MAX_CAPTURE_WARN) warnings.push({ severity: "warn", message: `${groups} capture groups`, fix: "Use (?:...) for unused groups" });
-
     if (replaceStr) {
+        const groups = countCaptureGroups(matchStr);
         if (groups > 0 && !replaceStr.includes("$&") && !/\$\d/.test(replaceStr)) {
             warnings.push({ severity: "info", message: "Capture groups defined but not referenced in replace", fix: "Use $& or (?:...) for non-capturing" });
         }
         const refs = replaceStr.match(/\$(\d+)/g)?.map(g => Number(g.slice(1))) ?? [];
-        for (const ref of invalidBackrefs(replaceStr, groups)) {
-            warnings.push({ severity: "error", message: `$${ref} referenced but only ${groups} groups` });
-        }
         const usedGroups = new Set(refs);
         for (let i = 1; i <= groups; i++) {
             if (!usedGroups.has(i)) warnings.push({ severity: "info", message: `$${i} unused`, fix: "Use (?:...)" });
