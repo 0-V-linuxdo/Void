@@ -15,39 +15,30 @@ import { toolHandlers } from "./tools";
 import { MCP as MCP_CONSTANTS } from "./tools/constants";
 import { clearAllIntercepts } from "./tools/intercept";
 import { clearWhereUsedCache } from "./tools/module";
+import { clearNetwork } from "./tools/network";
 import { clearStoreCache } from "./tools/store";
+import type { PageRequest, PageResponse } from "./tools/types";
 import { clearFactoryCaches, isThenable } from "./tools/utils";
 
-const logger = new Logger("MCP", "#ca9ee6");
+const logger = new Logger("MCP", MCP_CONSTANTS.LOG_COLOR);
 
-interface WsMessage {
-    id: string | number;
-    tool: string;
-    arguments?: Record<string, unknown>;
+function bridgePort(): number {
+    try { return Number(localStorage.getItem("void_mcp_port")) || MCP_CONSTANTS.PORT; } catch { return MCP_CONSTANTS.PORT; }
 }
-
-interface WsResponse {
-    id: string | number;
-    result?: unknown;
-    error?: string;
-}
-
-const MCP_URL = `ws://127.0.0.1:${MCP_CONSTANTS.PORT}`;
+const MCP_URL = `ws://127.0.0.1:${bridgePort()}`;
 const { SLOW_THRESHOLD, MAX_RESULT_SIZE, INITIAL_RECONNECT_DELAY, MAX_RECONNECT_DELAY } = MCP_CONSTANTS;
 
-// The socket lives in a blob worker: Firefox applies grok.com's upgrade-insecure-requests CSP
-// to document-created WebSockets regardless of loopback target (the exemption checks the page
-// URI, not the target — Bugzilla 1729897), force-upgrading ws:// to wss://. Worker-created
-// sockets skip that code path entirely.
 const WORKER_SRC = `let ws;
 onmessage = e => {
     const [op, data] = e.data;
     if (op === 0) {
-        ws = new WebSocket(data);
-        ws.onopen = () => postMessage([0]);
-        ws.onmessage = ev => postMessage([1, ev.data]);
-        ws.onclose = () => postMessage([2]);
-        ws.onerror = () => postMessage([3]);
+        try {
+            ws = new WebSocket(data);
+            ws.onopen = () => postMessage([0]);
+            ws.onmessage = ev => postMessage([1, ev.data]);
+            ws.onclose = () => postMessage([2]);
+            ws.onerror = () => postMessage([3]);
+        } catch { postMessage([3]); }
     } else if (op === 1) {
         try { ws.send(data); } catch {}
     }
@@ -117,7 +108,7 @@ function truncateResult(result: unknown): unknown {
     }
     if (isObject(result)) {
         const out: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(result as Record<string, unknown>)) {
+        for (const [k, v] of Object.entries(result)) {
             if (Array.isArray(v) && v.length > 0) {
                 try {
                     const sampleSize = JSON.stringify(v[0]).length;
@@ -139,17 +130,21 @@ function truncateResult(result: unknown): unknown {
     return result;
 }
 function safeSend(json: string) {
-    if (ws?.readyState === WebSocket.OPEN) {
-        try {
-            ws.send(json);
-        } catch {}
+    if (ws?.readyState !== WebSocket.OPEN) {
+        logger.warn("Dropped tool result: bridge socket not open");
+        return;
+    }
+    try {
+        ws.send(json);
+    } catch (err: unknown) {
+        logger.error("Failed to send tool result", err);
     }
 }
-function send(data: WsResponse) {
+function send(data: PageResponse) {
     try {
         let json = JSON.stringify(data);
         if (json.length > MAX_RESULT_SIZE && data.result != null) {
-            const truncated: WsResponse = { id: data.id, result: truncateResult(data.result) };
+            const truncated: PageResponse = { id: data.id, result: truncateResult(data.result) };
             json = JSON.stringify(truncated);
             if (json.length > MAX_RESULT_SIZE) {
                 safeSend(JSON.stringify({ id: data.id, error: `Result too large (${json.length} chars) even after auto-truncation. Use narrower queries or pagination.` }));
@@ -171,14 +166,21 @@ function connect() {
         scheduleReconnect();
         return;
     }
+    const watchdog = setTimeout(() => {
+        if (ws?.readyState === WebSocket.CONNECTING) {
+            logger.warn("Connect timed out, retrying");
+            ws.close();
+        }
+    }, MCP_CONSTANTS.CONNECT_TIMEOUT);
     ws.onopen = () => {
+        clearTimeout(watchdog);
         connectingLock = false;
         reconnectDelay = INITIAL_RECONNECT_DELAY;
         const toolCount = Object.keys(toolHandlers).length;
         logger.info(`Connected to MCP session with ${toolCount} tools ready`);
     };
     ws.onmessage = (event: { data: string }) => {
-        let msg: WsMessage;
+        let msg: PageRequest;
         try {
             msg = JSON.parse(event.data);
         } catch (err: unknown) {
@@ -219,6 +221,7 @@ function connect() {
         }
     };
     ws.onclose = () => {
+        clearTimeout(watchdog);
         ws = null;
         connectingLock = false;
         scheduleReconnect();
@@ -262,6 +265,7 @@ export default definePlugin({
     stop() {
         disconnect();
         clearAllIntercepts();
+        clearNetwork();
         clearFactoryCaches();
         clearWhereUsedCache();
         clearStoreCache();

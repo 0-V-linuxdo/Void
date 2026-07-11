@@ -13,7 +13,7 @@ import { canonicalizeMatch } from "@utils/patches";
 
 import { PATCH } from "./constants";
 import type { LintWarning, PatchArgs, ValidationIssue } from "./types";
-import { asArray, clampConfig, countCaptureGroups, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources, getFactorySourceCache } from "./utils";
+import { asArray, clampConfig, countCaptureGroups, dispatch, errorMessage, extractContextAnchors, extractI18nKeys, getAllFactorySources, invalidBackrefs } from "./utils";
 
 const CTX_PAD_CFG = { default: PATCH.DEFAULT_CONTEXT_PAD, max: PATCH.MAX_CONTEXT_PAD } as const;
 const ANALYZE_CTX_CFG = { default: PATCH.ANALYZE_DEFAULT_CONTEXT, max: PATCH.MAX_CONTEXT_PAD } as const;
@@ -29,6 +29,24 @@ function findModulesByFind(findStr: string | string[]): { ids: number[]; results
     const results = search(...canonParts);
     const ids = Object.keys(results).map(Number);
     return { ids, results, canonFind: canonParts[0] };
+}
+
+function factoryGroups(ids: number[], results: Record<number, unknown>): { sameSource: boolean; uniqueSources: string[] } {
+    const uniqueSources = [...new Set(ids.map(id => String(results[id])))];
+    return { sameSource: uniqueSources.length === 1, uniqueSources };
+}
+
+function i18nNear(src: string, idx: number, pad: number): Array<{ key: string; default: string }> {
+    return extractI18nKeys(src.slice(Math.max(0, idx - pad), idx + pad * 2));
+}
+
+function patchedSyntaxError(patchedSrc: string): string | null {
+    try {
+        new Function("return " + patchedSrc.replaceAll("$self", "({})"));
+        return null;
+    } catch (e: unknown) {
+        return errorMessage(e).split("\n")[0];
+    }
 }
 
 function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
@@ -69,8 +87,8 @@ function lintMatchRegex(matchStr: string, replaceStr?: string): LintWarning[] {
             warnings.push({ severity: "info", message: "Capture groups defined but not referenced in replace", fix: "Use $& or (?:...) for non-capturing" });
         }
         const refs = replaceStr.match(/\$(\d+)/g)?.map(g => Number(g.slice(1))) ?? [];
-        for (const ref of refs) {
-            if (ref > groups) warnings.push({ severity: "error", message: `$${ref} referenced but only ${groups} groups` });
+        for (const ref of invalidBackrefs(replaceStr, groups)) {
+            warnings.push({ severity: "error", message: `$${ref} referenced but only ${groups} groups` });
         }
         const usedGroups = new Set(refs);
         for (let i = 1; i <= groups; i++) {
@@ -175,12 +193,6 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
         return result;
     }
 
-    const replaceGroups = replaceStr.match(/\$(\d+)/g)?.map((g: string) => Number(g.slice(1))) ?? [];
-    const captureCount = countCaptureGroups(matchStr);
-    for (const g of replaceGroups) {
-        if (g > captureCount) warnings.push(`$${g} referenced but only ${captureCount} groups`);
-    }
-
     const globalRegex = new RegExp(regex.source, regex.flags.includes("g") ? regex.flags : `${regex.flags}g`);
     const allMatches = src.match(globalRegex);
     if (allMatches && allMatches.length > 1) warnings.push(`Regex matches ${allMatches.length} times in source — only first is replaced without g flag`);
@@ -188,11 +200,8 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
     const patchedSrc = src.replace(regex, replaceStr);
     if (patchedSrc === src) warnings.push("Replacement produced identical output (no-op)");
 
-    try {
-        new Function("return " + patchedSrc.replaceAll("$self", "({})"));
-    } catch (syntaxErr: unknown) {
-        warnings.push(`Replacement produces invalid JS: ${errorMessage(syntaxErr).split("\n")[0]}`);
-    }
+    const syntaxErr = patchedSyntaxError(patchedSrc);
+    if (syntaxErr) warnings.push(`Replacement produces invalid JS: ${syntaxErr}`);
 
     const at = matched.index!;
     const pad = clampConfig(contextPad, CTX_PAD_CFG);
@@ -226,13 +235,7 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
     const findLabel = String(p.find).slice(0, PATCH.FIND_SLICE);
 
     if (!ids.length) {
-        const findStr = String(p.find);
-        let inUnloaded = 0;
-        for (const [, src] of getFactorySourceCache()) {
-            if (src.includes(findStr)) inUnloaded++;
-        }
-        const reason = inUnloaded ? `find matched 0 loaded modules (found in ${inUnloaded} unloaded factory sources — likely lazy chunk)` : "find matched 0 modules";
-        return { plugin: p.plugin, find: findLabel, n: replacements.length, reason };
+        return { plugin: p.plugin, find: findLabel, n: replacements.length, reason: "find matched 0 modules" };
     }
 
     const sources = p.all ? ids.map(id => String(results[id])) : [String(results[ids[0]])];
@@ -261,14 +264,11 @@ function diagnoseOrphaned(p: (typeof patches)[number]) {
     const canonFind = canonicalizeMatch(findParts[0]);
     const findIdx = firstIndexOf(src, canonFind);
     if (findIdx >= 0) {
-        const neighborhood = src.slice(Math.max(0, findIdx - PATCH.ANALYZE_DEFAULT_CONTEXT), Math.min(src.length, findIdx + PATCH.ANALYZE_DEFAULT_CONTEXT * 2));
-        const nearbyI18n = extractI18nKeys(neighborhood);
+        const nearbyI18n = i18nNear(src, findIdx, PATCH.ANALYZE_DEFAULT_CONTEXT);
         if (nearbyI18n.length) result.nearbyI18n = nearbyI18n;
     }
     return result;
 }
-
-const BACKREF_RE = /\$(\d+)/g;
 
 function validatePatch(p: (typeof patches)[number]): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
@@ -285,19 +285,17 @@ function validatePatch(p: (typeof patches)[number]): ValidationIssue[] {
         return issues;
     }
 
-    const uniqueFactories = new Set<string>();
-    for (const id of ids) uniqueFactories.add(String(results[id]));
-    if (!p.all && uniqueFactories.size > 1) {
+    const { uniqueSources: candidateSources } = factoryGroups(ids, results);
+    if (!p.all && candidateSources.length > 1) {
         push({
             code: "find::ambiguous",
             severity: "error",
-            message: `find matches ${uniqueFactories.size} distinct factories across ${ids.length} modules without all:true`,
+            message: `find matches ${candidateSources.length} distinct factories across ${ids.length} modules without all:true`,
             detail: `ids: ${ids.slice(0, 10).join(", ")}${ids.length > 10 ? "…" : ""}`,
         });
     }
 
-    const candidateSources = [...uniqueFactories];
-    const candidateIds = [...uniqueFactories].map(src => ids.find(id => String(results[id]) === src)!);
+    const candidateIds = candidateSources.map(src => ids.find(id => String(results[id]) === src)!);
     const groupFailures: number[] = [];
 
     for (let r = 0; r < replacements.length; r++) {
@@ -339,22 +337,16 @@ function validatePatch(p: (typeof patches)[number]): ValidationIssue[] {
 
         if (compiled && typeof rep.replace === "string") {
             const groups = countCaptureGroups(compiled.source);
-            for (const m of rep.replace.matchAll(BACKREF_RE)) {
-                const ref = Number(m[1]);
-                if (ref > groups) {
-                    push({ code: "replace::backref-invalid", severity: "error", message: `replace uses $${ref} but match has only ${groups} capture group(s)`, replacementIndex: r, moduleId: hitModId ?? undefined });
-                }
+            for (const ref of invalidBackrefs(rep.replace, groups)) {
+                push({ code: "replace::backref-invalid", severity: "error", message: `replace uses $${ref} but match has only ${groups} capture group(s)`, replacementIndex: r, moduleId: hitModId ?? undefined });
             }
         }
 
         if (typeof rep.replace === "string") {
-            try {
-                const pluginPath = `Void.plugins[${JSON.stringify(p.plugin)}]`;
-                const replaceExpr = rep.replace.replaceAll("$self", pluginPath);
-                const patched = hitSrc.replace(compiled ?? (rep.match as string), replaceExpr);
-                new Function("return " + patched.replaceAll(pluginPath, "({})"));
-            } catch (e) {
-                push({ code: "replace::syntax-error", severity: "error", message: "replacement produced invalid JavaScript", replacementIndex: r, moduleId: hitModId ?? undefined, detail: errorMessage(e).split("\n")[0] });
+            const patched = hitSrc.replace(compiled ?? (rep.match as string), rep.replace);
+            const syntaxErr = patchedSyntaxError(patched);
+            if (syntaxErr) {
+                push({ code: "replace::syntax-error", severity: "error", message: "replacement produced invalid JavaScript", replacementIndex: r, moduleId: hitModId ?? undefined, detail: syntaxErr });
                 groupFailures.push(r);
             }
         }
@@ -415,8 +407,7 @@ function actionAnalyze(args: PatchArgs): unknown {
         return result;
     }
 
-    const firstSrc = String(results[ids[0]]);
-    const sameSource = ids.every(mid => String(results[mid]) === firstSrc);
+    const { sameSource } = factoryGroups(ids, results);
 
     const entries = ids.slice(0, PATCH.ANALYZE_IDS_LIMIT).map(mid => {
         const modSrc = String(results[mid]);
@@ -452,17 +443,15 @@ function actionTest(args: PatchArgs): unknown {
     const src = String(results[id]);
     const testResult = testMatchOnSource(src, id, findStr, matchStr, replaceStr, flags, args.context);
 
-    if (typeof testResult === "object" && testResult.status === "VALID") {
+    if (testResult.status === "VALID") {
         const matchAt = testResult.at as number;
-        const i18nPad = clampConfig(args.context, CTX_PAD_CFG);
-        const neighborhood = src.slice(Math.max(0, matchAt - i18nPad), Math.min(src.length, matchAt + i18nPad * 2));
-        const nearbyI18n = extractI18nKeys(neighborhood);
+        const nearbyI18n = i18nNear(src, matchAt, clampConfig(args.context, CTX_PAD_CFG));
         if (nearbyI18n.length) (testResult as Record<string, unknown>).nearbyI18n = nearbyI18n;
     }
 
     if (ids.length === 1) return testResult;
 
-    const sameSource = ids.every(mid => String(results[mid]) === src);
+    const { sameSource } = factoryGroups(ids, results);
     return {
         ...testResult,
         findCount: ids.length,
@@ -537,7 +526,7 @@ function actionContext(args: PatchArgs): unknown {
     if (findIdx < 0) return { error: "Find matched module but indexOf failed" };
 
     const rawWindow = args.window;
-    const windowSize = Math.max(PATCH.CONTEXT_MIN_WINDOW, clampConfig(rawWindow, { default: PATCH.CONTEXT_DEFAULT_WINDOW, max: PATCH.CONTEXT_MAX_WINDOW }));
+    const windowSize = clampConfig(rawWindow, { default: PATCH.CONTEXT_DEFAULT_WINDOW, min: PATCH.CONTEXT_MIN_WINDOW, max: PATCH.CONTEXT_MAX_WINDOW });
     const half = Math.floor(windowSize / 2);
     const ctxStart = Math.max(0, findIdx - half);
     const ctxEnd = Math.min(src.length, findIdx + half);
@@ -551,16 +540,12 @@ function actionContext(args: PatchArgs): unknown {
     const result: Record<string, unknown> = { id, at: findIdx, len: src.length, ctxStart, src: ctx, anchors };
     if (rawWindow != null && rawWindow < PATCH.CONTEXT_MIN_WINDOW) result.note = `Window clamped to minimum of ${PATCH.CONTEXT_MIN_WINDOW} (requested ${rawWindow}).`;
     if (ids.length > 1) {
-        const sameSource = ids.every(mid => String(results[mid]) === src);
+        const { sameSource } = factoryGroups(ids, results);
         result.findCount = ids.length;
         if (sameSource) result.sharedFactory = true;
     }
     return result;
 }
-
-const BENCH_RUNS = 50;
-const BENCH_WARMUP = 5;
-const BENCH_PHASE_BUDGET_MS = 1500;
 
 interface BenchStats {
     medianMs: number;
@@ -572,26 +557,26 @@ interface BenchStats {
 function runBench(fn: () => void): BenchStats {
     const phaseStart = performance.now();
     const warmupTimes: number[] = [];
-    for (let i = 0; i < BENCH_WARMUP; i++) {
+    for (let i = 0; i < PATCH.BENCH_WARMUP; i++) {
         const t = performance.now();
         fn();
         warmupTimes.push(performance.now() - t);
-        if (performance.now() - phaseStart > BENCH_PHASE_BUDGET_MS) {
+        if (performance.now() - phaseStart > PATCH.BENCH_PHASE_BUDGET_MS) {
             warmupTimes.sort((a, b) => a - b);
             const mid = warmupTimes[Math.floor(warmupTimes.length / 2)];
             return { medianMs: +mid.toFixed(3), p95Ms: +warmupTimes[warmupTimes.length - 1].toFixed(3), maxMs: +warmupTimes[warmupTimes.length - 1].toFixed(3), aborted: true };
         }
     }
     const times: number[] = [];
-    for (let i = 0; i < BENCH_RUNS; i++) {
-        if (performance.now() - phaseStart > BENCH_PHASE_BUDGET_MS) break;
+    for (let i = 0; i < PATCH.BENCH_RUNS; i++) {
+        if (performance.now() - phaseStart > PATCH.BENCH_PHASE_BUDGET_MS) break;
         const start = performance.now();
         fn();
         times.push(performance.now() - start);
     }
     if (!times.length) return { medianMs: -1, p95Ms: -1, maxMs: -1, aborted: true };
     times.sort((a, b) => a - b);
-    const aborted = times.length < BENCH_RUNS;
+    const aborted = times.length < PATCH.BENCH_RUNS;
     return {
         medianMs: +(times[Math.floor(times.length / 2)].toFixed(3)),
         p95Ms: +(times[Math.floor(times.length * 0.95)].toFixed(3)),
@@ -688,8 +673,4 @@ const PATCH_ACTIONS: Record<PatchArgs["action"], (args: PatchArgs) => unknown> =
     validate: actionValidate,
 };
 
-export function handlePatch(args: PatchArgs): unknown {
-    const fn = PATCH_ACTIONS[args.action];
-    if (!fn) return { error: `Unknown action: ${args.action}` };
-    return fn(args);
-}
+export const handlePatch = (args: PatchArgs): unknown => dispatch(PATCH_ACTIONS, args);

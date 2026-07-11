@@ -22,16 +22,18 @@ import {
     importModule,
     requireModule,
 } from "@turbopack/turbopack";
-import { type FilterFn, type PatchedModuleFactory, SYM_ORIGINAL, SYM_PATCHED_BY, SYM_PATCHED_CODE } from "@turbopack/types";
+import { type FilterFn } from "@turbopack/types";
 import { isObject } from "@utils/guards";
 
 import { MODULE } from "./constants";
 import type { DiffChunk, FilterDef, ModuleArgs } from "./types";
 import {
+    asError,
     attachPatchInfo,
     clampConfig,
     createGenerationalCache,
     describeValue,
+    dispatch,
     errorMessage,
     extractSuggestAnchors,
     findModuleId,
@@ -39,9 +41,13 @@ import {
     getFactorySource,
     getFactorySourceCache,
     getPatchedSource,
+    getPatchInfo,
+    moduleNotFound,
+    pageBounds,
     re,
+    requireCode,
+    requireId,
     requireModuleExports,
-    safeOffset,
     serialize,
 } from "./utils";
 
@@ -67,6 +73,13 @@ function attachModuleMetadata(result: Record<string, unknown>, id: number): void
         if (siblings.length) attachSharedInfo(result, siblings);
     }
     attachPatchInfo(result, id);
+}
+
+function moduleResult(mod: unknown, depth = 1): Record<string, unknown> {
+    const moduleId = findModuleId(mod);
+    const result: Record<string, unknown> = { id: moduleId, exports: serialize(mod, depth) };
+    if (moduleId != null) attachModuleMetadata(result, moduleId);
+    return result;
 }
 
 const whereUsedCacheHolder = createGenerationalCache(
@@ -303,13 +316,13 @@ function findDiffs(orig: string, patched: string, budget: number): DiffChunk[] {
     return diffs;
 }
 
-function resolveFilter(args: FilterDef): { filter: FilterFn; type: string } | null {
+function resolveFilter(args: FilterDef): { filter: FilterFn; type: string } | { error: string } {
     if (args.storeName) return { filter: filters.byStoreName(args.storeName), type: "storeName" };
     if (args.displayName) return { filter: filters.byDisplayName(args.displayName), type: "displayName" };
     if (args.code?.length && args.componentByCode) return { filter: filters.componentByCode(...args.code), type: "componentByCode" };
     if (args.props?.length) return { filter: filters.byProps(...args.props), type: "props" };
     if (args.code?.length) return { filter: filters.byCode(...args.code), type: "code" };
-    return null;
+    return { error: "Provide props, code, displayName, or storeName." };
 }
 
 function requireFactorySource(id: number | undefined): { src: string; id: number } | { error: string } {
@@ -365,7 +378,7 @@ function actionFind(args: ModuleArgs): unknown {
         filterType = "componentByCode";
     } else {
         const resolved = resolveFilter(args);
-        if (!resolved) return { error: "Provide props, code, displayName, or storeName." };
+        if ("error" in resolved) return resolved;
         mod = find(resolved.filter);
         filterType = resolved.type;
     }
@@ -391,32 +404,24 @@ function actionFind(args: ModuleArgs): unknown {
         if (filterType === "storeName") return { error: `No store "${args.storeName}" found`, hint: "storeName is case-sensitive and auto-prefixes 'use'/suffixes 'Store' (e.g. 'ChatPage' \u2192 useChatPageStore). Use the store tool's list action to see all stores, or the store tool with a partial query for fuzzy matching." };
         return { error: `No match in ${cache.size} modules` };
     }
-    const moduleId = findModuleId(mod);
-    const result: Record<string, unknown> = { id: moduleId, exports: serialize(mod, 1) };
+    const result = moduleResult(mod);
     if (filterType === "storeName" && typeof (mod as Record<string, unknown>).getState === "function") {
         try {
             const state = (mod as { getState(): Record<string, unknown> }).getState();
             if (state && typeof state === "object") result.stateKeys = Object.keys(state);
         } catch {}
     }
-    if (moduleId != null) attachModuleMetadata(result, moduleId);
     return result;
 }
 
 function actionFindAll(args: ModuleArgs): unknown {
     const resolved = resolveFilter(args);
-    if (!resolved) return { error: "Provide props, code, displayName, or storeName." };
+    if ("error" in resolved) return resolved;
     const mods = findAll(resolved.filter);
     if (!mods.length) return [];
-    const cap = clampConfig(args.limit, MODULE.DEFAULT_FIND_ALL, MODULE.MAX_FIND_ALL);
-    const off = safeOffset(args.offset);
+    const { off, cap } = pageBounds(args, { default: MODULE.DEFAULT_FIND_ALL, max: MODULE.MAX_FIND_ALL });
     const sliced = mods.slice(off, off + cap);
-    const results = sliced.map(m => {
-        const moduleId = findModuleId(m);
-        const result: Record<string, unknown> = { id: moduleId, exports: serialize(m, 1) };
-        if (moduleId != null) attachModuleMetadata(result, moduleId);
-        return result;
-    });
+    const results = sliced.map(m => moduleResult(m));
     if (mods.length > off + cap) results.push({ truncated: mods.length, showing: `${off}-${off + sliced.length}` });
     return results;
 }
@@ -424,16 +429,18 @@ function actionFindAll(args: ModuleArgs): unknown {
 function actionFindBulk(args: ModuleArgs): unknown {
     const filterDefs = args.filters;
     if (!Array.isArray(filterDefs) || filterDefs.length < 2) return { error: "Provide filters array (2+), each: {props?, code?, displayName?, storeName?}." };
-    const builtFilters = filterDefs.map(def => resolveFilter(def)?.filter ?? null);
-    const invalid = builtFilters.findIndex(f => !f);
+    const resolvedFilters = filterDefs.map(def => resolveFilter(def));
+    const invalid = resolvedFilters.findIndex(f => "error" in f);
     if (invalid !== -1) return { error: `Filter[${invalid}] needs props, code, displayName, or storeName` };
-    const results = findBulk(...(builtFilters as FilterFn[]));
+    const filterFns: FilterFn[] = [];
+    for (const f of resolvedFilters) if ("filter" in f) filterFns.push(f.filter);
+    const results = findBulk(...filterFns);
     return results.map((m, i) => {
         if (!m) {
             const def = filterDefs[i];
             return { i, found: false, filter: def.props?.length ? { props: def.props } : { code: def.code } };
         }
-        return { i, id: findModuleId(m), exports: serialize(m, 1) };
+        return { i, ...moduleResult(m) };
     });
 }
 
@@ -461,8 +468,9 @@ function actionFindComponent(args: ModuleArgs): unknown {
 }
 
 function actionFindModuleId(args: ModuleArgs): unknown {
-    const { code } = args;
-    if (!code?.length) return { error: "Provide code strings." };
+    const codeCheck = requireCode(args.code);
+    if ("error" in codeCheck) return codeCheck;
+    const { code } = codeCheck;
     const foundId = findModuleIdByCode(...code);
     if (foundId == null) return { error: `No factory matches [${code}]` };
     const result: Record<string, unknown> = { id: foundId, loaded: getModuleCache().has(foundId) };
@@ -471,8 +479,9 @@ function actionFindModuleId(args: ModuleArgs): unknown {
 }
 
 function actionExports(args: ModuleArgs): unknown {
-    const { id } = args;
-    if (id == null) return { error: "Provide module id." };
+    const idCheck = requireId(args.id);
+    if ("error" in idCheck) return idCheck;
+    const { id } = idCheck;
     const check = requireModuleExports(id);
     if ("error" in check) return check;
     const { exports } = check;
@@ -492,11 +501,12 @@ function actionExports(args: ModuleArgs): unknown {
 }
 
 function actionSource(args: ModuleArgs): unknown {
-    const { id } = args;
-    if (id == null) return { error: "Provide module id." };
+    const idCheck = requireId(args.id);
+    if ("error" in idCheck) return idCheck;
+    const { id } = idCheck;
     const patchedCode = args.patched ? getPatchedSource(id) : null;
     const src = patchedCode ?? getFactorySource(id);
-    if (!src) return { error: `Module ${id} not found.` };
+    if (!src) return { error: moduleNotFound(id) };
     const cap = clampConfig(args.limit, MODULE.DEFAULT_SOURCE_LIMIT, MODULE.MAX_SOURCE_LIMIT);
     const rawOffset = Math.floor(args.offset ?? 0);
     const offsetClamped = rawOffset < 0 || rawOffset > src.length;
@@ -573,8 +583,9 @@ function actionNamedExports(args: ModuleArgs): unknown {
 }
 
 function actionLoad(args: ModuleArgs): unknown {
-    const { id } = args;
-    if (id == null) return { error: "Provide module id." };
+    const idCheck = requireId(args.id);
+    if ("error" in idCheck) return idCheck;
+    const { id } = idCheck;
     const cache = getModuleCache();
     if (cache.has(id)) return { id, loaded: true, exports: serialize(cache.get(id)) };
 
@@ -582,29 +593,28 @@ function actionLoad(args: ModuleArgs): unknown {
     if (!registry?.has(id)) return { error: `No factory for ${id}` };
 
     if (args.async) {
-        return importModule(id).then(
-            (mod: unknown) => ({ id, loaded: true, exports: serialize(mod) }),
-            (err: unknown) => ({ error: errorMessage(err) }),
-        );
+        return importModule(id).then((mod: unknown) => ({ id, loaded: true, exports: serialize(mod) }), asError);
     }
 
-    const mod = requireModule(id);
-    if (mod == null) return { error: `Module ${id} load returned null` };
-    return { id, loaded: true, exports: serialize(mod) };
+    try {
+        const mod = requireModule(id);
+        if (mod == null) return { error: `Module ${id} load returned null` };
+        return { id, loaded: true, exports: serialize(mod) };
+    } catch (e: unknown) {
+        return asError(e);
+    }
 }
 
 function actionLoadChunks(args: ModuleArgs): unknown {
     const { code } = args;
     if (!code?.length) return { error: "Provide code to identify the chunk-loading factory." };
-    return extractAndLoadChunks(code).then(
-        (loaded: boolean) => ({ loaded }),
-        (err: unknown) => ({ error: errorMessage(err) }),
-    );
+    return extractAndLoadChunks(code).then((loaded: boolean) => ({ loaded }), asError);
 }
 
 function actionFindByFactory(args: ModuleArgs): unknown {
-    const { code } = args;
-    if (!code?.length) return { error: "Provide code strings." };
+    const codeCheck = requireCode(args.code);
+    if ("error" in codeCheck) return codeCheck;
+    const { code } = codeCheck;
     const found = findModuleFactory(...code);
     if (!found) return { error: `No factory matches [${code}]` };
     const [factoryId] = found;
@@ -617,21 +627,22 @@ function actionFindByFactory(args: ModuleArgs): unknown {
 }
 
 function actionMapMangled(args: ModuleArgs): unknown {
-    const { code } = args;
-    if (!code?.length) return { error: "Provide code strings." };
+    const codeCheck = requireCode(args.code);
+    if ("error" in codeCheck) return codeCheck;
+    const { code } = codeCheck;
     const mapperDefs = args.mappers;
     if (!isObject(mapperDefs)) return { error: "Provide mappers: {name: filterType}. Types: fn/string/number/boolean/object/array/component/hasProps:a,b/code:pattern" };
     const found = findModuleFactory(...code);
     if (!found) return { error: `No factory matches [${code}]` };
     const [factoryId] = found;
-    const mangledCache = getModuleCache();
-    if (!mangledCache.has(factoryId)) {
+    const cache = getModuleCache();
+    if (!cache.has(factoryId)) {
         try { requireModule(factoryId); } catch (e: unknown) {
             return { id: factoryId, error: `Load failed: ${errorMessage(e)}` };
         }
-        if (!mangledCache.has(factoryId)) return { id: factoryId, error: "Not loaded." };
+        if (!cache.has(factoryId)) return { id: factoryId, error: "Not loaded." };
     }
-    const exports = mangledCache.get(factoryId);
+    const exports = cache.get(factoryId);
     if (typeof exports !== "object" || exports == null) return { id: factoryId, error: "Not an object" };
 
     const builtFilters: Record<string, FilterFn> = {};
@@ -692,9 +703,8 @@ function actionUnloaded(args: ModuleArgs): unknown {
         if (!cache.has(fid)) unloaded.push(fid);
     }
     unloaded.sort((a, b) => (sources.get(b)?.length ?? 0) - (sources.get(a)?.length ?? 0));
-    const maxPreview = clampConfig(args.limit, MODULE.DEFAULT_UNLOADED_LIMIT, MODULE.MAX_UNLOADED_LIMIT);
-    const off = safeOffset(args.offset);
-    const previewed = unloaded.slice(off, off + maxPreview).map(uid => {
+    const { off, cap } = pageBounds(args, { default: MODULE.DEFAULT_UNLOADED_LIMIT, max: MODULE.MAX_UNLOADED_LIMIT });
+    const previewed = unloaded.slice(off, off + cap).map(uid => {
         const src = sources.get(uid);
         if (!src) return { id: uid };
         return { id: uid, len: src.length, preview: src.slice(0, MODULE.UNLOADED_PREVIEW_LENGTH) };
@@ -703,15 +713,15 @@ function actionUnloaded(args: ModuleArgs): unknown {
 }
 
 function actionDiff(args: ModuleArgs): unknown {
-    const { id } = args;
-    if (id == null) return { error: "Provide module id." };
-    const factory = getRuntimeFactoryRegistry()?.get(id) as PatchedModuleFactory | undefined;
-    if (!factory) return { error: `Module ${id} not found.` };
-    const patchedCode = factory[SYM_PATCHED_CODE];
+    const idCheck = requireId(args.id);
+    if ("error" in idCheck) return idCheck;
+    const { id } = idCheck;
+    const orig = getFactorySource(id);
+    if (!orig) return { error: moduleNotFound(id) };
+    const patchedCode = getPatchedSource(id);
     if (!patchedCode) return { patched: false };
-    const orig = String(factory[SYM_ORIGINAL] ?? factory);
     const diffBudget = clampConfig(args.limit, MODULE.DEFAULT_DIFF_SLICE, MODULE.MAX_DIFF_SLICE);
-    return { patched: true, by: factory[SYM_PATCHED_BY], origLen: orig.length, patchedLen: patchedCode.length, changes: findDiffs(orig, patchedCode, diffBudget) };
+    return { patched: true, by: getPatchInfo(id), origLen: orig.length, patchedLen: patchedCode.length, changes: findDiffs(orig, patchedCode, diffBudget) };
 }
 
 function actionWhereUsed(args: ModuleArgs): unknown {
@@ -719,8 +729,7 @@ function actionWhereUsed(args: ModuleArgs): unknown {
     if ("error" in check) return check;
     const index = whereUsedCacheHolder.get();
     const importers = index.get(check.id) ?? [];
-    const cap = clampConfig(args.limit, MODULE.DEFAULT_WHERE_USED, MODULE.MAX_WHERE_USED);
-    const off = safeOffset(args.offset);
+    const { off, cap } = pageBounds(args, { default: MODULE.DEFAULT_WHERE_USED, max: MODULE.MAX_WHERE_USED });
     const cache = getModuleCache();
     return { id: check.id, total: importers.length, importers: importers.slice(off, off + cap).map(i => ({ ...i, l: cache.has(i.id) })) };
 }
@@ -778,8 +787,4 @@ const MODULE_ACTIONS: Record<ModuleArgs["action"], (args: ModuleArgs) => unknown
     functionAt: actionFunctionAt,
 };
 
-export function handleModule(args: ModuleArgs): unknown {
-    const fn = MODULE_ACTIONS[args.action];
-    if (!fn) return { error: `Unknown action: ${args.action}` };
-    return fn(args);
-}
+export const handleModule = (args: ModuleArgs): unknown => dispatch(MODULE_ACTIONS, args);

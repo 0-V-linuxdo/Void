@@ -21,8 +21,12 @@
         "lint:fix": "oxlint -c .oxlintrc.json --fix src",
         "lint:styles": "stylelint \"src/**/*.css\"",
         "lint:styles:fix": "stylelint \"src/**/*.css\" --fix",
+        "strip-comments": "bun run scripts/strip-comments.mjs",
+        "strip-comments:check": "bun run scripts/strip-comments.mjs --check",
         "tsc": "tsc --noEmit",
+        "test": "bun test",
         "mcp": "bun run src/plugins/mcp.dev/server.ts",
+        "mcp:b": "MCP_PORT=7891 bun run src/plugins/mcp.dev/server.ts",
         "test:patches": "bun run scripts/test-patches.mjs",
         "test:build": "bun run scripts/test-build.mjs",
         "reporter": "bun run reporter.ts"
@@ -36,7 +40,8 @@
         "oxlint": "1.68.0",
         "stylelint": "17.4.0",
         "stylelint-config-standard": "40.0.0",
-        "typescript": "5.9.3"
+        "typescript": "5.9.3",
+        "zod": "^4.4.3"
     },
     "engines": {
         "bun": ">=1.1"

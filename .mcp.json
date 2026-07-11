@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "void-mcp": {
+            "type": "http",
+            "url": "http://localhost:7890/"
+        },
+        "void-b": {
+            "type": "http",
+            "url": "http://localhost:7891/"
+        }
+    }
+}

@@ -9,7 +9,6 @@ import type { EvalArgs, EvalError, EvalResult } from "./types";
 import { formatError, isThenable, serialize } from "./utils";
 
 const STATEMENT_RE = /^(return|throw|break|continue|if|for|while|switch|try|class|function(?!\s*\()|const|let|var)\b/;
-const NON_RETURNABLE_RE = STATEMENT_RE;
 const IIFE_TRIGGER_RE = /^(?:return\s|let\s|const\s|var\s|class\s)/;
 
 function stripTrailingComment(line: string): string {
@@ -61,7 +60,7 @@ function autoReturn(code: string): string {
         const lastSemi = findLastTopLevelSemicolon(trimmedCode);
         if (lastSemi > -1 && lastSemi < trimmedCode.length - 1) {
             const afterSemi = stripTrailingComment(trimmedCode.slice(lastSemi + 1)).trim();
-            if (afterSemi && !NON_RETURNABLE_RE.test(afterSemi)) {
+            if (afterSemi && !STATEMENT_RE.test(afterSemi)) {
                 return `${trimmedCode.slice(0, lastSemi + 1)}\nreturn ${afterSemi};`;
             }
         }

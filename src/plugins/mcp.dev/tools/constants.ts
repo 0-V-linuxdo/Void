@@ -72,6 +72,9 @@ export const PATCH = {
     MATCH_LONG_LENGTH: 200,
     ANALYZE_DEFAULT_CONTEXT: 200,
     MIN_LITERAL_LENGTH: 3,
+    BENCH_RUNS: 50,
+    BENCH_WARMUP: 5,
+    BENCH_PHASE_BUDGET_MS: 1500,
 } as const;
 
 export const REACT = {
@@ -107,6 +110,7 @@ export const STORE = {
     DEFAULT_DEPTH: 2,
     SUBSCRIBE_DEPTH: 1,
     MINIFIED_STORE_NAME: "r",
+    DESTRUCTIVE_METHODS: ["clearUser", "logout", "reset", "resetAll", "clearAll", "clearAllOverrides", "deleteUser", "signOut", "clearSession", "refreshSession"],
 } as const;
 
 export const INTERCEPT = {
@@ -119,6 +123,32 @@ export const INTERCEPT = {
     SERIALIZE_DEPTH: 2,
 } as const;
 
+export const NETWORK = {
+    DEFAULT_DURATION: 60_000,
+    MIN_DURATION: 5000,
+    MAX_DURATION: 300_000,
+    DEFAULT_CAPTURES: 50,
+    MAX_CAPTURES: 500,
+    MAX_BODY_LENGTH: 4000,
+    GET_LIMIT: 50,
+} as const;
+
+export const RECON = {
+    DEFAULT_LIMIT: 30,
+    MAX_LIMIT: 2000,
+    MAX_MATCH_LENGTH: 200,
+    OUTPUT_BUDGET: 40_000,
+} as const;
+
+export const REQUEST = {
+    DEFAULT_TIMEOUT: 15_000,
+    MIN_TIMEOUT: 1000,
+    MAX_TIMEOUT: 60_000,
+    MAX_BODY_LENGTH: 4000,
+    MAX_REQUESTS: 10,
+    JSON_DEPTH: 2,
+} as const;
+
 export const MCP = {
     SLOW_THRESHOLD: 1000,
     MAX_RESULT_SIZE: 50_000,
@@ -128,20 +158,13 @@ export const MCP = {
     MIN_TRUNCATED_ITEMS: 5,
     MIN_TRUNCATED_NESTED: 3,
     REQUEST_TIMEOUT: 150_000,
+    CONNECT_TIMEOUT: 10_000,
+    IDLE_GRACE_S: 10,
     WS_OPEN: 1,
     PORT: 7890,
-} as const;
-
-export const GROK = {
-    SEND_TIMEOUT: 120_000,
-    MAX_RESPONSE_LENGTH: 30_000,
-    MAX_THINKING_LENGTH: 10_000,
-    SERIALIZE_DEPTH: 3,
-    NAV_DELAY: 500,
-    EDITOR_TIMEOUT: 5000,
-    EDITOR_POLL_INTERVAL: 200,
-    PRE_SUBMIT_DELAY: 100,
-    READ_PREVIEW_LENGTH: 500,
+    PROTOCOL_VERSION: "2025-06-18",
+    SUPPORTED_PROTOCOL_VERSIONS: ["2025-06-18", "2025-03-26", "2024-11-05"],
+    LOG_COLOR: "#ca9ee6",
 } as const;
 
 export const EVAL = {

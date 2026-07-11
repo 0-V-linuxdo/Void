@@ -8,8 +8,8 @@ import { getModuleCache, isBlacklisted, silenceWarns, syncLazyModules } from "@t
 import { isObject } from "@utils/guards";
 
 import { SERIALIZE, STORE } from "./constants";
-import type { StoreArgs, StoreEntry, ZustandLike } from "./types";
-import { clampConfig, createGenerationalCache, describeValue, errorMessage, getPath, isThenable, notFound, serialize } from "./utils";
+import type { AnyFn, StoreArgs, StoreEntry, ZustandLike } from "./types";
+import { clampCaptureConfig, clampConfig, createGenerationalCache, describeValue, dispatch, errorMessage, getPath, isThenable, notFound, serialize } from "./utils";
 
 const storeCacheHolder = createGenerationalCache<StoreEntry[]>(
     () => {
@@ -25,8 +25,8 @@ const storeCacheHolder = createGenerationalCache<StoreEntry[]>(
             for (const key in mod) {
                 try {
                     const val = mod[key];
-                    if (!isZustandStore(val) || seen.has(val as object)) continue;
-                    seen.add(val as object);
+                    if (!isZustandStore(val) || seen.has(val)) continue;
+                    seen.add(val);
                     const state = val.getState();
                     const stateKeys = isObject(state) ? Object.keys(state) : [];
                     const storeName = resolveStoreName(key, val.name);
@@ -138,7 +138,7 @@ function diffState(prev: Record<string, unknown>, cur: Record<string, unknown>, 
     return changes;
 }
 
-const DESTRUCTIVE_METHODS = new Set(["clearUser", "logout", "reset", "resetAll", "clearAll", "clearAllOverrides", "deleteUser", "signOut", "clearSession", "refreshSession"]);
+const DESTRUCTIVE_METHODS = new Set<string>(STORE.DESTRUCTIVE_METHODS);
 
 function actionList(): unknown {
     return storeCacheHolder.get().map(s => ({ id: s.id, n: s.name, k: s.keys.slice(0, STORE.LIST_KEYS_PREVIEW) }));
@@ -164,9 +164,9 @@ function actionKeys(args: StoreArgs): unknown {
     const target = args.path ? getPath(state, args.path) : state;
     if (!isObject(target)) return { _store: result.resolvedName, ...(args.path && { path: args.path }), keys: [] };
     const keys: Record<string, string> = {};
-    for (const k of Object.keys(target as Record<string, unknown>)) {
+    for (const k of Object.keys(target)) {
         try {
-            keys[k] = describeValue((target as Record<string, unknown>)[k]);
+            keys[k] = describeValue(target[k]);
         } catch {
             keys[k] = "!";
         }
@@ -181,7 +181,7 @@ function actionMethods(args: StoreArgs): unknown {
     if (!isObject(state)) return { _store: result.resolvedName, methods: {} };
     const methods: Record<string, number> = {};
     for (const k of Object.keys(state)) {
-        if (typeof state[k] === "function") methods[k] = (state[k] as Function).length;
+        if (typeof state[k] === "function") methods[k] = (state[k] as AnyFn).length;
     }
     return { _store: result.resolvedName, methods };
 }
@@ -202,13 +202,13 @@ function actionCall(args: StoreArgs): unknown {
     const depth = clampConfig(args.depth, { default: SERIALIZE.DEFAULT_DEPTH, max: STORE.MAX_DEPTH });
     try {
         const stateBefore = found.store.getState();
-        const callResult = (state[method] as Function)(...(Array.isArray(callArgs) ? callArgs : []));
+        const callResult = (state[method] as AnyFn)(...(Array.isArray(callArgs) ? callArgs : []));
 
         const buildResult = (v: unknown): Record<string, unknown> => {
             const stateAfter = found.store.getState();
             const result: Record<string, unknown> = { _store: found.resolvedName, result: serialize(v, depth) };
             if (isObject(stateBefore) && isObject(stateAfter)) {
-                const changes = diffState(stateBefore as Record<string, unknown>, stateAfter as Record<string, unknown>, STORE.SUBSCRIBE_DEPTH, Infinity);
+                const changes = diffState(stateBefore, stateAfter, STORE.SUBSCRIBE_DEPTH, Infinity);
                 if (changes.length) {
                     const changed: Record<string, { from: unknown; to: unknown }> = {};
                     for (const c of changes) changed[c.key] = { from: c.from, to: c.to };
@@ -233,8 +233,10 @@ function actionCall(args: StoreArgs): unknown {
 function actionSubscribe(args: StoreArgs): unknown {
     const found = requireStore(args.query);
     if ("error" in found) return found;
-    const duration = clampConfig(args.duration != null ? Number(args.duration) : undefined, { default: STORE.DEFAULT_DURATION, min: STORE.MIN_DURATION, max: STORE.MAX_DURATION });
-    const maxCaptures = clampConfig(args.maxCaptures != null ? Number(args.maxCaptures) : undefined, { default: STORE.DEFAULT_CAPTURES, min: 1, max: STORE.MAX_CAPTURES });
+    const { duration, maxCaptures } = clampCaptureConfig(args, {
+        dur: { default: STORE.DEFAULT_DURATION, min: STORE.MIN_DURATION, max: STORE.MAX_DURATION },
+        cap: { default: STORE.DEFAULT_CAPTURES, max: STORE.MAX_CAPTURES },
+    });
     const watchPath = args.path;
 
     return new Promise<unknown>(resolve => {
@@ -260,7 +262,7 @@ function actionSubscribe(args: StoreArgs): unknown {
                 changes.push({ t: Date.now() - startTime, p: watchPath, from: serialize(prev, STORE.SUBSCRIBE_DEPTH), to: serialize(cur, STORE.SUBSCRIBE_DEPTH) });
             } else if (isObject(cur) && isObject(prev)) {
                 const dt = Date.now() - startTime;
-                for (const c of diffState(prev as Record<string, unknown>, cur as Record<string, unknown>, STORE.SUBSCRIBE_DEPTH, maxCaptures - changes.length)) {
+                for (const c of diffState(prev, cur, STORE.SUBSCRIBE_DEPTH, maxCaptures - changes.length)) {
                     changes.push({ t: dt, p: c.key, from: c.from, to: c.to });
                 }
             } else {
@@ -284,8 +286,4 @@ const STORE_ACTIONS: Record<StoreArgs["action"], (args: StoreArgs) => unknown> =
     subscribe: actionSubscribe,
 };
 
-export function handleStore(args: StoreArgs): unknown {
-    const fn = STORE_ACTIONS[args.action];
-    if (!fn) return { error: `Unknown action: ${args.action}` };
-    return fn(args);
-}
+export const handleStore = (args: StoreArgs): unknown => dispatch(STORE_ACTIONS, args);

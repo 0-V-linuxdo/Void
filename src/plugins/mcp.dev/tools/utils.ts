@@ -7,14 +7,53 @@
 import { patchStats } from "@turbopack/patchReport";
 import { getModuleCache, getRuntimeFactoryRegistry } from "@turbopack/patchTurbopack";
 import { type PatchedModuleFactory, SYM_PATCHED_BY, SYM_PATCHED_CODE } from "@turbopack/types";
+import { errorMessage } from "@utils/misc";
 
 import { EVAL, MODULE, SERIALIZE } from "./constants";
-import type { Anchor, SuggestCandidate } from "./types";
+import type { Anchor, AnyFn, SuggestCandidate } from "./types";
 
-export { errorMessage } from "@utils/misc";
+export { errorMessage };
 
 export function isThenable(value: unknown): value is PromiseLike<unknown> {
     return value != null && typeof (value as PromiseLike<unknown>).then === "function";
+}
+
+export function dispatch<A extends { action: string }>(actions: Record<A["action"], (args: A) => unknown>, args: A): unknown {
+    const fn = actions[args.action as A["action"]];
+    return fn ? fn(args) : { error: `Unknown action: ${args.action}`, validActions: Object.keys(actions) };
+}
+
+export const asError = (e: unknown): { error: string } => ({ error: errorMessage(e) });
+
+export const moduleNotFound = (id: number): string => `Module ${id} not found.`;
+
+export function requireId(id: number | undefined): { id: number } | { error: string } {
+    return id == null ? { error: "Provide module id." } : { id };
+}
+
+export function requireCode(code: string[] | undefined): { code: string[] } | { error: string } {
+    return code?.length ? { code } : { error: "Provide code strings." };
+}
+
+export function pageBounds(args: { limit?: number; offset?: number }, cfg: { default: number; max: number }): { off: number; cap: number } {
+    return { off: safeOffset(args.offset), cap: clampConfig(args.limit, cfg) };
+}
+
+const RE_BACKREF = /\$(\d+)/g;
+
+export const invalidBackrefs = (replaceStr: string, groups: number): number[] =>
+    [...replaceStr.matchAll(RE_BACKREF)].map(m => Number(m[1])).filter(n => n > groups);
+
+interface CaptureConfig {
+    dur: { default: number; min: number; max: number };
+    cap: { default: number; max: number };
+}
+
+export function clampCaptureConfig(args: { duration?: number; maxCaptures?: number }, cfg: CaptureConfig): { duration: number; maxCaptures: number } {
+    return {
+        duration: clampConfig(args.duration, cfg.dur),
+        maxCaptures: clampConfig(args.maxCaptures, { default: cfg.cap.default, min: 1, max: cfg.cap.max }),
+    };
 }
 
 export function createGenerationalCache<T>(rebuild: () => T, getGen: () => number): { get(): T; clear(): void } {
@@ -25,7 +64,7 @@ export function createGenerationalCache<T>(rebuild: () => T, getGen: () => numbe
             const current = getGen();
             if (cache != null && gen === current) return cache;
             cache = rebuild();
-            gen = current;
+            gen = getGen();
             return cache;
         },
         clear() {
@@ -79,7 +118,7 @@ export function describeValue(val: unknown, maxSlice = MODULE.EXPORT_VALUE_SLICE
     if (val == null) return String(val);
     const t = typeof val;
     if (t === "function") {
-        const fn = val as Function;
+        const fn = val as AnyFn;
         return fn.name ? `fn:${fn.name}(${fn.length})` : `fn(${fn.length})`;
     }
     if (t !== "object") return `${t}:${String(val).slice(0, maxSlice)}`;
@@ -101,7 +140,7 @@ function serializeInner(value: unknown, depth: number, seen: WeakSet<object>): u
     if (value === undefined) return "[undefined]";
     if (value === null) return null;
     const t = typeof value;
-    if (t === "function") return `[fn:${(value as Function).name || "?"}]`;
+    if (t === "function") return `[fn:${(value as AnyFn).name || "?"}]`;
     if (t === "symbol") return (value as symbol).toString();
     if (t === "bigint") return `${value}n`;
     if (t === "number") {
@@ -237,28 +276,20 @@ export const re = {
     },
 };
 
-let factorySourceCache: Map<number, string> | null = null;
-let factorySourceCacheGen = 0;
+const registrySize = () => getRuntimeFactoryRegistry()?.size ?? 0;
 
-export function getFactorySourceCache(): Map<number, string> {
+const factorySourceHolder = createGenerationalCache(() => {
     const registry = getRuntimeFactoryRegistry();
-    if (!registry) return new Map();
-    const gen = registry.size;
-    if (factorySourceCache && factorySourceCacheGen === gen) return factorySourceCache;
-    factorySourceCache = new Map();
-    for (const [id, factory] of registry) factorySourceCache.set(id, String(factory));
-    factorySourceCacheGen = gen;
-    return factorySourceCache;
-}
+    const map = new Map<number, string>();
+    if (registry) for (const [id, factory] of registry) map.set(id, String(factory));
+    return map;
+}, registrySize);
 
-let allFactorySourcesCache: string[] | null = null;
+export const getFactorySourceCache = (): Map<number, string> => factorySourceHolder.get();
 
-export function getAllFactorySources(): string[] {
-    const cache = getFactorySourceCache();
-    if (allFactorySourcesCache && allFactorySourcesCache.length === cache.size) return allFactorySourcesCache;
-    allFactorySourcesCache = [...new Set(cache.values())];
-    return allFactorySourcesCache;
-}
+const allFactorySourcesHolder = createGenerationalCache(() => [...new Set(getFactorySourceCache().values())], registrySize);
+
+export const getAllFactorySources = (): string[] => allFactorySourcesHolder.get();
 
 export const safeOffset = (raw: number | undefined) => Math.max(0, Math.floor(raw ?? 0));
 
@@ -276,38 +307,31 @@ function countInSources(sources: string[], text: string, max: number): number {
 }
 
 export function clearFactoryCaches(): void {
-    factorySourceCache = null;
-    factorySourceCacheGen = 0;
-    allFactorySourcesCache = null;
-    reverseCache = null;
-    reverseCacheGeneration = 0;
+    factorySourceHolder.clear();
+    allFactorySourcesHolder.clear();
+    reverseHolder.clear();
 }
 
 export const getFactorySource = (id: number): string | null => getFactorySourceCache().get(id) ?? null;
 
-let reverseCache: Map<unknown, number> | null = null;
-let reverseCacheGeneration = 0;
-
-export function findModuleId(exportValue: unknown): number | null {
+const reverseHolder = createGenerationalCache(() => {
     const cache = getModuleCache();
-    const currentGen = cache.size;
-    if (!reverseCache || reverseCacheGeneration !== currentGen) {
-        reverseCache = new Map();
-        for (const [id, exports] of cache) {
-            reverseCache.set(exports, id);
-            if (typeof exports === "object" && exports != null) {
-                for (const key in exports as Record<string, unknown>) {
-                    try {
-                        const val = (exports as Record<string, unknown>)[key];
-                        if (!reverseCache.has(val)) reverseCache.set(val, id);
-                    } catch {}
-                }
+    const map = new Map<unknown, number>();
+    for (const [id, exports] of cache) {
+        map.set(exports, id);
+        if (typeof exports === "object" && exports != null) {
+            for (const key in exports as Record<string, unknown>) {
+                try {
+                    const val = (exports as Record<string, unknown>)[key];
+                    if (!map.has(val)) map.set(val, id);
+                } catch {}
             }
         }
-        reverseCacheGeneration = currentGen;
     }
-    return reverseCache.get(exportValue) ?? null;
-}
+    return map;
+}, () => getModuleCache().size);
+
+export const findModuleId = (exportValue: unknown): number | null => reverseHolder.get().get(exportValue) ?? null;
 
 const getPatchedFactory = (id: number) => getRuntimeFactoryRegistry()?.get(id) as PatchedModuleFactory | undefined ?? null;
 export const getPatchInfo = (id: number): string[] | null => getPatchedFactory(id)?.[SYM_PATCHED_BY] ?? null;

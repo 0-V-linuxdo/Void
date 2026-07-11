@@ -4,34 +4,38 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { TOOL_DEFINITIONS } from "./definitions";
+import { z } from "zod";
+
 import { handleEval } from "./evaluate";
-import { handleGrok } from "./grok";
 import { handleIntercept } from "./intercept";
 import { handleModule } from "./module";
+import { handleNetwork } from "./network";
 import { handlePatch } from "./patch";
 import { handlePlugin } from "./plugin";
 import { handleReact } from "./react";
+import { handleRecon } from "./recon";
+import { handleRequest } from "./request";
+import { type ToolName, toolSchemas } from "./schemas";
 import { handleSearch } from "./search";
 import { handleStore } from "./store";
-import type { ToolArgs, ToolArgsMap, ToolHandler, ToolName } from "./types";
 
-export { TOOL_DEFINITIONS };
+function bindTool<S extends z.ZodType>(schema: S, handler: (args: z.output<S>) => unknown): (raw: unknown) => unknown {
+    return raw => {
+        const parsed = schema.safeParse(raw ?? {});
+        return parsed.success ? handler(parsed.data) : { error: `Invalid arguments: ${z.prettifyError(parsed.error)}` };
+    };
+}
 
-type TypedHandlers = { [K in ToolName]: (args: ToolArgsMap[K]) => unknown };
-
-const typedHandlers: TypedHandlers = {
-    module: handleModule,
-    search: handleSearch,
-    evaluateCode: handleEval,
-    patch: handlePatch,
-    plugin: handlePlugin,
-    react: handleReact,
-    store: handleStore,
-    intercept: handleIntercept,
-    grok: handleGrok,
-};
-
-export const toolHandlers = typedHandlers as unknown as Record<ToolName, ToolHandler>;
-
-export type { ToolArgs, ToolName };
+export const toolHandlers = {
+    module: bindTool(toolSchemas.module.input, handleModule),
+    search: bindTool(toolSchemas.search.input, handleSearch),
+    evaluateCode: bindTool(toolSchemas.evaluateCode.input, handleEval),
+    patch: bindTool(toolSchemas.patch.input, handlePatch),
+    plugin: bindTool(toolSchemas.plugin.input, handlePlugin),
+    react: bindTool(toolSchemas.react.input, handleReact),
+    store: bindTool(toolSchemas.store.input, handleStore),
+    intercept: bindTool(toolSchemas.intercept.input, handleIntercept),
+    network: bindTool(toolSchemas.network.input, handleNetwork),
+    recon: bindTool(toolSchemas.recon.input, handleRecon),
+    request: bindTool(toolSchemas.request.input, handleRequest),
+} satisfies Record<ToolName, (raw: unknown) => unknown>;

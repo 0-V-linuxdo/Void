@@ -8,7 +8,7 @@ import { type Fiber, type FiberState, getFiber, getReactRoot, walkFiberTree, wal
 
 import { REACT } from "./constants";
 import type { ReactArgs } from "./types";
-import { clampConfig, serialize } from "./utils";
+import { clampConfig, dispatch, serialize } from "./utils";
 
 const NO_FIBER = "No React fiber found on this element";
 const hasHooks = (f: Fiber) => f.tag === 0 && !!f.memoizedState;
@@ -26,20 +26,29 @@ function fiberName(f: Fiber): string | null {
     return t.displayName ?? t.name ?? null;
 }
 
-function resolveEl(selector: string): Element | string {
+function resolveEl(selector: string | undefined, opts: { all: true }): NodeListOf<Element> | { error: string };
+function resolveEl(selector: string | undefined): Element | { error: string };
+function resolveEl(selector: string | undefined, opts?: { all?: boolean }): Element | NodeListOf<Element> | { error: string } {
+    if (!selector) return { error: "Provide CSS selector (required for this action)." };
     try {
+        if (opts?.all) return document.querySelectorAll(selector);
         const el = document.querySelector(selector);
-        return el ?? `No element: ${selector}`;
+        return el ?? { error: `No element: ${selector}` };
     } catch {
-        return "Invalid CSS selector";
+        return { error: "Invalid CSS selector" };
     }
 }
 
 function bounds(args: ReactArgs): { maxD: number; lim: number } {
     return {
-        maxD: Math.max(0, clampConfig(args.depth, { default: REACT.DEFAULT_DEPTH, max: REACT.MAX_DEPTH })),
-        lim: Math.max(1, clampConfig(args.limit, { default: REACT.DEFAULT_LIMIT, max: REACT.MAX_LIMIT })),
+        maxD: clampConfig(args.depth, { default: REACT.DEFAULT_DEPTH, min: 0, max: REACT.MAX_DEPTH }),
+        lim: clampConfig(args.limit, { default: REACT.DEFAULT_LIMIT, min: 1, max: REACT.MAX_LIMIT }),
     };
+}
+
+function propKeys(fiber: Fiber, max: number): string[] {
+    if (!fiber.memoizedProps) return [];
+    return Object.keys(fiber.memoizedProps).filter(k => k !== "children").slice(0, max);
 }
 
 function actionFind(args: ReactArgs): unknown {
@@ -50,7 +59,7 @@ function actionFind(args: ReactArgs): unknown {
 
     const { lim } = bounds(args);
     const lower = componentName.toLowerCase();
-    type Entry = { name: string; d: number; props?: string[]; s?: boolean; count?: number };
+    type Entry = { name: string; props?: string[]; s?: boolean; count?: number };
     const found: Entry[] = [];
     const byName = args.includeProps ? null : new Map<string, Entry>();
     walkFiberTree(root, f => {
@@ -61,10 +70,10 @@ function actionFind(args: ReactArgs): unknown {
             const existing = byName.get(nm);
             if (existing) { existing.count = (existing.count ?? 1) + 1; return; }
         }
-        const entry: Entry = { name: nm, d: 0 };
-        if (args.includeProps && f.memoizedProps) {
-            const pk = Object.keys(f.memoizedProps).filter(k => k !== "children");
-            if (pk.length) entry.props = pk.slice(0, REACT.PROP_KEYS_PREVIEW);
+        const entry: Entry = { name: nm };
+        if (args.includeProps) {
+            const pk = propKeys(f, REACT.PROP_KEYS_PREVIEW);
+            if (pk.length) entry.props = pk;
         }
         if (f.memoizedState) entry.s = true;
         found.push(entry);
@@ -87,23 +96,13 @@ function actionRoot(): unknown {
 }
 
 function requireSelector(args: ReactArgs): Element | { error: string } {
-    const { selector } = args;
-    if (!selector) return { error: "Provide CSS selector (required for this action)." };
-    const el = resolveEl(selector);
-    if (typeof el === "string") return { error: el };
-    return el;
+    return resolveEl(args.selector);
 }
 
 function actionQuery(args: ReactArgs): unknown {
-    const { selector } = args;
-    if (!selector) return { error: "Provide CSS selector (required for this action)." };
+    const elements = resolveEl(args.selector, { all: true });
+    if (!(elements instanceof NodeList)) return elements;
     const { lim } = bounds(args);
-    let elements: NodeListOf<Element>;
-    try {
-        elements = document.querySelectorAll(selector);
-    } catch {
-        return { error: "Invalid CSS selector" };
-    }
     const out: Array<Record<string, unknown>> = [];
     for (let i = 0, l = Math.min(elements.length, lim); i < l; i++) {
         const e = elements[i];
@@ -133,9 +132,9 @@ function actionFiber(args: ReactArgs): unknown {
     walkFiberUp(fiber, maxD, cur => {
         const nm = fiberName(cur);
         const node: Record<string, unknown> = nm ? { n: nm } : { t: cur.tag };
-        if (args.includeProps && cur.memoizedProps) {
-            const pk = Object.keys(cur.memoizedProps).filter(k => k !== "children");
-            if (pk.length) node.p = pk.slice(0, REACT.FIBER_PROP_KEYS);
+        if (args.includeProps) {
+            const pk = propKeys(cur, REACT.FIBER_PROP_KEYS);
+            if (pk.length) node.p = pk;
         }
         if (cur.memoizedState) node.s = true;
         nodes.push(node);
@@ -158,11 +157,10 @@ function actionProps(args: ReactArgs): unknown {
 function describeHook(state: FiberState): Record<string, unknown> {
     const ms = state.memoizedState;
     if (state.queue?.dispatch) return { t: "state", v: serialize(ms, 1) };
-    if (ms != null && typeof ms === "object" && "current" in (ms as Record<string, unknown>)) {
-        return { t: "ref", v: serialize((ms as Record<string, unknown>).current, 1) };
-    }
-    if (ms != null && typeof ms === "object" && "create" in (ms as Record<string, unknown>) && "deps" in (ms as Record<string, unknown>)) {
-        return { t: "effect", deps: ((ms as Record<string, unknown>).deps as unknown[])?.length ?? null };
+    if (ms != null && typeof ms === "object") {
+        const obj = ms as Record<string, unknown>;
+        if ("current" in obj) return { t: "ref", v: serialize(obj.current, 1) };
+        if ("create" in obj && "deps" in obj) return { t: "effect", deps: (obj.deps as unknown[])?.length ?? null };
     }
     if (Array.isArray(ms) && ms.length === 2 && Array.isArray(ms[1])) {
         return typeof ms[0] === "function" ? { t: "cb", deps: ms[1].length } : { t: "memo", v: serialize(ms[0], 1), deps: ms[1].length };
@@ -206,7 +204,7 @@ function actionTree(args: ReactArgs): unknown {
     const el = requireSelector(args);
     if (!(el instanceof Element)) return el;
     const { maxD } = bounds(args);
-    const breadth = Math.max(1, clampConfig(args.breadth, { default: REACT.DEFAULT_BREADTH, max: REACT.MAX_BREADTH }));
+    const breadth = clampConfig(args.breadth, { default: REACT.DEFAULT_BREADTH, min: 1, max: REACT.MAX_BREADTH });
     const build = (node: Element, d: number): Record<string, unknown> => {
         const info: Record<string, unknown> = { tag: node.tagName.toLowerCase() };
         if (node.id) info.id = node.id;
@@ -255,8 +253,4 @@ const REACT_ACTIONS: Record<ReactArgs["action"], (args: ReactArgs) => unknown> =
     owner: actionOwner,
 };
 
-export function handleReact(args: ReactArgs): unknown {
-    const fn = REACT_ACTIONS[args.action];
-    if (!fn) return { error: `Unknown action: ${args.action}` };
-    return fn(args);
-}
+export const handleReact = (args: ReactArgs): unknown => dispatch(REACT_ACTIONS, args);

@@ -7,8 +7,8 @@
 import { Logger } from "@utils/Logger";
 
 import { INTERCEPT } from "./constants";
-import type { Capture, InterceptArgs, InterceptState } from "./types";
-import { clampConfig, errorMessage, isThenable, requireModuleExports, serialize } from "./utils";
+import type { AnyFn, Capture, InterceptArgs, InterceptState } from "./types";
+import { clampCaptureConfig, dispatch, errorMessage, isThenable, requireId, requireModuleExports, serialize } from "./utils";
 
 const logger = new Logger("MCP:Intercept");
 
@@ -44,44 +44,45 @@ function resolveHolder(exports: Record<string, unknown>, exportKey: string): { h
 const captureArgs = (callArgs: unknown[]): unknown => serialize(callArgs, INTERCEPT.SERIALIZE_DEPTH);
 const measureMs = (start: number) => Math.round((performance.now() - start) * 100) / 100;
 
-function buildWrapper(original: Function, state: InterceptState, maxCaptures: number): Function {
-    const wrapper = function (this: unknown, ...callArgs: unknown[]) {
-        const elapsed = Date.now() - state.startTime;
-        const callStart = performance.now();
-        const underLimit = state.captures.length < maxCaptures;
-        try {
-            const ret = original.apply(this, callArgs);
-            if (!underLimit) return ret;
-            const d = measureMs(callStart);
-            if (isThenable(ret)) {
-                const capture: Capture = { t: elapsed, d, args: captureArgs(callArgs), ret: "[Promise:pending]" };
-                state.captures.push(capture);
-                ret.then(
-                    v => { if (active.has(state.id)) capture.ret = serialize(v, INTERCEPT.SERIALIZE_DEPTH); },
-                    e => { if (active.has(state.id)) { capture.ret = null; capture.err = errorMessage(e); } },
-                );
-            } else {
-                state.captures.push({ t: elapsed, d, args: captureArgs(callArgs), ret: serialize(ret, INTERCEPT.SERIALIZE_DEPTH) });
-            }
-            return ret;
-        } catch (err: unknown) {
-            if (underLimit) state.captures.push({ t: elapsed, d: measureMs(callStart), args: captureArgs(callArgs), ret: null, err: errorMessage(err) });
-            throw err;
+function recordCall<R>(state: InterceptState, maxCaptures: number, callArgs: unknown[], invoke: () => R): R {
+    const elapsed = Date.now() - state.startTime;
+    const callStart = performance.now();
+    const underLimit = state.captures.length < maxCaptures;
+    try {
+        const ret = invoke();
+        if (!underLimit) return ret;
+        const d = measureMs(callStart);
+        if (isThenable(ret)) {
+            const capture: Capture = { t: elapsed, d, args: captureArgs(callArgs), ret: "[Promise:pending]" };
+            state.captures.push(capture);
+            ret.then(
+                v => { if (active.has(state.id)) capture.ret = serialize(v, INTERCEPT.SERIALIZE_DEPTH); },
+                e => { if (active.has(state.id)) { capture.ret = null; capture.err = errorMessage(e); } },
+            );
+        } else {
+            state.captures.push({ t: elapsed, d, args: captureArgs(callArgs), ret: serialize(ret, INTERCEPT.SERIALIZE_DEPTH) });
         }
-    };
-    Object.defineProperties(wrapper, {
-        length: { value: original.length, configurable: true },
-        name: { value: original.name, configurable: true },
-        toString: { value: () => String(original), configurable: true },
+        return ret;
+    } catch (err: unknown) {
+        if (underLimit) state.captures.push({ t: elapsed, d: measureMs(callStart), args: captureArgs(callArgs), ret: null, err: errorMessage(err) });
+        throw err;
+    }
+}
+
+function buildInterceptor(original: AnyFn, state: InterceptState, maxCaptures: number): AnyFn {
+    return new Proxy(original, {
+        apply: (target, thisArg, argArray) => recordCall(state, maxCaptures, argArray, () => Reflect.apply(target, thisArg, argArray)),
+        construct: (target, argArray, newTarget) => recordCall(state, maxCaptures, argArray, () => Reflect.construct(target, argArray, newTarget)),
     });
-    return wrapper;
 }
 
 function actionSet(args: InterceptArgs): unknown {
-    const { moduleId, exportKey = "default" } = args;
-    if (moduleId == null) return { error: "Provide moduleId." };
+    const { exportKey = "default" } = args;
+    const idResult = requireId(args.moduleId);
+    if ("error" in idResult) return idResult;
+    const { id: moduleId } = idResult;
 
-    const result = requireModuleExports(Number(moduleId));
+    const result = requireModuleExports(moduleId);
     if ("error" in result) return result;
 
     const resolved = resolveHolder(result.exports, exportKey);
@@ -90,39 +91,42 @@ function actionSet(args: InterceptArgs): unknown {
     const { holder, finalKey } = resolved;
     const original = holder[finalKey];
     if (typeof original !== "function") return { error: `${exportKey} is not a function (${typeof original})` };
+    const fn = original as AnyFn;
 
     for (const existing of active.values()) {
-        if (existing.moduleId === Number(moduleId) && existing.exportKey === exportKey) {
+        if (existing.moduleId === moduleId && existing.exportKey === exportKey) {
             return { error: `Intercept already active on module ${moduleId}.${exportKey} (id: ${existing.id}). Stop it first with stop action.` };
         }
     }
 
-    const duration = clampConfig(args.duration, { default: INTERCEPT.DEFAULT_DURATION, min: INTERCEPT.MIN_DURATION, max: INTERCEPT.MAX_DURATION });
-    const maxCaptures = clampConfig(args.maxCaptures, { default: INTERCEPT.DEFAULT_CAPTURES, min: 1, max: INTERCEPT.MAX_CAPTURES });
+    const { duration, maxCaptures } = clampCaptureConfig(args, {
+        dur: { default: INTERCEPT.DEFAULT_DURATION, min: INTERCEPT.MIN_DURATION, max: INTERCEPT.MAX_DURATION },
+        cap: { default: INTERCEPT.DEFAULT_CAPTURES, max: INTERCEPT.MAX_CAPTURES },
+    });
     const id = nextId++;
 
     const state: InterceptState = {
         id,
-        moduleId: Number(moduleId),
+        moduleId,
         exportKey,
         finalKey,
         captures: [],
         startTime: Date.now(),
-        original,
+        original: fn,
         holder,
         timer: setTimeout(() => restoreIntercept(state), duration),
     };
 
-    const wrapper = buildWrapper(original, state, maxCaptures);
+    const interceptor = buildInterceptor(fn, state, maxCaptures);
     try {
-        Object.defineProperty(holder, finalKey, { value: wrapper, writable: true, configurable: true });
+        Object.defineProperty(holder, finalKey, { value: interceptor, writable: true, configurable: true });
     } catch {
         clearTimeout(state.timer);
         return { error: `Cannot intercept non-configurable property "${exportKey}"` };
     }
 
     active.set(id, state);
-    return { id, moduleId: state.moduleId, exportKey, duration, maxCaptures, fnName: original.name ?? null };
+    return { id, moduleId: state.moduleId, exportKey, duration, maxCaptures, fnName: fn.name ?? null };
 }
 
 function actionGet(args: InterceptArgs): unknown {
@@ -174,8 +178,4 @@ const INTERCEPT_ACTIONS: Record<InterceptArgs["action"], (args: InterceptArgs) =
     list: actionList,
 };
 
-export function handleIntercept(args: InterceptArgs): unknown {
-    const fn = INTERCEPT_ACTIONS[args.action];
-    if (!fn) return { error: `Unknown action: ${args.action}` };
-    return fn(args);
-}
+export const handleIntercept = (args: InterceptArgs): unknown => dispatch(INTERCEPT_ACTIONS, args);

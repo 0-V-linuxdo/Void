@@ -4,68 +4,34 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export interface ModuleArgs {
-    action:
-        | "find"
-        | "findAll"
-        | "findBulk"
-        | "findComponent"
-        | "findModuleId"
-        | "exports"
-        | "stats"
-        | "source"
-        | "diff"
-        | "imports"
-        | "namedExports"
-        | "load"
-        | "loadChunks"
-        | "findByFactory"
-        | "mapMangled"
-        | "css"
-        | "unloaded"
-        | "whereUsed"
-        | "suggest"
-        | "functionAt";
-    props?: string[];
-    code?: string[];
-    id?: number;
-    offset?: number;
-    limit?: number;
-    patched?: boolean;
-    search?: string;
-    async?: boolean;
-    mappers?: Record<string, string>;
-    pattern?: string;
-    filters?: FilterDef[];
-    displayName?: string;
-    storeName?: string;
-    componentByCode?: boolean;
+export type {
+    EvalArgs,
+    InterceptArgs,
+    ModuleArgs,
+    NetworkArgs,
+    PatchArgs,
+    PluginArgs,
+    ReactArgs,
+    ReconArgs,
+    RequestArgs,
+    SearchArgs,
+    StoreArgs,
+    ToolArgsFor,
+    ToolName,
+} from "./schemas";
+
+export type AnyFn = (...args: unknown[]) => unknown;
+
+export interface PageRequest {
+    id: string | number;
+    tool: string;
+    arguments?: Record<string, unknown>;
 }
 
-export interface SearchArgs {
-    pattern?: string;
-    and?: string[];
-    id?: number;
-    max?: number;
-    context?: number;
-    filter?: "loaded" | "unloaded" | "patched";
-    count?: boolean;
-}
-
-export interface EvalArgs {
-    code: string;
-}
-
-export interface PatchArgs {
-    action: "test" | "analyze" | "list" | "conflicts" | "broken" | "lint" | "context" | "bench" | "report" | "validate";
-    find?: string | string[];
-    match?: string;
-    replace?: string;
-    flags?: string;
-    window?: number;
-    context?: number;
-    plugin?: string;
-    severity?: "error" | "warn" | "all";
+export interface PageResponse {
+    id: string | number;
+    result?: unknown;
+    error?: string;
 }
 
 export type ValidationCode =
@@ -87,69 +53,6 @@ export interface ValidationIssue {
     replacementIndex?: number;
     detail?: string;
 }
-
-export interface PluginArgs {
-    action: "list" | "enable" | "disable" | "toggle" | "settings" | "setSetting";
-    name?: string;
-    key?: string;
-    value?: unknown;
-}
-
-export interface ReactArgs {
-    action: "find" | "root" | "query" | "fiber" | "props" | "hooks" | "state" | "tree" | "owner";
-    selector?: string;
-    componentName?: string;
-    depth?: number;
-    limit?: number;
-    includeProps?: boolean;
-    breadth?: number;
-}
-
-export interface StoreArgs {
-    action: "list" | "get" | "keys" | "methods" | "call" | "subscribe";
-    query?: string | number;
-    path?: string;
-    depth?: number;
-    method?: string;
-    callArgs?: unknown[];
-    duration?: number;
-    maxCaptures?: number;
-}
-
-export interface InterceptArgs {
-    action: "set" | "get" | "stop" | "stopAll" | "list";
-    moduleId?: number;
-    exportKey?: string;
-    id?: number;
-    duration?: number;
-    maxCaptures?: number;
-}
-
-export interface GrokArgs {
-    action: "send" | "read" | "models";
-    message?: string;
-    model?: string;
-    conversationId?: string;
-    responseId?: string;
-    reasoningMode?: "none" | "think" | "deepsearch";
-}
-
-export type ToolArgs = Record<string, unknown>;
-export type ToolHandler = (args: ToolArgs) => unknown;
-
-export interface ToolArgsMap {
-    module: ModuleArgs;
-    search: SearchArgs;
-    evaluateCode: EvalArgs;
-    patch: PatchArgs;
-    plugin: PluginArgs;
-    react: ReactArgs;
-    store: StoreArgs;
-    intercept: InterceptArgs;
-    grok: GrokArgs;
-}
-
-export type ToolName = keyof ToolArgsMap;
 
 export interface FilterDef {
     props?: string[];
@@ -235,7 +138,7 @@ export interface InterceptState {
     finalKey: string;
     captures: Capture[];
     startTime: number;
-    original: Function;
+    original: AnyFn;
     holder: Record<string, unknown>;
     timer: ReturnType<typeof setTimeout>;
 }
