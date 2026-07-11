@@ -580,10 +580,6 @@ function wrapExistingFactories() {
             return w;
         };
 
-        // Hook Map.get so any factory read by the runtime during or after
-        // iteration is guaranteed to be wrapped before execution. This closes
-        // the race where Turbopack instantiates a module from the registry
-        // before our iteration reaches it (common on soft-reload / F5).
         const origGet = registry.get.bind(registry);
         registry.get = function (id: number) {
             const factory = origGet(id);

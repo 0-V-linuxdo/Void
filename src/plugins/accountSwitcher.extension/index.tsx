@@ -36,8 +36,6 @@ const RefreshCwIcon = findExportedComponentLazy("RefreshCwIcon");
 const AVATAR_FETCH_TIMEOUT_MS = 4000;
 const AVATAR_MAX_BYTES = 256 * 1024;
 
-// Keys (or prefixes) we never wipe — Void's own state.
-// Anything else in localStorage/sessionStorage is treated as account-scoped.
 const PRESERVE_PREFIXES = ["Void"];
 
 interface AccountPayload {
@@ -106,7 +104,6 @@ async function wipeEphemeralDbs() {
 function decodePayload(plaintext: string): AccountPayload {
     const parsed = JSON.parse(plaintext) as unknown;
     if (Array.isArray(parsed)) {
-        // schemaVersion 1: just cookie snapshots.
         return { schemaVersion: 2, cookies: parsed as CookieDomainSnapshot[], local: {}, session: {} };
     }
     const p = parsed as AccountPayload;

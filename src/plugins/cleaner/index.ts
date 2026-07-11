@@ -61,7 +61,6 @@ export default definePlugin({
                 replace: ",$self.settings.store.hideUpgradePlan||$1",
             },
         },
-        // covers the standalone upsell card and the copy inlined in the settings dialog
         {
             find: "UPSELL_CARD_PRIORITY)",
             all: true,
@@ -78,7 +77,6 @@ export default definePlugin({
                 replace: '"UpsellSuperGrokSmall",0,$self.settings.store.hideUpsellSmall?()=>null:',
             },
         },
-        // replaces upgrade/try free button (imagine page, sidebar, new chat)
         {
             find: '"UpsellButton",0,',
             replacement: {
@@ -101,7 +99,6 @@ export default definePlugin({
                 replace: '"BrowserNotificationBanner",0,$self.settings.store.hideNotificationBanner?()=>null:',
             },
         },
-        // hides upsell card and locked modes in the mode selector
         {
             find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
             all: true,

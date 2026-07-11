@@ -38,8 +38,6 @@ const HELP: Partial<Record<FinderSpec["kind"], string>> = {
 export function testFinder(finder: FinderSpec, map: ChunkMap): FinderReportEntry {
     const diagnostics: Diagnostic[] = [];
 
-    // Args all non-literal (variables/expressions) means we cannot check.
-    // Skip silently, not a failure.
     if (finder.args.every(a => a.kind === "unknown" || a.kind === "identifier")) {
         return { finder, matchedModules: [], diagnostics, ok: true };
     }
@@ -60,8 +58,6 @@ export function testFinder(finder: FinderSpec, map: ChunkMap): FinderReportEntry
         return { finder, matchedModules: matched, diagnostics, ok: false };
     }
 
-    // Only kinds that must be unique get an ambiguity warn. byProps and friends
-    // are first-match-wins at runtime so ambiguity is fine.
     const requiresUnique = finder.kind === "byStoreName" || finder.kind === "byDisplayName";
     if (requiresUnique && matched.length > 1) {
         diagnostics.push({
@@ -124,7 +120,6 @@ function moduleMatchesFinder(finder: FinderSpec, mod: ModuleEntry): boolean {
             return false;
         }
         default:
-            // `bulk` args are filter closures, not validated here.
             return false;
     }
 }

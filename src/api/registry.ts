@@ -14,15 +14,9 @@ export interface Registry<V extends { order?: number }> {
     update(id: string, patch: Partial<V>): void;
     has(id: string): boolean;
     get size(): number;
-    /** Entries sorted ascending by `order` (defaulting to 0). */
     sorted(): [string, V][];
 }
 
-/**
- * A notify-on-mutate ordered map backing a React `useExternalStore` subscription.
- * Shared by the ChatBarButtons and ContextMenus APIs so the add/remove/update/notify
- * wiring lives in exactly one place.
- */
 export function createRegistry<V extends { order?: number }>(): Registry<V> {
     const map = new Map<string, V>();
     const store = createExternalStore();

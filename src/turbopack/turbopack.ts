@@ -123,11 +123,6 @@ function withLazySync<T>(scan: () => T, isEmpty: (result: T) => boolean): T {
 
 const STOP = Symbol("stop");
 
-/**
- * Walks every module's top-level export and (unless `topLevelOnly`) each nested
- * export value, skipping nullish/blacklisted entries and swallowing getter throws.
- * The visitor returns `STOP` to halt iteration early. Shared by all cache scans.
- */
 function forEachModuleValue(visit: (value: any) => typeof STOP | void, topLevelOnly = false): void {
     for (const [, exports] of getModuleCache()) {
         if (exports == null || isBlacklisted(exports)) continue;
@@ -370,7 +365,6 @@ export function findBulk(...filterFns: FilterFn[]): any[] {
     });
 }
 
-/** Iterate the factory registry, invoking `visit` for each factory whose source matches all `code` patterns. Returns `STOP` to halt. */
 function forEachMatchingFactory(code: (string | RegExp)[], visit: (id: number, factory: ModuleFactory) => typeof STOP | void): void {
     const registry = getRuntimeFactoryRegistry();
     if (!registry) return;

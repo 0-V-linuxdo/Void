@@ -108,7 +108,6 @@ function openSettingsTab(tab: string) {
 
 let pendingPluginDialog: string | null = null;
 
-/** Called by PluginsTab on mount to consume any pending dialog request. */
 export function consumePendingPluginDialog(): string | null {
     const name = pendingPluginDialog;
     pendingPluginDialog = null;

@@ -35,8 +35,6 @@ export interface ContextMenuItemDef<L extends ContextMenuLocation = ContextMenuL
     onSelect?: (ctx: ContextMenuLocationMap[L]) => void;
 }
 
-// Radix menu primitives injected by the ContextMenuAPI patch; their prop shapes
-// live in grok's bundle and aren't importable here, so props stay untyped.
 type MenuPrimitive = ComponentType<Record<string, unknown>>;
 
 export interface MenuPrimitives {

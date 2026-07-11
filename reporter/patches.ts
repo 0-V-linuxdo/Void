@@ -89,13 +89,8 @@ export function testPatch(patch: PatchSpec, map: ChunkMap): PatchReportEntry {
         return { patch, matchedModules, diagnostics, ok: patch.noWarn, timings };
     }
 
-    // Runtime dedupes patching at the factory level (one wrapped factory per
-    // distinct factory text). Group the matched modules accordingly so each
-    // group mirrors exactly one `patchFactory` invocation at runtime.
     const groups = groupByFactory(matchedModules, map);
 
-    // The runtime evaluates replacements per group, then aggregates by the
-    // `all`/`group` flags. Track per-group application so we can mirror it.
     const groupApplied: boolean[] = [];
     for (let g = 0; g < groups.length; g++) {
         const group = groups[g];
@@ -127,14 +122,6 @@ function groupByFactory(matchedModules: number[], map: ChunkMap): FactoryGroup[]
     return [...byFactory.values()];
 }
 
-// Decision table mirroring `patchFactory`:
-//  - non-all: runtime consumes the patch on the FIRST factory group that hits
-//    find, regardless of which group that is (chunk load order is
-//    nondeterministic). >1 group where the match misses anywhere is therefore a
-//    load-order gamble → hard error.
-//  - all: applied to every group; a miss in some groups is partial application,
-//    legitimate only when intended → distinct warn so it gets `noWarn`'d.
-//  - group: per group, a failing replacement reverts that whole group's module.
 function aggregate(patch: PatchSpec, groups: FactoryGroup[], groupApplied: boolean[], matchedModules: number[], diagnostics: Diagnostic[]): void {
     const idNote = `ids: ${matchedModules.slice(0, MAX_MODULE_AMBIGUITY).join(", ")}${matchedModules.length > MAX_MODULE_AMBIGUITY ? "…" : ""}`;
     const appliedCount = groupApplied.filter(Boolean).length;
@@ -167,9 +154,6 @@ function aggregate(patch: PatchSpec, groups: FactoryGroup[], groupApplied: boole
         return;
     }
 
-    // Non-all: only one group ever receives the patch at runtime, decided by
-    // load order. If find spans >1 group and any group fails the match, the
-    // runtime outcome is a coin flip.
     if (groups.length > 1) {
         const missing = groupApplied.filter(a => !a).length;
         diagnostics.push({

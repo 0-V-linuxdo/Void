@@ -62,8 +62,6 @@ function patchTheme(url: string, patch: Partial<ThemeData>) {
     setThemes(getThemes().map(t => (t.url === url ? { ...t, ...patch } : t)));
 }
 
-// Re-checked after an async CSS fetch: the user may have disabled the theme (or all
-// themes) while the request was in flight, in which case we must not inject the style.
 function isThemeStillActive(url: string): boolean {
     return isThemesEnabled() && (getThemes().find(t => t.url === url)?.enabled ?? false);
 }

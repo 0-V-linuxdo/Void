@@ -117,7 +117,6 @@ export default definePlugin({
         registerStyle(HOVER_STYLE, [
             ".void-bf-wrap{display:none;align-items:center}",
             ".void-bf-wrap:has([data-state=checked]){display:inline-flex}",
-            // file rows use a bare `group` class, so reveal the checkbox on row hover
             ".group:hover .void-bf-wrap{display:inline-flex}",
             ".void-bf-checkbox{border-color:oklch(.9924 0 none/.15)!important}",
             ".void-bf-action-bar{display:flex;flex-direction:column;gap:0.5rem;padding:0.75rem}",
@@ -155,17 +154,14 @@ export default definePlugin({
             noWarn: true,
             group: true,
             replacement: [
-                // bulk "delete all" button next to the files search input
                 {
                     match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
                     replace: "$1,$self.renderDeleteAllButton()]",
                 },
-                // selection checkbox + ctrl/meta-click multi-select on each file row
                 {
                     match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
                     replace: "role:\"button\",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),",
                 },
-                // action bar at the bottom of the list root, below the scroll container
                 {
                     match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
                     replace: "$1,$self._renderFileActionBar()]",

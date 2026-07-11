@@ -109,9 +109,6 @@ async function tryFetchManifests(origin: string, buildId: string): Promise<strin
     return [...out];
 }
 
-// Turbopack chunks look like `.push([entryKey, id1, id2, factory, id3, factory, ...])`.
-// One factory can be shared by several ids. IDs may be written in scientific
-// shorthand (`944e3` === 944000).
 export function parseModulesFromChunk(src: string): Array<{ id: number; offset: number; length: number }> {
     const out: Array<{ id: number; offset: number; length: number }> = [];
     const pushIdx = src.indexOf(".push([");

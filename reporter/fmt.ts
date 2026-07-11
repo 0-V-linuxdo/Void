@@ -72,7 +72,6 @@ function renderSpan(span: SourceSpan, label: string | undefined, fileCache: Map<
     const lines = sliceLines(text, span.line, 1);
     const hitLine = lines.find(l => l.n === span.line);
 
-    // Minified source is one giant line, so render a char window around the hit.
     if (hitLine && hitLine.text.length > MINIFIED_LINE_THRESHOLD) {
         const WINDOW = 160;
         const col = Math.max(1, span.col);

@@ -44,8 +44,6 @@ function lazyExport<P = {}>(name: string): ComponentType<P> {
     return LazyComponent(name, () => findExportedComponent(name)) as unknown as ComponentType<P>;
 }
 
-// All button exports from the new module (with ButtonWithPopover + shape support).
-// NEVER use the legacy module (without ButtonWithPopover) — it lacks shape variants.
 const buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
 export const Button = buttonLazy<ButtonProps>("Button");
 export const ButtonWithTooltip = buttonLazy<ButtonWithTooltipProps>("ButtonWithTooltip");
