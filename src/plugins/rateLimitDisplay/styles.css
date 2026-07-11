@@ -13,7 +13,6 @@
     white-space: nowrap;
 }
 
-/* match the native mode-select label (14px / 550) with stable digit widths */
 .void-rld-trigger span {
     font-size: 14px !important;
     font-weight: 550 !important;
@@ -27,18 +26,26 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     padding-inline: 0.5rem;
 }
 
-.void-rld-icon {
-    width: 18px;
-}
-
 .void-rld-icon-limited {
     color: inherit;
 }
 
-.void-rld-auto-label {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+.void-rld-ring {
+    display: block;
+    color: inherit;
+}
+
+.void-rld-ring-track {
+    fill: none;
+    stroke: color-mix(in srgb, currentcolor 20%, transparent);
+    stroke-width: 2;
+}
+
+.void-rld-ring-fill {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2;
+    stroke-linecap: round;
 }
 
 .void-rld-panel {
@@ -58,3 +65,17 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     text-transform: capitalize;
 }
 
+.void-rld-bar {
+    height: 0.1875rem;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    background: color-mix(in srgb, currentcolor 15%, transparent);
+    border-radius: 999px;
+}
+
+.void-rld-bar-fill {
+    height: 100%;
+    background: currentcolor;
+    border-radius: inherit;
+    transform-origin: left;
+}

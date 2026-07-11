@@ -10,16 +10,17 @@ import { definePluginSettings } from "@api/Settings";
 import { Flex } from "@components/Flex";
 import { ClockAlertIcon } from "@components/icons";
 import { Text } from "@components/Text";
+import type { RateLimitResponse } from "@grok-types";
 import type { CreditQuotaStoreState, ImagineCreditBucket, ImagineCreditQuota } from "@grok-types/stores/CreditQuotaStore";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
-import { React, useEffect, useState } from "@turbopack/common/react";
+import { React, useEffect, useMemo, useState } from "@turbopack/common/react";
 import { CreditQuotaStore, ModesStore, RoutingStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { createExternalStore, formatCountdown, formatDuration } from "@utils/misc";
+import { clamp, createExternalStore, formatCountdown, formatDuration } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -29,32 +30,17 @@ const cl = classNameFactory("void-rld-");
 const UsageProgressIcon = findExportedComponentLazy("UsageProgressIcon");
 
 const settings = definePluginSettings({
-    hideTotal: {
-        type: OptionType.BOOLEAN,
-        description: "Show only remaining queries instead of remaining/total.",
-        default: true,
+    display: {
+        type: OptionType.SELECT,
+        description: "How to show the remaining usage in the chat bar.",
+        options: [
+            { label: "Count", value: "count", default: true },
+            { label: "Fraction (remaining/total)", value: "fraction" },
+            { label: "Percent remaining", value: "percent" },
+            { label: "Progress ring", value: "ring" },
+        ],
     },
 });
-
-const MODES = ["auto", "fast", "expert", "heavy", "grok-420-computer-use-sa"] as const;
-type ModeName = typeof MODES[number];
-
-const MODE_LABELS: Record<ModeName, string> = {
-    "auto": "auto",
-    "fast": "fast",
-    "expert": "expert",
-    "heavy": "heavy",
-    "grok-420-computer-use-sa": "grok 4.3",
-};
-
-interface RateLimitData {
-    windowSizeSeconds: number;
-    remainingQueries: number;
-    totalQueries: number;
-    waitTimeSeconds?: number;
-}
-
-type LimitsMap = Partial<Record<ModeName, RateLimitData>>;
 
 const IMAGINE_BUCKETS: readonly ImagineCreditBucket[] = ["image", "imagePro", "imageEdit", "video", "video720p"] as const;
 
@@ -67,13 +53,22 @@ const IMAGINE_LABELS: Record<ImagineCreditBucket, string> = {
 };
 
 const UNLIMITED_THRESHOLD = Number.MAX_SAFE_INTEGER;
+const RING_SIZE = 18;
+const RING_RADIUS = 7;
+const RING_CENTER = RING_SIZE / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 const store = createExternalStore();
-let limits: LimitsMap = {};
+const limits = new Map<string, RateLimitResponse>();
 
-async function fetchLimit(mode: ModeName): Promise<RateLimitData | null> {
+const remainingOf = (d: RateLimitResponse) => d.remainingTokens ?? d.remainingQueries;
+const totalOf = (d: RateLimitResponse) => d.totalTokens ?? d.totalQueries;
+const fractionOf = (d: RateLimitResponse) => (totalOf(d) > 0 ? clamp(remainingOf(d) / totalOf(d), 0, 1) : 1);
+const percentOf = (d: RateLimitResponse) => Math.round(fractionOf(d) * 100);
+
+async function fetchLimit(mode: string): Promise<RateLimitResponse | null> {
     try {
-        return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } }) as RateLimitData;
+        return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
     } catch (e) {
         logger.warn("Failed to fetch rate limits for", mode, e);
         return null;
@@ -86,43 +81,19 @@ function refreshImagineQuota() {
 
 async function refresh() {
     refreshImagineQuota();
-    const results = await Promise.all(MODES.map(async m => [m, await fetchLimit(m)] as const));
-    const next = { ...limits };
-    for (const [m, data] of results) {
-        if (data) next[m] = data;
-    }
-    limits = next;
+    const ids = ModesStore.useModesStore.getState().modes.map(m => m.id);
+    const results = await Promise.all(ids.map(async id => [id, await fetchLimit(id)] as const));
+    for (const [id, data] of results) if (data) limits.set(id, data);
     store.notify();
 }
 
-const useMode = (): ModeName => (ModesStore.useModesStore(s => s.selectedModeId) as ModeName) ?? "auto";
-const useIsImagine = (): boolean => RoutingStore.useRoutingStore(s => typeof s.route.page === "string" && s.route.page.startsWith("imagine"));
-const useImagineQuotas = (): CreditQuotaStoreState["quotas"] => CreditQuotaStore.useCreditQuotaStore(s => s.quotas);
+const useMode = () => ModesStore.useModesStore(s => s.selectedModeId);
+const useIsImagine = () => RoutingStore.useRoutingStore(s => typeof s.route.page === "string" && s.route.page.startsWith("imagine"));
+const useImagineQuotas = () => CreditQuotaStore.useCreditQuotaStore(s => s.quotas);
 
-function isLimited(mode: ModeName): boolean {
-    if (mode === "auto") return limits.expert?.remainingQueries === 0 || limits.fast?.remainingQueries === 0;
-    return limits[mode]?.remainingQueries === 0;
-}
-
-function ButtonIcon() {
-    useExternalStore(store);
-    const mode = useMode();
-    const isImagine = useIsImagine();
-    const quotas = useImagineQuotas();
-    const limited = isImagine ? isImagineLimited(quotas) : isLimited(mode);
-
-    useEffect(() => { refresh(); }, []);
-
-    const icon = limited
-        ? <ClockAlertIcon width={18} height={20} className={cl("icon-limited")} />
-        : <UsageProgressIcon width={18} height={18} />;
-
-    return (
-        <span className={cl("trigger")}>
-            {icon}
-            {isImagine ? <ImagineButtonLabel quotas={quotas} /> : <ButtonLabel mode={mode} />}
-        </span>
-    );
+function isLimited(mode: string): boolean {
+    const d = limits.get(mode);
+    return d != null && remainingOf(d) === 0;
 }
 
 function isImagineLimited(quotas: CreditQuotaStoreState["quotas"] | undefined): boolean {
@@ -131,6 +102,70 @@ function isImagineLimited(quotas: CreditQuotaStoreState["quotas"] | undefined): 
         const d = quotas[b];
         return d != null && d.available && d.remainingQueries === 0;
     });
+}
+
+function useCountdown(deadline: number, onExpire: () => void): number {
+    const [left, setLeft] = useState(() => Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+
+    useEffect(() => {
+        setLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+        const id = setInterval(() => {
+            const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+            setLeft(remaining);
+            if (remaining <= 0) {
+                clearInterval(id);
+                onExpire();
+            }
+        }, 1000);
+        return () => clearInterval(id);
+    }, [deadline, onExpire]);
+
+    return left;
+}
+
+function TriggerCountdown({ seconds }: { seconds: number }) {
+    const deadline = useMemo(() => Date.now() + seconds * 1000, [seconds]);
+    const left = useCountdown(deadline, refresh);
+    return <span>{formatCountdown(left)}</span>;
+}
+
+function Countdown({ deadline, onExpire }: { deadline: number; onExpire: () => void }) {
+    const left = useCountdown(deadline, onExpire);
+    return <Text size="xs" color="secondary">{formatCountdown(left)}</Text>;
+}
+
+function ProgressRing({ fraction }: { fraction: number }) {
+    return (
+        <svg width={RING_SIZE} height={RING_SIZE} viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`} className={cl("ring")}>
+            <circle cx={RING_CENTER} cy={RING_CENTER} r={RING_RADIUS} className={cl("ring-track")} />
+            <circle
+                cx={RING_CENTER}
+                cy={RING_CENTER}
+                r={RING_RADIUS}
+                className={cl("ring-fill")}
+                strokeDasharray={RING_CIRCUMFERENCE}
+                strokeDashoffset={RING_CIRCUMFERENCE * (1 - fraction)}
+                transform={`rotate(-90 ${RING_CENTER} ${RING_CENTER})`}
+            />
+        </svg>
+    );
+}
+
+function TriggerIcon({ limited, ring, fraction }: { limited: boolean; ring: boolean; fraction: number }) {
+    if (limited) return <ClockAlertIcon width={18} height={20} className={cl("icon-limited")} />;
+    if (ring) return <ProgressRing fraction={fraction} />;
+    return <UsageProgressIcon width={18} height={18} />;
+}
+
+function ButtonLabel({ mode }: { mode: string }) {
+    useExternalStore(store);
+    const { display } = settings.use(["display"]);
+    const data = limits.get(mode);
+    if (!data) return null;
+    if (remainingOf(data) === 0 && data.waitTimeSeconds) return <TriggerCountdown seconds={data.waitTimeSeconds} />;
+    if (display === "fraction") return <span>{remainingOf(data)}/{totalOf(data)}</span>;
+    if (display === "percent") return <span>{percentOf(data)}%</span>;
+    return <span>{remainingOf(data)}</span>;
 }
 
 function formatImagineCount(data: ImagineCreditQuota | undefined): string {
@@ -142,75 +177,45 @@ function formatImagineCount(data: ImagineCreditQuota | undefined): string {
 function ImagineButtonLabel({ quotas }: { quotas: CreditQuotaStoreState["quotas"] | undefined }) {
     const img = quotas?.image;
     if (!img) return null;
-    return <span className="truncate text-sm font-semibold">{formatImagineCount(img)}</span>;
+    return <span>{formatImagineCount(img)}</span>;
 }
 
-function renderRemaining(data: RateLimitData | undefined, hideTotal: boolean) {
-    if (!data) return <span className="truncate text-sm font-semibold">—</span>;
-    if (data.remainingQueries === 0 && data.waitTimeSeconds) return <CountdownTimer seconds={data.waitTimeSeconds} />;
-    return <span className="truncate text-sm font-semibold">{hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`}</span>;
-}
-
-function ButtonLabel({ mode }: { mode: ModeName }) {
+function ButtonIcon() {
     useExternalStore(store);
-    const { hideTotal } = settings.use(["hideTotal"]);
+    const mode = useMode();
+    const isImagine = useIsImagine();
+    const quotas = useImagineQuotas();
+    const { display } = settings.use(["display"]);
+    const data = limits.get(mode);
+    const limited = isImagine ? isImagineLimited(quotas) : isLimited(mode);
+    const ring = !isImagine && display === "ring" && data != null;
 
-    if (mode === "auto") {
-        const { expert, fast } = limits;
-        if (!expert && !fast) return null;
-        return (
-            <span className={cl("auto-label")}>
-                {renderRemaining(expert, hideTotal)}
-                <span className="truncate text-sm font-semibold">·</span>
-                {renderRemaining(fast, hideTotal)}
-            </span>
-        );
-    }
+    useEffect(() => { refresh(); }, []);
 
-    const data = limits[mode];
-    if (!data) return null;
-    if (data.remainingQueries === 0 && data.waitTimeSeconds) return <CountdownTimer seconds={data.waitTimeSeconds} />;
-    return <span className="truncate text-sm font-semibold">{hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`}</span>;
+    return (
+        <span className={cl("trigger")}>
+            <TriggerIcon limited={limited} ring={ring} fraction={data ? fractionOf(data) : 1} />
+            {isImagine ? <ImagineButtonLabel quotas={quotas} /> : <ButtonLabel mode={mode} />}
+        </span>
+    );
 }
 
-function CountdownTimer({ seconds }: { seconds: number }) {
-    const [left, setLeft] = useState(seconds);
-
-    useEffect(() => {
-        setLeft(seconds);
-        const start = Date.now();
-        const id = setInterval(() => {
-            const remaining = Math.max(0, seconds - Math.floor((Date.now() - start) / 1000));
-            setLeft(remaining);
-            if (remaining <= 0) {
-                clearInterval(id);
-                refresh();
-            }
-        }, 1000);
-        return () => clearInterval(id);
-    }, [seconds]);
-
-    return <span className="truncate text-sm font-semibold">{formatCountdown(left)}</span>;
+function ModeStatus({ data, deadline }: { data?: RateLimitResponse; deadline: number }) {
+    if (!data) return <Text size="xs" color="muted">—</Text>;
+    if (remainingOf(data) === 0 && data.waitTimeSeconds) return <Countdown deadline={deadline} onExpire={refresh} />;
+    return <Text size="xs" color="secondary">{remainingOf(data)}/{totalOf(data)} · {percentOf(data)}%</Text>;
 }
 
-function ModeRow({ mode, data, active }: { mode: ModeName; data?: RateLimitData; active: boolean }) {
-    const { hideTotal } = settings.use(["hideTotal"]);
-    const limited = data != null && data.remainingQueries === 0;
+function ModeRow({ title, data, active }: { title: string; data?: RateLimitResponse; active: boolean }) {
+    const deadline = useMemo(() => Date.now() + (data?.waitTimeSeconds ?? 0) * 1000, [data?.waitTimeSeconds]);
 
     return (
         <Flex flexDirection="column" gap={0} className={classes(cl("row"), active && cl("row-active"))}>
             <Flex justifyContent="space-between" alignItems="center" gap={8}>
-                <Text size="sm" weight={active ? "semibold" : "medium"} className={cl("mode-label")}>
-                    {MODE_LABELS[mode]}
-                </Text>
-                {data ? (
-                    limited && data.waitTimeSeconds
-                        ? <CountdownTimer seconds={data.waitTimeSeconds} />
-                        : <Text size="xs" color="secondary">{hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`}</Text>
-                ) : (
-                    <Text size="xs" color="muted">—</Text>
-                )}
+                <Text size="sm" weight={active ? "semibold" : "medium"} className={cl("mode-label")}>{title}</Text>
+                <ModeStatus data={data} deadline={deadline} />
             </Flex>
+            {data && <div className={cl("bar")}><div className={cl("bar-fill")} style={{ transform: `scaleX(${fractionOf(data)})` }} /></div>}
             {data && <Text size="xs" color="muted">Resets in {formatDuration(data.windowSizeSeconds)}</Text>}
         </Flex>
     );
@@ -221,13 +226,14 @@ function TooltipPanel() {
     const mode = useMode();
     const isImagine = useIsImagine();
     const quotas = useImagineQuotas();
+    const modes = ModesStore.useModesStore(s => s.modes);
 
     if (isImagine) return <ImagineTooltipPanel quotas={quotas} />;
 
     return (
         <Flex flexDirection="column" gap={2} className={cl("panel")}>
-            {MODES.map(m => (
-                <ModeRow key={m} mode={m} data={limits[m]} active={m === mode} />
+            {modes.map(m => (
+                <ModeRow key={m.id} title={m.title} data={limits.get(m.id)} active={m.id === mode} />
             ))}
         </Flex>
     );
@@ -245,7 +251,7 @@ function ImagineTooltipPanel({ quotas }: { quotas: CreditQuotaStoreState["quotas
                     <Flex key={b} justifyContent="space-between" alignItems="center" gap={8} className={cl("row")}>
                         <Text size="sm" weight="medium" className={cl("mode-label")}>{IMAGINE_LABELS[b]}</Text>
                         {exhausted && data?.nextAvailableAt
-                            ? <NextAvailableCountdown ts={data.nextAvailableAt} />
+                            ? <Countdown deadline={data.nextAvailableAt} onExpire={refreshImagineQuota} />
                             : <Text size="xs" color={!data?.available ? "muted" : "secondary"}>{formatImagineCount(data)}</Text>}
                     </Flex>
                 );
@@ -253,25 +259,6 @@ function ImagineTooltipPanel({ quotas }: { quotas: CreditQuotaStoreState["quotas
             {windowSec > 0 && <Text size="xs" color="muted">Rolling window: {formatDuration(windowSec)}</Text>}
         </Flex>
     );
-}
-
-function NextAvailableCountdown({ ts }: { ts: number }) {
-    const [left, setLeft] = useState(Math.max(0, Math.floor((ts - Date.now()) / 1000)));
-
-    useEffect(() => {
-        setLeft(Math.max(0, Math.floor((ts - Date.now()) / 1000)));
-        const id = setInterval(() => {
-            const remaining = Math.max(0, Math.floor((ts - Date.now()) / 1000));
-            setLeft(remaining);
-            if (remaining <= 0) {
-                clearInterval(id);
-                refreshImagineQuota();
-            }
-        }, 1000);
-        return () => clearInterval(id);
-    }, [ts]);
-
-    return <Text size="xs" color="secondary">{formatCountdown(left)}</Text>;
 }
 
 export default definePlugin({
@@ -291,7 +278,7 @@ export default definePlugin({
     },
 
     stop() {
-        limits = {};
+        limits.clear();
     },
 
     zustand: {

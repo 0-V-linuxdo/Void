@@ -1,13 +1,18 @@
 import type { LoadingStatus } from "../common/LoadingStatus";
 import type { ZustandStore } from "../zustand";
 
+export interface Mode {
+    id: string;
+    title: string;
+}
+
 /**
  * Zustand state for custom conversation modes (preset prompts
  * with specific configurations). Fetched lazily when the mode picker is opened.
  */
 export interface ModesStoreState {
     /** List of available custom modes. */
-    modes: any[];
+    modes: Mode[];
     /** Default mode ID, empty string if none. */
     defaultModeId: string;
     /** Loading status of the modes list. */
