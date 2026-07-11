@@ -3,6 +3,8 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import ts from "typescript";
 
+import { countCaptureGroups } from "../src/utils/patches.ts";
+
 const PLUGINS_DIR = "src/plugins";
 const MAX_CAPTURE_WARN = 5;
 const MATCH_LONG = 200;
@@ -20,19 +22,6 @@ function annotate(level, file, line, message) {
     } else {
         console.log(`${level.toUpperCase()} ${file}:${line} ${message}`);
     }
-}
-
-function countCaptureGroups(src) {
-    let count = 0;
-    let inClass = false;
-    for (let i = 0; i < src.length; i++) {
-        if (src[i] === "\\") { i++; continue; }
-        if (inClass) { if (src[i] === "]") inClass = false; continue; }
-        if (src[i] === "[") { inClass = true; continue; }
-        if (src[i] === "(" && src[i + 1] !== "?") count++;
-        else if (src[i] === "(" && src[i + 1] === "?" && src[i + 2] === "<" && src[i + 3] !== "!" && src[i + 3] !== "=") count++;
-    }
-    return count;
 }
 
 function lintMatch(file, line, kind, value, replaceValue) {

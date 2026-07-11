@@ -15,8 +15,8 @@ rules:
     - NEVER commit/push without explicit user instruction
     - NEVER commit design specs/plans/docs to the repo
   code:
-    - DELETE dead code, never comment out
-    - NEVER add comments unless asked, only for non-obvious gotchas
+    - ZERO comments in code — the ONLY permitted comments are the SPDX license header and functional tooling directives (oxlint-disable, eslint-disable, @ts-expect-error/@ts-ignore, prettier-ignore, stylelint-disable); NO //, NO /* */, NO /// //! doc comments, NO JSDoc, NO narration — names and types document the code, not prose
+    - DELETE dead code, never comment it out
     - capital first letter, period at end for descriptions
     - Logger from @utils/Logger, NEVER console.log/warn/error
     - less code = smarter code, same functionality fewer lines always wins
@@ -34,6 +34,9 @@ rules:
     - re-read state after await gaps, never trust snapshots across async
     - never Date.now() alone for IDs, add random suffix
     - never index arrays by enum ordinal, use Record maps
+    - make illegal states unrepresentable — discriminated unions over bool soup, branded/newtype ids over bare string
+    - parse untrusted input at the boundary into a typed shape (zod/type guard), then trust it — dont re-validate downstream
+    - exhaustive switch/union handling, NEVER a silent default that hides new variants
     - imports > Logger > finders > types > constants > functions > definePlugin
   perf:
     - Promise.all for parallel async, .find/.some over .filter()[0]
@@ -87,6 +90,7 @@ rules:
     - delete obj.key in hot paths (deoptimizes hidden classes)
     - any type when unknown/generic works
     - non-null assertions (!) unless the invariant is guaranteed upstream
+    - any comment beyond the SPDX header + tooling directives — //, /* */, JSDoc, doc comments, narration, commented-out code
   antiPatterns{bad > good}:
     - "value !== null && value !== undefined" > "value != null"
     - "array && array.length > 0" > "array.length"
