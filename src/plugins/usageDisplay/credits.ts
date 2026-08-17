@@ -9,6 +9,7 @@ import { clamp } from "@utils/misc";
 export const CREDITS_CONFIG_PATH = "/grok_api_v2.GrokBuildBilling/GetGrokCreditsConfig";
 export const OFFICIAL_USAGE_PATH = "/?_s=usage";
 export const REQUEST_TIMEOUT_MS = 12_000;
+const WEEKLY_LIMIT_RE = /Weekly SuperGrok.{0,24}Limit|每周.{0,24}SuperGrok.{0,24}(?:Limit|限额)/i;
 
 export interface UsageCategory {
     label: string;
@@ -196,19 +197,15 @@ export function decodeCreditsConfig(bytes: Uint8Array): NativeUsage | null {
     if (!configField || !(configField.value instanceof Uint8Array)) return null;
 
     const percentField = readProtoFields(configField.value).find(field => field.number === 1 && field.wire === 5);
-    let usedPercent: number | null = null;
+    let usedPercent = 0;
     if (percentField && percentField.value instanceof Uint8Array && percentField.value.length >= 4) {
-        try {
-            const view = new DataView(
-                percentField.value.buffer,
-                percentField.value.byteOffset,
-                percentField.value.byteLength,
-            );
-            const decodedPercent = view.getFloat32(0, true);
-            if (Number.isFinite(decodedPercent)) usedPercent = clamp(decodedPercent, 0, 100);
-        } catch {
-            // Newer responses may omit the legacy float percentage field.
-        }
+        const view = new DataView(
+            percentField.value.buffer,
+            percentField.value.byteOffset,
+            percentField.value.byteLength,
+        );
+        const decodedPercent = view.getFloat32(0, true);
+        if (Number.isFinite(decodedPercent)) usedPercent = clamp(decodedPercent, 0, 100);
     }
 
     const timestamps: number[] = [];
@@ -293,7 +290,11 @@ function linesFromPage(): string[] {
 }
 
 function findLineIndex(lines: string[], pattern: RegExp): number {
-    return lines.findIndex(line => pattern.test(line));
+    pattern.lastIndex = 0;
+    return lines.findIndex(line => {
+        pattern.lastIndex = 0;
+        return pattern.test(line);
+    });
 }
 
 function readUsagePercentFromDom(): number | null {
@@ -319,10 +320,8 @@ function readUsagePercentFromDom(): number | null {
             let ancestor: Element | null = element;
             for (let depth = 0; ancestor && depth < 8; depth++) {
                 const context = normalizeText(ancestor.textContent);
-                if (
-                    /Weekly SuperGrok Limit|每周.*SuperGrok.*(?:Limit|限额)/i.test(context)
-                    && /\bused\b|已使用/i.test(context)
-                ) {
+                WEEKLY_LIMIT_RE.lastIndex = 0;
+                if (WEEKLY_LIMIT_RE.test(context) && /\bused\b|已使用/i.test(context)) {
                     return Number(match[1]);
                 }
                 ancestor = ancestor.parentElement;
@@ -339,7 +338,7 @@ function usedPercentFromPage(domPercent: number | null, usedMatch: RegExpMatchAr
 }
 
 export function readNativeUsage(lines = linesFromPage()): NativeUsage | null {
-    const weeklyIndex = findLineIndex(lines, /Weekly SuperGrok Limit|每周.*SuperGrok.*(?:Limit|限额)/i);
+    const weeklyIndex = findLineIndex(lines, WEEKLY_LIMIT_RE);
     if (weeklyIndex < 0) return null;
 
     const weeklyLines: string[] = [];
