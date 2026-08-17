@@ -7,4 +7,5 @@
 export const Devs = Object.freeze({
     Prism: "Prism",
     adryd: "adryd",
+    p: "p",
 });

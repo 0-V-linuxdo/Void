@@ -1,0 +1,73 @@
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-ud-trigger {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.void-ud-label {
+    font-size: 14px !important;
+    font-weight: 550 !important;
+    font-variant-numeric: tabular-nums;
+}
+
+button:has(.void-ud-trigger) {
+    height: 2.5rem;
+    min-height: 2.5rem;
+}
+
+button:has(.void-ud-icon-only) {
+    width: 2.5rem;
+    min-width: 2.5rem;
+    padding-inline: 0;
+}
+
+button:has(.void-ud-trigger > .void-ud-label) {
+    width: auto;
+    border-radius: 999px;
+    padding-inline: 0.5rem;
+}
+
+.void-ud-ring {
+    display: block;
+    color: inherit;
+}
+
+.void-ud-ring-track {
+    fill: none;
+    stroke: color-mix(in srgb, currentcolor 35%, transparent);
+    stroke-width: 2;
+}
+
+.void-ud-ring-fill {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.void-ud-ring-warning {
+    color: #e3b341;
+}
+
+.void-ud-ring-danger {
+    color: #ff7b89;
+}
+
+.void-ud-panel {
+    min-width: 0;
+}
+
+.void-ud-used {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}

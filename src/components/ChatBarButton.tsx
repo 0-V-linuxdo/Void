@@ -24,9 +24,11 @@ export interface ChatBarButtonProps {
     className?: string;
 }
 
-const TOOLTIP_PROPS = { delayDuration: 600 } as const;
-const TOOLTIP_CONTENT_PROPS = { side: "top" } as const;
-const POPOVER_CONTENT_PROPS = { side: "top", align: "end" } as const;
+const preventOpenFocus = (e: Event) => e.preventDefault();
+const TOOLTIP_PROPS = { delayDuration: 100 } as const;
+const TOOLTIP_CONTENT_PROPS = { side: "top", sideOffset: 8 } as const;
+const POPOVER_PROPS = { modal: false } as const;
+const POPOVER_CONTENT_PROPS = { side: "top", align: "center", onOpenAutoFocus: preventOpenFocus } as const;
 
 export function ChatBarButton({
     icon,
@@ -53,6 +55,7 @@ export function ChatBarButton({
                 disabled={disabled}
                 className={cls}
                 popoverContent={popover}
+                popoverProps={POPOVER_PROPS}
                 popoverContentProps={POPOVER_CONTENT_PROPS}
                 onClick={onClick}
                 aria-label={label}
