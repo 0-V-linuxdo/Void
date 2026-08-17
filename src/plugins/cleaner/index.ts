@@ -98,8 +98,8 @@ export default definePlugin({
                     replace: "$&$self.settings.store.hideModelUpsell||",
                 },
                 {
-                    match: /,(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
-                    replace: ",($self.settings.store.hideInaccessibleModels?[]:$1)$2",
+                    match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
+                    replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}",
                 },
             ],
         },
