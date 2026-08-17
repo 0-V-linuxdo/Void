@@ -175,12 +175,17 @@ export default definePlugin({
     _tabEntries() {
         return getVisibleTabs().map(t => ({
             id: t.id,
+            group: "void",
             icon: t.icon,
             i18nKey: t.name,
             defaultLabel: t.name,
             visible: () => true,
             component: t.component,
         }));
+    },
+
+    _tabLabel(tab: { defaultLabel?: string; i18nKey?: string; id: string }) {
+        return tab.defaultLabel || tab.i18nKey || tab.id;
     },
 
     _renderVersion() {
@@ -215,8 +220,16 @@ export default definePlugin({
                     replace: "[...$&,...$self._tabEntries()]",
                 },
                 {
-                    match: /children:(\i\.map\(\i=>\(0,\i\.jsx\)\(\i,\{enterprise:\i\.enterprise,children:.{0,160}?\},\i\.id\)\))\}\)/,
-                    replace: "children:[...$1,$self._renderVersion()]})",
+                    match: /(\["general","grok","payments","data","other"),("team-management"\])/,
+                    replace: '$1,"void",$2',
+                },
+                {
+                    match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
+                    replace: '$1case"void":return"Void";$2',
+                },
+                {
+                    match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,
+                    replace: "default:return $self._tabLabel($1)",
                 },
             ],
         },
