@@ -19,7 +19,7 @@ import type {
     PopoverArrowProps, PopoverContentProps, PopoverProps, PopoverTriggerProps, PortalProps,
     RadixSubProps, ResponsiveDialogProps,
     SelectContentProps, SelectItemProps, SelectProps, SelectTriggerProps, SelectValueProps,
-    SeparatorProps, SettingsDescriptionProps, SettingsRowProps, SettingsTitleProps,
+    SeparatorProps,
     SkeletonProps, SliderProps, SpinnerProps, SwitchProps,
     TableBodyProps, TableCellProps, TableHeaderProps, TableHeadProps, TableProps, TableRowProps,
     TabsContentProps, TabsListProps, TabsProps, TabsTriggerProps, TextareaProps,
@@ -29,7 +29,7 @@ import type { ComponentType } from "react";
 
 import { filters, findByProps, findByPropsLazy, findExportedComponent, waitFor } from "../turbopack";
 import { type AnyComponent, LazyComponent } from "./react";
-import { getSettingsPrimitive } from "./settingsPrimitives";
+import { SettingsDescription, SettingsRow, SettingsTitle } from "./settingsPrimitives";
 
 export type * from "@grok-types";
 
@@ -111,9 +111,7 @@ export const SelectValue = selectLazy<SelectValueProps>("SelectValue");
 
 export const Separator = lazyExport<SeparatorProps>("Separator");
 
-export const SettingsRow = LazyComponent("SettingsRow", () => getSettingsPrimitive("SettingsRow") as AnyComponent | null) as unknown as ComponentType<SettingsRowProps>;
-export const SettingsTitle = LazyComponent("SettingsTitle", () => getSettingsPrimitive("SettingsTitle") as AnyComponent | null) as unknown as ComponentType<SettingsTitleProps>;
-export const SettingsDescription = LazyComponent("SettingsDescription", () => getSettingsPrimitive("SettingsDescription") as AnyComponent | null) as unknown as ComponentType<SettingsDescriptionProps>;
+export { SettingsDescription, SettingsRow, SettingsTitle };
 
 export const Skeleton = lazyExport<SkeletonProps>("Skeleton");
 export const Slider = lazyExport<SliderProps>("Slider");

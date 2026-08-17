@@ -32,3 +32,29 @@
     margin-inline-end: 0.5rem;
     color: hsl(var(--fg-secondary));
 }
+
+.void-settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    contain: content;
+}
+
+.void-settings-row-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.void-settings-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    color: hsl(var(--fg-primary));
+}
+
+.void-settings-description {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: hsl(var(--fg-secondary));
+}

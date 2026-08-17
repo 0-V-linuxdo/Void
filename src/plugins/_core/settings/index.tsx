@@ -246,8 +246,12 @@ export default definePlugin({
                     replace: '$1$self._setPrimitive("SettingsDescription",$2)',
                 },
                 {
-                    match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(,"SettingsSection")/,
-                    replace: '$1$self._setPrimitive("SettingsRow",$2)$3',
+                    match: /("SettingsRow",0,)(?!function)(\i)/,
+                    replace: '$1$self._setPrimitive("SettingsRow",$2)',
+                },
+                {
+                    match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(?=,"Settings)/,
+                    replace: '$1$self._setPrimitive("SettingsRow",$2)',
                 },
             ],
         },
