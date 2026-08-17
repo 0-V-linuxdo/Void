@@ -52,7 +52,6 @@
   // src/Void.ts
   var exports_Void = {};
   __export(exports_Void, {
-    wrapComponent: () => wrapComponent,
     walkFiberUp: () => walkFiberUp,
     walkFiberTree: () => walkFiberTree,
     waitFor: () => waitFor,
@@ -136,7 +135,6 @@
     findModuleId: () => findModuleId,
     findModuleFactory: () => findModuleFactory,
     findLazy: () => findLazy,
-    findInReactTree: () => findInReactTree,
     findExportedComponentLazy: () => findExportedComponentLazy,
     findExportedComponent: () => findExportedComponent,
     findCssClassesLazy: () => findCssClassesLazy,
@@ -624,13 +622,7 @@ ${sourceUrl}`;
           if (replacement.predicate && !replacement.predicate())
             continue;
           const { match } = replacement;
-          let matches;
-          if (match instanceof RegExp) {
-            match.lastIndex = 0;
-            matches = match.test(originalCode);
-          } else {
-            matches = originalCode.includes(match);
-          }
+          const matches = matchesPattern(originalCode, match);
           if (!matches && !patch.noWarn && !replacement.noWarn) {
             validateMisses.add(`${patch.plugin}: ${String(match)}`);
           }
@@ -793,7 +785,6 @@ ${sourceUrl}`;
   function patchChunkEntry(entry) {
     if (typeof entry[0] === "string")
       chunkFingerprint.add(entry[0]);
-    const hasPatches = patches.length > 0;
     let patchedEntry = null;
     const wrappedInChunk = new Map;
     for (let i = 1;i < entry.length; i++) {
@@ -809,9 +800,7 @@ ${sourceUrl}`;
       if (existing) {
         patchedEntry[i] = existing;
       } else {
-        const wrapped = hasPatches ? wrapFactory(prev, factory) : createFactoryWrapper(prev, factory, (ctx, helpers, mod, exports) => {
-          factory.call(ctx, helpers, mod, exports);
-        });
+        const wrapped = wrapFactory(prev, factory);
         wrappedInChunk.set(factory, wrapped);
         patchedEntry[i] = wrapped;
       }
@@ -947,16 +936,20 @@ ${sourceUrl}`;
       captureModuleCache(runtimeFactoryRegistry);
     }
   }
+  function adoptTurbopack(tp, drain) {
+    originalPush = tp.push.bind(tp);
+    tp.push = handleChunkPush;
+    drain?.();
+    try {
+      wrapExistingFactories();
+    } catch (e) {
+      logger.error("Failed to wrap existing factories:", e);
+    }
+  }
   function patchTurbopack() {
     const existingTp = pageWindow.TURBOPACK;
     if (existingTp && !Array.isArray(existingTp) && typeof existingTp.push === "function") {
-      originalPush = existingTp.push.bind(existingTp);
-      existingTp.push = (...args) => handleChunkPush(...args);
-      try {
-        wrapExistingFactories();
-      } catch (e) {
-        logger.error("Failed to wrap existing factories:", e);
-      }
+      adoptTurbopack(existingTp);
       return;
     }
     const queuedChunks = [];
@@ -971,22 +964,17 @@ ${sourceUrl}`;
       set(newValue) {
         if (newValue && !Array.isArray(newValue) && typeof newValue.push === "function") {
           const tp = newValue;
-          originalPush = tp.push.bind(tp);
-          tp.push = (...args) => handleChunkPush(...args);
-          currentTurbopack = tp;
-          for (const chunk of queuedChunks) {
-            try {
-              handleChunkPush(chunk);
-            } catch (e) {
-              logger.error("Failed to process queued chunk:", e);
+          adoptTurbopack(tp, () => {
+            currentTurbopack = tp;
+            for (const chunk of queuedChunks) {
+              try {
+                handleChunkPush(chunk);
+              } catch (e) {
+                logger.error("Failed to process queued chunk:", e);
+              }
             }
-          }
-          queuedChunks.length = 0;
-          try {
-            wrapExistingFactories();
-          } catch (e) {
-            logger.error("Failed to wrap existing factories:", e);
-          }
+            queuedChunks.length = 0;
+          });
         } else {
           currentTurbopack = newValue;
         }
@@ -1200,18 +1188,14 @@ ${sourceUrl}`;
   function trackFinder(type, args, resolve) {
     finderRegistry?.push({ type, args, resolve });
   }
-  function isEmptyResult(value) {
-    if (value == null)
-      return true;
-    return typeof value === "object" && Object.keys(value).length === 0;
-  }
   function reportFailedFinders() {
     if (!finderRegistry?.length)
       return;
     const failed = [];
     for (const record of finderRegistry) {
       try {
-        if (isEmptyResult(record.resolve()))
+        const value = record.resolve();
+        if (value == null || typeof value === "object" && !Object.keys(value).length)
           failed.push(`${record.type}(${record.args.map((a) => JSON.stringify(a)).join(", ")})`);
       } catch (e) {
         logger4.warn("Finder resolution error:", e);
@@ -1286,26 +1270,30 @@ ${sourceUrl}`;
     });
   }
   var STOP = Symbol("stop");
-  function forEachModuleValue(visit, topLevelOnly = false) {
-    for (const [, exports] of getModuleCache()) {
-      if (exports == null || isBlacklisted(exports))
-        continue;
+  function scanExports(exports, visit, topLevelOnly = false) {
+    if (exports == null || isBlacklisted(exports))
+      return false;
+    try {
+      if (visit(exports) === STOP)
+        return true;
+    } catch {}
+    if (topLevelOnly || typeof exports !== "object")
+      return false;
+    for (const key in exports) {
       try {
-        if (visit(exports) === STOP)
-          return;
+        const nested = exports[key];
+        if (nested == null || isBlacklisted(nested))
+          continue;
+        if (visit(nested) === STOP)
+          return true;
       } catch {}
-      if (topLevelOnly || typeof exports !== "object")
-        continue;
-      for (const key in exports) {
-        try {
-          const nested = exports[key];
-          if (nested == null || isBlacklisted(nested))
-            continue;
-          if (visit(nested) === STOP)
-            return;
-        } catch {}
-      }
     }
+    return false;
+  }
+  function forEachModuleValue(visit, topLevelOnly = false) {
+    for (const [, exports] of getModuleCache())
+      if (scanExports(exports, visit, topLevelOnly))
+        return;
   }
   function searchCache(filter, collectAll = false, topLevelOnly = false) {
     return withLazySync(() => scanModuleCache(filter, collectAll, topLevelOnly), (result) => collectAll ? !result.length : !result);
@@ -1405,13 +1393,7 @@ ${sourceUrl}`;
     }
   }
   function populateStoreCache() {
-    silenceWarns(() => {
-      collectStores();
-      const prevSize = getModuleCache().size;
-      syncLazyModules();
-      if (getModuleCache().size !== prevSize)
-        collectStores();
-    });
+    withLazySync(collectStores, () => true);
   }
   function findStore(name) {
     const hookName = toZustandHookName(name);
@@ -1481,8 +1463,8 @@ ${sourceUrl}`;
     }
     const scan = () => {
       const activeFilters = [...filterFns];
-      const results = new Array(length).fill(null);
-      let found = 0;
+      const results2 = new Array(length).fill(null);
+      let found2 = 0;
       forEachModuleValue((value) => {
         for (let j = 0;j < length; j++) {
           const filter = activeFilters[j];
@@ -1490,28 +1472,20 @@ ${sourceUrl}`;
             continue;
           try {
             if (filter(value)) {
-              results[j] = value;
+              results2[j] = value;
               activeFilters[j] = undefined;
-              if (++found === length)
+              if (++found2 === length)
                 return STOP;
             }
           } catch {}
         }
       });
-      return { results, found };
+      return { results: results2, found: found2 };
     };
-    return silenceWarns(() => {
-      let { results, found } = scan();
-      if (found < length) {
-        const prevSize = getModuleCache().size;
-        syncLazyModules();
-        if (getModuleCache().size > prevSize)
-          ({ results, found } = scan());
-      }
-      if (found !== length)
-        logger4.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
-      return results;
-    });
+    const { results, found } = withLazySync(scan, (r) => r.found < length);
+    if (found !== length)
+      logger4.warn(`findBulk: got ${length} filters but only found ${found} modules.`);
+    return results;
   }
   function forEachMatchingFactory(code, visit) {
     const registry = getRuntimeFactoryRegistry2();
@@ -1658,22 +1632,14 @@ ${sourceUrl}`;
   }
   function findMatchInExports(exports, filter) {
     return silenceWarns(() => {
-      if (isBlacklisted(exports))
-        return null;
-      try {
-        if (filter(exports))
-          return exports;
-        if (typeof exports === "object" && exports !== null) {
-          for (const key in exports) {
-            try {
-              const nested = exports[key];
-              if (nested != null && !isBlacklisted(nested) && filter(nested))
-                return nested;
-            } catch {}
-          }
+      let match = null;
+      scanExports(exports, (value) => {
+        if (filter(value)) {
+          match = value;
+          return STOP;
         }
-      } catch {}
-      return null;
+      });
+      return match;
     });
   }
   function waitFor(filter, callback, timeout = 0) {
@@ -1841,33 +1807,16 @@ ${sourceUrl}`;
   }
   function debounce(fn, ms) {
     let timer;
-    let lastArgs;
-    const debounced = (...args) => {
-      lastArgs = args;
+    return (...args) => {
       clearTimeout(timer);
-      timer = setTimeout(() => {
-        lastArgs = undefined;
-        fn(...args);
-      }, ms);
+      timer = setTimeout(() => fn(...args), ms);
     };
-    debounced.cancel = () => {
-      clearTimeout(timer);
-      lastArgs = undefined;
-    };
-    debounced.flush = () => {
-      if (lastArgs) {
-        clearTimeout(timer);
-        const a = lastArgs;
-        lastArgs = undefined;
-        fn(...a);
-      }
-    };
-    return debounced;
   }
+  var FETCH_TIMEOUT_MS = 30000;
   function fetchExternal(url) {
     if (typeof GM_xmlhttpRequest === "undefined") {
       const controller = new AbortController;
-      const timer = setTimeout(() => controller.abort(), 30000);
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
       return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
     }
     return new Promise((resolve, reject) => {
@@ -1875,7 +1824,7 @@ ${sourceUrl}`;
         method: "GET",
         url,
         responseType: "blob",
-        timeout: 30000,
+        timeout: FETCH_TIMEOUT_MS,
         onload(resp) {
           resolve(new Response(resp.response, {
             status: resp.status,
@@ -2039,78 +1988,35 @@ ${sourceUrl}`;
   // src/turbopack/common/stores.ts
   var exports_stores = {};
   __export(exports_stores, {
-    WorkspaceStore: () => WorkspaceStore,
-    WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
-    UpsellStore: () => UpsellStore,
-    TourGuideStore: () => TourGuideStore,
     TextToSpeechStore: () => TextToSpeechStore,
-    TasksStore: () => TasksStore,
-    TabsManagerStore: () => TabsManagerStore,
-    SuggestionStore: () => SuggestionStore,
     SubscriptionsStore: () => SubscriptionsStore,
-    SkillsStore: () => SkillsStore,
-    ShareStore: () => ShareStore,
     SettingsStore: () => SettingsStore,
     SettingsDialogStore: () => SettingsDialogStore,
     SessionStore: () => SessionStore,
-    ScrollStore: () => ScrollStore,
     RoutingStore: () => RoutingStore,
     ResponseStore: () => ResponseStore,
-    ReportStore: () => ReportStore,
-    PersonalityStore: () => PersonalityStore,
-    NotificationsStore: () => NotificationsStore,
     ModesStore: () => ModesStore,
-    MentionMenuStore: () => MentionMenuStore,
     MediaStore: () => MediaStore,
-    ImagineModelOverrideStore: () => ImagineModelOverrideStore,
-    ImageEditorStore: () => ImageEditorStore,
     FilesPageStore: () => FilesPageStore,
-    FileStore: () => FileStore,
     FeatureStore: () => FeatureStore,
-    DictationStore: () => DictationStore,
     CreditQuotaStore: () => CreditQuotaStore,
     ConversationStore: () => ConversationStore,
-    CommandMenuStore: () => CommandMenuStore,
-    ChatPageStore: () => ChatPageStore,
-    AssetStore: () => AssetStore
+    ChatPageStore: () => ChatPageStore
   });
-  var AssetStore = findByPropsLazy("useAssetStore");
   var ChatPageStore = findByPropsLazy("useChatPageStore");
-  var CommandMenuStore = findByPropsLazy("useCommandMenuStore", "createSelection");
   var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
   var CreditQuotaStore = findByPropsLazy("useCreditQuotaStore");
-  var DictationStore = findByPropsLazy("useDictationStore");
   var FeatureStore = findByPropsLazy("useFeatureStore");
   var FilesPageStore = findByPropsLazy("useFilesPageStore", "useAssetsList");
-  var FileStore = findByPropsLazy("useFileStore");
-  var ImageEditorStore = findLazy((m) => {
-    const hook = m?.useImageEditorStore;
-    return typeof hook === "function" && typeof hook.getState === "function" && typeof hook.getState()?.setUploadedImage === "function";
-  });
-  var ImagineModelOverrideStore = findByPropsLazy("useImagineModelOverrideStore");
   var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
-  var MentionMenuStore = findByPropsLazy("useMentionMenuStore");
   var ModesStore = findByPropsLazy("useModesStore");
-  var NotificationsStore = findByPropsLazy("useNotificationsStore", "useNotificationsStoreInit");
-  var PersonalityStore = findByPropsLazy("usePersonalityStore", "personalitySchema");
-  var ReportStore = findByPropsLazy("useReportStore");
   var ResponseStore = findByPropsLazy("useResponseStore", "createOptimisticResponse");
   var RoutingStore = findByPropsLazy("useRoutingStore", "formatUrl");
-  var ScrollStore = findByPropsLazy("useScrollStore");
   var SessionStore = findByPropsLazy("useSession", "SessionStoreProvider");
   var SettingsDialogStore = findByPropsLazy("useSettingsDialogStore");
   var SettingsStore = findByPropsLazy("useSettingsStore", "modelConfigOverrideSchema");
-  var ShareStore = findByPropsLazy("useShareStore");
-  var SkillsStore = findByPropsLazy("useSkillsStore");
   var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
-  var SuggestionStore = findByPropsLazy("useSuggestionStore", "useSuggestionStoreInit");
-  var TabsManagerStore = findByPropsLazy("useTabsManagerStore");
-  var TasksStore = findByPropsLazy("useTasksStore");
   var TextToSpeechStore = findByPropsLazy("useTextToSpeechStore");
-  var TourGuideStore = findByPropsLazy("useTourGuideStore", "useTourGuideTooltip");
-  var UpsellStore = findByPropsLazy("useUpsellStore", "useShouldShowUpgradeButton");
-  var WorkspaceConnectorsStore = findByPropsLazy("useWorkspaceConnectorsStore", "useWorkspaceActiveConnectorIds");
-  var WorkspaceStore = findByPropsLazy("useWorkspaceStore", "useWorkspacesList");
 
   // src/utils/react.ts
   function findFiberKey(el) {
@@ -2173,57 +2079,8 @@ ${sourceUrl}`;
     }
     return null;
   }
-  function findInReactTree(node, predicate) {
-    const stack = [node];
-    while (stack.length) {
-      const cur = stack.pop();
-      if (cur == null || typeof cur !== "object")
-        continue;
-      if (Array.isArray(cur)) {
-        for (const c of cur)
-          stack.push(c);
-        continue;
-      }
-      const el = cur;
-      if (predicate(el))
-        return el;
-      const children = el.props?.children;
-      if (children != null)
-        stack.push(children);
-    }
-    return null;
-  }
-  var jsxTransforms = new WeakMap;
-  function wrapComponent(type, wrapper) {
-    jsxTransforms.set(type, wrapper);
-  }
-  function wrapJsx(original) {
-    return function(type, props, key) {
-      const wrapper = typeof type === "object" || typeof type === "function" ? jsxTransforms.get(type) : undefined;
-      return wrapper ? original(wrapper, props, key) : original(type, props, key);
-    };
-  }
-  waitFor(filters.byProps("jsx", "jsxs"), (mod) => {
-    const origJsx = mod.jsx;
-    const origJsxs = mod.jsxs;
-    const jsx = wrapJsx(origJsx);
-    const jsxs = origJsxs === origJsx ? jsx : wrapJsx(origJsxs);
-    for (const cache of [getRuntimeModuleCache(), getModuleCache()]) {
-      if (!cache)
-        continue;
-      const entries = cache instanceof Map ? cache.values() : Object.values(cache).map((m) => m.exports);
-      for (const exp of entries) {
-        if (exp == null || typeof exp !== "object")
-          continue;
-        if (exp.jsx === origJsx)
-          exp.jsx = jsx;
-        if (exp.jsxs === origJsxs)
-          exp.jsxs = jsxs;
-      }
-    }
-  });
-  function resolveLazyNode(node) {
-    return typeof node === "function" ? node() : node;
+  function resolveLazy(v) {
+    return typeof v === "function" ? v() : v;
   }
   function useExternalStore(store) {
     useSyncExternalStore(store.subscribe, store.getSnapshot);
@@ -2315,8 +2172,8 @@ ${sourceUrl}`;
                     t[key] = defaultVal;
                     value = defaultVal;
                   }
+                  break;
                 }
-                break;
               }
             }
           }
@@ -2446,13 +2303,7 @@ ${sourceUrl}`;
 
   // src/api/Settings.ts
   var logger8 = new Logger("Settings");
-  var DefaultSettings = {
-    plugins: {},
-    notifications: {
-      timeout: 5000,
-      position: "bottom-right"
-    }
-  };
+  var DefaultSettings = { plugins: {} };
   var settings = {};
   mergeDefaults(settings, DefaultSettings);
   var SettingsStore3 = new SettingsStore2(settings);
@@ -2460,34 +2311,30 @@ ${sourceUrl}`;
   var Settings = SettingsStore3.store;
   var pluginPath = (name, key) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
   async function initSettings() {
-    if (typeof GM_getValue === "function") {
-      try {
-        const raw2 = GM_getValue(STORAGE_KEY, null);
-        if (raw2) {
-          const parsed = JSON.parse(raw2);
-          if (isObject(parsed))
-            Object.assign(settings, parsed);
-        }
-      } catch (e) {
-        logger8.error("Failed to load settings:", e);
-      }
-      mergeDefaults(settings, DefaultSettings);
-      return;
-    }
     let raw = null;
-    try {
-      raw = await idbGet(STORAGE_KEY) ?? null;
-    } catch (e) {
-      logger8.warn("Failed to read IndexedDB:", e);
-    }
-    if (!raw) {
-      raw = migrateFromLocalStorage();
-      if (raw)
-        idbSet(STORAGE_KEY, raw).then(() => {
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch {}
-        }).catch((e) => logger8.debug("Failed to persist settings to IndexedDB:", e));
+    if (typeof GM_getValue === "function") {
+      raw = GM_getValue(STORAGE_KEY, null);
+    } else {
+      try {
+        raw = await idbGet(STORAGE_KEY) ?? null;
+      } catch (e) {
+        logger8.warn("Failed to read IndexedDB:", e);
+      }
+      if (!raw) {
+        try {
+          raw = localStorage.getItem(STORAGE_KEY);
+          if (raw)
+            logger8.info("Migrating settings from localStorage to IndexedDB");
+        } catch (e) {
+          logger8.warn("Failed to read localStorage:", e);
+        }
+        if (raw)
+          idbSet(STORAGE_KEY, raw).then(() => {
+            try {
+              localStorage.removeItem(STORAGE_KEY);
+            } catch {}
+          }).catch((e) => logger8.debug("Failed to persist settings to IndexedDB:", e));
+      }
     }
     if (raw) {
       try {
@@ -2499,18 +2346,6 @@ ${sourceUrl}`;
       }
     }
     mergeDefaults(settings, DefaultSettings);
-  }
-  function migrateFromLocalStorage() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        logger8.info("Migrating settings from localStorage to IndexedDB");
-        return raw;
-      }
-    } catch (e) {
-      logger8.warn("Failed to read localStorage:", e);
-    }
-    return null;
   }
   function migratePluginSettings(name, ...oldNames) {
     const { plugins } = SettingsStore3.plain;
@@ -2763,7 +2598,46 @@ ${sourceUrl}`;
   function classes(...names) {
     return names.filter(Boolean).join(" ");
   }
-  // void-css:D:/Projects/Void/src/components/ConfirmDialog.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ColorSettingRow.css
+  registerStyle("ColorSettingRow", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-color-picker-input {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.375rem;
+    cursor: pointer;
+    padding: 0.125rem;
+    background-color: transparent;
+}
+`);
+
+  // src/components/ColorSettingRow.tsx
+  var cl = classNameFactory("void-color-picker-");
+  function ColorSettingRow({ value, onChange, title, description }) {
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Flex, {
+        alignItems: "center",
+        gap: "0.5rem"
+      }, /* @__PURE__ */ React.createElement("input", {
+        type: "color",
+        className: cl("input"),
+        value,
+        onChange: (e) => onChange(e.target.value)
+      }), /* @__PURE__ */ React.createElement(Text, {
+        size: "sm",
+        color: "muted"
+      }, value))
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
+  }
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     contain: content;
     width: 100%;
@@ -2979,7 +2853,7 @@ ${sourceUrl}`;
     },
     configurable: true
   });
-  // void-css:D:/Projects/Void/src/components/ErrorCard.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3007,7 +2881,7 @@ ${sourceUrl}`;
 `);
 
   // src/components/ErrorCard.tsx
-  var cl = classNameFactory("void-error-card-");
+  var cl2 = classNameFactory("void-error-card-");
   // src/components/Flex.tsx
   function Flex({ flexDirection, gap = "1em", justifyContent, alignItems, flexWrap, children, style, ref, ...restProps }) {
     return /* @__PURE__ */ React.createElement("div", {
@@ -3039,245 +2913,6 @@ ${sourceUrl}`;
       ...restProps
     }, children);
   }
-  // src/components/icons/index.tsx
-  var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.width ?? props.size ?? "1em",
-    height: props.height ?? props.size ?? "1em",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: props.strokeWidth ?? 2,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    className: props.className,
-    "aria-hidden": "true"
-  }, children);
-  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.width ?? props.size ?? "1em",
-    height: props.height ?? props.size ?? "1em",
-    viewBox,
-    fill: "currentColor",
-    className: props.className,
-    "aria-hidden": "true"
-  }, children);
-  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"
-  }));
-  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
-    x: "3",
-    y: "8",
-    width: "13",
-    height: "13",
-    rx: "4",
-    stroke: "currentColor"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z",
-    fill: "currentColor"
-  }));
-  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M10.88 21.94 15.46 14"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M21.17 8H12"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3.95 6.06 8.54 14"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "4"
-  }));
-  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "12",
-    x2: "12",
-    y1: "8",
-    y2: "12"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "12",
-    x2: "12.01",
-    y1: "16",
-    y2: "16"
-  }));
-  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "13.5",
-    cy: "6.5",
-    r: ".5",
-    fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "17.5",
-    cy: "10.5",
-    r: ".5",
-    fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "6.5",
-    cy: "12.5",
-    r: ".5",
-    fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "8.5",
-    cy: "7.5",
-    r: ".5",
-    fill: "currentColor"
-  }));
-  var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3 6h18"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-  }));
-  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M10 11v6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14 11v6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3 6h18"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-  }));
-  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01a2.83 2.83 0 0 1 0-4L17 3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m16 2 6 6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 16H4"
-  }));
-  var TelescopeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m13.56 11.747 4.332-.924"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m16 21-3.105-6.21"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m6.158 8.633 1.114 4.456"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m8 21 3.105-6.21"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "13",
-    r: "2"
-  }));
-  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-  }), /* @__PURE__ */ React.createElement("polyline", {
-    points: "7 10 12 15 17 10"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "12",
-    x2: "12",
-    y1: "15",
-    y2: "3"
-  }));
-  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m19 5 3-3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m2 22 3-3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M7.5 13.5 10 11"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M10.5 16.5 13 14"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"
-  }));
-  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React.createElement("path", {
-    d: "M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",
-    fill: "currentColor",
-    fillRule: "evenodd",
-    clipRule: "evenodd"
-  }));
-  var EllipsisVertical = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "1"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "5",
-    r: "1"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "19",
-    r: "1"
-  }));
-  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"
-  }));
-  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 9v4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 17h.01"
-  }));
-  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14 15H9v-5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M16 3h5v5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M21 3 9 15"
-  }));
-  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m15 5 4 4"
-  }));
-  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M2 12h20"
-  }));
-  var CircleXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m15 9-6 6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m9 9 6 6"
-  }));
-  var CircleCheckIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m9 12 2 2 4-4"
-  }));
-  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
-  }));
-  var ClockAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 6v6l4 2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M20 12v5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M20 21h.01"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M21.25 8.2A10 10 0 1 0 16 21.16"
-  }));
   // src/turbopack/common/utils.ts
   var ApiClients = findByPropsLazy("chatApi", "modelsApi");
   var Toaster = findByPropsLazy("Toaster", "toast");
@@ -3330,6 +2965,101 @@ ${sourceUrl}`;
       size: "sm",
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
+  }
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/SelectionUI.css
+  registerStyle("SelectionUI", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-sel-wrap {
+    display: none;
+    align-items: center;
+}
+
+.void-sel-wrap:has([data-state="checked"]) {
+    display: inline-flex;
+}
+
+.void-sel-checkbox {
+    border-color: oklch(99.24% 0 none / 15%) !important;
+}
+
+.void-sel-action-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+.void-sel-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-tertiary);
+}
+
+.void-sel-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.void-sel-buttons > button {
+    flex: 1;
+}
+`);
+
+  // src/components/SelectionUI.tsx
+  var cl3 = classNameFactory("void-sel-");
+  function SelectionCheckbox({ selection, id }) {
+    const checked = useSelectionHas(selection, id);
+    return /* @__PURE__ */ React.createElement("div", {
+      onClick: (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      },
+      className: cl3("wrap")
+    }, /* @__PURE__ */ React.createElement(Checkbox, {
+      checked,
+      onCheckedChange: () => selection.toggle(id),
+      className: cl3("checkbox")
+    }));
+  }
+  function SelectionActionBar({ selection, noun, title, onDelete }) {
+    const count = useSelectionSize(selection);
+    const [open2, setOpen] = useState(false);
+    if (!count)
+      return null;
+    const handleConfirm = async () => {
+      const ids = selection.all();
+      selection.clear();
+      await onDelete(ids);
+    };
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement("div", {
+      className: cl3("action-bar")
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: cl3("count")
+    }, "Selected · ", count), /* @__PURE__ */ React.createElement("div", {
+      className: cl3("buttons")
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "primary",
+      size: "sm",
+      shape: "pill",
+      onClick: () => selection.clear()
+    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
+      variant: "danger",
+      size: "sm",
+      shape: "pill",
+      onClick: () => setOpen(true)
+    }, "Delete"))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title,
+      description: `Are you sure you want to delete ${pluralize(count, noun)}? This cannot be undone.`,
+      confirmText: "Delete",
+      danger: true,
+      onConfirm: handleConfirm
+    }));
   }
   // src/components/ChatBarButton.tsx
   var TOOLTIP_PROPS = { delayDuration: 600 };
@@ -3387,21 +3117,12 @@ ${sourceUrl}`;
         map.set(id, value);
         store.notify();
       },
-      get: (id) => map.get(id),
       delete(id) {
         const had = map.delete(id);
         if (had)
           store.notify();
         return had;
       },
-      update(id, patch) {
-        const existing = map.get(id);
-        if (!existing)
-          return;
-        map.set(id, { ...existing, ...patch });
-        store.notify();
-      },
-      has: (id) => map.has(id),
       get size() {
         return map.size;
       },
@@ -3417,18 +3138,17 @@ ${sourceUrl}`;
   function removeChatBarButton(id) {
     buttons.delete(id);
   }
-  var resolve = (v) => typeof v === "function" ? v() : v;
   function renderEntry(def) {
     return /* @__PURE__ */ React.createElement(ChatBarButton, {
-      icon: resolveLazyNode(def.icon),
-      tooltip: resolveLazyNode(def.tooltip),
-      popover: resolveLazyNode(def.popover),
+      icon: resolveLazy(def.icon),
+      tooltip: resolveLazy(def.tooltip),
+      popover: resolveLazy(def.popover),
       onClick: def.onClick,
       variant: def.variant,
       size: def.size,
       shape: def.shape,
-      disabled: resolve(def.disabled),
-      active: resolve(def.active),
+      disabled: resolveLazy(def.disabled),
+      active: resolveLazy(def.active),
       "aria-label": def["aria-label"],
       className: def.className
     });
@@ -3463,7 +3183,6 @@ ${sourceUrl}`;
   var MenuSub = makeMenuPrimitive("Sub", DropdownMenuSub);
   var MenuSubTrigger = makeMenuPrimitive("SubTrigger", DropdownMenuSubTrigger);
   var MenuSubContent = makeMenuPrimitive("SubContent", DropdownMenuSubContent);
-  var MenuSeparator = makeMenuPrimitive("Separator", DropdownMenuSeparator);
   var registries = new Map;
   function getRegistry(location2) {
     return mapGetOrCreate(registries, location2, () => createRegistry());
@@ -3483,7 +3202,7 @@ ${sourceUrl}`;
     }
     return /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => def.onSelect?.(ctx)
-    }, resolveLazyNode(def.icon), resolveLazyNode(def.label));
+    }, resolveLazy(def.icon), resolveLazy(def.label));
   }
   function VoidContextMenuItems({ location: location2, menu, ...ctx }) {
     const registry = getRegistry(location2);
@@ -3587,12 +3306,11 @@ ${sourceUrl}`;
   function isSubscribable(val) {
     return val != null && typeof val.subscribe === "function";
   }
-  var SYM_LAZY_GET2 = Symbol.for("void.lazy.get");
   function resolveStoreHook(storeName) {
     const lazy = storeRegistry[storeName];
     if (!lazy)
       return null;
-    const resolved = lazy[SYM_LAZY_GET2]?.() ?? lazy;
+    const resolved = lazy[SYM_LAZY_GET]?.() ?? lazy;
     if (!resolved)
       return null;
     const hook = resolved[`use${storeName}`];
@@ -3878,95 +3596,7 @@ ${sourceUrl}`;
     });
   }
 
-  // src/utils/constants.ts
-  var Devs = Object.freeze({
-    Prism: "Prism",
-    adryd: "adryd"
-  });
-
-  // src/plugins/_core/fixChrome.chrome/index.ts
-  var fixChrome_default = definePlugin({
-    name: "FixChrome",
-    description: "Fixes Chromium-specific performance issues like backdrop blur lag.",
-    authors: [Devs.Prism],
-    required: true,
-    patches: [
-      {
-        find: "backdrop-blur-",
-        all: true,
-        replacement: {
-          match: /backdrop-blur-(?:\w+|\[[^\]]+\]) ?/g,
-          replace: ""
-        }
-      }
-    ]
-  });
-
-  // src/plugins/_core/noTelemetry/index.ts
-  var noTelemetry_default = definePlugin({
-    name: "NoTelemetry",
-    description: "Disables all tracking, telemetry, and event logging.",
-    authors: [Devs.Prism],
-    required: true,
-    patches: [
-      {
-        find: '"opentelemetry.js.api."',
-        replacement: {
-          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
-          replace: "$1function(){}"
-        }
-      },
-      {
-        find: '"after-init"),(0,',
-        group: true,
-        replacement: [
-          {
-            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
-            replace: "$1return}function _ignore(){"
-          },
-          {
-            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
-            replace: '"startRecordingImagineSession",0,function(){}'
-          },
-          {
-            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
-            replace: '"stopRecordingImagineSession",0,function(){}'
-          }
-        ]
-      },
-      {
-        find: "sendBatchLogEvent",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
-            replace: "sendBatchLogEvent=()=>{}"
-          },
-          {
-            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
-            replace: "sendBatchLogExperimentExposure=()=>{}"
-          }
-        ]
-      },
-      {
-        find: '"/api/log_metric"',
-        replacement: {
-          match: /"\/api\/log_metric",\i\)/,
-          replace: '"/api/log_metric",[])'
-        }
-      },
-      {
-        find: "isEnvVarsSet(){return void 0!=",
-        replacement: {
-          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
-          replace: "isEnvVarsSet(){return false}"
-        }
-      }
-    ]
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/_core/settings/styles.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4206,7 +3836,230 @@ ${sourceUrl}`;
     }
   }
 
-  // void-css:D:/Projects/Void/src/components/settings/tabs/CustomCSSTab.css
+  // src/components/icons.tsx
+  var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
+    width: props.width ?? props.size ?? "1em",
+    height: props.height ?? props.size ?? "1em",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: props.strokeWidth ?? 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className: props.className,
+    "aria-hidden": "true"
+  }, children);
+  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React.createElement("svg", {
+    width: props.width ?? props.size ?? "1em",
+    height: props.height ?? props.size ?? "1em",
+    viewBox,
+    fill: "currentColor",
+    className: props.className,
+    "aria-hidden": "true"
+  }, children);
+  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"
+  }));
+  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    x: "3",
+    y: "8",
+    width: "13",
+    height: "13",
+    rx: "4",
+    stroke: "currentColor"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z",
+    fill: "currentColor"
+  }));
+  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10.88 21.94 15.46 14"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21.17 8H12"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3.95 6.06 8.54 14"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "4"
+  }));
+  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12",
+    y1: "8",
+    y2: "12"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12.01",
+    y1: "16",
+    y2: "16"
+  }));
+  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "13.5",
+    cy: "6.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "17.5",
+    cy: "10.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "6.5",
+    cy: "12.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "8.5",
+    cy: "7.5",
+    r: ".5",
+    fill: "currentColor"
+  }));
+  var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 6h18"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+  }));
+  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10 11v6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 11v6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 6h18"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+  }));
+  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01a2.83 2.83 0 0 1 0-4L17 3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m16 2 6 6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 16H4"
+  }));
+  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+  }), /* @__PURE__ */ React.createElement("polyline", {
+    points: "7 10 12 15 17 10"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12",
+    y1: "15",
+    y2: "3"
+  }));
+  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m19 5 3-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m2 22 3-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M7.5 13.5 10 11"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M10.5 16.5 13 14"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"
+  }));
+  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React.createElement("path", {
+    d: "M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",
+    fill: "currentColor",
+    fillRule: "evenodd",
+    clipRule: "evenodd"
+  }));
+  var EllipsisVertical = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "5",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "19",
+    r: "1"
+  }));
+  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"
+  }));
+  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 9v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 17h.01"
+  }));
+  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 15H9v-5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 3h5v5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21 3 9 15"
+  }));
+  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m15 5 4 4"
+  }));
+  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M2 12h20"
+  }));
+  var CircleXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m15 9-6 6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m9 9 6 6"
+  }));
+  var CircleCheckIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m9 12 2 2 4-4"
+  }));
+  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+  }));
+  var ClockAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 6v6l4 2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M20 12v5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M20 21h.01"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21.25 8.2A10 10 0 1 0 16 21.16"
+  }));
+
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4218,7 +4071,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:D:/Projects/Void/src/components/settings/CssEditor.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -4304,10 +4157,10 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/CssEditor.tsx
-  var cl2 = classNameFactory("void-css-");
+  var cl4 = classNameFactory("void-css-");
   var TOKEN = /\/\*[\s\S]*?\*\/|@[\w-]+|"[^"]*"|'[^']*'|#[\da-fA-F]{3,8}|[\d.]+(?:px|em|rem|%|vh|vw|s|ms|deg|fr|ch)?|[\w-]+|[{}:;,()!]/g;
   function span(cls, text) {
-    return `<span class="${cl2(cls)}">${escapeHtml(text)}</span>`;
+    return `<span class="${cl4(cls)}">${escapeHtml(text)}</span>`;
   }
   function highlightCss(css) {
     let inBlock = 0;
@@ -4417,13 +4270,13 @@ ${sourceUrl}`;
       });
     }, [onChange]);
     return /* @__PURE__ */ React.createElement("div", {
-      className: className ? `${cl2("wrap")} ${className}` : cl2("wrap")
+      className: classes(cl4("wrap"), className)
     }, /* @__PURE__ */ React.createElement("pre", {
       ref: highlightRef,
-      className: cl2("highlight"),
+      className: cl4("highlight"),
       "aria-hidden": "true"
     }), /* @__PURE__ */ React.createElement("textarea", {
-      className: cl2("input"),
+      className: cl4("input"),
       value,
       placeholder,
       onChange: (e) => onChange(e.target.value),
@@ -4437,7 +4290,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/CustomCSSTab.tsx
-  var cl3 = classNameFactory("void-css-");
+  var cl5 = classNameFactory("void-css-");
   var STYLE_ID = "void-custom-css";
   function setCustomCSSEnabled(enabled) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
@@ -4472,11 +4325,11 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
-      className: `${cl3("root")} void-tab-root`
+      className: classes(cl5("root"), "void-tab-root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
-      className: cl3("header")
+      className: cl5("header")
     }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Quick CSS",
       description: "Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it."
@@ -4490,7 +4343,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:D:/Projects/Void/src/components/settings/shared.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4541,7 +4394,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:D:/Projects/Void/src/components/settings/tabs/PluginsTab.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
@@ -4554,21 +4407,22 @@ ${sourceUrl}`;
     color: inherit;
     flex: 1;
 }
-
-.void-plugins-filter-select {
-    width: 7rem;
-}
 `);
 
-  // void-css:D:/Projects/Void/src/components/settings/PluginCard.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
-.void-plugin-card-badge {
+.void-plugin-card-badge,
+.void-plugin-card-crashed-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: hsl(var(--fg-tertiary));
     flex-shrink: 0;
     line-height: 0;
+}
+
+.void-plugin-card-crashed-icon {
+    color: hsl(var(--fg-danger));
 }
 
 .void-plugin-card-required {
@@ -4580,31 +4434,13 @@ ${sourceUrl}`;
     border-color: hsl(var(--red-700));
 }
 
-.void-plugin-card-crashed-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: hsl(var(--fg-danger));
-    flex-shrink: 0;
-    line-height: 0;
-}
-
 .void-plugin-card-crashed-icon svg {
     width: 1em;
     height: 1em;
 }
-
-.void-plugin-card-authors {
-    font-size: 0.7rem;
-    color: hsl(var(--fg-tertiary));
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
 `);
 
-  // void-css:D:/Projects/Void/src/components/settings/BaseCard.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4690,46 +4526,45 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/BaseCard.tsx
-  var cl4 = classNameFactory("void-card-");
+  var cl6 = classNameFactory("void-card-");
   function BaseCard({ className, name, nameClassName, badges, description, controls, footer }) {
     return /* @__PURE__ */ React.createElement(Card, {
-      className: classes(cl4("root"), className)
+      className: classes(cl6("root"), className)
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl4("body")
+      className: cl6("body")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
     }, /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl4("name"), nameClassName)
+      className: classes(cl6("name"), nameClassName)
     }, /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl4("title")
+      className: cl6("title")
     }, name)), /* @__PURE__ */ React.createElement(TooltipContent, null, name)), badges), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
-      className: cl4("controls")
+      className: cl6("controls")
     }, controls)), description && /* @__PURE__ */ React.createElement("div", {
-      className: cl4("desc")
+      className: cl6("desc")
     }, description)), /* @__PURE__ */ React.createElement("div", {
-      className: cl4("separator")
+      className: cl6("separator")
     }), /* @__PURE__ */ React.createElement("div", {
-      className: cl4("footer")
+      className: cl6("footer")
     }, footer));
   }
 
   // src/components/settings/IconButton.tsx
-  function IconButton({ icon: Icon, label, size = 14, className, onClick }) {
+  function IconButton({ icon: Icon, label, onClick }) {
     return /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "xs",
       shape: "square",
       "aria-label": label,
-      className,
       onClick
     }, /* @__PURE__ */ React.createElement(Icon, {
-      size
+      size: 14
     }));
   }
 
@@ -4744,8 +4579,7 @@ ${sourceUrl}`;
   }
   var badges = [
     { key: "dev", icon: GhostFilledIcon, tooltip: "Dev Only" },
-    { key: "chrome", icon: ChromiumIcon, tooltip: "Chromium Only" },
-    { key: "preview", icon: TelescopeIcon, tooltip: "Preview plugin, may be removed once Grok ships this." }
+    { key: "chrome", icon: ChromiumIcon, tooltip: "Chromium Only" }
   ];
   function PluginBadges({ plugin, className }) {
     return badges.filter((b) => plugin[b.key]).map((b) => /* @__PURE__ */ React.createElement(TooltipIcon, {
@@ -4765,7 +4599,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/PluginCard.tsx
-  var cl5 = classNameFactory("void-plugin-card-");
+  var cl7 = classNameFactory("void-plugin-card-");
   function PluginCard({ name, onSettings, onReload }) {
     const plugin = plugins[name];
     const forceUpdate = useForceUpdater();
@@ -4784,19 +4618,19 @@ ${sourceUrl}`;
         onReload(name);
     };
     return /* @__PURE__ */ React.createElement(BaseCard, {
-      className: plugin.required ? cl5("required") : crashed ? cl5("crashed") : undefined,
+      className: classes(plugin.required && cl7("required"), crashed && cl7("crashed")),
       name,
       badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: TriangleAlert,
         tooltip: "This plugin failed to start",
-        className: cl5("crashed-icon")
+        className: cl7("crashed-icon")
       }), plugin.required && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: CircleAlertIcon,
         tooltip: "This plugin is required for Void to work",
-        className: cl5("required-icon")
+        className: cl7("required-icon")
       }), /* @__PURE__ */ React.createElement(PluginBadges, {
         plugin,
-        className: cl5("badge")
+        className: cl7("badge")
       }), isNewPlugin(name) && /* @__PURE__ */ React.createElement(Badge, {
         variant: "accent"
       }, "New")),
@@ -4811,14 +4645,13 @@ ${sourceUrl}`;
         onCheckedChange: handleToggle
       })),
       footer: /* @__PURE__ */ React.createElement("div", {
-        className: cl5("authors")
+        className: "void-card-author"
       }, plugin.authors?.join(", ") || " ")
     });
   }
 
-  // void-css:D:/Projects/Void/src/components/settings/tabs/PluginDialog.css
-  registerStyle("PluginDialog", `/* SettingsRow has px-3 built in, strip it so fields align with the title */
-.void-plugin-dialog-settings-list>.px-3 {
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/PluginDialog.css
+  registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
 }
@@ -4833,7 +4666,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:D:/Projects/Void/src/components/settings/SettingField.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
 }
@@ -4858,13 +4691,13 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/SettingField.tsx
-  var cl6 = classNameFactory("void-setting-");
+  var cl8 = classNameFactory("void-setting-");
   function usePluginSetting(pluginName, id, setting) {
-    const resolve2 = () => (Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting);
-    const [value, setValue] = useState(resolve2);
+    const resolve = () => (Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting);
+    const [value, setValue] = useState(resolve);
     useEffect(() => {
       const path = pluginPath(pluginName, id);
-      const listener = () => setValue(resolve2());
+      const listener = () => setValue(resolve());
       SettingsStore3.addChangeListener(path, listener);
       return () => SettingsStore3.removeChangeListener(path, listener);
     }, [pluginName, id]);
@@ -4882,6 +4715,15 @@ ${sourceUrl}`;
       flexDirection: "column",
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, humanizeKey(id)), setting.description && /* @__PURE__ */ React.createElement(SettingsDescription, null, setting.description));
+  }
+  function LabeledField({ id, setting, children }) {
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+      id,
+      setting
+    }), children);
   }
   var BooleanField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
@@ -4915,26 +4757,23 @@ ${sourceUrl}`;
   var SliderField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const { min, max } = setting;
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+    return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
-    }), /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       gap: "0.5rem",
-      className: cl6("slider-row")
+      className: cl8("slider-row")
     }, /* @__PURE__ */ React.createElement(Slider, {
       value: [value ?? min],
       min,
       max,
       step: 1,
       onValueChange: ([v]) => update(v),
-      className: cl6("slider")
+      className: cl8("slider")
     }), /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       color: "secondary",
-      className: cl6("slider-value")
+      className: cl8("slider-value")
     }, value)));
   };
   var ComponentField = ({ setting, pluginName }) => {
@@ -4947,36 +4786,29 @@ ${sourceUrl}`;
   };
   var NumberField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+    return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
-    }), /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "number",
-      value: value == null ? "" : String(value),
+      value: String(value ?? ""),
       onChange: (e) => {
         const n = Number(e.target.value);
         if (!isNaN(n))
           update(n);
       },
-      className: cl6("number-input")
+      className: cl8("number-input")
     }));
   };
   var BigIntField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    const display = value == null ? "" : String(value);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+    return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
-    }), /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       inputMode: "numeric",
-      value: display,
+      value: String(value ?? ""),
       onChange: (e) => {
         const raw = e.target.value.trim();
         if (!raw)
@@ -4985,23 +4817,20 @@ ${sourceUrl}`;
           update(BigInt(raw));
         } catch {}
       },
-      className: cl6("number-input")
+      className: cl8("number-input")
     }));
   };
   var StringField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+    return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
-    }), /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
-      value: value == null ? "" : String(value),
+      value: String(value ?? ""),
       onChange: (e) => update(e.target.value),
       placeholder: setting.placeholder,
-      className: cl6("string-input")
+      className: cl8("string-input")
     }));
   };
   var FIELD_MAP = {
@@ -5026,8 +4855,14 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/VoidDialogShell.tsx
-  function VoidDialogShell({ title, subtitle, children }) {
-    return /* @__PURE__ */ React.createElement(DialogContent, {
+  function VoidDialogShell({ title, subtitle, onClose, children }) {
+    return /* @__PURE__ */ React.createElement(Dialog, {
+      open: true,
+      onOpenChange: (v) => {
+        if (!v)
+          onClose();
+      }
+    }, /* @__PURE__ */ React.createElement(DialogContent, {
       className: "void-dialog-content",
       "aria-describedby": undefined
     }, /* @__PURE__ */ React.createElement(DialogClose, {
@@ -5040,7 +4875,7 @@ ${sourceUrl}`;
       className: "void-dialog-close"
     }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
       className: "void-dialog-header"
-    }, /* @__PURE__ */ React.createElement(DialogTitle, null, title), subtitle && /* @__PURE__ */ React.createElement(Paragraph, null, subtitle)), children);
+    }, /* @__PURE__ */ React.createElement(DialogTitle, null, title), subtitle && /* @__PURE__ */ React.createElement(Paragraph, null, subtitle)), children));
   }
   function DialogField({ label, className, children }) {
     return /* @__PURE__ */ React.createElement(Flex, {
@@ -5068,8 +4903,8 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/PluginDialog.tsx
-  var cl7 = classNameFactory("void-plugin-dialog-");
-  function PluginDialog({ plugin, open: open2, onClose }) {
+  var cl9 = classNameFactory("void-plugin-dialog-");
+  function PluginDialog({ plugin, onClose }) {
     const entries = useMemo(() => Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting), [plugin.settings?.def]);
     const [confirming, setConfirming] = useState(false);
     const resetSettings = useCallback(() => {
@@ -5080,15 +4915,10 @@ ${sourceUrl}`;
       Settings.plugins[plugin.name] = Object.fromEntries(Object.entries(current).filter(([k]) => !entryKeys.has(k)));
       setConfirming(false);
     }, [plugin.name, entries]);
-    return /* @__PURE__ */ React.createElement(Dialog, {
-      open: open2,
-      onOpenChange: (v) => {
-        if (!v)
-          onClose();
-      }
-    }, /* @__PURE__ */ React.createElement(VoidDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidDialogShell, {
       title: plugin.name,
-      subtitle: plugin.description
+      subtitle: plugin.description,
+      onClose
     }, /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(DialogField, {
       label: "Authors"
     }, /* @__PURE__ */ React.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(DialogField, {
@@ -5096,24 +4926,24 @@ ${sourceUrl}`;
     }, entries.length ? /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl7("settings-list")
+      className: cl9("settings-list")
     }, entries.map(([key, setting]) => /* @__PURE__ */ React.createElement(SettingField, {
       key,
       id: key,
       setting,
       pluginName: plugin.name
     }))) : /* @__PURE__ */ React.createElement(Paragraph, null, "No configurable settings.")), !!entries.length && /* @__PURE__ */ React.createElement(DialogFooter, {
-      className: cl7("footer")
+      className: cl9("footer")
     }, /* @__PURE__ */ React.createElement(Button, {
       variant: confirming ? "danger" : "secondary",
       size: "sm",
       onBlur: () => setConfirming(false),
       onClick: () => confirming ? resetSettings() : setConfirming(true)
-    }, confirming ? "Are you sure?" : "Reset"))));
+    }, confirming ? "Are you sure?" : "Reset")));
   }
 
   // src/components/settings/tabs/SearchFilterBar.tsx
-  function SearchFilterBar({ placeholder, search: search2, onSearchChange, filter, onFilterChange, options, selectClassName }) {
+  function SearchFilterBar({ placeholder, search: search2, onSearchChange, filter, onFilterChange, options }) {
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem"
@@ -5127,7 +4957,7 @@ ${sourceUrl}`;
       value: filter,
       onValueChange: (v) => onFilterChange(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: selectClassName
+      className: "void-search-bar-select"
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: o.value,
       value: o.value
@@ -5135,7 +4965,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/PluginsTab.tsx
-  var cl8 = classNameFactory("void-plugins-");
+  var cl10 = classNameFactory("void-plugins-");
   var FILTER_OPTIONS = [
     { value: "all", label: "All" },
     { value: "enabled", label: "Enabled" },
@@ -5147,6 +4977,15 @@ ${sourceUrl}`;
       return list;
     const enabled = filter === "enabled";
     return list.filter((n) => isPluginEnabled(n) === enabled);
+  }
+  var pendingPluginDialog = null;
+  function setPendingPluginDialog(name) {
+    pendingPluginDialog = name;
+  }
+  function consumePendingPluginDialog() {
+    const name = pendingPluginDialog;
+    pendingPluginDialog = null;
+    return name;
   }
   function PluginsTab() {
     const [search2, setSearch] = useState("");
@@ -5226,10 +5065,10 @@ ${sourceUrl}`;
       description: "Turn Void features on or off. Some require a reload to apply. Click the dots on a plugin to configure it."
     }), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
-      className: cl8("reload-banner")
+      className: cl10("reload-banner")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl8("reload-text")
+      className: cl10("reload-text")
     }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
@@ -5239,9 +5078,8 @@ ${sourceUrl}`;
       search: search2,
       onSearchChange: setSearch,
       filter,
-      onFilterChange: (f) => setFilter(f),
-      options: FILTER_OPTIONS,
-      selectClassName: cl8("filter-select")
+      onFilterChange: setFilter,
+      options: FILTER_OPTIONS
     }), filteredUser.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)"
     }, filteredUser.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
@@ -5265,7 +5103,6 @@ ${sourceUrl}`;
       className: "void-tab-empty"
     }, search2 ? "No plugins match your search." : "No plugins available."), dialogPlugin && /* @__PURE__ */ React.createElement(PluginDialog, {
       plugin: dialogPlugin,
-      open: true,
       onClose: () => setDialogName(null)
     }), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: showReload,
@@ -5281,7 +5118,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:D:/Projects/Void/src/components/settings/tabs/ThemesTab.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -5304,7 +5141,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:D:/Projects/Void/src/components/settings/ThemeCard.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5315,20 +5152,11 @@ ${sourceUrl}`;
     flex-shrink: 0;
     color: hsl(var(--fg-tertiary));
 }
-
-.void-theme-card-author {
-    font-size: 0.7rem;
-    color: hsl(var(--fg-tertiary));
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
 `);
 
   // src/components/settings/ThemeCard.tsx
   var logger13 = new Logger("ThemeCard");
-  var cl9 = classNameFactory("void-theme-card-");
+  var cl11 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, onRemove, onToggle, onEdit }) {
     const handleToggle = () => {
       if (theme.enabled)
@@ -5340,7 +5168,7 @@ ${sourceUrl}`;
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
     return /* @__PURE__ */ React.createElement(BaseCard, {
       name: theme.name ?? theme.url,
-      nameClassName: cl9("name"),
+      nameClassName: cl11("name"),
       description: theme.description,
       controls: /* @__PURE__ */ React.createElement(React.Fragment, null, theme.local ? /* @__PURE__ */ React.createElement(IconButton, {
         icon: PencilIcon,
@@ -5362,15 +5190,15 @@ ${sourceUrl}`;
       })),
       footer: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SourceIcon, {
         size: 12,
-        className: cl9("footer-icon")
+        className: cl11("footer-icon")
       }), /* @__PURE__ */ React.createElement("div", {
-        className: cl9("author")
+        className: "void-card-author"
       }, theme.author ?? " "))
     });
   }
 
   // src/components/settings/tabs/ThemesTab.tsx
-  var cl10 = classNameFactory("void-themes-");
+  var cl12 = classNameFactory("void-themes-");
   var FILTER_OPTIONS2 = [
     { value: "all", label: "All" },
     { value: "enabled", label: "Enabled" },
@@ -5379,7 +5207,7 @@ ${sourceUrl}`;
     { value: "local", label: "Local" }
   ];
   var getThemeKey = (t) => `${t.name} ${t.description ?? ""} ${t.author ?? ""}`;
-  function OnlineThemeDialog({ open: open2, onClose, onSave }) {
+  function OnlineThemeDialog({ onClose, onSave }) {
     const [url, setUrl] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -5399,14 +5227,9 @@ ${sourceUrl}`;
         setLoading(false);
       }
     };
-    return /* @__PURE__ */ React.createElement(Dialog, {
-      open: open2,
-      onOpenChange: (v) => {
-        if (!v)
-          onClose();
-      }
-    }, /* @__PURE__ */ React.createElement(VoidDialogShell, {
-      title: "Add Online Theme"
+    return /* @__PURE__ */ React.createElement(VoidDialogShell, {
+      title: "Add Online Theme",
+      onClose
     }, /* @__PURE__ */ React.createElement(DialogField, {
       label: "URL"
     }, /* @__PURE__ */ React.createElement(Input, {
@@ -5423,16 +5246,16 @@ ${sourceUrl}`;
       }
     })), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl10("add-error")
+      className: cl12("add-error")
     }, error), /* @__PURE__ */ React.createElement(DialogActions, {
-      className: cl10("local-footer"),
+      className: cl12("local-footer"),
       onCancel: onClose,
       confirmLabel: loading ? "Importing..." : "Import",
       onConfirm: handleImport,
       confirmDisabled: loading || !url.trim()
-    })));
+    }));
   }
-  function LocalThemeDialog({ open: open2, onClose, theme, onSave }) {
+  function LocalThemeDialog({ onClose, theme, onSave }) {
     const [name, setName] = useState(theme?.name ?? "");
     const [css, setCss] = useState(theme?.css ?? "");
     const [error, setError] = useState("");
@@ -5450,14 +5273,9 @@ ${sourceUrl}`;
         setError(errorMessage(e));
       }
     };
-    return /* @__PURE__ */ React.createElement(Dialog, {
-      open: open2,
-      onOpenChange: (v) => {
-        if (!v)
-          onClose();
-      }
-    }, /* @__PURE__ */ React.createElement(VoidDialogShell, {
-      title: theme ? "Edit Local Theme" : "New Local Theme"
+    return /* @__PURE__ */ React.createElement(VoidDialogShell, {
+      title: theme ? "Edit Local Theme" : "New Local Theme",
+      onClose
     }, /* @__PURE__ */ React.createElement(DialogField, {
       label: "Name"
     }, /* @__PURE__ */ React.createElement(Input, {
@@ -5467,22 +5285,22 @@ ${sourceUrl}`;
       onChange: (e) => setName(e.target.value)
     })), /* @__PURE__ */ React.createElement(DialogField, {
       label: "CSS",
-      className: cl10("local-css-field")
+      className: cl12("local-css-field")
     }, /* @__PURE__ */ React.createElement(CssEditor, {
-      className: cl10("local-editor"),
+      className: cl12("local-editor"),
       value: css,
       onChange: setCss,
       placeholder: "Paste your CSS here..."
     })), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl10("add-error")
+      className: cl12("add-error")
     }, error), /* @__PURE__ */ React.createElement(DialogActions, {
-      className: cl10("local-footer"),
+      className: cl12("local-footer"),
       onCancel: onClose,
       confirmLabel: theme ? "Save" : "Create",
       onConfirm: handleSave,
       confirmDisabled: !name.trim() || !css.trim()
-    })));
+    }));
   }
   function ThemesTab() {
     const [search2, setSearch] = useState("");
@@ -5550,9 +5368,8 @@ ${sourceUrl}`;
       search: search2,
       onSearchChange: setSearch,
       filter,
-      onFilterChange: (f) => setFilter(f),
-      options: FILTER_OPTIONS2,
-      selectClassName: "void-search-bar-select"
+      onFilterChange: setFilter,
+      options: FILTER_OPTIONS2
     }), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)"
     }, filtered.map((t) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
@@ -5561,7 +5378,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(ThemeCard, {
       theme: t,
       onRemove: setRemoveUrl,
-      onToggle: () => refreshThemes(),
+      onToggle: refreshThemes,
       onEdit: t.local ? () => {
         setEditingTheme(t);
         setLocalDialogOpen(true);
@@ -5582,23 +5399,20 @@ ${sourceUrl}`;
       danger: true,
       onConfirm: handleRemove
     }), onlineDialogOpen && /* @__PURE__ */ React.createElement(OnlineThemeDialog, {
-      open: onlineDialogOpen,
       onClose: () => setOnlineDialogOpen(false),
-      onSave: () => refreshThemes()
+      onSave: refreshThemes
     }), localDialogOpen && /* @__PURE__ */ React.createElement(LocalThemeDialog, {
-      open: localDialogOpen,
       onClose: () => setLocalDialogOpen(false),
       theme: editingTheme,
-      onSave: () => refreshThemes()
+      onSave: refreshThemes
     }));
   }
-
   // src/components/settings/tabs/index.ts
   var CustomCSSTab2 = ErrorBoundary.wrap(CustomCSSTab);
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:D:/Projects/Void/src/plugins/experiments/styles.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -5678,8 +5492,14 @@ ${sourceUrl}`;
     Toaster.toast?.dismiss(id);
   }
 
+  // src/utils/constants.ts
+  var Devs = Object.freeze({
+    Prism: "Prism",
+    adryd: "adryd"
+  });
+
   // src/plugins/experiments/index.tsx
-  var cl11 = classNameFactory("void-experiments-");
+  var cl13 = classNameFactory("void-experiments-");
   var NEW_FLAG_TTL = 24 * 60 * 60 * 1000;
   var settings2 = definePluginSettings({
     toastNotifications: {
@@ -5813,13 +5633,13 @@ ${sourceUrl}`;
       })
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React.createElement(Badge, {
       variant: "accent",
-      className: cl11("badge")
+      className: cl13("badge")
     }, "New"), decodedKey && /* @__PURE__ */ React.createElement(Badge, {
-      className: cl11("badge")
+      className: cl13("badge")
     }, "Encrypted"), isOverridden && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       as: "span",
-      className: cl11("modified")
+      className: cl13("modified")
     }, "(modified)")), /* @__PURE__ */ React.createElement(SettingsDescription, null, decodedKey ?? flagKey));
   }
   function ExperimentsTab() {
@@ -5856,36 +5676,36 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Experiments",
       description: "Toggle unreleased Grok features. These are experimental and may break. New flags are marked when they appear.",
-      className: cl11("section")
+      className: cl13("section")
     }), /* @__PURE__ */ React.createElement(Card, {
       variant: "ghost",
-      className: cl11("warning")
+      className: cl13("warning")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl11("warning-text")
+      className: cl13("warning-text")
     }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
-      className: cl11("clear-btn"),
+      className: cl13("clear-btn"),
       onClick: () => FeatureStore.useFeatureStore.getState().clearAllOverrides()
     }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem",
-      className: cl11("section")
+      className: cl13("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       placeholder: `Search ${prefiltered.length} flags...`,
       value: search2,
       onChange: (e) => setSearch(e.target.value),
-      className: cl11("search-input")
+      className: cl13("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl11("filter-select")
+      className: cl13("filter-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
     }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
@@ -5906,7 +5726,7 @@ ${sourceUrl}`;
       isNew: isNewFlag(key)
     }))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "muted",
-      className: cl11("empty")
+      className: cl13("empty")
     }, search2 ? `No flags matching "${search2}"` : `No ${filter} flags`));
   }
   var Tab = ErrorBoundary.wrap(ExperimentsTab);
@@ -5978,7 +5798,7 @@ ${sourceUrl}`;
   // src/plugins/_core/settings/index.tsx
   var logger15 = new Logger("Settings");
   var MoonIcon = findExportedComponentLazy("MoonIcon");
-  var cl12 = classNameFactory("void-settings-");
+  var cl14 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     showVoidMenu: {
       type: 3 /* BOOLEAN */,
@@ -5986,8 +5806,9 @@ ${sourceUrl}`;
       default: true
     }
   });
+  var PLUGINS_TAB_ID = "void_plugins_tab";
   var allTabs = [
-    { id: "void_plugins_tab", name: "Plugins", icon: UnplugIcon, component: PluginsTab2 },
+    { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2 },
     { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
     { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
     { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
@@ -6004,7 +5825,7 @@ ${sourceUrl}`;
       href,
       target: "_blank",
       rel: "noreferrer",
-      className: cl12("version-link")
+      className: cl14("version-link")
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
@@ -6014,7 +5835,7 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: cl12("version")
+      className: cl14("version")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
@@ -6024,8 +5845,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, `v${"1.0.3.10"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"953023d"}`
-    }, `(${"953023d"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"02dec47"}`
+    }, `(${"02dec47"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6041,15 +5862,9 @@ ${sourceUrl}`;
     store.setTab(tab);
     store.setOpen(true);
   }
-  var pendingPluginDialog = null;
-  function consumePendingPluginDialog() {
-    const name = pendingPluginDialog;
-    pendingPluginDialog = null;
-    return name;
-  }
   function openPluginSettings(name) {
-    pendingPluginDialog = name;
-    openSettingsTab("void_plugins_tab");
+    setPendingPluginDialog(name);
+    openSettingsTab(PLUGINS_TAB_ID);
   }
   function VoidMenu() {
     const forceUpdate = useForceUpdater();
@@ -6058,19 +5873,19 @@ ${sourceUrl}`;
       return null;
     const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).toSorted((a, b) => a.localeCompare(b));
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(MoonIcon, {
-      className: cl12("menu-icon")
+      className: cl14("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
-      className: cl12("menu-icon")
+      className: cl14("menu-icon")
     }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       key: name,
       onSelect: () => openPluginSettings(name)
-    }, name)))), getVisibleTabs().filter((t) => t.id !== "void_plugins_tab").map((t) => {
+    }, name)))), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
       const Icon = t.icon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
         onSelect: () => openSettingsTab(t.id)
       }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl12("menu-icon")
+        className: cl14("menu-icon")
       }), t.name);
     })));
   }
@@ -6082,17 +5897,9 @@ ${sourceUrl}`;
     required: true,
     settings: settings3,
     _renderVoidMenu: () => createElement(WrappedVoidMenu),
-    _setTitle(title) {
-      setSettingsPrimitive("SettingsTitle", title);
-      return title;
-    },
-    _setDescription(description) {
-      setSettingsPrimitive("SettingsDescription", description);
-      return description;
-    },
-    _setRow(row) {
-      setSettingsPrimitive("SettingsRow", row);
-      return row;
+    _setPrimitive(name, component) {
+      setSettingsPrimitive(name, component);
+      return component;
     },
     _tabEntries() {
       return getVisibleTabs().map((t) => ({
@@ -6126,7 +5933,7 @@ ${sourceUrl}`;
         find: "avatar_menu_click",
         all: true,
         replacement: {
-          match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{children:\[.{0,100}"user-dropdown\.help"/,
+          match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help"/,
           replace: "$self._renderVoidMenu(),$&"
         }
       },
@@ -6144,22 +5951,104 @@ ${sourceUrl}`;
         ]
       },
       {
-        find: /,\{children:\i,action:\i,hidden:\i,className:\i\}=\i,\i=\(0,\i\.useId\)\(\)/,
+        find: '"SettingsTitle",0,',
         all: true,
         replacement: [
           {
             match: /("SettingsTitle",0,)(\i)/,
-            replace: "$1$self._setTitle($2)"
+            replace: '$1$self._setPrimitive("SettingsTitle",$2)'
           },
           {
             match: /("SettingsDescription",0,)(\i)/,
-            replace: "$1$self._setDescription($2)"
+            replace: '$1$self._setPrimitive("SettingsDescription",$2)'
           },
           {
             match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(,"SettingsSection")/,
-            replace: "$1$self._setRow($2)$3"
+            replace: '$1$self._setPrimitive("SettingsRow",$2)$3'
           }
         ]
+      }
+    ]
+  });
+
+  // src/plugins/_core/fixChrome.chrome/index.ts
+  var fixChrome_default = definePlugin({
+    name: "FixChrome",
+    description: "Fixes Chromium-specific performance issues like backdrop blur lag.",
+    authors: [Devs.Prism],
+    required: true,
+    patches: [
+      {
+        find: "backdrop-blur-",
+        all: true,
+        replacement: {
+          match: /backdrop-blur-(?:\w+|\[[^\]]+\]) ?/g,
+          replace: ""
+        }
+      }
+    ]
+  });
+
+  // src/plugins/_core/noTelemetry/index.ts
+  var noTelemetry_default = definePlugin({
+    name: "NoTelemetry",
+    description: "Disables all tracking, telemetry, and event logging.",
+    authors: [Devs.Prism],
+    required: true,
+    patches: [
+      {
+        find: '"opentelemetry.js.api."',
+        replacement: {
+          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
+          replace: "$1function(){}"
+        }
+      },
+      {
+        find: '"after-init"),(0,',
+        group: true,
+        replacement: [
+          {
+            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
+            replace: "$1return}function _ignore(){"
+          },
+          {
+            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
+            replace: '"startRecordingImagineSession",0,function(){}'
+          },
+          {
+            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
+            replace: '"stopRecordingImagineSession",0,function(){}'
+          }
+        ]
+      },
+      {
+        find: "sendBatchLogEvent",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogEvent=()=>{}"
+          },
+          {
+            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogExperimentExposure=()=>{}"
+          }
+        ]
+      },
+      {
+        find: '"/api/log_metric"',
+        replacement: {
+          match: /"\/api\/log_metric",\i\)/,
+          replace: '"/api/log_metric",[])'
+        }
+      },
+      {
+        find: "isEnvVarsSet(){return void 0!=",
+        replacement: {
+          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
+          replace: "isEnvVarsSet(){return false}"
+        }
       }
     ]
   });
@@ -6311,2013 +6200,195 @@ ${sourceUrl}`;
     ]
   });
 
-  // src/plugins/autoCollapse/index.ts
-  var autoCollapse_default = definePlugin({
-    name: "AutoCollapse",
-    description: "Automatically collapse code blocks in responses.",
+  // src/plugins/starry/index.tsx
+  var DEFAULT_COLOR = "#ffffff";
+  var StarsBackground = findExportedComponentLazy("StarsBackground");
+  function hexToRgb(hex) {
+    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
+    if (!m)
+      return [255, 255, 255];
+    const n = parseInt(m[1], 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  function ColorRow() {
+    const { starColor } = settings4.use(["starColor"]);
+    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
+      value: starColor,
+      onChange: (v) => {
+        settings4.store.starColor = v;
+      },
+      title: "Star color",
+      description: "Color of the twinkling stars."
+    });
+  }
+  function StarryBackground() {
+    const { starColor } = settings4.use(["starColor"]);
+    return /* @__PURE__ */ React.createElement("div", {
+      "aria-hidden": true,
+      className: "fixed inset-0 -z-10 pointer-events-none"
+    }, /* @__PURE__ */ React.createElement(StarsBackground, {
+      starColor: hexToRgb(starColor)
+    }));
+  }
+  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
+  var settings4 = definePluginSettings({
+    starColor: {
+      type: 6 /* COMPONENT */,
+      default: DEFAULT_COLOR,
+      component: ColorRow
+    }
+  }).withPrivateSettings();
+  var starry_default = definePlugin({
+    name: "Starry",
+    description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
-    tags: ["chat"],
-    _collapse: () => true,
+    settings: settings4,
+    _StarryBg() {
+      return /* @__PURE__ */ React.createElement(WrappedStarry, {
+        key: "void-starry-bg"
+      });
+    },
     patches: [
       {
-        find: ["isInitiallyCollapsed", "showRunCode"],
-        all: true,
+        find: '"chat-page")',
         replacement: {
-          match: /isInitiallyCollapsed:(\i)=!1/g,
-          replace: "isInitiallyCollapsed:$1=$self._collapse()"
+          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
+          replace: "$1$self._StarryBg(),$2"
         }
       }
     ]
   });
 
-  // src/plugins/autoRetry/index.ts
-  var logger16 = new Logger("AutoRetry");
-  var CONTENT_MODERATED = "grok:content-moderated";
-  var settings4 = definePluginSettings({
-    retryModeration: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry content moderation errors.",
-      default: true
-    },
-    retryNetwork: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry network and stream errors.",
-      default: true
-    },
-    maxRetries: {
+  // src/plugins/widerChat/index.ts
+  var STYLE_NAME = "widerChat";
+  var settings5 = definePluginSettings({
+    width: {
       type: 1 /* NUMBER */,
-      description: "Maximum consecutive retries per conversation.",
-      default: 3
-    },
-    delay: {
-      type: 1 /* NUMBER */,
-      description: "Seconds to wait before retrying.",
-      default: 2
+      description: "Maximum chat width in rem.",
+      default: 64
     }
   });
-  var retryCounts = new Map;
-  var pendingTimer = null;
-  function clearPending() {
-    if (pendingTimer != null) {
-      clearTimeout(pendingTimer);
-      pendingTimer = null;
+  function applyWidth() {
+    const w = settings5.store.width;
+    registerStyle(STYLE_NAME, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
+  }
+  var widerChat_default = definePlugin({
+    name: "WiderChat",
+    description: "Adjustable chat width for big monitors.",
+    authors: [Devs.Prism],
+    settings: settings5,
+    start: applyWidth,
+    onSettingsChange: applyWidth,
+    stop() {
+      unregisterStyle(STYLE_NAME);
     }
+  });
+
+  // src/plugins/responseNotification/index.ts
+  var settings6 = definePluginSettings({
+    sound: {
+      type: 3 /* BOOLEAN */,
+      description: "Play a notification sound.",
+      default: true
+    },
+    soundUrl: {
+      type: 0 /* STRING */,
+      description: "Custom sound URL (leave empty for default beep).",
+      default: "",
+      placeholder: "https://example.com/sound.mp3"
+    },
+    browserNotification: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a browser notification.",
+      default: true
+    },
+    onlyWhenHidden: {
+      type: 3 /* BOOLEAN */,
+      description: "Only notify when the tab is not focused.",
+      default: true
+    }
+  });
+  var userGestured = false;
+  var gestureCtrl = null;
+  function playBeep() {
+    const ctx = new AudioContext;
+    const start = () => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.value = 0.15;
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+      osc.onended = () => ctx.close();
+    };
+    if (ctx.state === "suspended")
+      ctx.resume().then(start, () => ctx.close());
+    else
+      start();
   }
-  function isModeration(response) {
-    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
-  }
-  function shouldRetry(response) {
-    if (isModeration(response))
-      return settings4.store.retryModeration;
-    return settings4.store.retryNetwork;
-  }
-  function retry(responseId, conversationId, response) {
-    const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings4.store.maxRetries ?? 3;
-    if (count > max) {
-      showToast("Max retries reached.", 2 /* ERROR */);
-      retryCounts.delete(conversationId);
+  function playSound() {
+    if (!userGestured)
       return;
+    const url = settings6.store.soundUrl?.trim();
+    if (url) {
+      const audio = new Audio(url);
+      audio.volume = 0.3;
+      audio.play().catch(() => playBeep());
+    } else {
+      playBeep();
     }
-    retryCounts.set(conversationId, count);
-    const delaySec = settings4.store.delay ?? 2;
-    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger16.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
-    clearPending();
-    pendingTimer = setTimeout(() => {
-      pendingTimer = null;
-      const state = ChatPageStore.useChatPageStore.getState();
-      if (state.streamedMessageId)
-        return;
-      state.sendResponse({
-        message: "",
-        parentResponseId: responseId,
-        conversationId,
-        fileAttachmentIds: response.fileAttachments,
-        setOpimisticUserResponse: false,
-        setUserResponse: false,
-        enableRetries: true
-      });
-    }, delaySec * 1000);
   }
   function onStreamEnd({ responseId }) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "error") {
-      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (convId)
-        retryCounts.delete(convId);
+    if (!response || response.state !== "closed")
       return;
-    }
-    if (!shouldRetry(response))
+    if (settings6.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    const { conversationId } = ChatPageStore.useChatPageStore.getState();
-    if (!conversationId)
-      return;
-    retry(responseId, conversationId, response);
+    if (settings6.store.sound)
+      playSound();
+    if (settings6.store.browserNotification)
+      sendBrowserNotification("Grok", "Response complete.");
   }
-  var autoRetry_default = definePlugin({
-    name: "AutoRetry",
-    description: "Automatically retry failed messages on moderation or network errors.",
+  var responseNotification_default = definePlugin({
+    name: "ResponseNotification",
+    description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings4,
+    settings: settings6,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
-      retryCounts.clear();
-      clearPending();
+      if (gestureCtrl)
+        return;
+      gestureCtrl = new AbortController;
+      const markGestured = () => {
+        userGestured = true;
+        gestureCtrl?.abort();
+        gestureCtrl = null;
+      };
+      for (const evt of ["pointerdown", "keydown", "touchstart"]) {
+        addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
+      }
     },
     stop() {
-      clearPending();
-      retryCounts.clear();
+      gestureCtrl?.abort();
+      gestureCtrl = null;
     },
     events: {
       streamEnd: onStreamEnd
     }
   });
 
-  // src/plugins/betterFiles/index.tsx
-  var logger17 = new Logger("BetterFiles");
-  var cl13 = classNameFactory("void-bf-");
-  var selection = createSelectionStore();
-  async function deleteSelected() {
-    const ids = selection.all();
-    selection.clear();
-    const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
-    await Promise.allSettled(ids.map((id) => deleteAsset(id).catch((e) => logger17.error("Failed to delete asset", id, e))));
-  }
-  function DeleteAllButton() {
-    const [open2, setOpen] = useState(false);
-    const list = FilesPageStore.useFilesPageStore((s) => s.list);
-    const deleteAsset = FilesPageStore.useFilesPageStore((s) => s.deleteAsset);
-    if (!list.length)
-      return null;
-    const handleConfirm = async () => {
-      const ids = [...list];
-      for (const id of ids) {
-        try {
-          await deleteAsset(id);
-        } catch (e) {
-          logger17.error("Failed to delete asset", id, e);
-        }
-      }
-    };
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      shape: "square",
-      size: "sm",
-      onClick: () => setOpen(true)
-    }, /* @__PURE__ */ React.createElement(TrashIcon, {
-      size: 18,
-      className: "text-fg-secondary"
-    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
-      onOpenChange: setOpen,
-      title: "Delete all files",
-      description: `Are you sure you want to delete all ${list.length} files? This cannot be undone.`,
-      confirmText: "Delete all",
-      danger: true,
-      onConfirm: handleConfirm
-    }));
-  }
-  function FileSelectCheckbox({ id }) {
-    const checked = useSelectionHas(selection, id);
-    return /* @__PURE__ */ React.createElement("div", {
-      onClick: (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-      },
-      className: cl13("wrap")
-    }, /* @__PURE__ */ React.createElement(Checkbox, {
-      checked,
-      onCheckedChange: () => selection.toggle(id),
-      className: cl13("checkbox")
-    }));
-  }
-  function FileActionBar() {
-    const count = useSelectionSize(selection);
-    const [open2, setOpen] = useState(false);
-    if (!count)
-      return null;
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement("div", {
-      className: cl13("action-bar")
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: cl13("count")
-    }, "Selected · ", count), /* @__PURE__ */ React.createElement("div", {
-      className: cl13("buttons")
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "primary",
-      size: "sm",
-      shape: "pill",
-      onClick: () => selection.clear()
-    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
-      variant: "danger",
-      size: "sm",
-      shape: "pill",
-      onClick: () => setOpen(true)
-    }, "Delete"))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
-      onOpenChange: setOpen,
-      title: "Delete files",
-      description: `Are you sure you want to delete ${pluralize(count, "file")}? This cannot be undone.`,
-      confirmText: "Delete",
-      danger: true,
-      onConfirm: deleteSelected
-    }));
-  }
-  var HOVER_STYLE = "betterFiles-hover";
-  var betterFiles_default = definePlugin({
-    name: "BetterFiles",
-    description: "Adds bulk delete to the files page.",
-    authors: [Devs.Prism],
-    start() {
-      selection.clear();
-      registerStyle(HOVER_STYLE, [
-        ".void-bf-wrap{display:none;align-items:center}",
-        ".void-bf-wrap:has([data-state=checked]){display:inline-flex}",
-        ".group:hover .void-bf-wrap{display:inline-flex}",
-        ".void-bf-checkbox{border-color:oklch(.9924 0 none/.15)!important}",
-        ".void-bf-action-bar{display:flex;flex-direction:column;gap:0.5rem;padding:0.75rem}",
-        ".void-bf-count{font-size:0.75rem;font-weight:600;color:var(--color-text-tertiary)}",
-        ".void-bf-buttons{display:flex;gap:0.75rem}",
-        ".void-bf-buttons>button{flex:1}"
-      ].join(""));
-    },
-    stop() {
-      selection.clear();
-      unregisterStyle(HOVER_STYLE);
-    },
-    renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
-    _renderFileCheckbox: ErrorBoundary.wrap(FileSelectCheckbox, null),
-    _renderFileActionBar: ErrorBoundary.wrap(FileActionBar, null),
-    _wrapFileClick(onClick, asset) {
-      return (e) => {
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection.toggle(asset.assetId);
-          return;
-        }
-        onClick();
-      };
-    },
-    patches: [
-      {
-        find: `files.no-results",'No files matching`,
-        all: true,
-        noWarn: true,
-        group: true,
-        replacement: [
-          {
-            match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
-            replace: "$1,$self.renderDeleteAllButton()]"
-          },
-          {
-            match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
-            replace: 'role:"button",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),'
-          },
-          {
-            match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
-            replace: "$1,$self._renderFileActionBar()]"
-          }
-        ]
-      }
-    ]
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/betterImagine/styles.css
-  registerStyle("betterImagine", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-imagine-chip {
-    background: hsl(var(--surface-l1));
-}
-
-.void-imagine-chip:hover {
-    background: hsl(var(--surface-l2));
-}
-
-.void-imagine-search {
-    width: 10rem;
-    flex-shrink: 0;
-    border-radius: 9999px;
-}
-
-.void-imagine-date-select,
-.void-imagine-sort-select {
-    flex-shrink: 0;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    background: hsl(var(--surface-l1));
-    color: hsl(var(--fg-secondary));
-    border: none;
-}
-
-.void-imagine-sort-active {
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l2));
-}
-
-.void-imagine-hidden-count {
-    flex-shrink: 0;
-    font-size: 0.75rem;
-    color: hsl(var(--fg-secondary));
-    padding-inline: 0.5rem;
-    align-self: center;
-}
-`);
-
-  // src/plugins/betterImagine/index.tsx
-  var logger18 = new Logger("BetterImagine");
-  var cl14 = classNameFactory("void-imagine-");
-  var settings5 = definePluginSettings({
-    hideDefaultPreviews: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the community image grid and templates on the Imagine home page.",
-      default: true
-    },
-    noAutoplay: {
-      type: 3 /* BOOLEAN */,
-      description: "Stop video thumbnails from autoplaying.",
-      default: true
-    },
-    playOnHover: {
-      type: 3 /* BOOLEAN */,
-      description: "Play video thumbnails when hovered.",
-      default: true
-    },
-    hideModerated: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide moderated images and videos that cannot be interacted with.",
-      default: true
-    },
-    pauseWhenHidden: {
-      type: 3 /* BOOLEAN */,
-      description: "Pause any playing video thumbnails when the tab loses focus.",
-      default: true
-    },
-    persistFilters: {
-      type: 3 /* BOOLEAN */,
-      description: "Remember Favorites filter + sort across reloads.",
-      default: true
-    },
-    smartFilenames: {
-      type: 3 /* BOOLEAN */,
-      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
-      default: true
-    },
-    bypassPaywall: {
-      type: 3 /* BOOLEAN */,
-      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
-      default: false
-    },
-    ctrlClickSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
-      default: true
-    }
-  });
-  function buildFilename(post, isVideo) {
-    if (!settings5.store.smartFilenames || !post)
-      return null;
-    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
-    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
-    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
-    const id = post.id?.slice(0, 8) ?? "";
-    const ext = isVideo ? "mp4" : "png";
-    const parts = [date, slug, id].filter(Boolean);
-    if (!parts.length)
-      return null;
-    return `${parts.join("_")}.${ext}`;
-  }
-  var FILTER_MAP = {
-    image: "MEDIA_POST_TYPE_IMAGE",
-    video: "MEDIA_POST_TYPE_VIDEO"
-  };
-  var DATE_LABELS = {
-    all: "Any time",
-    today: "Today",
-    week: "This week",
-    month: "This month"
-  };
-  var SORT_LABELS = {
-    newest: "Newest first",
-    oldest: "Oldest first",
-    "prompt-az": "Prompt A → Z",
-    "prompt-za": "Prompt Z → A",
-    random: "Shuffle"
-  };
-  var SORT_KEYS = Object.keys(SORT_LABELS);
-  var DAY_MS = 86400000;
-  var DATE_CUTOFFS = {
-    all: 0,
-    today: DAY_MS,
-    week: 7 * DAY_MS,
-    month: 30 * DAY_MS
-  };
-  var STORAGE_KEY2 = "void-imagine-filters";
-  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
-  function loadFilters() {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY2);
-      if (!raw)
-        return DEFAULT_FILTERS;
-      const parsed = JSON.parse(raw);
-      return {
-        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
-        search: typeof parsed.search === "string" ? parsed.search : "",
-        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
-        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
-      };
-    } catch {
-      return DEFAULT_FILTERS;
-    }
-  }
-  var initial = loadFilters();
-  var currentFilter = initial.filter;
-  var currentSearch = initial.search;
-  var currentDate = initial.date;
-  var currentSort = initial.sort;
-  var randomSeed = Date.now();
-  var filterStore = createExternalStore();
-  function persist() {
-    if (!settings5.store.persistFilters)
-      return;
-    try {
-      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
-    } catch {}
-  }
-  function setFilter(f) {
-    currentFilter = f;
-    filterStore.notify();
-    persist();
-  }
-  var setSearch = debounce((s) => {
-    currentSearch = s;
-    filterStore.notify();
-    persist();
-  }, 200);
-  function setDate(d) {
-    currentDate = d;
-    filterStore.notify();
-    persist();
-  }
-  function setSort(s) {
-    if (s === "random" && currentSort === "random")
-      randomSeed = Date.now();
-    currentSort = s;
-    filterStore.notify();
-    persist();
-  }
-  function resetFilters() {
-    currentFilter = "all";
-    currentSearch = "";
-    currentDate = "all";
-    currentSort = "newest";
-    filterStore.notify();
-    persist();
-  }
-  function hasActiveFilters() {
-    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
-  }
-  function isModerated(p) {
-    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
-  }
-  var haystackCache = new WeakMap;
-  var tsCache = new WeakMap;
-  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
-  function getHaystack(p) {
-    let h = haystackCache.get(p);
-    if (h === undefined) {
-      h = `${p.prompt ?? ""}
-${p.originalPrompt ?? ""}`.toLowerCase();
-      haystackCache.set(p, h);
-    }
-    return h;
-  }
-  function getTs(p) {
-    let t = tsCache.get(p);
-    if (t === undefined) {
-      t = new Date(p.createTime).getTime() || 0;
-      tsCache.set(p, t);
-    }
-    return t;
-  }
-  function matchesFilters(p, target, q, cutoff, hideModerated) {
-    if (!p)
-      return false;
-    if (hideModerated && isModerated(p))
-      return false;
-    if (target && p.mediaType !== target)
-      return false;
-    if (cutoff && getTs(p) < cutoff)
-      return false;
-    if (q && !getHaystack(p).includes(q))
-      return false;
-    return true;
-  }
-  var cacheKey = null;
-  var cacheList = null;
-  var cacheResult = [];
-  function filterItems(items) {
-    const { hideModerated } = settings5.store;
-    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
-    if (cacheList === items && cacheKey === key)
-      return cacheResult;
-    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
-    let out = items;
-    if (needsFilter) {
-      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
-      const q = currentSearch.toLowerCase();
-      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
-      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
-    }
-    cacheList = items;
-    cacheKey = key;
-    cacheResult = currentSort === "newest" ? out : sortItems(out);
-    return cacheResult;
-  }
-  function mulberry32(seed) {
-    let a = seed;
-    return () => {
-      a |= 0;
-      a = a + 1831565813 | 0;
-      let t = Math.imul(a ^ a >>> 15, 1 | a);
-      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-  function sortItems(items) {
-    if (items.length < 2)
-      return items;
-    const arr = [...items];
-    switch (currentSort) {
-      case "oldest":
-        return arr.toSorted((a, b) => getTs(a) - getTs(b));
-      case "prompt-az":
-        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
-      case "prompt-za":
-        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
-      case "random": {
-        const rand = mulberry32(randomSeed);
-        for (let i = arr.length - 1;i > 0; i--) {
-          const j = Math.floor(rand() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      }
-      default:
-        return arr;
-    }
-  }
-  var pending = new WeakMap;
-  function pauseVideo(video) {
-    const promise = pending.get(video);
-    pending.delete(video);
-    if (promise) {
-      promise.then(() => {
-        if (pending.has(video))
-          return;
-        video.pause();
-        video.currentTime = 0;
-      }).catch((e) => logger18.warn("Failed to pause video:", e));
-    } else {
-      video.pause();
-      video.currentTime = 0;
-    }
-  }
-  var onMouseEnter = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pending.set(video, video.play().catch((e2) => logger18.error("Failed to play video", e2)));
-  };
-  var onMouseLeave = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pauseVideo(video);
-  };
-  function useFilteredFavorites() {
-    const list = MediaStore.useMediaStore((s) => s.favoritesList);
-    useExternalStore(filterStore);
-    return filterItems(list);
-  }
-  function mediaState() {
-    return MediaStore.useMediaStore.getState();
-  }
-  function selectVisible() {
-    const state = mediaState();
-    const list = state.favoritesList ?? [];
-    const visible = filterItems(list);
-    if (!visible.length)
-      return;
-    if (typeof state.setMultiSelectItems === "function") {
-      state.setMultiSelectItems(visible);
-    } else {
-      const ids = {};
-      for (const item of visible)
-        ids[item.id] = item;
-      MediaStore.useMediaStore.setState({ multiSelectIds: ids });
-    }
-    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
-  }
-  function deselectAll() {
-    const state = mediaState();
-    state.clearMultiSelect?.();
-  }
-  function selectedPosts() {
-    const state = mediaState();
-    const ids = Object.keys(state.multiSelectIds ?? {});
-    return ids.map((id) => state.byId[id]).filter((p) => !!p);
-  }
-  async function copyLines(lines, label) {
-    if (!lines.length) {
-      Toaster.toast.info(`Selected items have no ${label}s.`);
-      return;
-    }
-    try {
-      await copyToClipboard(lines.join(`
-`));
-      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
-    } catch (e) {
-      logger18.error(`Failed to copy ${label}s`, e);
-      Toaster.toast.error(`Failed to copy ${label}s.`);
-    }
-  }
-  async function copySelectedPrompts() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
-  }
-  async function copySelectedUrls() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    const { videoByMediaId } = mediaState();
-    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
-    await copyLines(urls, "URL");
-  }
-  async function bulkUpscaleSelected() {
-    const state = mediaState();
-    const ids = Object.keys(state.multiSelectIds ?? {});
-    let upscaled = 0;
-    let alreadyHd = 0;
-    let inProgress = 0;
-    for (const id of ids) {
-      const videos = state.videoByMediaId[id];
-      if (!videos?.length)
-        continue;
-      for (const video of videos) {
-        if (video.hdMediaUrl) {
-          alreadyHd++;
-          continue;
-        }
-        if (video.upscalingInProgress) {
-          inProgress++;
-          continue;
-        }
-        try {
-          await state.upscaleVideo(id, video.id);
-          upscaled++;
-        } catch (e) {
-          logger18.error("Failed to upscale video:", id, video.id, e);
-        }
-      }
-    }
-    if (upscaled)
-      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
-    else if (alreadyHd)
-      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
-    else if (inProgress)
-      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
-    else
-      Toaster.toast.info("No videos to upscale.");
-  }
-  function FilterButtons() {
-    useExternalStore(filterStore);
-    const [searchInput, setSearchInput] = useState(currentSearch);
-    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
-    const sortActive = currentSort !== "newest";
-    const lastSync = useRef(currentSearch);
-    if (lastSync.current !== currentSearch) {
-      lastSync.current = currentSearch;
-      setSearchInput(currentSearch);
-    }
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
-      value: currentDate,
-      onValueChange: (v) => setDate(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl14("date-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: d,
-      value: d
-    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
-      value: currentSort,
-      onValueChange: (v) => setSort(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: sortActive ? cl14("sort-select", "sort-active") : cl14("sort-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: s,
-      value: s
-    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      placeholder: "Search...",
-      value: searchInput,
-      onChange: (e) => {
-        setSearchInput(e.target.value);
-        setSearch(e.target.value);
-      },
-      className: cl14("search")
-    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
-      key: f,
-      variant: currentFilter === f ? "primary" : "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: currentFilter !== f ? cl14("chip") : undefined,
-      onClick: () => setFilter(currentFilter === f ? "all" : f)
-    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: cl14("chip"),
-      onClick: resetFilters
-    }, "Clear"));
-  }
-  function UpscaleItem() {
-    const [open2, setOpen] = useState(false);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => setOpen(true)
-    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
-      className: "size-4 me-2"
-    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
-      onOpenChange: setOpen,
-      title: "Upscale selected videos",
-      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
-      confirmText: "Upscale",
-      onConfirm: bulkUpscaleSelected
-    }));
-  }
-  function CopyActions() {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedPrompts
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedUrls
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy URLs"));
-  }
-  function isImaginePage() {
-    const page = RoutingStore.useRoutingStore.getState().route?.page;
-    return page === "imagine" || page === "imagine-favorites";
-  }
-  function isFavoritesPage() {
-    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
-  }
-  function isTypingTarget(t) {
-    if (!(t instanceof HTMLElement))
-      return false;
-    if (t.isContentEditable)
-      return true;
-    const tag = t.tagName;
-    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-  }
-  function onKeyDown(e) {
-    if (!isImaginePage())
-      return;
-    if (e.ctrlKey || e.metaKey || e.altKey)
-      return;
-    if (isTypingTarget(e.target))
-      return;
-    if (e.key === "i" || e.key === "I") {
-      setFilter(currentFilter === "image" ? "all" : "image");
-      e.preventDefault();
-    } else if (e.key === "v" || e.key === "V") {
-      setFilter(currentFilter === "video" ? "all" : "video");
-      e.preventDefault();
-    } else if (e.key === "r" || e.key === "R") {
-      resetFilters();
-      e.preventDefault();
-    } else if (e.key === "A") {
-      if (isFavoritesPage()) {
-        deselectAll();
-        e.preventDefault();
-      }
-    } else if (e.key === "a") {
-      if (isFavoritesPage()) {
-        selectVisible();
-        e.preventDefault();
-      }
-    } else if (e.key === "c" || e.key === "C") {
-      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
-        copySelectedPrompts();
-        e.preventDefault();
-      }
-    }
-  }
-  function onVisibilityChange() {
-    if (!settings5.store.pauseWhenHidden)
-      return;
-    if (document.visibilityState !== "hidden")
-      return;
-    for (const video of document.querySelectorAll("video")) {
-      if (!video.paused)
-        video.pause();
-    }
-  }
-  var abortCtrl = null;
-  var betterImagine_default = definePlugin({
-    name: "BetterImagine",
-    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
-    authors: [Devs.Prism],
-    settings: settings5,
-    _hideDefault: () => settings5.store.hideDefaultPreviews,
-    _NullGrid: () => null,
-    _autoPlay: () => !settings5.store.noAutoplay,
-    _bypassPaywall: () => settings5.store.bypassPaywall,
-    _ctrlClickSelect: () => settings5.store.ctrlClickSelect,
-    _hoverProps: () => settings5.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
-    _useFilteredFavorites: useFilteredFavorites,
-    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
-    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
-    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
-    _buildFilename: buildFilename,
-    start() {
-      if (abortCtrl)
-        return;
-      abortCtrl = new AbortController;
-      const { signal } = abortCtrl;
-      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
-      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
-    },
-    stop() {
-      abortCtrl?.abort();
-      abortCtrl = null;
-    },
-    patches: [
-      {
-        find: "image_feed_opened",
-        group: true,
-        replacement: [
-          {
-            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
-            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
-          },
-          {
-            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
-            replace: "=$self._useFilteredFavorites()"
-          }
-        ]
-      },
-      {
-        find: "image_feed_image_selected",
-        group: true,
-        replacement: [
-          {
-            match: /autoPlay:!0/g,
-            replace: "autoPlay:$self._autoPlay()"
-          },
-          {
-            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
-            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          }
-        ]
-      },
-      {
-        find: 'imagine-folder.all","All"',
-        replacement: {
-          match: /"imagine-folder\.all","All"\)\}\)/,
-          replace: "$&,$self._renderFilterButtons({})"
-        }
-      },
-      {
-        find: "imagine-templates.section-title",
-        all: true,
-        noWarn: true,
-        replacement: {
-          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
-          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
-        }
-      },
-      {
-        find: '"imagine-set-resolution"',
-        all: true,
-        replacement: {
-          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
-          replace: "if(!$self._bypassPaywall())$&"
-        }
-      },
-      {
-        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
-        group: true,
-        replacement: [
-          {
-            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
-            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
-          },
-          {
-            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
-            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
-          }
-        ]
-      }
-    ]
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/betterLinks/styles.css
-  registerStyle("betterLinks", `.void-better-links-picker {
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.375rem;
-    cursor: pointer;
-    padding: 0.125rem;
-    background-color: transparent;
-}
-
-`);
-
-  // src/plugins/betterLinks/index.tsx
-  var cl15 = classNameFactory("void-better-links-");
-  var DEFAULT_LINK = "#4a9eff";
-  var DEFAULT_VISITED = "#9b59b6";
-  var STYLE_NAME = "better-links-dynamic";
-  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
-  function isValidHex(c) {
-    return /^#[0-9a-fA-F]{6}$/.test(c);
-  }
-  function getColor(key, fallback) {
-    const val = settings6.store[key];
-    return val && isValidHex(val) ? val : fallback;
-  }
-  function applyColors() {
-    const link = getColor("linkColor", DEFAULT_LINK);
-    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings6.store.enableVisitedColor) {
-      const visited = getColor("visitedColor", DEFAULT_VISITED);
-      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
-    }
-    registerStyle(STYLE_NAME, css);
-  }
-  function ColorPicker({ settingKey, title, description, fallback }) {
-    const [value, setValue] = useState(() => getColor(settingKey, fallback));
-    return /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Flex, {
-        alignItems: "center",
-        gap: "0.5rem"
-      }, /* @__PURE__ */ React.createElement("input", {
-        type: "color",
-        className: cl15("picker"),
-        value,
-        onChange: (e) => {
-          setValue(e.target.value);
-          settings6.store[settingKey] = e.target.value;
-          applyColors();
-        }
-      }), /* @__PURE__ */ React.createElement(Text, {
-        size: "sm",
-        color: "muted"
-      }, value))
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
-  }
-  var settings6 = definePluginSettings({
-    linkifyDomains: {
-      type: 3 /* BOOLEAN */,
-      description: "Detect bare domains in messages and make them clickable.",
-      default: true
-    },
-    enableVisitedColor: {
-      type: 3 /* BOOLEAN */,
-      description: "Apply a different color to links you already visited.",
-      default: false,
-      onChange: applyColors
-    },
-    linkColor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorPicker, {
-        settingKey: "linkColor",
-        title: "Link color",
-        description: "Colorize links in messages.",
-        fallback: DEFAULT_LINK
-      })
-    },
-    visitedColor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorPicker, {
-        settingKey: "visitedColor",
-        title: "Visited color",
-        description: "Colorize links you already visited.",
-        fallback: DEFAULT_VISITED
-      })
-    }
-  }).withPrivateSettings();
-  var betterLinks_default = definePlugin({
-    name: "BetterLinks",
-    description: "Colorize links and detect bare domains in chat messages.",
-    authors: [Devs.Prism],
-    settings: settings6,
-    patches: [
-      {
-        find: "chat-markdown:a:link",
-        all: true,
-        replacement: {
-          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
-          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
-        }
-      },
-      {
-        find: "chat-markdown-load-third-party",
-        replacement: {
-          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
-          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
-        }
-      }
-    ],
-    _remarkLinkify() {
-      const { store: store2 } = settings6;
-      return (tree) => {
-        try {
-          if (!store2.linkifyDomains)
-            return;
-          const walk = (node) => {
-            if (!node.children)
-              return;
-            const out = [];
-            let changed = false;
-            for (const child of node.children) {
-              if (child.type !== "text") {
-                walk(child);
-                out.push(child);
-                continue;
-              }
-              DOMAIN_RE.lastIndex = 0;
-              if (!DOMAIN_RE.test(child.value)) {
-                out.push(child);
-                continue;
-              }
-              DOMAIN_RE.lastIndex = 0;
-              let last = 0;
-              let m;
-              while ((m = DOMAIN_RE.exec(child.value)) != null) {
-                if (m.index > last)
-                  out.push({ type: "text", value: child.value.slice(last, m.index) });
-                out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
-                last = m.index + m[0].length;
-              }
-              if (last < child.value.length)
-                out.push({ type: "text", value: child.value.slice(last) });
-              changed = true;
-            }
-            if (changed)
-              node.children = out;
-          };
-          walk(tree);
-        } catch {
-          return tree;
-        }
-      };
-    },
-    start() {
-      settings6.store.linkColor ??= DEFAULT_LINK;
-      settings6.store.visitedColor ??= DEFAULT_VISITED;
-      applyColors();
-      enableStyle(STYLE_NAME);
-    },
-    stop() {
-      disableStyle(STYLE_NAME);
-    }
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/betterSidebar/styles.css
-  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
-.group.peer [data-sidebar="content"] > .grow {
-    cursor: default !important;
-}
-
-.group.peer [data-sidebar="sidebar"] + div::after {
-    background-color: transparent !important;
-}
-
-.void-sidebar-card {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    min-width: 0;
-    flex: 1;
-}
-
-.void-sidebar-card:hover {
-    background-color: var(--button-ghost-hover);
-}
-
-.void-sidebar-card button[data-state] {
-    pointer-events: none;
-    background-color: transparent !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.void-sidebar-info {
-    min-width: 0;
-    overflow: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-sidebar-card { transition: none; }
-}
-
-.void-sidebar-name,
-.void-sidebar-plan {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    user-select: none;
-}
-
-/* Batch delete */
-
-.void-bd-action-bar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.75rem;
-}
-
-.void-bd-count {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-text-tertiary);
-}
-
-.void-bd-buttons {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.void-bd-buttons > button {
-    flex: 1;
-}
-`);
-
-  // src/turbopack/common/plan.ts
-  var PLAN_NAMES = {
-    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
-    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
-    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
-    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
-  };
-  var X_SUB_NAMES = {
-    PremiumPlus: "SuperGrok",
-    Premium: "X Premium",
-    Basic: "X Basic"
-  };
-  function getPlanName(bestSubscription, xSubscriptionType) {
-    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
-  }
-
-  // src/plugins/betterSidebar/index.tsx
-  var logger19 = new Logger("BetterSidebar");
-  var cl16 = classNameFactory("void-sidebar-");
-  var bdCl = classNameFactory("void-bd-");
-  var settings7 = definePluginSettings({
-    clickToToggle: {
-      type: 3 /* BOOLEAN */,
-      description: "Click anywhere on the sidebar to toggle it.",
-      default: true
-    },
-    defaultCollapsed: {
-      type: 3 /* BOOLEAN */,
-      description: "Start with the sidebar collapsed on page load.",
-      default: false
-    },
-    batchSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Show checkboxes on conversations for bulk selection and deletion.",
-      default: true
-    }
-  });
-  function UserCard({ AvatarMenu }) {
-    const { open: open2 } = SidebarComponents.useSidebar();
-    const { user } = SessionStore.useSession();
-    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
-    const cardRef = useRef(null);
-    if (!open2 || !user)
-      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
-    const forward = (e, type) => {
-      if (!e.isTrusted)
-        return;
-      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
-    };
-    return /* @__PURE__ */ React.createElement("div", {
-      ref: cardRef,
-      className: cl16("card"),
-      onPointerDown: (e) => forward(e, "pointerdown"),
-      onPointerUp: (e) => forward(e, "pointerup")
-    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      justifyContent: "center",
-      gap: "0",
-      className: cl16("info")
-    }, /* @__PURE__ */ React.createElement(Text, {
-      as: "span",
-      size: "sm",
-      weight: "medium",
-      className: cl16("name")
-    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text, {
-      as: "span",
-      size: "xs",
-      color: "secondary",
-      className: cl16("plan")
-    }, getPlanName(bestSubscription, user.xSubscriptionType))));
-  }
-  var selection2 = createSelectionStore();
-  var CONVERSATION_PAGE = "chat";
-  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
-  async function deleteSelected2() {
-    const ids = selection2.all();
-    selection2.clear();
-    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
-    if (currentConvId && ids.includes(currentConvId)) {
-      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
-    }
-    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger19.error("Failed to delete", id, e))));
-  }
-  function SelectCheckbox({ id, route }) {
-    const enabled = settings7.use(["batchSelect"]).batchSelect;
-    const checked = useSelectionHas(selection2, id ?? "");
-    if (!enabled || !id || !isConversationRoute(route))
-      return null;
-    return /* @__PURE__ */ React.createElement("div", {
-      onClick: (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-      },
-      className: bdCl("wrap")
-    }, /* @__PURE__ */ React.createElement(Checkbox, {
-      checked,
-      onCheckedChange: () => selection2.toggle(id),
-      className: bdCl("checkbox")
-    }));
-  }
-  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
-  function ActionBar() {
-    const count = useSelectionSize(selection2);
-    const [open2, setOpen] = useState(false);
-    if (!count)
-      return null;
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement("div", {
-      className: bdCl("action-bar")
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: bdCl("count")
-    }, "Selected · ", count), /* @__PURE__ */ React.createElement("div", {
-      className: bdCl("buttons")
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "primary",
-      size: "sm",
-      shape: "pill",
-      onClick: () => selection2.clear()
-    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
-      variant: "danger",
-      size: "sm",
-      shape: "pill",
-      onClick: () => setOpen(true)
-    }, "Delete"))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
-      onOpenChange: setOpen,
-      title: "Delete conversations",
-      description: `Are you sure you want to delete ${pluralize(count, "conversation")}? This cannot be undone.`,
-      confirmText: "Delete",
-      danger: true,
-      onConfirm: deleteSelected2
-    }));
-  }
-  var betterSidebar_default = definePlugin({
-    name: "BetterSidebar",
-    description: "Various sidebar improvements.",
-    authors: [Devs.Prism],
-    settings: settings7,
-    managedStyle: "betterSidebar",
-    _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderActionBar: ErrorBoundary.wrap(ActionBar, null),
-    _wrapCheckbox(item, id, route) {
-      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
-    },
-    _wrapSidebarClick(onClick, id, route) {
-      return (e) => {
-        if (id && settings7.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection2.toggle(id);
-          return;
-        }
-        onClick?.(e);
-      };
-    },
-    _defaultOpen() {
-      return !settings7.store.defaultCollapsed;
-    },
-    _onSidebarClick() {
-      if (!settings7.store.clickToToggle)
-        return;
-      return (e) => {
-        const target = e.target;
-        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
-          return;
-        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
-      };
-    },
-    start() {
-      selection2.clear();
-      registerStyle("batchDelete-hover", [
-        ".void-bd-wrap{display:none}",
-        ".void-bd-wrap:has([data-state=checked]){display:inline-flex}",
-        ".group\\/sidebar-menu-item:hover .void-bd-wrap{display:inline-flex}",
-        ".void-bd-checkbox{border-color:oklch(.9924 0 none/.15)!important}"
-      ].join(""));
-    },
-    stop() {
-      selection2.clear();
-      unregisterStyle("batchDelete-hover");
-    },
-    patches: [
-      {
-        find: "AvatarDropdownMenu,{expanded:",
-        replacement: {
-          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
-          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
-        }
-      },
-      {
-        find: "useSidebar must be used within a SidebarProvider",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /\{defaultOpen:(\i),open:/,
-            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
-          },
-          {
-            match: /data-sidebar":"sidebar",className:/,
-            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
-          }
-        ]
-      },
-      {
-        find: '"Editing actions","Editing actions"',
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
-            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
-          },
-          {
-            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
-            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
-          }
-        ]
-      },
-      {
-        find: '"sidebar-expand","Expand"',
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
-          replace: "$self._renderActionBar(),$&"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/cleaner/index.ts
-  var settings8 = definePluginSettings({
-    hideUpgradePlan: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade plan button in the user menu.",
-      default: true
-    },
-    hideUpsellCard: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upsell card banner.",
-      default: true
-    },
-    hideUpsellSmall: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the small SuperGrok upsell banner.",
-      default: true
-    },
-    hideModelUpsell: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade prompt in the model selector.",
-      default: true
-    },
-    hideInaccessibleModels: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide locked/inaccessible models in the model selector.",
-      default: true
-    },
-    hideNotificationBanner: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Get notified when Grok finishes answering" banner.',
-      default: true
-    },
-    hideConnectX: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
-      default: true
-    }
-  });
-  var cleaner_default = definePlugin({
-    name: "Cleaner",
-    description: "Hides upgrade nags and upsell banners.",
-    authors: [Devs.Prism],
-    settings: settings8,
-    patches: [
-      {
-        find: '"user-dropdown.upgrade","Upgrade plan"',
-        all: true,
-        replacement: {
-          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
-          replace: ",$self.settings.store.hideUpgradePlan||$1"
-        }
-      },
-      {
-        find: "UPSELL_CARD_PRIORITY)",
-        all: true,
-        replacement: {
-          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
-          replace: "$1&&!$self.settings.store.hideUpsellCard"
-        }
-      },
-      {
-        find: '"UpsellSuperGrokSmall",0,',
-        all: true,
-        replacement: {
-          match: /"UpsellSuperGrokSmall",0,/,
-          replace: '"UpsellSuperGrokSmall",0,$self.settings.store.hideUpsellSmall?()=>null:'
-        }
-      },
-      {
-        find: '"UpsellButton",0,',
-        replacement: {
-          match: /"UpsellButton",0,/,
-          replace: '"UpsellButton",0,$self.settings.store.hideUpsellSmall?()=>null:'
-        }
-      },
-      {
-        find: "connect-x-upsell-dismissed",
-        replacement: {
-          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
-          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
-        }
-      },
-      {
-        find: '"BrowserNotificationBanner",0,',
-        all: true,
-        replacement: {
-          match: /"BrowserNotificationBanner",0,/,
-          replace: '"BrowserNotificationBanner",0,$self.settings.store.hideNotificationBanner?()=>null:'
-        }
-      },
-      {
-        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
-            replace: "$&$self.settings.store.hideModelUpsell||"
-          },
-          {
-            match: /,(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
-            replace: ",($self.settings.store.hideInaccessibleModels?[]:$1)$2"
-          }
-        ]
-      }
-    ]
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/cloneChats/styles.css
-  registerStyle("cloneChats", `.void-clone-icon {
-    margin-inline-end: 0.5rem;
-}
-`);
-
-  // src/plugins/cloneChats/index.tsx
-  var logger20 = new Logger("CloneChats");
-  async function cloneChat(conversationId) {
-    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
-    if (!lastResponseId)
-      throw new Error("No responses found in conversation.");
-    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
-      conversationId,
-      body: { responseId: lastResponseId, allowIndexing: false }
-    });
-    if (!shareLinkId)
-      throw new Error("Failed to create share link.");
-    try {
-      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
-      if (conversation?.conversationId) {
-        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
-      }
-    } finally {
-      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
-    }
-  }
-  function CloneItem({ conversationId }) {
-    const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger20.error("Failed to clone chat:", e)),
-      disabled: streaming
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      size: 16,
-      className: "void-clone-icon"
-    }), "Clone");
-  }
-  var cloneChats_default = definePlugin({
-    name: "CloneChats",
-    description: "Clone conversations from the context-menu.",
-    authors: [Devs.Prism],
-    contextMenuItems: {
-      conversation: {
-        label: "Clone",
-        render: ErrorBoundary.wrap(CloneItem)
-      }
-    }
-  });
-
-  // src/plugins/consoleJanitor/index.ts
-  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
-  var consoleJanitor_default = definePlugin({
-    name: "ConsoleJanitor",
-    description: "Silences noisy warnings and info logs in the browser console.",
-    authors: [Devs.Prism],
-    patches: [
-      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
-      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
-      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
-      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
-      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
-    ]
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/customInstructions/styles.css
-  registerStyle("customInstructions", `.void-ci-root {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.void-ci-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-}
-
-.void-ci-card {
-    position: relative;
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 0.625rem;
-    border-radius: 1rem;
-    padding: 0.625rem 0.75rem;
-    height: 3.25rem;
-    color: var(--text-primary);
-    background: var(--surface-l1);
-    box-shadow: inset 0 0 0 1px var(--border-l1, var(--border));
-    cursor: pointer;
-}
-
-.void-ci-card:hover {
-    background: var(--button-ghost-hover, rgb(255 255 255 / 8%));
-}
-
-.void-ci-card-add {
-    justify-content: center;
-    box-shadow: inset 0 0 0 1px var(--border-l1, var(--border));
-    border-style: dashed;
-}
-
-.void-ci-avatar {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.void-ci-card-name {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-    flex: 1;
-    gap: 0.125rem;
-}
-
-.void-ci-card-name>* {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-}
-
-.void-ci-card-actions {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-end: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.125rem;
-    opacity: 0;
-    transition: opacity 0.15s;
-}
-
-.void-ci-card:hover .void-ci-card-actions {
-    opacity: 1;
-}
-
-.void-ci-editor {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.void-ci-label {
-    padding-inline: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.void-ci-input {
-    width: 100%;
-    border-radius: 0.75rem;
-    border: 1px solid var(--border-l2, var(--border));
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    background: transparent;
-    color: var(--text-primary);
-}
-
-.void-ci-input:focus {
-    outline: none;
-}
-
-.void-ci-textarea-wrap {
-    border: 1px solid var(--border-l2, var(--border));
-    border-radius: 0.75rem;
-}
-
-.void-ci-textarea-wrap-error {
-    border-color: var(--fg-danger, #ef4444);
-}
-
-.void-ci-textarea {
-    width: 100%;
-    min-height: 7.5rem;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.void-ci-textarea:focus {
-    outline: none;
-}
-
-.void-ci-editor-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-inline: 0.25rem;
-}
-
-.void-ci-error-text {
-    color: var(--fg-danger, #ef4444);
-}
-
-.void-ci-trigger {
-    gap: 0.5rem;
-}
-
-.void-ci-menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-}
-`);
-
-  // src/plugins/customInstructions/index.tsx
-  var cl17 = classNameFactory("void-ci-");
-  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
-  var CheckIcon = findExportedComponentLazy("CheckIcon");
-  var BookIcon = findExportedComponentLazy("BookIcon");
-  var PenIcon = findExportedComponentLazy("PenIcon");
-  var TrashIcon2 = findExportedComponentLazy("TrashIcon");
-  var PlusIcon = findExportedComponentLazy("PlusIcon");
-  var MAX_LENGTH = 4000;
-  var settings9 = definePluginSettings({
-    editor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
-    }
-  }).withPrivateSettings();
-  function getPresets() {
-    return settings9.plain.presets ?? [];
-  }
-  function setPresets(presets) {
-    settings9.store.presets = presets;
-  }
-  function getAssignments() {
-    return settings9.plain.assignments ?? {};
-  }
-  function PresetCard({ preset, onEdit, onDelete }) {
-    return /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl17("card"),
-      onClick: onEdit
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl17("avatar")
-    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
-      seed: preset.id,
-      size: 32
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl17("card-name")
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium"
-    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl17("card-actions")
-    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Edit",
-      onClick: (e) => {
-        e.stopPropagation();
-        onEdit();
-      }
-    }, /* @__PURE__ */ React.createElement(PenIcon, {
-      className: "size-3.5 text-secondary"
-    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Delete",
-      onClick: (e) => {
-        e.stopPropagation();
-        onDelete();
-      }
-    }, /* @__PURE__ */ React.createElement(TrashIcon2, {
-      className: "size-3.5 text-secondary"
-    }))));
-  }
-  function PresetEditor({ preset, onUpdate, onClose }) {
-    const overLimit = preset.prompt.length > MAX_LENGTH;
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl17("editor")
-    }, /* @__PURE__ */ React.createElement("label", {
-      className: cl17("label")
-    }, "Name"), /* @__PURE__ */ React.createElement("input", {
-      type: "text",
-      className: cl17("input"),
-      placeholder: "Preset name",
-      value: preset.name,
-      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
-      autoComplete: "off"
-    }), /* @__PURE__ */ React.createElement("label", {
-      className: cl17("label")
-    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl17("textarea-wrap", { error: overLimit })
-    }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl17("textarea"),
-      placeholder: "How should Grok behave?",
-      value: preset.prompt,
-      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl17("editor-footer")
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: overLimit ? undefined : "muted",
-      className: overLimit ? cl17("error-text") : undefined
-    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      onClick: onClose
-    }, "Done")));
-  }
-  function PresetsEditor() {
-    const presets = settings9.use(["presets"]).presets ?? [];
-    const [editingId, setEditingId] = useState(null);
-    const updatePreset = useCallback((updated) => {
-      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
-    }, []);
-    const deletePreset = useCallback((id) => {
-      setPresets(getPresets().filter((p) => p.id !== id));
-      const a = { ...getAssignments() };
-      for (const [k, v] of Object.entries(a)) {
-        if (v === id)
-          delete a[k];
-      }
-      settings9.store.assignments = a;
-      setEditingId((prev) => prev === id ? null : prev);
-    }, []);
-    const addPreset = useCallback(() => {
-      const id = randomId();
-      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
-      setEditingId(id);
-    }, []);
-    const editing = presets.find((p) => p.id === editingId);
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl17("root")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl17("grid")
-    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
-      key: p.id,
-      preset: p,
-      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
-      onDelete: () => deletePreset(p.id)
-    })), /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl17("card", "add"),
-      onClick: addPreset
-    }, /* @__PURE__ */ React.createElement(PlusIcon, {
-      className: "size-4 text-secondary"
-    }), /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: "medium",
-      color: "muted"
-    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
-      preset: editing,
-      onUpdate: updatePreset,
-      onClose: () => setEditingId(null)
-    }));
-  }
-  function InstructionsMenu({ conversationId }) {
-    const presets = settings9.use(["presets"]).presets ?? [];
-    const assignments = settings9.use(["assignments"]).assignments ?? {};
-    const activePresetId = assignments[conversationId];
-    const assign = useCallback((presetId) => {
-      const a = { ...getAssignments() };
-      if (presetId)
-        a[conversationId] = presetId;
-      else
-        delete a[conversationId];
-      settings9.store.assignments = a;
-    }, [conversationId]);
-    if (!presets.length)
-      return null;
-    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl17("trigger")
-    }, /* @__PURE__ */ React.createElement(BookIcon, {
-      size: 16
-    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => assign(),
-      className: cl17("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm"
-    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
-      key: p.id,
-      onSelect: () => assign(p.id),
-      className: cl17("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm"
-    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })))));
-  }
-  var customInstructions_default = definePlugin({
-    name: "CustomInstructions",
-    description: "Create instruction presets and assign them to conversations.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings9,
-    contextMenuItems: {
-      conversation: {
-        label: "Instructions",
-        render: ErrorBoundary.wrap(InstructionsMenu)
-      }
-    },
-    _getPrompt() {
-      const { conversationId } = ChatPageStore.useChatPageStore.getState();
-      if (!conversationId)
-        return;
-      const presetId = getAssignments()[conversationId];
-      if (!presetId)
-        return;
-      const preset = getPresets().find((p) => p.id === presetId);
-      return preset?.prompt?.trim() || undefined;
-    },
-    patches: [
-      {
-        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
-        all: true,
-        replacement: {
-          match: /customInstructions:(\i)\.customInstructions/g,
-          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
-        }
-      }
-    ]
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/downloadTTS/styles.css
-  registerStyle("downloadTTS", `.void-download-tts-spinner {
-    pointer-events: none;
-}
-`);
-
-  // src/plugins/downloadTTS/index.tsx
-  var cl18 = classNameFactory("void-download-tts-");
-  var logger21 = new Logger("DownloadTTS");
-  async function fetchAndDownload() {
-    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
-    if (!currentStreamId)
-      return;
-    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
-    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
-    if (voiceId)
-      url += `?voiceId=${encodeURIComponent(voiceId)}`;
-    const res = await fetch(url);
-    if (!res.ok)
-      throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
-    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
-  }
-  function DownloadButton() {
-    const [loading, onClick] = useAsyncAction(async () => {
-      try {
-        await fetchAndDownload();
-      } catch (e) {
-        logger21.error("Failed to download TTS audio:", e);
-      }
-    });
-    return /* @__PURE__ */ React.createElement(Button, {
-      "aria-label": "Download audio",
-      onClick,
-      disabled: loading,
-      size: "md",
-      shape: "square",
-      variant: "tertiary"
-    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
-      size: "sm",
-      className: cl18("spinner")
-    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 16
-    }));
-  }
-  var downloadTTS_default = definePlugin({
-    name: "DownloadTTS",
-    description: "Add a download button to the TTS playback controls.",
-    authors: [Devs.Prism],
-    patches: [{
-      find: 'tts-controls.stop.label","Stop"',
-      all: true,
-      replacement: {
-        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
-        replace: "$1,$self._renderDownloadButton()]"
-      }
-    }],
-    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/exportChat/styles.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger22 = new Logger("ExportChat");
+  var logger16 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -8448,10 +6519,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
   }
   var FORMATS = [
-    { fmt: "json", label: "JSON", mime: "application/json" },
-    { fmt: "md", label: "Markdown", mime: "text/markdown" },
-    { fmt: "txt", label: "Plain Text", mime: "text/plain" },
-    { fmt: "html", label: "HTML", mime: "text/html" }
+    { fmt: "json", label: "JSON" },
+    { fmt: "md", label: "Markdown" },
+    { fmt: "txt", label: "Plain Text" },
+    { fmt: "html", label: "HTML" }
   ];
   async function exportChat(conversationId, format) {
     const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
@@ -8462,33 +6533,37 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const messages = responses.map(buildExportMessage);
     const filename = sanitizeFilename(title, "chat");
     let content;
+    let mime;
     switch (format) {
+      case "json":
+        content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
+        mime = "application/json";
+        break;
       case "md":
         content = toMarkdown(title, messages);
+        mime = "text/markdown";
         break;
       case "txt":
         content = toPlainText(title, messages);
+        mime = "text/plain";
         break;
       case "html":
         content = toHtml(title, messages);
+        mime = "text/html";
         break;
-      default:
-        content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
     }
-    const { mime } = FORMATS.find((f) => f.fmt === format);
     await FileUtils.downloadBlob(new Blob([content], { type: mime }), `${filename}.${format}`);
   }
   function ExportMenu({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
     return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      disabled: streaming,
-      className: "void-export-trigger"
+      disabled: streaming
     }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
       className: "void-export-icon"
     }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger22.error("Failed to export chat", e))
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger16.error("Failed to export chat", e))
     }, label))));
   }
   var exportChat_default = definePlugin({
@@ -8503,113 +6578,1082 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // src/plugins/incognito/index.ts
-  var store2 = () => SettingsStore.useSettingsStore.getState();
-  var unsubscribe = null;
-  function enforce() {
-    if (!store2().isIncognito)
-      store2().setIsIncognito(true);
-  }
-  var incognito_default = definePlugin({
-    name: "Incognito",
-    description: "Force private chat mode for new conversations.",
-    authors: [Devs.Prism],
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      enforce();
-      unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce);
-    },
-    stop() {
-      unsubscribe?.();
-      unsubscribe = null;
-      store2().setIsIncognito(false);
-    }
-  });
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterImagine/styles.css
+  registerStyle("betterImagine", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-  // void-css:D:/Projects/Void/src/plugins/messageTimestamps/styles.css
-  registerStyle("messageTimestamps", `.void-timestamp {
-    margin-bottom: 0.125rem;
+.void-imagine-chip {
+    background: hsl(var(--surface-l1));
 }
 
-@media print {
-    .void-timestamp {
-        display: none;
-    }
+.void-imagine-chip:hover {
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-search {
+    width: 10rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+}
+
+.void-imagine-date-select,
+.void-imagine-sort-select {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+    border: none;
+}
+
+.void-imagine-sort-active {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
 }
 `);
 
-  // src/plugins/messageTimestamps/index.tsx
-  var settings10 = definePluginSettings({
-    showDate: {
+  // src/plugins/betterImagine/index.tsx
+  var logger17 = new Logger("BetterImagine");
+  var cl15 = classNameFactory("void-imagine-");
+  var settings7 = definePluginSettings({
+    hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
-      description: "Show the full date for messages older than today.",
+      description: "Hide the community image grid and templates on the Imagine home page.",
       default: true
     },
-    hideOwnMessages: {
+    noAutoplay: {
       type: 3 /* BOOLEAN */,
-      description: "Hide timestamps on your own messages.",
+      description: "Stop video thumbnails from autoplaying.",
+      default: true
+    },
+    playOnHover: {
+      type: 3 /* BOOLEAN */,
+      description: "Play video thumbnails when hovered.",
+      default: true
+    },
+    hideModerated: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide moderated images and videos that cannot be interacted with.",
+      default: true
+    },
+    pauseWhenHidden: {
+      type: 3 /* BOOLEAN */,
+      description: "Pause any playing video thumbnails when the tab loses focus.",
+      default: true
+    },
+    persistFilters: {
+      type: 3 /* BOOLEAN */,
+      description: "Remember Favorites filter + sort across reloads.",
+      default: true
+    },
+    smartFilenames: {
+      type: 3 /* BOOLEAN */,
+      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
+      default: true
+    },
+    bypassPaywall: {
+      type: 3 /* BOOLEAN */,
+      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
       default: false
+    },
+    ctrlClickSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
+      default: true
     }
   });
-  function formatTimestamp(iso, showDate) {
-    const date = new Date(iso);
-    const now = new Date;
-    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
-    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (!showDate || today)
-      return time;
-    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
+  function buildFilename(post, isVideo) {
+    if (!settings7.store.smartFilenames || !post)
+      return null;
+    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
+    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
+    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
+    const id = post.id?.slice(0, 8) ?? "";
+    const ext = isVideo ? "mp4" : "png";
+    const parts = [date, slug, id].filter(Boolean);
+    if (!parts.length)
+      return null;
+    return `${parts.join("_")}.${ext}`;
   }
-  var messageTimestamps_default = definePlugin({
-    name: "MessageTimestamps",
-    description: "Shows timestamps on chat messages.",
+  var FILTER_MAP = {
+    image: "MEDIA_POST_TYPE_IMAGE",
+    video: "MEDIA_POST_TYPE_VIDEO"
+  };
+  var DATE_LABELS = {
+    all: "Any time",
+    today: "Today",
+    week: "This week",
+    month: "This month"
+  };
+  var SORT_LABELS = {
+    newest: "Newest first",
+    oldest: "Oldest first",
+    "prompt-az": "Prompt A → Z",
+    "prompt-za": "Prompt Z → A",
+    random: "Shuffle"
+  };
+  var SORT_KEYS = Object.keys(SORT_LABELS);
+  var DAY_MS = 86400000;
+  var DATE_CUTOFFS = {
+    all: 0,
+    today: DAY_MS,
+    week: 7 * DAY_MS,
+    month: 30 * DAY_MS
+  };
+  var STORAGE_KEY2 = "void-imagine-filters";
+  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
+  function loadFilters() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY2);
+      if (!raw)
+        return DEFAULT_FILTERS;
+      const parsed = JSON.parse(raw);
+      return {
+        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
+        search: typeof parsed.search === "string" ? parsed.search : "",
+        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
+        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
+      };
+    } catch {
+      return DEFAULT_FILTERS;
+    }
+  }
+  var initial = loadFilters();
+  var currentFilter = initial.filter;
+  var currentSearch = initial.search;
+  var currentDate = initial.date;
+  var currentSort = initial.sort;
+  var randomSeed = Date.now();
+  var filterStore = createExternalStore();
+  function persist() {
+    if (!settings7.store.persistFilters)
+      return;
+    try {
+      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
+    } catch {}
+  }
+  function setFilter(f) {
+    currentFilter = f;
+    filterStore.notify();
+    persist();
+  }
+  var setSearch = debounce((s) => {
+    currentSearch = s;
+    filterStore.notify();
+    persist();
+  }, 200);
+  function setDate(d) {
+    currentDate = d;
+    filterStore.notify();
+    persist();
+  }
+  function setSort(s) {
+    if (s === "random" && currentSort === "random")
+      randomSeed = Date.now();
+    currentSort = s;
+    filterStore.notify();
+    persist();
+  }
+  function resetFilters() {
+    currentFilter = "all";
+    currentSearch = "";
+    currentDate = "all";
+    currentSort = "newest";
+    filterStore.notify();
+    persist();
+  }
+  function hasActiveFilters() {
+    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
+  }
+  function isModerated(p) {
+    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
+  }
+  var haystackCache = new WeakMap;
+  var tsCache = new WeakMap;
+  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+  function getHaystack(p) {
+    let h = haystackCache.get(p);
+    if (h === undefined) {
+      h = `${p.prompt ?? ""}
+${p.originalPrompt ?? ""}`.toLowerCase();
+      haystackCache.set(p, h);
+    }
+    return h;
+  }
+  function getTs(p) {
+    let t = tsCache.get(p);
+    if (t === undefined) {
+      t = new Date(p.createTime).getTime() || 0;
+      tsCache.set(p, t);
+    }
+    return t;
+  }
+  function matchesFilters(p, target, q, cutoff, hideModerated) {
+    if (!p)
+      return false;
+    if (hideModerated && isModerated(p))
+      return false;
+    if (target && p.mediaType !== target)
+      return false;
+    if (cutoff && getTs(p) < cutoff)
+      return false;
+    if (q && !getHaystack(p).includes(q))
+      return false;
+    return true;
+  }
+  var cacheKey = null;
+  var cacheList = null;
+  var cacheResult = [];
+  function filterItems(items) {
+    const { hideModerated } = settings7.store;
+    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
+    if (cacheList === items && cacheKey === key)
+      return cacheResult;
+    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
+    let out = items;
+    if (needsFilter) {
+      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
+      const q = currentSearch.toLowerCase();
+      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
+      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
+    }
+    cacheList = items;
+    cacheKey = key;
+    cacheResult = currentSort === "newest" ? out : sortItems(out);
+    return cacheResult;
+  }
+  function mulberry32(seed) {
+    let a = seed;
+    return () => {
+      a |= 0;
+      a = a + 1831565813 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function sortItems(items) {
+    if (items.length < 2)
+      return items;
+    const arr = [...items];
+    switch (currentSort) {
+      case "oldest":
+        return arr.toSorted((a, b) => getTs(a) - getTs(b));
+      case "prompt-az":
+        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
+      case "prompt-za":
+        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
+      case "random": {
+        const rand = mulberry32(randomSeed);
+        for (let i = arr.length - 1;i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+      default:
+        return arr;
+    }
+  }
+  var pending = new WeakMap;
+  function pauseVideo(video) {
+    const promise = pending.get(video);
+    pending.delete(video);
+    if (promise) {
+      promise.then(() => {
+        if (pending.has(video))
+          return;
+        video.pause();
+        video.currentTime = 0;
+      }).catch((e) => logger17.warn("Failed to pause video:", e));
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }
+  var onMouseEnter = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pending.set(video, video.play().catch((e2) => logger17.error("Failed to play video", e2)));
+  };
+  var onMouseLeave = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pauseVideo(video);
+  };
+  function useFilteredFavorites() {
+    const list = MediaStore.useMediaStore((s) => s.favoritesList);
+    useExternalStore(filterStore);
+    return filterItems(list);
+  }
+  function mediaState() {
+    return MediaStore.useMediaStore.getState();
+  }
+  function selectVisible() {
+    const state = mediaState();
+    const list = state.favoritesList ?? [];
+    const visible = filterItems(list);
+    if (!visible.length)
+      return;
+    state.setMultiSelectItems(visible);
+    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
+  }
+  function deselectAll() {
+    const state = mediaState();
+    state.clearMultiSelect?.();
+  }
+  function selectedPosts() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    return ids.map((id) => state.byId[id]).filter((p) => !!p);
+  }
+  async function copyLines(lines, label) {
+    if (!lines.length) {
+      Toaster.toast.info(`Selected items have no ${label}s.`);
+      return;
+    }
+    try {
+      await copyToClipboard(lines.join(`
+`));
+      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
+    } catch (e) {
+      logger17.error(`Failed to copy ${label}s`, e);
+      Toaster.toast.error(`Failed to copy ${label}s.`);
+    }
+  }
+  async function copySelectedPrompts() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
+  }
+  async function copySelectedUrls() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    const { videoByMediaId } = mediaState();
+    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
+    await copyLines(urls, "URL");
+  }
+  async function bulkUpscaleSelected() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    let upscaled = 0;
+    let alreadyHd = 0;
+    let inProgress = 0;
+    for (const id of ids) {
+      const videos = state.videoByMediaId[id];
+      if (!videos?.length)
+        continue;
+      for (const video of videos) {
+        if (video.hdMediaUrl) {
+          alreadyHd++;
+          continue;
+        }
+        if (video.upscalingInProgress) {
+          inProgress++;
+          continue;
+        }
+        try {
+          await state.upscaleVideo(id, video.id);
+          upscaled++;
+        } catch (e) {
+          logger17.error("Failed to upscale video:", id, video.id, e);
+        }
+      }
+    }
+    if (upscaled)
+      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
+    else if (alreadyHd)
+      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
+    else if (inProgress)
+      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
+    else
+      Toaster.toast.info("No videos to upscale.");
+  }
+  function FilterButtons() {
+    useExternalStore(filterStore);
+    const [searchInput, setSearchInput] = useState(currentSearch);
+    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
+    const sortActive = currentSort !== "newest";
+    const lastSync = useRef(currentSearch);
+    if (lastSync.current !== currentSearch) {
+      lastSync.current = currentSearch;
+      setSearchInput(currentSearch);
+    }
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
+      value: currentDate,
+      onValueChange: (v) => setDate(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: cl15("date-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: d,
+      value: d
+    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
+      value: currentSort,
+      onValueChange: (v) => setSort(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: sortActive ? cl15("sort-select", "sort-active") : cl15("sort-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: s,
+      value: s
+    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "Search...",
+      value: searchInput,
+      onChange: (e) => {
+        setSearchInput(e.target.value);
+        setSearch(e.target.value);
+      },
+      className: cl15("search")
+    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
+      key: f,
+      variant: currentFilter === f ? "primary" : "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: currentFilter !== f ? cl15("chip") : undefined,
+      onClick: () => setFilter(currentFilter === f ? "all" : f)
+    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: cl15("chip"),
+      onClick: resetFilters
+    }, "Clear"));
+  }
+  function UpscaleItem() {
+    const [open2, setOpen] = useState(false);
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: () => setOpen(true)
+    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
+      className: "size-4 me-2"
+    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title: "Upscale selected videos",
+      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
+      confirmText: "Upscale",
+      onConfirm: bulkUpscaleSelected
+    }));
+  }
+  function CopyActions() {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: copySelectedPrompts
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: copySelectedUrls
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy URLs"));
+  }
+  function isImaginePage() {
+    const page = RoutingStore.useRoutingStore.getState().route?.page;
+    return page === "imagine" || page === "imagine-favorites";
+  }
+  function isFavoritesPage() {
+    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
+  }
+  function isTypingTarget(t) {
+    if (!(t instanceof HTMLElement))
+      return false;
+    if (t.isContentEditable)
+      return true;
+    const tag = t.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+  }
+  function onKeyDown(e) {
+    if (!isImaginePage())
+      return;
+    if (e.ctrlKey || e.metaKey || e.altKey)
+      return;
+    if (isTypingTarget(e.target))
+      return;
+    if (e.key === "i" || e.key === "I") {
+      setFilter(currentFilter === "image" ? "all" : "image");
+      e.preventDefault();
+    } else if (e.key === "v" || e.key === "V") {
+      setFilter(currentFilter === "video" ? "all" : "video");
+      e.preventDefault();
+    } else if (e.key === "r" || e.key === "R") {
+      resetFilters();
+      e.preventDefault();
+    } else if (e.key === "A") {
+      if (isFavoritesPage()) {
+        deselectAll();
+        e.preventDefault();
+      }
+    } else if (e.key === "a") {
+      if (isFavoritesPage()) {
+        selectVisible();
+        e.preventDefault();
+      }
+    } else if (e.key === "c" || e.key === "C") {
+      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
+        copySelectedPrompts();
+        e.preventDefault();
+      }
+    }
+  }
+  function onVisibilityChange() {
+    if (!settings7.store.pauseWhenHidden)
+      return;
+    if (document.visibilityState !== "hidden")
+      return;
+    for (const video of document.querySelectorAll("video")) {
+      if (!video.paused)
+        video.pause();
+    }
+  }
+  var abortCtrl = null;
+  var betterImagine_default = definePlugin({
+    name: "BetterImagine",
+    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
-    settings: settings10,
-    _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
-      if (!response?.createTime)
-        return null;
-      if (settings10.store.hideOwnMessages && response.sender === "human")
-        return null;
-      return /* @__PURE__ */ React.createElement(Text, {
-        as: "span",
-        size: "xs",
-        color: "muted",
-        className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings10.store.showDate));
-    }),
+    settings: settings7,
+    _hideDefault: () => settings7.store.hideDefaultPreviews,
+    _NullGrid: () => null,
+    _autoPlay: () => !settings7.store.noAutoplay,
+    _bypassPaywall: () => settings7.store.bypassPaywall,
+    _ctrlClickSelect: () => settings7.store.ctrlClickSelect,
+    _hoverProps: () => settings7.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _useFilteredFavorites: useFilteredFavorites,
+    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
+    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
+    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
+    _buildFilename: buildFilename,
+    start() {
+      if (abortCtrl)
+        return;
+      abortCtrl = new AbortController;
+      const { signal } = abortCtrl;
+      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
+      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
+    },
+    stop() {
+      abortCtrl?.abort();
+      abortCtrl = null;
+    },
     patches: [
       {
-        find: "response-family:handleEditSave",
+        find: "image_feed_opened",
+        group: true,
+        replacement: [
+          {
+            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
+            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
+          },
+          {
+            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
+            replace: "=$self._useFilteredFavorites()"
+          }
+        ]
+      },
+      {
+        find: "image_feed_image_selected",
+        group: true,
+        replacement: [
+          {
+            match: /autoPlay:!0/g,
+            replace: "autoPlay:$self._autoPlay()"
+          },
+          {
+            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
+            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          }
+        ]
+      },
+      {
+        find: 'imagine-folder.all","All"',
+        replacement: {
+          match: /"imagine-folder\.all","All"\)\}\)/,
+          replace: "$&,$self._renderFilterButtons({})"
+        }
+      },
+      {
+        find: "imagine-templates.section-title",
+        all: true,
+        noWarn: true,
+        replacement: {
+          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
+          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
+        }
+      },
+      {
+        find: '"imagine-set-resolution"',
         all: true,
         replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._renderTimestamp({response:$1}),$&"
+          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
+          replace: "if(!$self._bypassPaywall())$&"
+        }
+      },
+      {
+        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
+        group: true,
+        replacement: [
+          {
+            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
+            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
+          },
+          {
+            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
+            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/consoleJanitor/index.ts
+  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
+  var consoleJanitor_default = definePlugin({
+    name: "ConsoleJanitor",
+    description: "Silences noisy warnings and info logs in the browser console.",
+    authors: [Devs.Prism],
+    patches: [
+      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
+      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
+      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
+      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
+      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
+    ]
+  });
+
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterFiles/styles.css
+  registerStyle("betterFiles", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.group:hover .void-sel-wrap {
+    display: inline-flex;
+}
+`);
+
+  // src/plugins/betterFiles/index.tsx
+  var logger18 = new Logger("BetterFiles");
+  var selection = createSelectionStore();
+  async function deleteAssets(ids) {
+    const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
+    for (const id of ids) {
+      try {
+        await deleteAsset(id);
+      } catch (e) {
+        logger18.error("Failed to delete asset", id, e);
+      }
+    }
+  }
+  function DeleteAllButton() {
+    const [open2, setOpen] = useState(false);
+    const list = FilesPageStore.useFilesPageStore((s) => s.list);
+    if (!list.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      shape: "square",
+      size: "sm",
+      onClick: () => setOpen(true)
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
+      size: 18,
+      className: "text-fg-secondary"
+    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title: "Delete all files",
+      description: `Are you sure you want to delete all ${pluralize(list.length, "file")}? This cannot be undone.`,
+      confirmText: "Delete all",
+      danger: true,
+      onConfirm: () => deleteAssets([...list])
+    }));
+  }
+  var betterFiles_default = definePlugin({
+    name: "BetterFiles",
+    description: "Adds bulk delete to the files page.",
+    authors: [Devs.Prism],
+    managedStyle: "betterFiles",
+    start() {
+      selection.clear();
+    },
+    stop() {
+      selection.clear();
+    },
+    renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
+    _renderFileCheckbox: ErrorBoundary.wrap(({ id }) => /* @__PURE__ */ React.createElement(SelectionCheckbox, {
+      selection,
+      id
+    }), null),
+    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
+      selection,
+      noun: "file",
+      title: "Delete files",
+      onDelete: deleteAssets
+    }), null),
+    _wrapFileClick(onClick, asset) {
+      return (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          selection.toggle(asset.assetId);
+          return;
+        }
+        onClick();
+      };
+    },
+    patches: [
+      {
+        find: `files.no-results",'No files matching`,
+        all: true,
+        noWarn: true,
+        group: true,
+        replacement: [
+          {
+            match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
+            replace: "$1,$self.renderDeleteAllButton()]"
+          },
+          {
+            match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
+            replace: 'role:"button",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),'
+          },
+          {
+            match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
+            replace: "$1,$self._renderFileActionBar()]"
+          }
+        ]
+      }
+    ]
+  });
+
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/cloneChats/styles.css
+  registerStyle("cloneChats", `.void-clone-icon {
+    margin-inline-end: 0.5rem;
+}
+`);
+
+  // src/plugins/cloneChats/index.tsx
+  var logger19 = new Logger("CloneChats");
+  async function cloneChat(conversationId) {
+    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
+    if (!lastResponseId)
+      throw new Error("No responses found in conversation.");
+    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
+      conversationId,
+      body: { responseId: lastResponseId, allowIndexing: false }
+    });
+    if (!shareLinkId)
+      throw new Error("Failed to create share link.");
+    try {
+      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
+      if (conversation?.conversationId) {
+        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
+      }
+    } finally {
+      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
+    }
+  }
+  function CloneItem({ conversationId }) {
+    const streaming = useIsStreaming(conversationId);
+    return /* @__PURE__ */ React.createElement(MenuItem, {
+      onSelect: () => cloneChat(conversationId).catch((e) => logger19.error("Failed to clone chat:", e)),
+      disabled: streaming
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      size: 16,
+      className: "void-clone-icon"
+    }), "Clone");
+  }
+  var cloneChats_default = definePlugin({
+    name: "CloneChats",
+    description: "Clone conversations from the context-menu.",
+    authors: [Devs.Prism],
+    contextMenuItems: {
+      conversation: {
+        label: "Clone",
+        render: ErrorBoundary.wrap(CloneItem)
+      }
+    }
+  });
+
+  // src/plugins/autoCollapse/index.ts
+  var autoCollapse_default = definePlugin({
+    name: "AutoCollapse",
+    description: "Automatically collapse code blocks in responses.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    _collapse: () => true,
+    patches: [
+      {
+        find: ["isInitiallyCollapsed", "showRunCode"],
+        all: true,
+        replacement: {
+          match: /isInitiallyCollapsed:(\i)=!1/g,
+          replace: "isInitiallyCollapsed:$1=$self._collapse()"
         }
       }
     ]
   });
 
-  // src/plugins/oneko/index.ts
-  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
-  var ONEKO_SCRIPT = '(function oneko(){const isReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)")===true||window.matchMedia("(prefers-reduced-motion: reduce)").matches===true;if(false)return;const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
-  var oneko_default = definePlugin({
-    name: "Oneko",
-    description: "Cat follows your mouse cursor.",
-    authors: [Devs.adryd],
-    cleanupSelectors: ["#oneko"],
+  // src/plugins/betterLinks/index.tsx
+  var DEFAULT_LINK = "#4a9eff";
+  var DEFAULT_VISITED = "#9b59b6";
+  var STYLE_NAME2 = "better-links-dynamic";
+  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
+  function isValidHex(c) {
+    return /^#[0-9a-fA-F]{6}$/.test(c);
+  }
+  function getColor(key, fallback) {
+    const val = settings8.store[key];
+    return val && isValidHex(val) ? val : fallback;
+  }
+  function applyColors() {
+    const link = getColor("linkColor", DEFAULT_LINK);
+    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
+    if (settings8.store.enableVisitedColor) {
+      const visited = getColor("visitedColor", DEFAULT_VISITED);
+      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
+    }
+    registerStyle(STYLE_NAME2, css);
+  }
+  function ColorRow2({ settingKey, title, description, fallback }) {
+    settings8.use([settingKey]);
+    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
+      value: getColor(settingKey, fallback),
+      onChange: (v) => {
+        settings8.store[settingKey] = v;
+        applyColors();
+      },
+      title,
+      description
+    });
+  }
+  var settings8 = definePluginSettings({
+    linkifyDomains: {
+      type: 3 /* BOOLEAN */,
+      description: "Detect bare domains in messages and make them clickable.",
+      default: true
+    },
+    enableVisitedColor: {
+      type: 3 /* BOOLEAN */,
+      description: "Apply a different color to links you already visited.",
+      default: false,
+      onChange: applyColors
+    },
+    linkColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
+        settingKey: "linkColor",
+        title: "Link color",
+        description: "Colorize links in messages.",
+        fallback: DEFAULT_LINK
+      })
+    },
+    visitedColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
+        settingKey: "visitedColor",
+        title: "Visited color",
+        description: "Colorize links you already visited.",
+        fallback: DEFAULT_VISITED
+      })
+    }
+  }).withPrivateSettings();
+  var betterLinks_default = definePlugin({
+    name: "BetterLinks",
+    description: "Colorize links and detect bare domains in chat messages.",
+    authors: [Devs.Prism],
+    settings: settings8,
+    patches: [
+      {
+        find: "chat-markdown:a:link",
+        all: true,
+        replacement: {
+          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
+          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
+        }
+      },
+      {
+        find: "chat-markdown-load-third-party",
+        replacement: {
+          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
+          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
+        }
+      }
+    ],
+    _remarkLinkify() {
+      const { store: store2 } = settings8;
+      return (tree) => {
+        try {
+          if (!store2.linkifyDomains)
+            return;
+          const walk = (node) => {
+            if (!node.children)
+              return;
+            const out = [];
+            let changed = false;
+            for (const child of node.children) {
+              if (child.type !== "text") {
+                walk(child);
+                out.push(child);
+                continue;
+              }
+              DOMAIN_RE.lastIndex = 0;
+              if (!DOMAIN_RE.test(child.value)) {
+                out.push(child);
+                continue;
+              }
+              DOMAIN_RE.lastIndex = 0;
+              let last = 0;
+              let m;
+              while ((m = DOMAIN_RE.exec(child.value)) != null) {
+                if (m.index > last)
+                  out.push({ type: "text", value: child.value.slice(last, m.index) });
+                out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
+                last = m.index + m[0].length;
+              }
+              if (last < child.value.length)
+                out.push({ type: "text", value: child.value.slice(last) });
+              changed = true;
+            }
+            if (changed)
+              node.children = out;
+          };
+          walk(tree);
+        } catch {
+          return tree;
+        }
+      };
+    },
     start() {
-      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
-      const el = document.createElement("script");
-      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
-      document.head.appendChild(el);
-      el.addEventListener("load", () => {
-        el.remove();
-        URL.revokeObjectURL(el.src);
-      }, { once: true });
+      settings8.store.linkColor ??= DEFAULT_LINK;
+      settings8.store.visitedColor ??= DEFAULT_VISITED;
+      applyColors();
+      enableStyle(STYLE_NAME2);
+    },
+    stop() {
+      disableStyle(STYLE_NAME2);
     }
   });
 
-  // void-css:D:/Projects/Void/src/plugins/rateLimitDisplay/styles.css
+  // src/plugins/autoRetry/index.ts
+  var logger20 = new Logger("AutoRetry");
+  var CONTENT_MODERATED = "grok:content-moderated";
+  var settings9 = definePluginSettings({
+    retryModeration: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry content moderation errors.",
+      default: true
+    },
+    retryNetwork: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry network and stream errors.",
+      default: true
+    },
+    maxRetries: {
+      type: 1 /* NUMBER */,
+      description: "Maximum consecutive retries per conversation.",
+      default: 3
+    },
+    delay: {
+      type: 1 /* NUMBER */,
+      description: "Seconds to wait before retrying.",
+      default: 2
+    }
+  });
+  var retryCounts = new Map;
+  var pendingTimer = null;
+  function clearPending() {
+    if (pendingTimer != null) {
+      clearTimeout(pendingTimer);
+      pendingTimer = null;
+    }
+  }
+  function isModeration(response) {
+    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
+  }
+  function shouldRetry(response) {
+    if (isModeration(response))
+      return settings9.store.retryModeration;
+    return settings9.store.retryNetwork;
+  }
+  function retry(responseId, conversationId, response) {
+    const count = (retryCounts.get(conversationId) ?? 0) + 1;
+    const max = settings9.store.maxRetries;
+    if (count > max) {
+      showToast("Max retries reached.", 2 /* ERROR */);
+      retryCounts.delete(conversationId);
+      return;
+    }
+    retryCounts.set(conversationId, count);
+    const delaySec = settings9.store.delay;
+    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
+    logger20.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    clearPending();
+    pendingTimer = setTimeout(() => {
+      pendingTimer = null;
+      const state = ChatPageStore.useChatPageStore.getState();
+      if (state.streamedMessageId)
+        return;
+      state.sendResponse({
+        message: "",
+        parentResponseId: responseId,
+        conversationId,
+        fileAttachmentIds: response.fileAttachments,
+        setOpimisticUserResponse: false,
+        setUserResponse: false,
+        enableRetries: true
+      });
+    }, delaySec * 1000);
+  }
+  function onStreamEnd2({ responseId }) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (!response || response.state !== "error") {
+      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (convId)
+        retryCounts.delete(convId);
+      return;
+    }
+    if (!shouldRetry(response))
+      return;
+    const { conversationId } = ChatPageStore.useChatPageStore.getState();
+    if (!conversationId)
+      return;
+    retry(responseId, conversationId, response);
+  }
+  var autoRetry_default = definePlugin({
+    name: "AutoRetry",
+    description: "Automatically retry failed messages on moderation or network errors.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings9,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      retryCounts.clear();
+      clearPending();
+    },
+    stop() {
+      clearPending();
+      retryCounts.clear();
+    },
+    events: {
+      streamEnd: onStreamEnd2
+    }
+  });
+
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/rateLimitDisplay/styles.css
   registerStyle("rateLimitDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8625,7 +7669,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     white-space: nowrap;
 }
 
-/* match the native mode-select label (14px / 550) with stable digit widths */
 .void-rld-trigger span {
     font-size: 14px !important;
     font-weight: 550 !important;
@@ -8639,18 +7682,26 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     padding-inline: 0.5rem;
 }
 
-.void-rld-icon {
-    width: 18px;
-}
-
 .void-rld-icon-limited {
     color: inherit;
 }
 
-.void-rld-auto-label {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+.void-rld-ring {
+    display: block;
+    color: inherit;
+}
+
+.void-rld-ring-track {
+    fill: none;
+    stroke: color-mix(in srgb, currentcolor 20%, transparent);
+    stroke-width: 2;
+}
+
+.void-rld-ring-fill {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2;
+    stroke-linecap: round;
 }
 
 .void-rld-panel {
@@ -8670,27 +7721,38 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     text-transform: capitalize;
 }
 
+.void-rld-bar {
+    height: 0.1875rem;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    background: color-mix(in srgb, currentcolor 15%, transparent);
+    border-radius: 999px;
+}
+
+.void-rld-bar-fill {
+    height: 100%;
+    background: currentcolor;
+    border-radius: inherit;
+    transform-origin: left;
+}
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
-  var logger23 = new Logger("RateLimitDisplay");
-  var cl19 = classNameFactory("void-rld-");
+  var logger21 = new Logger("RateLimitDisplay");
+  var cl16 = classNameFactory("void-rld-");
   var UsageProgressIcon = findExportedComponentLazy("UsageProgressIcon");
-  var settings11 = definePluginSettings({
-    hideTotal: {
-      type: 3 /* BOOLEAN */,
-      description: "Show only remaining queries instead of remaining/total.",
-      default: true
+  var settings10 = definePluginSettings({
+    display: {
+      type: 4 /* SELECT */,
+      description: "How to show the remaining usage in the chat bar.",
+      options: [
+        { label: "Count", value: "count", default: true },
+        { label: "Fraction (remaining/total)", value: "fraction" },
+        { label: "Percent remaining", value: "percent" },
+        { label: "Progress ring", value: "ring" }
+      ]
     }
   });
-  var MODES = ["auto", "fast", "expert", "heavy", "grok-420-computer-use-sa"];
-  var MODE_LABELS = {
-    auto: "auto",
-    fast: "fast",
-    expert: "expert",
-    heavy: "heavy",
-    "grok-420-computer-use-sa": "grok 4.3"
-  };
   var IMAGINE_BUCKETS = ["image", "imagePro", "imageEdit", "video", "video720p"];
   var IMAGINE_LABELS = {
     image: "Speed Images",
@@ -8700,13 +7762,21 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     video720p: "Videos 720p"
   };
   var UNLIMITED_THRESHOLD = Number.MAX_SAFE_INTEGER;
-  var store3 = createExternalStore();
-  var limits = {};
+  var RING_SIZE = 18;
+  var RING_RADIUS = 7;
+  var RING_CENTER = RING_SIZE / 2;
+  var RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+  var store2 = createExternalStore();
+  var limits = new Map;
+  var remainingOf = (d) => d.remainingTokens ?? d.remainingQueries;
+  var totalOf = (d) => d.totalTokens ?? d.totalQueries;
+  var fractionOf = (d) => totalOf(d) > 0 ? clamp(remainingOf(d) / totalOf(d), 0, 1) : 1;
+  var percentOf = (d) => Math.round(fractionOf(d) * 100);
   async function fetchLimit(mode) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
     } catch (e) {
-      logger23.warn("Failed to fetch rate limits for", mode, e);
+      logger21.warn("Failed to fetch rate limits for", mode, e);
       return null;
     }
   }
@@ -8715,47 +7785,19 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   }
   async function refresh() {
     refreshImagineQuota();
-    const results = await Promise.all(MODES.map(async (m) => [m, await fetchLimit(m)]));
-    const next = { ...limits };
-    for (const [m, data] of results) {
+    const ids = ModesStore.useModesStore.getState().modes.map((m) => m.id);
+    const results = await Promise.all(ids.map(async (id) => [id, await fetchLimit(id)]));
+    for (const [id, data] of results)
       if (data)
-        next[m] = data;
-    }
-    limits = next;
-    store3.notify();
+        limits.set(id, data);
+    store2.notify();
   }
-  var useMode = () => ModesStore.useModesStore((s) => s.selectedModeId) ?? "auto";
+  var useMode = () => ModesStore.useModesStore((s) => s.selectedModeId);
   var useIsImagine = () => RoutingStore.useRoutingStore((s) => typeof s.route.page === "string" && s.route.page.startsWith("imagine"));
   var useImagineQuotas = () => CreditQuotaStore.useCreditQuotaStore((s) => s.quotas);
   function isLimited(mode) {
-    if (mode === "auto")
-      return limits.expert?.remainingQueries === 0 || limits.fast?.remainingQueries === 0;
-    return limits[mode]?.remainingQueries === 0;
-  }
-  function ButtonIcon() {
-    useExternalStore(store3);
-    const mode = useMode();
-    const isImagine = useIsImagine();
-    const quotas = useImagineQuotas();
-    const limited = isImagine ? isImagineLimited(quotas) : isLimited(mode);
-    useEffect(() => {
-      refresh();
-    }, []);
-    const icon = limited ? /* @__PURE__ */ React.createElement(ClockAlertIcon, {
-      width: 18,
-      height: 20,
-      className: cl19("icon-limited")
-    }) : /* @__PURE__ */ React.createElement(UsageProgressIcon, {
-      width: 18,
-      height: 18
-    });
-    return /* @__PURE__ */ React.createElement("span", {
-      className: cl19("trigger")
-    }, icon, isImagine ? /* @__PURE__ */ React.createElement(ImagineButtonLabel, {
-      quotas
-    }) : /* @__PURE__ */ React.createElement(ButtonLabel, {
-      mode
-    }));
+    const d = limits.get(mode);
+    return d != null && remainingOf(d) === 0;
   }
   function isImagineLimited(quotas) {
     if (!quotas)
@@ -8764,6 +7806,87 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       const d = quotas[b];
       return d != null && d.available && d.remainingQueries === 0;
     });
+  }
+  function useCountdown(deadline, onExpire) {
+    const [left, setLeft] = useState(() => Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    useEffect(() => {
+      setLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+      const id = setInterval(() => {
+        const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+        setLeft(remaining);
+        if (remaining <= 0) {
+          clearInterval(id);
+          onExpire();
+        }
+      }, 1000);
+      return () => clearInterval(id);
+    }, [deadline, onExpire]);
+    return left;
+  }
+  function TriggerCountdown({ seconds }) {
+    const deadline = useMemo(() => Date.now() + seconds * 1000, [seconds]);
+    const left = useCountdown(deadline, refresh);
+    return /* @__PURE__ */ React.createElement("span", null, formatCountdown(left));
+  }
+  function Countdown({ deadline, onExpire }) {
+    const left = useCountdown(deadline, onExpire);
+    return /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, formatCountdown(left));
+  }
+  function ProgressRing({ fraction }) {
+    return /* @__PURE__ */ React.createElement("svg", {
+      width: RING_SIZE,
+      height: RING_SIZE,
+      viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
+      className: cl16("ring")
+    }, /* @__PURE__ */ React.createElement("circle", {
+      cx: RING_CENTER,
+      cy: RING_CENTER,
+      r: RING_RADIUS,
+      className: cl16("ring-track")
+    }), /* @__PURE__ */ React.createElement("circle", {
+      cx: RING_CENTER,
+      cy: RING_CENTER,
+      r: RING_RADIUS,
+      className: cl16("ring-fill"),
+      strokeDasharray: RING_CIRCUMFERENCE,
+      strokeDashoffset: RING_CIRCUMFERENCE * (1 - fraction),
+      transform: `rotate(-90 ${RING_CENTER} ${RING_CENTER})`
+    }));
+  }
+  function TriggerIcon({ limited, ring, fraction }) {
+    if (limited)
+      return /* @__PURE__ */ React.createElement(ClockAlertIcon, {
+        width: 18,
+        height: 20,
+        className: cl16("icon-limited")
+      });
+    if (ring)
+      return /* @__PURE__ */ React.createElement(ProgressRing, {
+        fraction
+      });
+    return /* @__PURE__ */ React.createElement(UsageProgressIcon, {
+      width: 18,
+      height: 18
+    });
+  }
+  function ButtonLabel({ mode }) {
+    useExternalStore(store2);
+    const { display } = settings10.use(["display"]);
+    const data = limits.get(mode);
+    if (!data)
+      return null;
+    if (remainingOf(data) === 0 && data.waitTimeSeconds)
+      return /* @__PURE__ */ React.createElement(TriggerCountdown, {
+        seconds: data.waitTimeSeconds
+      });
+    if (display === "fraction")
+      return /* @__PURE__ */ React.createElement("span", null, remainingOf(data), "/", totalOf(data));
+    if (display === "percent")
+      return /* @__PURE__ */ React.createElement("span", null, percentOf(data), "%");
+    return /* @__PURE__ */ React.createElement("span", null, remainingOf(data));
   }
   function formatImagineCount(data) {
     if (!data || !data.available)
@@ -8776,73 +7899,54 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     const img = quotas?.image;
     if (!img)
       return null;
-    return /* @__PURE__ */ React.createElement("span", {
-      className: "truncate text-sm font-semibold"
-    }, formatImagineCount(img));
+    return /* @__PURE__ */ React.createElement("span", null, formatImagineCount(img));
   }
-  function renderRemaining(data, hideTotal) {
-    if (!data)
-      return /* @__PURE__ */ React.createElement("span", {
-        className: "truncate text-sm font-semibold"
-      }, "—");
-    if (data.remainingQueries === 0 && data.waitTimeSeconds)
-      return /* @__PURE__ */ React.createElement(CountdownTimer, {
-        seconds: data.waitTimeSeconds
-      });
-    return /* @__PURE__ */ React.createElement("span", {
-      className: "truncate text-sm font-semibold"
-    }, hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`);
-  }
-  function ButtonLabel({ mode }) {
-    useExternalStore(store3);
-    const { hideTotal } = settings11.use(["hideTotal"]);
-    if (mode === "auto") {
-      const { expert, fast } = limits;
-      if (!expert && !fast)
-        return null;
-      return /* @__PURE__ */ React.createElement("span", {
-        className: cl19("auto-label")
-      }, renderRemaining(expert, hideTotal), /* @__PURE__ */ React.createElement("span", {
-        className: "truncate text-sm font-semibold"
-      }, "·"), renderRemaining(fast, hideTotal));
-    }
-    const data = limits[mode];
-    if (!data)
-      return null;
-    if (data.remainingQueries === 0 && data.waitTimeSeconds)
-      return /* @__PURE__ */ React.createElement(CountdownTimer, {
-        seconds: data.waitTimeSeconds
-      });
-    return /* @__PURE__ */ React.createElement("span", {
-      className: "truncate text-sm font-semibold"
-    }, hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`);
-  }
-  function CountdownTimer({ seconds }) {
-    const [left, setLeft] = useState(seconds);
+  function ButtonIcon() {
+    useExternalStore(store2);
+    const mode = useMode();
+    const isImagine = useIsImagine();
+    const quotas = useImagineQuotas();
+    const { display } = settings10.use(["display"]);
+    const data = limits.get(mode);
+    const limited = isImagine ? isImagineLimited(quotas) : isLimited(mode);
+    const ring = !isImagine && display === "ring" && data != null;
     useEffect(() => {
-      setLeft(seconds);
-      const start = Date.now();
-      const id = setInterval(() => {
-        const remaining = Math.max(0, seconds - Math.floor((Date.now() - start) / 1000));
-        setLeft(remaining);
-        if (remaining <= 0) {
-          clearInterval(id);
-          refresh();
-        }
-      }, 1000);
-      return () => clearInterval(id);
-    }, [seconds]);
+      refresh();
+    }, []);
     return /* @__PURE__ */ React.createElement("span", {
-      className: "truncate text-sm font-semibold"
-    }, formatCountdown(left));
+      className: cl16("trigger")
+    }, /* @__PURE__ */ React.createElement(TriggerIcon, {
+      limited,
+      ring,
+      fraction: data ? fractionOf(data) : 1
+    }), isImagine ? /* @__PURE__ */ React.createElement(ImagineButtonLabel, {
+      quotas
+    }) : /* @__PURE__ */ React.createElement(ButtonLabel, {
+      mode
+    }));
   }
-  function ModeRow({ mode, data, active }) {
-    const { hideTotal } = settings11.use(["hideTotal"]);
-    const limited = data != null && data.remainingQueries === 0;
+  function ModeStatus({ data, deadline }) {
+    if (!data)
+      return /* @__PURE__ */ React.createElement(Text, {
+        size: "xs",
+        color: "muted"
+      }, "—");
+    if (remainingOf(data) === 0 && data.waitTimeSeconds)
+      return /* @__PURE__ */ React.createElement(Countdown, {
+        deadline,
+        onExpire: refresh
+      });
+    return /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "secondary"
+    }, remainingOf(data), "/", totalOf(data), " · ", percentOf(data), "%");
+  }
+  function ModeRow({ title, data, active }) {
+    const deadline = useMemo(() => Date.now() + (data?.waitTimeSeconds ?? 0) * 1000, [data?.waitTimeSeconds]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 0,
-      className: classes(cl19("row"), active && cl19("row-active"))
+      className: classes(cl16("row"), active && cl16("row-active"))
     }, /* @__PURE__ */ React.createElement(Flex, {
       justifyContent: "space-between",
       alignItems: "center",
@@ -8850,25 +7954,26 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: active ? "semibold" : "medium",
-      className: cl19("mode-label")
-    }, MODE_LABELS[mode]), data ? limited && data.waitTimeSeconds ? /* @__PURE__ */ React.createElement(CountdownTimer, {
-      seconds: data.waitTimeSeconds
-    }) : /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, hideTotal ? data.remainingQueries : `${data.remainingQueries}/${data.totalQueries}`) : /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "muted"
-    }, "—")), data && /* @__PURE__ */ React.createElement(Text, {
+      className: cl16("mode-label")
+    }, title), /* @__PURE__ */ React.createElement(ModeStatus, {
+      data,
+      deadline
+    })), data && /* @__PURE__ */ React.createElement("div", {
+      className: cl16("bar")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl16("bar-fill"),
+      style: { transform: `scaleX(${fractionOf(data)})` }
+    })), data && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       color: "muted"
     }, "Resets in ", formatDuration(data.windowSizeSeconds)));
   }
   function TooltipPanel() {
-    useExternalStore(store3);
+    useExternalStore(store2);
     const mode = useMode();
     const isImagine = useIsImagine();
     const quotas = useImagineQuotas();
+    const modes = ModesStore.useModesStore((s) => s.modes);
     if (isImagine)
       return /* @__PURE__ */ React.createElement(ImagineTooltipPanel, {
         quotas
@@ -8876,12 +7981,12 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl19("panel")
-    }, MODES.map((m) => /* @__PURE__ */ React.createElement(ModeRow, {
-      key: m,
-      mode: m,
-      data: limits[m],
-      active: m === mode
+      className: cl16("panel")
+    }, modes.map((m) => /* @__PURE__ */ React.createElement(ModeRow, {
+      key: m.id,
+      title: m.title,
+      data: limits.get(m.id),
+      active: m.id === mode
     })));
   }
   function ImagineTooltipPanel({ quotas }) {
@@ -8889,7 +7994,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl19("panel")
+      className: cl16("panel")
     }, IMAGINE_BUCKETS.map((b) => {
       const data = quotas?.[b];
       const exhausted = data?.available && data.remainingQueries === 0;
@@ -8898,13 +8003,14 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
         justifyContent: "space-between",
         alignItems: "center",
         gap: 8,
-        className: cl19("row")
+        className: cl16("row")
       }, /* @__PURE__ */ React.createElement(Text, {
         size: "sm",
         weight: "medium",
-        className: cl19("mode-label")
-      }, IMAGINE_LABELS[b]), exhausted && data?.nextAvailableAt ? /* @__PURE__ */ React.createElement(NextAvailableCountdown, {
-        ts: data.nextAvailableAt
+        className: cl16("mode-label")
+      }, IMAGINE_LABELS[b]), exhausted && data?.nextAvailableAt ? /* @__PURE__ */ React.createElement(Countdown, {
+        deadline: data.nextAvailableAt,
+        onExpire: refreshImagineQuota
       }) : /* @__PURE__ */ React.createElement(Text, {
         size: "xs",
         color: !data?.available ? "muted" : "secondary"
@@ -8914,31 +8020,12 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       color: "muted"
     }, "Rolling window: ", formatDuration(windowSec)));
   }
-  function NextAvailableCountdown({ ts }) {
-    const [left, setLeft] = useState(Math.max(0, Math.floor((ts - Date.now()) / 1000)));
-    useEffect(() => {
-      setLeft(Math.max(0, Math.floor((ts - Date.now()) / 1000)));
-      const id = setInterval(() => {
-        const remaining = Math.max(0, Math.floor((ts - Date.now()) / 1000));
-        setLeft(remaining);
-        if (remaining <= 0) {
-          clearInterval(id);
-          refreshImagineQuota();
-        }
-      }, 1000);
-      return () => clearInterval(id);
-    }, [ts]);
-    return /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, formatCountdown(left));
-  }
   var rateLimitDisplay_default = definePlugin({
     name: "RateLimitDisplay",
     description: "Shows rate limit usage for the current model mode in the chat bar.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings11,
+    settings: settings10,
     chatBarButton: {
       icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
       tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
@@ -8948,7 +8035,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       locations: ["chat", "imagine"]
     },
     stop() {
-      limits = {};
+      limits.clear();
     },
     zustand: {
       ModesStore: {
@@ -8960,7 +8047,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       CreditQuotaStore: {
         selector: (s) => s.generationSeq,
         handler() {
-          store3.notify();
+          store2.notify();
         }
       }
     },
@@ -8971,192 +8058,90 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }
   });
 
-  // src/plugins/responseNotification/index.ts
-  var settings12 = definePluginSettings({
-    sound: {
-      type: 3 /* BOOLEAN */,
-      description: "Play a notification sound.",
-      default: true
-    },
-    soundUrl: {
-      type: 0 /* STRING */,
-      description: "Custom sound URL (leave empty for default beep).",
-      default: "",
-      placeholder: "https://example.com/sound.mp3"
-    },
-    browserNotification: {
-      type: 3 /* BOOLEAN */,
-      description: "Show a browser notification.",
-      default: true
-    },
-    onlyWhenHidden: {
-      type: 3 /* BOOLEAN */,
-      description: "Only notify when the tab is not focused.",
-      default: true
-    }
-  });
-  var userGestured = false;
-  var gestureCtrl = null;
-  function playBeep() {
-    if (!userGestured)
-      return;
-    const ctx = new AudioContext;
-    const start = () => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 800;
-      gain.gain.value = 0.15;
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-      osc.onended = () => ctx.close();
-    };
-    if (ctx.state === "suspended")
-      ctx.resume().then(start, () => ctx.close());
-    else
-      start();
-  }
-  function playSound() {
-    if (!userGestured)
-      return;
-    const url = settings12.store.soundUrl?.trim();
-    if (url) {
-      const audio = new Audio(url);
-      audio.volume = 0.3;
-      audio.play().catch(() => playBeep());
-    } else {
-      playBeep();
-    }
-  }
-  function onStreamEnd2({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "closed")
-      return;
-    if (settings12.store.onlyWhenHidden && document.visibilityState === "visible")
-      return;
-    if (settings12.store.sound)
-      playSound();
-    if (settings12.store.browserNotification)
-      sendBrowserNotification("Grok", "Response complete.");
-  }
-  var responseNotification_default = definePlugin({
-    name: "ResponseNotification",
-    description: "Notify when Grok finishes responding.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings12,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      if (gestureCtrl)
-        return;
-      gestureCtrl = new AbortController;
-      const markGestured = () => {
-        userGestured = true;
-        gestureCtrl?.abort();
-        gestureCtrl = null;
-      };
-      for (const evt of ["pointerdown", "keydown", "touchstart"]) {
-        addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
-      }
-    },
-    stop() {
-      gestureCtrl?.abort();
-      gestureCtrl = null;
-    },
-    events: {
-      streamEnd: onStreamEnd2
-    }
-  });
-
-  // void-css:D:/Projects/Void/src/plugins/starry/styles.css
-  registerStyle("starry", `.void-starry-picker {
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.375rem;
-    cursor: pointer;
-    padding: 0.125rem;
-    background-color: transparent;
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/downloadTTS/styles.css
+  registerStyle("downloadTTS", `.void-download-tts-spinner {
+    pointer-events: none;
 }
 `);
 
-  // src/plugins/starry/index.tsx
-  var cl20 = classNameFactory("void-starry-");
-  var DEFAULT_COLOR = "#ffffff";
-  var StarsBackground = findExportedComponentLazy("StarsBackground");
-  function hexToRgb(hex) {
-    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
-    if (!m)
-      return [255, 255, 255];
-    const n = parseInt(m[1], 16);
-    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  // src/plugins/downloadTTS/index.tsx
+  var cl17 = classNameFactory("void-download-tts-");
+  var logger22 = new Logger("DownloadTTS");
+  async function fetchAndDownload() {
+    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
+    if (!currentStreamId)
+      return;
+    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
+    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
+    if (voiceId)
+      url += `?voiceId=${encodeURIComponent(voiceId)}`;
+    const res = await fetch(url);
+    if (!res.ok)
+      throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
   }
-  function ColorPicker2() {
-    const { starColor } = settings13.use(["starColor"]);
-    const value = starColor ?? DEFAULT_COLOR;
-    return /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Flex, {
-        alignItems: "center",
-        gap: "0.5rem"
-      }, /* @__PURE__ */ React.createElement("input", {
-        type: "color",
-        className: cl20("picker"),
-        value,
-        onChange: (e) => {
-          settings13.store.starColor = e.target.value;
-        }
-      }), /* @__PURE__ */ React.createElement(Text, {
-        size: "sm",
-        color: "muted"
-      }, value))
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Star color"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Color of the twinkling stars.")));
-  }
-  function StarryBackground() {
-    const { starColor } = settings13.use(["starColor"]);
-    return /* @__PURE__ */ React.createElement("div", {
-      "aria-hidden": true,
-      className: "fixed inset-0 -z-10 pointer-events-none"
-    }, /* @__PURE__ */ React.createElement(StarsBackground, {
-      starColor: hexToRgb(starColor ?? DEFAULT_COLOR)
+  function DownloadButton() {
+    const [loading, onClick] = useAsyncAction(async () => {
+      try {
+        await fetchAndDownload();
+      } catch (e) {
+        logger22.error("Failed to download TTS audio:", e);
+      }
+    });
+    return /* @__PURE__ */ React.createElement(Button, {
+      "aria-label": "Download audio",
+      onClick,
+      disabled: loading,
+      size: "md",
+      shape: "square",
+      variant: "tertiary"
+    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
+      size: "sm",
+      className: cl17("spinner")
+    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
+      size: 16
     }));
   }
-  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings13 = definePluginSettings({
-    starColor: {
-      type: 6 /* COMPONENT */,
-      component: ColorPicker2
-    }
-  }).withPrivateSettings();
-  var starry_default = definePlugin({
-    name: "Starry",
-    description: "Adds Grok's native twinkling starry background to the main page.",
+  var downloadTTS_default = definePlugin({
+    name: "DownloadTTS",
+    description: "Add a download button to the TTS playback controls.",
     authors: [Devs.Prism],
-    settings: settings13,
-    _StarryBg() {
-      return /* @__PURE__ */ React.createElement(WrappedStarry, {
-        key: "void-starry-bg"
-      });
-    },
-    patches: [
-      {
-        find: '"chat-page")',
-        replacement: {
-          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
-          replace: "$1$self._StarryBg(),$2"
-        }
+    patches: [{
+      find: 'tts-controls.stop.label","Stop"',
+      all: true,
+      replacement: {
+        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
+        replace: "$1,$self._renderDownloadButton()]"
       }
-    ],
+    }],
+    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
+  });
+
+  // src/plugins/incognito/index.ts
+  var store3 = () => SettingsStore.useSettingsStore.getState();
+  var unsubscribe = null;
+  function enforce() {
+    if (!store3().isIncognito)
+      store3().setIsIncognito(true);
+  }
+  var incognito_default = definePlugin({
+    name: "Incognito",
+    description: "Force private chat mode for new conversations.",
+    authors: [Devs.Prism],
+    startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
-      settings13.store.starColor ??= DEFAULT_COLOR;
+      enforce();
+      unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce);
+    },
+    stop() {
+      unsubscribe?.();
+      unsubscribe = null;
+      store3().setIsIncognito(false);
     }
   });
 
-  // void-css:D:/Projects/Void/src/plugins/streamerMode/styles.css
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -9263,7 +8248,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings14 = definePluginSettings({
+  var settings11 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -9308,14 +8293,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings14.store[key]);
+      classList.toggle(cls, !!settings11.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings14,
+    settings: settings11,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -9326,36 +8311,792 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // src/plugins/widerChat/index.ts
-  var STYLE_NAME2 = "widerChat";
-  var settings15 = definePluginSettings({
-    width: {
-      type: 1 /* NUMBER */,
-      description: "Maximum chat width in rem (default: 48).",
-      default: 64
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/customInstructions/styles.css
+  registerStyle("customInstructions", `.void-ci-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.void-ci-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.void-ci-card {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: 1rem;
+    padding: 0.625rem 0.75rem;
+    height: 3.25rem;
+    color: var(--text-primary);
+    background: var(--surface-l1);
+    box-shadow: inset 0 0 0 1px var(--border-l1, var(--border));
+    cursor: pointer;
+}
+
+.void-ci-card:hover {
+    background: var(--button-ghost-hover, rgb(255 255 255 / 8%));
+}
+
+.void-ci-card-add {
+    justify-content: center;
+    box-shadow: none;
+    border: 1px dashed var(--border-l1, var(--border));
+}
+
+.void-ci-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.void-ci-card-name {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    flex: 1;
+    gap: 0.125rem;
+}
+
+.void-ci-card-name>* {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.void-ci-card-actions {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.void-ci-card:hover .void-ci-card-actions {
+    opacity: 1;
+}
+
+.void-ci-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.void-ci-label {
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.void-ci-input {
+    width: 100%;
+}
+
+.void-ci-textarea-wrap {
+    border: 1px solid var(--border-l2, var(--border));
+    border-radius: 0.75rem;
+}
+
+.void-ci-textarea-wrap-error {
+    border-color: var(--fg-danger, #ef4444);
+}
+
+.void-ci-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.void-ci-textarea:focus {
+    outline: none;
+}
+
+.void-ci-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 0.25rem;
+}
+
+.void-ci-error-text {
+    color: var(--fg-danger, #ef4444);
+}
+
+.void-ci-trigger {
+    gap: 0.5rem;
+}
+
+.void-ci-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+`);
+
+  // src/plugins/customInstructions/index.tsx
+  var cl18 = classNameFactory("void-ci-");
+  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
+  var CheckIcon = findExportedComponentLazy("CheckIcon");
+  var BookIcon = findExportedComponentLazy("BookIcon");
+  var PenIcon = findExportedComponentLazy("PenIcon");
+  var TrashIcon2 = findExportedComponentLazy("TrashIcon");
+  var PlusIcon = findExportedComponentLazy("PlusIcon");
+  var MAX_LENGTH = 4000;
+  var settings12 = definePluginSettings({
+    editor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
+    }
+  }).withPrivateSettings();
+  function getPresets() {
+    return settings12.plain.presets ?? [];
+  }
+  function setPresets(presets) {
+    settings12.store.presets = presets;
+  }
+  function getAssignments() {
+    return settings12.plain.assignments ?? {};
+  }
+  function PresetCard({ preset, onEdit, onDelete }) {
+    return /* @__PURE__ */ React.createElement("div", {
+      role: "button",
+      className: cl18("card"),
+      onClick: onEdit
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl18("avatar")
+    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
+      seed: preset.id,
+      size: 32
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl18("card-name")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
+      className: cl18("card-actions")
+    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Edit",
+      onClick: (e) => {
+        e.stopPropagation();
+        onEdit();
+      }
+    }, /* @__PURE__ */ React.createElement(PenIcon, {
+      className: "size-3.5 text-secondary"
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Delete",
+      onClick: (e) => {
+        e.stopPropagation();
+        onDelete();
+      }
+    }, /* @__PURE__ */ React.createElement(TrashIcon2, {
+      className: "size-3.5 text-secondary"
+    }))));
+  }
+  function PresetEditor({ preset, onUpdate, onClose }) {
+    const overLimit = preset.prompt.length > MAX_LENGTH;
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl18("editor")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium",
+      className: cl18("label")
+    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      className: cl18("input"),
+      placeholder: "Preset name",
+      value: preset.name,
+      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
+      autoComplete: "off"
+    }), /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium",
+      className: cl18("label")
+    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
+      className: cl18("textarea-wrap", { "textarea-wrap-error": overLimit })
+    }, /* @__PURE__ */ React.createElement(Textarea, {
+      className: cl18("textarea"),
+      placeholder: "How should Grok behave?",
+      value: preset.prompt,
+      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl18("editor-footer")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: overLimit ? undefined : "muted",
+      className: overLimit ? cl18("error-text") : undefined
+    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      onClick: onClose
+    }, "Done")));
+  }
+  function PresetsEditor() {
+    const presets = settings12.use(["presets"]).presets ?? [];
+    const [editingId, setEditingId] = useState(null);
+    const updatePreset = useCallback((updated) => {
+      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
+    }, []);
+    const deletePreset = useCallback((id) => {
+      setPresets(getPresets().filter((p) => p.id !== id));
+      const a = { ...getAssignments() };
+      for (const [k, v] of Object.entries(a)) {
+        if (v === id)
+          delete a[k];
+      }
+      settings12.store.assignments = a;
+      setEditingId((prev) => prev === id ? null : prev);
+    }, []);
+    const addPreset = useCallback(() => {
+      const id = randomId();
+      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
+      setEditingId(id);
+    }, []);
+    const editing = presets.find((p) => p.id === editingId);
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl18("root")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl18("grid")
+    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
+      key: p.id,
+      preset: p,
+      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
+      onDelete: () => deletePreset(p.id)
+    })), /* @__PURE__ */ React.createElement("div", {
+      role: "button",
+      className: cl18("card", "card-add"),
+      onClick: addPreset
+    }, /* @__PURE__ */ React.createElement(PlusIcon, {
+      className: "size-4 text-secondary"
+    }), /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium",
+      color: "muted"
+    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
+      preset: editing,
+      onUpdate: updatePreset,
+      onClose: () => setEditingId(null)
+    }));
+  }
+  function InstructionsMenu({ conversationId }) {
+    const presets = settings12.use(["presets"]).presets ?? [];
+    const assignments = settings12.use(["assignments"]).assignments ?? {};
+    const activePresetId = assignments[conversationId];
+    const assign = useCallback((presetId) => {
+      const a = { ...getAssignments() };
+      if (presetId)
+        a[conversationId] = presetId;
+      else
+        delete a[conversationId];
+      settings12.store.assignments = a;
+    }, [conversationId]);
+    if (!presets.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
+      className: cl18("trigger")
+    }, /* @__PURE__ */ React.createElement(BookIcon, {
+      size: 16
+    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
+      onSelect: () => assign(),
+      className: cl18("menu-item")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm"
+    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
+      key: p.id,
+      onSelect: () => assign(p.id),
+      className: cl18("menu-item")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm"
+    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })))));
+  }
+  var customInstructions_default = definePlugin({
+    name: "CustomInstructions",
+    description: "Create instruction presets and assign them to conversations.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings12,
+    contextMenuItems: {
+      conversation: {
+        label: "Instructions",
+        render: ErrorBoundary.wrap(InstructionsMenu)
+      }
+    },
+    _getPrompt() {
+      const { conversationId } = ChatPageStore.useChatPageStore.getState();
+      if (!conversationId)
+        return;
+      const presetId = getAssignments()[conversationId];
+      if (!presetId)
+        return;
+      const preset = getPresets().find((p) => p.id === presetId);
+      return preset?.prompt?.trim() || undefined;
+    },
+    patches: [
+      {
+        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
+        all: true,
+        replacement: {
+          match: /customInstructions:(\i)\.customInstructions/g,
+          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/oneko/index.ts
+  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
+  var ONEKO_SCRIPT = '(function oneko(){const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
+  var oneko_default = definePlugin({
+    name: "Oneko",
+    description: "Cat follows your mouse cursor.",
+    authors: [Devs.adryd],
+    cleanupSelectors: ["#oneko"],
+    start() {
+      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
+      const el = document.createElement("script");
+      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
+      document.head.appendChild(el);
+      el.addEventListener("load", () => {
+        el.remove();
+        URL.revokeObjectURL(el.src);
+      }, { once: true });
     }
   });
-  function applyWidth() {
-    const w = settings15.store.width ?? 64;
-    registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
+
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterSidebar/styles.css
+  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
+.group.peer [data-sidebar="content"] > .grow {
+    cursor: default !important;
+}
+
+.group.peer [data-sidebar="sidebar"] + div::after {
+    background-color: transparent !important;
+}
+
+.void-sidebar-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    min-width: 0;
+    flex: 1;
+}
+
+.void-sidebar-card:hover {
+    background-color: var(--button-ghost-hover);
+}
+
+.void-sidebar-card button[data-state] {
+    pointer-events: none;
+    background-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.void-sidebar-info {
+    min-width: 0;
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-sidebar-card { transition: none; }
+}
+
+.void-sidebar-name,
+.void-sidebar-plan {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.group\\/sidebar-menu-item:hover .void-sel-wrap {
+    display: inline-flex;
+}
+`);
+
+  // src/turbopack/common/plan.ts
+  var PLAN_NAMES = {
+    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
+    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
+    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
+    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
+  };
+  var X_SUB_NAMES = {
+    PremiumPlus: "SuperGrok",
+    Premium: "X Premium",
+    Basic: "X Basic"
+  };
+  function getPlanName(bestSubscription, xSubscriptionType) {
+    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
   }
-  var widerChat_default = definePlugin({
-    name: "WiderChat",
-    description: "Adjustable chat width for big monitors.",
+
+  // src/plugins/betterSidebar/index.tsx
+  var logger23 = new Logger("BetterSidebar");
+  var cl19 = classNameFactory("void-sidebar-");
+  var settings13 = definePluginSettings({
+    clickToToggle: {
+      type: 3 /* BOOLEAN */,
+      description: "Click anywhere on the sidebar to toggle it.",
+      default: true
+    },
+    defaultCollapsed: {
+      type: 3 /* BOOLEAN */,
+      description: "Start with the sidebar collapsed on page load.",
+      default: false
+    },
+    batchSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Show checkboxes on conversations for bulk selection and deletion.",
+      default: true
+    }
+  });
+  function UserCard({ AvatarMenu }) {
+    const { open: open2 } = SidebarComponents.useSidebar();
+    const { user } = SessionStore.useSession();
+    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
+    const cardRef = useRef(null);
+    if (!open2 || !user)
+      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
+    const forward = (e, type) => {
+      if (!e.isTrusted)
+        return;
+      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
+    };
+    return /* @__PURE__ */ React.createElement("div", {
+      ref: cardRef,
+      className: cl19("card"),
+      onPointerDown: (e) => forward(e, "pointerdown"),
+      onPointerUp: (e) => forward(e, "pointerup")
+    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      justifyContent: "center",
+      gap: "0",
+      className: cl19("info")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      size: "sm",
+      weight: "medium",
+      className: cl19("name")
+    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text, {
+      as: "span",
+      size: "xs",
+      color: "secondary",
+      className: cl19("plan")
+    }, getPlanName(bestSubscription, user.xSubscriptionType))));
+  }
+  var selection2 = createSelectionStore();
+  var CONVERSATION_PAGE = "chat";
+  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
+  async function deleteConversations(ids) {
+    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
+    if (currentConvId && ids.includes(currentConvId)) {
+      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
+    }
+    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger23.error("Failed to delete", id, e))));
+  }
+  function SelectCheckbox({ id, route }) {
+    const enabled = settings13.use(["batchSelect"]).batchSelect;
+    if (!enabled || !id || !isConversationRoute(route))
+      return null;
+    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
+      selection: selection2,
+      id
+    });
+  }
+  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
+  var betterSidebar_default = definePlugin({
+    name: "BetterSidebar",
+    description: "Various sidebar improvements.",
+    authors: [Devs.Prism],
+    settings: settings13,
+    managedStyle: "betterSidebar",
+    _UserCard: ErrorBoundary.wrap(UserCard),
+    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
+      selection: selection2,
+      noun: "conversation",
+      title: "Delete conversations",
+      onDelete: deleteConversations
+    }), null),
+    _wrapCheckbox(item, id, route) {
+      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
+    },
+    _wrapSidebarClick(onClick, id, route) {
+      return (e) => {
+        if (id && settings13.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          e.stopPropagation();
+          selection2.toggle(id);
+          return;
+        }
+        onClick?.(e);
+      };
+    },
+    _defaultOpen() {
+      return !settings13.store.defaultCollapsed;
+    },
+    _onSidebarClick() {
+      if (!settings13.store.clickToToggle)
+        return;
+      return (e) => {
+        const target = e.target;
+        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
+          return;
+        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
+      };
+    },
+    start() {
+      selection2.clear();
+    },
+    stop() {
+      selection2.clear();
+    },
+    patches: [
+      {
+        find: "AvatarDropdownMenu,{expanded:",
+        replacement: {
+          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
+          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
+        }
+      },
+      {
+        find: "useSidebar must be used within a SidebarProvider",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /\{defaultOpen:(\i),open:/,
+            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
+          },
+          {
+            match: /data-sidebar":"sidebar",className:/,
+            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
+          }
+        ]
+      },
+      {
+        find: '"Editing actions","Editing actions"',
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
+            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
+          },
+          {
+            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
+            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
+          }
+        ]
+      },
+      {
+        find: '"sidebar-expand","Expand"',
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
+          replace: "$self._renderActionBar(),$&"
+        }
+      }
+    ]
+  });
+
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/messageTimestamps/styles.css
+  registerStyle("messageTimestamps", `.void-timestamp {
+    margin-bottom: 0.125rem;
+}
+
+@media print {
+    .void-timestamp {
+        display: none;
+    }
+}
+`);
+
+  // src/plugins/messageTimestamps/index.tsx
+  var settings14 = definePluginSettings({
+    showDate: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the full date for messages older than today.",
+      default: true
+    },
+    hideOwnMessages: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide timestamps on your own messages.",
+      default: false
+    }
+  });
+  function formatTimestamp(iso, showDate) {
+    const date = new Date(iso);
+    const now = new Date;
+    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (!showDate || today)
+      return time;
+    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
+  }
+  var messageTimestamps_default = definePlugin({
+    name: "MessageTimestamps",
+    description: "Shows timestamps on chat messages.",
+    authors: [Devs.Prism],
+    settings: settings14,
+    _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
+      if (!response?.createTime)
+        return null;
+      if (settings14.store.hideOwnMessages && response.sender === "human")
+        return null;
+      return /* @__PURE__ */ React.createElement(Text, {
+        as: "span",
+        size: "xs",
+        color: "muted",
+        className: "void-timestamp"
+      }, formatTimestamp(response.createTime, settings14.store.showDate));
+    }),
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._renderTimestamp({response:$1}),$&"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/cleaner/index.ts
+  var settings15 = definePluginSettings({
+    hideUpgradePlan: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade plan button in the user menu.",
+      default: true
+    },
+    hideUpsellCard: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upsell card banner.",
+      default: true
+    },
+    hideUpsellSmall: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the small SuperGrok upsell banner.",
+      default: true
+    },
+    hideModelUpsell: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade prompt in the model selector.",
+      default: true
+    },
+    hideInaccessibleModels: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide locked/inaccessible models in the model selector.",
+      default: true
+    },
+    hideNotificationBanner: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Get notified when Grok finishes answering" banner.',
+      default: true
+    },
+    hideConnectX: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
+      default: true
+    }
+  });
+  var hideComponentPatch = (name, setting, all = true) => ({
+    find: `"${name}",0,`,
+    all,
+    replacement: {
+      match: new RegExp(`"${name}",0,`),
+      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
+    }
+  });
+  var cleaner_default = definePlugin({
+    name: "Cleaner",
+    description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
     settings: settings15,
-    start: applyWidth,
-    onSettingsChange: applyWidth,
-    stop() {
-      unregisterStyle(STYLE_NAME2);
-    }
+    patches: [
+      {
+        find: '"user-dropdown.upgrade","Upgrade plan"',
+        all: true,
+        replacement: {
+          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          replace: ",$self.settings.store.hideUpgradePlan||$1"
+        }
+      },
+      {
+        find: "UPSELL_CARD_PRIORITY)",
+        all: true,
+        replacement: {
+          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
+          replace: "$1&&!$self.settings.store.hideUpsellCard"
+        }
+      },
+      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
+      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
+      {
+        find: "connect-x-upsell-dismissed",
+        replacement: {
+          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
+          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
+        }
+      },
+      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
+      {
+        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
+            replace: "$&$self.settings.store.hideModelUpsell||"
+          },
+          {
+            match: /,(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
+            replace: ",($self.settings.store.hideInaccessibleModels?[]:$1)$2"
+          }
+        ]
+      }
+    ]
   });
 
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [oneko_default.name]: oneko_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [responseNotification_default.name]: responseNotification_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [widerChat_default.name]: widerChat_default };
-  // void-css:D:/Projects/Void/src/api/Notices.css
+  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [responseNotification_default.name]: responseNotification_default, [exportChat_default.name]: exportChat_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [messageTimestamps_default.name]: messageTimestamps_default, [cleaner_default.name]: cleaner_default };
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
@@ -9409,29 +9150,29 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     NoticeType2["ERROR"] = "error";
     NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var cl21 = classNameFactory("void-notice-");
+  var cl20 = classNameFactory("void-notice-");
   var ICONS = {
-    ["info" /* INFO */]: (size) => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
-      size
+    ["info" /* INFO */]: () => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
+      size: 18
     }),
-    ["warning" /* WARNING */]: (size) => /* @__PURE__ */ React.createElement(TriangleAlert, {
-      size
+    ["warning" /* WARNING */]: () => /* @__PURE__ */ React.createElement(TriangleAlert, {
+      size: 18
     }),
-    ["error" /* ERROR */]: (size) => /* @__PURE__ */ React.createElement(CircleXIcon, {
-      size
+    ["error" /* ERROR */]: () => /* @__PURE__ */ React.createElement(CircleXIcon, {
+      size: 18
     }),
-    ["success" /* SUCCESS */]: (size) => /* @__PURE__ */ React.createElement(CircleCheckIcon, {
-      size
+    ["success" /* SUCCESS */]: () => /* @__PURE__ */ React.createElement(CircleCheckIcon, {
+      size: 18
     })
   };
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl21("root")
+      className: cl20("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl21("icon")
-    }, ICONS[type ?? "info" /* INFO */](18)), /* @__PURE__ */ React.createElement("span", {
-      className: cl21("message")
+      className: cl20("icon")
+    }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
+      className: cl20("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
@@ -9441,7 +9182,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       variant: "tertiary",
       size: "sm",
       shape: "square",
-      className: cl21("close"),
+      className: cl20("close"),
       onClick: onClose
     }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
@@ -9485,10 +9226,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     useCallback: () => useCallback,
     onceReady: () => onceReady,
     createElement: () => createElement,
-    WorkspaceStore: () => WorkspaceStore,
-    WorkspaceConnectorsStore: () => WorkspaceConnectorsStore,
-    UpsellStore: () => UpsellStore,
-    TourGuideStore: () => TourGuideStore,
     TooltipTrigger: () => TooltipTrigger,
     TooltipProvider: () => TooltipProvider,
     TooltipContent: () => TooltipContent,
@@ -9498,9 +9235,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     Toaster: () => Toaster,
     Textarea: () => Textarea,
     TextToSpeechStore: () => TextToSpeechStore,
-    TasksStore: () => TasksStore,
     TabsTrigger: () => TabsTrigger,
-    TabsManagerStore: () => TabsManagerStore,
     TabsList: () => TabsList,
     TabsContent: () => TabsContent,
     Tabs: () => Tabs,
@@ -9511,14 +9246,11 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     TableBody: () => TableBody,
     Table: () => Table,
     Switch: () => Switch,
-    SuggestionStore: () => SuggestionStore,
     SubscriptionsStore: () => SubscriptionsStore,
     Spinner: () => Spinner,
     Slider: () => Slider,
-    SkillsStore: () => SkillsStore,
     Skeleton: () => Skeleton,
     SidebarComponents: () => SidebarComponents,
-    ShareStore: () => ShareStore,
     SettingsTitle: () => SettingsTitle,
     SettingsStore: () => SettingsStore,
     SettingsRow: () => SettingsRow,
@@ -9531,35 +9263,27 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     SelectItem: () => SelectItem,
     SelectContent: () => SelectContent,
     Select: () => Select,
-    ScrollStore: () => ScrollStore,
     RoutingStore: () => RoutingStore,
     ResponsiveDialog: () => ResponsiveDialog,
     ResponseStore: () => ResponseStore,
-    ReportStore: () => ReportStore,
     React: () => React,
     Portal: () => Portal,
     PopoverTrigger: () => PopoverTrigger,
     PopoverContent: () => PopoverContent,
     PopoverArrow: () => PopoverArrow,
     Popover: () => Popover,
-    PersonalityStore: () => PersonalityStore,
-    NotificationsStore: () => NotificationsStore,
     MotionDiv: () => MotionDiv,
     ModesStore: () => ModesStore,
-    MentionMenuStore: () => MentionMenuStore,
     MediaStore: () => MediaStore,
     LazyComponent: () => LazyComponent,
     Label: () => Label,
     Input: () => Input,
-    ImagineModelOverrideStore: () => ImagineModelOverrideStore,
-    ImageEditorStore: () => ImageEditorStore,
     HoverCardTrigger: () => HoverCardTrigger,
     HoverCardContent: () => HoverCardContent,
     HoverCard: () => HoverCard,
     Fragment: () => Fragment,
     FilesPageStore: () => FilesPageStore,
     FileUtils: () => FileUtils,
-    FileStore: () => FileStore,
     FeatureStore: () => FeatureStore,
     DropdownMenuTrigger: () => DropdownMenuTrigger,
     DropdownMenuSubTrigger: () => DropdownMenuSubTrigger,
@@ -9580,7 +9304,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     DrawerDescription: () => DrawerDescription,
     DrawerContent: () => DrawerContent,
     Drawer: () => Drawer,
-    DictationStore: () => DictationStore,
     DialogTrigger: () => DialogTrigger,
     DialogTitle: () => DialogTitle,
     DialogPortal: () => DialogPortal,
@@ -9593,7 +9316,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     Dialog: () => Dialog,
     CreditQuotaStore: () => CreditQuotaStore,
     ConversationStore: () => ConversationStore,
-    CommandMenuStore: () => CommandMenuStore,
     CommandList: () => CommandList,
     CommandItem: () => CommandItem,
     CommandInput: () => CommandInput,
@@ -9613,7 +9335,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     Button: () => Button,
     Badge: () => Badge,
     Avatar: () => Avatar,
-    AssetStore: () => AssetStore,
     ApiClients: () => ApiClients,
     AnimatePresence: () => AnimatePresence,
     AlertDialogTrigger: () => AlertDialogTrigger,
