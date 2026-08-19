@@ -13,15 +13,15 @@ const repoRawUrl = repoUrl.replace("github.com", "raw.githubusercontent.com");
 
 const environment = isDev ? "Development" : "Production";
 
-const LICENSE_BANNER = `/**
- * Void v${pkg.version} — A modification for grok.com
- * (c) ${new Date().getFullYear()} ${pkg.author} & Void Contributors
- * Licensed under GPL-3.0-or-later
- * Source: ${repoUrl}
- */`;
-
 const FORK_URL = "https://github.com/0-V-linuxdo/Void";
 const FORK_RAW_URL = "https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B";
+
+const LICENSE_BANNER = `/**
+ * Void++ v${pkg.version} — A modification for grok.com
+ * (c) ${new Date().getFullYear()} Prism & Void Contributors
+ * Licensed under GPL-3.0-or-later
+ * Source: ${FORK_URL}
+ */`;
 
 const USERSCRIPT_HEADER = `// ==UserScript==
 // @name         Void++
@@ -30,7 +30,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @description  A modification for grok.com
 // @author       ${pkg.author} & Void Contributors
 // @environment  ${environment}
-// @homepageURL  ${repoUrl}
+// @homepageURL  ${FORK_URL}
 // @icon         ${repoRawUrl}/main/assets/logos/app-icon/void-icon-256.png
 // @match        *://grok.com/*
 // @run-at       document-start

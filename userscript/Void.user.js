@@ -5,7 +5,7 @@
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
-// @homepageURL  https://github.com/imjustprism/Void
+// @homepageURL  https://github.com/0-V-linuxdo/Void
 // @icon         https://raw.githubusercontent.com/imjustprism/Void/main/assets/logos/app-icon/void-icon-256.png
 // @match        *://grok.com/*
 // @run-at       document-start
@@ -28,10 +28,10 @@
 // ==/UserScript==
 
 /**
- * Void v1.0.3.10 — A modification for grok.com
+ * Void++ v1.0.3.10 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
- * Source: https://github.com/imjustprism/Void
+ * Source: https://github.com/0-V-linuxdo/Void
  */
 (() => {
   var __defProp = Object.defineProperty;
