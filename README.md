@@ -8,7 +8,7 @@
 
 **New**
 
-- **NoShareLink** — Hide Share Project and Create share link buttons (separate toggles).
+- **NoShareLink** — Hide Share Project (in a project) and Create share link (top-right of chats); separate toggles.
 - **NoDictation** — Hide the Dictation (voice input) button from the chat input bar.
 - **UsageDisplay** — Shows official weekly SuperGrok usage in the chat bar.
 - **Placeholder** — Replace the rotating chat input placeholder.

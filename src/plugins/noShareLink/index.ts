@@ -14,12 +14,12 @@ const STYLE_NAME = "noShareLink";
 const settings = definePluginSettings({
     hideShareProject: {
         type: OptionType.BOOLEAN,
-        description: "Hide the Share Project button.",
+        description: "Inside a project: hide the top-right Share Project button.",
         default: true,
     },
     hideCreateShareLink: {
         type: OptionType.BOOLEAN,
-        description: "Hide the Create share link button.",
+        description: "Not in a project: hide the top-right Create share link button on chats.",
         default: true,
     },
 });
@@ -37,7 +37,7 @@ function apply() {
 
 export default definePlugin({
     name: "NoShareLink",
-    description: "Hide Share Project and Create share link buttons for privacy.",
+    description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,

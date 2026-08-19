@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"69d6c6b"}`
-    }, `(${"69d6c6b"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8d4fcb2"}`
+    }, `(${"8d4fcb2"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -9422,12 +9422,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var settings16 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
-      description: "Hide the Share Project button.",
+      description: "Inside a project: hide the top-right Share Project button.",
       default: true
     },
     hideCreateShareLink: {
       type: 3 /* BOOLEAN */,
-      description: "Hide the Create share link button.",
+      description: "Not in a project: hide the top-right Create share link button on chats.",
       default: true
     }
   });
@@ -9444,7 +9444,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   var noShareLink_default = definePlugin({
     name: "NoShareLink",
-    description: "Hide Share Project and Create share link buttons for privacy.",
+    description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
