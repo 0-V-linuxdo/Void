@@ -8,6 +8,7 @@
 
 **New**
 
+- **ChatStateFavicons** — Tab favicon reflects chat state (streaming, done, ready, error) with five overlay styles.
 - **NoShareLink** — Hide Share Project (in a project) and Create share link (top-right of chats); separate toggles.
 - **NoDictation** — Hide the Dictation (voice input) button from the chat input bar.
 - **UsageDisplay** — Shows official weekly SuperGrok usage in the chat bar.

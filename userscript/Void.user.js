@@ -2596,7 +2596,7 @@ ${sourceUrl}`;
   function classes(...names) {
     return names.filter(Boolean).join(" ");
   }
-  // void-css:/tmp/Void-push/src/components/ColorSettingRow.css
+  // void-css:/tmp/void/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -2635,7 +2635,7 @@ ${sourceUrl}`;
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/Void-push/src/components/ConfirmDialog.css
+  // void-css:/tmp/void/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     contain: content;
     width: 100%;
@@ -2865,7 +2865,7 @@ ${sourceUrl}`;
     },
     configurable: true
   });
-  // void-css:/tmp/Void-push/src/components/ErrorCard.css
+  // void-css:/tmp/void/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -2978,7 +2978,7 @@ ${sourceUrl}`;
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/Void-push/src/components/SelectionUI.css
+  // void-css:/tmp/void/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3636,7 +3636,7 @@ ${sourceUrl}`;
     ]
   });
 
-  // void-css:/tmp/Void-push/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/void/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4116,7 +4116,7 @@ ${sourceUrl}`;
     d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
   }));
 
-  // void-css:/tmp/Void-push/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/void/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4128,7 +4128,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void-push/src/components/settings/CssEditor.css
+  // void-css:/tmp/void/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -4400,7 +4400,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:/tmp/Void-push/src/components/settings/shared.css
+  // void-css:/tmp/void/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4451,7 +4451,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void-push/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/void/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
@@ -4466,7 +4466,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void-push/src/components/settings/PluginCard.css
+  // void-css:/tmp/void/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -4497,7 +4497,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void-push/src/components/settings/BaseCard.css
+  // void-css:/tmp/void/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4707,7 +4707,7 @@ ${sourceUrl}`;
     });
   }
 
-  // void-css:/tmp/Void-push/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/void/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -4723,7 +4723,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void-push/src/components/settings/SettingField.css
+  // void-css:/tmp/void/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
 }
@@ -5175,7 +5175,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:/tmp/Void-push/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/void/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -5198,7 +5198,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void-push/src/components/settings/ThemeCard.css
+  // void-css:/tmp/void/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5469,7 +5469,7 @@ ${sourceUrl}`;
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/Void-push/src/plugins/experiments/styles.css
+  // void-css:/tmp/void/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8d4fcb2"}`
-    }, `(${"8d4fcb2"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"d98deae"}`
+    }, `(${"d98deae"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6249,7 +6249,7 @@ ${sourceUrl}`;
     ]
   });
 
-  // void-css:/tmp/Void-push/src/plugins/placeholder/styles.css
+  // void-css:/tmp/void/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -6380,7 +6380,7 @@ div:has(> button[aria-label*="Dictation"]) {
     ]
   });
 
-  // void-css:/tmp/Void-push/src/plugins/betterFiles/styles.css
+  // void-css:/tmp/void/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -6731,7 +6731,7 @@ div:has(> button[aria-label*="Dictation"]) {
     }
   });
 
-  // void-css:/tmp/Void-push/src/plugins/streamerMode/styles.css
+  // void-css:/tmp/void/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -7012,7 +7012,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ]
   });
 
-  // void-css:/tmp/Void-push/src/plugins/betterImagine/styles.css
+  // void-css:/tmp/void/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -7653,7 +7653,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // void-css:/tmp/Void-push/src/plugins/downloadTTS/styles.css
+  // void-css:/tmp/void/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -7713,7 +7713,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
   });
 
-  // void-css:/tmp/Void-push/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/void/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8397,7 +8397,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/Void-push/src/plugins/exportChat/styles.css
+  // void-css:/tmp/void/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -8594,7 +8594,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/Void-push/src/plugins/customInstructions/styles.css
+  // void-css:/tmp/void/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -8998,7 +8998,322 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/Void-push/src/plugins/betterSidebar/styles.css
+  // src/plugins/chatStateFavicons/icons.ts
+  var ICON_STYLES = ["original", "badge", "dot", "hole", "bg"];
+  var STYLE_OPTIONS = [
+    { label: "Original emoji", value: "original" },
+    { label: "Badge + glyph", value: "badge", default: true },
+    { label: "Color dot", value: "dot" },
+    { label: "Mark tint", value: "hole" },
+    { label: "Background tint", value: "bg" }
+  ];
+  var KIND_COLOR = {
+    rotate: "#3B82F6",
+    done: "#22C55E",
+    ready: "#F59E0B",
+    error: "#EF4444"
+  };
+  var HOLE_IDLE = "#050505";
+  var MARK_FILL = "#FCFCFC";
+  var GROK_MARK_PATH = "M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815";
+  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var ORIGINAL_EMOJI = {
+    rotate: "\uD83D\uDD04",
+    done: "✔️",
+    ready: "\uD83D\uDC4D",
+    error: "\uD83D\uDEAB"
+  };
+  function isIconStyle(value) {
+    return typeof value === "string" && ICON_STYLES.includes(value);
+  }
+  function svgEmoji(emoji) {
+    return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`)}`;
+  }
+  function toSvgData(inner, viewBox = "0 0 64 64") {
+    const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg2)}`;
+  }
+  function grokMarkSvg() {
+    return [
+      `<rect width="64" height="64" rx="14" fill="${HOLE_IDLE}"/>`,
+      `<g transform="translate(8 8) scale(2)" fill="${MARK_FILL}" fill-rule="evenodd">`,
+      `<path d="${GROK_MARK_PATH}"/>`,
+      "</g>"
+    ].join("");
+  }
+  function officialGrokSvg(markColor, bgColor) {
+    return [
+      `<path d="${GROK_BG_PATH}" fill="${bgColor}"/>`,
+      `<path d="${GROK_MARK_P1}" fill="${markColor}"/>`,
+      `<path d="${GROK_MARK_P2}" fill="${markColor}"/>`
+    ].join("");
+  }
+  function badgeGlyph(kind) {
+    if (kind === "rotate") {
+      return [
+        '<g transform="translate(51.5 51.5)"><g>',
+        '<path d="M0-6.1 A6.1 6.1 0 1 1 -5.3 3.05" fill="none" stroke="#fff" stroke-width="2.15" stroke-linecap="round"/>',
+        '<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.85s" repeatCount="indefinite"/>',
+        "</g></g>"
+      ].join("");
+    }
+    if (kind === "done") {
+      return '<path d="M46.6 51.7 L50.1 55.3 L56.8 47.4" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    if (kind === "ready") {
+      return [
+        '<path d="M51.5 56.4 V46.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+        '<path d="M46.6 51.2 L51.5 46.2 L56.4 51.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+      ].join("");
+    }
+    return [
+      '<path d="M47.2 47.2 L55.8 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+      '<path d="M55.8 47.2 L47.2 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
+    ].join("");
+  }
+  function composeIcon(style, kind, officialHref) {
+    if (style === "original") {
+      if (kind === "wait")
+        return officialHref;
+      return svgEmoji(ORIGINAL_EMOJI[kind]);
+    }
+    const color = kind === "wait" ? undefined : KIND_COLOR[kind];
+    if (style === "hole") {
+      return toSvgData(officialGrokSvg(color ?? MARK_FILL, HOLE_IDLE), "0 0 512 512");
+    }
+    if (style === "bg") {
+      return toSvgData(officialGrokSvg(MARK_FILL, color ?? HOLE_IDLE), "0 0 512 512");
+    }
+    if (!color || kind === "wait")
+      return toSvgData(grokMarkSvg());
+    const badge = style === "dot" ? [
+      '<circle cx="52.2" cy="52.2" r="10.4" fill="#050505"/>',
+      `<circle cx="52.2" cy="52.2" r="7.7" fill="${color}"/>`
+    ].join("") : [
+      '<circle cx="51.5" cy="51.5" r="12.15" fill="#050505"/>',
+      `<circle cx="51.5" cy="51.5" r="9.55" fill="${color}"/>`,
+      badgeGlyph(kind)
+    ].join("");
+    return toSvgData(grokMarkSvg() + badge);
+  }
+  function buildIcons(style, officialHref) {
+    return {
+      wait: composeIcon(style, "wait", officialHref),
+      rotate: composeIcon(style, "rotate", officialHref),
+      done: composeIcon(style, "done", officialHref),
+      ready: composeIcon(style, "ready", officialHref),
+      error: composeIcon(style, "error", officialHref)
+    };
+  }
+
+  // src/plugins/chatStateFavicons/index.ts
+  var ICON_ID = "void-chat-state-favicon";
+  var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
+  var settings13 = definePluginSettings({
+    style: {
+      type: 4 /* SELECT */,
+      description: "How the Grok mark is overlaid with chat state.",
+      options: STYLE_OPTIONS
+    }
+  });
+  var officialHref = "/images/favicon.svg";
+  var icons = buildIcons("badge", officialHref);
+  var kind = "wait";
+  var justFinished = false;
+  var lastWasError = false;
+  var lastConv;
+  var observer = null;
+  var inputCtrl = null;
+  var raf = 0;
+  function currentStyle() {
+    const value = settings13.store.style;
+    return isIconStyle(value) ? value : "badge";
+  }
+  function captureOfficial() {
+    const existing = document.querySelector(`link[rel~="icon"]:not(#${ICON_ID})`);
+    const href = existing?.href;
+    if (href && !href.startsWith("data:"))
+      return href;
+    return `${location.origin}/images/favicon.svg`;
+  }
+  function isIconLink(node) {
+    return node instanceof HTMLLinkElement && (node.relList.contains("icon") || /\bicon\b/i.test(node.rel));
+  }
+  function stripCompetitors() {
+    for (const node of document.head.querySelectorAll("link")) {
+      if (node.id !== ICON_ID && isIconLink(node))
+        node.remove();
+    }
+  }
+  function applyHref(href) {
+    const { head } = document;
+    if (!head)
+      return;
+    stripCompetitors();
+    let link = document.getElementById(ICON_ID);
+    if (!link) {
+      link = document.createElement("link");
+      link.id = ICON_ID;
+      link.rel = "icon shortcut icon";
+      link.type = "image/svg+xml";
+      link.setAttribute("sizes", "any");
+      head.prepend(link);
+    } else if (head.firstChild !== link) {
+      head.prepend(link);
+    }
+    if (link.getAttribute("href") !== href)
+      link.setAttribute("href", href);
+  }
+  function setKind(next) {
+    kind = next;
+    applyHref(icons[next]);
+  }
+  function rebuildIcons() {
+    icons = buildIcons(currentStyle(), officialHref);
+    applyHref(icons[kind]);
+  }
+  function isInputEmpty() {
+    const { conversationId, queryByConversationId } = ChatPageStore.useChatPageStore.getState();
+    const draft = (conversationId ? queryByConversationId[conversationId] : queryByConversationId[""]) ?? "";
+    if (draft.replaceAll("​", "").trim())
+      return false;
+    const editor = document.querySelector(EDITOR_SEL);
+    if (!editor?.isConnected)
+      return true;
+    if (editor.querySelector("p.is-empty.is-editor-empty"))
+      return true;
+    return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
+  }
+  function evaluate() {
+    const { streamedMessageId, conversationId } = ChatPageStore.useChatPageStore.getState();
+    if (streamedMessageId) {
+      justFinished = false;
+      lastWasError = false;
+      lastConv = conversationId;
+      setKind("rotate");
+      return;
+    }
+    const sameConv = lastConv === conversationId;
+    if (lastWasError && sameConv) {
+      if (!isInputEmpty()) {
+        lastWasError = false;
+        justFinished = false;
+        setKind("ready");
+        return;
+      }
+      setKind("error");
+      return;
+    }
+    if (justFinished && sameConv) {
+      if (!isInputEmpty()) {
+        justFinished = false;
+        setKind("ready");
+        return;
+      }
+      setKind("done");
+      return;
+    }
+    justFinished = false;
+    lastWasError = false;
+    setKind(isInputEmpty() ? "wait" : "ready");
+  }
+  function scheduleEvaluate() {
+    if (raf)
+      return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      evaluate();
+    });
+  }
+  function onStreamEnd2({ responseId }) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    lastConv = ChatPageStore.useChatPageStore.getState().conversationId;
+    lastWasError = response?.state === "error" || response?.error != null;
+    justFinished = !lastWasError;
+    evaluate();
+  }
+  function startGuard() {
+    observer?.disconnect();
+    observer = new MutationObserver((list) => {
+      for (const m of list) {
+        if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
+          applyHref(icons[kind]);
+          return;
+        }
+        for (const node of m.addedNodes) {
+          if (isIconLink(node) && node.id !== ICON_ID) {
+            applyHref(icons[kind]);
+            return;
+          }
+        }
+      }
+    });
+    observer.observe(document.head, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href", "rel"]
+    });
+  }
+  function startInputWatch() {
+    inputCtrl?.abort();
+    inputCtrl = new AbortController;
+    const { signal } = inputCtrl;
+    document.addEventListener("input", scheduleEvaluate, { capture: true, passive: true, signal });
+    document.addEventListener("compositionend", scheduleEvaluate, { capture: true, passive: true, signal });
+  }
+  function restoreOfficial() {
+    observer?.disconnect();
+    observer = null;
+    document.getElementById(ICON_ID)?.remove();
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.type = "image/svg+xml";
+    link.href = officialHref;
+    document.head.prepend(link);
+  }
+  var chatStateFavicons_default = definePlugin({
+    name: "ChatStateFavicons",
+    description: "Show streaming, done, ready, and error states on the tab favicon.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings13,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    cleanupSelectors: [`#${ICON_ID}`],
+    start() {
+      officialHref = captureOfficial();
+      rebuildIcons();
+      startGuard();
+      startInputWatch();
+      evaluate();
+    },
+    stop() {
+      if (raf)
+        cancelAnimationFrame(raf);
+      raf = 0;
+      inputCtrl?.abort();
+      inputCtrl = null;
+      justFinished = false;
+      lastWasError = false;
+      lastConv = undefined;
+      restoreOfficial();
+    },
+    onSettingsChange: rebuildIcons,
+    zustand: {
+      ChatPageStore: {
+        selector: (s) => `${s.streamedMessageId ?? ""}|${s.conversationId ?? ""}`,
+        handler: evaluate
+      }
+    },
+    events: {
+      streamEnd: onStreamEnd2
+    }
+  });
+
+  // void-css:/tmp/void/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -9057,7 +9372,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // src/plugins/betterSidebar/index.tsx
   var logger22 = new Logger("BetterSidebar");
   var cl21 = classNameFactory("void-sidebar-");
-  var settings13 = definePluginSettings({
+  var settings14 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -9120,7 +9435,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger22.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings13.use(["batchSelect"]).batchSelect;
+    const enabled = settings14.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
@@ -9133,7 +9448,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
-    settings: settings13,
+    settings: settings14,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
@@ -9147,7 +9462,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings13.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings14.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -9157,10 +9472,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
       };
     },
     _defaultOpen() {
-      return !settings13.store.defaultCollapsed;
+      return !settings14.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings13.store.clickToToggle)
+      if (!settings14.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -9223,7 +9538,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     ]
   });
 
-  // void-css:/tmp/Void-push/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/void/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -9295,7 +9610,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/Void-push/src/plugins/messageTimestamps/styles.css
+  // void-css:/tmp/void/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -9308,7 +9623,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings14 = definePluginSettings({
+  var settings15 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -9333,18 +9648,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings14,
+    settings: settings15,
     _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
       if (!response?.createTime)
         return null;
-      if (settings14.store.hideOwnMessages && response.sender === "human")
+      if (settings15.store.hideOwnMessages && response.sender === "human")
         return null;
       return /* @__PURE__ */ React.createElement(Text, {
         as: "span",
         size: "xs",
         color: "muted",
         className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings14.store.showDate));
+      }, formatTimestamp(response.createTime, settings15.store.showDate));
     }),
     patches: [
       {
@@ -9369,18 +9684,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorRow2() {
-    const { starColor } = settings15.use(["starColor"]);
+    const { starColor } = settings16.use(["starColor"]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
-        settings15.store.starColor = v;
+        settings16.store.starColor = v;
       },
       title: "Star color",
       description: "Color of the twinkling stars."
     });
   }
   function StarryBackground() {
-    const { starColor } = settings15.use(["starColor"]);
+    const { starColor } = settings16.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -9389,7 +9704,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings15 = definePluginSettings({
+  var settings16 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_COLOR,
@@ -9400,7 +9715,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "Starry",
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings16,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -9419,7 +9734,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
   // src/plugins/noShareLink/index.ts
   var STYLE_NAME4 = "noShareLink";
-  var settings16 = definePluginSettings({
+  var settings17 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
       description: "Inside a project: hide the top-right Share Project button.",
@@ -9433,10 +9748,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
   });
   function apply() {
     const rules = [];
-    if (settings16.store.hideShareProject) {
+    if (settings17.store.hideShareProject) {
       rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
-    if (settings16.store.hideCreateShareLink) {
+    if (settings17.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
     registerStyle(STYLE_NAME4, rules.join(`
@@ -9448,7 +9763,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings16,
+    settings: settings17,
     start: apply,
     onSettingsChange: apply,
     stop() {
@@ -9457,7 +9772,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   });
 
   // src/plugins/responseNotification/index.ts
-  var settings17 = definePluginSettings({
+  var settings18 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -9504,7 +9819,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings17.store.soundUrl?.trim();
+    const url = settings18.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -9513,15 +9828,15 @@ button:has(.void-ud-trigger > .void-ud-label) {
       playBeep();
     }
   }
-  function onStreamEnd2({ responseId }) {
+  function onStreamEnd3({ responseId }) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings17.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings18.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings17.store.sound)
+    if (settings18.store.sound)
       playSound();
-    if (settings17.store.browserNotification)
+    if (settings18.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -9529,7 +9844,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings17,
+    settings: settings18,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -9549,15 +9864,15 @@ button:has(.void-ud-trigger > .void-ud-label) {
       gestureCtrl = null;
     },
     events: {
-      streamEnd: onStreamEnd2
+      streamEnd: onStreamEnd3
     }
   });
 
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [contextMenu_default.name]: contextMenu_default, [chatBarButtons_default.name]: chatBarButtons_default, [placeholder_default.name]: placeholder_default, [noDictation_default.name]: noDictation_default, [autoCollapse_default.name]: autoCollapse_default, [betterFiles_default.name]: betterFiles_default, [autoRetry_default.name]: autoRetry_default, [betterLinks_default.name]: betterLinks_default, [streamerMode_default.name]: streamerMode_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [cleaner_default.name]: cleaner_default, [betterImagine_default.name]: betterImagine_default, [downloadTTS_default.name]: downloadTTS_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [widerChat_default.name]: widerChat_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [cloneChats_default.name]: cloneChats_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [starry_default.name]: starry_default, [noShareLink_default.name]: noShareLink_default, [responseNotification_default.name]: responseNotification_default };
-  // void-css:/tmp/Void-push/src/api/Notices.css
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [contextMenu_default.name]: contextMenu_default, [chatBarButtons_default.name]: chatBarButtons_default, [placeholder_default.name]: placeholder_default, [noDictation_default.name]: noDictation_default, [autoCollapse_default.name]: autoCollapse_default, [betterFiles_default.name]: betterFiles_default, [autoRetry_default.name]: autoRetry_default, [betterLinks_default.name]: betterLinks_default, [streamerMode_default.name]: streamerMode_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [cleaner_default.name]: cleaner_default, [betterImagine_default.name]: betterImagine_default, [downloadTTS_default.name]: downloadTTS_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [widerChat_default.name]: widerChat_default, [oneko_default.name]: oneko_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterSidebar_default.name]: betterSidebar_default, [cloneChats_default.name]: cloneChats_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [starry_default.name]: starry_default, [noShareLink_default.name]: noShareLink_default, [responseNotification_default.name]: responseNotification_default };
+  // void-css:/tmp/void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
