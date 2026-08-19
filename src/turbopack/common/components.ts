@@ -44,10 +44,10 @@ function lazyExport<P = {}>(name: string): ComponentType<P> {
     return LazyComponent(name, () => findExportedComponent(name)) as unknown as ComponentType<P>;
 }
 
-const buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
+const buttonLazy = createModuleLazy("Button", "ButtonWithTooltip");
 export const Button = buttonLazy<ButtonProps>("Button");
 export const ButtonWithTooltip = buttonLazy<ButtonWithTooltipProps>("ButtonWithTooltip");
-export const ButtonWithTooltipOptimized = buttonLazy<ButtonWithTooltipProps>("ButtonWithTooltipOptimized");
+export const ButtonWithTooltipOptimized = ButtonWithTooltip;
 export const ButtonWithPopover = buttonLazy<ButtonWithPopoverProps>("ButtonWithPopover");
 
 const cardLazy = createModuleLazy("Card", "CardContent", "CardHeader", "CardTitle");

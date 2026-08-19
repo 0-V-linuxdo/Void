@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { ButtonWithPopover, ButtonWithTooltipOptimized } from "@components";
+import { ButtonWithPopover, ButtonWithTooltip } from "@components";
 import type { ButtonShape, ButtonSize, ButtonVariant } from "@grok-types";
 import { React } from "@turbopack/common/react";
 import { classes } from "@utils/css";
@@ -66,7 +66,7 @@ export function ChatBarButton({
     }
 
     return (
-        <ButtonWithTooltipOptimized
+        <ButtonWithTooltip
             variant={variant}
             size={size}
             shape={shape}
@@ -79,6 +79,6 @@ export function ChatBarButton({
             aria-label={label}
         >
             {icon}
-        </ButtonWithTooltipOptimized>
+        </ButtonWithTooltip>
     );
 }
