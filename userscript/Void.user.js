@@ -23,8 +23,8 @@
 // @compatible   opera
 // @license      GPL-3.0-or-later
 // @supportURL   https://discord.gg/4Rx3qUCR5Y
-// @downloadURL  https://raw.githubusercontent.com/imjustprism/Void/main/userscript/Void.user.js
-// @updateURL    https://raw.githubusercontent.com/imjustprism/Void/main/userscript/Void.user.js
+// @downloadURL  https://raw.githubusercontent.com/0-V-linuxdo/Void/void-settings-and-usage-display/userscript/Void.user.js
+// @updateURL    https://raw.githubusercontent.com/0-V-linuxdo/Void/void-settings-and-usage-display/userscript/Void.user.js
 // ==/UserScript==
 
 /**
@@ -2652,13 +2652,30 @@ ${sourceUrl}`;
 `);
 
   // src/turbopack/common/settingsPrimitives.ts
+  var cl2 = classNameFactory("void-settings-");
   var captured = {};
+  function FallbackTitle({ children, className }) {
+    return React.createElement("div", { className: classes(cl2("title"), className) }, children);
+  }
+  function FallbackDescription({ children }) {
+    return React.createElement("div", { className: cl2("description") }, children);
+  }
+  function FallbackRow({ children, action, hidden, className }) {
+    if (hidden)
+      return null;
+    return React.createElement("div", { className: classes(cl2("row"), className) }, React.createElement("div", { className: cl2("row-body") }, children), action ?? null);
+  }
+  var fallbacks = {
+    SettingsTitle: FallbackTitle,
+    SettingsDescription: FallbackDescription,
+    SettingsRow: FallbackRow
+  };
   function setSettingsPrimitive(name, component) {
     captured[name] = component;
   }
-  function getSettingsPrimitive(name) {
-    return captured[name] ?? null;
-  }
+  var SettingsTitle = (props) => React.createElement(captured.SettingsTitle ?? fallbacks.SettingsTitle, props);
+  var SettingsDescription = (props) => React.createElement(captured.SettingsDescription ?? fallbacks.SettingsDescription, props);
+  var SettingsRow = (props) => React.createElement(captured.SettingsRow ?? fallbacks.SettingsRow, props);
 
   // src/turbopack/common/components.ts
   function createModuleLazy(...filterProps) {
@@ -2671,10 +2688,10 @@ ${sourceUrl}`;
   function lazyExport(name) {
     return LazyComponent(name, () => findExportedComponent(name));
   }
-  var buttonLazy = createModuleLazy("Button", "ButtonWithPopover");
+  var buttonLazy = createModuleLazy("Button", "ButtonWithTooltip");
   var Button = buttonLazy("Button");
   var ButtonWithTooltip = buttonLazy("ButtonWithTooltip");
-  var ButtonWithTooltipOptimized = buttonLazy("ButtonWithTooltipOptimized");
+  var ButtonWithTooltipOptimized = ButtonWithTooltip;
   var ButtonWithPopover = buttonLazy("ButtonWithPopover");
   var cardLazy = createModuleLazy("Card", "CardContent", "CardHeader", "CardTitle");
   var Card = cardLazy("Card");
@@ -2729,9 +2746,6 @@ ${sourceUrl}`;
   var SelectItem = selectLazy("SelectItem");
   var SelectValue = selectLazy("SelectValue");
   var Separator = lazyExport("Separator");
-  var SettingsRow = LazyComponent("SettingsRow", () => getSettingsPrimitive("SettingsRow"));
-  var SettingsTitle = LazyComponent("SettingsTitle", () => getSettingsPrimitive("SettingsTitle"));
-  var SettingsDescription = LazyComponent("SettingsDescription", () => getSettingsPrimitive("SettingsDescription"));
   var Skeleton = lazyExport("Skeleton");
   var Slider = lazyExport("Slider");
   var Switch = lazyExport("Switch");
@@ -2881,7 +2895,7 @@ ${sourceUrl}`;
 `);
 
   // src/components/ErrorCard.tsx
-  var cl2 = classNameFactory("void-error-card-");
+  var cl3 = classNameFactory("void-error-card-");
   // src/components/Flex.tsx
   function Flex({ flexDirection, gap = "1em", justifyContent, alignItems, flexWrap, children, style, ref, ...restProps }) {
     return /* @__PURE__ */ React.createElement("div", {
@@ -3010,7 +3024,7 @@ ${sourceUrl}`;
 `);
 
   // src/components/SelectionUI.tsx
-  var cl3 = classNameFactory("void-sel-");
+  var cl4 = classNameFactory("void-sel-");
   function SelectionCheckbox({ selection, id }) {
     const checked = useSelectionHas(selection, id);
     return /* @__PURE__ */ React.createElement("div", {
@@ -3018,11 +3032,11 @@ ${sourceUrl}`;
         e.stopPropagation();
         e.preventDefault();
       },
-      className: cl3("wrap")
+      className: cl4("wrap")
     }, /* @__PURE__ */ React.createElement(Checkbox, {
       checked,
       onCheckedChange: () => selection.toggle(id),
-      className: cl3("checkbox")
+      className: cl4("checkbox")
     }));
   }
   function SelectionActionBar({ selection, noun, title, onDelete }) {
@@ -3036,11 +3050,11 @@ ${sourceUrl}`;
       await onDelete(ids);
     };
     return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement("div", {
-      className: cl3("action-bar")
+      className: cl4("action-bar")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl3("count")
+      className: cl4("count")
     }, "Selected · ", count), /* @__PURE__ */ React.createElement("div", {
-      className: cl3("buttons")
+      className: cl4("buttons")
     }, /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
@@ -3062,9 +3076,11 @@ ${sourceUrl}`;
     }));
   }
   // src/components/ChatBarButton.tsx
-  var TOOLTIP_PROPS = { delayDuration: 600 };
-  var TOOLTIP_CONTENT_PROPS = { side: "top" };
-  var POPOVER_CONTENT_PROPS = { side: "top", align: "end" };
+  var preventOpenFocus = (e) => e.preventDefault();
+  var TOOLTIP_PROPS = { delayDuration: 100 };
+  var TOOLTIP_CONTENT_PROPS = { side: "top", sideOffset: 8 };
+  var POPOVER_PROPS = { modal: false };
+  var POPOVER_CONTENT_PROPS = { side: "top", align: "center", onOpenAutoFocus: preventOpenFocus };
   function ChatBarButton({
     icon,
     tooltip,
@@ -3088,12 +3104,13 @@ ${sourceUrl}`;
         disabled,
         className: cls,
         popoverContent: popover,
+        popoverProps: POPOVER_PROPS,
         popoverContentProps: POPOVER_CONTENT_PROPS,
         onClick,
         "aria-label": label
       }, icon);
     }
-    return /* @__PURE__ */ React.createElement(ButtonWithTooltipOptimized, {
+    return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant,
       size,
       shape,
@@ -3631,6 +3648,32 @@ ${sourceUrl}`;
     margin-inline-end: 0.5rem;
     color: hsl(var(--fg-secondary));
 }
+
+.void-settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    contain: content;
+}
+
+.void-settings-row-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.void-settings-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    color: hsl(var(--fg-primary));
+}
+
+.void-settings-description {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: hsl(var(--fg-secondary));
+}
 `);
 
   // src/api/Themes.ts
@@ -4157,10 +4200,10 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/CssEditor.tsx
-  var cl4 = classNameFactory("void-css-");
+  var cl5 = classNameFactory("void-css-");
   var TOKEN = /\/\*[\s\S]*?\*\/|@[\w-]+|"[^"]*"|'[^']*'|#[\da-fA-F]{3,8}|[\d.]+(?:px|em|rem|%|vh|vw|s|ms|deg|fr|ch)?|[\w-]+|[{}:;,()!]/g;
   function span(cls, text) {
-    return `<span class="${cl4(cls)}">${escapeHtml(text)}</span>`;
+    return `<span class="${cl5(cls)}">${escapeHtml(text)}</span>`;
   }
   function highlightCss(css) {
     let inBlock = 0;
@@ -4270,13 +4313,13 @@ ${sourceUrl}`;
       });
     }, [onChange]);
     return /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl4("wrap"), className)
+      className: classes(cl5("wrap"), className)
     }, /* @__PURE__ */ React.createElement("pre", {
       ref: highlightRef,
-      className: cl4("highlight"),
+      className: cl5("highlight"),
       "aria-hidden": "true"
     }), /* @__PURE__ */ React.createElement("textarea", {
-      className: cl4("input"),
+      className: cl5("input"),
       value,
       placeholder,
       onChange: (e) => onChange(e.target.value),
@@ -4290,7 +4333,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/CustomCSSTab.tsx
-  var cl5 = classNameFactory("void-css-");
+  var cl6 = classNameFactory("void-css-");
   var STYLE_ID = "void-custom-css";
   function setCustomCSSEnabled(enabled) {
     updateSettingsPluginData({ customCSSEnabled: enabled });
@@ -4325,11 +4368,11 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
-      className: classes(cl5("root"), "void-tab-root")
+      className: classes(cl6("root"), "void-tab-root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
-      className: cl5("header")
+      className: cl6("header")
     }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Quick CSS",
       description: "Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it."
@@ -4526,32 +4569,32 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/BaseCard.tsx
-  var cl6 = classNameFactory("void-card-");
+  var cl7 = classNameFactory("void-card-");
   function BaseCard({ className, name, nameClassName, badges, description, controls, footer }) {
     return /* @__PURE__ */ React.createElement(Card, {
-      className: classes(cl6("root"), className)
+      className: classes(cl7("root"), className)
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl6("body")
+      className: cl7("body")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
     }, /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl6("name"), nameClassName)
+      className: classes(cl7("name"), nameClassName)
     }, /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl6("title")
+      className: cl7("title")
     }, name)), /* @__PURE__ */ React.createElement(TooltipContent, null, name)), badges), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
-      className: cl6("controls")
+      className: cl7("controls")
     }, controls)), description && /* @__PURE__ */ React.createElement("div", {
-      className: cl6("desc")
+      className: cl7("desc")
     }, description)), /* @__PURE__ */ React.createElement("div", {
-      className: cl6("separator")
+      className: cl7("separator")
     }), /* @__PURE__ */ React.createElement("div", {
-      className: cl6("footer")
+      className: cl7("footer")
     }, footer));
   }
 
@@ -4599,7 +4642,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/PluginCard.tsx
-  var cl7 = classNameFactory("void-plugin-card-");
+  var cl8 = classNameFactory("void-plugin-card-");
   function PluginCard({ name, onSettings, onReload }) {
     const plugin = plugins[name];
     const forceUpdate = useForceUpdater();
@@ -4618,19 +4661,19 @@ ${sourceUrl}`;
         onReload(name);
     };
     return /* @__PURE__ */ React.createElement(BaseCard, {
-      className: classes(plugin.required && cl7("required"), crashed && cl7("crashed")),
+      className: classes(plugin.required && cl8("required"), crashed && cl8("crashed")),
       name,
       badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: TriangleAlert,
         tooltip: "This plugin failed to start",
-        className: cl7("crashed-icon")
+        className: cl8("crashed-icon")
       }), plugin.required && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: CircleAlertIcon,
         tooltip: "This plugin is required for Void to work",
-        className: cl7("required-icon")
+        className: cl8("required-icon")
       }), /* @__PURE__ */ React.createElement(PluginBadges, {
         plugin,
-        className: cl7("badge")
+        className: cl8("badge")
       }), isNewPlugin(name) && /* @__PURE__ */ React.createElement(Badge, {
         variant: "accent"
       }, "New")),
@@ -4691,7 +4734,7 @@ ${sourceUrl}`;
 `);
 
   // src/components/settings/SettingField.tsx
-  var cl8 = classNameFactory("void-setting-");
+  var cl9 = classNameFactory("void-setting-");
   function usePluginSetting(pluginName, id, setting) {
     const resolve = () => (Settings.plugins[pluginName] ?? {})[id] ?? resolveDefault(setting);
     const [value, setValue] = useState(resolve);
@@ -4762,18 +4805,18 @@ ${sourceUrl}`;
       setting
     }, /* @__PURE__ */ React.createElement(Flex, {
       gap: "0.5rem",
-      className: cl8("slider-row")
+      className: cl9("slider-row")
     }, /* @__PURE__ */ React.createElement(Slider, {
       value: [value ?? min],
       min,
       max,
       step: 1,
       onValueChange: ([v]) => update(v),
-      className: cl8("slider")
+      className: cl9("slider")
     }), /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       color: "secondary",
-      className: cl8("slider-value")
+      className: cl9("slider-value")
     }, value)));
   };
   var ComponentField = ({ setting, pluginName }) => {
@@ -4797,7 +4840,7 @@ ${sourceUrl}`;
         if (!isNaN(n))
           update(n);
       },
-      className: cl8("number-input")
+      className: cl9("number-input")
     }));
   };
   var BigIntField = ({ id, setting, pluginName }) => {
@@ -4817,7 +4860,7 @@ ${sourceUrl}`;
           update(BigInt(raw));
         } catch {}
       },
-      className: cl8("number-input")
+      className: cl9("number-input")
     }));
   };
   var StringField = ({ id, setting, pluginName }) => {
@@ -4830,7 +4873,7 @@ ${sourceUrl}`;
       value: String(value ?? ""),
       onChange: (e) => update(e.target.value),
       placeholder: setting.placeholder,
-      className: cl8("string-input")
+      className: cl9("string-input")
     }));
   };
   var FIELD_MAP = {
@@ -4903,7 +4946,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/PluginDialog.tsx
-  var cl9 = classNameFactory("void-plugin-dialog-");
+  var cl10 = classNameFactory("void-plugin-dialog-");
   function PluginDialog({ plugin, onClose }) {
     const entries = useMemo(() => Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting), [plugin.settings?.def]);
     const [confirming, setConfirming] = useState(false);
@@ -4926,14 +4969,14 @@ ${sourceUrl}`;
     }, entries.length ? /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl9("settings-list")
+      className: cl10("settings-list")
     }, entries.map(([key, setting]) => /* @__PURE__ */ React.createElement(SettingField, {
       key,
       id: key,
       setting,
       pluginName: plugin.name
     }))) : /* @__PURE__ */ React.createElement(Paragraph, null, "No configurable settings.")), !!entries.length && /* @__PURE__ */ React.createElement(DialogFooter, {
-      className: cl9("footer")
+      className: cl10("footer")
     }, /* @__PURE__ */ React.createElement(Button, {
       variant: confirming ? "danger" : "secondary",
       size: "sm",
@@ -4965,7 +5008,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/PluginsTab.tsx
-  var cl10 = classNameFactory("void-plugins-");
+  var cl11 = classNameFactory("void-plugins-");
   var FILTER_OPTIONS = [
     { value: "all", label: "All" },
     { value: "enabled", label: "Enabled" },
@@ -5065,10 +5108,10 @@ ${sourceUrl}`;
       description: "Turn Void features on or off. Some require a reload to apply. Click the dots on a plugin to configure it."
     }), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
-      className: cl10("reload-banner")
+      className: cl11("reload-banner")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl10("reload-text")
+      className: cl11("reload-text")
     }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
@@ -5156,7 +5199,7 @@ ${sourceUrl}`;
 
   // src/components/settings/ThemeCard.tsx
   var logger13 = new Logger("ThemeCard");
-  var cl11 = classNameFactory("void-theme-card-");
+  var cl12 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, onRemove, onToggle, onEdit }) {
     const handleToggle = () => {
       if (theme.enabled)
@@ -5168,7 +5211,7 @@ ${sourceUrl}`;
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
     return /* @__PURE__ */ React.createElement(BaseCard, {
       name: theme.name ?? theme.url,
-      nameClassName: cl11("name"),
+      nameClassName: cl12("name"),
       description: theme.description,
       controls: /* @__PURE__ */ React.createElement(React.Fragment, null, theme.local ? /* @__PURE__ */ React.createElement(IconButton, {
         icon: PencilIcon,
@@ -5190,7 +5233,7 @@ ${sourceUrl}`;
       })),
       footer: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SourceIcon, {
         size: 12,
-        className: cl11("footer-icon")
+        className: cl12("footer-icon")
       }), /* @__PURE__ */ React.createElement("div", {
         className: "void-card-author"
       }, theme.author ?? " "))
@@ -5198,7 +5241,7 @@ ${sourceUrl}`;
   }
 
   // src/components/settings/tabs/ThemesTab.tsx
-  var cl12 = classNameFactory("void-themes-");
+  var cl13 = classNameFactory("void-themes-");
   var FILTER_OPTIONS2 = [
     { value: "all", label: "All" },
     { value: "enabled", label: "Enabled" },
@@ -5246,9 +5289,9 @@ ${sourceUrl}`;
       }
     })), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl12("add-error")
+      className: cl13("add-error")
     }, error), /* @__PURE__ */ React.createElement(DialogActions, {
-      className: cl12("local-footer"),
+      className: cl13("local-footer"),
       onCancel: onClose,
       confirmLabel: loading ? "Importing..." : "Import",
       onConfirm: handleImport,
@@ -5285,17 +5328,17 @@ ${sourceUrl}`;
       onChange: (e) => setName(e.target.value)
     })), /* @__PURE__ */ React.createElement(DialogField, {
       label: "CSS",
-      className: cl12("local-css-field")
+      className: cl13("local-css-field")
     }, /* @__PURE__ */ React.createElement(CssEditor, {
-      className: cl12("local-editor"),
+      className: cl13("local-editor"),
       value: css,
       onChange: setCss,
       placeholder: "Paste your CSS here..."
     })), error && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl12("add-error")
+      className: cl13("add-error")
     }, error), /* @__PURE__ */ React.createElement(DialogActions, {
-      className: cl12("local-footer"),
+      className: cl13("local-footer"),
       onCancel: onClose,
       confirmLabel: theme ? "Save" : "Create",
       onConfirm: handleSave,
@@ -5495,11 +5538,12 @@ ${sourceUrl}`;
   // src/utils/constants.ts
   var Devs = Object.freeze({
     Prism: "Prism",
-    adryd: "adryd"
+    adryd: "adryd",
+    p: "p"
   });
 
   // src/plugins/experiments/index.tsx
-  var cl13 = classNameFactory("void-experiments-");
+  var cl14 = classNameFactory("void-experiments-");
   var NEW_FLAG_TTL = 24 * 60 * 60 * 1000;
   var settings2 = definePluginSettings({
     toastNotifications: {
@@ -5633,13 +5677,13 @@ ${sourceUrl}`;
       })
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React.createElement(Badge, {
       variant: "accent",
-      className: cl13("badge")
+      className: cl14("badge")
     }, "New"), decodedKey && /* @__PURE__ */ React.createElement(Badge, {
-      className: cl13("badge")
+      className: cl14("badge")
     }, "Encrypted"), isOverridden && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       as: "span",
-      className: cl13("modified")
+      className: cl14("modified")
     }, "(modified)")), /* @__PURE__ */ React.createElement(SettingsDescription, null, decodedKey ?? flagKey));
   }
   function ExperimentsTab() {
@@ -5676,36 +5720,36 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Experiments",
       description: "Toggle unreleased Grok features. These are experimental and may break. New flags are marked when they appear.",
-      className: cl13("section")
+      className: cl14("section")
     }), /* @__PURE__ */ React.createElement(Card, {
       variant: "ghost",
-      className: cl13("warning")
+      className: cl14("warning")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
-      className: cl13("warning-text")
+      className: cl14("warning-text")
     }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
-      className: cl13("clear-btn"),
+      className: cl14("clear-btn"),
       onClick: () => FeatureStore.useFeatureStore.getState().clearAllOverrides()
     }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem",
-      className: cl13("section")
+      className: cl14("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       placeholder: `Search ${prefiltered.length} flags...`,
       value: search2,
       onChange: (e) => setSearch(e.target.value),
-      className: cl13("search-input")
+      className: cl14("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl13("filter-select")
+      className: cl14("filter-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
     }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
@@ -5726,7 +5770,7 @@ ${sourceUrl}`;
       isNew: isNewFlag(key)
     }))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "muted",
-      className: cl13("empty")
+      className: cl14("empty")
     }, search2 ? `No flags matching "${search2}"` : `No ${filter} flags`));
   }
   var Tab = ErrorBoundary.wrap(ExperimentsTab);
@@ -5798,7 +5842,7 @@ ${sourceUrl}`;
   // src/plugins/_core/settings/index.tsx
   var logger15 = new Logger("Settings");
   var MoonIcon = findExportedComponentLazy("MoonIcon");
-  var cl14 = classNameFactory("void-settings-");
+  var cl15 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     showVoidMenu: {
       type: 3 /* BOOLEAN */,
@@ -5825,7 +5869,7 @@ ${sourceUrl}`;
       href,
       target: "_blank",
       rel: "noreferrer",
-      className: cl14("version-link")
+      className: cl15("version-link")
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       color: "secondary"
@@ -5835,7 +5879,7 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: cl14("version")
+      className: cl15("version")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
@@ -5845,8 +5889,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, `v${"1.0.3.10"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"9eaba33"}`
-    }, `(${"9eaba33"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"cbd3a08"}`
+    }, `(${"cbd3a08"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -5873,9 +5917,9 @@ ${sourceUrl}`;
       return null;
     const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).toSorted((a, b) => a.localeCompare(b));
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(MoonIcon, {
-      className: cl14("menu-icon")
+      className: cl15("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
-      className: cl14("menu-icon")
+      className: cl15("menu-icon")
     }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       key: name,
       onSelect: () => openPluginSettings(name)
@@ -5885,7 +5929,7 @@ ${sourceUrl}`;
         key: t.id,
         onSelect: () => openSettingsTab(t.id)
       }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl14("menu-icon")
+        className: cl15("menu-icon")
       }), t.name);
     })));
   }
@@ -5975,8 +6019,12 @@ ${sourceUrl}`;
             replace: '$1$self._setPrimitive("SettingsDescription",$2)'
           },
           {
-            match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(,"SettingsSection")/,
-            replace: '$1$self._setPrimitive("SettingsRow",$2)$3'
+            match: /("SettingsRow",0,)(?!function)(\i)/,
+            replace: '$1$self._setPrimitive("SettingsRow",$2)'
+          },
+          {
+            match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(?=,"Settings)/,
+            replace: '$1$self._setPrimitive("SettingsRow",$2)'
           }
         ]
       }
@@ -6393,6 +6441,690 @@ ${sourceUrl}`;
     }
   });
 
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/usageDisplay/styles.css
+  registerStyle("usageDisplay", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-ud-trigger {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.void-ud-label {
+    font-size: 14px !important;
+    font-weight: 550 !important;
+    font-variant-numeric: tabular-nums;
+}
+
+button:has(.void-ud-trigger) {
+    height: 2.5rem;
+    min-height: 2.5rem;
+}
+
+button:has(.void-ud-icon-only) {
+    width: 2.5rem;
+    min-width: 2.5rem;
+    padding-inline: 0;
+}
+
+button:has(.void-ud-trigger > .void-ud-label) {
+    width: auto;
+    border-radius: 999px;
+    padding-inline: 0.5rem;
+}
+
+.void-ud-ring {
+    display: block;
+    color: inherit;
+}
+
+.void-ud-ring-track {
+    fill: none;
+    stroke: color-mix(in srgb, currentcolor 35%, transparent);
+    stroke-width: 2;
+}
+
+.void-ud-ring-fill {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.void-ud-ring-warning {
+    color: #e3b341;
+}
+
+.void-ud-ring-danger {
+    color: #ff7b89;
+}
+
+.void-ud-panel {
+    min-width: 0;
+}
+
+.void-ud-used {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+`);
+
+  // src/turbopack/common/plan.ts
+  var PLAN_NAMES = {
+    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
+    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
+    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
+    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
+  };
+  var X_SUB_NAMES = {
+    PremiumPlus: "SuperGrok",
+    Premium: "X Premium",
+    Basic: "X Basic"
+  };
+  function getPlanName(bestSubscription, xSubscriptionType) {
+    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
+  }
+
+  // src/plugins/usageDisplay/credits.ts
+  var CREDITS_CONFIG_PATH = "/grok_api_v2.GrokBuildBilling/GetGrokCreditsConfig";
+  var REQUEST_TIMEOUT_MS = 12000;
+  var WEEKLY_LIMIT_RE = /Weekly SuperGrok.{0,24}Limit|每周.{0,24}SuperGrok.{0,24}(?:Limit|限额)/i;
+  function isRecord(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value);
+  }
+  function finiteNumber(value) {
+    if (typeof value === "number")
+      return Number.isFinite(value) ? value : null;
+    if (typeof value !== "string" || value.trim() === "")
+      return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  function normalizeText(value) {
+    return String(value ?? "").replaceAll(" ", " ").replaceAll(/[\t ]+/g, " ").trim();
+  }
+  function formatPercent(value) {
+    const number = finiteNumber(value);
+    if (number === null)
+      return "—";
+    const rounded = Math.round(number * 10) / 10;
+    return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}%`;
+  }
+  function usageTone(value) {
+    const percent = finiteNumber(value);
+    if (percent === null)
+      return "waiting";
+    if (percent >= 90)
+      return "danger";
+    if (percent >= 70)
+      return "warning";
+    return "normal";
+  }
+  function readProtoVarint(bytes, startIndex) {
+    let value = 0;
+    let index = startIndex;
+    let shift = 0;
+    for (let count = 0;index < bytes.length && count < 10; count++) {
+      const byte = bytes[index++];
+      value += (byte & 127) * 2 ** shift;
+      if ((byte & 128) === 0)
+        return { value, index };
+      shift += 7;
+    }
+    return null;
+  }
+  function readProtoFields(bytes) {
+    const fields = [];
+    let index = 0;
+    while (index < bytes.length) {
+      const tag = readProtoVarint(bytes, index);
+      if (!tag)
+        break;
+      index = tag.index;
+      const fieldNumber = Math.floor(tag.value / 8);
+      const wireType = tag.value & 7;
+      if (fieldNumber <= 0)
+        break;
+      if (wireType === 0) {
+        const value = readProtoVarint(bytes, index);
+        if (!value)
+          break;
+        index = value.index;
+        fields.push({ number: fieldNumber, wire: wireType, value: value.value });
+      } else if (wireType === 1) {
+        if (index + 8 > bytes.length)
+          break;
+        fields.push({ number: fieldNumber, wire: wireType, value: bytes.slice(index, index + 8) });
+        index += 8;
+      } else if (wireType === 2) {
+        const length = readProtoVarint(bytes, index);
+        if (!length || length.value < 0 || index + length.value > bytes.length)
+          break;
+        index = length.index;
+        if (index + length.value > bytes.length)
+          break;
+        fields.push({ number: fieldNumber, wire: wireType, value: bytes.slice(index, index + length.value) });
+        index += length.value;
+      } else if (wireType === 5) {
+        if (index + 4 > bytes.length)
+          break;
+        fields.push({ number: fieldNumber, wire: wireType, value: bytes.slice(index, index + 4) });
+        index += 4;
+      } else {
+        break;
+      }
+    }
+    return fields;
+  }
+  function grpcDataFrame(bytes) {
+    let index = 0;
+    while (index + 5 <= bytes.length) {
+      const flags = bytes[index];
+      const length = bytes[index + 1] * 16777216 + bytes[index + 2] * 65536 + bytes[index + 3] * 256 + bytes[index + 4];
+      index += 5;
+      if (index + length > bytes.length)
+        return null;
+      const frame = bytes.slice(index, index + length);
+      index += length;
+      if ((flags & 128) === 0)
+        return frame;
+    }
+    return null;
+  }
+  function collectProtoTimestamps(bytes, output, depth) {
+    if (depth > 6)
+      return;
+    for (const field of readProtoFields(bytes)) {
+      if (field.wire === 0) {
+        const value = finiteNumber(field.value);
+        if (value !== null && value >= 1e9 && value <= 4102444800) {
+          output.push(value);
+        }
+      } else if (field.wire === 2 && field.value instanceof Uint8Array) {
+        collectProtoTimestamps(field.value, output, depth + 1);
+      }
+    }
+  }
+  function formatResetTime(seconds) {
+    const value = finiteNumber(seconds);
+    if (value === null)
+      return "";
+    try {
+      return new Date(value * 1000).toLocaleString([], {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    } catch {
+      return "";
+    }
+  }
+  function parseResetAt(text) {
+    const trimmed = normalizeText(text);
+    if (!trimmed)
+      return null;
+    const parsed = Date.parse(trimmed.replace(/\s+at\s+/i, " "));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  function decodeCreditsConfig(bytes) {
+    const data = grpcDataFrame(bytes);
+    if (!data)
+      return null;
+    const configField = readProtoFields(data).find((field) => field.number === 1 && field.wire === 2);
+    if (!configField || !(configField.value instanceof Uint8Array))
+      return null;
+    const percentField = readProtoFields(configField.value).find((field) => field.number === 1 && field.wire === 5);
+    let usedPercent = 0;
+    if (percentField && percentField.value instanceof Uint8Array && percentField.value.length >= 4) {
+      const view = new DataView(percentField.value.buffer, percentField.value.byteOffset, percentField.value.byteLength);
+      const decodedPercent = view.getFloat32(0, true);
+      if (Number.isFinite(decodedPercent))
+        usedPercent = clamp(decodedPercent, 0, 100);
+    }
+    const timestamps = [];
+    collectProtoTimestamps(configField.value, timestamps, 0);
+    const resetSeconds = timestamps.length ? Math.max(...timestamps) : null;
+    return {
+      weekly: {
+        label: "Weekly SuperGrok Limit",
+        usedPercent,
+        resetText: formatResetTime(resetSeconds),
+        resetAt: resetSeconds === null ? null : resetSeconds * 1000,
+        categories: []
+      }
+    };
+  }
+  function normalizeNativeUsage(value) {
+    if (!isRecord(value) || !isRecord(value.weekly))
+      return null;
+    const { weekly } = value;
+    const usedPercent = finiteNumber(weekly.usedPercent);
+    const resetText = normalizeText(weekly.resetText).slice(0, 160);
+    const resetAt = finiteNumber(weekly.resetAt) ?? parseResetAt(resetText);
+    const categories = Array.isArray(weekly.categories) ? weekly.categories.map((item) => {
+      if (!isRecord(item))
+        return null;
+      const percent = finiteNumber(item.percent);
+      const label = normalizeText(item.label).slice(0, 120);
+      return label && percent !== null ? { label, percent: clamp(percent, 0, 100) } : null;
+    }).filter((item) => item != null).slice(0, 20) : [];
+    return {
+      weekly: {
+        label: normalizeText(weekly.label || "Weekly SuperGrok Limit").slice(0, 120),
+        usedPercent: usedPercent === null ? null : clamp(usedPercent, 0, 100),
+        resetText,
+        resetAt,
+        categories
+      }
+    };
+  }
+  function mergeNativeUsage(...sources) {
+    let merged = null;
+    for (const source of sources) {
+      const next = normalizeNativeUsage(source);
+      if (!next)
+        continue;
+      if (!merged) {
+        merged = next;
+        continue;
+      }
+      const previousWeekly = merged.weekly;
+      const nextWeekly = next.weekly;
+      merged = {
+        weekly: {
+          ...previousWeekly,
+          ...nextWeekly,
+          usedPercent: nextWeekly.usedPercent === null ? previousWeekly.usedPercent : nextWeekly.usedPercent,
+          resetText: nextWeekly.resetText || previousWeekly.resetText,
+          resetAt: nextWeekly.resetAt ?? previousWeekly.resetAt,
+          categories: nextWeekly.categories.length ? nextWeekly.categories : previousWeekly.categories
+        }
+      };
+    }
+    return merged;
+  }
+  function linesFromPage() {
+    const text = document.body?.innerText || document.body?.textContent;
+    return String(text || "").split(/\r?\n/).map(normalizeText).filter(Boolean);
+  }
+  function findLineIndex(lines, pattern) {
+    pattern.lastIndex = 0;
+    return lines.findIndex((line) => {
+      pattern.lastIndex = 0;
+      return pattern.test(line);
+    });
+  }
+  function readUsagePercentFromDom() {
+    const selectors = [
+      "number-flow-react[aria-label]",
+      '[role="img"][aria-label]',
+      '[aria-label*="%"]'
+    ];
+    const seen = new Set;
+    for (const selector of selectors) {
+      let elements;
+      try {
+        elements = document.querySelectorAll(selector);
+      } catch {
+        continue;
+      }
+      for (const element of elements) {
+        if (seen.has(element))
+          continue;
+        seen.add(element);
+        const ariaLabel = normalizeText(element.getAttribute("aria-label"));
+        const match = ariaLabel.match(/^(\d+(?:\.\d+)?)\s*%$/);
+        if (!match)
+          continue;
+        let ancestor = element;
+        for (let depth = 0;ancestor && depth < 8; depth++) {
+          const context = normalizeText(ancestor.textContent);
+          WEEKLY_LIMIT_RE.lastIndex = 0;
+          if (WEEKLY_LIMIT_RE.test(context) && /\bused\b|已使用/i.test(context)) {
+            return Number(match[1]);
+          }
+          ancestor = ancestor.parentElement;
+        }
+      }
+    }
+    return null;
+  }
+  function usedPercentFromPage(domPercent, usedMatch) {
+    if (domPercent !== null)
+      return domPercent;
+    if (usedMatch)
+      return Number(usedMatch[1]);
+    return null;
+  }
+  function readNativeUsage(lines = linesFromPage()) {
+    const weeklyIndex = findLineIndex(lines, WEEKLY_LIMIT_RE);
+    if (weeklyIndex < 0)
+      return null;
+    const weeklyLines = [];
+    for (const line of lines.slice(weeklyIndex, weeklyIndex + 16)) {
+      if (weeklyLines.length > 0 && /^(?:Usage Limit Reset|Extra Usage Credits|使用限额重置|额外使用额度)$/i.test(line)) {
+        break;
+      }
+      weeklyLines.push(line);
+    }
+    const usedLineIndex = weeklyLines.findIndex((line) => /\bused\b|已使用/i.test(line));
+    const usedLine = usedLineIndex >= 0 ? weeklyLines[usedLineIndex] : "";
+    const previousLine = usedLineIndex > 0 ? weeklyLines[usedLineIndex - 1] : "";
+    const usedMatch = `${previousLine} ${usedLine}`.match(/(\d+(?:\.\d+)?)\s*%\s*(?:used|已使用)/i);
+    const domPercent = readUsagePercentFromDom();
+    const resetLine = weeklyLines.find((line) => /Resets|重置/i.test(line));
+    const resetMatch = resetLine?.match(/(?:Resets|重置)\s+(.+)/i);
+    const categories = [];
+    for (const line of weeklyLines) {
+      const match = line.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*%$/);
+      if (!match || /used|已使用|resets|重置/i.test(match[1]))
+        continue;
+      categories.push({ label: normalizeText(match[1]), percent: Number(match[2]) });
+    }
+    return {
+      weekly: {
+        label: lines[weeklyIndex],
+        usedPercent: usedPercentFromPage(domPercent, usedMatch),
+        resetText: resetMatch ? normalizeText(resetMatch[1]) : "",
+        resetAt: resetMatch ? parseResetAt(resetMatch[1]) : null,
+        categories
+      }
+    };
+  }
+  async function fetchOfficialUsage() {
+    const controller = typeof AbortController === "function" ? new AbortController : null;
+    const timeout = controller ? window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS) : null;
+    try {
+      const response = await fetch(new URL(CREDITS_CONFIG_PATH, location.href).href, {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          accept: "*/*",
+          "content-type": "application/grpc-web+proto",
+          "x-grpc-web": "1",
+          "x-user-agent": "connect-es/2.1.1"
+        },
+        body: new Uint8Array([0, 0, 0, 0, 0]),
+        ...controller ? { signal: controller.signal } : {}
+      });
+      if (!response.ok)
+        throw new Error(`HTTP ${response.status}`);
+      const usage = decodeCreditsConfig(new Uint8Array(await response.arrayBuffer()));
+      if (!usage)
+        throw new Error("unsupported-official-usage-schema");
+      return usage;
+    } finally {
+      if (timeout !== null)
+        window.clearTimeout(timeout);
+    }
+  }
+  var STORAGE_PREFIX = "void-usage-display:v1:";
+  function readStoredUsage(userId) {
+    if (!userId)
+      return null;
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_PREFIX + userId) || "null");
+      if (!isRecord(stored) || stored.version !== 1 || stored.userId !== userId)
+        return null;
+      return normalizeNativeUsage(stored.nativeUsage);
+    } catch {
+      return null;
+    }
+  }
+  function persistUsage(userId, usage, updatedAt) {
+    if (!userId)
+      return;
+    try {
+      localStorage.setItem(STORAGE_PREFIX + userId, JSON.stringify({
+        version: 1,
+        userId,
+        updatedAt,
+        nativeUsage: normalizeNativeUsage(usage)
+      }));
+    } catch {}
+  }
+
+  // src/plugins/usageDisplay/index.tsx
+  var logger16 = new Logger("UsageDisplay");
+  var cl16 = classNameFactory("void-ud-");
+  var settings7 = definePluginSettings({
+    showPercent: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the used-percent label next to the ring.",
+      default: false
+    }
+  });
+  var AUTO_REFRESH_MS = 60 * 1000;
+  var STALE_MS = 30 * 1000;
+  var DAY_SECONDS = 86400;
+  var RING_SIZE = 18;
+  var RING_RADIUS = 7;
+  var RING_CENTER = RING_SIZE / 2;
+  var RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+  var store2 = createExternalStore();
+  var state = {
+    loading: false,
+    lastFetchAt: 0,
+    lastUpdatedAt: 0,
+    usage: null,
+    userId: ""
+  };
+  var refreshPromise = null;
+  function currentUserId() {
+    try {
+      return SessionStore.getSessionStoreState?.()?.user?.userId ?? "";
+    } catch {
+      return "";
+    }
+  }
+  function loadMemory(userId) {
+    if (!userId || userId === state.userId)
+      return;
+    const stored = readStoredUsage(userId);
+    state.userId = userId;
+    state.usage = stored;
+    state.lastUpdatedAt = stored ? Date.now() : 0;
+    state.lastFetchAt = 0;
+    store2.notify();
+  }
+  function syncAccount() {
+    const userId = currentUserId();
+    if (!userId)
+      return;
+    loadMemory(userId);
+  }
+  async function refresh(reason = "manual") {
+    if (refreshPromise)
+      return refreshPromise;
+    if (reason === "poll" && Date.now() - state.lastFetchAt < STALE_MS)
+      return false;
+    syncAccount();
+    state.loading = true;
+    state.lastFetchAt = Date.now();
+    store2.notify();
+    refreshPromise = (async () => {
+      try {
+        const pageUsage = readNativeUsage();
+        const remote = await fetchOfficialUsage().then((usage) => ({ ok: true, usage })).catch((error) => {
+          logger16.warn("Failed to fetch official usage", error);
+          return { ok: false };
+        });
+        const merged = mergeNativeUsage(state.usage, remote.ok ? remote.usage : null, pageUsage);
+        if (merged)
+          state.usage = merged;
+        if (state.usage || pageUsage)
+          state.lastUpdatedAt = Date.now();
+        if (state.userId)
+          persistUsage(state.userId, state.usage, state.lastUpdatedAt);
+        return Boolean(state.usage);
+      } finally {
+        state.loading = false;
+        refreshPromise = null;
+        store2.notify();
+      }
+    })();
+    return refreshPromise;
+  }
+  function onVisibility() {
+    if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS)
+      refresh("visible");
+  }
+  function readPlan() {
+    let xSubscriptionType;
+    try {
+      xSubscriptionType = SessionStore.getSessionStoreState?.()?.user?.xSubscriptionType;
+    } catch {
+      xSubscriptionType = undefined;
+    }
+    let bestSubscription;
+    try {
+      bestSubscription = SubscriptionsStore.useSubscriptionsStore.getState().bestSubscription;
+    } catch {
+      bestSubscription = undefined;
+    }
+    return getPlanName(bestSubscription, xSubscriptionType) === "Free";
+  }
+  function triggerLabel(isFree, percent, loading, showPercent) {
+    if (isFree)
+      return "Free";
+    if (!showPercent)
+      return null;
+    if (percent !== null)
+      return formatPercent(percent);
+    return loading ? "…" : "—";
+  }
+  function usedLabel(isFree, percent, loading) {
+    if (isFree)
+      return "Free";
+    if (percent !== null)
+      return `${formatPercent(percent)} used`;
+    return loading ? "…" : "—";
+  }
+  function formatResetCountdown(totalSeconds) {
+    if (totalSeconds <= 0)
+      return formatCountdown(0);
+    const days = Math.floor(totalSeconds / DAY_SECONDS);
+    const rest = totalSeconds % DAY_SECONDS;
+    return days > 0 ? `${days}d ${formatCountdown(rest)}` : formatCountdown(rest);
+  }
+  function ProgressRing({ percent, tone }) {
+    const fraction = percent === null ? 0 : clamp(percent, 0, 100) / 100;
+    return /* @__PURE__ */ React.createElement("svg", {
+      width: RING_SIZE,
+      height: RING_SIZE,
+      viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
+      className: classes(cl16("ring"), cl16(`ring-${tone}`))
+    }, /* @__PURE__ */ React.createElement("circle", {
+      cx: RING_CENTER,
+      cy: RING_CENTER,
+      r: RING_RADIUS,
+      className: cl16("ring-track")
+    }), /* @__PURE__ */ React.createElement("circle", {
+      cx: RING_CENTER,
+      cy: RING_CENTER,
+      r: RING_RADIUS,
+      className: cl16("ring-fill"),
+      strokeDasharray: RING_CIRCUMFERENCE,
+      strokeDashoffset: RING_CIRCUMFERENCE * (1 - fraction),
+      transform: `rotate(-90 ${RING_CENTER} ${RING_CENTER})`
+    }));
+  }
+  function ButtonIcon() {
+    useExternalStore(store2);
+    const { showPercent } = settings7.use(["showPercent"]);
+    const weekly = state.usage?.weekly;
+    const percent = weekly?.usedPercent ?? null;
+    const tone = usageTone(percent);
+    const isFree = readPlan();
+    const label = triggerLabel(isFree, percent, state.loading, showPercent);
+    useEffect(() => {
+      refresh("initial");
+      const id = window.setInterval(() => {
+        if (!document.hidden)
+          refresh("poll");
+      }, AUTO_REFRESH_MS);
+      document.addEventListener("visibilitychange", onVisibility);
+      return () => {
+        window.clearInterval(id);
+        document.removeEventListener("visibilitychange", onVisibility);
+      };
+    }, []);
+    return /* @__PURE__ */ React.createElement("span", {
+      className: classes(cl16("trigger"), label == null && cl16("icon-only"))
+    }, /* @__PURE__ */ React.createElement(ProgressRing, {
+      percent: isFree ? null : percent,
+      tone: isFree ? "waiting" : tone
+    }), label != null && /* @__PURE__ */ React.createElement("span", {
+      className: cl16("label")
+    }, label));
+  }
+  function UsagePanel() {
+    useExternalStore(store2);
+    const [now, setNow] = useState(Date.now);
+    const weekly = state.usage?.weekly;
+    const percent = weekly?.usedPercent ?? null;
+    const isFree = readPlan();
+    const resetAt = weekly?.resetAt ?? null;
+    useEffect(() => {
+      if (resetAt == null)
+        return;
+      const id = window.setInterval(() => setNow(Date.now()), 1000);
+      return () => window.clearInterval(id);
+    }, [resetAt]);
+    const left = resetAt == null ? 0 : Math.max(0, Math.ceil((resetAt - now) / 1000));
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: 2,
+      className: cl16("panel")
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "semibold",
+      className: cl16("used")
+    }, usedLabel(isFree, percent, state.loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text, {
+      size: "xs",
+      color: "muted"
+    }, "Resets in ", formatResetCountdown(left)));
+  }
+  var SafeButtonIcon = ErrorBoundary.wrap(ButtonIcon);
+  var SafeUsagePanel = ErrorBoundary.wrap(UsagePanel);
+  var BUTTON_BASE = {
+    icon: () => /* @__PURE__ */ React.createElement(SafeButtonIcon, null),
+    onClick: () => {
+      refresh("manual");
+    },
+    order: 1,
+    className: "text-fg-primary",
+    "aria-label": "Grok weekly usage",
+    locations: ["chat", "imagine"]
+  };
+  var usageDisplay_default = definePlugin({
+    name: "UsageDisplay",
+    description: "Shows official weekly SuperGrok usage next to the rate-limit button.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    enabledByDefault: true,
+    settings: settings7,
+    chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
+    events: {
+      streamEnd() {
+        refresh("stream");
+      }
+    }
+  });
+
   // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
@@ -6400,7 +7132,7 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger16 = new Logger("ExportChat");
+  var logger17 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -6575,7 +7307,7 @@ ${sourceUrl}`;
       className: "void-export-icon"
     }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger16.error("Failed to export chat", e))
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger17.error("Failed to export chat", e))
     }, label))));
   }
   var exportChat_default = definePlugin({
@@ -6628,9 +7360,9 @@ ${sourceUrl}`;
 `);
 
   // src/plugins/betterImagine/index.tsx
-  var logger17 = new Logger("BetterImagine");
-  var cl15 = classNameFactory("void-imagine-");
-  var settings7 = definePluginSettings({
+  var logger18 = new Logger("BetterImagine");
+  var cl17 = classNameFactory("void-imagine-");
+  var settings8 = definePluginSettings({
     hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
       description: "Hide the community image grid and templates on the Imagine home page.",
@@ -6678,7 +7410,7 @@ ${sourceUrl}`;
     }
   });
   function buildFilename(post, isVideo) {
-    if (!settings7.store.smartFilenames || !post)
+    if (!settings8.store.smartFilenames || !post)
       return null;
     const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
     const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
@@ -6741,7 +7473,7 @@ ${sourceUrl}`;
   var randomSeed = Date.now();
   var filterStore = createExternalStore();
   function persist() {
-    if (!settings7.store.persistFilters)
+    if (!settings8.store.persistFilters)
       return;
     try {
       sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
@@ -6820,7 +7552,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var cacheList = null;
   var cacheResult = [];
   function filterItems(items) {
-    const { hideModerated } = settings7.store;
+    const { hideModerated } = settings8.store;
     const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
     if (cacheList === items && cacheKey === key)
       return cacheResult;
@@ -6880,7 +7612,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           return;
         video.pause();
         video.currentTime = 0;
-      }).catch((e) => logger17.warn("Failed to pause video:", e));
+      }).catch((e) => logger18.warn("Failed to pause video:", e));
     } else {
       video.pause();
       video.currentTime = 0;
@@ -6889,7 +7621,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var onMouseEnter = (e) => {
     const video = e.currentTarget.querySelector("video");
     if (video)
-      pending.set(video, video.play().catch((e2) => logger17.error("Failed to play video", e2)));
+      pending.set(video, video.play().catch((e2) => logger18.error("Failed to play video", e2)));
   };
   var onMouseLeave = (e) => {
     const video = e.currentTarget.querySelector("video");
@@ -6905,22 +7637,22 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return MediaStore.useMediaStore.getState();
   }
   function selectVisible() {
-    const state = mediaState();
-    const list = state.favoritesList ?? [];
+    const state2 = mediaState();
+    const list = state2.favoritesList ?? [];
     const visible = filterItems(list);
     if (!visible.length)
       return;
-    state.setMultiSelectItems(visible);
+    state2.setMultiSelectItems(visible);
     Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
   }
   function deselectAll() {
-    const state = mediaState();
-    state.clearMultiSelect?.();
+    const state2 = mediaState();
+    state2.clearMultiSelect?.();
   }
   function selectedPosts() {
-    const state = mediaState();
-    const ids = Object.keys(state.multiSelectIds ?? {});
-    return ids.map((id) => state.byId[id]).filter((p) => !!p);
+    const state2 = mediaState();
+    const ids = Object.keys(state2.multiSelectIds ?? {});
+    return ids.map((id) => state2.byId[id]).filter((p) => !!p);
   }
   async function copyLines(lines, label) {
     if (!lines.length) {
@@ -6932,7 +7664,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `));
       Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
     } catch (e) {
-      logger17.error(`Failed to copy ${label}s`, e);
+      logger18.error(`Failed to copy ${label}s`, e);
       Toaster.toast.error(`Failed to copy ${label}s.`);
     }
   }
@@ -6955,13 +7687,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     await copyLines(urls, "URL");
   }
   async function bulkUpscaleSelected() {
-    const state = mediaState();
-    const ids = Object.keys(state.multiSelectIds ?? {});
+    const state2 = mediaState();
+    const ids = Object.keys(state2.multiSelectIds ?? {});
     let upscaled = 0;
     let alreadyHd = 0;
     let inProgress = 0;
     for (const id of ids) {
-      const videos = state.videoByMediaId[id];
+      const videos = state2.videoByMediaId[id];
       if (!videos?.length)
         continue;
       for (const video of videos) {
@@ -6974,10 +7706,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           continue;
         }
         try {
-          await state.upscaleVideo(id, video.id);
+          await state2.upscaleVideo(id, video.id);
           upscaled++;
         } catch (e) {
-          logger17.error("Failed to upscale video:", id, video.id, e);
+          logger18.error("Failed to upscale video:", id, video.id, e);
         }
       }
     }
@@ -7004,7 +7736,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       value: currentDate,
       onValueChange: (v) => setDate(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl15("date-select")
+      className: cl17("date-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: d,
       value: d
@@ -7012,7 +7744,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       value: currentSort,
       onValueChange: (v) => setSort(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: sortActive ? cl15("sort-select", "sort-active") : cl15("sort-select")
+      className: sortActive ? cl17("sort-select", "sort-active") : cl17("sort-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: s,
       value: s
@@ -7024,19 +7756,19 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         setSearchInput(e.target.value);
         setSearch(e.target.value);
       },
-      className: cl15("search")
+      className: cl17("search")
     }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
       key: f,
       variant: currentFilter === f ? "primary" : "tertiary",
       size: "sm",
       shape: "pill",
-      className: currentFilter !== f ? cl15("chip") : undefined,
+      className: currentFilter !== f ? cl17("chip") : undefined,
       onClick: () => setFilter(currentFilter === f ? "all" : f)
     }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "pill",
-      className: cl15("chip"),
+      className: cl17("chip"),
       onClick: resetFilters
     }, "Clear"));
   }
@@ -7115,7 +7847,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   }
   function onVisibilityChange() {
-    if (!settings7.store.pauseWhenHidden)
+    if (!settings8.store.pauseWhenHidden)
       return;
     if (document.visibilityState !== "hidden")
       return;
@@ -7129,13 +7861,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "BetterImagine",
     description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
-    settings: settings7,
-    _hideDefault: () => settings7.store.hideDefaultPreviews,
+    settings: settings8,
+    _hideDefault: () => settings8.store.hideDefaultPreviews,
     _NullGrid: () => null,
-    _autoPlay: () => !settings7.store.noAutoplay,
-    _bypassPaywall: () => settings7.store.bypassPaywall,
-    _ctrlClickSelect: () => settings7.store.ctrlClickSelect,
-    _hoverProps: () => settings7.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _autoPlay: () => !settings8.store.noAutoplay,
+    _bypassPaywall: () => settings8.store.bypassPaywall,
+    _ctrlClickSelect: () => settings8.store.ctrlClickSelect,
+    _hoverProps: () => settings8.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
     _useFilteredFavorites: useFilteredFavorites,
     _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
     _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
@@ -7259,7 +7991,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/betterFiles/index.tsx
-  var logger18 = new Logger("BetterFiles");
+  var logger19 = new Logger("BetterFiles");
   var selection = createSelectionStore();
   async function deleteAssets(ids) {
     const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
@@ -7267,7 +7999,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       try {
         await deleteAsset(id);
       } catch (e) {
-        logger18.error("Failed to delete asset", id, e);
+        logger19.error("Failed to delete asset", id, e);
       }
     }
   }
@@ -7358,7 +8090,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/cloneChats/index.tsx
-  var logger19 = new Logger("CloneChats");
+  var logger20 = new Logger("CloneChats");
   async function cloneChat(conversationId) {
     const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
     if (!lastResponseId)
@@ -7381,7 +8113,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
     return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger19.error("Failed to clone chat:", e)),
+      onSelect: () => cloneChat(conversationId).catch((e) => logger20.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
@@ -7428,31 +8160,31 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings8.store[key];
+    const val = settings9.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
     const link = getColor("linkColor", DEFAULT_LINK);
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings8.store.enableVisitedColor) {
+    if (settings9.store.enableVisitedColor) {
       const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
     registerStyle(STYLE_NAME2, css);
   }
   function ColorRow2({ settingKey, title, description, fallback }) {
-    settings8.use([settingKey]);
+    settings9.use([settingKey]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
-        settings8.store[settingKey] = v;
+        settings9.store[settingKey] = v;
         applyColors();
       },
       title,
       description
     });
   }
-  var settings8 = definePluginSettings({
+  var settings9 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -7487,7 +8219,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "BetterLinks",
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
-    settings: settings8,
+    settings: settings9,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -7506,10 +8238,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       }
     ],
     _remarkLinkify() {
-      const { store: store2 } = settings8;
+      const { store: store3 } = settings9;
       return (tree) => {
         try {
-          if (!store2.linkifyDomains)
+          if (!store3.linkifyDomains)
             return;
           const walk = (node) => {
             if (!node.children)
@@ -7550,8 +8282,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       };
     },
     start() {
-      settings8.store.linkColor ??= DEFAULT_LINK;
-      settings8.store.visitedColor ??= DEFAULT_VISITED;
+      settings9.store.linkColor ??= DEFAULT_LINK;
+      settings9.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
       enableStyle(STYLE_NAME2);
     },
@@ -7561,9 +8293,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   });
 
   // src/plugins/autoRetry/index.ts
-  var logger20 = new Logger("AutoRetry");
+  var logger21 = new Logger("AutoRetry");
   var CONTENT_MODERATED = "grok:content-moderated";
-  var settings9 = definePluginSettings({
+  var settings10 = definePluginSettings({
     retryModeration: {
       type: 3 /* BOOLEAN */,
       description: "Retry content moderation errors.",
@@ -7598,28 +8330,28 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function shouldRetry(response) {
     if (isModeration(response))
-      return settings9.store.retryModeration;
-    return settings9.store.retryNetwork;
+      return settings10.store.retryModeration;
+    return settings10.store.retryNetwork;
   }
   function retry(responseId, conversationId, response) {
     const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings9.store.maxRetries;
+    const max = settings10.store.maxRetries;
     if (count > max) {
       showToast("Max retries reached.", 2 /* ERROR */);
       retryCounts.delete(conversationId);
       return;
     }
     retryCounts.set(conversationId, count);
-    const delaySec = settings9.store.delay;
+    const delaySec = settings10.store.delay;
     showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger20.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    logger21.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
     clearPending();
     pendingTimer = setTimeout(() => {
       pendingTimer = null;
-      const state = ChatPageStore.useChatPageStore.getState();
-      if (state.streamedMessageId)
+      const state2 = ChatPageStore.useChatPageStore.getState();
+      if (state2.streamedMessageId)
         return;
-      state.sendResponse({
+      state2.sendResponse({
         message: "",
         parentResponseId: responseId,
         conversationId,
@@ -7650,7 +8382,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Automatically retry failed messages on moderation or network errors.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings9,
+    settings: settings10,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       retryCounts.clear();
@@ -7750,10 +8482,10 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
 `);
 
   // src/plugins/rateLimitDisplay/index.tsx
-  var logger21 = new Logger("RateLimitDisplay");
-  var cl16 = classNameFactory("void-rld-");
+  var logger22 = new Logger("RateLimitDisplay");
+  var cl18 = classNameFactory("void-rld-");
   var UsageProgressIcon = findExportedComponentLazy("UsageProgressIcon");
-  var settings10 = definePluginSettings({
+  var settings11 = definePluginSettings({
     display: {
       type: 4 /* SELECT */,
       description: "How to show the remaining usage in the chat bar.",
@@ -7774,11 +8506,11 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     video720p: "Videos 720p"
   };
   var UNLIMITED_THRESHOLD = Number.MAX_SAFE_INTEGER;
-  var RING_SIZE = 18;
-  var RING_RADIUS = 7;
-  var RING_CENTER = RING_SIZE / 2;
-  var RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
-  var store2 = createExternalStore();
+  var RING_SIZE2 = 18;
+  var RING_RADIUS2 = 7;
+  var RING_CENTER2 = RING_SIZE2 / 2;
+  var RING_CIRCUMFERENCE2 = 2 * Math.PI * RING_RADIUS2;
+  var store3 = createExternalStore();
   var limits = new Map;
   var remainingOf = (d) => d.remainingTokens ?? d.remainingQueries;
   var totalOf = (d) => d.totalTokens ?? d.totalQueries;
@@ -7788,21 +8520,21 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     try {
       return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
     } catch (e) {
-      logger21.warn("Failed to fetch rate limits for", mode, e);
+      logger22.warn("Failed to fetch rate limits for", mode, e);
       return null;
     }
   }
   function refreshImagineQuota() {
     CreditQuotaStore.useCreditQuotaStore.getState().fetchQuotas();
   }
-  async function refresh() {
+  async function refresh2() {
     refreshImagineQuota();
     const ids = ModesStore.useModesStore.getState().modes.map((m) => m.id);
     const results = await Promise.all(ids.map(async (id) => [id, await fetchLimit(id)]));
     for (const [id, data] of results)
       if (data)
         limits.set(id, data);
-    store2.notify();
+    store3.notify();
   }
   var useMode = () => ModesStore.useModesStore((s) => s.selectedModeId);
   var useIsImagine = () => RoutingStore.useRoutingStore((s) => typeof s.route.page === "string" && s.route.page.startsWith("imagine"));
@@ -7837,7 +8569,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   }
   function TriggerCountdown({ seconds }) {
     const deadline = useMemo(() => Date.now() + seconds * 1000, [seconds]);
-    const left = useCountdown(deadline, refresh);
+    const left = useCountdown(deadline, refresh2);
     return /* @__PURE__ */ React.createElement("span", null, formatCountdown(left));
   }
   function Countdown({ deadline, onExpire }) {
@@ -7847,25 +8579,25 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       color: "secondary"
     }, formatCountdown(left));
   }
-  function ProgressRing({ fraction }) {
+  function ProgressRing2({ fraction }) {
     return /* @__PURE__ */ React.createElement("svg", {
-      width: RING_SIZE,
-      height: RING_SIZE,
-      viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
-      className: cl16("ring")
+      width: RING_SIZE2,
+      height: RING_SIZE2,
+      viewBox: `0 0 ${RING_SIZE2} ${RING_SIZE2}`,
+      className: cl18("ring")
     }, /* @__PURE__ */ React.createElement("circle", {
-      cx: RING_CENTER,
-      cy: RING_CENTER,
-      r: RING_RADIUS,
-      className: cl16("ring-track")
+      cx: RING_CENTER2,
+      cy: RING_CENTER2,
+      r: RING_RADIUS2,
+      className: cl18("ring-track")
     }), /* @__PURE__ */ React.createElement("circle", {
-      cx: RING_CENTER,
-      cy: RING_CENTER,
-      r: RING_RADIUS,
-      className: cl16("ring-fill"),
-      strokeDasharray: RING_CIRCUMFERENCE,
-      strokeDashoffset: RING_CIRCUMFERENCE * (1 - fraction),
-      transform: `rotate(-90 ${RING_CENTER} ${RING_CENTER})`
+      cx: RING_CENTER2,
+      cy: RING_CENTER2,
+      r: RING_RADIUS2,
+      className: cl18("ring-fill"),
+      strokeDasharray: RING_CIRCUMFERENCE2,
+      strokeDashoffset: RING_CIRCUMFERENCE2 * (1 - fraction),
+      transform: `rotate(-90 ${RING_CENTER2} ${RING_CENTER2})`
     }));
   }
   function TriggerIcon({ limited, ring, fraction }) {
@@ -7873,10 +8605,10 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       return /* @__PURE__ */ React.createElement(ClockAlertIcon, {
         width: 18,
         height: 20,
-        className: cl16("icon-limited")
+        className: cl18("icon-limited")
       });
     if (ring)
-      return /* @__PURE__ */ React.createElement(ProgressRing, {
+      return /* @__PURE__ */ React.createElement(ProgressRing2, {
         fraction
       });
     return /* @__PURE__ */ React.createElement(UsageProgressIcon, {
@@ -7885,8 +8617,8 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     });
   }
   function ButtonLabel({ mode }) {
-    useExternalStore(store2);
-    const { display } = settings10.use(["display"]);
+    useExternalStore(store3);
+    const { display } = settings11.use(["display"]);
     const data = limits.get(mode);
     if (!data)
       return null;
@@ -7913,20 +8645,20 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       return null;
     return /* @__PURE__ */ React.createElement("span", null, formatImagineCount(img));
   }
-  function ButtonIcon() {
-    useExternalStore(store2);
+  function ButtonIcon2() {
+    useExternalStore(store3);
     const mode = useMode();
     const isImagine = useIsImagine();
     const quotas = useImagineQuotas();
-    const { display } = settings10.use(["display"]);
+    const { display } = settings11.use(["display"]);
     const data = limits.get(mode);
     const limited = isImagine ? isImagineLimited(quotas) : isLimited(mode);
     const ring = !isImagine && display === "ring" && data != null;
     useEffect(() => {
-      refresh();
+      refresh2();
     }, []);
     return /* @__PURE__ */ React.createElement("span", {
-      className: cl16("trigger")
+      className: cl18("trigger")
     }, /* @__PURE__ */ React.createElement(TriggerIcon, {
       limited,
       ring,
@@ -7946,7 +8678,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     if (remainingOf(data) === 0 && data.waitTimeSeconds)
       return /* @__PURE__ */ React.createElement(Countdown, {
         deadline,
-        onExpire: refresh
+        onExpire: refresh2
       });
     return /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
@@ -7958,7 +8690,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 0,
-      className: classes(cl16("row"), active && cl16("row-active"))
+      className: classes(cl18("row"), active && cl18("row-active"))
     }, /* @__PURE__ */ React.createElement(Flex, {
       justifyContent: "space-between",
       alignItems: "center",
@@ -7966,14 +8698,14 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: active ? "semibold" : "medium",
-      className: cl16("mode-label")
+      className: cl18("mode-label")
     }, title), /* @__PURE__ */ React.createElement(ModeStatus, {
       data,
       deadline
     })), data && /* @__PURE__ */ React.createElement("div", {
-      className: cl16("bar")
+      className: cl18("bar")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl16("bar-fill"),
+      className: cl18("bar-fill"),
       style: { transform: `scaleX(${fractionOf(data)})` }
     })), data && /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
@@ -7981,7 +8713,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     }, "Resets in ", formatDuration(data.windowSizeSeconds)));
   }
   function TooltipPanel() {
-    useExternalStore(store2);
+    useExternalStore(store3);
     const mode = useMode();
     const isImagine = useIsImagine();
     const quotas = useImagineQuotas();
@@ -7993,7 +8725,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl16("panel")
+      className: cl18("panel")
     }, modes.map((m) => /* @__PURE__ */ React.createElement(ModeRow, {
       key: m.id,
       title: m.title,
@@ -8006,7 +8738,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl16("panel")
+      className: cl18("panel")
     }, IMAGINE_BUCKETS.map((b) => {
       const data = quotas?.[b];
       const exhausted = data?.available && data.remainingQueries === 0;
@@ -8015,11 +8747,11 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
         justifyContent: "space-between",
         alignItems: "center",
         gap: 8,
-        className: cl16("row")
+        className: cl18("row")
       }, /* @__PURE__ */ React.createElement(Text, {
         size: "sm",
         weight: "medium",
-        className: cl16("mode-label")
+        className: cl18("mode-label")
       }, IMAGINE_LABELS[b]), exhausted && data?.nextAvailableAt ? /* @__PURE__ */ React.createElement(Countdown, {
         deadline: data.nextAvailableAt,
         onExpire: refreshImagineQuota
@@ -8037,11 +8769,11 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     description: "Shows rate limit usage for the current model mode in the chat bar.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings10,
+    settings: settings11,
     chatBarButton: {
-      icon: () => /* @__PURE__ */ React.createElement(ButtonIcon, null),
+      icon: () => /* @__PURE__ */ React.createElement(ButtonIcon2, null),
       tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
-      onClick: () => refresh(),
+      onClick: () => refresh2(),
       order: 0,
       className: "text-fg-primary",
       locations: ["chat", "imagine"]
@@ -8053,19 +8785,19 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       ModesStore: {
         selector: (s) => s.selectedModeId,
         handler() {
-          refresh();
+          refresh2();
         }
       },
       CreditQuotaStore: {
         selector: (s) => s.generationSeq,
         handler() {
-          store2.notify();
+          store3.notify();
         }
       }
     },
     events: {
       streamEnd() {
-        refresh();
+        refresh2();
       }
     }
   });
@@ -8077,8 +8809,8 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
 `);
 
   // src/plugins/downloadTTS/index.tsx
-  var cl17 = classNameFactory("void-download-tts-");
-  var logger22 = new Logger("DownloadTTS");
+  var cl19 = classNameFactory("void-download-tts-");
+  var logger23 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -8098,7 +8830,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger22.error("Failed to download TTS audio:", e);
+        logger23.error("Failed to download TTS audio:", e);
       }
     });
     return /* @__PURE__ */ React.createElement(Button, {
@@ -8110,7 +8842,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       variant: "tertiary"
     }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
       size: "sm",
-      className: cl17("spinner")
+      className: cl19("spinner")
     }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16
     }));
@@ -8131,11 +8863,11 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   });
 
   // src/plugins/incognito/index.ts
-  var store3 = () => SettingsStore.useSettingsStore.getState();
+  var store4 = () => SettingsStore.useSettingsStore.getState();
   var unsubscribe = null;
   function enforce() {
-    if (!store3().isIncognito)
-      store3().setIsIncognito(true);
+    if (!store4().isIncognito)
+      store4().setIsIncognito(true);
   }
   var incognito_default = definePlugin({
     name: "Incognito",
@@ -8149,7 +8881,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     stop() {
       unsubscribe?.();
       unsubscribe = null;
-      store3().setIsIncognito(false);
+      store4().setIsIncognito(false);
     }
   });
 
@@ -8260,7 +8992,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings11 = definePluginSettings({
+  var settings12 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -8305,14 +9037,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings11.store[key]);
+      classList.toggle(cls, !!settings12.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings11,
+    settings: settings12,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -8463,7 +9195,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 `);
 
   // src/plugins/customInstructions/index.tsx
-  var cl18 = classNameFactory("void-ci-");
+  var cl20 = classNameFactory("void-ci-");
   var PixelAvatarModule = findByPropsLazy("PixelAvatar");
   var CheckIcon = findExportedComponentLazy("CheckIcon");
   var BookIcon = findExportedComponentLazy("BookIcon");
@@ -8471,38 +9203,38 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var TrashIcon2 = findExportedComponentLazy("TrashIcon");
   var PlusIcon = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings12 = definePluginSettings({
+  var settings13 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings12.plain.presets ?? [];
+    return settings13.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings12.store.presets = presets;
+    settings13.store.presets = presets;
   }
   function getAssignments() {
-    return settings12.plain.assignments ?? {};
+    return settings13.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
       role: "button",
-      className: cl18("card"),
+      className: cl20("card"),
       onClick: onEdit
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl18("avatar")
+      className: cl20("avatar")
     }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
       seed: preset.id,
       size: 32
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("card-name")
+      className: cl20("card-name")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
     }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("card-actions")
+      className: cl20("card-actions")
     }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "tertiary",
       size: "xs",
@@ -8530,14 +9262,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function PresetEditor({ preset, onUpdate, onClose }) {
     const overLimit = preset.prompt.length > MAX_LENGTH;
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl18("editor")
+      className: cl20("editor")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium",
-      className: cl18("label")
+      className: cl20("label")
     }, "Name"), /* @__PURE__ */ React.createElement(Input, {
       type: "text",
-      className: cl18("input"),
+      className: cl20("input"),
       placeholder: "Preset name",
       value: preset.name,
       onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
@@ -8545,20 +9277,20 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }), /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium",
-      className: cl18("label")
+      className: cl20("label")
     }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("textarea-wrap", { "textarea-wrap-error": overLimit })
+      className: cl20("textarea-wrap", { "textarea-wrap-error": overLimit })
     }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl18("textarea"),
+      className: cl20("textarea"),
       placeholder: "How should Grok behave?",
       value: preset.prompt,
       onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("editor-footer")
+      className: cl20("editor-footer")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       color: overLimit ? undefined : "muted",
-      className: overLimit ? cl18("error-text") : undefined
+      className: overLimit ? cl20("error-text") : undefined
     }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
@@ -8567,7 +9299,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings12.use(["presets"]).presets ?? [];
+    const presets = settings13.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -8579,7 +9311,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (v === id)
           delete a[k];
       }
-      settings12.store.assignments = a;
+      settings13.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -8589,9 +9321,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }, []);
     const editing = presets.find((p) => p.id === editingId);
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl18("root")
+      className: cl20("root")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl18("grid")
+      className: cl20("grid")
     }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
       key: p.id,
       preset: p,
@@ -8599,7 +9331,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       onDelete: () => deletePreset(p.id)
     })), /* @__PURE__ */ React.createElement("div", {
       role: "button",
-      className: cl18("card", "card-add"),
+      className: cl20("card", "card-add"),
       onClick: addPreset
     }, /* @__PURE__ */ React.createElement(PlusIcon, {
       className: "size-4 text-secondary"
@@ -8614,8 +9346,8 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings12.use(["presets"]).presets ?? [];
-    const assignments = settings12.use(["assignments"]).assignments ?? {};
+    const presets = settings13.use(["presets"]).presets ?? [];
+    const assignments = settings13.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -8623,17 +9355,17 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings12.store.assignments = a;
+      settings13.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
     return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl18("trigger")
+      className: cl20("trigger")
     }, /* @__PURE__ */ React.createElement(BookIcon, {
       size: 16
     }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => assign(),
-      className: cl18("menu-item")
+      className: cl20("menu-item")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm"
     }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
@@ -8641,7 +9373,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: p.id,
       onSelect: () => assign(p.id),
-      className: cl18("menu-item")
+      className: cl20("menu-item")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm"
     }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
@@ -8653,7 +9385,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings12,
+    settings: settings13,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -8758,28 +9490,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 }
 `);
 
-  // src/turbopack/common/plan.ts
-  var PLAN_NAMES = {
-    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
-    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
-    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
-    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
-  };
-  var X_SUB_NAMES = {
-    PremiumPlus: "SuperGrok",
-    Premium: "X Premium",
-    Basic: "X Basic"
-  };
-  function getPlanName(bestSubscription, xSubscriptionType) {
-    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
-  }
-
   // src/plugins/betterSidebar/index.tsx
-  var logger23 = new Logger("BetterSidebar");
-  var cl19 = classNameFactory("void-sidebar-");
-  var settings13 = definePluginSettings({
+  var logger24 = new Logger("BetterSidebar");
+  var cl21 = classNameFactory("void-sidebar-");
+  var settings14 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -8810,24 +9524,24 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     };
     return /* @__PURE__ */ React.createElement("div", {
       ref: cardRef,
-      className: cl19("card"),
+      className: cl21("card"),
       onPointerDown: (e) => forward(e, "pointerdown"),
       onPointerUp: (e) => forward(e, "pointerup")
     }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       justifyContent: "center",
       gap: "0",
-      className: cl19("info")
+      className: cl21("info")
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "sm",
       weight: "medium",
-      className: cl19("name")
+      className: cl21("name")
     }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "xs",
       color: "secondary",
-      className: cl19("plan")
+      className: cl21("plan")
     }, getPlanName(bestSubscription, user.xSubscriptionType))));
   }
   var selection2 = createSelectionStore();
@@ -8839,10 +9553,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
     }
     const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger23.error("Failed to delete", id, e))));
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger24.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings13.use(["batchSelect"]).batchSelect;
+    const enabled = settings14.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
@@ -8855,7 +9569,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
-    settings: settings13,
+    settings: settings14,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
@@ -8869,7 +9583,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings13.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings14.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -8879,10 +9593,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       };
     },
     _defaultOpen() {
-      return !settings13.store.defaultCollapsed;
+      return !settings14.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings13.store.clickToToggle)
+      if (!settings14.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -8945,6 +9659,92 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ]
   });
 
+  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/placeholder/styles.css
+  registerStyle("placeholder", `.void-ph-root {
+    contain: content;
+}
+
+.void-ph-textarea-wrap {
+    border: 1px solid var(--border-l2, var(--border));
+    border-radius: 0.75rem;
+}
+
+.void-ph-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    resize: vertical;
+}
+`);
+
+  // src/plugins/placeholder/index.tsx
+  var cl22 = classNameFactory("void-ph-");
+  var DEFAULT_PHRASES = [
+    "What do you want to know?",
+    "How can I help you today?",
+    "What's on your mind?"
+  ].join(`
+`);
+  function parsePhrases(raw) {
+    return String(raw ?? "").split(`
+`).map((s) => s.trim()).filter(Boolean);
+  }
+  var settings15 = definePluginSettings({
+    phrases: {
+      type: 6 /* COMPONENT */,
+      default: DEFAULT_PHRASES,
+      component: PhrasesEditor
+    }
+  }).withPrivateSettings();
+  function PhrasesEditor() {
+    const { phrases } = settings15.use(["phrases"]);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem",
+      className: cl22("root")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(Text, {
+      size: "sm",
+      weight: "medium"
+    }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
+      className: cl22("textarea-wrap")
+    }, /* @__PURE__ */ React.createElement(Textarea, {
+      className: cl22("textarea"),
+      value: phrases ?? DEFAULT_PHRASES,
+      onChange: (e) => {
+        settings15.store.phrases = e.target.value;
+      },
+      placeholder: DEFAULT_PHRASES
+    })));
+  }
+  var placeholder_default = definePlugin({
+    name: "Placeholder",
+    description: "Replace the rotating chat input placeholder.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    settings: settings15,
+    _phrases() {
+      const lines = parsePhrases(settings15.store.phrases ?? DEFAULT_PHRASES);
+      return lines.length ? lines : null;
+    },
+    patches: [
+      {
+        find: `query-bar-placeholder.whats-on-your-mind","What's on your mind?"`,
+        replacement: {
+          match: /("query-bar-placeholder\.whats-on-your-mind","What's on your mind\?"\)\],\[\i,\i,\i,\i\]\),)(\i)=(\i\(\)),(\i)=(\i)\.map\(\2\)/,
+          replace: "$1$2=$3,$4=($self._phrases()??$5).map($2)"
+        }
+      }
+    ]
+  });
+
   // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
@@ -8958,7 +9758,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings14 = definePluginSettings({
+  var settings16 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -8983,18 +9783,18 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings14,
+    settings: settings16,
     _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
       if (!response?.createTime)
         return null;
-      if (settings14.store.hideOwnMessages && response.sender === "human")
+      if (settings16.store.hideOwnMessages && response.sender === "human")
         return null;
       return /* @__PURE__ */ React.createElement(Text, {
         as: "span",
         size: "xs",
         color: "muted",
         className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings14.store.showDate));
+      }, formatTimestamp(response.createTime, settings16.store.showDate));
     }),
     patches: [
       {
@@ -9009,7 +9809,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/plugins/cleaner/index.ts
-  var settings15 = definePluginSettings({
+  var settings17 = definePluginSettings({
     hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
       description: "Hide the upgrade plan button in the user menu.",
@@ -9058,7 +9858,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "Cleaner",
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings17,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
@@ -9096,8 +9896,8 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
             replace: "$&$self.settings.store.hideModelUpsell||"
           },
           {
-            match: /,(\i)(\.map\(\i=>\(0,\i\.jsx\)\(\i\.DropdownMenuItem,\{className:[^}]{0,200}?\("div",\{className:[^}]{0,200}?\{mode:\i,showDescription:!0\}\)\}\)\},\i\.id\)\))/,
-            replace: ",($self.settings.store.hideInaccessibleModels?[]:$1)$2"
+            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
+            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
           }
         ]
       }
@@ -9107,7 +9907,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [responseNotification_default.name]: responseNotification_default, [exportChat_default.name]: exportChat_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [messageTimestamps_default.name]: messageTimestamps_default, [cleaner_default.name]: cleaner_default };
+  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [responseNotification_default.name]: responseNotification_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [placeholder_default.name]: placeholder_default, [messageTimestamps_default.name]: messageTimestamps_default, [cleaner_default.name]: cleaner_default };
   // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
@@ -9162,7 +9962,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     NoticeType2["ERROR"] = "error";
     NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var cl20 = classNameFactory("void-notice-");
+  var cl23 = classNameFactory("void-notice-");
   var ICONS = {
     ["info" /* INFO */]: () => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
       size: 18
@@ -9180,11 +9980,11 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl20("root")
+      className: cl23("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl20("icon")
+      className: cl23("icon")
     }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
-      className: cl20("message")
+      className: cl23("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
@@ -9194,7 +9994,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       variant: "tertiary",
       size: "sm",
       shape: "square",
-      className: cl20("close"),
+      className: cl23("close"),
       onClick: onClose
     }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
@@ -9365,14 +10165,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger24 = new Logger("TurbopackPatcher", "#e78284");
+  var logger25 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger24.error(`${name} failed:`, e);
+      logger25.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -9393,7 +10193,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger24.info(`${getModuleCache().size} modules loaded, ready`);
+      logger25.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
       safely("checkBuildFingerprint", checkBuildFingerprint);
