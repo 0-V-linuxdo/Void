@@ -84,7 +84,7 @@ function VersionInfo() {
             <Flex alignItems="center" gap="0.25rem">
                 <VersionLink href={REPO_URL}>Void</VersionLink>
                 <Dot />
-                <Text as="span" color="secondary">{`v${VERSION}`}</Text>
+                <Text as="span" color="secondary">{VERSION}</Text>
                 <Dot />
                 <VersionLink href={`${REPO_URL}/commit/${GIT_HASH}`}>{`(${GIT_HASH})`}</VersionLink>
             </Flex>

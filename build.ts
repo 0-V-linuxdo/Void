@@ -15,9 +15,11 @@ const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/Void";
 const FORK_RAW_URL = "https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B";
+const VERSION_DATE = "20260819";
+const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
- * Void++ v${pkg.version} — A modification for grok.com
+ * Void++ ${displayVersion} — A modification for grok.com
  * (c) ${new Date().getFullYear()} Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: ${FORK_URL}
@@ -26,7 +28,7 @@ const LICENSE_BANNER = `/**
 const USERSCRIPT_HEADER = `// ==UserScript==
 // @name         Void++
 // @namespace    ${FORK_URL}
-// @version      ${pkg.version}
+// @version      ${displayVersion}
 // @description  A modification for grok.com
 // @author       ${pkg.author} & Void Contributors
 // @environment  ${environment}
@@ -153,7 +155,7 @@ async function buildCore(outfile: string, isExt: boolean) {
         define: {
             IS_DEV: JSON.stringify(isDev),
             IS_EXTENSION: JSON.stringify(isExt),
-            VERSION: JSON.stringify(pkg.version),
+            VERSION: JSON.stringify(displayVersion),
             REPO_URL: JSON.stringify(repoUrl),
             GIT_HASH: JSON.stringify((() => {
                 try {
