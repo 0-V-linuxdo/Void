@@ -255,7 +255,7 @@ const BUTTON_BASE = {
 
 export default definePlugin({
     name: "UsageDisplay",
-    description: "Shows official weekly SuperGrok usage next to the rate-limit button.",
+    description: "Shows official weekly SuperGrok usage in the chat bar.",
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,

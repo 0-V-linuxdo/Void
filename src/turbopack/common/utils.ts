@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { GrokResponse, RateLimitResponse } from "@grok-types";
+import type { GrokResponse } from "@grok-types";
 
 import { findByPropsLazy } from "../turbopack";
 
@@ -15,7 +15,6 @@ export const ApiClients: {
         chatCloneConversation(a: { shareLinkId: string; body: object }): Promise<{ conversation?: { conversationId: string } }>;
         chatDeleteShareLink(a: { shareLinkId: string }): Promise<unknown>;
     };
-    rateLimitsApi: { rateLimitsGetRateLimits(a: { body: { modelName: string } }): Promise<RateLimitResponse> };
 } = findByPropsLazy("chatApi", "modelsApi");
 
 export const Toaster: {

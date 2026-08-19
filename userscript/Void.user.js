@@ -23,8 +23,8 @@
 // @compatible   opera
 // @license      GPL-3.0-or-later
 // @supportURL   https://discord.gg/4Rx3qUCR5Y
-// @downloadURL  https://raw.githubusercontent.com/0-V-linuxdo/Void/void-settings-and-usage-display/userscript/Void.user.js
-// @updateURL    https://raw.githubusercontent.com/0-V-linuxdo/Void/void-settings-and-usage-display/userscript/Void.user.js
+// @downloadURL  https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/userscript/Void.user.js
+// @updateURL    https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/userscript/Void.user.js
 // ==/UserScript==
 
 /**
@@ -1999,13 +1999,11 @@ ${sourceUrl}`;
     MediaStore: () => MediaStore,
     FilesPageStore: () => FilesPageStore,
     FeatureStore: () => FeatureStore,
-    CreditQuotaStore: () => CreditQuotaStore,
     ConversationStore: () => ConversationStore,
     ChatPageStore: () => ChatPageStore
   });
   var ChatPageStore = findByPropsLazy("useChatPageStore");
   var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
-  var CreditQuotaStore = findByPropsLazy("useCreditQuotaStore");
   var FeatureStore = findByPropsLazy("useFeatureStore");
   var FilesPageStore = findByPropsLazy("useFilesPageStore", "useAssetsList");
   var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
@@ -4092,15 +4090,6 @@ ${sourceUrl}`;
   var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
   }));
-  var ClockAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 6v6l4 2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M20 12v5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M20 21h.01"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M21.25 8.2A10 10 0 1 0 16 21.16"
-  }));
 
   // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
@@ -5889,8 +5878,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, `v${"1.0.3.10"}`), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"cbd3a08"}`
-    }, `(${"cbd3a08"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"33ae7c8"}`
+    }, `(${"33ae7c8"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -7112,7 +7101,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   };
   var usageDisplay_default = definePlugin({
     name: "UsageDisplay",
-    description: "Shows official weekly SuperGrok usage next to the rate-limit button.",
+    description: "Shows official weekly SuperGrok usage in the chat bar.",
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
@@ -8397,411 +8386,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/rateLimitDisplay/styles.css
-  registerStyle("rateLimitDisplay", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-rld-trigger {
-    display: flex;
-    gap: 0.25rem;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.void-rld-trigger span {
-    font-size: 14px !important;
-    font-weight: 550 !important;
-    font-variant-numeric: tabular-nums;
-}
-
-button:has(> .void-rld-trigger > :nth-child(2)) {
-    width: auto;
-    border-radius: 1.25rem;
-    overflow: visible;
-    padding-inline: 0.5rem;
-}
-
-.void-rld-icon-limited {
-    color: inherit;
-}
-
-.void-rld-ring {
-    display: block;
-    color: inherit;
-}
-
-.void-rld-ring-track {
-    fill: none;
-    stroke: color-mix(in srgb, currentcolor 20%, transparent);
-    stroke-width: 2;
-}
-
-.void-rld-ring-fill {
-    fill: none;
-    stroke: currentcolor;
-    stroke-width: 2;
-    stroke-linecap: round;
-}
-
-.void-rld-panel {
-    min-width: 12rem;
-}
-
-.void-rld-row {
-    padding: 0.25rem 0.375rem;
-    border-radius: 0.375rem;
-}
-
-.void-rld-row-active {
-    background: var(--color-surface-secondary);
-}
-
-.void-rld-mode-label {
-    text-transform: capitalize;
-}
-
-.void-rld-bar {
-    height: 0.1875rem;
-    margin-top: 0.25rem;
-    overflow: hidden;
-    background: color-mix(in srgb, currentcolor 15%, transparent);
-    border-radius: 999px;
-}
-
-.void-rld-bar-fill {
-    height: 100%;
-    background: currentcolor;
-    border-radius: inherit;
-    transform-origin: left;
-}
-`);
-
-  // src/plugins/rateLimitDisplay/index.tsx
-  var logger22 = new Logger("RateLimitDisplay");
-  var cl18 = classNameFactory("void-rld-");
-  var UsageProgressIcon = findExportedComponentLazy("UsageProgressIcon");
-  var settings11 = definePluginSettings({
-    display: {
-      type: 4 /* SELECT */,
-      description: "How to show the remaining usage in the chat bar.",
-      options: [
-        { label: "Count", value: "count", default: true },
-        { label: "Fraction (remaining/total)", value: "fraction" },
-        { label: "Percent remaining", value: "percent" },
-        { label: "Progress ring", value: "ring" }
-      ]
-    }
-  });
-  var IMAGINE_BUCKETS = ["image", "imagePro", "imageEdit", "video", "video720p"];
-  var IMAGINE_LABELS = {
-    image: "Speed Images",
-    imagePro: "Quality Images",
-    imageEdit: "Image Edits",
-    video: "Videos 480p",
-    video720p: "Videos 720p"
-  };
-  var UNLIMITED_THRESHOLD = Number.MAX_SAFE_INTEGER;
-  var RING_SIZE2 = 18;
-  var RING_RADIUS2 = 7;
-  var RING_CENTER2 = RING_SIZE2 / 2;
-  var RING_CIRCUMFERENCE2 = 2 * Math.PI * RING_RADIUS2;
-  var store3 = createExternalStore();
-  var limits = new Map;
-  var remainingOf = (d) => d.remainingTokens ?? d.remainingQueries;
-  var totalOf = (d) => d.totalTokens ?? d.totalQueries;
-  var fractionOf = (d) => totalOf(d) > 0 ? clamp(remainingOf(d) / totalOf(d), 0, 1) : 1;
-  var percentOf = (d) => Math.round(fractionOf(d) * 100);
-  async function fetchLimit(mode) {
-    try {
-      return await ApiClients.rateLimitsApi.rateLimitsGetRateLimits({ body: { modelName: mode } });
-    } catch (e) {
-      logger22.warn("Failed to fetch rate limits for", mode, e);
-      return null;
-    }
-  }
-  function refreshImagineQuota() {
-    CreditQuotaStore.useCreditQuotaStore.getState().fetchQuotas();
-  }
-  async function refresh2() {
-    refreshImagineQuota();
-    const ids = ModesStore.useModesStore.getState().modes.map((m) => m.id);
-    const results = await Promise.all(ids.map(async (id) => [id, await fetchLimit(id)]));
-    for (const [id, data] of results)
-      if (data)
-        limits.set(id, data);
-    store3.notify();
-  }
-  var useMode = () => ModesStore.useModesStore((s) => s.selectedModeId);
-  var useIsImagine = () => RoutingStore.useRoutingStore((s) => typeof s.route.page === "string" && s.route.page.startsWith("imagine"));
-  var useImagineQuotas = () => CreditQuotaStore.useCreditQuotaStore((s) => s.quotas);
-  function isLimited(mode) {
-    const d = limits.get(mode);
-    return d != null && remainingOf(d) === 0;
-  }
-  function isImagineLimited(quotas) {
-    if (!quotas)
-      return false;
-    return IMAGINE_BUCKETS.some((b) => {
-      const d = quotas[b];
-      return d != null && d.available && d.remainingQueries === 0;
-    });
-  }
-  function useCountdown(deadline, onExpire) {
-    const [left, setLeft] = useState(() => Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
-    useEffect(() => {
-      setLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
-      const id = setInterval(() => {
-        const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-        setLeft(remaining);
-        if (remaining <= 0) {
-          clearInterval(id);
-          onExpire();
-        }
-      }, 1000);
-      return () => clearInterval(id);
-    }, [deadline, onExpire]);
-    return left;
-  }
-  function TriggerCountdown({ seconds }) {
-    const deadline = useMemo(() => Date.now() + seconds * 1000, [seconds]);
-    const left = useCountdown(deadline, refresh2);
-    return /* @__PURE__ */ React.createElement("span", null, formatCountdown(left));
-  }
-  function Countdown({ deadline, onExpire }) {
-    const left = useCountdown(deadline, onExpire);
-    return /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, formatCountdown(left));
-  }
-  function ProgressRing2({ fraction }) {
-    return /* @__PURE__ */ React.createElement("svg", {
-      width: RING_SIZE2,
-      height: RING_SIZE2,
-      viewBox: `0 0 ${RING_SIZE2} ${RING_SIZE2}`,
-      className: cl18("ring")
-    }, /* @__PURE__ */ React.createElement("circle", {
-      cx: RING_CENTER2,
-      cy: RING_CENTER2,
-      r: RING_RADIUS2,
-      className: cl18("ring-track")
-    }), /* @__PURE__ */ React.createElement("circle", {
-      cx: RING_CENTER2,
-      cy: RING_CENTER2,
-      r: RING_RADIUS2,
-      className: cl18("ring-fill"),
-      strokeDasharray: RING_CIRCUMFERENCE2,
-      strokeDashoffset: RING_CIRCUMFERENCE2 * (1 - fraction),
-      transform: `rotate(-90 ${RING_CENTER2} ${RING_CENTER2})`
-    }));
-  }
-  function TriggerIcon({ limited, ring, fraction }) {
-    if (limited)
-      return /* @__PURE__ */ React.createElement(ClockAlertIcon, {
-        width: 18,
-        height: 20,
-        className: cl18("icon-limited")
-      });
-    if (ring)
-      return /* @__PURE__ */ React.createElement(ProgressRing2, {
-        fraction
-      });
-    return /* @__PURE__ */ React.createElement(UsageProgressIcon, {
-      width: 18,
-      height: 18
-    });
-  }
-  function ButtonLabel({ mode }) {
-    useExternalStore(store3);
-    const { display } = settings11.use(["display"]);
-    const data = limits.get(mode);
-    if (!data)
-      return null;
-    if (remainingOf(data) === 0 && data.waitTimeSeconds)
-      return /* @__PURE__ */ React.createElement(TriggerCountdown, {
-        seconds: data.waitTimeSeconds
-      });
-    if (display === "fraction")
-      return /* @__PURE__ */ React.createElement("span", null, remainingOf(data), "/", totalOf(data));
-    if (display === "percent")
-      return /* @__PURE__ */ React.createElement("span", null, percentOf(data), "%");
-    return /* @__PURE__ */ React.createElement("span", null, remainingOf(data));
-  }
-  function formatImagineCount(data) {
-    if (!data || !data.available)
-      return "—";
-    if (data.remainingQueries >= UNLIMITED_THRESHOLD)
-      return "—";
-    return String(data.remainingQueries);
-  }
-  function ImagineButtonLabel({ quotas }) {
-    const img = quotas?.image;
-    if (!img)
-      return null;
-    return /* @__PURE__ */ React.createElement("span", null, formatImagineCount(img));
-  }
-  function ButtonIcon2() {
-    useExternalStore(store3);
-    const mode = useMode();
-    const isImagine = useIsImagine();
-    const quotas = useImagineQuotas();
-    const { display } = settings11.use(["display"]);
-    const data = limits.get(mode);
-    const limited = isImagine ? isImagineLimited(quotas) : isLimited(mode);
-    const ring = !isImagine && display === "ring" && data != null;
-    useEffect(() => {
-      refresh2();
-    }, []);
-    return /* @__PURE__ */ React.createElement("span", {
-      className: cl18("trigger")
-    }, /* @__PURE__ */ React.createElement(TriggerIcon, {
-      limited,
-      ring,
-      fraction: data ? fractionOf(data) : 1
-    }), isImagine ? /* @__PURE__ */ React.createElement(ImagineButtonLabel, {
-      quotas
-    }) : /* @__PURE__ */ React.createElement(ButtonLabel, {
-      mode
-    }));
-  }
-  function ModeStatus({ data, deadline }) {
-    if (!data)
-      return /* @__PURE__ */ React.createElement(Text, {
-        size: "xs",
-        color: "muted"
-      }, "—");
-    if (remainingOf(data) === 0 && data.waitTimeSeconds)
-      return /* @__PURE__ */ React.createElement(Countdown, {
-        deadline,
-        onExpire: refresh2
-      });
-    return /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "secondary"
-    }, remainingOf(data), "/", totalOf(data), " · ", percentOf(data), "%");
-  }
-  function ModeRow({ title, data, active }) {
-    const deadline = useMemo(() => Date.now() + (data?.waitTimeSeconds ?? 0) * 1000, [data?.waitTimeSeconds]);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: 0,
-      className: classes(cl18("row"), active && cl18("row-active"))
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 8
-    }, /* @__PURE__ */ React.createElement(Text, {
-      size: "sm",
-      weight: active ? "semibold" : "medium",
-      className: cl18("mode-label")
-    }, title), /* @__PURE__ */ React.createElement(ModeStatus, {
-      data,
-      deadline
-    })), data && /* @__PURE__ */ React.createElement("div", {
-      className: cl18("bar")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl18("bar-fill"),
-      style: { transform: `scaleX(${fractionOf(data)})` }
-    })), data && /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "muted"
-    }, "Resets in ", formatDuration(data.windowSizeSeconds)));
-  }
-  function TooltipPanel() {
-    useExternalStore(store3);
-    const mode = useMode();
-    const isImagine = useIsImagine();
-    const quotas = useImagineQuotas();
-    const modes = ModesStore.useModesStore((s) => s.modes);
-    if (isImagine)
-      return /* @__PURE__ */ React.createElement(ImagineTooltipPanel, {
-        quotas
-      });
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: 2,
-      className: cl18("panel")
-    }, modes.map((m) => /* @__PURE__ */ React.createElement(ModeRow, {
-      key: m.id,
-      title: m.title,
-      data: limits.get(m.id),
-      active: m.id === mode
-    })));
-  }
-  function ImagineTooltipPanel({ quotas }) {
-    const windowSec = quotas?.image?.windowSizeSeconds ?? 0;
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: 2,
-      className: cl18("panel")
-    }, IMAGINE_BUCKETS.map((b) => {
-      const data = quotas?.[b];
-      const exhausted = data?.available && data.remainingQueries === 0;
-      return /* @__PURE__ */ React.createElement(Flex, {
-        key: b,
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 8,
-        className: cl18("row")
-      }, /* @__PURE__ */ React.createElement(Text, {
-        size: "sm",
-        weight: "medium",
-        className: cl18("mode-label")
-      }, IMAGINE_LABELS[b]), exhausted && data?.nextAvailableAt ? /* @__PURE__ */ React.createElement(Countdown, {
-        deadline: data.nextAvailableAt,
-        onExpire: refreshImagineQuota
-      }) : /* @__PURE__ */ React.createElement(Text, {
-        size: "xs",
-        color: !data?.available ? "muted" : "secondary"
-      }, formatImagineCount(data)));
-    }), windowSec > 0 && /* @__PURE__ */ React.createElement(Text, {
-      size: "xs",
-      color: "muted"
-    }, "Rolling window: ", formatDuration(windowSec)));
-  }
-  var rateLimitDisplay_default = definePlugin({
-    name: "RateLimitDisplay",
-    description: "Shows rate limit usage for the current model mode in the chat bar.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings11,
-    chatBarButton: {
-      icon: () => /* @__PURE__ */ React.createElement(ButtonIcon2, null),
-      tooltip: () => /* @__PURE__ */ React.createElement(TooltipPanel, null),
-      onClick: () => refresh2(),
-      order: 0,
-      className: "text-fg-primary",
-      locations: ["chat", "imagine"]
-    },
-    stop() {
-      limits.clear();
-    },
-    zustand: {
-      ModesStore: {
-        selector: (s) => s.selectedModeId,
-        handler() {
-          refresh2();
-        }
-      },
-      CreditQuotaStore: {
-        selector: (s) => s.generationSeq,
-        handler() {
-          store3.notify();
-        }
-      }
-    },
-    events: {
-      streamEnd() {
-        refresh2();
-      }
-    }
-  });
-
   // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
@@ -8809,8 +8393,8 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
 `);
 
   // src/plugins/downloadTTS/index.tsx
-  var cl19 = classNameFactory("void-download-tts-");
-  var logger23 = new Logger("DownloadTTS");
+  var cl18 = classNameFactory("void-download-tts-");
+  var logger22 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -8830,7 +8414,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger23.error("Failed to download TTS audio:", e);
+        logger22.error("Failed to download TTS audio:", e);
       }
     });
     return /* @__PURE__ */ React.createElement(Button, {
@@ -8842,7 +8426,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
       variant: "tertiary"
     }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
       size: "sm",
-      className: cl19("spinner")
+      className: cl18("spinner")
     }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16
     }));
@@ -8863,11 +8447,11 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
   });
 
   // src/plugins/incognito/index.ts
-  var store4 = () => SettingsStore.useSettingsStore.getState();
+  var store3 = () => SettingsStore.useSettingsStore.getState();
   var unsubscribe = null;
   function enforce() {
-    if (!store4().isIncognito)
-      store4().setIsIncognito(true);
+    if (!store3().isIncognito)
+      store3().setIsIncognito(true);
   }
   var incognito_default = definePlugin({
     name: "Incognito",
@@ -8881,7 +8465,7 @@ button:has(> .void-rld-trigger > :nth-child(2)) {
     stop() {
       unsubscribe?.();
       unsubscribe = null;
-      store4().setIsIncognito(false);
+      store3().setIsIncognito(false);
     }
   });
 
@@ -8992,7 +8576,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings12 = definePluginSettings({
+  var settings11 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -9037,14 +8621,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings12.store[key]);
+      classList.toggle(cls, !!settings11.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings12,
+    settings: settings11,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -9195,7 +8779,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 `);
 
   // src/plugins/customInstructions/index.tsx
-  var cl20 = classNameFactory("void-ci-");
+  var cl19 = classNameFactory("void-ci-");
   var PixelAvatarModule = findByPropsLazy("PixelAvatar");
   var CheckIcon = findExportedComponentLazy("CheckIcon");
   var BookIcon = findExportedComponentLazy("BookIcon");
@@ -9203,38 +8787,38 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var TrashIcon2 = findExportedComponentLazy("TrashIcon");
   var PlusIcon = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings13 = definePluginSettings({
+  var settings12 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings13.plain.presets ?? [];
+    return settings12.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings13.store.presets = presets;
+    settings12.store.presets = presets;
   }
   function getAssignments() {
-    return settings13.plain.assignments ?? {};
+    return settings12.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
       role: "button",
-      className: cl20("card"),
+      className: cl19("card"),
       onClick: onEdit
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl20("avatar")
+      className: cl19("avatar")
     }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
       seed: preset.id,
       size: 32
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("card-name")
+      className: cl19("card-name")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium"
     }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("card-actions")
+      className: cl19("card-actions")
     }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "tertiary",
       size: "xs",
@@ -9262,14 +8846,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function PresetEditor({ preset, onUpdate, onClose }) {
     const overLimit = preset.prompt.length > MAX_LENGTH;
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl20("editor")
+      className: cl19("editor")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium",
-      className: cl20("label")
+      className: cl19("label")
     }, "Name"), /* @__PURE__ */ React.createElement(Input, {
       type: "text",
-      className: cl20("input"),
+      className: cl19("input"),
       placeholder: "Preset name",
       value: preset.name,
       onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
@@ -9277,20 +8861,20 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }), /* @__PURE__ */ React.createElement(Text, {
       size: "sm",
       weight: "medium",
-      className: cl20("label")
+      className: cl19("label")
     }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("textarea-wrap", { "textarea-wrap-error": overLimit })
+      className: cl19("textarea-wrap", { "textarea-wrap-error": overLimit })
     }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl20("textarea"),
+      className: cl19("textarea"),
       placeholder: "How should Grok behave?",
       value: preset.prompt,
       onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("editor-footer")
+      className: cl19("editor-footer")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "xs",
       color: overLimit ? undefined : "muted",
-      className: overLimit ? cl20("error-text") : undefined
+      className: overLimit ? cl19("error-text") : undefined
     }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
@@ -9299,7 +8883,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings13.use(["presets"]).presets ?? [];
+    const presets = settings12.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -9311,7 +8895,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         if (v === id)
           delete a[k];
       }
-      settings13.store.assignments = a;
+      settings12.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -9321,9 +8905,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }, []);
     const editing = presets.find((p) => p.id === editingId);
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl20("root")
+      className: cl19("root")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl20("grid")
+      className: cl19("grid")
     }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
       key: p.id,
       preset: p,
@@ -9331,7 +8915,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       onDelete: () => deletePreset(p.id)
     })), /* @__PURE__ */ React.createElement("div", {
       role: "button",
-      className: cl20("card", "card-add"),
+      className: cl19("card", "card-add"),
       onClick: addPreset
     }, /* @__PURE__ */ React.createElement(PlusIcon, {
       className: "size-4 text-secondary"
@@ -9346,8 +8930,8 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings13.use(["presets"]).presets ?? [];
-    const assignments = settings13.use(["assignments"]).assignments ?? {};
+    const presets = settings12.use(["presets"]).presets ?? [];
+    const assignments = settings12.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -9355,17 +8939,17 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings13.store.assignments = a;
+      settings12.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
     return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl20("trigger")
+      className: cl19("trigger")
     }, /* @__PURE__ */ React.createElement(BookIcon, {
       size: 16
     }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => assign(),
-      className: cl20("menu-item")
+      className: cl19("menu-item")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm"
     }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
@@ -9373,7 +8957,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: p.id,
       onSelect: () => assign(p.id),
-      className: cl20("menu-item")
+      className: cl19("menu-item")
     }, /* @__PURE__ */ React.createElement(Text, {
       size: "sm"
     }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
@@ -9385,7 +8969,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings13,
+    settings: settings12,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -9491,9 +9075,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 `);
 
   // src/plugins/betterSidebar/index.tsx
-  var logger24 = new Logger("BetterSidebar");
-  var cl21 = classNameFactory("void-sidebar-");
-  var settings14 = definePluginSettings({
+  var logger23 = new Logger("BetterSidebar");
+  var cl20 = classNameFactory("void-sidebar-");
+  var settings13 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -9524,24 +9108,24 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     };
     return /* @__PURE__ */ React.createElement("div", {
       ref: cardRef,
-      className: cl21("card"),
+      className: cl20("card"),
       onPointerDown: (e) => forward(e, "pointerdown"),
       onPointerUp: (e) => forward(e, "pointerup")
     }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       justifyContent: "center",
       gap: "0",
-      className: cl21("info")
+      className: cl20("info")
     }, /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "sm",
       weight: "medium",
-      className: cl21("name")
+      className: cl20("name")
     }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text, {
       as: "span",
       size: "xs",
       color: "secondary",
-      className: cl21("plan")
+      className: cl20("plan")
     }, getPlanName(bestSubscription, user.xSubscriptionType))));
   }
   var selection2 = createSelectionStore();
@@ -9553,10 +9137,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
     }
     const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger24.error("Failed to delete", id, e))));
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger23.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings14.use(["batchSelect"]).batchSelect;
+    const enabled = settings13.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
@@ -9569,7 +9153,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
-    settings: settings14,
+    settings: settings13,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
@@ -9583,7 +9167,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings14.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings13.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -9593,10 +9177,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       };
     },
     _defaultOpen() {
-      return !settings14.store.defaultCollapsed;
+      return !settings13.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings14.store.clickToToggle)
+      if (!settings13.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -9683,7 +9267,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 `);
 
   // src/plugins/placeholder/index.tsx
-  var cl22 = classNameFactory("void-ph-");
+  var cl21 = classNameFactory("void-ph-");
   var DEFAULT_PHRASES = [
     "What do you want to know?",
     "How can I help you today?",
@@ -9694,7 +9278,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     return String(raw ?? "").split(`
 `).map((s) => s.trim()).filter(Boolean);
   }
-  var settings15 = definePluginSettings({
+  var settings14 = definePluginSettings({
     phrases: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_PHRASES,
@@ -9702,11 +9286,11 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   }).withPrivateSettings();
   function PhrasesEditor() {
-    const { phrases } = settings15.use(["phrases"]);
+    const { phrases } = settings14.use(["phrases"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
-      className: cl22("root")
+      className: cl21("root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -9714,12 +9298,12 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       size: "sm",
       weight: "medium"
     }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl22("textarea-wrap")
+      className: cl21("textarea-wrap")
     }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl22("textarea"),
+      className: cl21("textarea"),
       value: phrases ?? DEFAULT_PHRASES,
       onChange: (e) => {
-        settings15.store.phrases = e.target.value;
+        settings14.store.phrases = e.target.value;
       },
       placeholder: DEFAULT_PHRASES
     })));
@@ -9729,9 +9313,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     description: "Replace the rotating chat input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],
-    settings: settings15,
+    settings: settings14,
     _phrases() {
-      const lines = parsePhrases(settings15.store.phrases ?? DEFAULT_PHRASES);
+      const lines = parsePhrases(settings14.store.phrases ?? DEFAULT_PHRASES);
       return lines.length ? lines : null;
     },
     patches: [
@@ -9758,7 +9342,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings16 = definePluginSettings({
+  var settings15 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -9783,18 +9367,18 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings16,
+    settings: settings15,
     _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
       if (!response?.createTime)
         return null;
-      if (settings16.store.hideOwnMessages && response.sender === "human")
+      if (settings15.store.hideOwnMessages && response.sender === "human")
         return null;
       return /* @__PURE__ */ React.createElement(Text, {
         as: "span",
         size: "xs",
         color: "muted",
         className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings16.store.showDate));
+      }, formatTimestamp(response.createTime, settings15.store.showDate));
     }),
     patches: [
       {
@@ -9809,7 +9393,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/plugins/cleaner/index.ts
-  var settings17 = definePluginSettings({
+  var settings16 = definePluginSettings({
     hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
       description: "Hide the upgrade plan button in the user menu.",
@@ -9858,7 +9442,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "Cleaner",
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
-    settings: settings17,
+    settings: settings16,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
@@ -9907,7 +9491,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [responseNotification_default.name]: responseNotification_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [rateLimitDisplay_default.name]: rateLimitDisplay_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [placeholder_default.name]: placeholder_default, [messageTimestamps_default.name]: messageTimestamps_default, [cleaner_default.name]: cleaner_default };
+  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [responseNotification_default.name]: responseNotification_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [placeholder_default.name]: placeholder_default, [messageTimestamps_default.name]: messageTimestamps_default, [cleaner_default.name]: cleaner_default };
   // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
@@ -9962,7 +9546,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     NoticeType2["ERROR"] = "error";
     NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var cl23 = classNameFactory("void-notice-");
+  var cl22 = classNameFactory("void-notice-");
   var ICONS = {
     ["info" /* INFO */]: () => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
       size: 18
@@ -9980,11 +9564,11 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl23("root")
+      className: cl22("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl23("icon")
+      className: cl22("icon")
     }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
-      className: cl23("message")
+      className: cl22("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
@@ -9994,7 +9578,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       variant: "tertiary",
       size: "sm",
       shape: "square",
-      className: cl23("close"),
+      className: cl22("close"),
       onClick: onClose
     }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
@@ -10126,7 +9710,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     DialogContent: () => DialogContent,
     DialogClose: () => DialogClose,
     Dialog: () => Dialog,
-    CreditQuotaStore: () => CreditQuotaStore,
     ConversationStore: () => ConversationStore,
     CommandList: () => CommandList,
     CommandItem: () => CommandItem,
@@ -10165,14 +9748,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger25 = new Logger("TurbopackPatcher", "#e78284");
+  var logger24 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger25.error(`${name} failed:`, e);
+      logger24.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -10193,7 +9776,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger25.info(`${getModuleCache().size} modules loaded, ready`);
+      logger24.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
       safely("checkBuildFingerprint", checkBuildFingerprint);
