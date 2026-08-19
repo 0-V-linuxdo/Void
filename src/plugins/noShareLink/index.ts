@@ -4,23 +4,36 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
-import definePlugin from "@utils/types";
+import definePlugin, { OptionType } from "@utils/types";
 
 const STYLE_NAME = "noShareLink";
 
-/**
- * Hide only the share buttons themselves.
- * Do NOT hide parent containers — that would remove neighboring action buttons
- * that live in the same toolbar/wrapper.
- */
-const CSS = `
-button[aria-label="Share Project"],
-button[aria-label="Create share link"] {
-    display: none !important;
+const settings = definePluginSettings({
+    hideShareProject: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the Share Project button.",
+        default: true,
+    },
+    hideCreateShareLink: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the Create share link button.",
+        default: true,
+    },
+});
+
+function apply() {
+    const rules: string[] = [];
+    if (settings.store.hideShareProject) {
+        rules.push('button[aria-label="Share Project"]{display:none!important}');
+    }
+    if (settings.store.hideCreateShareLink) {
+        rules.push('button[aria-label="Create share link"]{display:none!important}');
+    }
+    registerStyle(STYLE_NAME, rules.join("\n"));
 }
-`;
 
 export default definePlugin({
     name: "NoShareLink",
@@ -28,11 +41,10 @@ export default definePlugin({
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
+    settings,
 
-    start() {
-        registerStyle(STYLE_NAME, CSS);
-    },
-
+    start: apply,
+    onSettingsChange: apply,
     stop() {
         unregisterStyle(STYLE_NAME);
     },
