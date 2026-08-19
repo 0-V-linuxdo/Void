@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"d98deae"}`
-    }, `(${"d98deae"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"2066cae"}`
+    }, `(${"2066cae"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -9109,6 +9109,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
 
   // src/plugins/chatStateFavicons/index.ts
+  var logger22 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
   var settings13 = definePluginSettings({
@@ -9142,7 +9143,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return node instanceof HTMLLinkElement && (node.relList.contains("icon") || /\bicon\b/i.test(node.rel));
   }
   function stripCompetitors() {
-    for (const node of document.head.querySelectorAll("link")) {
+    const { head } = document;
+    if (!head)
+      return;
+    for (const node of head.querySelectorAll("link")) {
       if (node.id !== ICON_ID && isIconLink(node))
         node.remove();
     }
@@ -9174,9 +9178,22 @@ button:has(.void-ud-trigger > .void-ud-label) {
     icons = buildIcons(currentStyle(), officialHref);
     applyHref(icons[kind]);
   }
+  function getPage() {
+    try {
+      const { getState } = ChatPageStore.useChatPageStore;
+      if (typeof getState !== "function")
+        return null;
+      return getState();
+    } catch (e) {
+      logger22.debug("ChatPageStore unavailable:", e);
+      return null;
+    }
+  }
   function isInputEmpty() {
-    const { conversationId, queryByConversationId } = ChatPageStore.useChatPageStore.getState();
-    const draft = (conversationId ? queryByConversationId[conversationId] : queryByConversationId[""]) ?? "";
+    const page = getPage();
+    const conversationId = page?.conversationId;
+    const drafts = page?.queryByConversationId;
+    const draft = (conversationId ? drafts?.[conversationId] : drafts?.[""]) ?? "";
     if (draft.replaceAll("​", "").trim())
       return false;
     const editor = document.querySelector(EDITOR_SEL);
@@ -9187,7 +9204,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
   }
   function evaluate() {
-    const { streamedMessageId, conversationId } = ChatPageStore.useChatPageStore.getState();
+    const page = getPage();
+    if (!page)
+      return;
+    const { streamedMessageId, conversationId } = page;
     if (streamedMessageId) {
       justFinished = false;
       lastWasError = false;
@@ -9228,14 +9248,23 @@ button:has(.void-ud-trigger > .void-ud-label) {
     });
   }
   function onStreamEnd2({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    lastConv = ChatPageStore.useChatPageStore.getState().conversationId;
-    lastWasError = response?.state === "error" || response?.error != null;
+    let error = false;
+    try {
+      const response = ResponseStore.useResponseStore.getState().byId[responseId];
+      error = response?.state === "error" || response?.error != null;
+    } catch (e) {
+      logger22.debug("ResponseStore unavailable:", e);
+    }
+    lastConv = getPage()?.conversationId;
+    lastWasError = error;
     justFinished = !lastWasError;
     evaluate();
   }
   function startGuard() {
     observer?.disconnect();
+    const { head } = document;
+    if (!head)
+      return;
     observer = new MutationObserver((list) => {
       for (const m of list) {
         if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
@@ -9250,7 +9279,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         }
       }
     });
-    observer.observe(document.head, {
+    observer.observe(head, {
       childList: true,
       subtree: true,
       attributes: true,
@@ -9268,11 +9297,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
     observer?.disconnect();
     observer = null;
     document.getElementById(ICON_ID)?.remove();
+    const { head } = document;
+    if (!head)
+      return;
     const link = document.createElement("link");
     link.rel = "icon";
     link.type = "image/svg+xml";
     link.href = officialHref;
-    document.head.prepend(link);
+    head.prepend(link);
   }
   var chatStateFavicons_default = definePlugin({
     name: "ChatStateFavicons",
@@ -9304,7 +9336,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
     onSettingsChange: rebuildIcons,
     zustand: {
       ChatPageStore: {
-        selector: (s) => `${s.streamedMessageId ?? ""}|${s.conversationId ?? ""}`,
         handler: evaluate
       }
     },
@@ -9370,7 +9401,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/betterSidebar/index.tsx
-  var logger22 = new Logger("BetterSidebar");
+  var logger23 = new Logger("BetterSidebar");
   var cl21 = classNameFactory("void-sidebar-");
   var settings14 = definePluginSettings({
     clickToToggle: {
@@ -9432,7 +9463,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
     }
     const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger22.error("Failed to delete", id, e))));
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger23.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
     const enabled = settings14.use(["batchSelect"]).batchSelect;
@@ -9545,7 +9576,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/cloneChats/index.tsx
-  var logger23 = new Logger("CloneChats");
+  var logger24 = new Logger("CloneChats");
   async function cloneChat(conversationId) {
     const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
     if (!lastResponseId)
@@ -9568,7 +9599,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
     return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger23.error("Failed to clone chat:", e)),
+      onSelect: () => cloneChat(conversationId).catch((e) => logger24.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
@@ -10128,14 +10159,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
   });
 
   // src/Void.ts
-  var logger24 = new Logger("TurbopackPatcher", "#e78284");
+  var logger25 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger24.error(`${name} failed:`, e);
+      logger25.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -10156,7 +10187,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger24.info(`${getModuleCache().size} modules loaded, ready`);
+      logger25.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
       safely("checkBuildFingerprint", checkBuildFingerprint);

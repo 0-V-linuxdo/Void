@@ -9,10 +9,12 @@ import { definePluginSettings } from "@api/Settings";
 import type { ChatPageStoreState } from "@grok-types/stores";
 import { ChatPageStore, ResponseStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
+import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 
 import { buildIcons, type FaviconKind, type IconStyle, isIconStyle, STYLE_OPTIONS } from "./icons";
 
+const logger = new Logger("ChatStateFavicons");
 const ICON_ID = "void-chat-state-favicon";
 const EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
 
@@ -51,7 +53,9 @@ function isIconLink(node: Node): node is HTMLLinkElement {
 }
 
 function stripCompetitors() {
-    for (const node of document.head.querySelectorAll("link")) {
+    const { head } = document;
+    if (!head) return;
+    for (const node of head.querySelectorAll("link")) {
         if (node.id !== ICON_ID && isIconLink(node)) node.remove();
     }
 }
@@ -84,9 +88,22 @@ function rebuildIcons() {
     applyHref(icons[kind]);
 }
 
+function getPage(): ChatPageStoreState | null {
+    try {
+        const {getState} = ChatPageStore.useChatPageStore;
+        if (typeof getState !== "function") return null;
+        return getState();
+    } catch (e) {
+        logger.debug("ChatPageStore unavailable:", e);
+        return null;
+    }
+}
+
 function isInputEmpty(): boolean {
-    const { conversationId, queryByConversationId } = ChatPageStore.useChatPageStore.getState();
-    const draft = (conversationId ? queryByConversationId[conversationId] : queryByConversationId[""]) ?? "";
+    const page = getPage();
+    const conversationId = page?.conversationId;
+    const drafts = page?.queryByConversationId;
+    const draft = (conversationId ? drafts?.[conversationId] : drafts?.[""]) ?? "";
     if (draft.replaceAll("\u200B", "").trim()) return false;
 
     const editor = document.querySelector<HTMLElement>(EDITOR_SEL);
@@ -96,7 +113,10 @@ function isInputEmpty(): boolean {
 }
 
 function evaluate() {
-    const { streamedMessageId, conversationId } = ChatPageStore.useChatPageStore.getState();
+    const page = getPage();
+    if (!page) return;
+
+    const { streamedMessageId, conversationId } = page;
 
     if (streamedMessageId) {
         justFinished = false;
@@ -143,15 +163,23 @@ function scheduleEvaluate() {
 }
 
 function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    lastConv = ChatPageStore.useChatPageStore.getState().conversationId;
-    lastWasError = response?.state === "error" || response?.error != null;
+    let error = false;
+    try {
+        const response = ResponseStore.useResponseStore.getState().byId[responseId];
+        error = response?.state === "error" || response?.error != null;
+    } catch (e) {
+        logger.debug("ResponseStore unavailable:", e);
+    }
+    lastConv = getPage()?.conversationId;
+    lastWasError = error;
     justFinished = !lastWasError;
     evaluate();
 }
 
 function startGuard() {
     observer?.disconnect();
+    const { head } = document;
+    if (!head) return;
     observer = new MutationObserver(list => {
         for (const m of list) {
             if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
@@ -166,7 +194,7 @@ function startGuard() {
             }
         }
     });
-    observer.observe(document.head, {
+    observer.observe(head, {
         childList: true,
         subtree: true,
         attributes: true,
@@ -186,11 +214,13 @@ function restoreOfficial() {
     observer?.disconnect();
     observer = null;
     document.getElementById(ICON_ID)?.remove();
+    const { head } = document;
+    if (!head) return;
     const link = document.createElement("link");
     link.rel = "icon";
     link.type = "image/svg+xml";
     link.href = officialHref;
-    document.head.prepend(link);
+    head.prepend(link);
 }
 
 export default definePlugin({
@@ -226,7 +256,6 @@ export default definePlugin({
 
     zustand: {
         ChatPageStore: {
-            selector: (s: ChatPageStoreState) => `${s.streamedMessageId ?? ""}|${s.conversationId ?? ""}`,
             handler: evaluate,
         },
     },
