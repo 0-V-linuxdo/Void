@@ -8,6 +8,7 @@
 
 **New**
 
+- **NoShareLink** — Hide the Share Project button from the top-right corner.
 - **NoDictation** — Hide the Dictation (voice input) button from the chat input bar.
 - **UsageDisplay** — Shows official weekly SuperGrok usage in the chat bar.
 - **Placeholder** — Replace the rotating chat input placeholder.
