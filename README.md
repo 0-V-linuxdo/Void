@@ -16,3 +16,7 @@
 - **Settings** — Void tabs in the Grok settings sidebar.
 - **Cleaner** — Hide inaccessible models in the model selector again.
 - **Chat bar buttons** — Restored after Grok removed `ButtonWithTooltipOptimized`.
+
+**Removed**
+
+- **RateLimitDisplay** — Dropped after Grok credit rules changed; the old per-mode rate-limit readout no longer works.

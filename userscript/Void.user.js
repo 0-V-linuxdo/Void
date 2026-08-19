@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         Void
-// @namespace    https://github.com/imjustprism/Void
+// @name         Void++
+// @namespace    https://github.com/0-V-linuxdo/Void
 // @version      1.0.3.10
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
@@ -22,7 +22,7 @@
 // @compatible   edge
 // @compatible   opera
 // @license      GPL-3.0-or-later
-// @supportURL   https://discord.gg/4Rx3qUCR5Y
+// @supportURL   https://github.com/0-V-linuxdo/Void
 // @downloadURL  https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/userscript/Void.user.js
 // @updateURL    https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/userscript/Void.user.js
 // ==/UserScript==

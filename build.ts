@@ -20,9 +20,12 @@ const LICENSE_BANNER = `/**
  * Source: ${repoUrl}
  */`;
 
+const FORK_URL = "https://github.com/0-V-linuxdo/Void";
+const FORK_RAW_URL = "https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B";
+
 const USERSCRIPT_HEADER = `// ==UserScript==
-// @name         Void
-// @namespace    ${repoUrl}
+// @name         Void++
+// @namespace    ${FORK_URL}
 // @version      ${pkg.version}
 // @description  A modification for grok.com
 // @author       ${pkg.author} & Void Contributors
@@ -44,9 +47,9 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @compatible   edge
 // @compatible   opera
 // @license      GPL-3.0-or-later
-// @supportURL   https://discord.gg/4Rx3qUCR5Y
-// @downloadURL  ${repoRawUrl}/main/userscript/Void.user.js
-// @updateURL    ${repoRawUrl}/main/userscript/Void.user.js
+// @supportURL   ${FORK_URL}
+// @downloadURL  ${FORK_RAW_URL}/userscript/Void.user.js
+// @updateURL    ${FORK_RAW_URL}/userscript/Void.user.js
 // ==/UserScript==
 `;
 
