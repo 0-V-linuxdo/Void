@@ -11,25 +11,33 @@ import definePlugin from "@utils/types";
 const STYLE_NAME = "noShareLink";
 
 /**
- * Hide the "Share Project" button in the top-right corner.
- * Also collapses any direct parent wrapper to prevent empty gaps.
+ * Hide share-related buttons (Share Project, Create share link, etc.)
+ * and collapse their immediate parent wrappers to avoid empty gaps.
  */
 const CSS = `
 button[aria-label="Share Project"],
-button[aria-label*="Share Project"] {
+button[aria-label*="Share Project"],
+button[aria-label="Create share link"],
+button[aria-label*="Create share link"],
+button[aria-label="Share link"],
+button[aria-label*="Share link"] {
     display: none !important;
 }
 
 /* Collapse sizing wrappers so no empty space remains */
 div:has(> button[aria-label="Share Project"]),
-div:has(> button[aria-label*="Share Project"]) {
+div:has(> button[aria-label*="Share Project"]),
+div:has(> button[aria-label="Create share link"]),
+div:has(> button[aria-label*="Create share link"]),
+div:has(> button[aria-label="Share link"]),
+div:has(> button[aria-label*="Share link"]) {
     display: none !important;
 }
 `;
 
 export default definePlugin({
     name: "NoShareLink",
-    description: "Hide the Share Project button from the top-right corner.",
+    description: "Hide Share Project / Create share link buttons for privacy.",
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
