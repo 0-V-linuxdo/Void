@@ -1,0 +1,102 @@
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+export const EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
+export const STOP_SELECTORS = [
+    'button[aria-label="Stop model response"]',
+    'button[aria-label*="Stop"]',
+    'button[aria-label*="stop"]',
+    'button[aria-label*="停止"]',
+] as const;
+export const SEND_SELECTORS = [
+    'button[aria-label*="Send"]',
+    'button[aria-label*="Submit"]',
+    'button[type="submit"]',
+] as const;
+
+export function isVisible(el: Element | null | undefined): el is HTMLElement {
+    if (!(el instanceof HTMLElement) || !el.isConnected) return false;
+    if (!el.getClientRects().length) return false;
+    const style = getComputedStyle(el);
+    return style.visibility !== "hidden" && style.display !== "none";
+}
+
+export function getActiveEditor(): HTMLElement | null {
+    const list = Array.from(document.querySelectorAll<HTMLElement>(EDITOR_SEL));
+    return list.find(isVisible) ?? list[0] ?? null;
+}
+
+export function getComposerRoot(): Element {
+    const editor = getActiveEditor();
+    return editor?.closest("form")
+        ?? editor?.closest("div.relative")
+        ?? editor?.parentElement
+        ?? document.body;
+}
+
+export function collectStopButtons(root: ParentNode): HTMLElement[] {
+    const candidates: HTMLElement[] = [];
+    for (const sel of STOP_SELECTORS) {
+        for (const node of root.querySelectorAll(sel)) {
+            if (node instanceof HTMLElement) candidates.push(node);
+        }
+    }
+    if (candidates.length === 0) {
+        for (const btn of root.querySelectorAll("button")) {
+            if (!(btn instanceof HTMLElement)) continue;
+            const label = btn.getAttribute("aria-label") ?? "";
+            const text = btn.textContent ?? "";
+            if (/stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止")) candidates.push(btn);
+        }
+    }
+    return candidates;
+}
+
+export function getStopButton(): HTMLElement | null {
+    for (const root of [getComposerRoot(), document.body]) {
+        const candidates = collectStopButtons(root);
+        const found = candidates.find(isVisible) ?? candidates[0];
+        if (found) return found;
+    }
+    return null;
+}
+
+export function submitIsVisible(): boolean {
+    const root = getComposerRoot();
+    for (const sel of SEND_SELECTORS) {
+        for (const node of root.querySelectorAll(sel)) {
+            if (isVisible(node)) return true;
+        }
+    }
+    return false;
+}
+
+export function isInputEmpty(): boolean {
+    const editor = getActiveEditor();
+    if (!editor) return true;
+    if (editor.querySelector("p.is-empty.is-editor-empty")) return true;
+    return (editor.textContent ?? "").replaceAll("\u200B", "").trim().length === 0;
+}
+
+export function conversationToken(): string {
+    const params = new URLSearchParams(location.search);
+    const paramId = params.get("conversationId")
+        ?? params.get("conversation_id")
+        ?? params.get("chatId")
+        ?? params.get("chat_id")
+        ?? params.get("cid")
+        ?? params.get("id")
+        ?? "";
+    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
+    const pathId = /^[a-z0-9_-]{8,}$/i.test(lastSeg) ? lastSeg : "";
+    const dataId = document.querySelector("[data-conversation-id]")?.getAttribute("data-conversation-id") ?? "";
+    return [dataId, paramId, pathId].filter(Boolean).join("|");
+}
+
+export function contextKeyFromUrl(token: string): string {
+    const base = `${location.origin}${location.pathname}`;
+    return token ? `${base}|${token}` : `${base}|draft`;
+}

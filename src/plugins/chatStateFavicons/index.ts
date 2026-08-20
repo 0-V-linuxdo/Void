@@ -6,25 +6,24 @@
 
 import type { VoidEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
-import type { ChatPageStoreModule, ChatPageStoreState } from "@grok-types/stores";
-import { ChatPageStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
-import { filters, waitFor } from "@turbopack/turbopack";
+import { ChatPageStore, ResponseStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 
+import {
+    contextKeyFromUrl,
+    conversationToken,
+    getActiveEditor,
+    getComposerRoot,
+    getStopButton,
+    isInputEmpty,
+    submitIsVisible,
+} from "./detect";
 import { buildIcons, type FaviconKind, type IconStyle, isIconStyle, STYLE_OPTIONS } from "./icons";
 
 const logger = new Logger("ChatStateFavicons");
 const ICON_ID = "void-chat-state-favicon";
-const EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
-const STOP_SELECTORS = [
-    'button[aria-label="Stop model response"]',
-    'button[aria-label*="Stop" i]',
-    'button[aria-label*="停止"]',
-];
-const STOP_RE = /stop|停止/i;
-const STREAM_IDLE_TICKS = 3;
 
 const settings = definePluginSettings({
     style: {
@@ -39,16 +38,16 @@ let icons = buildIcons("badge", officialHref);
 let kind: FaviconKind = "wait";
 let wasStreaming = false;
 let justFinished = false;
+let streamContext: string | null = null;
+let lockedToken = "";
 let lastWasError = false;
-let streamContext: string | undefined;
-let idleTicks = 0;
-let observer: MutationObserver | null = null;
+let faviconObs: MutationObserver | null = null;
+let globalObs: MutationObserver | null = null;
 let composerObs: MutationObserver | null = null;
+let buttonObs: MutationObserver | null = null;
 let inputCtrl: AbortController | null = null;
-let unsubPage: (() => void) | null = null;
-let unsubRoute: (() => void) | null = null;
-let cancelWait: (() => void) | null = null;
 let raf = 0;
+let started = false;
 
 function currentStyle(): IconStyle {
     const value = settings.store.style;
@@ -102,195 +101,125 @@ function rebuildIcons() {
     applyHref(icons[kind]);
 }
 
-function getPage(): ChatPageStoreState | null {
+function storeStreaming(): boolean {
     try {
-        const { getState } = ChatPageStore.useChatPageStore;
-        if (typeof getState !== "function") return null;
-        return getState();
+        const page = ChatPageStore.useChatPageStore.getState();
+        return !!(page.streamedMessageId || page.showStreamingIndicator);
     } catch (e) {
         logger.debug("ChatPageStore unavailable:", e);
-        return null;
+        return false;
     }
 }
 
-function contextKey(): string {
+function isStreaming(): boolean {
+    if (getStopButton()) return true;
+    return storeStreaming();
+}
+
+function getContextKey(): string {
+    const token = conversationToken();
+    if (getStopButton() || storeStreaming()) {
+        if (!lockedToken && token) lockedToken = token;
+        return contextKeyFromUrl(lockedToken);
+    }
+    lockedToken = "";
+    return contextKeyFromUrl(token);
+}
+
+function hasError(): boolean {
+    if (lastWasError) return true;
     try {
-        const { route } = RoutingStore.useRoutingStore.getState();
-        if (route.conversationId) return `c:${route.conversationId}`;
-        if (route.page) return `p:${route.page}`;
+        const { byId } = ResponseStore.useResponseStore.getState();
+        const page = ChatPageStore.useChatPageStore.getState();
+        const id = page.streamedMessageId ?? page.lastMessageId;
+        if (!id) return false;
+        const response = byId[id];
+        return response?.state === "error" || response?.error != null;
     } catch (e) {
-        logger.debug("RoutingStore unavailable:", e);
+        logger.debug("ResponseStore unavailable:", e);
+        return false;
     }
-    const page = getPage();
-    if (page?.conversationId) return `c:${page.conversationId}`;
-    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
-    if (/^[a-z0-9_-]{8,}$/i.test(lastSeg)) return `c:${lastSeg}`;
-    return `p:${location.pathname}`;
 }
 
-function lockStreamContext(key: string) {
-    if (!streamContext) {
-        streamContext = key;
+function evaluateState() {
+    if (!started) return;
+    const contextKey = getContextKey();
+
+    if (hasError() && !isStreaming()) {
+        setKind("error");
+        wasStreaming = false;
+        justFinished = false;
+        streamContext = null;
+        lastWasError = false;
         return;
     }
-    if (streamContext.startsWith("p:") && key.startsWith("c:")) streamContext = key;
-}
 
-function sameStreamContext(key: string): boolean {
-    if (!streamContext) return true;
-    if (streamContext === key) return true;
-    return streamContext.startsWith("p:") && key.startsWith("c:");
-}
-
-function isVisible(el: Element): boolean {
-    if (!(el instanceof HTMLElement) || !el.isConnected) return false;
-    if (el.getClientRects().length === 0) return false;
-    const style = getComputedStyle(el);
-    return style.display !== "none" && style.visibility !== "hidden";
-}
-
-function composerRoot(): Element {
-    const editor = document.querySelector(EDITOR_SEL);
-    if (!editor) return document.body;
-    return editor.closest("form")
-        ?? editor.closest('[class*="composer" i]')
-        ?? editor.parentElement
-        ?? document.body;
-}
-
-function firstStopButton(root: ParentNode, visibleOnly: boolean): HTMLElement | null {
-    for (const sel of STOP_SELECTORS) {
-        for (const node of root.querySelectorAll(sel)) {
-            if (node instanceof HTMLElement && (!visibleOnly || isVisible(node))) return node;
-        }
-    }
-    for (const btn of root.querySelectorAll("button")) {
-        if (!(btn instanceof HTMLElement)) continue;
-        const label = btn.getAttribute("aria-label") ?? "";
-        const text = btn.textContent ?? "";
-        if (STOP_RE.test(label) || STOP_RE.test(text)) {
-            if (!visibleOnly || isVisible(btn)) return btn;
-        }
-    }
-    return null;
-}
-
-function getStopButton(): HTMLElement | null {
-    return firstStopButton(composerRoot(), false) ?? firstStopButton(document, false);
-}
-
-function isInputEmpty(): boolean {
-    const editor = document.querySelector<HTMLElement>(EDITOR_SEL);
-    if (!editor?.isConnected) return true;
-    if (editor.querySelector("p.is-empty.is-editor-empty")) return true;
-    return (editor.textContent ?? "").replaceAll("\u200B", "").trim().length === 0;
-}
-
-function isStreaming(page: ChatPageStoreState | null): boolean {
-    if (page?.streamedMessageId) return true;
-    if (page?.showStreamingIndicator) return true;
-    return getStopButton() != null;
-}
-
-function evaluate() {
-    const page = getPage();
-    const key = contextKey();
-    const streaming = isStreaming(page);
-    const sameContext = sameStreamContext(key);
-
-    if (streaming) {
+    if (isStreaming()) {
         wasStreaming = true;
         justFinished = false;
-        idleTicks = 0;
-        lockStreamContext(key);
+        lastWasError = false;
+        streamContext = contextKey;
         setKind("rotate");
         return;
     }
 
-    if (lastWasError && sameContext) {
-        if (!isInputEmpty()) {
-            lastWasError = false;
-            justFinished = false;
-            wasStreaming = false;
-            streamContext = undefined;
-            idleTicks = 0;
-            setKind("ready");
+    if (wasStreaming) {
+        const sameContext = !streamContext || !contextKey || streamContext === contextKey;
+        wasStreaming = false;
+        if (sameContext && submitIsVisible()) {
+            justFinished = true;
+            setKind("done");
             return;
         }
-        setKind("error");
-        return;
+        justFinished = false;
+        streamContext = null;
     }
 
-    if (kind === "rotate" || wasStreaming) {
-        if (!sameContext) {
-            wasStreaming = false;
+    if (justFinished) {
+        const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);
+        if (contextChanged) {
             justFinished = false;
-            lastWasError = false;
-            streamContext = undefined;
-            idleTicks = 0;
+            streamContext = null;
         } else {
-            idleTicks += 1;
-            if (idleTicks < STREAM_IDLE_TICKS) {
-                setKind("rotate");
-                scheduleEvaluate();
-                return;
+            if (!isInputEmpty()) {
+                setKind("ready");
+                justFinished = false;
             }
-            wasStreaming = false;
-            justFinished = !lastWasError;
-            idleTicks = 0;
-            setKind(lastWasError ? "error" : "done");
             return;
         }
     }
 
-    if (justFinished && sameContext) {
-        if (!isInputEmpty()) {
-            justFinished = false;
-            lastWasError = false;
-            streamContext = undefined;
-            setKind("ready");
-        }
-        return;
-    }
-
-    justFinished = false;
+    streamContext = null;
     lastWasError = false;
-    streamContext = undefined;
-    idleTicks = 0;
     setKind(isInputEmpty() ? "wait" : "ready");
 }
 
 function scheduleEvaluate() {
-    if (raf) return;
+    if (!started || raf) return;
     raf = requestAnimationFrame(() => {
         raf = 0;
-        evaluate();
+        if (!started) return;
+        bindEditorInput();
+        observeComposer();
+        observeButtons();
+        evaluateState();
     });
 }
 
-function onComposerInput() {
-    if (kind === "rotate" || wasStreaming) return;
-    scheduleEvaluate();
-}
-
 function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
-    let error = false;
     try {
         const response = ResponseStore.useResponseStore.getState().byId[responseId];
-        error = response?.state === "error" || response?.error != null;
+        lastWasError = response?.state === "error" || response?.error != null;
     } catch (e) {
         logger.debug("ResponseStore unavailable:", e);
     }
-    lastWasError = error;
-    wasStreaming = true;
-    evaluate();
 }
 
-function startGuard() {
-    observer?.disconnect();
+function startFaviconGuard() {
+    faviconObs?.disconnect();
     const { head } = document;
     if (!head) return;
-    observer = new MutationObserver(list => {
+    faviconObs = new MutationObserver(list => {
         for (const m of list) {
             if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
                 applyHref(icons[kind]);
@@ -304,7 +233,7 @@ function startGuard() {
             }
         }
     });
-    observer.observe(head, {
+    faviconObs.observe(head, {
         childList: true,
         subtree: true,
         attributes: true,
@@ -312,88 +241,55 @@ function startGuard() {
     });
 }
 
-function startInputWatch() {
-    inputCtrl?.abort();
-    inputCtrl = new AbortController();
-    const { signal } = inputCtrl;
-    document.addEventListener("input", onComposerInput, { capture: true, passive: true, signal });
-    document.addEventListener("compositionend", onComposerInput, { capture: true, passive: true, signal });
-    window.addEventListener("popstate", scheduleEvaluate, { signal });
+function bindEditorInput() {
+    const editor = getActiveEditor();
+    if (!editor || editor.dataset.voidCsfBound === "1") return;
+    editor.dataset.voidCsfBound = "1";
+    editor.addEventListener("input", scheduleEvaluate, { passive: true });
+    editor.addEventListener("compositionend", scheduleEvaluate, { passive: true });
 }
 
-function isButtonNode(node: Node): boolean {
-    if (!(node instanceof HTMLElement)) return false;
-    return node.tagName === "BUTTON" || node.querySelector("button") != null;
-}
-
-function startComposerWatch() {
+function observeComposer() {
     composerObs?.disconnect();
-    const target = composerRoot();
-    if (!target) return;
-    composerObs = new MutationObserver(list => {
+    const root = getComposerRoot();
+    composerObs = new MutationObserver(scheduleEvaluate);
+    composerObs.observe(root, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["aria-disabled", "disabled", "data-testid", "class"],
+    });
+}
+
+function observeButtons() {
+    buttonObs?.disconnect();
+    const target = getComposerRoot();
+    buttonObs = new MutationObserver(list => {
         for (const m of list) {
             if (m.type === "attributes") {
-                if (m.target instanceof HTMLElement && m.target.tagName === "BUTTON") {
+                const t = m.target;
+                if (t instanceof HTMLElement && t.tagName === "BUTTON") {
                     scheduleEvaluate();
                     return;
                 }
-                continue;
-            }
-            for (const node of m.addedNodes) {
-                if (isButtonNode(node)) {
-                    scheduleEvaluate();
-                    return;
-                }
-            }
-            for (const node of m.removedNodes) {
-                if (isButtonNode(node)) {
-                    scheduleEvaluate();
-                    return;
-                }
+            } else if (m.addedNodes.length || m.removedNodes.length) {
+                scheduleEvaluate();
+                return;
             }
         }
     });
-    composerObs.observe(target, {
+    buttonObs.observe(target, {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ["aria-label", "type", "disabled", "aria-disabled", "hidden", "class"],
+        attributeFilter: ["aria-label", "type", "disabled", "aria-disabled", "class"],
     });
 }
 
-function pageSignature(s: ChatPageStoreState) {
-    return `${s.streamedMessageId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
-}
-
-function attachStore(mod?: ChatPageStoreModule) {
-    unsubPage?.();
-    const store = mod?.useChatPageStore ?? ChatPageStore.useChatPageStore;
-    if (typeof store?.subscribe !== "function") return false;
-
-    try {
-        unsubPage = store.subscribe(pageSignature, () => scheduleEvaluate());
-    } catch (e) {
-        logger.debug("selector subscribe failed, using full subscribe:", e);
-        unsubPage = store.subscribe(() => scheduleEvaluate());
-    }
-
-    try {
-        unsubRoute?.();
-        const routeStore = RoutingStore.useRoutingStore;
-        if (typeof routeStore?.subscribe === "function") {
-            unsubRoute = routeStore.subscribe(() => scheduleEvaluate());
-        }
-    } catch (e) {
-        logger.debug("RoutingStore subscribe failed:", e);
-    }
-
-    evaluate();
-    return true;
-}
-
 function restoreOfficial() {
-    observer?.disconnect();
-    observer = null;
+    faviconObs?.disconnect();
+    faviconObs = null;
     document.getElementById(ICON_ID)?.remove();
     const { head } = document;
     if (!head) return;
@@ -415,36 +311,39 @@ export default definePlugin({
     cleanupSelectors: [`#${ICON_ID}`],
 
     start() {
+        started = true;
         officialHref = captureOfficial();
         rebuildIcons();
-        startGuard();
-        startInputWatch();
-        startComposerWatch();
-        if (attachStore()) return;
-        cancelWait = waitFor<ChatPageStoreModule>(filters.byProps("useChatPageStore"), mod => {
-            attachStore(mod);
-        });
-        evaluate();
+        startFaviconGuard();
+        inputCtrl?.abort();
+        inputCtrl = new AbortController();
+        window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
+        globalObs?.disconnect();
+        globalObs = new MutationObserver(scheduleEvaluate);
+        globalObs.observe(document.body, { childList: true, subtree: true });
+        bindEditorInput();
+        observeComposer();
+        observeButtons();
+        evaluateState();
     },
 
     stop() {
+        started = false;
         if (raf) cancelAnimationFrame(raf);
         raf = 0;
-        cancelWait?.();
-        cancelWait = null;
-        unsubPage?.();
-        unsubPage = null;
-        unsubRoute?.();
-        unsubRoute = null;
         inputCtrl?.abort();
         inputCtrl = null;
+        globalObs?.disconnect();
+        globalObs = null;
         composerObs?.disconnect();
         composerObs = null;
+        buttonObs?.disconnect();
+        buttonObs = null;
         wasStreaming = false;
         justFinished = false;
+        streamContext = null;
+        lockedToken = "";
         lastWasError = false;
-        streamContext = undefined;
-        idleTicks = 0;
         restoreOfficial();
     },
 
