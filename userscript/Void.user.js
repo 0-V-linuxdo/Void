@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820.6] v1.0.0
+// @version      [20260820.7] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820.6] v1.0.0 — A modification for grok.com
+ * Void++ [20260820.7] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820.6] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"61dc2b2"}`
-    }, `(${"61dc2b2"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8a56c88"}`
+    }, `(${"8a56c88"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6847,7 +6847,6 @@ div:has(> button[aria-label*="Dictation"]) {
       default: true
     }
   }).withPrivateSettings();
-  var ui = createExternalStore();
   var thumbs = new Map;
   var wsNames = {};
   var open2 = false;
@@ -6855,6 +6854,7 @@ div:has(> button[aria-label*="Dictation"]) {
   var held = false;
   var ctrlHeld = false;
   var keys = null;
+  var host = null;
   function unique(ids) {
     const seen = new Set;
     const out = [];
@@ -6931,8 +6931,8 @@ div:has(> button[aria-label*="Dictation"]) {
         changed = true;
       if (assignRecord("projectNames", keepProjects))
         changed = true;
-      if (changed)
-        ui.notify();
+      if (changed && open2)
+        paint();
     } finally {
       writing = false;
     }
@@ -7249,14 +7249,14 @@ div:has(> button[aria-label*="Dictation"]) {
     } catch (e) {
       logger17.error("Failed to open switcher:", e);
     }
-    ui.notify();
+    paint();
   }
   function cycle(reverse) {
     const { length } = topics();
     if (!length)
       return;
     selected = (selected + (reverse ? -1 : 1) + length) % length;
-    ui.notify();
+    paint();
   }
   function commit() {
     if (!open2)
@@ -7264,7 +7264,7 @@ div:has(> button[aria-label*="Dictation"]) {
     const target = topics()[selected];
     open2 = false;
     held = false;
-    ui.notify();
+    paint();
     if (target)
       navigateTo(target.id);
   }
@@ -7273,7 +7273,7 @@ div:has(> button[aria-label*="Dictation"]) {
       return;
     open2 = false;
     held = false;
-    ui.notify();
+    paint();
   }
   function onKeyDown(e) {
     if (isCtrlKey(e)) {
@@ -7333,45 +7333,29 @@ div:has(> button[aria-label*="Dictation"]) {
     selected = index;
     commit();
   }
-  function Shot({ id }) {
-    const boxRef = useRef(null);
-    const has = thumbs.has(id);
-    useLayoutEffect(() => {
-      const box = boxRef.current;
-      if (!box)
-        return;
-      box.replaceChildren();
-      const node = thumbs.get(id);
-      if (node)
-        box.appendChild(node.cloneNode(true));
-      return () => {
-        box.replaceChildren();
-      };
-    }, [id, has, open2]);
-    return /* @__PURE__ */ React.createElement("span", {
-      className: cl17("shot"),
-      "aria-hidden": true
-    }, has ? /* @__PURE__ */ React.createElement("span", {
-      ref: boxRef,
-      className: cl17("mini")
-    }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("bubble")
-    }), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("bubble")
-    }), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("bubble")
-    })));
+  function node(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className)
+      el.className = className;
+    if (text)
+      el.textContent = text;
+    return el;
   }
-  function Switcher() {
-    useExternalStore(ui);
-    const stageRef = useRef(null);
-    useEffect(() => {
-      if (!open2)
-        return;
-      stageRef.current?.querySelector("[aria-current=true]")?.scrollIntoView({ inline: "center", block: "nearest" });
-    }, [open2, selected]);
+  function fillShot(box, id) {
+    const thumb = thumbs.get(id);
+    if (!thumb) {
+      box.append(node("span", cl17("bubble")), node("span", cl17("bubble")), node("span", cl17("bubble")));
+      return;
+    }
+    const mini = node("span", cl17("mini"));
+    mini.append(thumb.cloneNode(true));
+    box.append(mini);
+  }
+  function paint() {
+    host?.remove();
+    host = null;
     if (!open2)
-      return null;
+      return;
     const items = topics();
     const active = items[selected];
     let hint = "Esc to cancel";
@@ -7379,74 +7363,62 @@ div:has(> button[aria-label*="Dictation"]) {
       hint = "Release Ctrl to switch";
     else if (active)
       hint = "Click to switch";
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl17("root"),
-      role: "presentation"
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl17("backdrop"),
-      onClick: cancel
-    }), /* @__PURE__ */ React.createElement("div", {
-      className: cl17("hud"),
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-label": "Recent conversations",
-      onClick: (e) => e.stopPropagation()
-    }, items.length ? /* @__PURE__ */ React.createElement("div", {
-      ref: stageRef,
-      className: cl17("stage")
-    }, items.map((topic, i) => /* @__PURE__ */ React.createElement("button", {
-      key: topic.id || "home",
-      type: "button",
-      tabIndex: -1,
-      "aria-label": topic.project ? `${topic.title}, ${topic.project}` : topic.title,
-      "aria-current": i === selected,
-      className: classes(cl17("item"), i === selected && cl17("item-on")),
-      onMouseEnter: () => {
-        selected = i;
-        ui.notify();
-      },
-      onClick: () => pick(i)
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("window")
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("bar"),
-      "aria-hidden": true
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("dots")
-    }, /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null))), /* @__PURE__ */ React.createElement(Shot, {
-      id: topic.id
-    })), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("meta")
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("name")
-    }, topic.title), topic.project ? /* @__PURE__ */ React.createElement("span", {
-      className: cl17("project")
-    }, topic.project) : null)))) : /* @__PURE__ */ React.createElement("div", {
-      className: cl17("empty")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, "Open a few chats, then hold Ctrl+` to switch.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl17("hint")
-    }, hint)));
-  }
-  var Overlay = ErrorBoundary.wrap(Switcher, null);
-  var taken = false;
-  function LeadOverlay() {
-    const [isLead] = useState(() => {
-      if (taken)
-        return false;
-      taken = true;
-      return true;
-    });
-    useEffect(() => () => {
-      if (isLead)
-        taken = false;
-    }, [isLead]);
-    if (!isLead)
-      return null;
-    return /* @__PURE__ */ React.createElement(Overlay, null);
+    const root = node("div", cl17("root"));
+    root.id = "void-rt-host";
+    root.setAttribute("role", "presentation");
+    const backdrop = node("div", cl17("backdrop"));
+    backdrop.addEventListener("click", cancel);
+    const hud = node("div", cl17("hud"));
+    hud.setAttribute("role", "dialog");
+    hud.setAttribute("aria-modal", "true");
+    hud.setAttribute("aria-label", "Recent conversations");
+    hud.addEventListener("click", (e) => e.stopPropagation());
+    if (!items.length) {
+      hud.append(node("div", cl17("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+    } else {
+      const stage = node("div", cl17("stage"));
+      items.forEach((topic, i) => {
+        const btn = node("button", classes(cl17("item"), i === selected && cl17("item-on")));
+        btn.type = "button";
+        btn.tabIndex = -1;
+        btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+        if (i === selected)
+          btn.setAttribute("aria-current", "true");
+        btn.addEventListener("mouseenter", () => {
+          if (selected === i)
+            return;
+          selected = i;
+          paint();
+        });
+        btn.addEventListener("click", () => pick(i));
+        const win = node("span", cl17("window"));
+        const bar = node("span", cl17("bar"));
+        bar.setAttribute("aria-hidden", "true");
+        const dots = node("span", cl17("dots"));
+        dots.append(node("span"), node("span"), node("span"));
+        bar.append(dots);
+        const shot = node("span", cl17("shot"));
+        shot.setAttribute("aria-hidden", "true");
+        fillShot(shot, topic.id);
+        win.append(bar, shot);
+        const meta = node("span", cl17("meta"));
+        meta.append(node("span", cl17("name"), topic.title));
+        if (topic.project)
+          meta.append(node("span", cl17("project"), topic.project));
+        btn.append(win, meta);
+        stage.append(btn);
+      });
+      hud.append(stage);
+      stage.querySelector("[aria-current=true]")?.scrollIntoView({ inline: "center", block: "nearest" });
+    }
+    hud.append(node("div", cl17("hint"), hint));
+    root.append(backdrop, hud);
+    host = root;
+    (document.body ?? document.documentElement).append(host);
   }
   function dropLegacyHost() {
+    host?.remove();
+    host = null;
     document.getElementById("void-rt-host")?.remove();
     document.querySelectorAll("dialog.void-rt-root").forEach((el) => {
       const d = el;
@@ -7465,15 +7437,11 @@ div:has(> button[aria-label*="Dictation"]) {
     enabledByDefault: true,
     settings: settings6,
     managedStyle: "recentTopics",
-    _Overlay() {
-      return /* @__PURE__ */ React.createElement(LeadOverlay, null);
-    },
     start() {
       dropLegacyHost();
       open2 = false;
       held = false;
       ctrlHeld = false;
-      taken = false;
       try {
         hydrate();
         const current = currentVisit();
@@ -7499,7 +7467,6 @@ div:has(> button[aria-label*="Dictation"]) {
       open2 = false;
       held = false;
       ctrlHeld = false;
-      taken = false;
       thumbs.clear();
       dropLegacyHost();
     },
@@ -7532,25 +7499,7 @@ div:has(> button[aria-label*="Dictation"]) {
           scheduleCapture();
         }
       }
-    },
-    patches: [
-      {
-        find: '"chat-page")',
-        replacement: {
-          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
-          replace: "$1$self._Overlay(),$2"
-        }
-      },
-      {
-        find: "data-query-bar-mode-select",
-        all: true,
-        noWarn: true,
-        replacement: {
-          match: /\},"mode-select"\),/,
-          replace: "$&$self._Overlay(),"
-        }
-      }
-    ]
+    }
   });
 
   // src/plugins/autoRetry/index.ts
@@ -7750,12 +7699,12 @@ div:has(> button[aria-label*="Dictation"]) {
         try {
           if (!store2.linkifyDomains)
             return;
-          const walk = (node) => {
-            if (!node.children)
+          const walk = (node2) => {
+            if (!node2.children)
               return;
             const out = [];
             let changed = false;
-            for (const child of node.children) {
+            for (const child of node2.children) {
               if (child.type !== "text") {
                 walk(child);
                 out.push(child);
@@ -7780,7 +7729,7 @@ div:has(> button[aria-label*="Dictation"]) {
               changed = true;
             }
             if (changed)
-              node.children = out;
+              node2.children = out;
           };
           walk(tree);
         } catch {
@@ -10103,9 +10052,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function collectStopButtons(root) {
     const candidates = [];
     for (const sel of STOP_SELECTORS) {
-      for (const node of root.querySelectorAll(sel)) {
-        if (node instanceof HTMLElement)
-          candidates.push(node);
+      for (const node2 of root.querySelectorAll(sel)) {
+        if (node2 instanceof HTMLElement)
+          candidates.push(node2);
       }
     }
     if (candidates.length === 0) {
@@ -10134,11 +10083,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function getSubmitButton() {
     for (const root of [getComposerRoot(), document]) {
       for (const sel of SEND_SELECTORS) {
-        for (const node of root.querySelectorAll(sel)) {
-          if (!(node instanceof HTMLElement) || isStopControl(node))
+        for (const node2 of root.querySelectorAll(sel)) {
+          if (!(node2 instanceof HTMLElement) || isStopControl(node2))
             continue;
-          if (isVisible(node) || isDisabledControl(node))
-            return node;
+          if (isVisible(node2) || isDisabledControl(node2))
+            return node2;
         }
       }
     }
@@ -10320,16 +10269,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return href;
     return `${location.origin}/images/favicon.svg`;
   }
-  function isIconLink(node) {
-    return node instanceof HTMLLinkElement && (node.relList.contains("icon") || /\bicon\b/i.test(node.rel));
+  function isIconLink(node2) {
+    return node2 instanceof HTMLLinkElement && (node2.relList.contains("icon") || /\bicon\b/i.test(node2.rel));
   }
   function stripCompetitors() {
     const { head } = document;
     if (!head)
       return;
-    for (const node of head.querySelectorAll("link")) {
-      if (node.id !== ICON_ID && isIconLink(node))
-        node.remove();
+    for (const node2 of head.querySelectorAll("link")) {
+      if (node2.id !== ICON_ID && isIconLink(node2))
+        node2.remove();
     }
   }
   function applyHref(href) {
@@ -10519,12 +10468,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     else
       setKind("wait");
   }
-  function nodeTouchesStop(node) {
-    if (!(node instanceof Element))
+  function nodeTouchesStop(node2) {
+    if (!(node2 instanceof Element))
       return false;
-    if (node instanceof HTMLElement && node.tagName === "BUTTON" && isStopControl(node))
+    if (node2 instanceof HTMLElement && node2.tagName === "BUTTON" && isStopControl(node2))
       return true;
-    for (const btn of node.querySelectorAll("button")) {
+    for (const btn of node2.querySelectorAll("button")) {
       if (isStopControl(btn))
         return true;
     }
@@ -10549,8 +10498,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
     return false;
   }
-  function nodeInEditor(node) {
-    const el = node instanceof Element ? node : node?.parentElement;
+  function nodeInEditor(node2) {
+    const el = node2 instanceof Element ? node2 : node2?.parentElement;
     return !!el?.closest(EDITOR_SEL);
   }
   function mutationsAreEditorOnly(list) {
@@ -10622,8 +10571,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
           applyHref(icons[kind]);
           return;
         }
-        for (const node of m.addedNodes) {
-          if (isIconLink(node) && node.id !== ICON_ID) {
+        for (const node2 of m.addedNodes) {
+          if (isIconLink(node2) && node2.id !== ICON_ID) {
             applyHref(icons[kind]);
             return;
           }

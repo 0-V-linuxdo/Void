@@ -7,18 +7,13 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { ErrorBoundary } from "@components/ErrorBoundary";
-import { Text } from "@components/Text";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { GrokPage, GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
-import { React, useEffect, useLayoutEffect, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { createExternalStore } from "@utils/misc";
-import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 
 const logger = new Logger("RecentTopics");
@@ -49,7 +44,6 @@ const settings = definePluginSettings({
     pages: Record<string, string>;
 }>();
 
-const ui = createExternalStore();
 const thumbs = new Map<string, HTMLElement>();
 const wsNames: Record<string, string> = {};
 
@@ -64,6 +58,7 @@ let selected = 0;
 let held = false;
 let ctrlHeld = false;
 let keys: AbortController | null = null;
+let host: HTMLDivElement | null = null;
 
 function unique(ids: string[]): string[] {
     const seen = new Set<string>();
@@ -139,7 +134,7 @@ function writeVisits(next: string[]) {
         if (assignRecord("workspaceByConv", workspaceByConv)) changed = true;
         if (assignRecord("pages", pages)) changed = true;
         if (assignRecord("projectNames", keepProjects)) changed = true;
-        if (changed) ui.notify();
+        if (changed && open) paint();
     } finally {
         writing = false;
     }
@@ -436,14 +431,14 @@ function begin(reverse: boolean, fromHold: boolean) {
     } catch (e) {
         logger.error("Failed to open switcher:", e);
     }
-    ui.notify();
+    paint();
 }
 
 function cycle(reverse: boolean) {
     const { length } = topics();
     if (!length) return;
     selected = (selected + (reverse ? -1 : 1) + length) % length;
-    ui.notify();
+    paint();
 }
 
 function commit() {
@@ -451,7 +446,7 @@ function commit() {
     const target = topics()[selected];
     open = false;
     held = false;
-    ui.notify();
+    paint();
     if (target) navigateTo(target.id);
 }
 
@@ -459,7 +454,7 @@ function cancel() {
     if (!open) return;
     open = false;
     held = false;
-    ui.notify();
+    paint();
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -521,42 +516,28 @@ function pick(index: number) {
     commit();
 }
 
-function Shot({ id }: { id: string }) {
-    const boxRef = useRef<HTMLSpanElement>(null);
-    const has = thumbs.has(id);
-    useLayoutEffect(() => {
-        const box = boxRef.current;
-        if (!box) return;
-        box.replaceChildren();
-        const node = thumbs.get(id);
-        if (node) box.appendChild(node.cloneNode(true));
-        return () => { box.replaceChildren(); };
-    }, [id, has, open]);
-    return (
-        <span className={cl("shot")} aria-hidden>
-            {has
-                ? <span ref={boxRef} className={cl("mini")} />
-                : (
-                    <>
-                        <span className={cl("bubble")} />
-                        <span className={cl("bubble")} />
-                        <span className={cl("bubble")} />
-                    </>
-                )}
-        </span>
-    );
+function node(tag: string, className?: string, text?: string) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text) el.textContent = text;
+    return el;
 }
 
-function Switcher() {
-    useExternalStore(ui);
-    const stageRef = useRef<HTMLDivElement>(null);
+function fillShot(box: HTMLElement, id: string) {
+    const thumb = thumbs.get(id);
+    if (!thumb) {
+        box.append(node("span", cl("bubble")), node("span", cl("bubble")), node("span", cl("bubble")));
+        return;
+    }
+    const mini = node("span", cl("mini"));
+    mini.append(thumb.cloneNode(true));
+    box.append(mini);
+}
 
-    useEffect(() => {
-        if (!open) return;
-        stageRef.current?.querySelector("[aria-current=true]")?.scrollIntoView({ inline: "center", block: "nearest" });
-    }, [open, selected]);
-
-    if (!open) return null;
+function paint() {
+    host?.remove();
+    host = null;
+    if (!open) return;
 
     const items = topics();
     const active = items[selected];
@@ -564,76 +545,66 @@ function Switcher() {
     if (active && held) hint = "Release Ctrl to switch";
     else if (active) hint = "Click to switch";
 
-    return (
-        <div className={cl("root")} role="presentation">
-            <div className={cl("backdrop")} onClick={cancel} />
-            <div
-                className={cl("hud")}
-                role="dialog"
-                aria-modal="true"
-                aria-label="Recent conversations"
-                onClick={e => e.stopPropagation()}
-            >
-                {items.length
-                    ? (
-                        <div ref={stageRef} className={cl("stage")}>
-                            {items.map((topic, i) => (
-                                <button
-                                    key={topic.id || "home"}
-                                    type="button"
-                                    tabIndex={-1}
-                                    aria-label={topic.project ? `${topic.title}, ${topic.project}` : topic.title}
-                                    aria-current={i === selected}
-                                    className={classes(cl("item"), i === selected && cl("item-on"))}
-                                    onMouseEnter={() => { selected = i; ui.notify(); }}
-                                    onClick={() => pick(i)}
-                                >
-                                    <span className={cl("window")}>
-                                        <span className={cl("bar")} aria-hidden>
-                                            <span className={cl("dots")}>
-                                                <span />
-                                                <span />
-                                                <span />
-                                            </span>
-                                        </span>
-                                        <Shot id={topic.id} />
-                                    </span>
-                                    <span className={cl("meta")}>
-                                        <span className={cl("name")}>{topic.title}</span>
-                                        {topic.project ? <span className={cl("project")}>{topic.project}</span> : null}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    )
-                    : (
-                        <div className={cl("empty")}>
-                            <Text size="sm">Open a few chats, then hold Ctrl+` to switch.</Text>
-                        </div>
-                    )}
-                <div className={cl("hint")}>{hint}</div>
-            </div>
-        </div>
-    );
-}
+    const root = node("div", cl("root"));
+    root.id = "void-rt-host";
+    root.setAttribute("role", "presentation");
 
-const Overlay = ErrorBoundary.wrap(Switcher, null);
-let taken = false;
+    const backdrop = node("div", cl("backdrop"));
+    backdrop.addEventListener("click", cancel);
 
-function LeadOverlay() {
-    const [isLead] = useState(() => {
-        if (taken) return false;
-        taken = true;
-        return true;
-    });
-    useEffect(() => () => {
-        if (isLead) taken = false;
-    }, [isLead]);
-    if (!isLead) return null;
-    return <Overlay />;
+    const hud = node("div", cl("hud"));
+    hud.setAttribute("role", "dialog");
+    hud.setAttribute("aria-modal", "true");
+    hud.setAttribute("aria-label", "Recent conversations");
+    hud.addEventListener("click", e => e.stopPropagation());
+
+    if (!items.length) {
+        hud.append(node("div", cl("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+    } else {
+        const stage = node("div", cl("stage"));
+        items.forEach((topic, i) => {
+            const btn = node("button", classes(cl("item"), i === selected && cl("item-on"))) as HTMLButtonElement;
+            btn.type = "button";
+            btn.tabIndex = -1;
+            btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+            if (i === selected) btn.setAttribute("aria-current", "true");
+            btn.addEventListener("mouseenter", () => {
+                if (selected === i) return;
+                selected = i;
+                paint();
+            });
+            btn.addEventListener("click", () => pick(i));
+
+            const win = node("span", cl("window"));
+            const bar = node("span", cl("bar"));
+            bar.setAttribute("aria-hidden", "true");
+            const dots = node("span", cl("dots"));
+            dots.append(node("span"), node("span"), node("span"));
+            bar.append(dots);
+            const shot = node("span", cl("shot"));
+            shot.setAttribute("aria-hidden", "true");
+            fillShot(shot, topic.id);
+            win.append(bar, shot);
+
+            const meta = node("span", cl("meta"));
+            meta.append(node("span", cl("name"), topic.title));
+            if (topic.project) meta.append(node("span", cl("project"), topic.project));
+            btn.append(win, meta);
+            stage.append(btn);
+        });
+        hud.append(stage);
+        stage.querySelector("[aria-current=true]")?.scrollIntoView({ inline: "center", block: "nearest" });
+    }
+
+    hud.append(node("div", cl("hint"), hint));
+    root.append(backdrop, hud);
+    host = root as HTMLDivElement;
+    (document.body ?? document.documentElement).append(host);
 }
 
 function dropLegacyHost() {
+    host?.remove();
+    host = null;
     document.getElementById("void-rt-host")?.remove();
     document.querySelectorAll("dialog.void-rt-root").forEach(el => {
         const d = el as HTMLDialogElement;
@@ -651,16 +622,11 @@ export default definePlugin({
     settings,
     managedStyle: "recentTopics",
 
-    _Overlay() {
-        return <LeadOverlay />;
-    },
-
     start() {
         dropLegacyHost();
         open = false;
         held = false;
         ctrlHeld = false;
-        taken = false;
         try {
             hydrate();
             const current = currentVisit();
@@ -686,7 +652,6 @@ export default definePlugin({
         open = false;
         held = false;
         ctrlHeld = false;
-        taken = false;
         thumbs.clear();
         dropLegacyHost();
     },
@@ -719,23 +684,4 @@ export default definePlugin({
             },
         },
     },
-
-    patches: [
-        {
-            find: "\"chat-page\")",
-            replacement: {
-                match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
-                replace: "$1$self._Overlay(),$2",
-            },
-        },
-        {
-            find: "data-query-bar-mode-select",
-            all: true,
-            noWarn: true,
-            replacement: {
-                match: /\},"mode-select"\),/,
-                replace: "$&$self._Overlay(),",
-            },
-        },
-    ],
 });
