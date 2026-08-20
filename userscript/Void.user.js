@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"c13950c"}`
-    }, `(${"c13950c"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"a3a0094"}`
+    }, `(${"a3a0094"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -10016,7 +10016,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
     if (!started2)
       return;
     const contextKey = getContextKey();
-    if (hasError() && !isStreaming()) {
+    const streaming = isStreaming();
+    const empty = isInputEmpty();
+    const gray = submitIsGray();
+    if (hasError() && !streaming) {
       setKind("error");
       wasStreaming = false;
       justFinished = false;
@@ -10024,7 +10027,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       lastWasError = false;
       return;
     }
-    if (isStreaming()) {
+    if (streaming && empty) {
       wasStreaming = true;
       justFinished = false;
       lastWasError = false;
@@ -10034,36 +10037,33 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
     if (wasStreaming) {
       const sameContext = !streamContext || !contextKey || streamContext === contextKey;
-      if (!sameContext) {
-        wasStreaming = false;
-        justFinished = false;
-        streamContext = null;
-      } else if (!submitIsGray()) {
-        setKind("rotate");
-        return;
-      } else {
-        wasStreaming = false;
+      wasStreaming = false;
+      if (sameContext && gray) {
         justFinished = true;
+        streamContext = contextKey;
         setKind("done");
         return;
       }
+      justFinished = false;
+      streamContext = null;
     }
     if (justFinished) {
       const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);
       if (contextChanged) {
         justFinished = false;
         streamContext = null;
+      } else if (empty) {
+        setKind("done");
+        return;
       } else {
-        if (!isInputEmpty()) {
-          setKind("ready");
-          justFinished = false;
-        }
+        justFinished = false;
+        setKind("ready");
         return;
       }
     }
     streamContext = null;
     lastWasError = false;
-    setKind(isInputEmpty() ? "wait" : "ready");
+    setKind(empty ? "wait" : "ready");
   }
   function nodeTouchesStop(node) {
     if (!(node instanceof Element))
@@ -10130,8 +10130,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
     scheduleEvaluate();
   }
   function onEditorInput() {
-    if (kind === "rotate" || wasStreaming)
-      return;
     scheduleEvaluate();
   }
   function scheduleEvaluate() {

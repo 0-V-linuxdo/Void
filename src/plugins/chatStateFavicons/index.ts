@@ -163,8 +163,11 @@ function hasError(): boolean {
 function evaluateState() {
     if (!started) return;
     const contextKey = getContextKey();
+    const streaming = isStreaming();
+    const empty = isInputEmpty();
+    const gray = submitIsGray();
 
-    if (hasError() && !isStreaming()) {
+    if (hasError() && !streaming) {
         setKind("error");
         wasStreaming = false;
         justFinished = false;
@@ -173,7 +176,7 @@ function evaluateState() {
         return;
     }
 
-    if (isStreaming()) {
+    if (streaming && empty) {
         wasStreaming = true;
         justFinished = false;
         lastWasError = false;
@@ -184,19 +187,15 @@ function evaluateState() {
 
     if (wasStreaming) {
         const sameContext = !streamContext || !contextKey || streamContext === contextKey;
-        if (!sameContext) {
-            wasStreaming = false;
-            justFinished = false;
-            streamContext = null;
-        } else if (!submitIsGray()) {
-            setKind("rotate");
-            return;
-        } else {
-            wasStreaming = false;
+        wasStreaming = false;
+        if (sameContext && gray) {
             justFinished = true;
+            streamContext = contextKey;
             setKind("done");
             return;
         }
+        justFinished = false;
+        streamContext = null;
     }
 
     if (justFinished) {
@@ -204,18 +203,19 @@ function evaluateState() {
         if (contextChanged) {
             justFinished = false;
             streamContext = null;
+        } else if (empty) {
+            setKind("done");
+            return;
         } else {
-            if (!isInputEmpty()) {
-                setKind("ready");
-                justFinished = false;
-            }
+            justFinished = false;
+            setKind("ready");
             return;
         }
     }
 
     streamContext = null;
     lastWasError = false;
-    setKind(isInputEmpty() ? "wait" : "ready");
+    setKind(empty ? "wait" : "ready");
 }
 
 function nodeTouchesStop(node: Node): boolean {
@@ -273,7 +273,6 @@ function onDomMutate(list: MutationRecord[]) {
 }
 
 function onEditorInput() {
-    if (kind === "rotate" || wasStreaming) return;
     scheduleEvaluate();
 }
 
