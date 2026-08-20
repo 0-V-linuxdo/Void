@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"d42056b"}`
-    }, `(${"d42056b"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"7039728"}`
+    }, `(${"7039728"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -6251,28 +6251,46 @@ ${sourceUrl}`;
 
   // src/plugins/noSidebarIdentity/index.ts
   var STYLE_NAME = "noSidebarIdentity";
-  var CSS = `
-[data-sidebar="footer"] button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left,
-[data-sidebar="footer"] button[data-slot="button"] > div.min-w-0.flex-1.overflow-hidden,
-[data-sidebar="footer"] button[data-state] > div.min-w-0.flex-1.overflow-hidden {
-    display: none !important;
-}
-
-[data-sidebar="footer"] .void-sidebar-info,
-[data-sidebar="footer"] .void-sidebar-name,
-[data-sidebar="footer"] .void-sidebar-plan {
-    display: none !important;
-}
-`;
+  var FOOTER = '[data-sidebar="footer"]';
+  var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
+  var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
+  var settings4 = definePluginSettings({
+    hideUsername: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the username next to the sidebar avatar.",
+      default: true
+    },
+    hideEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the email next to the sidebar avatar.",
+      default: true
+    }
+  });
+  function apply() {
+    const rules = [];
+    if (settings4.store.hideUsername) {
+      rules.push(`${STACK}>:first-child{display:none!important}`);
+      rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
+    }
+    if (settings4.store.hideEmail) {
+      rules.push(`${STACK}>:nth-child(2){display:none!important}`);
+    }
+    if (settings4.store.hideUsername && settings4.store.hideEmail) {
+      rules.push(`${TEXT_WRAP}{display:none!important}`);
+      rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
+    }
+    registerStyle(STYLE_NAME, rules.join(`
+`));
+  }
   var noSidebarIdentity_default = definePlugin({
     name: "NoSidebarIdentity",
-    description: "Hide username and email in the Grok sidebar. Avatar stays clickable.",
+    description: "Hide username and/or email in the Grok sidebar. Avatar stays clickable.",
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    start() {
-      registerStyle(STYLE_NAME, CSS);
-    },
+    settings: settings4,
+    start: apply,
+    onSettingsChange: apply,
     stop() {
       unregisterStyle(STYLE_NAME);
     }
@@ -6313,7 +6331,7 @@ ${sourceUrl}`;
     return String(raw ?? "").split(`
 `).map((s) => s.trim()).filter(Boolean);
   }
-  var settings4 = definePluginSettings({
+  var settings5 = definePluginSettings({
     phrases: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_PHRASES,
@@ -6321,7 +6339,7 @@ ${sourceUrl}`;
     }
   }).withPrivateSettings();
   function PhrasesEditor() {
-    const { phrases } = settings4.use(["phrases"]);
+    const { phrases } = settings5.use(["phrases"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
@@ -6338,7 +6356,7 @@ ${sourceUrl}`;
       className: cl16("textarea"),
       value: phrases ?? DEFAULT_PHRASES,
       onChange: (e) => {
-        settings4.store.phrases = e.target.value;
+        settings5.store.phrases = e.target.value;
       },
       placeholder: DEFAULT_PHRASES
     })));
@@ -6348,9 +6366,9 @@ ${sourceUrl}`;
     description: "Replace the rotating chat input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],
-    settings: settings4,
+    settings: settings5,
     _phrases() {
-      const lines = parsePhrases(settings4.store.phrases ?? DEFAULT_PHRASES);
+      const lines = parsePhrases(settings5.store.phrases ?? DEFAULT_PHRASES);
       return lines.length ? lines : null;
     },
     patches: [
@@ -6366,7 +6384,7 @@ ${sourceUrl}`;
 
   // src/plugins/noDictation/index.ts
   var STYLE_NAME2 = "noDictation";
-  var CSS2 = `
+  var CSS = `
 button[aria-label^="Dictation"],
 button[aria-label*="Dictation"] {
     display: none !important;
@@ -6383,7 +6401,7 @@ div:has(> button[aria-label*="Dictation"]) {
     tags: ["chat", "ui"],
     enabledByDefault: true,
     start() {
-      registerStyle(STYLE_NAME2, CSS2);
+      registerStyle(STYLE_NAME2, CSS);
     },
     stop() {
       unregisterStyle(STYLE_NAME2);
@@ -6517,7 +6535,7 @@ div:has(> button[aria-label*="Dictation"]) {
   // src/plugins/autoRetry/index.ts
   var logger17 = new Logger("AutoRetry");
   var CONTENT_MODERATED = "grok:content-moderated";
-  var settings5 = definePluginSettings({
+  var settings6 = definePluginSettings({
     retryModeration: {
       type: 3 /* BOOLEAN */,
       description: "Retry content moderation errors.",
@@ -6552,19 +6570,19 @@ div:has(> button[aria-label*="Dictation"]) {
   }
   function shouldRetry(response) {
     if (isModeration(response))
-      return settings5.store.retryModeration;
-    return settings5.store.retryNetwork;
+      return settings6.store.retryModeration;
+    return settings6.store.retryNetwork;
   }
   function retry(responseId, conversationId, response) {
     const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings5.store.maxRetries;
+    const max = settings6.store.maxRetries;
     if (count > max) {
       showToast("Max retries reached.", 2 /* ERROR */);
       retryCounts.delete(conversationId);
       return;
     }
     retryCounts.set(conversationId, count);
-    const delaySec = settings5.store.delay;
+    const delaySec = settings6.store.delay;
     showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
     logger17.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
     clearPending();
@@ -6604,7 +6622,7 @@ div:has(> button[aria-label*="Dictation"]) {
     description: "Automatically retry failed messages on moderation or network errors.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings5,
+    settings: settings6,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       retryCounts.clear();
@@ -6628,31 +6646,31 @@ div:has(> button[aria-label*="Dictation"]) {
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings6.store[key];
+    const val = settings7.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
     const link = getColor("linkColor", DEFAULT_LINK);
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings6.store.enableVisitedColor) {
+    if (settings7.store.enableVisitedColor) {
       const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
     registerStyle(STYLE_NAME3, css);
   }
   function ColorRow({ settingKey, title, description, fallback }) {
-    settings6.use([settingKey]);
+    settings7.use([settingKey]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
-        settings6.store[settingKey] = v;
+        settings7.store[settingKey] = v;
         applyColors();
       },
       title,
       description
     });
   }
-  var settings6 = definePluginSettings({
+  var settings7 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -6687,7 +6705,7 @@ div:has(> button[aria-label*="Dictation"]) {
     name: "BetterLinks",
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
-    settings: settings6,
+    settings: settings7,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -6706,7 +6724,7 @@ div:has(> button[aria-label*="Dictation"]) {
       }
     ],
     _remarkLinkify() {
-      const { store: store2 } = settings6;
+      const { store: store2 } = settings7;
       return (tree) => {
         try {
           if (!store2.linkifyDomains)
@@ -6750,8 +6768,8 @@ div:has(> button[aria-label*="Dictation"]) {
       };
     },
     start() {
-      settings6.store.linkColor ??= DEFAULT_LINK;
-      settings6.store.visitedColor ??= DEFAULT_VISITED;
+      settings7.store.linkColor ??= DEFAULT_LINK;
+      settings7.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
       enableStyle(STYLE_NAME3);
     },
@@ -6867,7 +6885,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings7 = definePluginSettings({
+  var settings8 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -6912,14 +6930,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings7.store[key]);
+      classList.toggle(cls, !!settings8.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings7,
+    settings: settings8,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -6946,7 +6964,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/plugins/cleaner/index.ts
-  var settings8 = definePluginSettings({
+  var settings9 = definePluginSettings({
     hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
       description: "Hide the upgrade plan button in the user menu.",
@@ -6995,7 +7013,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "Cleaner",
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
-    settings: settings8,
+    settings: settings9,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
@@ -7081,7 +7099,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // src/plugins/betterImagine/index.tsx
   var logger18 = new Logger("BetterImagine");
   var cl17 = classNameFactory("void-imagine-");
-  var settings9 = definePluginSettings({
+  var settings10 = definePluginSettings({
     hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
       description: "Hide the community image grid and templates on the Imagine home page.",
@@ -7129,7 +7147,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
   function buildFilename(post, isVideo) {
-    if (!settings9.store.smartFilenames || !post)
+    if (!settings10.store.smartFilenames || !post)
       return null;
     const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
     const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
@@ -7192,7 +7210,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var randomSeed = Date.now();
   var filterStore = createExternalStore();
   function persist() {
-    if (!settings9.store.persistFilters)
+    if (!settings10.store.persistFilters)
       return;
     try {
       sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
@@ -7271,7 +7289,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var cacheList = null;
   var cacheResult = [];
   function filterItems(items) {
-    const { hideModerated } = settings9.store;
+    const { hideModerated } = settings10.store;
     const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
     if (cacheList === items && cacheKey === key)
       return cacheResult;
@@ -7566,7 +7584,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   }
   function onVisibilityChange() {
-    if (!settings9.store.pauseWhenHidden)
+    if (!settings10.store.pauseWhenHidden)
       return;
     if (document.visibilityState !== "hidden")
       return;
@@ -7580,13 +7598,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "BetterImagine",
     description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
-    settings: settings9,
-    _hideDefault: () => settings9.store.hideDefaultPreviews,
+    settings: settings10,
+    _hideDefault: () => settings10.store.hideDefaultPreviews,
     _NullGrid: () => null,
-    _autoPlay: () => !settings9.store.noAutoplay,
-    _bypassPaywall: () => settings9.store.bypassPaywall,
-    _ctrlClickSelect: () => settings9.store.ctrlClickSelect,
-    _hoverProps: () => settings9.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _autoPlay: () => !settings10.store.noAutoplay,
+    _bypassPaywall: () => settings10.store.bypassPaywall,
+    _ctrlClickSelect: () => settings10.store.ctrlClickSelect,
+    _hoverProps: () => settings10.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
     _useFilteredFavorites: useFilteredFavorites,
     _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
     _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
@@ -8201,7 +8219,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // src/plugins/usageDisplay/index.tsx
   var logger20 = new Logger("UsageDisplay");
   var cl19 = classNameFactory("void-ud-");
-  var settings10 = definePluginSettings({
+  var settings11 = definePluginSettings({
     showPercent: {
       type: 3 /* BOOLEAN */,
       description: "Show the used-percent label next to the ring.",
@@ -8345,7 +8363,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function ButtonIcon() {
     useExternalStore(store2);
-    const { showPercent } = settings10.use(["showPercent"]);
+    const { showPercent } = settings11.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -8417,7 +8435,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings10,
+    settings: settings11,
     chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
     events: {
       streamEnd() {
@@ -8771,20 +8789,20 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var TrashIcon2 = findExportedComponentLazy("TrashIcon");
   var PlusIcon = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings11 = definePluginSettings({
+  var settings12 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings11.plain.presets ?? [];
+    return settings12.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings11.store.presets = presets;
+    settings12.store.presets = presets;
   }
   function getAssignments() {
-    return settings11.plain.assignments ?? {};
+    return settings12.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
@@ -8867,7 +8885,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings11.use(["presets"]).presets ?? [];
+    const presets = settings12.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -8879,7 +8897,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         if (v === id)
           delete a[k];
       }
-      settings11.store.assignments = a;
+      settings12.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -8914,8 +8932,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings11.use(["presets"]).presets ?? [];
-    const assignments = settings11.use(["assignments"]).assignments ?? {};
+    const presets = settings12.use(["presets"]).presets ?? [];
+    const assignments = settings12.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -8923,7 +8941,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings11.store.assignments = a;
+      settings12.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
@@ -8953,7 +8971,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings11,
+    settings: settings12,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -8984,7 +9002,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME4 = "widerChat";
-  var settings12 = definePluginSettings({
+  var settings13 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem.",
@@ -8992,14 +9010,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
   function applyWidth() {
-    const w = settings12.store.width;
+    const w = settings13.store.width;
     registerStyle(STYLE_NAME4, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
-    settings: settings12,
+    settings: settings13,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
@@ -9141,7 +9159,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var logger22 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
-  var settings13 = definePluginSettings({
+  var settings14 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
       description: "How the Grok mark is overlaid with chat state.",
@@ -9158,7 +9176,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var inputCtrl = null;
   var raf = 0;
   function currentStyle() {
-    const value = settings13.store.style;
+    const value = settings14.store.style;
     return isIconStyle(value) ? value : "badge";
   }
   function captureOfficial() {
@@ -9341,7 +9359,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings13,
+    settings: settings14,
     startAt: "TurbopackReady" /* TurbopackReady */,
     cleanupSelectors: [`#${ICON_ID}`],
     start() {
@@ -9432,7 +9450,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // src/plugins/betterSidebar/index.tsx
   var logger23 = new Logger("BetterSidebar");
   var cl21 = classNameFactory("void-sidebar-");
-  var settings14 = definePluginSettings({
+  var settings15 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -9495,7 +9513,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger23.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings14.use(["batchSelect"]).batchSelect;
+    const enabled = settings15.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
@@ -9508,7 +9526,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
-    settings: settings14,
+    settings: settings15,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
@@ -9522,7 +9540,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings14.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings15.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -9532,10 +9550,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
       };
     },
     _defaultOpen() {
-      return !settings14.store.defaultCollapsed;
+      return !settings15.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings14.store.clickToToggle)
+      if (!settings15.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -9683,7 +9701,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings15 = definePluginSettings({
+  var settings16 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -9708,18 +9726,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings16,
     _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
       if (!response?.createTime)
         return null;
-      if (settings15.store.hideOwnMessages && response.sender === "human")
+      if (settings16.store.hideOwnMessages && response.sender === "human")
         return null;
       return /* @__PURE__ */ React.createElement(Text, {
         as: "span",
         size: "xs",
         color: "muted",
         className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings15.store.showDate));
+      }, formatTimestamp(response.createTime, settings16.store.showDate));
     }),
     patches: [
       {
@@ -9744,18 +9762,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorRow2() {
-    const { starColor } = settings16.use(["starColor"]);
+    const { starColor } = settings17.use(["starColor"]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
-        settings16.store.starColor = v;
+        settings17.store.starColor = v;
       },
       title: "Star color",
       description: "Color of the twinkling stars."
     });
   }
   function StarryBackground() {
-    const { starColor } = settings16.use(["starColor"]);
+    const { starColor } = settings17.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -9764,7 +9782,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings16 = definePluginSettings({
+  var settings17 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_COLOR,
@@ -9775,7 +9793,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "Starry",
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
-    settings: settings16,
+    settings: settings17,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -9794,7 +9812,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
   // src/plugins/noShareLink/index.ts
   var STYLE_NAME5 = "noShareLink";
-  var settings17 = definePluginSettings({
+  var settings18 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
       description: "Inside a project: hide the top-right Share Project button.",
@@ -9806,12 +9824,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
       default: true
     }
   });
-  function apply() {
+  function apply2() {
     const rules = [];
-    if (settings17.store.hideShareProject) {
+    if (settings18.store.hideShareProject) {
       rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
-    if (settings17.store.hideCreateShareLink) {
+    if (settings18.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
     registerStyle(STYLE_NAME5, rules.join(`
@@ -9823,16 +9841,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings17,
-    start: apply,
-    onSettingsChange: apply,
+    settings: settings18,
+    start: apply2,
+    onSettingsChange: apply2,
     stop() {
       unregisterStyle(STYLE_NAME5);
     }
   });
 
   // src/plugins/responseNotification/index.ts
-  var settings18 = definePluginSettings({
+  var settings19 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -9879,7 +9897,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings18.store.soundUrl?.trim();
+    const url = settings19.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -9892,11 +9910,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings18.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings19.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings18.store.sound)
+    if (settings19.store.sound)
       playSound();
-    if (settings18.store.browserNotification)
+    if (settings19.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -9904,7 +9922,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings18,
+    settings: settings19,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)

@@ -4,43 +4,56 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
-import definePlugin from "@utils/types";
+import definePlugin, { OptionType } from "@utils/types";
 
 const STYLE_NAME = "noSidebarIdentity";
 
-/**
- * Hide username and email in the Grok sidebar account button.
- * Avatar stays so the account menu still opens.
- * Scoped to [data-sidebar="footer"] so other shadcn buttons are untouched.
- * Also hides BetterSidebar's extra name/plan block.
- */
-const CSS = `
-[data-sidebar="footer"] button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left,
-[data-sidebar="footer"] button[data-slot="button"] > div.min-w-0.flex-1.overflow-hidden,
-[data-sidebar="footer"] button[data-state] > div.min-w-0.flex-1.overflow-hidden {
-    display: none !important;
-}
+const FOOTER = '[data-sidebar="footer"]';
+const STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
+const TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
 
-[data-sidebar="footer"] .void-sidebar-info,
-[data-sidebar="footer"] .void-sidebar-name,
-[data-sidebar="footer"] .void-sidebar-plan {
-    display: none !important;
+const settings = definePluginSettings({
+    hideUsername: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the username next to the sidebar avatar.",
+        default: true,
+    },
+    hideEmail: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the email next to the sidebar avatar.",
+        default: true,
+    },
+});
+
+function apply() {
+    const rules: string[] = [];
+    if (settings.store.hideUsername) {
+        rules.push(`${STACK}>:first-child{display:none!important}`);
+        rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
+    }
+    if (settings.store.hideEmail) {
+        rules.push(`${STACK}>:nth-child(2){display:none!important}`);
+    }
+    if (settings.store.hideUsername && settings.store.hideEmail) {
+        rules.push(`${TEXT_WRAP}{display:none!important}`);
+        rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
+    }
+    registerStyle(STYLE_NAME, rules.join("\n"));
 }
-`;
 
 export default definePlugin({
     name: "NoSidebarIdentity",
-    description: "Hide username and email in the Grok sidebar. Avatar stays clickable.",
+    description: "Hide username and/or email in the Grok sidebar. Avatar stays clickable.",
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
+    settings,
 
-    start() {
-        registerStyle(STYLE_NAME, CSS);
-    },
-
+    start: apply,
+    onSettingsChange: apply,
     stop() {
         unregisterStyle(STYLE_NAME);
     },
