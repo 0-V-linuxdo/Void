@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"2066cae"}`
-    }, `(${"2066cae"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"d83630b"}`
+    }, `(${"d83630b"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -9001,7 +9001,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // src/plugins/chatStateFavicons/icons.ts
   var ICON_STYLES = ["original", "badge", "dot", "hole", "bg"];
   var STYLE_OPTIONS = [
-    { label: "Original emoji", value: "original" },
+    { label: "only emoji", value: "original" },
     { label: "Badge + glyph", value: "badge", default: true },
     { label: "Color dot", value: "dot" },
     { label: "Mark tint", value: "hole" },
