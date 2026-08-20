@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"7039728"}`
-    }, `(${"7039728"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"4bad4ac"}`
+    }, `(${"4bad4ac"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -9159,6 +9159,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var logger22 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
+  var STOP_SEL = 'button[aria-label="Stop model response"], button[aria-label*="Stop" i]';
   var settings14 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
@@ -9169,11 +9170,15 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var officialHref = "/images/favicon.svg";
   var icons = buildIcons("badge", officialHref);
   var kind = "wait";
+  var wasStreaming = false;
   var justFinished = false;
   var lastWasError = false;
   var lastConv;
   var observer = null;
+  var composerObs = null;
   var inputCtrl = null;
+  var unsubPage = null;
+  var cancelWait = null;
   var raf = 0;
   function currentStyle() {
     const value = settings14.store.style;
@@ -9236,13 +9241,27 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return null;
     }
   }
-  function isInputEmpty() {
-    const page = getPage();
-    const conversationId = page?.conversationId;
-    const drafts = page?.queryByConversationId;
-    const draft = (conversationId ? drafts?.[conversationId] : drafts?.[""]) ?? "";
-    if (draft.replaceAll("​", "").trim())
+  function isVisible(el) {
+    if (!(el instanceof HTMLElement))
       return false;
+    if (el.getClientRects().length === 0)
+      return false;
+    const style = getComputedStyle(el);
+    return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+  }
+  function composerRoot() {
+    const editor = document.querySelector(EDITOR_SEL);
+    return editor?.closest("form") ?? editor?.closest("div.relative") ?? document.body;
+  }
+  function stopButtonVisible() {
+    const root = composerRoot();
+    for (const btn of root.querySelectorAll(STOP_SEL)) {
+      if (isVisible(btn))
+        return true;
+    }
+    return false;
+  }
+  function isInputEmpty() {
     const editor = document.querySelector(EDITOR_SEL);
     if (!editor?.isConnected)
       return true;
@@ -9250,36 +9269,54 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return true;
     return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
   }
+  function isStreaming(page) {
+    if (page?.streamedMessageId)
+      return true;
+    if (page?.showStreamingIndicator)
+      return true;
+    return stopButtonVisible();
+  }
   function evaluate() {
     const page = getPage();
-    if (!page)
-      return;
-    const { streamedMessageId, conversationId } = page;
-    if (streamedMessageId) {
+    const conversationId = page?.conversationId;
+    const streaming = isStreaming(page);
+    const sameConv = lastConv == null || conversationId == null || lastConv === conversationId;
+    if (streaming) {
+      wasStreaming = true;
       justFinished = false;
-      lastWasError = false;
-      lastConv = conversationId;
+      lastConv = conversationId ?? lastConv;
       setKind("rotate");
       return;
     }
-    const sameConv = lastConv === conversationId;
     if (lastWasError && sameConv) {
       if (!isInputEmpty()) {
         lastWasError = false;
         justFinished = false;
+        wasStreaming = false;
         setKind("ready");
         return;
       }
       setKind("error");
       return;
     }
+    if (wasStreaming) {
+      wasStreaming = false;
+      if (sameConv) {
+        justFinished = !lastWasError;
+        setKind(lastWasError ? "error" : "done");
+        return;
+      }
+      justFinished = false;
+      lastWasError = false;
+    }
     if (justFinished && sameConv) {
       if (!isInputEmpty()) {
         justFinished = false;
+        lastWasError = false;
         setKind("ready");
         return;
       }
-      setKind("done");
+      setKind(lastWasError ? "error" : "done");
       return;
     }
     justFinished = false;
@@ -9302,9 +9339,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
     } catch (e) {
       logger22.debug("ResponseStore unavailable:", e);
     }
-    lastConv = getPage()?.conversationId;
+    lastConv = getPage()?.conversationId ?? lastConv;
     lastWasError = error;
-    justFinished = !lastWasError;
+    justFinished = !error;
+    wasStreaming = true;
     evaluate();
   }
   function startGuard() {
@@ -9340,6 +9378,36 @@ button:has(.void-ud-trigger > .void-ud-label) {
     document.addEventListener("input", scheduleEvaluate, { capture: true, passive: true, signal });
     document.addEventListener("compositionend", scheduleEvaluate, { capture: true, passive: true, signal });
   }
+  function startComposerWatch() {
+    composerObs?.disconnect();
+    const target = composerRoot();
+    if (!target)
+      return;
+    composerObs = new MutationObserver(() => scheduleEvaluate());
+    composerObs.observe(target, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-label", "type", "disabled", "aria-disabled", "hidden", "class"]
+    });
+  }
+  function pageSignature(s) {
+    return `${s.streamedMessageId ?? ""}|${s.conversationId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${s.optimisticMessageId ?? ""}`;
+  }
+  function attachStore(mod) {
+    unsubPage?.();
+    const store3 = mod?.useChatPageStore ?? ChatPageStore.useChatPageStore;
+    if (typeof store3?.subscribe !== "function")
+      return false;
+    try {
+      unsubPage = store3.subscribe(pageSignature, () => scheduleEvaluate());
+    } catch (e) {
+      logger22.debug("selector subscribe failed, using full subscribe:", e);
+      unsubPage = store3.subscribe(() => scheduleEvaluate());
+    }
+    evaluate();
+    return true;
+  }
   function restoreOfficial() {
     observer?.disconnect();
     observer = null;
@@ -9367,25 +9435,33 @@ button:has(.void-ud-trigger > .void-ud-label) {
       rebuildIcons();
       startGuard();
       startInputWatch();
+      startComposerWatch();
+      if (attachStore())
+        return;
+      cancelWait = waitFor(filters.byProps("useChatPageStore"), (mod) => {
+        attachStore(mod);
+      });
       evaluate();
     },
     stop() {
       if (raf)
         cancelAnimationFrame(raf);
       raf = 0;
+      cancelWait?.();
+      cancelWait = null;
+      unsubPage?.();
+      unsubPage = null;
       inputCtrl?.abort();
       inputCtrl = null;
+      composerObs?.disconnect();
+      composerObs = null;
+      wasStreaming = false;
       justFinished = false;
       lastWasError = false;
       lastConv = undefined;
       restoreOfficial();
     },
     onSettingsChange: rebuildIcons,
-    zustand: {
-      ChatPageStore: {
-        handler: evaluate
-      }
-    },
     events: {
       streamEnd: onStreamEnd2
     }

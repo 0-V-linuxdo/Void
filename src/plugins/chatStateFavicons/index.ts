@@ -6,8 +6,9 @@
 
 import type { VoidEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
-import type { ChatPageStoreState } from "@grok-types/stores";
+import type { ChatPageStoreModule, ChatPageStoreState } from "@grok-types/stores";
 import { ChatPageStore, ResponseStore } from "@turbopack/common/stores";
+import { filters, waitFor } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
@@ -17,6 +18,7 @@ import { buildIcons, type FaviconKind, type IconStyle, isIconStyle, STYLE_OPTION
 const logger = new Logger("ChatStateFavicons");
 const ICON_ID = "void-chat-state-favicon";
 const EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
+const STOP_SEL = 'button[aria-label="Stop model response"], button[aria-label*="Stop" i]';
 
 const settings = definePluginSettings({
     style: {
@@ -29,11 +31,15 @@ const settings = definePluginSettings({
 let officialHref = "/images/favicon.svg";
 let icons = buildIcons("badge", officialHref);
 let kind: FaviconKind = "wait";
+let wasStreaming = false;
 let justFinished = false;
 let lastWasError = false;
 let lastConv: string | undefined;
 let observer: MutationObserver | null = null;
+let composerObs: MutationObserver | null = null;
 let inputCtrl: AbortController | null = null;
+let unsubPage: (() => void) | null = null;
+let cancelWait: (() => void) | null = null;
 let raf = 0;
 
 function currentStyle(): IconStyle {
@@ -90,7 +96,7 @@ function rebuildIcons() {
 
 function getPage(): ChatPageStoreState | null {
     try {
-        const {getState} = ChatPageStore.useChatPageStore;
+        const { getState } = ChatPageStore.useChatPageStore;
         if (typeof getState !== "function") return null;
         return getState();
     } catch (e) {
@@ -99,39 +105,58 @@ function getPage(): ChatPageStoreState | null {
     }
 }
 
-function isInputEmpty(): boolean {
-    const page = getPage();
-    const conversationId = page?.conversationId;
-    const drafts = page?.queryByConversationId;
-    const draft = (conversationId ? drafts?.[conversationId] : drafts?.[""]) ?? "";
-    if (draft.replaceAll("\u200B", "").trim()) return false;
+function isVisible(el: Element): boolean {
+    if (!(el instanceof HTMLElement)) return false;
+    if (el.getClientRects().length === 0) return false;
+    const style = getComputedStyle(el);
+    return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+}
 
+function composerRoot(): Element {
+    const editor = document.querySelector(EDITOR_SEL);
+    return editor?.closest("form") ?? editor?.closest("div.relative") ?? document.body;
+}
+
+function stopButtonVisible(): boolean {
+    const root = composerRoot();
+    for (const btn of root.querySelectorAll(STOP_SEL)) {
+        if (isVisible(btn)) return true;
+    }
+    return false;
+}
+
+function isInputEmpty(): boolean {
     const editor = document.querySelector<HTMLElement>(EDITOR_SEL);
     if (!editor?.isConnected) return true;
     if (editor.querySelector("p.is-empty.is-editor-empty")) return true;
     return (editor.textContent ?? "").replaceAll("\u200B", "").trim().length === 0;
 }
 
+function isStreaming(page: ChatPageStoreState | null): boolean {
+    if (page?.streamedMessageId) return true;
+    if (page?.showStreamingIndicator) return true;
+    return stopButtonVisible();
+}
+
 function evaluate() {
     const page = getPage();
-    if (!page) return;
+    const conversationId = page?.conversationId;
+    const streaming = isStreaming(page);
+    const sameConv = lastConv == null || conversationId == null || lastConv === conversationId;
 
-    const { streamedMessageId, conversationId } = page;
-
-    if (streamedMessageId) {
+    if (streaming) {
+        wasStreaming = true;
         justFinished = false;
-        lastWasError = false;
-        lastConv = conversationId;
+        lastConv = conversationId ?? lastConv;
         setKind("rotate");
         return;
     }
-
-    const sameConv = lastConv === conversationId;
 
     if (lastWasError && sameConv) {
         if (!isInputEmpty()) {
             lastWasError = false;
             justFinished = false;
+            wasStreaming = false;
             setKind("ready");
             return;
         }
@@ -139,13 +164,25 @@ function evaluate() {
         return;
     }
 
+    if (wasStreaming) {
+        wasStreaming = false;
+        if (sameConv) {
+            justFinished = !lastWasError;
+            setKind(lastWasError ? "error" : "done");
+            return;
+        }
+        justFinished = false;
+        lastWasError = false;
+    }
+
     if (justFinished && sameConv) {
         if (!isInputEmpty()) {
             justFinished = false;
+            lastWasError = false;
             setKind("ready");
             return;
         }
-        setKind("done");
+        setKind(lastWasError ? "error" : "done");
         return;
     }
 
@@ -170,9 +207,10 @@ function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
     } catch (e) {
         logger.debug("ResponseStore unavailable:", e);
     }
-    lastConv = getPage()?.conversationId;
+    lastConv = getPage()?.conversationId ?? lastConv;
     lastWasError = error;
-    justFinished = !lastWasError;
+    justFinished = !error;
+    wasStreaming = true;
     evaluate();
 }
 
@@ -210,6 +248,38 @@ function startInputWatch() {
     document.addEventListener("compositionend", scheduleEvaluate, { capture: true, passive: true, signal });
 }
 
+function startComposerWatch() {
+    composerObs?.disconnect();
+    const target = composerRoot();
+    if (!target) return;
+    composerObs = new MutationObserver(() => scheduleEvaluate());
+    composerObs.observe(target, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["aria-label", "type", "disabled", "aria-disabled", "hidden", "class"],
+    });
+}
+
+function pageSignature(s: ChatPageStoreState) {
+    return `${s.streamedMessageId ?? ""}|${s.conversationId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${s.optimisticMessageId ?? ""}`;
+}
+
+function attachStore(mod?: ChatPageStoreModule) {
+    unsubPage?.();
+    const store = mod?.useChatPageStore ?? ChatPageStore.useChatPageStore;
+    if (typeof store?.subscribe !== "function") return false;
+
+    try {
+        unsubPage = store.subscribe(pageSignature, () => scheduleEvaluate());
+    } catch (e) {
+        logger.debug("selector subscribe failed, using full subscribe:", e);
+        unsubPage = store.subscribe(() => scheduleEvaluate());
+    }
+    evaluate();
+    return true;
+}
+
 function restoreOfficial() {
     observer?.disconnect();
     observer = null;
@@ -238,14 +308,26 @@ export default definePlugin({
         rebuildIcons();
         startGuard();
         startInputWatch();
+        startComposerWatch();
+        if (attachStore()) return;
+        cancelWait = waitFor<ChatPageStoreModule>(filters.byProps("useChatPageStore"), mod => {
+            attachStore(mod);
+        });
         evaluate();
     },
 
     stop() {
         if (raf) cancelAnimationFrame(raf);
         raf = 0;
+        cancelWait?.();
+        cancelWait = null;
+        unsubPage?.();
+        unsubPage = null;
         inputCtrl?.abort();
         inputCtrl = null;
+        composerObs?.disconnect();
+        composerObs = null;
+        wasStreaming = false;
         justFinished = false;
         lastWasError = false;
         lastConv = undefined;
@@ -253,12 +335,6 @@ export default definePlugin({
     },
 
     onSettingsChange: rebuildIcons,
-
-    zustand: {
-        ChatPageStore: {
-            handler: evaluate,
-        },
-    },
 
     events: {
         streamEnd: onStreamEnd,
