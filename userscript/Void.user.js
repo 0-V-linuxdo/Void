@@ -2626,7 +2626,7 @@ ${sourceUrl}`;
         className: cl("input"),
         value,
         onChange: (e) => onChange(e.target.value)
-      }), /* @__PURE__ */ React.createElement(Text, {
+      }), /* @__PURE__ */ React.createElement(Text2, {
         size: "sm",
         color: "muted"
       }, value))
@@ -2951,7 +2951,7 @@ ${sourceUrl}`;
     secondary: "text-secondary",
     muted: "text-muted-foreground"
   };
-  function Text({ size = "sm", weight = "normal", color = "primary", as = "div", className, ...props }) {
+  function Text2({ size = "sm", weight = "normal", color = "primary", as = "div", className, ...props }) {
     return createElement(as, {
       className: ClassNames.cn(sizeClasses[size], weightClasses[weight], colorClasses[color], className),
       ...props
@@ -2960,7 +2960,7 @@ ${sourceUrl}`;
 
   // src/components/Paragraph.tsx
   function Paragraph({ color = "secondary", className, children, ...props }) {
-    return /* @__PURE__ */ React.createElement(Text, {
+    return /* @__PURE__ */ React.createElement(Text2, {
       as: "p",
       size: "xs",
       color,
@@ -2973,7 +2973,7 @@ ${sourceUrl}`;
       flexDirection: "column",
       gap: "0",
       className: ClassNames.cn("max-w-sm min-w-0", className)
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
@@ -4629,7 +4629,7 @@ ${sourceUrl}`;
   function TooltipIcon({ icon: Icon, tooltip, className, as = "span" }) {
     return /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       as,
       className
     }, /* @__PURE__ */ React.createElement(Icon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, tooltip));
@@ -4827,7 +4827,7 @@ ${sourceUrl}`;
       step: 1,
       onValueChange: ([v]) => update(v),
       className: cl9("slider")
-    }), /* @__PURE__ */ React.createElement(Text, {
+    }), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       color: "secondary",
       className: cl9("slider-value")
@@ -4939,7 +4939,7 @@ ${sourceUrl}`;
       flexDirection: "column",
       gap: "0.25rem",
       className
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
     }, label), children);
@@ -5123,7 +5123,7 @@ ${sourceUrl}`;
     }), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       className: cl11("reload-banner")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       className: cl11("reload-text")
     }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React.createElement(Button, {
@@ -5301,7 +5301,7 @@ ${sourceUrl}`;
         if (e.key === "Enter")
           handleImport();
       }
-    })), error && /* @__PURE__ */ React.createElement(Text, {
+    })), error && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       className: cl13("add-error")
     }, error), /* @__PURE__ */ React.createElement(DialogActions, {
@@ -5348,7 +5348,7 @@ ${sourceUrl}`;
       value: css,
       onChange: setCss,
       placeholder: "Paste your CSS here..."
-    })), error && /* @__PURE__ */ React.createElement(Text, {
+    })), error && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       className: cl13("add-error")
     }, error), /* @__PURE__ */ React.createElement(DialogActions, {
@@ -5687,7 +5687,7 @@ ${sourceUrl}`;
       className: cl14("badge")
     }, "New"), decodedKey && /* @__PURE__ */ React.createElement(Badge, {
       className: cl14("badge")
-    }, "Encrypted"), isOverridden && /* @__PURE__ */ React.createElement(Text, {
+    }, "Encrypted"), isOverridden && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       as: "span",
       className: cl14("modified")
@@ -5735,7 +5735,7 @@ ${sourceUrl}`;
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       className: cl14("warning-text")
     }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React.createElement(Button, {
@@ -5867,7 +5867,7 @@ ${sourceUrl}`;
   function getVisibleTabs() {
     return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
   }
-  var Dot = () => /* @__PURE__ */ React.createElement(Text, {
+  var Dot = () => /* @__PURE__ */ React.createElement(Text2, {
     as: "span",
     color: "secondary"
   }, "•");
@@ -5877,7 +5877,7 @@ ${sourceUrl}`;
       target: "_blank",
       rel: "noreferrer",
       className: cl15("version-link")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
     }, children));
@@ -5892,18 +5892,18 @@ ${sourceUrl}`;
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(VersionLink, {
       href: "https://github.com/imjustprism/Void"
-    }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
+    }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"3a4a074"}`
-    }, `(${"3a4a074"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"bc891aa"}`
+    }, `(${"bc891aa"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "Production"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text, {
+    }, "Production"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
     }, "Userscript")));
@@ -6347,7 +6347,7 @@ ${sourceUrl}`;
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
     }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
@@ -8408,11 +8408,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
       flexDirection: "column",
       gap: 2,
       className: cl19("panel")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
       className: cl19("used")
-    }, usedLabel(isFree, percent, state.loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text, {
+    }, usedLabel(isFree, percent, state.loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Resets in ", formatResetCountdown(left)));
@@ -8816,7 +8816,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       size: 32
     })), /* @__PURE__ */ React.createElement("div", {
       className: cl20("card-name")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
     }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
@@ -8849,7 +8849,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const overLimit = preset.prompt.length > MAX_LENGTH;
     return /* @__PURE__ */ React.createElement("div", {
       className: cl20("editor")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
       className: cl20("label")
@@ -8860,7 +8860,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       value: preset.name,
       onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
       autoComplete: "off"
-    }), /* @__PURE__ */ React.createElement(Text, {
+    }), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
       className: cl20("label")
@@ -8873,7 +8873,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
     })), /* @__PURE__ */ React.createElement("div", {
       className: cl20("editor-footer")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: overLimit ? undefined : "muted",
       className: overLimit ? cl20("error-text") : undefined
@@ -8921,7 +8921,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onClick: addPreset
     }, /* @__PURE__ */ React.createElement(PlusIcon, {
       className: "size-4 text-secondary"
-    }), /* @__PURE__ */ React.createElement(Text, {
+    }), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
       color: "muted"
@@ -8952,7 +8952,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => assign(),
       className: cl20("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
     }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
       className: "size-3.5 shrink-0"
@@ -8960,7 +8960,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       key: p.id,
       onSelect: () => assign(p.id),
       className: cl20("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
     }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
       className: "size-3.5 shrink-0"
@@ -9409,6 +9409,41 @@ button:has(.void-ud-trigger > .void-ud-label) {
     lastWasError = false;
     setKind(isInputEmpty() ? "wait" : "ready");
   }
+  function nodeInEditor(node) {
+    const el = node instanceof Element ? node : node?.parentElement;
+    return !!el?.closest(EDITOR_SEL);
+  }
+  function mutationsAreEditorOnly(list) {
+    if (!list.length)
+      return false;
+    for (const m of list) {
+      if (!nodeInEditor(m.target))
+        return false;
+      for (const n of m.addedNodes) {
+        if (n instanceof Text)
+          continue;
+        if (!nodeInEditor(n))
+          return false;
+      }
+      for (const n of m.removedNodes) {
+        if (n instanceof Text)
+          continue;
+        if (!nodeInEditor(n))
+          return false;
+      }
+    }
+    return true;
+  }
+  function onDomMutate(list) {
+    if ((kind === "rotate" || wasStreaming) && mutationsAreEditorOnly(list))
+      return;
+    scheduleEvaluate();
+  }
+  function onEditorInput() {
+    if (kind === "rotate" || wasStreaming)
+      return;
+    scheduleEvaluate();
+  }
   function scheduleEvaluate() {
     if (!started2 || raf)
       return;
@@ -9417,8 +9452,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
       if (!started2)
         return;
       bindEditorInput();
-      observeComposer();
-      observeButtons();
+      const root = getComposerRoot();
+      if (!composerObs || !root.isConnected) {
+        observeComposer();
+        observeButtons();
+      }
       evaluateState();
     });
   }
@@ -9461,13 +9499,13 @@ button:has(.void-ud-trigger > .void-ud-label) {
     if (!editor || editor.dataset.voidCsfBound === "1")
       return;
     editor.dataset.voidCsfBound = "1";
-    editor.addEventListener("input", scheduleEvaluate, { passive: true });
-    editor.addEventListener("compositionend", scheduleEvaluate, { passive: true });
+    editor.addEventListener("input", onEditorInput, { passive: true });
+    editor.addEventListener("compositionend", onEditorInput, { passive: true });
   }
   function observeComposer() {
     composerObs?.disconnect();
     const root = getComposerRoot();
-    composerObs = new MutationObserver(scheduleEvaluate);
+    composerObs = new MutationObserver(onDomMutate);
     composerObs.observe(root, {
       childList: true,
       subtree: true,
@@ -9479,20 +9517,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function observeButtons() {
     buttonObs?.disconnect();
     const target = getComposerRoot();
-    buttonObs = new MutationObserver((list) => {
-      for (const m of list) {
-        if (m.type === "attributes") {
-          const t = m.target;
-          if (t instanceof HTMLElement && t.tagName === "BUTTON") {
-            scheduleEvaluate();
-            return;
-          }
-        } else if (m.addedNodes.length || m.removedNodes.length) {
-          scheduleEvaluate();
-          return;
-        }
-      }
-    });
+    buttonObs = new MutationObserver(onDomMutate);
     buttonObs.observe(target, {
       childList: true,
       subtree: true,
@@ -9531,7 +9556,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       inputCtrl = new AbortController;
       window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
       globalObs?.disconnect();
-      globalObs = new MutationObserver(scheduleEvaluate);
+      globalObs = new MutationObserver(onDomMutate);
       globalObs.observe(document.body, { childList: true, subtree: true });
       bindEditorInput();
       observeComposer();
@@ -9662,12 +9687,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
       justifyContent: "center",
       gap: "0",
       className: cl21("info")
-    }, /* @__PURE__ */ React.createElement(Text, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       size: "sm",
       weight: "medium",
       className: cl21("name")
-    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text, {
+    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       size: "xs",
       color: "secondary",
@@ -9905,7 +9930,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         return null;
       if (settings16.store.hideOwnMessages && response.sender === "human")
         return null;
-      return /* @__PURE__ */ React.createElement(Text, {
+      return /* @__PURE__ */ React.createElement(Text2, {
         as: "span",
         size: "xs",
         color: "muted",

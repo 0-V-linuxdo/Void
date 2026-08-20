@@ -14,6 +14,7 @@ import definePlugin, { OptionType, StartAt } from "@utils/types";
 import {
     contextKeyFromUrl,
     conversationToken,
+    EDITOR_SEL,
     getActiveEditor,
     getComposerRoot,
     getStopButton,
@@ -199,18 +200,51 @@ function evaluateState() {
     setKind(isInputEmpty() ? "wait" : "ready");
 }
 
+function nodeInEditor(node: Node | null): boolean {
+    const el = node instanceof Element ? node : node?.parentElement;
+    return !!el?.closest(EDITOR_SEL);
+}
+
+function mutationsAreEditorOnly(list: MutationRecord[]): boolean {
+    if (!list.length) return false;
+    for (const m of list) {
+        if (!nodeInEditor(m.target)) return false;
+        for (const n of m.addedNodes) {
+            if (n instanceof Text) continue;
+            if (!nodeInEditor(n)) return false;
+        }
+        for (const n of m.removedNodes) {
+            if (n instanceof Text) continue;
+            if (!nodeInEditor(n)) return false;
+        }
+    }
+    return true;
+}
+
+function onDomMutate(list: MutationRecord[]) {
+    if ((kind === "rotate" || wasStreaming) && mutationsAreEditorOnly(list)) return;
+    scheduleEvaluate();
+}
+
+function onEditorInput() {
+    if (kind === "rotate" || wasStreaming) return;
+    scheduleEvaluate();
+}
+
 function scheduleEvaluate() {
     if (!started || raf) return;
     raf = requestAnimationFrame(() => {
         raf = 0;
         if (!started) return;
         bindEditorInput();
-        observeComposer();
-        observeButtons();
+        const root = getComposerRoot();
+        if (!composerObs || !root.isConnected) {
+            observeComposer();
+            observeButtons();
+        }
         evaluateState();
     });
 }
-
 function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
     try {
         const response = ResponseStore.useResponseStore.getState().byId[responseId];
@@ -250,14 +284,14 @@ function bindEditorInput() {
     const editor = getActiveEditor();
     if (!editor || editor.dataset.voidCsfBound === "1") return;
     editor.dataset.voidCsfBound = "1";
-    editor.addEventListener("input", scheduleEvaluate, { passive: true });
-    editor.addEventListener("compositionend", scheduleEvaluate, { passive: true });
+    editor.addEventListener("input", onEditorInput, { passive: true });
+    editor.addEventListener("compositionend", onEditorInput, { passive: true });
 }
 
 function observeComposer() {
     composerObs?.disconnect();
     const root = getComposerRoot();
-    composerObs = new MutationObserver(scheduleEvaluate);
+    composerObs = new MutationObserver(onDomMutate);
     composerObs.observe(root, {
         childList: true,
         subtree: true,
@@ -270,20 +304,7 @@ function observeComposer() {
 function observeButtons() {
     buttonObs?.disconnect();
     const target = getComposerRoot();
-    buttonObs = new MutationObserver(list => {
-        for (const m of list) {
-            if (m.type === "attributes") {
-                const t = m.target;
-                if (t instanceof HTMLElement && t.tagName === "BUTTON") {
-                    scheduleEvaluate();
-                    return;
-                }
-            } else if (m.addedNodes.length || m.removedNodes.length) {
-                scheduleEvaluate();
-                return;
-            }
-        }
-    });
+    buttonObs = new MutationObserver(onDomMutate);
     buttonObs.observe(target, {
         childList: true,
         subtree: true,
@@ -324,7 +345,7 @@ export default definePlugin({
         inputCtrl = new AbortController();
         window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
         globalObs?.disconnect();
-        globalObs = new MutationObserver(scheduleEvaluate);
+        globalObs = new MutationObserver(onDomMutate);
         globalObs.observe(document.body, { childList: true, subtree: true });
         bindEditorInput();
         observeComposer();
