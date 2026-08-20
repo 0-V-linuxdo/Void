@@ -63,15 +63,29 @@ export function getStopButton(): HTMLElement | null {
     return candidates.find(isVisible) ?? candidates[0] ?? null;
 }
 
-export function submitIsVisible(): boolean {
-    const root = getComposerRoot();
-    for (const sel of SEND_SELECTORS) {
-        for (const node of root.querySelectorAll(sel)) {
-            if (!isVisible(node) || isStopControl(node)) continue;
-            return true;
+export function isDisabledControl(el: HTMLElement): boolean {
+    if (el instanceof HTMLButtonElement && el.disabled) return true;
+    if (el.hasAttribute("disabled")) return true;
+    if (el.getAttribute("aria-disabled") === "true") return true;
+    if (el.getAttribute("data-disabled") === "true") return true;
+    return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
+}
+
+export function getSubmitButton(): HTMLElement | null {
+    for (const root of [getComposerRoot(), document]) {
+        for (const sel of SEND_SELECTORS) {
+            for (const node of root.querySelectorAll(sel)) {
+                if (!(node instanceof HTMLElement) || isStopControl(node)) continue;
+                if (isVisible(node) || isDisabledControl(node)) return node;
+            }
         }
     }
-    return false;
+    return null;
+}
+
+export function submitIsGray(): boolean {
+    const btn = getSubmitButton();
+    return !!btn && isDisabledControl(btn);
 }
 
 export function isInputEmpty(): boolean {

@@ -20,7 +20,7 @@ import {
     getStopButton,
     isInputEmpty,
     isStopControl,
-    submitIsVisible,
+    submitIsGray,
 } from "./detect";
 import { buildIcons, type FaviconKind, type IconStyle, isIconStyle, STYLE_OPTIONS } from "./icons";
 
@@ -188,7 +188,7 @@ function evaluateState() {
             wasStreaming = false;
             justFinished = false;
             streamContext = null;
-        } else if (getStopButton() || !submitIsVisible()) {
+        } else if (!submitIsGray()) {
             setKind("rotate");
             return;
         } else {

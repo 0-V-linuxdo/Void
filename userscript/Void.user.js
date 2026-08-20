@@ -9714,16 +9714,33 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const candidates = collectStopButtons(document);
     return candidates.find(isVisible) ?? candidates[0] ?? null;
   }
-  function submitIsVisible() {
-    const root = getComposerRoot();
-    for (const sel of SEND_SELECTORS) {
-      for (const node of root.querySelectorAll(sel)) {
-        if (!isVisible(node) || isStopControl(node))
-          continue;
-        return true;
+  function isDisabledControl(el) {
+    if (el instanceof HTMLButtonElement && el.disabled)
+      return true;
+    if (el.hasAttribute("disabled"))
+      return true;
+    if (el.getAttribute("aria-disabled") === "true")
+      return true;
+    if (el.getAttribute("data-disabled") === "true")
+      return true;
+    return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
+  }
+  function getSubmitButton() {
+    for (const root of [getComposerRoot(), document]) {
+      for (const sel of SEND_SELECTORS) {
+        for (const node of root.querySelectorAll(sel)) {
+          if (!(node instanceof HTMLElement) || isStopControl(node))
+            continue;
+          if (isVisible(node) || isDisabledControl(node))
+            return node;
+        }
       }
     }
-    return false;
+    return null;
+  }
+  function submitIsGray() {
+    const btn = getSubmitButton();
+    return !!btn && isDisabledControl(btn);
   }
   function isInputEmpty() {
     const editor = getActiveEditor();
@@ -10021,7 +10038,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         wasStreaming = false;
         justFinished = false;
         streamContext = null;
-      } else if (getStopButton() || !submitIsVisible()) {
+      } else if (!submitIsGray()) {
         setKind("rotate");
         return;
       } else {
