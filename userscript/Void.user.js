@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260820] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"ac76fef"}`
-    }, `(${"ac76fef"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8c2837c"}`
+    }, `(${"8c2837c"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -9918,7 +9918,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var lockedToken = "";
   var lastWasError = false;
   var lastConvId = "";
-  var switchGuard = 0;
+  var primedReady = true;
   var faviconObs = null;
   var globalObs = null;
   var composerObs = null;
@@ -10046,13 +10046,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function onConversationSwitch(id) {
     lastConvId = id;
     resetStreamFlags();
-    switchGuard = 2;
+    primedReady = false;
     composerObs?.disconnect();
     composerObs = null;
     buttonObs?.disconnect();
     buttonObs = null;
     setKind("wait");
-    scheduleEvaluate();
   }
   function hasError() {
     if (lastWasError)
@@ -10080,17 +10079,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
     if (conv)
       lastConvId = conv;
-    if (switchGuard > 0) {
-      switchGuard -= 1;
-      if (switchGuard > 0) {
-        setKind("wait");
-        scheduleEvaluate();
-        return;
-      }
-      bindEditorInput();
-      observeComposer();
-      observeButtons();
-    }
     const contextKey = getContextKey();
     const streaming = isStreaming();
     const empty = isInputEmpty();
@@ -10131,15 +10119,24 @@ button:has(.void-ud-trigger > .void-ud-label) {
       } else if (empty) {
         setKind("done");
         return;
-      } else {
+      } else if (primedReady) {
         justFinished = false;
         setKind("ready");
+        return;
+      } else {
+        justFinished = false;
+        setKind("wait");
         return;
       }
     }
     streamContext = null;
     lastWasError = false;
-    setKind(empty ? "wait" : "ready");
+    if (empty)
+      setKind("wait");
+    else if (primedReady)
+      setKind("ready");
+    else
+      setKind("wait");
   }
   function nodeTouchesStop(node) {
     if (!(node instanceof Element))
@@ -10206,6 +10203,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     scheduleEvaluate();
   }
   function onEditorInput() {
+    primedReady = true;
     scheduleEvaluate();
   }
   function scheduleEvaluate() {
@@ -10385,7 +10383,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       streamContext = null;
       lockedToken = "";
       lastConvId = "";
-      switchGuard = 0;
+      primedReady = true;
       lastWasError = false;
       restoreOfficial();
     },

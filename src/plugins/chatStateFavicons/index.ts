@@ -45,7 +45,7 @@ let streamContext: string | null = null;
 let lockedToken = "";
 let lastWasError = false;
 let lastConvId = "";
-let switchGuard = 0;
+let primedReady = true;
 let faviconObs: MutationObserver | null = null;
 let globalObs: MutationObserver | null = null;
 let composerObs: MutationObserver | null = null;
@@ -175,13 +175,12 @@ function resetStreamFlags() {
 function onConversationSwitch(id: string) {
     lastConvId = id;
     resetStreamFlags();
-    switchGuard = 2;
+    primedReady = false;
     composerObs?.disconnect();
     composerObs = null;
     buttonObs?.disconnect();
     buttonObs = null;
     setKind("wait");
-    scheduleEvaluate();
 }
 
 function hasError(): boolean {
@@ -207,18 +206,6 @@ function evaluateState() {
         return;
     }
     if (conv) lastConvId = conv;
-
-    if (switchGuard > 0) {
-        switchGuard -= 1;
-        if (switchGuard > 0) {
-            setKind("wait");
-            scheduleEvaluate();
-            return;
-        }
-        bindEditorInput();
-        observeComposer();
-        observeButtons();
-    }
 
     const contextKey = getContextKey();
     const streaming = isStreaming();
@@ -264,16 +251,22 @@ function evaluateState() {
         } else if (empty) {
             setKind("done");
             return;
-        } else {
+        } else if (primedReady) {
             justFinished = false;
             setKind("ready");
+            return;
+        } else {
+            justFinished = false;
+            setKind("wait");
             return;
         }
     }
 
     streamContext = null;
     lastWasError = false;
-    setKind(empty ? "wait" : "ready");
+    if (empty) setKind("wait");
+    else if (primedReady) setKind("ready");
+    else setKind("wait");
 }
 
 function nodeTouchesStop(node: Node): boolean {
@@ -331,6 +324,7 @@ function onDomMutate(list: MutationRecord[]) {
 }
 
 function onEditorInput() {
+    primedReady = true;
     scheduleEvaluate();
 }
 
@@ -513,7 +507,7 @@ export default definePlugin({
         streamContext = null;
         lockedToken = "";
         lastConvId = "";
-        switchGuard = 0;
+        primedReady = true;
         lastWasError = false;
         restoreOfficial();
     },
