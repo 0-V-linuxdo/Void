@@ -6,7 +6,7 @@
 
 import type { VoidEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
-import { ChatPageStore, ResponseStore } from "@turbopack/common/stores";
+import { ChatPageStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
@@ -49,6 +49,8 @@ let globalObs: MutationObserver | null = null;
 let composerObs: MutationObserver | null = null;
 let buttonObs: MutationObserver | null = null;
 let inputCtrl: AbortController | null = null;
+let unsubRoute: (() => void) | null = null;
+let unsubPage: (() => void) | null = null;
 let raf = 0;
 let started = false;
 
@@ -115,15 +117,9 @@ function liveResponse(id: string | undefined, byId: Record<string, { state?: str
 function storeStreaming(): boolean {
     try {
         const page = ChatPageStore.useChatPageStore.getState();
-        if (page.streamedMessageId || page.showStreamingIndicator || page.optimisticMessageId) return true;
+        if (page.streamedMessageId || page.showStreamingIndicator) return true;
         const { byId } = ResponseStore.useResponseStore.getState();
-        if (liveResponse(page.streamedMessageId, byId)) return true;
-        if (liveResponse(page.lastMessageId, byId)) return true;
-        for (const response of Object.values(byId)) {
-            if (response.sender === "human") continue;
-            if (response.partial || LIVE_RESPONSE.has(response.state ?? "")) return true;
-        }
-        return false;
+        return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
     } catch (e) {
         logger.debug("stream stores unavailable:", e);
         return false;
@@ -135,14 +131,35 @@ function isStreaming(): boolean {
     return getStopButton() != null;
 }
 
+function currentConversationId(): string {
+    try {
+        const { route } = RoutingStore.useRoutingStore.getState();
+        if (route.conversationId) return String(route.conversationId);
+    } catch (e) {
+        logger.debug("RoutingStore unavailable:", e);
+    }
+    try {
+        const id = ChatPageStore.useChatPageStore.getState().conversationId;
+        if (id) return id;
+    } catch (e) {
+        logger.debug("ChatPageStore unavailable:", e);
+    }
+    return conversationToken();
+}
+
 function getContextKey(): string {
-    const token = conversationToken();
+    const id = currentConversationId();
+    const key = id || contextKeyFromUrl("");
     if (isStreaming()) {
-        if (!lockedToken && token) lockedToken = token;
-        return contextKeyFromUrl(lockedToken);
+        if (!lockedToken && key) lockedToken = key;
+        return lockedToken;
     }
     lockedToken = "";
-    return contextKeyFromUrl(token);
+    return key;
+}
+
+function sameStreamContext(key: string): boolean {
+    return !!streamContext && !!key && streamContext === key;
 }
 
 function hasError(): boolean {
@@ -186,7 +203,7 @@ function evaluateState() {
     }
 
     if (wasStreaming) {
-        const sameContext = !streamContext || !contextKey || streamContext === contextKey;
+        const sameContext = sameStreamContext(contextKey);
         wasStreaming = false;
         if (sameContext && gray) {
             justFinished = true;
@@ -361,6 +378,27 @@ function observeButtons() {
     });
 }
 
+function attachStores() {
+    unsubRoute?.();
+    unsubPage?.();
+    try {
+        const routeStore = RoutingStore.useRoutingStore;
+        if (typeof routeStore?.subscribe === "function") {
+            unsubRoute = routeStore.subscribe(() => scheduleEvaluate());
+        }
+    } catch (e) {
+        logger.debug("RoutingStore subscribe failed:", e);
+    }
+    try {
+        const pageStore = ChatPageStore.useChatPageStore;
+        if (typeof pageStore?.subscribe === "function") {
+            unsubPage = pageStore.subscribe(s => s.conversationId, () => scheduleEvaluate());
+        }
+    } catch (e) {
+        logger.debug("ChatPageStore subscribe failed:", e);
+    }
+}
+
 function restoreOfficial() {
     faviconObs?.disconnect();
     faviconObs = null;
@@ -398,6 +436,7 @@ export default definePlugin({
         bindEditorInput();
         observeComposer();
         observeButtons();
+        attachStores();
         evaluateState();
     },
 
@@ -407,6 +446,10 @@ export default definePlugin({
         raf = 0;
         inputCtrl?.abort();
         inputCtrl = null;
+        unsubRoute?.();
+        unsubRoute = null;
+        unsubPage?.();
+        unsubPage = null;
         globalObs?.disconnect();
         globalObs = null;
         composerObs?.disconnect();

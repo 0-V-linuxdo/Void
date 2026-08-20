@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"a3a0094"}`
-    }, `(${"a3a0094"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"d011b50"}`
+    }, `(${"d011b50"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -9897,6 +9897,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var composerObs = null;
   var buttonObs = null;
   var inputCtrl = null;
+  var unsubRoute = null;
+  var unsubPage = null;
   var raf = 0;
   var started2 = false;
   function currentStyle() {
@@ -9962,20 +9964,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function storeStreaming() {
     try {
       const page = ChatPageStore.useChatPageStore.getState();
-      if (page.streamedMessageId || page.showStreamingIndicator || page.optimisticMessageId)
+      if (page.streamedMessageId || page.showStreamingIndicator)
         return true;
       const { byId } = ResponseStore.useResponseStore.getState();
-      if (liveResponse(page.streamedMessageId, byId))
-        return true;
-      if (liveResponse(page.lastMessageId, byId))
-        return true;
-      for (const response of Object.values(byId)) {
-        if (response.sender === "human")
-          continue;
-        if (response.partial || LIVE_RESPONSE.has(response.state ?? ""))
-          return true;
-      }
-      return false;
+      return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
     } catch (e) {
       logger23.debug("stream stores unavailable:", e);
       return false;
@@ -9986,15 +9978,36 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return true;
     return getStopButton() != null;
   }
+  function currentConversationId() {
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      if (route.conversationId)
+        return String(route.conversationId);
+    } catch (e) {
+      logger23.debug("RoutingStore unavailable:", e);
+    }
+    try {
+      const id = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (id)
+        return id;
+    } catch (e) {
+      logger23.debug("ChatPageStore unavailable:", e);
+    }
+    return conversationToken();
+  }
   function getContextKey() {
-    const token = conversationToken();
+    const id = currentConversationId();
+    const key = id || contextKeyFromUrl("");
     if (isStreaming()) {
-      if (!lockedToken && token)
-        lockedToken = token;
-      return contextKeyFromUrl(lockedToken);
+      if (!lockedToken && key)
+        lockedToken = key;
+      return lockedToken;
     }
     lockedToken = "";
-    return contextKeyFromUrl(token);
+    return key;
+  }
+  function sameStreamContext(key) {
+    return !!streamContext && !!key && streamContext === key;
   }
   function hasError() {
     if (lastWasError)
@@ -10036,7 +10049,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return;
     }
     if (wasStreaming) {
-      const sameContext = !streamContext || !contextKey || streamContext === contextKey;
+      const sameContext = sameStreamContext(contextKey);
       wasStreaming = false;
       if (sameContext && gray) {
         justFinished = true;
@@ -10215,6 +10228,26 @@ button:has(.void-ud-trigger > .void-ud-label) {
       attributeOldValue: true
     });
   }
+  function attachStores() {
+    unsubRoute?.();
+    unsubPage?.();
+    try {
+      const routeStore = RoutingStore.useRoutingStore;
+      if (typeof routeStore?.subscribe === "function") {
+        unsubRoute = routeStore.subscribe(() => scheduleEvaluate());
+      }
+    } catch (e) {
+      logger23.debug("RoutingStore subscribe failed:", e);
+    }
+    try {
+      const pageStore = ChatPageStore.useChatPageStore;
+      if (typeof pageStore?.subscribe === "function") {
+        unsubPage = pageStore.subscribe((s) => s.conversationId, () => scheduleEvaluate());
+      }
+    } catch (e) {
+      logger23.debug("ChatPageStore subscribe failed:", e);
+    }
+  }
   function restoreOfficial() {
     faviconObs?.disconnect();
     faviconObs = null;
@@ -10251,6 +10284,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       bindEditorInput();
       observeComposer();
       observeButtons();
+      attachStores();
       evaluateState();
     },
     stop() {
@@ -10260,6 +10294,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
       raf = 0;
       inputCtrl?.abort();
       inputCtrl = null;
+      unsubRoute?.();
+      unsubRoute = null;
+      unsubPage?.();
+      unsubPage = null;
       globalObs?.disconnect();
       globalObs = null;
       composerObs?.disconnect();
