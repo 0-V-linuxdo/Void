@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"3cd1d5e"}`
-    }, `(${"3cd1d5e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8e58825"}`
+    }, `(${"8e58825"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -9161,13 +9161,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
   var STOP_SELECTORS = [
     'button[aria-label="Stop model response"]',
-    'button[aria-label*="Stop" i]'
+    'button[aria-label*="Stop" i]',
+    'button[aria-label*="停止"]'
   ];
-  var SEND_SELECTORS = [
-    'button[aria-label*="Send" i]',
-    'button[aria-label*="Submit" i]',
-    'button[type="submit"]'
-  ];
+  var STOP_RE = /stop|停止/i;
+  var STREAM_IDLE_TICKS = 3;
   var settings14 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
@@ -9182,6 +9180,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var justFinished = false;
   var lastWasError = false;
   var streamContext;
+  var idleTicks = 0;
   var observer = null;
   var composerObs = null;
   var inputCtrl = null;
@@ -9297,36 +9296,27 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return document.body;
     return editor.closest("form") ?? editor.closest('[class*="composer" i]') ?? editor.parentElement ?? document.body;
   }
-  function firstVisibleButton(root, selectors) {
-    for (const sel of selectors) {
+  function firstStopButton(root, visibleOnly) {
+    for (const sel of STOP_SELECTORS) {
       for (const node of root.querySelectorAll(sel)) {
-        if (isVisible(node))
+        if (node instanceof HTMLElement && (!visibleOnly || isVisible(node)))
           return node;
       }
     }
-    return null;
-  }
-  function getStopButton() {
-    const root = composerRoot();
-    const local = firstVisibleButton(root, STOP_SELECTORS);
-    if (local)
-      return local;
-    const global = firstVisibleButton(document, STOP_SELECTORS);
-    if (global)
-      return global;
     for (const btn of root.querySelectorAll("button")) {
+      if (!(btn instanceof HTMLElement))
+        continue;
       const label = btn.getAttribute("aria-label") ?? "";
       const text = btn.textContent ?? "";
-      if (/stop/i.test(label) || /\bstop\b/i.test(text)) {
-        if (isVisible(btn))
+      if (STOP_RE.test(label) || STOP_RE.test(text)) {
+        if (!visibleOnly || isVisible(btn))
           return btn;
       }
     }
     return null;
   }
-  function sendButtonVisible() {
-    const root = composerRoot();
-    return !!(firstVisibleButton(root, SEND_SELECTORS) ?? firstVisibleButton(document, SEND_SELECTORS));
+  function getStopButton() {
+    return firstStopButton(composerRoot(), false) ?? firstStopButton(document, false);
   }
   function isInputEmpty() {
     const editor = document.querySelector(EDITOR_SEL);
@@ -9351,6 +9341,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     if (streaming) {
       wasStreaming = true;
       justFinished = false;
+      idleTicks = 0;
       lockStreamContext(key);
       setKind("rotate");
       return;
@@ -9361,24 +9352,30 @@ button:has(.void-ud-trigger > .void-ud-label) {
         justFinished = false;
         wasStreaming = false;
         streamContext = undefined;
+        idleTicks = 0;
         setKind("ready");
         return;
       }
       setKind("error");
       return;
     }
-    if (wasStreaming) {
+    if (kind === "rotate" || wasStreaming) {
       if (!sameContext) {
         wasStreaming = false;
         justFinished = false;
         lastWasError = false;
         streamContext = undefined;
-      } else if (getStopButton() || !sendButtonVisible()) {
-        setKind("rotate");
-        return;
+        idleTicks = 0;
       } else {
+        idleTicks += 1;
+        if (idleTicks < STREAM_IDLE_TICKS) {
+          setKind("rotate");
+          scheduleEvaluate();
+          return;
+        }
         wasStreaming = false;
         justFinished = !lastWasError;
+        idleTicks = 0;
         setKind(lastWasError ? "error" : "done");
         return;
       }
@@ -9395,6 +9392,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     justFinished = false;
     lastWasError = false;
     streamContext = undefined;
+    idleTicks = 0;
     setKind(isInputEmpty() ? "wait" : "ready");
   }
   function scheduleEvaluate() {
@@ -9497,7 +9495,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     });
   }
   function pageSignature(s) {
-    return `${s.streamedMessageId ?? ""}|${s.conversationId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${s.optimisticMessageId ?? ""}`;
+    return `${s.streamedMessageId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
   }
   function attachStore(mod) {
     unsubPage?.();
@@ -9575,6 +9573,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       justFinished = false;
       lastWasError = false;
       streamContext = undefined;
+      idleTicks = 0;
       restoreOfficial();
     },
     onSettingsChange: rebuildIcons,
