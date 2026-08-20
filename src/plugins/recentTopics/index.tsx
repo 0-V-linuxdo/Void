@@ -12,7 +12,7 @@ import { Text } from "@components/Text";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { GrokPage, GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
-import { React, useEffect, useLayoutEffect, useRef, useState } from "@turbopack/common/react";
+import { React, useEffect, useLayoutEffect, useRef } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
 import { filters, waitFor } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
@@ -529,17 +529,6 @@ function pick(index: number) {
     commit();
 }
 
-function syncDialog(el: HTMLDialogElement | null, shouldOpen: boolean) {
-    if (!el) return;
-    try {
-        if (shouldOpen && !el.open) el.showModal();
-        else if (!shouldOpen && el.open) el.close();
-    } catch (e) {
-        logger.debug("dialog:", e);
-        el.toggleAttribute("open", shouldOpen);
-    }
-}
-
 function Shot({ id }: { id: string }) {
     const boxRef = useRef<HTMLSpanElement>(null);
     const has = thumbs.has(id);
@@ -568,12 +557,7 @@ function Shot({ id }: { id: string }) {
 
 function Switcher() {
     useExternalStore(ui);
-    const dialogRef = useRef<HTMLDialogElement>(null);
     const stageRef = useRef<HTMLDivElement>(null);
-
-    useLayoutEffect(() => {
-        syncDialog(dialogRef.current, open);
-    }, [open]);
 
     useEffect(() => {
         if (!open) return;
@@ -589,14 +573,15 @@ function Switcher() {
     else if (active) hint = "Click to switch";
 
     return (
-        <dialog
-            ref={dialogRef}
-            className={cl("root")}
-            aria-label="Recent conversations"
-            onCancel={e => { e.preventDefault(); cancel(); }}
-            onClick={e => { if (e.target === e.currentTarget) cancel(); }}
-        >
-            <div className={cl("hud")}>
+        <div className={cl("root")} role="presentation">
+            <div className={cl("backdrop")} onClick={cancel} />
+            <div
+                className={cl("hud")}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Recent conversations"
+                onClick={e => e.stopPropagation()}
+            >
                 {items.length
                     ? (
                         <div ref={stageRef} className={cl("stage")}>
@@ -636,43 +621,36 @@ function Switcher() {
                     )}
                 <div className={cl("hint")}>{hint}</div>
             </div>
-        </dialog>
+        </div>
     );
 }
 
 const Overlay = ErrorBoundary.wrap(Switcher, null);
-let taken = false;
-
-function LeadOverlay() {
-    const [isLead] = useState(() => {
-        if (taken) return false;
-        taken = true;
-        return true;
-    });
-    useEffect(() => () => {
-        if (isLead) taken = false;
-    }, [isLead]);
-    if (!isLead) return null;
-    return <Overlay key="void-recent-topics" />;
-}
 
 function mountHost() {
     waitFor(filters.byProps("createRoot"), (mod: { createRoot: (el: Element) => ReactRoot }) => {
         if (root) return;
+        document.getElementById("void-rt-host")?.remove();
         host = document.createElement("div");
         host.id = "void-rt-host";
+        host.style.cssText = "display:contents;pointer-events:none;";
         (document.body ?? document.documentElement).appendChild(host);
         root = mod.createRoot(host);
-        root.render(<LeadOverlay />);
+        root.render(<Overlay />);
     });
 }
 
 function unmountHost() {
     try { root?.unmount(); } catch (e) { logger.debug("unmount:", e); }
     host?.remove();
+    document.getElementById("void-rt-host")?.remove();
+    document.querySelectorAll("dialog.void-rt-root").forEach(el => {
+        const d = el as HTMLDialogElement;
+        try { if (d.open) d.close(); } catch {}
+        d.remove();
+    });
     host = null;
     root = null;
-    taken = false;
 }
 
 export default definePlugin({
@@ -684,11 +662,11 @@ export default definePlugin({
     settings,
     managedStyle: "recentTopics",
 
-    _Overlay() {
-        return <LeadOverlay />;
-    },
-
     start() {
+        unmountHost();
+        open = false;
+        held = false;
+        ctrlHeld = false;
         try {
             hydrate();
             const current = currentVisit();
@@ -747,23 +725,4 @@ export default definePlugin({
             },
         },
     },
-
-    patches: [
-        {
-            find: "\"chat-page\")",
-            replacement: {
-                match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
-                replace: "$1$self._Overlay(),$2",
-            },
-        },
-        {
-            find: "data-query-bar-mode-select",
-            all: true,
-            noWarn: true,
-            replacement: {
-                match: /\},"mode-select"\),/,
-                replace: "$&$self._Overlay(),",
-            },
-        },
-    ],
 });

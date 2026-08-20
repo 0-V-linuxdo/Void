@@ -5,22 +5,7 @@
     z-index: 2147483646;
     display: grid;
     place-items: center;
-    width: 100vw;
-    height: 100dvh;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    border: none;
-    background: transparent;
-    color: inherit;
     pointer-events: auto;
-}
-
-.void-rt-root::backdrop {
-    background: rgb(0 0 0 / 42%);
-    backdrop-filter: blur(22px);
 }
 
 .void-rt-backdrop {
@@ -32,12 +17,14 @@
 
 .void-rt-hud {
     position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.95rem;
     max-width: 100%;
     padding: 1.25rem 1rem 1.5rem;
+    pointer-events: auto;
 }
 
 .void-rt-stage {

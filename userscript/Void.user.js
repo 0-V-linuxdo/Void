@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820.4] v1.0.0
+// @version      [20260820.5] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820.4] v1.0.0 — A modification for grok.com
+ * Void++ [20260820.5] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820.4] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"e7072cf"}`
-    }, `(${"e7072cf"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820.5] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8904960"}`
+    }, `(${"8904960"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6552,22 +6552,7 @@ div:has(> button[aria-label*="Dictation"]) {
     z-index: 2147483646;
     display: grid;
     place-items: center;
-    width: 100vw;
-    height: 100dvh;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    border: none;
-    background: transparent;
-    color: inherit;
     pointer-events: auto;
-}
-
-.void-rt-root::backdrop {
-    background: rgb(0 0 0 / 42%);
-    backdrop-filter: blur(22px);
 }
 
 .void-rt-backdrop {
@@ -6579,12 +6564,14 @@ div:has(> button[aria-label*="Dictation"]) {
 
 .void-rt-hud {
     position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.95rem;
     max-width: 100%;
     padding: 1.25rem 1rem 1.5rem;
+    pointer-events: auto;
 }
 
 .void-rt-stage {
@@ -7348,19 +7335,6 @@ div:has(> button[aria-label*="Dictation"]) {
     selected = index;
     commit();
   }
-  function syncDialog(el, shouldOpen) {
-    if (!el)
-      return;
-    try {
-      if (shouldOpen && !el.open)
-        el.showModal();
-      else if (!shouldOpen && el.open)
-        el.close();
-    } catch (e) {
-      logger17.debug("dialog:", e);
-      el.toggleAttribute("open", shouldOpen);
-    }
-  }
   function Shot({ id }) {
     const boxRef = useRef(null);
     const has = thumbs.has(id);
@@ -7392,11 +7366,7 @@ div:has(> button[aria-label*="Dictation"]) {
   }
   function Switcher() {
     useExternalStore(ui);
-    const dialogRef = useRef(null);
     const stageRef = useRef(null);
-    useLayoutEffect(() => {
-      syncDialog(dialogRef.current, open2);
-    }, [open2]);
     useEffect(() => {
       if (!open2)
         return;
@@ -7411,20 +7381,18 @@ div:has(> button[aria-label*="Dictation"]) {
       hint = "Release Ctrl to switch";
     else if (active)
       hint = "Click to switch";
-    return /* @__PURE__ */ React.createElement("dialog", {
-      ref: dialogRef,
+    return /* @__PURE__ */ React.createElement("div", {
       className: cl17("root"),
-      "aria-label": "Recent conversations",
-      onCancel: (e) => {
-        e.preventDefault();
-        cancel();
-      },
-      onClick: (e) => {
-        if (e.target === e.currentTarget)
-          cancel();
-      }
+      role: "presentation"
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl17("hud")
+      className: cl17("backdrop"),
+      onClick: cancel
+    }), /* @__PURE__ */ React.createElement("div", {
+      className: cl17("hud"),
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": "Recent conversations",
+      onClick: (e) => e.stopPropagation()
     }, items.length ? /* @__PURE__ */ React.createElement("div", {
       ref: stageRef,
       className: cl17("stage")
@@ -7464,33 +7432,17 @@ div:has(> button[aria-label*="Dictation"]) {
     }, hint)));
   }
   var Overlay = ErrorBoundary.wrap(Switcher, null);
-  var taken = false;
-  function LeadOverlay() {
-    const [isLead] = useState(() => {
-      if (taken)
-        return false;
-      taken = true;
-      return true;
-    });
-    useEffect(() => () => {
-      if (isLead)
-        taken = false;
-    }, [isLead]);
-    if (!isLead)
-      return null;
-    return /* @__PURE__ */ React.createElement(Overlay, {
-      key: "void-recent-topics"
-    });
-  }
   function mountHost() {
     waitFor(filters.byProps("createRoot"), (mod) => {
       if (root)
         return;
+      document.getElementById("void-rt-host")?.remove();
       host = document.createElement("div");
       host.id = "void-rt-host";
+      host.style.cssText = "display:contents;pointer-events:none;";
       (document.body ?? document.documentElement).appendChild(host);
       root = mod.createRoot(host);
-      root.render(/* @__PURE__ */ React.createElement(LeadOverlay, null));
+      root.render(/* @__PURE__ */ React.createElement(Overlay, null));
     });
   }
   function unmountHost() {
@@ -7500,9 +7452,17 @@ div:has(> button[aria-label*="Dictation"]) {
       logger17.debug("unmount:", e);
     }
     host?.remove();
+    document.getElementById("void-rt-host")?.remove();
+    document.querySelectorAll("dialog.void-rt-root").forEach((el) => {
+      const d = el;
+      try {
+        if (d.open)
+          d.close();
+      } catch {}
+      d.remove();
+    });
     host = null;
     root = null;
-    taken = false;
   }
   var recentTopics_default = definePlugin({
     name: "RecentTopics",
@@ -7512,10 +7472,11 @@ div:has(> button[aria-label*="Dictation"]) {
     enabledByDefault: true,
     settings: settings6,
     managedStyle: "recentTopics",
-    _Overlay() {
-      return /* @__PURE__ */ React.createElement(LeadOverlay, null);
-    },
     start() {
+      unmountHost();
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
       try {
         hydrate();
         const current = currentVisit();
@@ -7574,25 +7535,7 @@ div:has(> button[aria-label*="Dictation"]) {
           scheduleCapture();
         }
       }
-    },
-    patches: [
-      {
-        find: '"chat-page")',
-        replacement: {
-          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
-          replace: "$1$self._Overlay(),$2"
-        }
-      },
-      {
-        find: "data-query-bar-mode-select",
-        all: true,
-        noWarn: true,
-        replacement: {
-          match: /\},"mode-select"\),/,
-          replace: "$&$self._Overlay(),"
-        }
-      }
-    ]
+    }
   });
 
   // src/plugins/autoRetry/index.ts
