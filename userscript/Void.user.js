@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820.3] v1.0.0
+// @version      [20260820.4] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820.3] v1.0.0 — A modification for grok.com
+ * Void++ [20260820.4] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820.3] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"2a70ce9"}`
-    }, `(${"2a70ce9"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820.4] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"e7072cf"}`
+    }, `(${"e7072cf"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6902,25 +6902,55 @@ div:has(> button[aria-label*="Dictation"]) {
     }
     return keep;
   }
+  function sameList(a, b) {
+    return a.length === b.length && a.every((id, i) => id === b[i]);
+  }
+  function sameRecord(a, b) {
+    const src = a ?? {};
+    const keys2 = Object.keys(b);
+    if (Object.keys(src).length !== keys2.length)
+      return false;
+    return keys2.every((k) => src[k] === b[k]);
+  }
+  function assignRecord(key, next) {
+    if (sameRecord(settings6.plain[key], next))
+      return false;
+    settings6.store[key] = next;
+    return true;
+  }
+  var writing = false;
   function writeVisits(next) {
-    const prev = readVisits();
-    const workspaceByConv = settings6.plain.workspaceByConv ?? {};
-    const pages = settings6.plain.pages ?? {};
-    const usedWs = new Set(next.map((id) => workspaceByConv[id]).filter(Boolean));
-    const projectNames = settings6.plain.projectNames ?? {};
-    const keepProjects = {};
-    for (const [id, name] of Object.entries(projectNames)) {
-      if (usedWs.has(id) || next.includes(id))
-        keepProjects[id] = name;
-    }
-    settings6.store.titles = pruneRecord(settings6.plain.titles, next);
-    settings6.store.workspaceByConv = pruneRecord(workspaceByConv, next);
-    settings6.store.pages = pruneRecord(pages, next);
-    settings6.store.projectNames = keepProjects;
-    if (next.length === prev.length && next.every((id, i) => id === prev[i]))
+    if (writing)
       return;
-    settings6.store.visits = next;
-    ui.notify();
+    writing = true;
+    try {
+      const visits = capVisits(next);
+      const workspaceByConv = pruneRecord(settings6.plain.workspaceByConv, visits);
+      const pages = pruneRecord(settings6.plain.pages, visits);
+      const usedWs = new Set(Object.values(workspaceByConv));
+      const keepProjects = {};
+      for (const [id, name] of Object.entries(settings6.plain.projectNames ?? {})) {
+        if (usedWs.has(id))
+          keepProjects[id] = name;
+      }
+      let changed = false;
+      if (!sameList(readVisits(), visits)) {
+        settings6.store.visits = visits;
+        changed = true;
+      }
+      if (assignRecord("titles", pruneRecord(settings6.plain.titles, visits)))
+        changed = true;
+      if (assignRecord("workspaceByConv", workspaceByConv))
+        changed = true;
+      if (assignRecord("pages", pages))
+        changed = true;
+      if (assignRecord("projectNames", keepProjects))
+        changed = true;
+      if (changed)
+        ui.notify();
+    } finally {
+      writing = false;
+    }
   }
   function rememberTitle(id, title) {
     const t = title?.trim();
@@ -7097,11 +7127,8 @@ div:has(> button[aria-label*="Dictation"]) {
       return null;
     let best = null;
     let bestScore = 0;
-    for (const n of main.querySelectorAll("div")) {
+    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
       if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
-        continue;
-      const cls = n.className;
-      if (typeof cls !== "string" || !cls.includes("overflow"))
         continue;
       const r = n.getBoundingClientRect();
       if (r.width < 240 || r.height < 120)
@@ -7112,54 +7139,66 @@ div:has(> button[aria-label*="Dictation"]) {
         bestScore = score;
       }
     }
-    return best ?? main;
+    return best;
   }
-  function trimClone(rootEl) {
-    rootEl.querySelectorAll("script, iframe, video, textarea, input, canvas, .void-rt-root, #void-rt-host").forEach((n) => n.remove());
-    let node = rootEl;
+  function messageList(pane) {
+    let node = pane;
     for (let i = 0;i < 8; i++) {
       const kids = [...node.children].filter((c) => c instanceof HTMLElement);
       if (kids.length === 1 && kids[0].children.length > 1) {
         node = kids[0];
         continue;
       }
-      if (kids.length > 10)
-        kids.slice(0, -10).forEach((k) => k.remove());
       break;
     }
+    return node;
   }
+  function trimClone(rootEl) {
+    rootEl.querySelectorAll("script, iframe, video, textarea, input, canvas, .void-rt-root, #void-rt-host").forEach((n) => n.remove());
+  }
+  var capturing = false;
   function captureCurrent() {
+    if (capturing || open2)
+      return;
     const id = currentVisit();
     if (id == null)
       return;
+    capturing = true;
     try {
       const pane = chatPane();
       if (!pane)
         return;
-      const clone = pane.cloneNode(true);
-      trimClone(clone);
-      thumbs.set(id, clone);
+      const source = messageList(pane);
+      const shell = source.cloneNode(false);
+      const keep = [...source.children].slice(-6);
+      for (const kid of keep)
+        shell.appendChild(kid.cloneNode(true));
+      trimClone(shell);
+      thumbs.set(id, shell);
     } catch (e) {
       logger17.debug("snapshot failed:", e);
+    } finally {
+      capturing = false;
     }
   }
   function scheduleCapture() {
+    if (open2)
+      return;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        captureCurrent();
-        if (open2)
-          ui.notify();
+        if (!open2)
+          captureCurrent();
       });
     });
   }
   function bump(id) {
     if (!id && !settings6.store.includeHome)
       return;
+    writeVisits(capVisits([id, ...readVisits()]));
     const conv = id ? lookup(id) : undefined;
     rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
     if (id)
       rememberProject(id);
-    writeVisits(capVisits([id, ...readVisits()]));
   }
   function hydrate() {
     const current = currentVisit();
@@ -7210,8 +7249,9 @@ div:has(> button[aria-label*="Dictation"]) {
     return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
   }
   function begin(reverse, fromHold) {
-    captureCurrent();
     held = fromHold;
+    open2 = false;
+    captureCurrent();
     open2 = true;
     selected = 0;
     try {
@@ -7464,47 +7504,6 @@ div:has(> button[aria-label*="Dictation"]) {
     root = null;
     taken = false;
   }
-  function ingestWorkspaces(state) {
-    const consider = (id, name) => {
-      if (typeof id !== "string" || !id || typeof name !== "string")
-        return;
-      const t = name.trim();
-      if (t)
-        wsNames[id] = t;
-    };
-    const { byId } = state;
-    if (byId && typeof byId === "object") {
-      for (const [id, row] of Object.entries(byId)) {
-        consider(id, row?.name ?? row?.title);
-      }
-    }
-    for (const key of ["list", "workspaces", "projects", "items"]) {
-      const list = state[key];
-      if (!Array.isArray(list))
-        continue;
-      for (const row of list) {
-        if (!row || typeof row !== "object")
-          continue;
-        consider(row.id ?? row.workspaceId ?? row.projectId, row.name ?? row.title);
-      }
-    }
-  }
-  function watchWorkspaceStores() {
-    for (const prop of ["useWorkspaceStore", "useProjectStore", "useWorkspacesStore"]) {
-      waitFor(filters.byProps(prop), (mod) => {
-        const hook = mod[prop];
-        if (typeof hook?.getState !== "function")
-          return;
-        const pull = () => {
-          try {
-            ingestWorkspaces(hook.getState());
-          } catch {}
-        };
-        pull();
-        hook.subscribe?.(pull);
-      });
-    }
-  }
   var recentTopics_default = definePlugin({
     name: "RecentTopics",
     description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
@@ -7535,7 +7534,6 @@ div:has(> button[aria-label*="Dictation"]) {
         document.addEventListener("visibilitychange", onVisibility, { signal });
         document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
       }
-      watchWorkspaceStores();
       mountHost();
     },
     stop() {

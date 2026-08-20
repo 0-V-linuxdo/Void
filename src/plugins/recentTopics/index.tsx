@@ -107,23 +107,50 @@ function pruneRecord(source: Record<string, string> | undefined, ids: string[]):
     return keep;
 }
 
+function sameList(a: string[], b: string[]) {
+    return a.length === b.length && a.every((id, i) => id === b[i]);
+}
+
+function sameRecord(a: Record<string, string> | undefined, b: Record<string, string>) {
+    const src = a ?? {};
+    const keys = Object.keys(b);
+    if (Object.keys(src).length !== keys.length) return false;
+    return keys.every(k => src[k] === b[k]);
+}
+
+function assignRecord(key: "titles" | "workspaceByConv" | "projectNames" | "pages", next: Record<string, string>) {
+    if (sameRecord(settings.plain[key], next)) return false;
+    settings.store[key] = next;
+    return true;
+}
+
+let writing = false;
+
 function writeVisits(next: string[]) {
-    const prev = readVisits();
-    const workspaceByConv = settings.plain.workspaceByConv ?? {};
-    const pages = settings.plain.pages ?? {};
-    const usedWs = new Set(next.map(id => workspaceByConv[id]).filter(Boolean));
-    const projectNames = settings.plain.projectNames ?? {};
-    const keepProjects: Record<string, string> = {};
-    for (const [id, name] of Object.entries(projectNames)) {
-        if (usedWs.has(id) || next.includes(id)) keepProjects[id] = name;
+    if (writing) return;
+    writing = true;
+    try {
+        const visits = capVisits(next);
+        const workspaceByConv = pruneRecord(settings.plain.workspaceByConv, visits);
+        const pages = pruneRecord(settings.plain.pages, visits);
+        const usedWs = new Set(Object.values(workspaceByConv));
+        const keepProjects: Record<string, string> = {};
+        for (const [id, name] of Object.entries(settings.plain.projectNames ?? {})) {
+            if (usedWs.has(id)) keepProjects[id] = name;
+        }
+        let changed = false;
+        if (!sameList(readVisits(), visits)) {
+            settings.store.visits = visits;
+            changed = true;
+        }
+        if (assignRecord("titles", pruneRecord(settings.plain.titles, visits))) changed = true;
+        if (assignRecord("workspaceByConv", workspaceByConv)) changed = true;
+        if (assignRecord("pages", pages)) changed = true;
+        if (assignRecord("projectNames", keepProjects)) changed = true;
+        if (changed) ui.notify();
+    } finally {
+        writing = false;
     }
-    settings.store.titles = pruneRecord(settings.plain.titles, next);
-    settings.store.workspaceByConv = pruneRecord(workspaceByConv, next);
-    settings.store.pages = pruneRecord(pages, next);
-    settings.store.projectNames = keepProjects;
-    if (next.length === prev.length && next.every((id, i) => id === prev[i])) return;
-    settings.store.visits = next;
-    ui.notify();
 }
 
 function rememberTitle(id: string, title?: string) {
@@ -261,7 +288,7 @@ function rememberProject(id: string) {
     if (prevWs[id] !== ws) settings.store.workspaceByConv = { ...prevWs, [id]: ws };
     let page: string | undefined;
     try {
-        const {route} = RoutingStore.useRoutingStore.getState();
+        const { route } = RoutingStore.useRoutingStore.getState();
         if (route.conversationId === id) page = route.page;
     } catch {}
     if (page) {
@@ -280,10 +307,8 @@ function chatPane(): HTMLElement | null {
     if (!main) return null;
     let best: HTMLElement | null = null;
     let bestScore = 0;
-    for (const n of main.querySelectorAll<HTMLElement>("div")) {
+    for (const n of main.querySelectorAll<HTMLElement>("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
         if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host")) continue;
-        const cls = n.className;
-        if (typeof cls !== "string" || !cls.includes("overflow")) continue;
         const r = n.getBoundingClientRect();
         if (r.width < 240 || r.height < 120) continue;
         const score = r.width * r.height;
@@ -292,52 +317,64 @@ function chatPane(): HTMLElement | null {
             bestScore = score;
         }
     }
-    return best ?? (main as HTMLElement);
+    return best;
 }
 
-function trimClone(rootEl: HTMLElement) {
-    rootEl.querySelectorAll("script, iframe, video, textarea, input, canvas, .void-rt-root, #void-rt-host").forEach(n => n.remove());
-    let node: HTMLElement = rootEl;
+function messageList(pane: HTMLElement): HTMLElement {
+    let node = pane;
     for (let i = 0; i < 8; i++) {
         const kids = [...node.children].filter((c): c is HTMLElement => c instanceof HTMLElement);
         if (kids.length === 1 && kids[0].children.length > 1) {
             node = kids[0];
             continue;
         }
-        if (kids.length > 10) kids.slice(0, -10).forEach(k => k.remove());
         break;
     }
+    return node;
 }
 
+function trimClone(rootEl: HTMLElement) {
+    rootEl.querySelectorAll("script, iframe, video, textarea, input, canvas, .void-rt-root, #void-rt-host").forEach(n => n.remove());
+}
+
+let capturing = false;
+
 function captureCurrent() {
+    if (capturing || open) return;
     const id = currentVisit();
     if (id == null) return;
+    capturing = true;
     try {
         const pane = chatPane();
         if (!pane) return;
-        const clone = pane.cloneNode(true) as HTMLElement;
-        trimClone(clone);
-        thumbs.set(id, clone);
+        const source = messageList(pane);
+        const shell = source.cloneNode(false) as HTMLElement;
+        const keep = [...source.children].slice(-6);
+        for (const kid of keep) shell.appendChild(kid.cloneNode(true));
+        trimClone(shell);
+        thumbs.set(id, shell);
     } catch (e) {
         logger.debug("snapshot failed:", e);
+    } finally {
+        capturing = false;
     }
 }
 
 function scheduleCapture() {
+    if (open) return;
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            captureCurrent();
-            if (open) ui.notify();
+            if (!open) captureCurrent();
         });
     });
 }
 
 function bump(id: string) {
     if (!id && !settings.store.includeHome) return;
+    writeVisits(capVisits([id, ...readVisits()]));
     const conv = id ? lookup(id) : undefined;
     rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
     if (id) rememberProject(id);
-    writeVisits(capVisits([id, ...readVisits()]));
 }
 
 function hydrate() {
@@ -394,8 +431,9 @@ function isCtrlKey(e: KeyboardEvent) {
 }
 
 function begin(reverse: boolean, fromHold: boolean) {
-    captureCurrent();
     held = fromHold;
+    open = false;
+    captureCurrent();
     open = true;
     selected = 0;
     try {
@@ -637,42 +675,6 @@ function unmountHost() {
     taken = false;
 }
 
-function ingestWorkspaces(state: Record<string, unknown>) {
-    const consider = (id: unknown, name: unknown) => {
-        if (typeof id !== "string" || !id || typeof name !== "string") return;
-        const t = name.trim();
-        if (t) wsNames[id] = t;
-    };
-    const {byId} = state;
-    if (byId && typeof byId === "object") {
-        for (const [id, row] of Object.entries(byId as Record<string, any>)) {
-            consider(id, row?.name ?? row?.title);
-        }
-    }
-    for (const key of ["list", "workspaces", "projects", "items"]) {
-        const list = state[key];
-        if (!Array.isArray(list)) continue;
-        for (const row of list) {
-            if (!row || typeof row !== "object") continue;
-            consider(row.id ?? row.workspaceId ?? row.projectId, row.name ?? row.title);
-        }
-    }
-}
-
-function watchWorkspaceStores() {
-    for (const prop of ["useWorkspaceStore", "useProjectStore", "useWorkspacesStore"]) {
-        waitFor(filters.byProps(prop), (mod: Record<string, any>) => {
-            const hook = mod[prop];
-            if (typeof hook?.getState !== "function") return;
-            const pull = () => {
-                try { ingestWorkspaces(hook.getState()); } catch {}
-            };
-            pull();
-            hook.subscribe?.(pull);
-        });
-    }
-}
-
 export default definePlugin({
     name: "RecentTopics",
     description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
@@ -704,7 +706,6 @@ export default definePlugin({
             document.addEventListener("visibilitychange", onVisibility, { signal });
             document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
         }
-        watchWorkspaceStores();
         mountHost();
     },
 
