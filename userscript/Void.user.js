@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820.5] v1.0.0
+// @version      [20260820.6] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820.5] v1.0.0 — A modification for grok.com
+ * Void++ [20260820.6] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820.5] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8904960"}`
-    }, `(${"8904960"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820.6] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"61dc2b2"}`
+    }, `(${"61dc2b2"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6855,8 +6855,6 @@ div:has(> button[aria-label*="Dictation"]) {
   var held = false;
   var ctrlHeld = false;
   var keys = null;
-  var host = null;
-  var root = null;
   function unique(ids) {
     const seen = new Set;
     const out = [];
@@ -7432,26 +7430,23 @@ div:has(> button[aria-label*="Dictation"]) {
     }, hint)));
   }
   var Overlay = ErrorBoundary.wrap(Switcher, null);
-  function mountHost() {
-    waitFor(filters.byProps("createRoot"), (mod) => {
-      if (root)
-        return;
-      document.getElementById("void-rt-host")?.remove();
-      host = document.createElement("div");
-      host.id = "void-rt-host";
-      host.style.cssText = "display:contents;pointer-events:none;";
-      (document.body ?? document.documentElement).appendChild(host);
-      root = mod.createRoot(host);
-      root.render(/* @__PURE__ */ React.createElement(Overlay, null));
+  var taken = false;
+  function LeadOverlay() {
+    const [isLead] = useState(() => {
+      if (taken)
+        return false;
+      taken = true;
+      return true;
     });
+    useEffect(() => () => {
+      if (isLead)
+        taken = false;
+    }, [isLead]);
+    if (!isLead)
+      return null;
+    return /* @__PURE__ */ React.createElement(Overlay, null);
   }
-  function unmountHost() {
-    try {
-      root?.unmount();
-    } catch (e) {
-      logger17.debug("unmount:", e);
-    }
-    host?.remove();
+  function dropLegacyHost() {
     document.getElementById("void-rt-host")?.remove();
     document.querySelectorAll("dialog.void-rt-root").forEach((el) => {
       const d = el;
@@ -7461,8 +7456,6 @@ div:has(> button[aria-label*="Dictation"]) {
       } catch {}
       d.remove();
     });
-    host = null;
-    root = null;
   }
   var recentTopics_default = definePlugin({
     name: "RecentTopics",
@@ -7472,11 +7465,15 @@ div:has(> button[aria-label*="Dictation"]) {
     enabledByDefault: true,
     settings: settings6,
     managedStyle: "recentTopics",
+    _Overlay() {
+      return /* @__PURE__ */ React.createElement(LeadOverlay, null);
+    },
     start() {
-      unmountHost();
+      dropLegacyHost();
       open2 = false;
       held = false;
       ctrlHeld = false;
+      taken = false;
       try {
         hydrate();
         const current = currentVisit();
@@ -7495,7 +7492,6 @@ div:has(> button[aria-label*="Dictation"]) {
         document.addEventListener("visibilitychange", onVisibility, { signal });
         document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
       }
-      mountHost();
     },
     stop() {
       keys?.abort();
@@ -7503,8 +7499,9 @@ div:has(> button[aria-label*="Dictation"]) {
       open2 = false;
       held = false;
       ctrlHeld = false;
+      taken = false;
       thumbs.clear();
-      unmountHost();
+      dropLegacyHost();
     },
     onSettingsChange() {
       try {
@@ -7535,7 +7532,25 @@ div:has(> button[aria-label*="Dictation"]) {
           scheduleCapture();
         }
       }
-    }
+    },
+    patches: [
+      {
+        find: '"chat-page")',
+        replacement: {
+          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
+          replace: "$1$self._Overlay(),$2"
+        }
+      },
+      {
+        find: "data-query-bar-mode-select",
+        all: true,
+        noWarn: true,
+        replacement: {
+          match: /\},"mode-select"\),/,
+          replace: "$&$self._Overlay(),"
+        }
+      }
+    ]
   });
 
   // src/plugins/autoRetry/index.ts
@@ -10085,16 +10100,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const editor = getActiveEditor();
     return editor?.closest("form") ?? editor?.closest("div.relative") ?? editor?.parentElement ?? document.body;
   }
-  function collectStopButtons(root2) {
+  function collectStopButtons(root) {
     const candidates = [];
     for (const sel of STOP_SELECTORS) {
-      for (const node of root2.querySelectorAll(sel)) {
+      for (const node of root.querySelectorAll(sel)) {
         if (node instanceof HTMLElement)
           candidates.push(node);
       }
     }
     if (candidates.length === 0) {
-      for (const btn of root2.querySelectorAll("button")) {
+      for (const btn of root.querySelectorAll("button")) {
         if (btn instanceof HTMLElement && isStopControl(btn))
           candidates.push(btn);
       }
@@ -10117,9 +10132,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
   }
   function getSubmitButton() {
-    for (const root2 of [getComposerRoot(), document]) {
+    for (const root of [getComposerRoot(), document]) {
       for (const sel of SEND_SELECTORS) {
-        for (const node of root2.querySelectorAll(sel)) {
+        for (const node of root.querySelectorAll(sel)) {
           if (!(node instanceof HTMLElement) || isStopControl(node))
             continue;
           if (isVisible(node) || isDisabledControl(node))
@@ -10580,8 +10595,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
       if (!started2)
         return;
       bindEditorInput();
-      const root2 = getComposerRoot();
-      if (!composerObs || !root2.isConnected) {
+      const root = getComposerRoot();
+      if (!composerObs || !root.isConnected) {
         observeComposer();
         observeButtons();
       }
@@ -10632,9 +10647,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function observeComposer() {
     composerObs?.disconnect();
-    const root2 = getComposerRoot();
+    const root = getComposerRoot();
     composerObs = new MutationObserver(onDomMutate);
-    composerObs.observe(root2, {
+    composerObs.observe(root, {
       childList: true,
       subtree: true,
       characterData: true,

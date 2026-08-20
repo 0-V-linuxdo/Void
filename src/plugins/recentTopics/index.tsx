@@ -12,9 +12,8 @@ import { Text } from "@components/Text";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { GrokPage, GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
-import { React, useEffect, useLayoutEffect, useRef } from "@turbopack/common/react";
+import { React, useEffect, useLayoutEffect, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
-import { filters, waitFor } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -60,18 +59,11 @@ interface Topic {
     project: string;
 }
 
-interface ReactRoot {
-    render(node: unknown): void;
-    unmount(): void;
-}
-
 let open = false;
 let selected = 0;
 let held = false;
 let ctrlHeld = false;
 let keys: AbortController | null = null;
-let host: HTMLDivElement | null = null;
-let root: ReactRoot | null = null;
 
 function unique(ids: string[]): string[] {
     const seen = new Set<string>();
@@ -626,31 +618,28 @@ function Switcher() {
 }
 
 const Overlay = ErrorBoundary.wrap(Switcher, null);
+let taken = false;
 
-function mountHost() {
-    waitFor(filters.byProps("createRoot"), (mod: { createRoot: (el: Element) => ReactRoot }) => {
-        if (root) return;
-        document.getElementById("void-rt-host")?.remove();
-        host = document.createElement("div");
-        host.id = "void-rt-host";
-        host.style.cssText = "display:contents;pointer-events:none;";
-        (document.body ?? document.documentElement).appendChild(host);
-        root = mod.createRoot(host);
-        root.render(<Overlay />);
+function LeadOverlay() {
+    const [isLead] = useState(() => {
+        if (taken) return false;
+        taken = true;
+        return true;
     });
+    useEffect(() => () => {
+        if (isLead) taken = false;
+    }, [isLead]);
+    if (!isLead) return null;
+    return <Overlay />;
 }
 
-function unmountHost() {
-    try { root?.unmount(); } catch (e) { logger.debug("unmount:", e); }
-    host?.remove();
+function dropLegacyHost() {
     document.getElementById("void-rt-host")?.remove();
     document.querySelectorAll("dialog.void-rt-root").forEach(el => {
         const d = el as HTMLDialogElement;
         try { if (d.open) d.close(); } catch {}
         d.remove();
     });
-    host = null;
-    root = null;
 }
 
 export default definePlugin({
@@ -662,11 +651,16 @@ export default definePlugin({
     settings,
     managedStyle: "recentTopics",
 
+    _Overlay() {
+        return <LeadOverlay />;
+    },
+
     start() {
-        unmountHost();
+        dropLegacyHost();
         open = false;
         held = false;
         ctrlHeld = false;
+        taken = false;
         try {
             hydrate();
             const current = currentVisit();
@@ -684,7 +678,6 @@ export default definePlugin({
             document.addEventListener("visibilitychange", onVisibility, { signal });
             document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
         }
-        mountHost();
     },
 
     stop() {
@@ -693,8 +686,9 @@ export default definePlugin({
         open = false;
         held = false;
         ctrlHeld = false;
+        taken = false;
         thumbs.clear();
-        unmountHost();
+        dropLegacyHost();
     },
 
     onSettingsChange() {
@@ -725,4 +719,23 @@ export default definePlugin({
             },
         },
     },
+
+    patches: [
+        {
+            find: "\"chat-page\")",
+            replacement: {
+                match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
+                replace: "$1$self._Overlay(),$2",
+            },
+        },
+        {
+            find: "data-query-bar-mode-select",
+            all: true,
+            noWarn: true,
+            replacement: {
+                match: /\},"mode-select"\),/,
+                replace: "$&$self._Overlay(),",
+            },
+        },
+    ],
 });
