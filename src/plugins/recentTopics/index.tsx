@@ -11,7 +11,7 @@ import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Text } from "@components/Text";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
-import type { GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
+import type { GrokPage, GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
 import { React, useEffect, useLayoutEffect, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
 import { filters, waitFor } from "@turbopack/turbopack";
@@ -28,6 +28,7 @@ const HOME_ID = "";
 const TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
 const TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
 const TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
+const SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation)$/i;
 const COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => ({ label: String(n), value: n, default: n === 5 }));
 
 const settings = definePluginSettings({
@@ -41,13 +42,22 @@ const settings = definePluginSettings({
         description: "Include the new-chat home page in the switcher.",
         default: true,
     },
-}).withPrivateSettings<{ visits: string[]; titles: Record<string, string> }>();
+}).withPrivateSettings<{
+    visits: string[];
+    titles: Record<string, string>;
+    workspaceByConv: Record<string, string>;
+    projectNames: Record<string, string>;
+    pages: Record<string, string>;
+}>();
 
 const ui = createExternalStore();
+const thumbs = new Map<string, HTMLElement>();
+const wsNames: Record<string, string> = {};
 
 interface Topic {
     id: string;
     title: string;
+    project: string;
 }
 
 interface ReactRoot {
@@ -88,16 +98,31 @@ function capVisits(ids: string[]): string[] {
     return unique(ids).filter(id => id || allowHome).slice(0, maxCount());
 }
 
+function pruneRecord(source: Record<string, string> | undefined, ids: string[]): Record<string, string> {
+    const keep: Record<string, string> = {};
+    if (!source) return keep;
+    for (const id of ids) {
+        if (source[id]) keep[id] = source[id];
+    }
+    return keep;
+}
+
 function writeVisits(next: string[]) {
     const prev = readVisits();
-    if (next.length === prev.length && next.every((id, i) => id === prev[i])) return;
-    const titles = settings.plain.titles ?? {};
-    const keep: Record<string, string> = {};
-    for (const id of next) {
-        if (titles[id]) keep[id] = titles[id];
+    const workspaceByConv = settings.plain.workspaceByConv ?? {};
+    const pages = settings.plain.pages ?? {};
+    const usedWs = new Set(next.map(id => workspaceByConv[id]).filter(Boolean));
+    const projectNames = settings.plain.projectNames ?? {};
+    const keepProjects: Record<string, string> = {};
+    for (const [id, name] of Object.entries(projectNames)) {
+        if (usedWs.has(id) || next.includes(id)) keepProjects[id] = name;
     }
+    settings.store.titles = pruneRecord(settings.plain.titles, next);
+    settings.store.workspaceByConv = pruneRecord(workspaceByConv, next);
+    settings.store.pages = pruneRecord(pages, next);
+    settings.store.projectNames = keepProjects;
+    if (next.length === prev.length && next.every((id, i) => id === prev[i])) return;
     settings.store.visits = next;
-    settings.store.titles = keep;
     ui.notify();
 }
 
@@ -174,10 +199,144 @@ function titleOf(id: string): string {
     return "Untitled";
 }
 
+function liveWorkspaceId(): string {
+    try {
+        const pid = ChatPageStore.useChatPageStore.getState().projectId;
+        if (pid) return pid;
+    } catch {}
+    try {
+        const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
+        if (workspaceId) return workspaceId;
+    } catch {}
+    return "";
+}
+
+function workspaceOf(id: string): string {
+    if (!id) return "";
+    if (id === currentVisit()) {
+        const live = liveWorkspaceId();
+        if (live) return live;
+    }
+    const conv = lookup(id);
+    if (conv?.workspaces?.[0]) return conv.workspaces[0];
+    return settings.plain.workspaceByConv?.[id] ?? "";
+}
+
+function labelText(el: Element): string {
+    return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+}
+
+function readOpenProjectName(): string {
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar) return "";
+    const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
+    let afterProjects = false;
+    for (const el of nodes) {
+        const t = labelText(el);
+        if (!t) continue;
+        if (/^projects$/i.test(t)) {
+            afterProjects = true;
+            continue;
+        }
+        if (!afterProjects) continue;
+        if (SKIP_LABEL.test(t)) break;
+        if (t.length < 2 || t.length > 64) continue;
+        if (el.querySelector("svg")) return t;
+    }
+    return "";
+}
+
+function projectNameOf(id: string): string {
+    if (!id) return "";
+    const ws = workspaceOf(id);
+    if (!ws) return "";
+    return wsNames[ws] || settings.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
+}
+
+function rememberProject(id: string) {
+    if (!id) return;
+    const ws = workspaceOf(id);
+    if (!ws) return;
+    const prevWs = settings.plain.workspaceByConv ?? {};
+    if (prevWs[id] !== ws) settings.store.workspaceByConv = { ...prevWs, [id]: ws };
+    let page: string | undefined;
+    try {
+        const {route} = RoutingStore.useRoutingStore.getState();
+        if (route.conversationId === id) page = route.page;
+    } catch {}
+    if (page) {
+        const prevPages = settings.plain.pages ?? {};
+        if (prevPages[id] !== page) settings.store.pages = { ...prevPages, [id]: page };
+    }
+    const name = wsNames[ws] || readOpenProjectName() || settings.plain.projectNames?.[ws] || "";
+    if (!name) return;
+    wsNames[ws] = name;
+    const prevNames = settings.plain.projectNames ?? {};
+    if (prevNames[ws] !== name) settings.store.projectNames = { ...prevNames, [ws]: name };
+}
+
+function chatPane(): HTMLElement | null {
+    const main = document.querySelector("main");
+    if (!main) return null;
+    let best: HTMLElement | null = null;
+    let bestScore = 0;
+    for (const n of main.querySelectorAll<HTMLElement>("div")) {
+        if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host")) continue;
+        const cls = n.className;
+        if (typeof cls !== "string" || !cls.includes("overflow")) continue;
+        const r = n.getBoundingClientRect();
+        if (r.width < 240 || r.height < 120) continue;
+        const score = r.width * r.height;
+        if (score > bestScore) {
+            best = n;
+            bestScore = score;
+        }
+    }
+    return best ?? (main as HTMLElement);
+}
+
+function trimClone(rootEl: HTMLElement) {
+    rootEl.querySelectorAll("script, iframe, video, textarea, input, canvas, .void-rt-root, #void-rt-host").forEach(n => n.remove());
+    let node: HTMLElement = rootEl;
+    for (let i = 0; i < 8; i++) {
+        const kids = [...node.children].filter((c): c is HTMLElement => c instanceof HTMLElement);
+        if (kids.length === 1 && kids[0].children.length > 1) {
+            node = kids[0];
+            continue;
+        }
+        if (kids.length > 10) kids.slice(0, -10).forEach(k => k.remove());
+        break;
+    }
+}
+
+function captureCurrent() {
+    const id = currentVisit();
+    if (id == null) return;
+    try {
+        const pane = chatPane();
+        if (!pane) return;
+        const clone = pane.cloneNode(true) as HTMLElement;
+        trimClone(clone);
+        thumbs.set(id, clone);
+    } catch (e) {
+        logger.debug("snapshot failed:", e);
+    }
+}
+
+function scheduleCapture() {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            captureCurrent();
+            if (open) ui.notify();
+        });
+    });
+}
+
 function bump(id: string) {
     if (!id && !settings.store.includeHome) return;
     const conv = id ? lookup(id) : undefined;
     rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    if (id) rememberProject(id);
     writeVisits(capVisits([id, ...readVisits()]));
 }
 
@@ -187,11 +346,18 @@ function hydrate() {
         ? [...idsFromHistory(), ...readVisits()]
         : [current, ...idsFromHistory(), ...readVisits()];
     writeVisits(capVisits(merged));
-    if (current) rememberTitle(current, lookup(current)?.title || pageTitle());
+    if (current) {
+        rememberTitle(current, lookup(current)?.title || pageTitle());
+        rememberProject(current);
+    }
 }
 
 function topics(): Topic[] {
-    return capVisits(readVisits()).map(id => ({ id, title: titleOf(id) }));
+    return capVisits(readVisits()).map(id => ({
+        id,
+        title: titleOf(id),
+        project: projectNameOf(id),
+    }));
 }
 
 function navigateTo(id: string) {
@@ -199,13 +365,20 @@ function navigateTo(id: string) {
         const routing = RoutingStore.useRoutingStore.getState();
         const { route } = routing;
         const teamId = route.teamId ?? null;
-        if (id) {
-            if (route.conversationId === id) return;
-            routing.push({ page: "chat", conversationId: id, teamId });
+        if (!id) {
+            if (route.page === "main" || (route.page === "chat" && !route.conversationId)) return;
+            routing.push({ page: "main", teamId });
             return;
         }
-        if (route.page === "main" || (route.page === "chat" && !route.conversationId)) return;
-        routing.push({ page: "main", teamId });
+        const workspaceId = workspaceOf(id) || undefined;
+        const savedPage = settings.plain.pages?.[id];
+        const page: GrokPage = savedPage === "workspace" || (workspaceId && route.page === "workspace")
+            ? "workspace"
+            : "chat";
+        if (route.conversationId === id && (route.workspaceId || "") === (workspaceId || "") && route.page === page) return;
+        const next: GrokRoute = { page, conversationId: id, teamId };
+        if (workspaceId) next.workspaceId = workspaceId;
+        routing.push(next);
     } catch (e) {
         logger.error("Failed to navigate:", e);
     }
@@ -221,6 +394,7 @@ function isCtrlKey(e: KeyboardEvent) {
 }
 
 function begin(reverse: boolean, fromHold: boolean) {
+    captureCurrent();
     held = fromHold;
     open = true;
     selected = 0;
@@ -277,20 +451,15 @@ function onKeyDown(e: KeyboardEvent) {
         return;
     }
 
-    if (e.isComposing) return;
-
-    if (e.key === "Escape" && open) {
+    if (!open) return;
+    if (e.key === "Escape") {
         e.preventDefault();
-        e.stopImmediatePropagation();
         cancel();
         return;
     }
-
-    if (open && (e.key === "Enter" || e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowUp")) {
+    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
         e.preventDefault();
-        e.stopImmediatePropagation();
-        if (e.key === "Enter") commit();
-        else cycle(e.key === "ArrowLeft" || e.key === "ArrowUp");
+        cycle(e.shiftKey);
     }
 }
 
@@ -333,6 +502,32 @@ function syncDialog(el: HTMLDialogElement | null, shouldOpen: boolean) {
     }
 }
 
+function Shot({ id }: { id: string }) {
+    const boxRef = useRef<HTMLSpanElement>(null);
+    const has = thumbs.has(id);
+    useLayoutEffect(() => {
+        const box = boxRef.current;
+        if (!box) return;
+        box.replaceChildren();
+        const node = thumbs.get(id);
+        if (node) box.appendChild(node.cloneNode(true));
+        return () => { box.replaceChildren(); };
+    }, [id, has, open]);
+    return (
+        <span className={cl("shot")} aria-hidden>
+            {has
+                ? <span ref={boxRef} className={cl("mini")} />
+                : (
+                    <>
+                        <span className={cl("bubble")} />
+                        <span className={cl("bubble")} />
+                        <span className={cl("bubble")} />
+                    </>
+                )}
+        </span>
+    );
+}
+
 function Switcher() {
     useExternalStore(ui);
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -372,24 +567,25 @@ function Switcher() {
                                     key={topic.id || "home"}
                                     type="button"
                                     tabIndex={-1}
-                                    aria-label={topic.title}
+                                    aria-label={topic.project ? `${topic.title}, ${topic.project}` : topic.title}
                                     aria-current={i === selected}
-                                    className={classes(cl("card"), i === selected && cl("card-on"))}
+                                    className={classes(cl("item"), i === selected && cl("item-on"))}
                                     onMouseEnter={() => { selected = i; ui.notify(); }}
                                     onClick={() => pick(i)}
                                 >
-                                    <span className={cl("bar")} aria-hidden>
-                                        <span className={cl("dots")}>
-                                            <span />
-                                            <span />
-                                            <span />
+                                    <span className={cl("window")}>
+                                        <span className={cl("bar")} aria-hidden>
+                                            <span className={cl("dots")}>
+                                                <span />
+                                                <span />
+                                                <span />
+                                            </span>
                                         </span>
-                                        <span className={cl("tab")}>{topic.title}</span>
+                                        <Shot id={topic.id} />
                                     </span>
-                                    <span className={cl("shot")} aria-hidden>
-                                        <span className={cl("bubble")} />
-                                        <span className={cl("bubble")} />
-                                        <span className={cl("bubble")} />
+                                    <span className={cl("meta")}>
+                                        <span className={cl("name")}>{topic.title}</span>
+                                        {topic.project ? <span className={cl("project")}>{topic.project}</span> : null}
                                     </span>
                                 </button>
                             ))}
@@ -400,7 +596,6 @@ function Switcher() {
                             <Text size="sm">Open a few chats, then hold Ctrl+` to switch.</Text>
                         </div>
                     )}
-                {active ? <div className={cl("caption")}>{active.title}</div> : null}
                 <div className={cl("hint")}>{hint}</div>
             </div>
         </dialog>
@@ -442,6 +637,42 @@ function unmountHost() {
     taken = false;
 }
 
+function ingestWorkspaces(state: Record<string, unknown>) {
+    const consider = (id: unknown, name: unknown) => {
+        if (typeof id !== "string" || !id || typeof name !== "string") return;
+        const t = name.trim();
+        if (t) wsNames[id] = t;
+    };
+    const {byId} = state;
+    if (byId && typeof byId === "object") {
+        for (const [id, row] of Object.entries(byId as Record<string, any>)) {
+            consider(id, row?.name ?? row?.title);
+        }
+    }
+    for (const key of ["list", "workspaces", "projects", "items"]) {
+        const list = state[key];
+        if (!Array.isArray(list)) continue;
+        for (const row of list) {
+            if (!row || typeof row !== "object") continue;
+            consider(row.id ?? row.workspaceId ?? row.projectId, row.name ?? row.title);
+        }
+    }
+}
+
+function watchWorkspaceStores() {
+    for (const prop of ["useWorkspaceStore", "useProjectStore", "useWorkspacesStore"]) {
+        waitFor(filters.byProps(prop), (mod: Record<string, any>) => {
+            const hook = mod[prop];
+            if (typeof hook?.getState !== "function") return;
+            const pull = () => {
+                try { ingestWorkspaces(hook.getState()); } catch {}
+            };
+            pull();
+            hook.subscribe?.(pull);
+        });
+    }
+}
+
 export default definePlugin({
     name: "RecentTopics",
     description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
@@ -460,6 +691,7 @@ export default definePlugin({
             hydrate();
             const current = currentVisit();
             if (current != null) bump(current);
+            scheduleCapture();
         } catch (e) {
             logger.error("Hydrate failed:", e);
         }
@@ -472,6 +704,7 @@ export default definePlugin({
             document.addEventListener("visibilitychange", onVisibility, { signal });
             document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
         }
+        watchWorkspaceStores();
         mountHost();
     },
 
@@ -481,6 +714,7 @@ export default definePlugin({
         open = false;
         held = false;
         ctrlHeld = false;
+        thumbs.clear();
         unmountHost();
     },
 
@@ -498,13 +732,17 @@ export default definePlugin({
             handler(id: string | null) {
                 if (open || id == null) return;
                 bump(id);
+                scheduleCapture();
             },
         },
         ChatPageStore: {
-            selector: (s: ChatPageStoreState) => s.conversationId ?? null,
-            handler(id: string | null) {
-                if (open || id == null) return;
+            selector: (s: ChatPageStoreState) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
+            handler() {
+                if (open) return;
+                const id = currentVisit();
+                if (id == null) return;
                 bump(id);
+                scheduleCapture();
             },
         },
     },

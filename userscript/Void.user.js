@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820.2] v1.0.0
+// @version      [20260820.3] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820.2] v1.0.0 — A modification for grok.com
+ * Void++ [20260820.3] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820.2] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"89a1ce5"}`
-    }, `(${"89a1ce5"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820.3] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"2a70ce9"}`
+    }, `(${"2a70ce9"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6582,18 +6582,18 @@ div:has(> button[aria-label*="Dictation"]) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.85rem;
+    gap: 0.95rem;
     max-width: 100%;
     padding: 1.25rem 1rem 1.5rem;
 }
 
 .void-rt-stage {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    gap: 0.7rem;
-    max-width: min(70rem, calc(100vw - 1.5rem));
-    padding: 1.35rem 0.75rem 1.1rem;
+    gap: 1.1rem;
+    max-width: min(78rem, calc(100vw - 1.5rem));
+    padding: 1.1rem 0.75rem 0.35rem;
     overflow-x: auto;
     scrollbar-width: none;
 }
@@ -6602,44 +6602,54 @@ div:has(> button[aria-label*="Dictation"]) {
     display: none;
 }
 
-.void-rt-card {
+.void-rt-item {
     appearance: none;
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    width: 14.5rem;
+    padding: 0;
+    overflow: visible;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    text-align: center;
+    user-select: none;
+}
+
+.void-rt-window {
     position: relative;
     display: flex;
     flex-direction: column;
-    flex: 0 0 auto;
-    width: 13.25rem;
-    padding: 0;
+    width: 100%;
     overflow: hidden;
     border: 1px solid rgb(255 255 255 / 8%);
     border-radius: 0.7rem;
     background: #1d1d1f;
-    color: #f5f5f7;
     opacity: 0.62;
-    transform: scale(0.84);
+    transform: scale(0.88);
     box-shadow: 0 10px 28px rgb(0 0 0 / 28%);
-    cursor: pointer;
-    font: inherit;
-    text-align: left;
-    user-select: none;
     transition: transform 0.12s ease, opacity 0.12s ease;
 }
 
-.void-rt-card-on {
+.void-rt-item-on .void-rt-window {
+    z-index: 1;
     opacity: 1;
-    transform: scale(1);
     border-color: rgb(255 255 255 / 95%);
+    transform: scale(1);
     box-shadow:
         0 0 0 2px #fff,
         0 22px 48px rgb(0 0 0 / 48%);
-    z-index: 1;
 }
 
 .void-rt-bar {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    height: 1.65rem;
+    height: 1.55rem;
     padding: 0 0.55rem;
     background: #2c2c2e;
     border-bottom: 1px solid rgb(255 255 255 / 6%);
@@ -6669,27 +6679,35 @@ div:has(> button[aria-label*="Dictation"]) {
     background: #28c840;
 }
 
-.void-rt-tab {
-    min-width: 0;
-    overflow: hidden;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    line-height: 1;
-    opacity: 0.72;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .void-rt-shot {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     gap: 0.38rem;
-    height: 8.25rem;
+    height: 8.75rem;
+    overflow: hidden;
     padding: 0.7rem 0.65rem 0.75rem;
-    background:
-        linear-gradient(180deg, #141416 0%, #0c0c0d 100%);
+    background: linear-gradient(180deg, #141416 0%, #0c0c0d 100%);
+}
+
+.void-rt-mini {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 320%;
+    min-height: 320%;
+    overflow: hidden;
+    transform: scale(0.3125);
+    transform-origin: top left;
+    pointer-events: none;
+    user-select: none;
+}
+
+.void-rt-mini,
+.void-rt-mini * {
+    pointer-events: none !important;
+    scrollbar-width: none;
 }
 
 .void-rt-bubble {
@@ -6713,16 +6731,72 @@ div:has(> button[aria-label*="Dictation"]) {
     width: 46%;
 }
 
-.void-rt-caption {
-    max-width: min(34rem, calc(100vw - 2.5rem));
+.void-rt-shot-live {
+    justify-content: flex-end;
+    gap: 0.32rem;
+}
+
+.void-rt-line {
+    display: -webkit-box;
+    max-width: 92%;
     overflow: hidden;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    letter-spacing: -0.022em;
+    border-radius: 0.55rem;
+    background: rgb(255 255 255 / 8%);
+    color: rgb(255 255 255 / 78%);
+    font-size: 0.58rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+    text-align: left;
+    overflow-wrap: break-word;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    padding: 0.32rem 0.45rem;
+}
+
+.void-rt-line-user {
+    align-self: flex-end;
+    background: rgb(255 255 255 / 16%);
     color: #fff;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+}
+
+.void-rt-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.18rem;
+    width: 100%;
+    min-height: 2.4rem;
+    padding: 0 0.15rem;
+}
+
+.void-rt-name {
+    width: 100%;
+    overflow-wrap: break-word;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: -0.018em;
+    line-height: 1.35;
+    color: rgb(255 255 255 / 72%);
+}
+
+.void-rt-item-on .void-rt-name {
+    color: #fff;
+}
+
+.void-rt-project {
+    width: 100%;
+    overflow-wrap: break-word;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    color: rgb(255 255 255 / 42%);
+}
+
+.void-rt-item-on .void-rt-project {
+    color: rgb(255 255 255 / 62%);
 }
 
 .void-rt-hint {
@@ -6745,21 +6819,21 @@ div:has(> button[aria-label*="Dictation"]) {
 @media (width <= 40rem) {
     .void-rt-stage {
         justify-content: flex-start;
-        gap: 0.5rem;
+        gap: 0.7rem;
         padding-inline: 0.35rem;
     }
 
-    .void-rt-card {
-        width: 9.75rem;
+    .void-rt-item {
+        width: 11rem;
     }
 
     .void-rt-shot {
-        height: 6.5rem;
+        height: 6.75rem;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .void-rt-card {
+    .void-rt-window {
         transition: none;
     }
 }
@@ -6772,6 +6846,7 @@ div:has(> button[aria-label*="Dictation"]) {
   var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
   var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
   var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
+  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation)$/i;
   var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
   var settings6 = definePluginSettings({
     maxRecent: {
@@ -6786,6 +6861,8 @@ div:has(> button[aria-label*="Dictation"]) {
     }
   }).withPrivateSettings();
   var ui = createExternalStore();
+  var thumbs = new Map;
+  var wsNames = {};
   var open2 = false;
   var selected = 0;
   var held = false;
@@ -6815,18 +6892,34 @@ div:has(> button[aria-label*="Dictation"]) {
     const allowHome = settings6.store.includeHome;
     return unique(ids).filter((id) => id || allowHome).slice(0, maxCount());
   }
+  function pruneRecord(source, ids) {
+    const keep = {};
+    if (!source)
+      return keep;
+    for (const id of ids) {
+      if (source[id])
+        keep[id] = source[id];
+    }
+    return keep;
+  }
   function writeVisits(next) {
     const prev = readVisits();
+    const workspaceByConv = settings6.plain.workspaceByConv ?? {};
+    const pages = settings6.plain.pages ?? {};
+    const usedWs = new Set(next.map((id) => workspaceByConv[id]).filter(Boolean));
+    const projectNames = settings6.plain.projectNames ?? {};
+    const keepProjects = {};
+    for (const [id, name] of Object.entries(projectNames)) {
+      if (usedWs.has(id) || next.includes(id))
+        keepProjects[id] = name;
+    }
+    settings6.store.titles = pruneRecord(settings6.plain.titles, next);
+    settings6.store.workspaceByConv = pruneRecord(workspaceByConv, next);
+    settings6.store.pages = pruneRecord(pages, next);
+    settings6.store.projectNames = keepProjects;
     if (next.length === prev.length && next.every((id, i) => id === prev[i]))
       return;
-    const titles = settings6.plain.titles ?? {};
-    const keep = {};
-    for (const id of next) {
-      if (titles[id])
-        keep[id] = titles[id];
-    }
     settings6.store.visits = next;
-    settings6.store.titles = keep;
     ui.notify();
   }
   function rememberTitle(id, title) {
@@ -6908,37 +7001,202 @@ div:has(> button[aria-label*="Dictation"]) {
       return pageTitle() || "Untitled";
     return "Untitled";
   }
+  function liveWorkspaceId() {
+    try {
+      const pid = ChatPageStore.useChatPageStore.getState().projectId;
+      if (pid)
+        return pid;
+    } catch {}
+    try {
+      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
+      if (workspaceId)
+        return workspaceId;
+    } catch {}
+    return "";
+  }
+  function workspaceOf(id) {
+    if (!id)
+      return "";
+    if (id === currentVisit()) {
+      const live = liveWorkspaceId();
+      if (live)
+        return live;
+    }
+    const conv = lookup(id);
+    if (conv?.workspaces?.[0])
+      return conv.workspaces[0];
+    return settings6.plain.workspaceByConv?.[id] ?? "";
+  }
+  function labelText(el) {
+    return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+  }
+  function readOpenProjectName() {
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar)
+      return "";
+    const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
+    let afterProjects = false;
+    for (const el of nodes) {
+      const t = labelText(el);
+      if (!t)
+        continue;
+      if (/^projects$/i.test(t)) {
+        afterProjects = true;
+        continue;
+      }
+      if (!afterProjects)
+        continue;
+      if (SKIP_LABEL.test(t))
+        break;
+      if (t.length < 2 || t.length > 64)
+        continue;
+      if (el.querySelector("svg"))
+        return t;
+    }
+    return "";
+  }
+  function projectNameOf(id) {
+    if (!id)
+      return "";
+    const ws = workspaceOf(id);
+    if (!ws)
+      return "";
+    return wsNames[ws] || settings6.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
+  }
+  function rememberProject(id) {
+    if (!id)
+      return;
+    const ws = workspaceOf(id);
+    if (!ws)
+      return;
+    const prevWs = settings6.plain.workspaceByConv ?? {};
+    if (prevWs[id] !== ws)
+      settings6.store.workspaceByConv = { ...prevWs, [id]: ws };
+    let page;
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      if (route.conversationId === id)
+        page = route.page;
+    } catch {}
+    if (page) {
+      const prevPages = settings6.plain.pages ?? {};
+      if (prevPages[id] !== page)
+        settings6.store.pages = { ...prevPages, [id]: page };
+    }
+    const name = wsNames[ws] || readOpenProjectName() || settings6.plain.projectNames?.[ws] || "";
+    if (!name)
+      return;
+    wsNames[ws] = name;
+    const prevNames = settings6.plain.projectNames ?? {};
+    if (prevNames[ws] !== name)
+      settings6.store.projectNames = { ...prevNames, [ws]: name };
+  }
+  function chatPane() {
+    const main = document.querySelector("main");
+    if (!main)
+      return null;
+    let best = null;
+    let bestScore = 0;
+    for (const n of main.querySelectorAll("div")) {
+      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
+        continue;
+      const cls = n.className;
+      if (typeof cls !== "string" || !cls.includes("overflow"))
+        continue;
+      const r = n.getBoundingClientRect();
+      if (r.width < 240 || r.height < 120)
+        continue;
+      const score = r.width * r.height;
+      if (score > bestScore) {
+        best = n;
+        bestScore = score;
+      }
+    }
+    return best ?? main;
+  }
+  function trimClone(rootEl) {
+    rootEl.querySelectorAll("script, iframe, video, textarea, input, canvas, .void-rt-root, #void-rt-host").forEach((n) => n.remove());
+    let node = rootEl;
+    for (let i = 0;i < 8; i++) {
+      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
+      if (kids.length === 1 && kids[0].children.length > 1) {
+        node = kids[0];
+        continue;
+      }
+      if (kids.length > 10)
+        kids.slice(0, -10).forEach((k) => k.remove());
+      break;
+    }
+  }
+  function captureCurrent() {
+    const id = currentVisit();
+    if (id == null)
+      return;
+    try {
+      const pane = chatPane();
+      if (!pane)
+        return;
+      const clone = pane.cloneNode(true);
+      trimClone(clone);
+      thumbs.set(id, clone);
+    } catch (e) {
+      logger17.debug("snapshot failed:", e);
+    }
+  }
+  function scheduleCapture() {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        captureCurrent();
+        if (open2)
+          ui.notify();
+      });
+    });
+  }
   function bump(id) {
     if (!id && !settings6.store.includeHome)
       return;
     const conv = id ? lookup(id) : undefined;
     rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    if (id)
+      rememberProject(id);
     writeVisits(capVisits([id, ...readVisits()]));
   }
   function hydrate() {
     const current = currentVisit();
     const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
     writeVisits(capVisits(merged));
-    if (current)
+    if (current) {
       rememberTitle(current, lookup(current)?.title || pageTitle());
+      rememberProject(current);
+    }
   }
   function topics() {
-    return capVisits(readVisits()).map((id) => ({ id, title: titleOf(id) }));
+    return capVisits(readVisits()).map((id) => ({
+      id,
+      title: titleOf(id),
+      project: projectNameOf(id)
+    }));
   }
   function navigateTo(id) {
     try {
       const routing = RoutingStore.useRoutingStore.getState();
       const { route } = routing;
       const teamId = route.teamId ?? null;
-      if (id) {
-        if (route.conversationId === id)
+      if (!id) {
+        if (route.page === "main" || route.page === "chat" && !route.conversationId)
           return;
-        routing.push({ page: "chat", conversationId: id, teamId });
+        routing.push({ page: "main", teamId });
         return;
       }
-      if (route.page === "main" || route.page === "chat" && !route.conversationId)
+      const workspaceId = workspaceOf(id) || undefined;
+      const savedPage = settings6.plain.pages?.[id];
+      const page = savedPage === "workspace" || workspaceId && route.page === "workspace" ? "workspace" : "chat";
+      if (route.conversationId === id && (route.workspaceId || "") === (workspaceId || "") && route.page === page)
         return;
-      routing.push({ page: "main", teamId });
+      const next = { page, conversationId: id, teamId };
+      if (workspaceId)
+        next.workspaceId = workspaceId;
+      routing.push(next);
     } catch (e) {
       logger17.error("Failed to navigate:", e);
     }
@@ -6952,6 +7210,7 @@ div:has(> button[aria-label*="Dictation"]) {
     return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
   }
   function begin(reverse, fromHold) {
+    captureCurrent();
     held = fromHold;
     open2 = true;
     selected = 0;
@@ -7010,21 +7269,16 @@ div:has(> button[aria-label*="Dictation"]) {
       }
       return;
     }
-    if (e.isComposing)
+    if (!open2)
       return;
-    if (e.key === "Escape" && open2) {
+    if (e.key === "Escape") {
       e.preventDefault();
-      e.stopImmediatePropagation();
       cancel();
       return;
     }
-    if (open2 && (e.key === "Enter" || e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowUp")) {
+    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
       e.preventDefault();
-      e.stopImmediatePropagation();
-      if (e.key === "Enter")
-        commit();
-      else
-        cycle(e.key === "ArrowLeft" || e.key === "ArrowUp");
+      cycle(e.shiftKey);
     }
   }
   function onKeyUp(e) {
@@ -7066,6 +7320,35 @@ div:has(> button[aria-label*="Dictation"]) {
       logger17.debug("dialog:", e);
       el.toggleAttribute("open", shouldOpen);
     }
+  }
+  function Shot({ id }) {
+    const boxRef = useRef(null);
+    const has = thumbs.has(id);
+    useLayoutEffect(() => {
+      const box = boxRef.current;
+      if (!box)
+        return;
+      box.replaceChildren();
+      const node = thumbs.get(id);
+      if (node)
+        box.appendChild(node.cloneNode(true));
+      return () => {
+        box.replaceChildren();
+      };
+    }, [id, has, open2]);
+    return /* @__PURE__ */ React.createElement("span", {
+      className: cl17("shot"),
+      "aria-hidden": true
+    }, has ? /* @__PURE__ */ React.createElement("span", {
+      ref: boxRef,
+      className: cl17("mini")
+    }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", {
+      className: cl17("bubble")
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("bubble")
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("bubble")
+    })));
   }
   function Switcher() {
     useExternalStore(ui);
@@ -7109,37 +7392,34 @@ div:has(> button[aria-label*="Dictation"]) {
       key: topic.id || "home",
       type: "button",
       tabIndex: -1,
-      "aria-label": topic.title,
+      "aria-label": topic.project ? `${topic.title}, ${topic.project}` : topic.title,
       "aria-current": i === selected,
-      className: classes(cl17("card"), i === selected && cl17("card-on")),
+      className: classes(cl17("item"), i === selected && cl17("item-on")),
       onMouseEnter: () => {
         selected = i;
         ui.notify();
       },
       onClick: () => pick(i)
     }, /* @__PURE__ */ React.createElement("span", {
+      className: cl17("window")
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl17("bar"),
       "aria-hidden": true
     }, /* @__PURE__ */ React.createElement("span", {
       className: cl17("dots")
-    }, /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null)), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("tab")
-    }, topic.title)), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("shot"),
-      "aria-hidden": true
+    }, /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null))), /* @__PURE__ */ React.createElement(Shot, {
+      id: topic.id
+    })), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("meta")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("bubble")
-    }), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("bubble")
-    }), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("bubble")
-    }))))) : /* @__PURE__ */ React.createElement("div", {
+      className: cl17("name")
+    }, topic.title), topic.project ? /* @__PURE__ */ React.createElement("span", {
+      className: cl17("project")
+    }, topic.project) : null)))) : /* @__PURE__ */ React.createElement("div", {
       className: cl17("empty")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
-    }, "Open a few chats, then hold Ctrl+` to switch.")), active ? /* @__PURE__ */ React.createElement("div", {
-      className: cl17("caption")
-    }, active.title) : null, /* @__PURE__ */ React.createElement("div", {
+    }, "Open a few chats, then hold Ctrl+` to switch.")), /* @__PURE__ */ React.createElement("div", {
       className: cl17("hint")
     }, hint)));
   }
@@ -7184,6 +7464,47 @@ div:has(> button[aria-label*="Dictation"]) {
     root = null;
     taken = false;
   }
+  function ingestWorkspaces(state) {
+    const consider = (id, name) => {
+      if (typeof id !== "string" || !id || typeof name !== "string")
+        return;
+      const t = name.trim();
+      if (t)
+        wsNames[id] = t;
+    };
+    const { byId } = state;
+    if (byId && typeof byId === "object") {
+      for (const [id, row] of Object.entries(byId)) {
+        consider(id, row?.name ?? row?.title);
+      }
+    }
+    for (const key of ["list", "workspaces", "projects", "items"]) {
+      const list = state[key];
+      if (!Array.isArray(list))
+        continue;
+      for (const row of list) {
+        if (!row || typeof row !== "object")
+          continue;
+        consider(row.id ?? row.workspaceId ?? row.projectId, row.name ?? row.title);
+      }
+    }
+  }
+  function watchWorkspaceStores() {
+    for (const prop of ["useWorkspaceStore", "useProjectStore", "useWorkspacesStore"]) {
+      waitFor(filters.byProps(prop), (mod) => {
+        const hook = mod[prop];
+        if (typeof hook?.getState !== "function")
+          return;
+        const pull = () => {
+          try {
+            ingestWorkspaces(hook.getState());
+          } catch {}
+        };
+        pull();
+        hook.subscribe?.(pull);
+      });
+    }
+  }
   var recentTopics_default = definePlugin({
     name: "RecentTopics",
     description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
@@ -7201,6 +7522,7 @@ div:has(> button[aria-label*="Dictation"]) {
         const current = currentVisit();
         if (current != null)
           bump(current);
+        scheduleCapture();
       } catch (e) {
         logger17.error("Hydrate failed:", e);
       }
@@ -7213,6 +7535,7 @@ div:has(> button[aria-label*="Dictation"]) {
         document.addEventListener("visibilitychange", onVisibility, { signal });
         document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
       }
+      watchWorkspaceStores();
       mountHost();
     },
     stop() {
@@ -7221,6 +7544,7 @@ div:has(> button[aria-label*="Dictation"]) {
       open2 = false;
       held = false;
       ctrlHeld = false;
+      thumbs.clear();
       unmountHost();
     },
     onSettingsChange() {
@@ -7237,14 +7561,19 @@ div:has(> button[aria-label*="Dictation"]) {
           if (open2 || id == null)
             return;
           bump(id);
+          scheduleCapture();
         }
       },
       ChatPageStore: {
-        selector: (s) => s.conversationId ?? null,
-        handler(id) {
-          if (open2 || id == null)
+        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
+        handler() {
+          if (open2)
+            return;
+          const id = currentVisit();
+          if (id == null)
             return;
           bump(id);
+          scheduleCapture();
         }
       }
     },
