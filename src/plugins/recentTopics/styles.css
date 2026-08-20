@@ -7,7 +7,20 @@
     place-items: center;
     width: 100vw;
     height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: none;
+    background: transparent;
+    color: inherit;
     pointer-events: auto;
+}
+
+.void-rt-root::backdrop {
+    background: rgb(0 0 0 / 42%);
+    backdrop-filter: blur(22px);
 }
 
 .void-rt-backdrop {

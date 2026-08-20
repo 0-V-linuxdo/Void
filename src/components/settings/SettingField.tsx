@@ -8,7 +8,7 @@ import "./SettingField.css";
 
 import { dispatch } from "@api/Events";
 import { mergePluginSettings, pluginPath, resolveDefault, Settings, SettingsStore } from "@api/Settings";
-import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Slider, Switch, Text } from "@components";
+import { Flex, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Switch, Text } from "@components";
 import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { humanizeKey } from "@utils/text";
@@ -105,19 +105,27 @@ const SelectField: Field<PluginSettingSelectDef & PluginSettingCommon> = ({ id, 
 const SliderField: Field<PluginSettingSliderDef & PluginSettingCommon> = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const { min, max } = setting;
+    const n = typeof value === "number" ? value : min;
 
     return (
         <LabeledField id={id} setting={setting}>
             <Flex gap="0.5rem" className={cl("slider-row")}>
-                <Slider
-                    value={[(value as number) ?? min]}
+                <Input
+                    type="range"
                     min={min}
                     max={max}
                     step={1}
-                    onValueChange={([v]: number[]) => update(v)}
+                    value={String(n)}
+                    onChange={(e: InputChangeEvent) => {
+                        const v = Number(e.target.value);
+                        if (!Number.isNaN(v)) update(v);
+                    }}
                     className={cl("slider")}
+                    aria-valuemin={min}
+                    aria-valuemax={max}
+                    aria-valuenow={n}
                 />
-                <Text size="sm" color="secondary" className={cl("slider-value")}>{value as number}</Text>
+                <Text size="sm" color="secondary" className={cl("slider-value")}>{n}</Text>
             </Flex>
         </LabeledField>
     );

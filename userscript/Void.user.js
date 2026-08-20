@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820] v1.0.0
+// @version      [20260820.2] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820] v1.0.0 — A modification for grok.com
+ * Void++ [20260820.2] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4729,7 +4729,10 @@ ${sourceUrl}`;
 }
 
 .void-setting-slider {
-    width: 8rem;
+    width: 12rem;
+    height: 1.25rem;
+    accent-color: var(--fg, #fff);
+    cursor: pointer;
 }
 
 .void-setting-slider-value {
@@ -4814,24 +4817,33 @@ ${sourceUrl}`;
   var SliderField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const { min, max } = setting;
+    const n = typeof value === "number" ? value : min;
     return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
     }, /* @__PURE__ */ React.createElement(Flex, {
       gap: "0.5rem",
       className: cl9("slider-row")
-    }, /* @__PURE__ */ React.createElement(Slider, {
-      value: [value ?? min],
+    }, /* @__PURE__ */ React.createElement(Input, {
+      type: "range",
       min,
       max,
       step: 1,
-      onValueChange: ([v]) => update(v),
-      className: cl9("slider")
+      value: String(n),
+      onChange: (e) => {
+        const v = Number(e.target.value);
+        if (!Number.isNaN(v))
+          update(v);
+      },
+      className: cl9("slider"),
+      "aria-valuemin": min,
+      "aria-valuemax": max,
+      "aria-valuenow": n
     }), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       color: "secondary",
       className: cl9("slider-value")
-    }, value)));
+    }, n)));
   };
   var ComponentField = ({ setting, pluginName }) => {
     const [, update] = usePluginSetting(pluginName, "component", setting);
@@ -5895,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8c2837c"}`
-    }, `(${"8c2837c"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820.2] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"89a1ce5"}`
+    }, `(${"89a1ce5"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6542,7 +6554,20 @@ div:has(> button[aria-label*="Dictation"]) {
     place-items: center;
     width: 100vw;
     height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: none;
+    background: transparent;
+    color: inherit;
     pointer-events: auto;
+}
+
+.void-rt-root::backdrop {
+    background: rgb(0 0 0 / 42%);
+    backdrop-filter: blur(22px);
 }
 
 .void-rt-backdrop {
@@ -6747,13 +6772,12 @@ div:has(> button[aria-label*="Dictation"]) {
   var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
   var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
   var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
+  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
   var settings6 = definePluginSettings({
     maxRecent: {
-      type: 5 /* SLIDER */,
+      type: 4 /* SELECT */,
       description: "How many recently opened conversations to show.",
-      min: 3,
-      max: 12,
-      default: 5
+      options: COUNT_OPTIONS
     },
     includeHome: {
       type: 3 /* BOOLEAN */,
@@ -6767,6 +6791,8 @@ div:has(> button[aria-label*="Dictation"]) {
   var held = false;
   var ctrlHeld = false;
   var keys = null;
+  var host = null;
+  var root = null;
   function unique(ids) {
     const seen = new Set;
     const out = [];
@@ -6781,9 +6807,13 @@ div:has(> button[aria-label*="Dictation"]) {
   function readVisits() {
     return settings6.plain.visits ?? [];
   }
+  function maxCount() {
+    const n = Number(settings6.store.maxRecent);
+    return Number.isFinite(n) && n > 0 ? n : 5;
+  }
   function capVisits(ids) {
     const allowHome = settings6.store.includeHome;
-    return unique(ids).filter((id) => id || allowHome).slice(0, settings6.store.maxRecent);
+    return unique(ids).filter((id) => id || allowHome).slice(0, maxCount());
   }
   function writeVisits(next) {
     const prev = readVisits();
@@ -6922,16 +6952,19 @@ div:has(> button[aria-label*="Dictation"]) {
     return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
   }
   function begin(reverse, fromHold) {
-    hydrate();
-    const current = currentVisit();
-    if (current != null)
-      bump(current);
-    const items = topics();
-    selected = 0;
-    if (items.length > 1)
-      selected = reverse ? items.length - 1 : 1;
     held = fromHold;
     open2 = true;
+    selected = 0;
+    try {
+      hydrate();
+      const current = currentVisit();
+      if (current != null)
+        bump(current);
+      if (topics().length > 1)
+        selected = reverse ? topics().length - 1 : 1;
+    } catch (e) {
+      logger17.error("Failed to open switcher:", e);
+    }
     ui.notify();
   }
   function cycle(reverse) {
@@ -6967,10 +7000,14 @@ div:has(> button[aria-label*="Dictation"]) {
     if (combo) {
       e.preventDefault();
       e.stopImmediatePropagation();
-      if (open2)
-        cycle(e.shiftKey);
-      else
-        begin(e.shiftKey, true);
+      try {
+        if (open2)
+          cycle(e.shiftKey);
+        else
+          begin(e.shiftKey, true);
+      } catch (err) {
+        logger17.error("Hotkey failed:", err);
+      }
       return;
     }
     if (e.isComposing)
@@ -7004,17 +7041,39 @@ div:has(> button[aria-label*="Dictation"]) {
     if (data && TRIGGER_KEYS.has(data))
       e.preventDefault();
   }
-  function onBlur() {
+  function onWindowBlur() {
     ctrlHeld = false;
-    cancel();
+  }
+  function onVisibility() {
+    if (document.hidden) {
+      ctrlHeld = false;
+      cancel();
+    }
   }
   function pick(index) {
     selected = index;
     commit();
   }
+  function syncDialog(el, shouldOpen) {
+    if (!el)
+      return;
+    try {
+      if (shouldOpen && !el.open)
+        el.showModal();
+      else if (!shouldOpen && el.open)
+        el.close();
+    } catch (e) {
+      logger17.debug("dialog:", e);
+      el.toggleAttribute("open", shouldOpen);
+    }
+  }
   function Switcher() {
     useExternalStore(ui);
+    const dialogRef = useRef(null);
     const stageRef = useRef(null);
+    useLayoutEffect(() => {
+      syncDialog(dialogRef.current, open2);
+    }, [open2]);
     useEffect(() => {
       if (!open2)
         return;
@@ -7029,15 +7088,19 @@ div:has(> button[aria-label*="Dictation"]) {
       hint = "Release Ctrl to switch";
     else if (active)
       hint = "Click to switch";
-    return /* @__PURE__ */ React.createElement("div", {
+    return /* @__PURE__ */ React.createElement("dialog", {
+      ref: dialogRef,
       className: cl17("root"),
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-label": "Recent conversations"
+      "aria-label": "Recent conversations",
+      onCancel: (e) => {
+        e.preventDefault();
+        cancel();
+      },
+      onClick: (e) => {
+        if (e.target === e.currentTarget)
+          cancel();
+      }
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl17("backdrop"),
-      onClick: cancel
-    }), /* @__PURE__ */ React.createElement("div", {
       className: cl17("hud")
     }, items.length ? /* @__PURE__ */ React.createElement("div", {
       ref: stageRef,
@@ -7099,6 +7162,28 @@ div:has(> button[aria-label*="Dictation"]) {
       key: "void-recent-topics"
     });
   }
+  function mountHost() {
+    waitFor(filters.byProps("createRoot"), (mod) => {
+      if (root)
+        return;
+      host = document.createElement("div");
+      host.id = "void-rt-host";
+      (document.body ?? document.documentElement).appendChild(host);
+      root = mod.createRoot(host);
+      root.render(/* @__PURE__ */ React.createElement(LeadOverlay, null));
+    });
+  }
+  function unmountHost() {
+    try {
+      root?.unmount();
+    } catch (e) {
+      logger17.debug("unmount:", e);
+    }
+    host?.remove();
+    host = null;
+    root = null;
+    taken = false;
+  }
   var recentTopics_default = definePlugin({
     name: "RecentTopics",
     description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
@@ -7111,18 +7196,24 @@ div:has(> button[aria-label*="Dictation"]) {
       return /* @__PURE__ */ React.createElement(LeadOverlay, null);
     },
     start() {
-      hydrate();
-      const current = currentVisit();
-      if (current != null)
-        bump(current);
-      if (keys)
-        return;
-      keys = new AbortController;
-      const { signal } = keys;
-      window.addEventListener("keydown", onKeyDown, { capture: true, signal });
-      window.addEventListener("keyup", onKeyUp, { capture: true, signal });
-      window.addEventListener("blur", onBlur, { signal });
-      document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+      try {
+        hydrate();
+        const current = currentVisit();
+        if (current != null)
+          bump(current);
+      } catch (e) {
+        logger17.error("Hydrate failed:", e);
+      }
+      if (!keys) {
+        keys = new AbortController;
+        const { signal } = keys;
+        window.addEventListener("keydown", onKeyDown, { capture: true, signal });
+        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+        window.addEventListener("blur", onWindowBlur, { signal });
+        document.addEventListener("visibilitychange", onVisibility, { signal });
+        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+      }
+      mountHost();
     },
     stop() {
       keys?.abort();
@@ -7130,9 +7221,14 @@ div:has(> button[aria-label*="Dictation"]) {
       open2 = false;
       held = false;
       ctrlHeld = false;
+      unmountHost();
     },
     onSettingsChange() {
-      writeVisits(capVisits(readVisits()));
+      try {
+        writeVisits(capVisits(readVisits()));
+      } catch (e) {
+        logger17.error("Settings update failed:", e);
+      }
     },
     zustand: {
       RoutingStore: {
@@ -8937,7 +9033,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     })();
     return refreshPromise;
   }
-  function onVisibility() {
+  function onVisibility2() {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS)
       refresh("visible");
   }
@@ -9015,10 +9111,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
         if (!document.hidden)
           refresh("poll");
       }, AUTO_REFRESH_MS);
-      document.addEventListener("visibilitychange", onVisibility);
+      document.addEventListener("visibilitychange", onVisibility2);
       return () => {
         window.clearInterval(id);
-        document.removeEventListener("visibilitychange", onVisibility);
+        document.removeEventListener("visibilitychange", onVisibility2);
       };
     }, []);
     return /* @__PURE__ */ React.createElement("span", {
@@ -9719,16 +9815,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const editor = getActiveEditor();
     return editor?.closest("form") ?? editor?.closest("div.relative") ?? editor?.parentElement ?? document.body;
   }
-  function collectStopButtons(root) {
+  function collectStopButtons(root2) {
     const candidates = [];
     for (const sel of STOP_SELECTORS) {
-      for (const node of root.querySelectorAll(sel)) {
+      for (const node of root2.querySelectorAll(sel)) {
         if (node instanceof HTMLElement)
           candidates.push(node);
       }
     }
     if (candidates.length === 0) {
-      for (const btn of root.querySelectorAll("button")) {
+      for (const btn of root2.querySelectorAll("button")) {
         if (btn instanceof HTMLElement && isStopControl(btn))
           candidates.push(btn);
       }
@@ -9751,9 +9847,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
   }
   function getSubmitButton() {
-    for (const root of [getComposerRoot(), document]) {
+    for (const root2 of [getComposerRoot(), document]) {
       for (const sel of SEND_SELECTORS) {
-        for (const node of root.querySelectorAll(sel)) {
+        for (const node of root2.querySelectorAll(sel)) {
           if (!(node instanceof HTMLElement) || isStopControl(node))
             continue;
           if (isVisible(node) || isDisabledControl(node))
@@ -10214,8 +10310,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
       if (!started2)
         return;
       bindEditorInput();
-      const root = getComposerRoot();
-      if (!composerObs || !root.isConnected) {
+      const root2 = getComposerRoot();
+      if (!composerObs || !root2.isConnected) {
         observeComposer();
         observeButtons();
       }
@@ -10266,9 +10362,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function observeComposer() {
     composerObs?.disconnect();
-    const root = getComposerRoot();
+    const root2 = getComposerRoot();
     composerObs = new MutationObserver(onDomMutate);
-    composerObs.observe(root, {
+    composerObs.observe(root2, {
       childList: true,
       subtree: true,
       characterData: true,

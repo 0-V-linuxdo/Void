@@ -12,8 +12,9 @@ import { Text } from "@components/Text";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
-import { React, useEffect, useRef, useState } from "@turbopack/common/react";
+import { React, useEffect, useLayoutEffect, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
+import { filters, waitFor } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -27,14 +28,13 @@ const HOME_ID = "";
 const TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
 const TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
 const TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
+const COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => ({ label: String(n), value: n, default: n === 5 }));
 
 const settings = definePluginSettings({
     maxRecent: {
-        type: OptionType.SLIDER,
+        type: OptionType.SELECT,
         description: "How many recently opened conversations to show.",
-        min: 3,
-        max: 12,
-        default: 5,
+        options: COUNT_OPTIONS,
     },
     includeHome: {
         type: OptionType.BOOLEAN,
@@ -50,11 +50,18 @@ interface Topic {
     title: string;
 }
 
+interface ReactRoot {
+    render(node: unknown): void;
+    unmount(): void;
+}
+
 let open = false;
 let selected = 0;
 let held = false;
 let ctrlHeld = false;
 let keys: AbortController | null = null;
+let host: HTMLDivElement | null = null;
+let root: ReactRoot | null = null;
 
 function unique(ids: string[]): string[] {
     const seen = new Set<string>();
@@ -71,9 +78,14 @@ function readVisits(): string[] {
     return settings.plain.visits ?? [];
 }
 
+function maxCount(): number {
+    const n = Number(settings.store.maxRecent);
+    return Number.isFinite(n) && n > 0 ? n : 5;
+}
+
 function capVisits(ids: string[]): string[] {
     const allowHome = settings.store.includeHome;
-    return unique(ids).filter(id => id || allowHome).slice(0, settings.store.maxRecent);
+    return unique(ids).filter(id => id || allowHome).slice(0, maxCount());
 }
 
 function writeVisits(next: string[]) {
@@ -209,14 +221,17 @@ function isCtrlKey(e: KeyboardEvent) {
 }
 
 function begin(reverse: boolean, fromHold: boolean) {
-    hydrate();
-    const current = currentVisit();
-    if (current != null) bump(current);
-    const items = topics();
-    selected = 0;
-    if (items.length > 1) selected = reverse ? items.length - 1 : 1;
     held = fromHold;
     open = true;
+    selected = 0;
+    try {
+        hydrate();
+        const current = currentVisit();
+        if (current != null) bump(current);
+        if (topics().length > 1) selected = reverse ? topics().length - 1 : 1;
+    } catch (e) {
+        logger.error("Failed to open switcher:", e);
+    }
     ui.notify();
 }
 
@@ -253,8 +268,12 @@ function onKeyDown(e: KeyboardEvent) {
     if (combo) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        if (open) cycle(e.shiftKey);
-        else begin(e.shiftKey, true);
+        try {
+            if (open) cycle(e.shiftKey);
+            else begin(e.shiftKey, true);
+        } catch (err) {
+            logger.error("Hotkey failed:", err);
+        }
         return;
     }
 
@@ -287,9 +306,15 @@ function onBeforeInput(e: Event) {
     if (data && TRIGGER_KEYS.has(data)) e.preventDefault();
 }
 
-function onBlur() {
+function onWindowBlur() {
     ctrlHeld = false;
-    cancel();
+}
+
+function onVisibility() {
+    if (document.hidden) {
+        ctrlHeld = false;
+        cancel();
+    }
 }
 
 function pick(index: number) {
@@ -297,9 +322,25 @@ function pick(index: number) {
     commit();
 }
 
+function syncDialog(el: HTMLDialogElement | null, shouldOpen: boolean) {
+    if (!el) return;
+    try {
+        if (shouldOpen && !el.open) el.showModal();
+        else if (!shouldOpen && el.open) el.close();
+    } catch (e) {
+        logger.debug("dialog:", e);
+        el.toggleAttribute("open", shouldOpen);
+    }
+}
+
 function Switcher() {
     useExternalStore(ui);
+    const dialogRef = useRef<HTMLDialogElement>(null);
     const stageRef = useRef<HTMLDivElement>(null);
+
+    useLayoutEffect(() => {
+        syncDialog(dialogRef.current, open);
+    }, [open]);
 
     useEffect(() => {
         if (!open) return;
@@ -315,8 +356,13 @@ function Switcher() {
     else if (active) hint = "Click to switch";
 
     return (
-        <div className={cl("root")} role="dialog" aria-modal="true" aria-label="Recent conversations">
-            <div className={cl("backdrop")} onClick={cancel} />
+        <dialog
+            ref={dialogRef}
+            className={cl("root")}
+            aria-label="Recent conversations"
+            onCancel={e => { e.preventDefault(); cancel(); }}
+            onClick={e => { if (e.target === e.currentTarget) cancel(); }}
+        >
             <div className={cl("hud")}>
                 {items.length
                     ? (
@@ -357,7 +403,7 @@ function Switcher() {
                 {active ? <div className={cl("caption")}>{active.title}</div> : null}
                 <div className={cl("hint")}>{hint}</div>
             </div>
-        </div>
+        </dialog>
     );
 }
 
@@ -377,6 +423,25 @@ function LeadOverlay() {
     return <Overlay key="void-recent-topics" />;
 }
 
+function mountHost() {
+    waitFor(filters.byProps("createRoot"), (mod: { createRoot: (el: Element) => ReactRoot }) => {
+        if (root) return;
+        host = document.createElement("div");
+        host.id = "void-rt-host";
+        (document.body ?? document.documentElement).appendChild(host);
+        root = mod.createRoot(host);
+        root.render(<LeadOverlay />);
+    });
+}
+
+function unmountHost() {
+    try { root?.unmount(); } catch (e) { logger.debug("unmount:", e); }
+    host?.remove();
+    host = null;
+    root = null;
+    taken = false;
+}
+
 export default definePlugin({
     name: "RecentTopics",
     description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
@@ -391,16 +456,23 @@ export default definePlugin({
     },
 
     start() {
-        hydrate();
-        const current = currentVisit();
-        if (current != null) bump(current);
-        if (keys) return;
-        keys = new AbortController();
-        const { signal } = keys;
-        window.addEventListener("keydown", onKeyDown, { capture: true, signal });
-        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
-        window.addEventListener("blur", onBlur, { signal });
-        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+        try {
+            hydrate();
+            const current = currentVisit();
+            if (current != null) bump(current);
+        } catch (e) {
+            logger.error("Hydrate failed:", e);
+        }
+        if (!keys) {
+            keys = new AbortController();
+            const { signal } = keys;
+            window.addEventListener("keydown", onKeyDown, { capture: true, signal });
+            window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+            window.addEventListener("blur", onWindowBlur, { signal });
+            document.addEventListener("visibilitychange", onVisibility, { signal });
+            document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+        }
+        mountHost();
     },
 
     stop() {
@@ -409,10 +481,15 @@ export default definePlugin({
         open = false;
         held = false;
         ctrlHeld = false;
+        unmountHost();
     },
 
     onSettingsChange() {
-        writeVisits(capVisits(readVisits()));
+        try {
+            writeVisits(capVisits(readVisits()));
+        } catch (e) {
+            logger.error("Settings update failed:", e);
+        }
     },
 
     zustand: {

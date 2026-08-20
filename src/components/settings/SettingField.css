@@ -3,7 +3,10 @@
 }
 
 .void-setting-slider {
-    width: 8rem;
+    width: 12rem;
+    height: 1.25rem;
+    accent-color: var(--fg, #fff);
+    cursor: pointer;
 }
 
 .void-setting-slider-value {
