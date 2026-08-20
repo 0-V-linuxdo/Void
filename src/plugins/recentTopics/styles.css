@@ -1,27 +1,32 @@
 .void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
-    position: fixed;
-    inset: 0;
-    z-index: 2147483647;
-    display: grid;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+    display: grid !important;
     place-items: center;
-    width: 100vw;
-    height: 100dvh;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    border: none;
-    background: transparent;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    background: transparent !important;
     color: inherit;
-    pointer-events: auto;
+    pointer-events: auto !important;
 }
 
 .void-rt-root::backdrop {
     background: rgb(0 0 0 / 42%);
     backdrop-filter: blur(22px);
+}
+
+html.void-rt-open [data-sidebar="sidebar"],
+html.void-rt-open [data-sidebar="gap"] {
+    z-index: 0 !important;
 }
 
 .void-rt-backdrop {

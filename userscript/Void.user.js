@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820.7] v1.0.0
+// @version      [20260820.9] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820.7] v1.0.0 — A modification for grok.com
+ * Void++ [20260820.9] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8a56c88"}`
-    }, `(${"8a56c88"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820.9] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"75a6ae3"}`
+    }, `(${"75a6ae3"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6545,14 +6545,35 @@ div:has(> button[aria-label*="Dictation"]) {
   });
 
   // void-css:/tmp/void/src/plugins/recentTopics/styles.css
-  registerStyle("recentTopics", `.void-rt-root {
+  registerStyle("recentTopics", `.void-rt-root,
+.void-rt-root:popover-open {
     isolation: isolate;
-    position: fixed;
-    inset: 0;
-    z-index: 2147483646;
-    display: grid;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+    display: grid !important;
     place-items: center;
-    pointer-events: auto;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    background: transparent !important;
+    color: inherit;
+    pointer-events: auto !important;
+}
+
+.void-rt-root::backdrop {
+    background: rgb(0 0 0 / 42%);
+    backdrop-filter: blur(22px);
+}
+
+html.void-rt-open [data-sidebar="sidebar"],
+html.void-rt-open [data-sidebar="gap"] {
+    z-index: 0 !important;
 }
 
 .void-rt-backdrop {
@@ -7352,8 +7373,8 @@ div:has(> button[aria-label*="Dictation"]) {
     box.append(mini);
   }
   function paint() {
-    host?.remove();
-    host = null;
+    detachHost();
+    document.documentElement.classList.toggle("void-rt-open", open2);
     if (!open2)
       return;
     const items = topics();
@@ -7414,20 +7435,41 @@ div:has(> button[aria-label*="Dictation"]) {
     hud.append(node("div", cl17("hint"), hint));
     root.append(backdrop, hud);
     host = root;
-    (document.body ?? document.documentElement).append(host);
+    mountOverlay(host);
   }
-  function dropLegacyHost() {
-    host?.remove();
-    host = null;
-    document.getElementById("void-rt-host")?.remove();
-    document.querySelectorAll("dialog.void-rt-root").forEach((el) => {
-      const d = el;
+  function detachHost() {
+    document.documentElement.classList.remove("void-rt-open");
+    if (host) {
       try {
-        if (d.open)
-          d.close();
+        host.hidePopover();
       } catch {}
-      d.remove();
+      host.remove();
+      host = null;
+    }
+    document.getElementById("void-rt-host")?.remove();
+    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
+      const p = el;
+      try {
+        p.hidePopover?.();
+      } catch {}
+      try {
+        p.close?.();
+      } catch {}
+      el.remove();
     });
+  }
+  function mountOverlay(root) {
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:grid;place-items:center;background:transparent;pointer-events:auto;";
+    document.documentElement.append(root);
+    document.documentElement.classList.add("void-rt-open");
+    if (typeof root.showPopover !== "function")
+      return;
+    root.setAttribute("popover", "manual");
+    try {
+      root.showPopover();
+    } catch {
+      root.removeAttribute("popover");
+    }
   }
   var recentTopics_default = definePlugin({
     name: "RecentTopics",
@@ -7438,7 +7480,7 @@ div:has(> button[aria-label*="Dictation"]) {
     settings: settings6,
     managedStyle: "recentTopics",
     start() {
-      dropLegacyHost();
+      detachHost();
       open2 = false;
       held = false;
       ctrlHeld = false;
@@ -7468,7 +7510,7 @@ div:has(> button[aria-label*="Dictation"]) {
       held = false;
       ctrlHeld = false;
       thumbs.clear();
-      dropLegacyHost();
+      detachHost();
     },
     onSettingsChange() {
       try {
