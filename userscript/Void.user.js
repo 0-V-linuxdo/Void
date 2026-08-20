@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260820] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"71db80d"}`
-    }, `(${"71db80d"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"ac76fef"}`
+    }, `(${"ac76fef"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -9917,6 +9917,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var streamContext = null;
   var lockedToken = "";
   var lastWasError = false;
+  var lastConvId = "";
+  var switchGuard = 0;
   var faviconObs = null;
   var globalObs = null;
   var composerObs = null;
@@ -10034,6 +10036,24 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function sameStreamContext(key) {
     return !!streamContext && !!key && streamContext === key;
   }
+  function resetStreamFlags() {
+    wasStreaming = false;
+    justFinished = false;
+    streamContext = null;
+    lockedToken = "";
+    lastWasError = false;
+  }
+  function onConversationSwitch(id) {
+    lastConvId = id;
+    resetStreamFlags();
+    switchGuard = 2;
+    composerObs?.disconnect();
+    composerObs = null;
+    buttonObs?.disconnect();
+    buttonObs = null;
+    setKind("wait");
+    scheduleEvaluate();
+  }
   function hasError() {
     if (lastWasError)
       return true;
@@ -10053,6 +10073,24 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function evaluateState() {
     if (!started2)
       return;
+    const conv = currentConversationId();
+    if (lastConvId && conv && lastConvId !== conv) {
+      onConversationSwitch(conv);
+      return;
+    }
+    if (conv)
+      lastConvId = conv;
+    if (switchGuard > 0) {
+      switchGuard -= 1;
+      if (switchGuard > 0) {
+        setKind("wait");
+        scheduleEvaluate();
+        return;
+      }
+      bindEditorInput();
+      observeComposer();
+      observeButtons();
+    }
     const contextKey = getContextKey();
     const streaming = isStreaming();
     const empty = isInputEmpty();
@@ -10259,15 +10297,28 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       const routeStore = RoutingStore.useRoutingStore;
       if (typeof routeStore?.subscribe === "function") {
-        unsubRoute = routeStore.subscribe(() => scheduleEvaluate());
+        unsubRoute = routeStore.subscribe((s) => s.route.conversationId, (id, prev) => {
+          if (!id || id === prev)
+            return;
+          onConversationSwitch(String(id));
+        });
       }
     } catch (e) {
       logger23.debug("RoutingStore subscribe failed:", e);
+      try {
+        unsubRoute = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
+      } catch (err) {
+        logger23.debug("RoutingStore full subscribe failed:", err);
+      }
     }
     try {
       const pageStore = ChatPageStore.useChatPageStore;
       if (typeof pageStore?.subscribe === "function") {
-        unsubPage = pageStore.subscribe((s) => s.conversationId, () => scheduleEvaluate());
+        unsubPage = pageStore.subscribe((s) => s.conversationId, (id, prev) => {
+          if (!id || id === prev)
+            return;
+          onConversationSwitch(id);
+        });
       }
     } catch (e) {
       logger23.debug("ChatPageStore subscribe failed:", e);
@@ -10333,6 +10384,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
       justFinished = false;
       streamContext = null;
       lockedToken = "";
+      lastConvId = "";
+      switchGuard = 0;
       lastWasError = false;
       restoreOfficial();
     },

@@ -44,6 +44,8 @@ let justFinished = false;
 let streamContext: string | null = null;
 let lockedToken = "";
 let lastWasError = false;
+let lastConvId = "";
+let switchGuard = 0;
 let faviconObs: MutationObserver | null = null;
 let globalObs: MutationObserver | null = null;
 let composerObs: MutationObserver | null = null;
@@ -162,6 +164,26 @@ function sameStreamContext(key: string): boolean {
     return !!streamContext && !!key && streamContext === key;
 }
 
+function resetStreamFlags() {
+    wasStreaming = false;
+    justFinished = false;
+    streamContext = null;
+    lockedToken = "";
+    lastWasError = false;
+}
+
+function onConversationSwitch(id: string) {
+    lastConvId = id;
+    resetStreamFlags();
+    switchGuard = 2;
+    composerObs?.disconnect();
+    composerObs = null;
+    buttonObs?.disconnect();
+    buttonObs = null;
+    setKind("wait");
+    scheduleEvaluate();
+}
+
 function hasError(): boolean {
     if (lastWasError) return true;
     try {
@@ -179,6 +201,25 @@ function hasError(): boolean {
 
 function evaluateState() {
     if (!started) return;
+    const conv = currentConversationId();
+    if (lastConvId && conv && lastConvId !== conv) {
+        onConversationSwitch(conv);
+        return;
+    }
+    if (conv) lastConvId = conv;
+
+    if (switchGuard > 0) {
+        switchGuard -= 1;
+        if (switchGuard > 0) {
+            setKind("wait");
+            scheduleEvaluate();
+            return;
+        }
+        bindEditorInput();
+        observeComposer();
+        observeButtons();
+    }
+
     const contextKey = getContextKey();
     const streaming = isStreaming();
     const empty = isInputEmpty();
@@ -384,15 +425,26 @@ function attachStores() {
     try {
         const routeStore = RoutingStore.useRoutingStore;
         if (typeof routeStore?.subscribe === "function") {
-            unsubRoute = routeStore.subscribe(() => scheduleEvaluate());
+            unsubRoute = routeStore.subscribe(s => s.route.conversationId, (id, prev) => {
+                if (!id || id === prev) return;
+                onConversationSwitch(String(id));
+            });
         }
     } catch (e) {
         logger.debug("RoutingStore subscribe failed:", e);
+        try {
+            unsubRoute = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
+        } catch (err) {
+            logger.debug("RoutingStore full subscribe failed:", err);
+        }
     }
     try {
         const pageStore = ChatPageStore.useChatPageStore;
         if (typeof pageStore?.subscribe === "function") {
-            unsubPage = pageStore.subscribe(s => s.conversationId, () => scheduleEvaluate());
+            unsubPage = pageStore.subscribe(s => s.conversationId, (id, prev) => {
+                if (!id || id === prev) return;
+                onConversationSwitch(id);
+            });
         }
     } catch (e) {
         logger.debug("ChatPageStore subscribe failed:", e);
@@ -460,6 +512,8 @@ export default definePlugin({
         justFinished = false;
         streamContext = null;
         lockedToken = "";
+        lastConvId = "";
+        switchGuard = 0;
         lastWasError = false;
         restoreOfficial();
     },
