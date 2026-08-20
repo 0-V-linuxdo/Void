@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"27691ce"}`
-    }, `(${"27691ce"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"c13950c"}`
+    }, `(${"c13950c"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6532,10 +6532,625 @@ div:has(> button[aria-label*="Dictation"]) {
     ]
   });
 
-  // src/plugins/autoRetry/index.ts
-  var logger17 = new Logger("AutoRetry");
-  var CONTENT_MODERATED = "grok:content-moderated";
+  // void-css:/tmp/void/src/plugins/recentTopics/styles.css
+  registerStyle("recentTopics", `.void-rt-root {
+    contain: content;
+    isolation: isolate;
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100dvh;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    pointer-events: auto;
+}
+
+.void-rt-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 52%);
+}
+
+.void-rt-stage {
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+    justify-content: center;
+    max-width: min(76rem, calc(100vw - 2rem));
+    padding: 1rem 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.void-rt-stage::-webkit-scrollbar {
+    display: none;
+}
+
+.void-rt-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    width: 11.5rem;
+    min-height: 9.5rem;
+    padding: 0.75rem;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 1rem;
+    background: var(--bg-composer, #161616);
+    color: var(--text-primary, #eee);
+    opacity: 0.46;
+    transform: scale(0.92);
+    cursor: pointer;
+    contain: content;
+    text-align: left;
+    font: inherit;
+    user-select: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.void-rt-card-on {
+    opacity: 1;
+    transform: scale(1.06);
+    border-color: rgb(255 255 255 / 82%);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 82%);
+    z-index: 1;
+}
+
+.void-rt-card-starred .void-rt-index::after {
+    content: "";
+    display: inline-block;
+    width: 0.35rem;
+    height: 0.35rem;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+    border-radius: 999px;
+    background: currentcolor;
+    opacity: 0.7;
+}
+
+.void-rt-chrome {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 0.55rem;
+}
+
+.void-rt-chrome span {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 999px;
+    background: currentcolor;
+    opacity: 0.28;
+}
+
+.void-rt-index {
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.45;
+}
+
+.void-rt-title {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-top: 0.35rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    font-size: 0.9375rem;
+    font-weight: 550;
+    line-height: 1.3;
+    overflow-wrap: break-word;
+}
+
+.void-rt-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+    margin-top: 0.7rem;
+    flex: 1;
+}
+
+.void-rt-preview span {
+    display: block;
+    height: 0.32rem;
+    border-radius: 999px;
+    background: currentcolor;
+    opacity: 0.12;
+}
+
+.void-rt-preview span:nth-child(2) {
+    width: 78%;
+}
+
+.void-rt-preview span:nth-child(3) {
+    width: 52%;
+}
+
+.void-rt-time {
+    margin-top: auto;
+    padding-top: 0.7rem;
+    font-size: 0.75rem;
+    opacity: 0.5;
+}
+
+.void-rt-hint {
+    position: relative;
+    max-width: min(36rem, calc(100vw - 2rem));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+    color: rgb(255 255 255 / 62%);
+    pointer-events: none;
+    text-align: center;
+}
+
+.void-rt-empty {
+    position: relative;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 1rem;
+    background: var(--bg-composer, #161616);
+    color: var(--text-primary, #eee);
+}
+
+@media (width <= 40rem) {
+    .void-rt-stage {
+        justify-content: flex-start;
+        gap: 0.5rem;
+    }
+
+    .void-rt-card {
+        width: 8.25rem;
+        min-height: 8rem;
+        padding: 0.625rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-rt-card {
+        transition: none;
+    }
+}
+`);
+
+  // src/plugins/recentTopics/index.tsx
+  var logger17 = new Logger("RecentTopics");
+  var cl17 = classNameFactory("void-rt-");
+  var HOME_ID = "";
+  var MINUTE = 60000;
+  var HOUR = 60 * MINUTE;
+  var DAY = 24 * HOUR;
+  var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
+  var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
   var settings6 = definePluginSettings({
+    maxRecent: {
+      type: 5 /* SLIDER */,
+      description: "How many recent conversations to show.",
+      min: 3,
+      max: 12,
+      default: 5
+    },
+    includeHome: {
+      type: 3 /* BOOLEAN */,
+      description: "Include the new-chat home page in the switcher.",
+      default: true
+    }
+  }).withPrivateSettings();
+  var ui = createExternalStore();
+  var open2 = false;
+  var selected = 0;
+  var held = false;
+  var ctrlHeld = false;
+  var keys = null;
+  function readMru() {
+    return settings6.plain.mru ?? [];
+  }
+  function writeMru(next) {
+    const prev = readMru();
+    if (next.length === prev.length && next.every((id, i) => id === prev[i]))
+      return;
+    settings6.store.mru = next;
+    ui.notify();
+  }
+  function capMru(ids) {
+    const allowHome = settings6.store.includeHome;
+    return ids.filter((id) => id || allowHome).slice(0, settings6.store.maxRecent);
+  }
+  function bump(id) {
+    if (!id && !settings6.store.includeHome)
+      return;
+    writeMru(capMru([id, ...readMru().filter((x) => x !== id)]));
+  }
+  function prune(alive) {
+    writeMru(readMru().filter((id) => !id || alive.has(id)));
+  }
+  function activeId() {
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      if (route?.page === "chat")
+        return route.conversationId ?? HOME_ID;
+      if (route?.page === "main")
+        return HOME_ID;
+    } catch (e) {
+      logger17.debug("RoutingStore unavailable:", e);
+    }
+    try {
+      return ChatPageStore.useChatPageStore.getState().conversationId ?? HOME_ID;
+    } catch (e) {
+      logger17.debug("ChatPageStore unavailable:", e);
+      return HOME_ID;
+    }
+  }
+  function conversationList() {
+    try {
+      return ConversationStore.useConversationStore.getState().list ?? [];
+    } catch (e) {
+      logger17.debug("ConversationStore unavailable:", e);
+      return [];
+    }
+  }
+  function seedIfEmpty() {
+    if (readMru().length)
+      return;
+    const current = activeId();
+    const rest = conversationList().map((c) => c.conversationId).filter((id) => id !== current);
+    writeMru(capMru([current, ...rest]));
+  }
+  function lookup(id) {
+    try {
+      const { byId, list } = ConversationStore.useConversationStore.getState();
+      return byId[id] ?? list.find((c) => c.conversationId === id);
+    } catch (e) {
+      logger17.debug("Conversation lookup failed:", e);
+      return;
+    }
+  }
+  function topics() {
+    return capMru(readMru()).map((id) => {
+      if (!id)
+        return { id: HOME_ID, title: "New chat", starred: false, time: "" };
+      const conv = lookup(id);
+      return {
+        id,
+        title: conv?.title?.trim() || "Untitled",
+        starred: !!conv?.starred,
+        time: conv?.modifyTime || conv?.createTime || ""
+      };
+    });
+  }
+  function formatRelative(iso) {
+    if (!iso)
+      return "";
+    const ms = Date.now() - new Date(iso).getTime();
+    if (!Number.isFinite(ms) || ms < 0)
+      return "";
+    if (ms < MINUTE)
+      return "Just now";
+    if (ms < HOUR)
+      return `${Math.floor(ms / MINUTE)}m ago`;
+    if (ms < DAY)
+      return `${Math.floor(ms / HOUR)}h ago`;
+    const d = Math.floor(ms / DAY);
+    return d === 1 ? "Yesterday" : `${d}d ago`;
+  }
+  function navigateTo(id) {
+    try {
+      const routing = RoutingStore.useRoutingStore.getState();
+      const { route } = routing;
+      const teamId = route.teamId ?? null;
+      if (id) {
+        if (route.page === "chat" && route.conversationId === id)
+          return;
+        routing.push({ page: "chat", conversationId: id, teamId });
+        return;
+      }
+      if (route.page === "main" || route.page === "chat" && !route.conversationId)
+        return;
+      routing.push({ page: "main", teamId });
+    } catch (e) {
+      logger17.error("Failed to navigate:", e);
+    }
+  }
+  function isTrigger(e) {
+    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
+      return true;
+    return TRIGGER_KEYS.has(e.key);
+  }
+  function isCtrlKey(e) {
+    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
+  }
+  function begin(reverse, fromHold) {
+    seedIfEmpty();
+    const items = topics();
+    selected = 0;
+    if (items.length > 1)
+      selected = reverse ? items.length - 1 : 1;
+    held = fromHold;
+    open2 = true;
+    ui.notify();
+  }
+  function cycle(reverse) {
+    const { length } = topics();
+    if (!length)
+      return;
+    selected = (selected + (reverse ? -1 : 1) + length) % length;
+    ui.notify();
+  }
+  function commit() {
+    if (!open2)
+      return;
+    const target = topics()[selected];
+    open2 = false;
+    held = false;
+    ui.notify();
+    if (target)
+      navigateTo(target.id);
+  }
+  function cancel() {
+    if (!open2)
+      return;
+    open2 = false;
+    held = false;
+    ui.notify();
+  }
+  function onKeyDown(e) {
+    if (isCtrlKey(e)) {
+      ctrlHeld = true;
+      return;
+    }
+    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
+    if (combo) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (open2)
+        cycle(e.shiftKey);
+      else
+        begin(e.shiftKey, true);
+      return;
+    }
+    if (e.isComposing)
+      return;
+    if (e.key === "Escape" && open2) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      cancel();
+      return;
+    }
+    if (open2 && (e.key === "Enter" || e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowUp")) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (e.key === "Enter")
+        commit();
+      else
+        cycle(e.key === "ArrowLeft" || e.key === "ArrowUp");
+    }
+  }
+  function onKeyUp(e) {
+    if (!isCtrlKey(e))
+      return;
+    ctrlHeld = false;
+    if (open2 && held)
+      commit();
+  }
+  function onBeforeInput(e) {
+    if (!ctrlHeld && !open2)
+      return;
+    const { data } = e;
+    if (data && TRIGGER_KEYS.has(data))
+      e.preventDefault();
+  }
+  function onBlur() {
+    ctrlHeld = false;
+    cancel();
+  }
+  function pick(index) {
+    selected = index;
+    commit();
+  }
+  function RecentIcon() {
+    return /* @__PURE__ */ React.createElement("svg", {
+      width: 18,
+      height: 18,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "1.75",
+      "aria-hidden": true
+    }, /* @__PURE__ */ React.createElement("rect", {
+      x: "3",
+      y: "6",
+      width: "10",
+      height: "14",
+      rx: "1.5"
+    }), /* @__PURE__ */ React.createElement("rect", {
+      x: "11",
+      y: "4",
+      width: "10",
+      height: "14",
+      rx: "1.5"
+    }));
+  }
+  function Switcher() {
+    useExternalStore(ui);
+    const stageRef = useRef(null);
+    useEffect(() => {
+      if (!open2)
+        return;
+      stageRef.current?.querySelector("[aria-current=true]")?.scrollIntoView({ inline: "center", block: "nearest" });
+    }, [open2, selected]);
+    if (!open2)
+      return null;
+    const items = topics();
+    const active = items[selected];
+    let hint = "Click a conversation · Esc cancel";
+    if (active && held)
+      hint = `Release Ctrl to open ${active.title}`;
+    else if (active)
+      hint = `Click to open ${active.title}`;
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl17("root"),
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": "Recent conversations"
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl17("backdrop"),
+      onClick: cancel
+    }), items.length ? /* @__PURE__ */ React.createElement("div", {
+      ref: stageRef,
+      className: cl17("stage")
+    }, items.map((topic, i) => /* @__PURE__ */ React.createElement("button", {
+      key: topic.id || "home",
+      type: "button",
+      tabIndex: -1,
+      "aria-label": topic.title,
+      "aria-current": i === selected,
+      className: classes(cl17("card"), i === selected && cl17("card-on"), topic.starred && cl17("card-starred")),
+      onMouseEnter: () => {
+        selected = i;
+        ui.notify();
+      },
+      onClick: () => pick(i)
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: cl17("chrome"),
+      "aria-hidden": true
+    }, /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null)), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("index")
+    }, String(i + 1).padStart(2, "0")), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("title")
+    }, topic.title), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("preview"),
+      "aria-hidden": true
+    }, /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null)), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("time")
+    }, formatRelative(topic.time) || (topic.id ? "" : "Home"))))) : /* @__PURE__ */ React.createElement("div", {
+      className: cl17("empty")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm"
+    }, "No recent conversations yet.")), /* @__PURE__ */ React.createElement("div", {
+      className: cl17("hint")
+    }, hint));
+  }
+  var Overlay = ErrorBoundary.wrap(Switcher, null);
+  var taken = false;
+  function LeadOverlay() {
+    const [isLead] = useState(() => {
+      if (taken)
+        return false;
+      taken = true;
+      return true;
+    });
+    useEffect(() => () => {
+      if (isLead)
+        taken = false;
+    }, [isLead]);
+    if (!isLead)
+      return null;
+    return /* @__PURE__ */ React.createElement(Overlay, {
+      key: "void-recent-topics"
+    });
+  }
+  var recentTopics_default = definePlugin({
+    name: "RecentTopics",
+    description: "Switch recent conversations with Ctrl+` like Arc's tab switcher.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings6,
+    managedStyle: "recentTopics",
+    dependencies: ["ChatBarButtonAPI"],
+    _Overlay() {
+      return /* @__PURE__ */ React.createElement(LeadOverlay, null);
+    },
+    chatBarButton: {
+      icon: () => /* @__PURE__ */ React.createElement(RecentIcon, null),
+      tooltip: "Recent conversations (Ctrl+`)",
+      onClick() {
+        begin(false, false);
+      },
+      order: 2,
+      "aria-label": "Recent conversations",
+      locations: ["chat"]
+    },
+    start() {
+      seedIfEmpty();
+      if (keys)
+        return;
+      keys = new AbortController;
+      const { signal } = keys;
+      window.addEventListener("keydown", onKeyDown, { capture: true, signal });
+      window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+      window.addEventListener("blur", onBlur, { signal });
+      document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+    },
+    stop() {
+      keys?.abort();
+      keys = null;
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+    },
+    onSettingsChange() {
+      writeMru(capMru(readMru()));
+    },
+    zustand: {
+      RoutingStore: {
+        selector: (s) => {
+          const page = s.route?.page;
+          if (page === "chat")
+            return `c:${s.route.conversationId ?? ""}`;
+          if (page === "main")
+            return "m:";
+          return "";
+        },
+        handler(key) {
+          if (open2 || !key)
+            return;
+          bump(key === "m:" ? HOME_ID : key.slice(2));
+        }
+      },
+      ConversationStore: {
+        selector: (s) => s.list,
+        handler(list) {
+          prune(new Set(list.map((c) => c.conversationId)));
+          seedIfEmpty();
+          if (open2)
+            ui.notify();
+        }
+      }
+    },
+    patches: [
+      {
+        find: '"chat-page")',
+        replacement: {
+          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
+          replace: "$1$self._Overlay(),$2"
+        }
+      },
+      {
+        find: "data-query-bar-mode-select",
+        all: true,
+        noWarn: true,
+        replacement: {
+          match: /\},"mode-select"\),/,
+          replace: "$&$self._Overlay(),"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/autoRetry/index.ts
+  var logger18 = new Logger("AutoRetry");
+  var CONTENT_MODERATED = "grok:content-moderated";
+  var settings7 = definePluginSettings({
     retryModeration: {
       type: 3 /* BOOLEAN */,
       description: "Retry content moderation errors.",
@@ -6570,21 +7185,21 @@ div:has(> button[aria-label*="Dictation"]) {
   }
   function shouldRetry(response) {
     if (isModeration(response))
-      return settings6.store.retryModeration;
-    return settings6.store.retryNetwork;
+      return settings7.store.retryModeration;
+    return settings7.store.retryNetwork;
   }
   function retry(responseId, conversationId, response) {
     const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings6.store.maxRetries;
+    const max = settings7.store.maxRetries;
     if (count > max) {
       showToast("Max retries reached.", 2 /* ERROR */);
       retryCounts.delete(conversationId);
       return;
     }
     retryCounts.set(conversationId, count);
-    const delaySec = settings6.store.delay;
+    const delaySec = settings7.store.delay;
     showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger17.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    logger18.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
     clearPending();
     pendingTimer = setTimeout(() => {
       pendingTimer = null;
@@ -6622,7 +7237,7 @@ div:has(> button[aria-label*="Dictation"]) {
     description: "Automatically retry failed messages on moderation or network errors.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings6,
+    settings: settings7,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       retryCounts.clear();
@@ -6646,31 +7261,31 @@ div:has(> button[aria-label*="Dictation"]) {
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings7.store[key];
+    const val = settings8.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
     const link = getColor("linkColor", DEFAULT_LINK);
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings7.store.enableVisitedColor) {
+    if (settings8.store.enableVisitedColor) {
       const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
     registerStyle(STYLE_NAME3, css);
   }
   function ColorRow({ settingKey, title, description, fallback }) {
-    settings7.use([settingKey]);
+    settings8.use([settingKey]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
-        settings7.store[settingKey] = v;
+        settings8.store[settingKey] = v;
         applyColors();
       },
       title,
       description
     });
   }
-  var settings7 = definePluginSettings({
+  var settings8 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -6705,7 +7320,7 @@ div:has(> button[aria-label*="Dictation"]) {
     name: "BetterLinks",
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
-    settings: settings7,
+    settings: settings8,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -6724,7 +7339,7 @@ div:has(> button[aria-label*="Dictation"]) {
       }
     ],
     _remarkLinkify() {
-      const { store: store2 } = settings7;
+      const { store: store2 } = settings8;
       return (tree) => {
         try {
           if (!store2.linkifyDomains)
@@ -6768,8 +7383,8 @@ div:has(> button[aria-label*="Dictation"]) {
       };
     },
     start() {
-      settings7.store.linkColor ??= DEFAULT_LINK;
-      settings7.store.visitedColor ??= DEFAULT_VISITED;
+      settings8.store.linkColor ??= DEFAULT_LINK;
+      settings8.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
       enableStyle(STYLE_NAME3);
     },
@@ -6885,7 +7500,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings8 = definePluginSettings({
+  var settings9 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -6930,14 +7545,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings8.store[key]);
+      classList.toggle(cls, !!settings9.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
-    settings: settings8,
+    settings: settings9,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -6964,7 +7579,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/plugins/cleaner/index.ts
-  var settings9 = definePluginSettings({
+  var settings10 = definePluginSettings({
     hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
       description: "Hide the upgrade plan button in the user menu.",
@@ -7013,7 +7628,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     name: "Cleaner",
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
-    settings: settings9,
+    settings: settings10,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
@@ -7097,9 +7712,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 `);
 
   // src/plugins/betterImagine/index.tsx
-  var logger18 = new Logger("BetterImagine");
-  var cl17 = classNameFactory("void-imagine-");
-  var settings10 = definePluginSettings({
+  var logger19 = new Logger("BetterImagine");
+  var cl18 = classNameFactory("void-imagine-");
+  var settings11 = definePluginSettings({
     hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
       description: "Hide the community image grid and templates on the Imagine home page.",
@@ -7147,7 +7762,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
   function buildFilename(post, isVideo) {
-    if (!settings10.store.smartFilenames || !post)
+    if (!settings11.store.smartFilenames || !post)
       return null;
     const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
     const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
@@ -7210,7 +7825,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var randomSeed = Date.now();
   var filterStore = createExternalStore();
   function persist() {
-    if (!settings10.store.persistFilters)
+    if (!settings11.store.persistFilters)
       return;
     try {
       sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
@@ -7289,7 +7904,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var cacheList = null;
   var cacheResult = [];
   function filterItems(items) {
-    const { hideModerated } = settings10.store;
+    const { hideModerated } = settings11.store;
     const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
     if (cacheList === items && cacheKey === key)
       return cacheResult;
@@ -7349,7 +7964,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           return;
         video.pause();
         video.currentTime = 0;
-      }).catch((e) => logger18.warn("Failed to pause video:", e));
+      }).catch((e) => logger19.warn("Failed to pause video:", e));
     } else {
       video.pause();
       video.currentTime = 0;
@@ -7358,7 +7973,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var onMouseEnter = (e) => {
     const video = e.currentTarget.querySelector("video");
     if (video)
-      pending.set(video, video.play().catch((e2) => logger18.error("Failed to play video", e2)));
+      pending.set(video, video.play().catch((e2) => logger19.error("Failed to play video", e2)));
   };
   var onMouseLeave = (e) => {
     const video = e.currentTarget.querySelector("video");
@@ -7401,7 +8016,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `));
       Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
     } catch (e) {
-      logger18.error(`Failed to copy ${label}s`, e);
+      logger19.error(`Failed to copy ${label}s`, e);
       Toaster.toast.error(`Failed to copy ${label}s.`);
     }
   }
@@ -7446,7 +8061,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           await state.upscaleVideo(id, video.id);
           upscaled++;
         } catch (e) {
-          logger18.error("Failed to upscale video:", id, video.id, e);
+          logger19.error("Failed to upscale video:", id, video.id, e);
         }
       }
     }
@@ -7473,7 +8088,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       value: currentDate,
       onValueChange: (v) => setDate(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl17("date-select")
+      className: cl18("date-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: d,
       value: d
@@ -7481,7 +8096,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       value: currentSort,
       onValueChange: (v) => setSort(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: sortActive ? cl17("sort-select", "sort-active") : cl17("sort-select")
+      className: sortActive ? cl18("sort-select", "sort-active") : cl18("sort-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: s,
       value: s
@@ -7493,30 +8108,30 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         setSearchInput(e.target.value);
         setSearch(e.target.value);
       },
-      className: cl17("search")
+      className: cl18("search")
     }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
       key: f,
       variant: currentFilter === f ? "primary" : "tertiary",
       size: "sm",
       shape: "pill",
-      className: currentFilter !== f ? cl17("chip") : undefined,
+      className: currentFilter !== f ? cl18("chip") : undefined,
       onClick: () => setFilter(currentFilter === f ? "all" : f)
     }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "pill",
-      className: cl17("chip"),
+      className: cl18("chip"),
       onClick: resetFilters
     }, "Clear"));
   }
   function UpscaleItem() {
-    const [open2, setOpen] = useState(false);
+    const [open3, setOpen] = useState(false);
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => setOpen(true)
     }, /* @__PURE__ */ React.createElement(ScalingIcon, {
       className: "size-4 me-2"
     }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
+      open: open3,
       onOpenChange: setOpen,
       title: "Upscale selected videos",
       description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
@@ -7550,7 +8165,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const tag = t.tagName;
     return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
   }
-  function onKeyDown(e) {
+  function onKeyDown2(e) {
     if (!isImaginePage())
       return;
     if (e.ctrlKey || e.metaKey || e.altKey)
@@ -7584,7 +8199,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   }
   function onVisibilityChange() {
-    if (!settings10.store.pauseWhenHidden)
+    if (!settings11.store.pauseWhenHidden)
       return;
     if (document.visibilityState !== "hidden")
       return;
@@ -7598,13 +8213,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "BetterImagine",
     description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
-    settings: settings10,
-    _hideDefault: () => settings10.store.hideDefaultPreviews,
+    settings: settings11,
+    _hideDefault: () => settings11.store.hideDefaultPreviews,
     _NullGrid: () => null,
-    _autoPlay: () => !settings10.store.noAutoplay,
-    _bypassPaywall: () => settings10.store.bypassPaywall,
-    _ctrlClickSelect: () => settings10.store.ctrlClickSelect,
-    _hoverProps: () => settings10.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _autoPlay: () => !settings11.store.noAutoplay,
+    _bypassPaywall: () => settings11.store.bypassPaywall,
+    _ctrlClickSelect: () => settings11.store.ctrlClickSelect,
+    _hoverProps: () => settings11.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
     _useFilteredFavorites: useFilteredFavorites,
     _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
     _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
@@ -7615,7 +8230,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         return;
       abortCtrl = new AbortController;
       const { signal } = abortCtrl;
-      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
+      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
       document.addEventListener("visibilitychange", onVisibilityChange, { signal });
     },
     stop() {
@@ -7707,8 +8322,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/downloadTTS/index.tsx
-  var cl18 = classNameFactory("void-download-tts-");
-  var logger19 = new Logger("DownloadTTS");
+  var cl19 = classNameFactory("void-download-tts-");
+  var logger20 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -7728,7 +8343,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger19.error("Failed to download TTS audio:", e);
+        logger20.error("Failed to download TTS audio:", e);
       }
     });
     return /* @__PURE__ */ React.createElement(Button, {
@@ -7740,7 +8355,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       variant: "tertiary"
     }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
       size: "sm",
-      className: cl18("spinner")
+      className: cl19("spinner")
     }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16
     }));
@@ -8217,9 +8832,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
 
   // src/plugins/usageDisplay/index.tsx
-  var logger20 = new Logger("UsageDisplay");
-  var cl19 = classNameFactory("void-ud-");
-  var settings11 = definePluginSettings({
+  var logger21 = new Logger("UsageDisplay");
+  var cl20 = classNameFactory("void-ud-");
+  var settings12 = definePluginSettings({
     showPercent: {
       type: 3 /* BOOLEAN */,
       description: "Show the used-percent label next to the ring.",
@@ -8278,7 +8893,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       try {
         const pageUsage = readNativeUsage();
         const remote = await fetchOfficialUsage().then((usage) => ({ ok: true, usage })).catch((error) => {
-          logger20.warn("Failed to fetch official usage", error);
+          logger21.warn("Failed to fetch official usage", error);
           return { ok: false };
         });
         const merged = mergeNativeUsage(state.usage, remote.ok ? remote.usage : null, pageUsage);
@@ -8345,17 +8960,17 @@ button:has(.void-ud-trigger > .void-ud-label) {
       width: RING_SIZE,
       height: RING_SIZE,
       viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
-      className: classes(cl19("ring"), cl19(`ring-${tone}`))
+      className: classes(cl20("ring"), cl20(`ring-${tone}`))
     }, /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl19("ring-track")
+      className: cl20("ring-track")
     }), /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl19("ring-fill"),
+      className: cl20("ring-fill"),
       strokeDasharray: RING_CIRCUMFERENCE,
       strokeDashoffset: RING_CIRCUMFERENCE * (1 - fraction),
       transform: `rotate(-90 ${RING_CENTER} ${RING_CENTER})`
@@ -8363,7 +8978,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function ButtonIcon() {
     useExternalStore(store2);
-    const { showPercent } = settings11.use(["showPercent"]);
+    const { showPercent } = settings12.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -8382,12 +8997,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
       };
     }, []);
     return /* @__PURE__ */ React.createElement("span", {
-      className: classes(cl19("trigger"), label == null && cl19("icon-only"))
+      className: classes(cl20("trigger"), label == null && cl20("icon-only"))
     }, /* @__PURE__ */ React.createElement(ProgressRing, {
       percent: isFree ? null : percent,
       tone: isFree ? "waiting" : tone
     }), label != null && /* @__PURE__ */ React.createElement("span", {
-      className: cl19("label")
+      className: cl20("label")
     }, label));
   }
   function UsagePanel() {
@@ -8407,11 +9022,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl19("panel")
+      className: cl20("panel")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl19("used")
+      className: cl20("used")
     }, usedLabel(isFree, percent, state.loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
@@ -8435,7 +9050,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings11,
+    settings: settings12,
     chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
     events: {
       streamEnd() {
@@ -8451,7 +9066,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger21 = new Logger("ExportChat");
+  var logger22 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -8626,7 +9241,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       className: "void-export-icon"
     }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger21.error("Failed to export chat", e))
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger22.error("Failed to export chat", e))
     }, label))));
   }
   var exportChat_default = definePlugin({
@@ -8781,7 +9396,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/customInstructions/index.tsx
-  var cl20 = classNameFactory("void-ci-");
+  var cl21 = classNameFactory("void-ci-");
   var PixelAvatarModule = findByPropsLazy("PixelAvatar");
   var CheckIcon = findExportedComponentLazy("CheckIcon");
   var BookIcon = findExportedComponentLazy("BookIcon");
@@ -8789,38 +9404,38 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var TrashIcon2 = findExportedComponentLazy("TrashIcon");
   var PlusIcon = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings12 = definePluginSettings({
+  var settings13 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings12.plain.presets ?? [];
+    return settings13.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings12.store.presets = presets;
+    settings13.store.presets = presets;
   }
   function getAssignments() {
-    return settings12.plain.assignments ?? {};
+    return settings13.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
       role: "button",
-      className: cl20("card"),
+      className: cl21("card"),
       onClick: onEdit
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl20("avatar")
+      className: cl21("avatar")
     }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
       seed: preset.id,
       size: 32
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("card-name")
+      className: cl21("card-name")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
     }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("card-actions")
+      className: cl21("card-actions")
     }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "tertiary",
       size: "xs",
@@ -8848,14 +9463,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function PresetEditor({ preset, onUpdate, onClose }) {
     const overLimit = preset.prompt.length > MAX_LENGTH;
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl20("editor")
+      className: cl21("editor")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
-      className: cl20("label")
+      className: cl21("label")
     }, "Name"), /* @__PURE__ */ React.createElement(Input, {
       type: "text",
-      className: cl20("input"),
+      className: cl21("input"),
       placeholder: "Preset name",
       value: preset.name,
       onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
@@ -8863,20 +9478,20 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
-      className: cl20("label")
+      className: cl21("label")
     }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("textarea-wrap", { "textarea-wrap-error": overLimit })
+      className: cl21("textarea-wrap", { "textarea-wrap-error": overLimit })
     }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl20("textarea"),
+      className: cl21("textarea"),
       placeholder: "How should Grok behave?",
       value: preset.prompt,
       onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("editor-footer")
+      className: cl21("editor-footer")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: overLimit ? undefined : "muted",
-      className: overLimit ? cl20("error-text") : undefined
+      className: overLimit ? cl21("error-text") : undefined
     }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
@@ -8885,7 +9500,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings12.use(["presets"]).presets ?? [];
+    const presets = settings13.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -8897,7 +9512,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         if (v === id)
           delete a[k];
       }
-      settings12.store.assignments = a;
+      settings13.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -8907,9 +9522,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, []);
     const editing = presets.find((p) => p.id === editingId);
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl20("root")
+      className: cl21("root")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl20("grid")
+      className: cl21("grid")
     }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
       key: p.id,
       preset: p,
@@ -8917,7 +9532,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onDelete: () => deletePreset(p.id)
     })), /* @__PURE__ */ React.createElement("div", {
       role: "button",
-      className: cl20("card", "card-add"),
+      className: cl21("card", "card-add"),
       onClick: addPreset
     }, /* @__PURE__ */ React.createElement(PlusIcon, {
       className: "size-4 text-secondary"
@@ -8932,8 +9547,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings12.use(["presets"]).presets ?? [];
-    const assignments = settings12.use(["assignments"]).assignments ?? {};
+    const presets = settings13.use(["presets"]).presets ?? [];
+    const assignments = settings13.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -8941,17 +9556,17 @@ button:has(.void-ud-trigger > .void-ud-label) {
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings12.store.assignments = a;
+      settings13.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
     return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl20("trigger")
+      className: cl21("trigger")
     }, /* @__PURE__ */ React.createElement(BookIcon, {
       size: 16
     }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => assign(),
-      className: cl20("menu-item")
+      className: cl21("menu-item")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
     }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
@@ -8959,7 +9574,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: p.id,
       onSelect: () => assign(p.id),
-      className: cl20("menu-item")
+      className: cl21("menu-item")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
     }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
@@ -8971,7 +9586,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings12,
+    settings: settings13,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -9002,7 +9617,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME4 = "widerChat";
-  var settings13 = definePluginSettings({
+  var settings14 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem.",
@@ -9010,14 +9625,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
   function applyWidth() {
-    const w = settings13.store.width;
+    const w = settings14.store.width;
     registerStyle(STYLE_NAME4, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
-    settings: settings13,
+    settings: settings14,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
@@ -9242,10 +9857,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
 
   // src/plugins/chatStateFavicons/index.ts
-  var logger22 = new Logger("ChatStateFavicons");
+  var logger23 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var settings14 = definePluginSettings({
+  var settings15 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
       description: "How the Grok mark is overlaid with chat state.",
@@ -9268,7 +9883,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var raf = 0;
   var started2 = false;
   function currentStyle() {
-    const value = settings14.store.style;
+    const value = settings15.store.style;
     return isIconStyle(value) ? value : "badge";
   }
   function captureOfficial() {
@@ -9345,7 +9960,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }
       return false;
     } catch (e) {
-      logger22.debug("stream stores unavailable:", e);
+      logger23.debug("stream stores unavailable:", e);
       return false;
     }
   }
@@ -9376,7 +9991,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       const response = byId[id];
       return response?.state === "error" || response?.error != null;
     } catch (e) {
-      logger22.debug("ResponseStore unavailable:", e);
+      logger23.debug("ResponseStore unavailable:", e);
       return false;
     }
   }
@@ -9523,7 +10138,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       const response = ResponseStore.useResponseStore.getState().byId[responseId];
       lastWasError = response?.state === "error" || response?.error != null;
     } catch (e) {
-      logger22.debug("ResponseStore unavailable:", e);
+      logger23.debug("ResponseStore unavailable:", e);
     }
   }
   function startFaviconGuard() {
@@ -9604,7 +10219,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings14,
+    settings: settings15,
     startAt: "TurbopackReady" /* TurbopackReady */,
     cleanupSelectors: [`#${ICON_ID}`],
     start() {
@@ -9706,9 +10321,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/betterSidebar/index.tsx
-  var logger23 = new Logger("BetterSidebar");
-  var cl21 = classNameFactory("void-sidebar-");
-  var settings15 = definePluginSettings({
+  var logger24 = new Logger("BetterSidebar");
+  var cl22 = classNameFactory("void-sidebar-");
+  var settings16 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -9726,11 +10341,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
   function UserCard({ AvatarMenu }) {
-    const { open: open2 } = SidebarComponents.useSidebar();
+    const { open: open3 } = SidebarComponents.useSidebar();
     const { user } = SessionStore.useSession();
     const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
     const cardRef = useRef(null);
-    if (!open2 || !user)
+    if (!open3 || !user)
       return /* @__PURE__ */ React.createElement(AvatarMenu, null);
     const forward = (e, type) => {
       if (!e.isTrusted)
@@ -9739,24 +10354,24 @@ button:has(.void-ud-trigger > .void-ud-label) {
     };
     return /* @__PURE__ */ React.createElement("div", {
       ref: cardRef,
-      className: cl21("card"),
+      className: cl22("card"),
       onPointerDown: (e) => forward(e, "pointerdown"),
       onPointerUp: (e) => forward(e, "pointerup")
     }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       justifyContent: "center",
       gap: "0",
-      className: cl21("info")
+      className: cl22("info")
     }, /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       size: "sm",
       weight: "medium",
-      className: cl21("name")
+      className: cl22("name")
     }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       size: "xs",
       color: "secondary",
-      className: cl21("plan")
+      className: cl22("plan")
     }, getPlanName(bestSubscription, user.xSubscriptionType))));
   }
   var selection2 = createSelectionStore();
@@ -9768,10 +10383,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
       ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
     }
     const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger23.error("Failed to delete", id, e))));
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger24.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings15.use(["batchSelect"]).batchSelect;
+    const enabled = settings16.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
@@ -9784,7 +10399,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
-    settings: settings15,
+    settings: settings16,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
@@ -9798,7 +10413,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings15.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings16.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -9808,10 +10423,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
       };
     },
     _defaultOpen() {
-      return !settings15.store.defaultCollapsed;
+      return !settings16.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings15.store.clickToToggle)
+      if (!settings16.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -9881,7 +10496,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/cloneChats/index.tsx
-  var logger24 = new Logger("CloneChats");
+  var logger25 = new Logger("CloneChats");
   async function cloneChat(conversationId) {
     const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
     if (!lastResponseId)
@@ -9904,7 +10519,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
     return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger24.error("Failed to clone chat:", e)),
+      onSelect: () => cloneChat(conversationId).catch((e) => logger25.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
@@ -9959,7 +10574,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings16 = definePluginSettings({
+  var settings17 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -9984,18 +10599,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "MessageTimestamps",
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
-    settings: settings16,
+    settings: settings17,
     _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
       if (!response?.createTime)
         return null;
-      if (settings16.store.hideOwnMessages && response.sender === "human")
+      if (settings17.store.hideOwnMessages && response.sender === "human")
         return null;
       return /* @__PURE__ */ React.createElement(Text2, {
         as: "span",
         size: "xs",
         color: "muted",
         className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings16.store.showDate));
+      }, formatTimestamp(response.createTime, settings17.store.showDate));
     }),
     patches: [
       {
@@ -10020,18 +10635,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorRow2() {
-    const { starColor } = settings17.use(["starColor"]);
+    const { starColor } = settings18.use(["starColor"]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
-        settings17.store.starColor = v;
+        settings18.store.starColor = v;
       },
       title: "Star color",
       description: "Color of the twinkling stars."
     });
   }
   function StarryBackground() {
-    const { starColor } = settings17.use(["starColor"]);
+    const { starColor } = settings18.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -10040,7 +10655,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings17 = definePluginSettings({
+  var settings18 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_COLOR,
@@ -10051,7 +10666,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     name: "Starry",
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
-    settings: settings17,
+    settings: settings18,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -10070,7 +10685,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
   // src/plugins/noShareLink/index.ts
   var STYLE_NAME5 = "noShareLink";
-  var settings18 = definePluginSettings({
+  var settings19 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
       description: "Inside a project: hide the top-right Share Project button.",
@@ -10084,10 +10699,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
   });
   function apply2() {
     const rules = [];
-    if (settings18.store.hideShareProject) {
+    if (settings19.store.hideShareProject) {
       rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
-    if (settings18.store.hideCreateShareLink) {
+    if (settings19.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
     registerStyle(STYLE_NAME5, rules.join(`
@@ -10099,7 +10714,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings18,
+    settings: settings19,
     start: apply2,
     onSettingsChange: apply2,
     stop() {
@@ -10108,7 +10723,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   });
 
   // src/plugins/responseNotification/index.ts
-  var settings19 = definePluginSettings({
+  var settings20 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -10155,7 +10770,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings19.store.soundUrl?.trim();
+    const url = settings20.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -10168,11 +10783,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings19.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings20.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings19.store.sound)
+    if (settings20.store.sound)
       playSound();
-    if (settings19.store.browserNotification)
+    if (settings20.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -10180,7 +10795,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings19,
+    settings: settings20,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -10207,7 +10822,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [contextMenu_default.name]: contextMenu_default, [chatBarButtons_default.name]: chatBarButtons_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [placeholder_default.name]: placeholder_default, [noDictation_default.name]: noDictation_default, [autoCollapse_default.name]: autoCollapse_default, [betterFiles_default.name]: betterFiles_default, [autoRetry_default.name]: autoRetry_default, [betterLinks_default.name]: betterLinks_default, [streamerMode_default.name]: streamerMode_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [cleaner_default.name]: cleaner_default, [betterImagine_default.name]: betterImagine_default, [downloadTTS_default.name]: downloadTTS_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [widerChat_default.name]: widerChat_default, [oneko_default.name]: oneko_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterSidebar_default.name]: betterSidebar_default, [cloneChats_default.name]: cloneChats_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [starry_default.name]: starry_default, [noShareLink_default.name]: noShareLink_default, [responseNotification_default.name]: responseNotification_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [contextMenu_default.name]: contextMenu_default, [chatBarButtons_default.name]: chatBarButtons_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [placeholder_default.name]: placeholder_default, [noDictation_default.name]: noDictation_default, [autoCollapse_default.name]: autoCollapse_default, [betterFiles_default.name]: betterFiles_default, [recentTopics_default.name]: recentTopics_default, [autoRetry_default.name]: autoRetry_default, [betterLinks_default.name]: betterLinks_default, [streamerMode_default.name]: streamerMode_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [cleaner_default.name]: cleaner_default, [betterImagine_default.name]: betterImagine_default, [downloadTTS_default.name]: downloadTTS_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [widerChat_default.name]: widerChat_default, [oneko_default.name]: oneko_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterSidebar_default.name]: betterSidebar_default, [cloneChats_default.name]: cloneChats_default, [incognito_default.name]: incognito_default, [messageTimestamps_default.name]: messageTimestamps_default, [starry_default.name]: starry_default, [noShareLink_default.name]: noShareLink_default, [responseNotification_default.name]: responseNotification_default };
   // void-css:/tmp/void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
@@ -10262,7 +10877,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     NoticeType2["ERROR"] = "error";
     NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var cl22 = classNameFactory("void-notice-");
+  var cl23 = classNameFactory("void-notice-");
   var ICONS = {
     ["info" /* INFO */]: () => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
       size: 18
@@ -10280,11 +10895,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl22("root")
+      className: cl23("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl22("icon")
+      className: cl23("icon")
     }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
-      className: cl22("message")
+      className: cl23("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
@@ -10294,7 +10909,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       variant: "tertiary",
       size: "sm",
       shape: "square",
-      className: cl22("close"),
+      className: cl23("close"),
       onClick: onClose
     }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
@@ -10464,14 +11079,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
   });
 
   // src/Void.ts
-  var logger25 = new Logger("TurbopackPatcher", "#e78284");
+  var logger26 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger25.error(`${name} failed:`, e);
+      logger26.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -10492,7 +11107,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger25.info(`${getModuleCache().size} modules loaded, ready`);
+      logger26.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
       safely("checkBuildFingerprint", checkBuildFingerprint);
