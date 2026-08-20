@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"4bad4ac"}`
-    }, `(${"4bad4ac"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"3cd1d5e"}`
+    }, `(${"3cd1d5e"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -9159,7 +9159,15 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var logger22 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
-  var STOP_SEL = 'button[aria-label="Stop model response"], button[aria-label*="Stop" i]';
+  var STOP_SELECTORS = [
+    'button[aria-label="Stop model response"]',
+    'button[aria-label*="Stop" i]'
+  ];
+  var SEND_SELECTORS = [
+    'button[aria-label*="Send" i]',
+    'button[aria-label*="Submit" i]',
+    'button[type="submit"]'
+  ];
   var settings14 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
@@ -9173,11 +9181,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var wasStreaming = false;
   var justFinished = false;
   var lastWasError = false;
-  var lastConv;
+  var streamContext;
   var observer = null;
   var composerObs = null;
   var inputCtrl = null;
   var unsubPage = null;
+  var unsubRoute = null;
   var cancelWait = null;
   var raf = 0;
   function currentStyle() {
@@ -9241,25 +9250,83 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return null;
     }
   }
+  function contextKey() {
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      if (route.conversationId)
+        return `c:${route.conversationId}`;
+      if (route.page)
+        return `p:${route.page}`;
+    } catch (e) {
+      logger22.debug("RoutingStore unavailable:", e);
+    }
+    const page = getPage();
+    if (page?.conversationId)
+      return `c:${page.conversationId}`;
+    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
+    if (/^[a-z0-9_-]{8,}$/i.test(lastSeg))
+      return `c:${lastSeg}`;
+    return `p:${location.pathname}`;
+  }
+  function lockStreamContext(key) {
+    if (!streamContext) {
+      streamContext = key;
+      return;
+    }
+    if (streamContext.startsWith("p:") && key.startsWith("c:"))
+      streamContext = key;
+  }
+  function sameStreamContext(key) {
+    if (!streamContext)
+      return true;
+    if (streamContext === key)
+      return true;
+    return streamContext.startsWith("p:") && key.startsWith("c:");
+  }
   function isVisible(el) {
-    if (!(el instanceof HTMLElement))
+    if (!(el instanceof HTMLElement) || !el.isConnected)
       return false;
     if (el.getClientRects().length === 0)
       return false;
     const style = getComputedStyle(el);
-    return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+    return style.display !== "none" && style.visibility !== "hidden";
   }
   function composerRoot() {
     const editor = document.querySelector(EDITOR_SEL);
-    return editor?.closest("form") ?? editor?.closest("div.relative") ?? document.body;
+    if (!editor)
+      return document.body;
+    return editor.closest("form") ?? editor.closest('[class*="composer" i]') ?? editor.parentElement ?? document.body;
   }
-  function stopButtonVisible() {
-    const root = composerRoot();
-    for (const btn of root.querySelectorAll(STOP_SEL)) {
-      if (isVisible(btn))
-        return true;
+  function firstVisibleButton(root, selectors) {
+    for (const sel of selectors) {
+      for (const node of root.querySelectorAll(sel)) {
+        if (isVisible(node))
+          return node;
+      }
     }
-    return false;
+    return null;
+  }
+  function getStopButton() {
+    const root = composerRoot();
+    const local = firstVisibleButton(root, STOP_SELECTORS);
+    if (local)
+      return local;
+    const global = firstVisibleButton(document, STOP_SELECTORS);
+    if (global)
+      return global;
+    for (const btn of root.querySelectorAll("button")) {
+      const label = btn.getAttribute("aria-label") ?? "";
+      const text = btn.textContent ?? "";
+      if (/stop/i.test(label) || /\bstop\b/i.test(text)) {
+        if (isVisible(btn))
+          return btn;
+      }
+    }
+    return null;
+  }
+  function sendButtonVisible() {
+    const root = composerRoot();
+    return !!(firstVisibleButton(root, SEND_SELECTORS) ?? firstVisibleButton(document, SEND_SELECTORS));
   }
   function isInputEmpty() {
     const editor = document.querySelector(EDITOR_SEL);
@@ -9274,25 +9341,26 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return true;
     if (page?.showStreamingIndicator)
       return true;
-    return stopButtonVisible();
+    return getStopButton() != null;
   }
   function evaluate() {
     const page = getPage();
-    const conversationId = page?.conversationId;
+    const key = contextKey();
     const streaming = isStreaming(page);
-    const sameConv = lastConv == null || conversationId == null || lastConv === conversationId;
+    const sameContext = sameStreamContext(key);
     if (streaming) {
       wasStreaming = true;
       justFinished = false;
-      lastConv = conversationId ?? lastConv;
+      lockStreamContext(key);
       setKind("rotate");
       return;
     }
-    if (lastWasError && sameConv) {
+    if (lastWasError && sameContext) {
       if (!isInputEmpty()) {
         lastWasError = false;
         justFinished = false;
         wasStreaming = false;
+        streamContext = undefined;
         setKind("ready");
         return;
       }
@@ -9300,27 +9368,33 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return;
     }
     if (wasStreaming) {
-      wasStreaming = false;
-      if (sameConv) {
+      if (!sameContext) {
+        wasStreaming = false;
+        justFinished = false;
+        lastWasError = false;
+        streamContext = undefined;
+      } else if (getStopButton() || !sendButtonVisible()) {
+        setKind("rotate");
+        return;
+      } else {
+        wasStreaming = false;
         justFinished = !lastWasError;
         setKind(lastWasError ? "error" : "done");
         return;
       }
-      justFinished = false;
-      lastWasError = false;
     }
-    if (justFinished && sameConv) {
+    if (justFinished && sameContext) {
       if (!isInputEmpty()) {
         justFinished = false;
         lastWasError = false;
+        streamContext = undefined;
         setKind("ready");
-        return;
       }
-      setKind(lastWasError ? "error" : "done");
       return;
     }
     justFinished = false;
     lastWasError = false;
+    streamContext = undefined;
     setKind(isInputEmpty() ? "wait" : "ready");
   }
   function scheduleEvaluate() {
@@ -9331,6 +9405,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
       evaluate();
     });
   }
+  function onComposerInput() {
+    if (kind === "rotate" || wasStreaming)
+      return;
+    scheduleEvaluate();
+  }
   function onStreamEnd2({ responseId }) {
     let error = false;
     try {
@@ -9339,9 +9418,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     } catch (e) {
       logger22.debug("ResponseStore unavailable:", e);
     }
-    lastConv = getPage()?.conversationId ?? lastConv;
     lastWasError = error;
-    justFinished = !error;
     wasStreaming = true;
     evaluate();
   }
@@ -9375,15 +9452,43 @@ button:has(.void-ud-trigger > .void-ud-label) {
     inputCtrl?.abort();
     inputCtrl = new AbortController;
     const { signal } = inputCtrl;
-    document.addEventListener("input", scheduleEvaluate, { capture: true, passive: true, signal });
-    document.addEventListener("compositionend", scheduleEvaluate, { capture: true, passive: true, signal });
+    document.addEventListener("input", onComposerInput, { capture: true, passive: true, signal });
+    document.addEventListener("compositionend", onComposerInput, { capture: true, passive: true, signal });
+    window.addEventListener("popstate", scheduleEvaluate, { signal });
+  }
+  function isButtonNode(node) {
+    if (!(node instanceof HTMLElement))
+      return false;
+    return node.tagName === "BUTTON" || node.querySelector("button") != null;
   }
   function startComposerWatch() {
     composerObs?.disconnect();
     const target = composerRoot();
     if (!target)
       return;
-    composerObs = new MutationObserver(() => scheduleEvaluate());
+    composerObs = new MutationObserver((list) => {
+      for (const m of list) {
+        if (m.type === "attributes") {
+          if (m.target instanceof HTMLElement && m.target.tagName === "BUTTON") {
+            scheduleEvaluate();
+            return;
+          }
+          continue;
+        }
+        for (const node of m.addedNodes) {
+          if (isButtonNode(node)) {
+            scheduleEvaluate();
+            return;
+          }
+        }
+        for (const node of m.removedNodes) {
+          if (isButtonNode(node)) {
+            scheduleEvaluate();
+            return;
+          }
+        }
+      }
+    });
     composerObs.observe(target, {
       childList: true,
       subtree: true,
@@ -9404,6 +9509,15 @@ button:has(.void-ud-trigger > .void-ud-label) {
     } catch (e) {
       logger22.debug("selector subscribe failed, using full subscribe:", e);
       unsubPage = store3.subscribe(() => scheduleEvaluate());
+    }
+    try {
+      unsubRoute?.();
+      const routeStore = RoutingStore.useRoutingStore;
+      if (typeof routeStore?.subscribe === "function") {
+        unsubRoute = routeStore.subscribe(() => scheduleEvaluate());
+      }
+    } catch (e) {
+      logger22.debug("RoutingStore subscribe failed:", e);
     }
     evaluate();
     return true;
@@ -9451,6 +9565,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
       cancelWait = null;
       unsubPage?.();
       unsubPage = null;
+      unsubRoute?.();
+      unsubRoute = null;
       inputCtrl?.abort();
       inputCtrl = null;
       composerObs?.disconnect();
@@ -9458,7 +9574,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       wasStreaming = false;
       justFinished = false;
       lastWasError = false;
-      lastConv = undefined;
+      streamContext = undefined;
       restoreOfficial();
     },
     onSettingsChange: rebuildIcons,

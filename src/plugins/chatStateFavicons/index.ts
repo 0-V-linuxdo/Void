@@ -7,7 +7,7 @@
 import type { VoidEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
 import type { ChatPageStoreModule, ChatPageStoreState } from "@grok-types/stores";
-import { ChatPageStore, ResponseStore } from "@turbopack/common/stores";
+import { ChatPageStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { filters, waitFor } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
@@ -18,7 +18,15 @@ import { buildIcons, type FaviconKind, type IconStyle, isIconStyle, STYLE_OPTION
 const logger = new Logger("ChatStateFavicons");
 const ICON_ID = "void-chat-state-favicon";
 const EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
-const STOP_SEL = 'button[aria-label="Stop model response"], button[aria-label*="Stop" i]';
+const STOP_SELECTORS = [
+    'button[aria-label="Stop model response"]',
+    'button[aria-label*="Stop" i]',
+];
+const SEND_SELECTORS = [
+    'button[aria-label*="Send" i]',
+    'button[aria-label*="Submit" i]',
+    'button[type="submit"]',
+];
 
 const settings = definePluginSettings({
     style: {
@@ -34,11 +42,12 @@ let kind: FaviconKind = "wait";
 let wasStreaming = false;
 let justFinished = false;
 let lastWasError = false;
-let lastConv: string | undefined;
+let streamContext: string | undefined;
 let observer: MutationObserver | null = null;
 let composerObs: MutationObserver | null = null;
 let inputCtrl: AbortController | null = null;
 let unsubPage: (() => void) | null = null;
+let unsubRoute: (() => void) | null = null;
 let cancelWait: (() => void) | null = null;
 let raf = 0;
 
@@ -105,24 +114,81 @@ function getPage(): ChatPageStoreState | null {
     }
 }
 
+function contextKey(): string {
+    try {
+        const { route } = RoutingStore.useRoutingStore.getState();
+        if (route.conversationId) return `c:${route.conversationId}`;
+        if (route.page) return `p:${route.page}`;
+    } catch (e) {
+        logger.debug("RoutingStore unavailable:", e);
+    }
+    const page = getPage();
+    if (page?.conversationId) return `c:${page.conversationId}`;
+    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
+    if (/^[a-z0-9_-]{8,}$/i.test(lastSeg)) return `c:${lastSeg}`;
+    return `p:${location.pathname}`;
+}
+
+function lockStreamContext(key: string) {
+    if (!streamContext) {
+        streamContext = key;
+        return;
+    }
+    if (streamContext.startsWith("p:") && key.startsWith("c:")) streamContext = key;
+}
+
+function sameStreamContext(key: string): boolean {
+    if (!streamContext) return true;
+    if (streamContext === key) return true;
+    return streamContext.startsWith("p:") && key.startsWith("c:");
+}
+
 function isVisible(el: Element): boolean {
-    if (!(el instanceof HTMLElement)) return false;
+    if (!(el instanceof HTMLElement) || !el.isConnected) return false;
     if (el.getClientRects().length === 0) return false;
     const style = getComputedStyle(el);
-    return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+    return style.display !== "none" && style.visibility !== "hidden";
 }
 
 function composerRoot(): Element {
     const editor = document.querySelector(EDITOR_SEL);
-    return editor?.closest("form") ?? editor?.closest("div.relative") ?? document.body;
+    if (!editor) return document.body;
+    return editor.closest("form")
+        ?? editor.closest('[class*="composer" i]')
+        ?? editor.parentElement
+        ?? document.body;
 }
 
-function stopButtonVisible(): boolean {
-    const root = composerRoot();
-    for (const btn of root.querySelectorAll(STOP_SEL)) {
-        if (isVisible(btn)) return true;
+function firstVisibleButton(root: ParentNode, selectors: readonly string[]): HTMLElement | null {
+    for (const sel of selectors) {
+        for (const node of root.querySelectorAll(sel)) {
+            if (isVisible(node)) return node as HTMLElement;
+        }
     }
-    return false;
+    return null;
+}
+
+function getStopButton(): HTMLElement | null {
+    const root = composerRoot();
+    const local = firstVisibleButton(root, STOP_SELECTORS);
+    if (local) return local;
+
+    const global = firstVisibleButton(document, STOP_SELECTORS);
+    if (global) return global;
+
+    for (const btn of root.querySelectorAll("button")) {
+        const label = btn.getAttribute("aria-label") ?? "";
+        const text = btn.textContent ?? "";
+        if (/stop/i.test(label) || /\bstop\b/i.test(text)) {
+            if (isVisible(btn)) return btn as HTMLElement;
+        }
+    }
+    return null;
+}
+
+function sendButtonVisible(): boolean {
+    const root = composerRoot();
+    return !!(firstVisibleButton(root, SEND_SELECTORS) ?? firstVisibleButton(document, SEND_SELECTORS));
 }
 
 function isInputEmpty(): boolean {
@@ -135,28 +201,29 @@ function isInputEmpty(): boolean {
 function isStreaming(page: ChatPageStoreState | null): boolean {
     if (page?.streamedMessageId) return true;
     if (page?.showStreamingIndicator) return true;
-    return stopButtonVisible();
+    return getStopButton() != null;
 }
 
 function evaluate() {
     const page = getPage();
-    const conversationId = page?.conversationId;
+    const key = contextKey();
     const streaming = isStreaming(page);
-    const sameConv = lastConv == null || conversationId == null || lastConv === conversationId;
+    const sameContext = sameStreamContext(key);
 
     if (streaming) {
         wasStreaming = true;
         justFinished = false;
-        lastConv = conversationId ?? lastConv;
+        lockStreamContext(key);
         setKind("rotate");
         return;
     }
 
-    if (lastWasError && sameConv) {
+    if (lastWasError && sameContext) {
         if (!isInputEmpty()) {
             lastWasError = false;
             justFinished = false;
             wasStreaming = false;
+            streamContext = undefined;
             setKind("ready");
             return;
         }
@@ -165,29 +232,35 @@ function evaluate() {
     }
 
     if (wasStreaming) {
-        wasStreaming = false;
-        if (sameConv) {
+        if (!sameContext) {
+            wasStreaming = false;
+            justFinished = false;
+            lastWasError = false;
+            streamContext = undefined;
+        } else if (getStopButton() || !sendButtonVisible()) {
+            setKind("rotate");
+            return;
+        } else {
+            wasStreaming = false;
             justFinished = !lastWasError;
             setKind(lastWasError ? "error" : "done");
             return;
         }
-        justFinished = false;
-        lastWasError = false;
     }
 
-    if (justFinished && sameConv) {
+    if (justFinished && sameContext) {
         if (!isInputEmpty()) {
             justFinished = false;
             lastWasError = false;
+            streamContext = undefined;
             setKind("ready");
-            return;
         }
-        setKind(lastWasError ? "error" : "done");
         return;
     }
 
     justFinished = false;
     lastWasError = false;
+    streamContext = undefined;
     setKind(isInputEmpty() ? "wait" : "ready");
 }
 
@@ -199,6 +272,11 @@ function scheduleEvaluate() {
     });
 }
 
+function onComposerInput() {
+    if (kind === "rotate" || wasStreaming) return;
+    scheduleEvaluate();
+}
+
 function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
     let error = false;
     try {
@@ -207,9 +285,7 @@ function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
     } catch (e) {
         logger.debug("ResponseStore unavailable:", e);
     }
-    lastConv = getPage()?.conversationId ?? lastConv;
     lastWasError = error;
-    justFinished = !error;
     wasStreaming = true;
     evaluate();
 }
@@ -244,15 +320,43 @@ function startInputWatch() {
     inputCtrl?.abort();
     inputCtrl = new AbortController();
     const { signal } = inputCtrl;
-    document.addEventListener("input", scheduleEvaluate, { capture: true, passive: true, signal });
-    document.addEventListener("compositionend", scheduleEvaluate, { capture: true, passive: true, signal });
+    document.addEventListener("input", onComposerInput, { capture: true, passive: true, signal });
+    document.addEventListener("compositionend", onComposerInput, { capture: true, passive: true, signal });
+    window.addEventListener("popstate", scheduleEvaluate, { signal });
+}
+
+function isButtonNode(node: Node): boolean {
+    if (!(node instanceof HTMLElement)) return false;
+    return node.tagName === "BUTTON" || node.querySelector("button") != null;
 }
 
 function startComposerWatch() {
     composerObs?.disconnect();
     const target = composerRoot();
     if (!target) return;
-    composerObs = new MutationObserver(() => scheduleEvaluate());
+    composerObs = new MutationObserver(list => {
+        for (const m of list) {
+            if (m.type === "attributes") {
+                if (m.target instanceof HTMLElement && m.target.tagName === "BUTTON") {
+                    scheduleEvaluate();
+                    return;
+                }
+                continue;
+            }
+            for (const node of m.addedNodes) {
+                if (isButtonNode(node)) {
+                    scheduleEvaluate();
+                    return;
+                }
+            }
+            for (const node of m.removedNodes) {
+                if (isButtonNode(node)) {
+                    scheduleEvaluate();
+                    return;
+                }
+            }
+        }
+    });
     composerObs.observe(target, {
         childList: true,
         subtree: true,
@@ -276,6 +380,17 @@ function attachStore(mod?: ChatPageStoreModule) {
         logger.debug("selector subscribe failed, using full subscribe:", e);
         unsubPage = store.subscribe(() => scheduleEvaluate());
     }
+
+    try {
+        unsubRoute?.();
+        const routeStore = RoutingStore.useRoutingStore;
+        if (typeof routeStore?.subscribe === "function") {
+            unsubRoute = routeStore.subscribe(() => scheduleEvaluate());
+        }
+    } catch (e) {
+        logger.debug("RoutingStore subscribe failed:", e);
+    }
+
     evaluate();
     return true;
 }
@@ -323,6 +438,8 @@ export default definePlugin({
         cancelWait = null;
         unsubPage?.();
         unsubPage = null;
+        unsubRoute?.();
+        unsubRoute = null;
         inputCtrl?.abort();
         inputCtrl = null;
         composerObs?.disconnect();
@@ -330,7 +447,7 @@ export default definePlugin({
         wasStreaming = false;
         justFinished = false;
         lastWasError = false;
-        lastConv = undefined;
+        streamContext = undefined;
         restoreOfficial();
     },
 
