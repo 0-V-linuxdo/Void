@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820] v1.0.1
+// @version      [20260820] v1.0.2
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820] v1.0.1 — A modification for grok.com
+ * Void++ [20260820] v1.0.2 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820] v1.0.1"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"dcc21dc"}`
-    }, `(${"dcc21dc"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820] v1.0.2"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8547d03"}`
+    }, `(${"8547d03"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6974,9 +6974,29 @@ html.void-rt-open [data-sidebar="gap"] {
       return null;
     if (route.conversationId)
       return route.conversationId;
+    if (typeof route.chat === "string" && route.chat)
+      return route.chat;
     if (route.page === "main")
       return HOME_ID;
     return null;
+  }
+  function projectIdFromUrl() {
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    return m?.[1] ?? "";
+  }
+  function chatIdFromUrl() {
+    try {
+      return new URLSearchParams(location.search).get("chat") ?? "";
+    } catch {
+      return "";
+    }
+  }
+  function hrefFor(id, workspaceId) {
+    if (!id)
+      return workspaceId ? `/project/${workspaceId}` : "/";
+    if (workspaceId)
+      return `/project/${workspaceId}?chat=${encodeURIComponent(id)}`;
+    return `/c/${encodeURIComponent(id)}`;
   }
   function currentVisit() {
     try {
@@ -6987,11 +7007,13 @@ html.void-rt-open [data-sidebar="gap"] {
       logger17.debug("ChatPageStore unavailable:", e);
     }
     try {
-      return routeConvId(RoutingStore.useRoutingStore.getState().route);
+      const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
+      if (id != null)
+        return id;
     } catch (e) {
       logger17.debug("RoutingStore unavailable:", e);
-      return null;
     }
+    return chatIdFromUrl() || null;
   }
   function idsFromHistory() {
     try {
@@ -7050,6 +7072,19 @@ html.void-rt-open [data-sidebar="gap"] {
       if (workspaceId)
         return workspaceId;
     } catch {}
+    return projectIdFromUrl();
+  }
+  function workspaceFromHistory(id) {
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      if (routeConvId(route) === id && route.workspaceId)
+        return route.workspaceId;
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
+        const r = historyStack[i];
+        if (routeConvId(r) === id && r?.workspaceId)
+          return r.workspaceId;
+      }
+    } catch {}
     return "";
   }
   function workspaceOf(id) {
@@ -7063,7 +7098,10 @@ html.void-rt-open [data-sidebar="gap"] {
     const conv = lookup(id);
     if (conv?.workspaces?.[0])
       return conv.workspaces[0];
-    return settings6.plain.workspaceByConv?.[id] ?? "";
+    const cached = settings6.plain.workspaceByConv?.[id];
+    if (cached)
+      return cached;
+    return workspaceFromHistory(id);
   }
   function labelText(el) {
     return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
@@ -7113,9 +7151,11 @@ html.void-rt-open [data-sidebar="gap"] {
     let page;
     try {
       const { route } = RoutingStore.useRoutingStore.getState();
-      if (route.conversationId === id)
+      if (routeConvId(route) === id || id === currentVisit())
         page = route.page;
     } catch {}
+    if (!page && projectIdFromUrl())
+      page = "workspace";
     if (page) {
       const prevPages = settings6.plain.pages ?? {};
       if (prevPages[id] !== page)
@@ -7230,22 +7270,44 @@ html.void-rt-open [data-sidebar="gap"] {
       const { route } = routing;
       const teamId = route.teamId ?? null;
       if (!id) {
-        if (route.page === "main" || route.page === "chat" && !route.conversationId)
+        if (route.page === "main" || route.page === "chat" && !route.conversationId && !projectIdFromUrl())
           return;
         routing.push({ page: "main", teamId });
         return;
       }
       const workspaceId = workspaceOf(id) || undefined;
-      const savedPage = settings6.plain.pages?.[id];
-      const page = savedPage === "workspace" || workspaceId && route.page === "workspace" ? "workspace" : "chat";
-      if (route.conversationId === id && (route.workspaceId || "") === (workspaceId || "") && route.page === page)
+      const href = hrefFor(id, workspaceId);
+      const next = workspaceId ? { page: "workspace", conversationId: id, workspaceId, chat: id, teamId } : { page: "chat", conversationId: id, teamId };
+      if (routeConvId(route) === id && (route.workspaceId || "") === (workspaceId || "") && (workspaceId ? route.page === "workspace" : route.page === "chat"))
         return;
-      const next = { page, conversationId: id, teamId };
-      if (workspaceId)
-        next.workspaceId = workspaceId;
-      routing.push(next);
+      let dest = next;
+      try {
+        const parsed = RoutingStore.urlToRoute?.(href);
+        if (parsed?.page) {
+          if (teamId != null && parsed.teamId == null)
+            parsed.teamId = teamId;
+          if (workspaceId && !parsed.workspaceId)
+            parsed.workspaceId = workspaceId;
+          if (id && !parsed.conversationId)
+            parsed.conversationId = id;
+          if (workspaceId && parsed.page !== "workspace")
+            parsed.page = "workspace";
+          dest = parsed;
+        }
+      } catch (e) {
+        logger17.debug("urlToRoute failed:", e);
+      }
+      if (dest.page === "workspace" && !dest.workspaceId) {
+        dest = workspaceId ? { ...dest, workspaceId, conversationId: dest.conversationId || id } : { page: "chat", conversationId: id, teamId };
+      }
+      routing.push(dest);
     } catch (e) {
       logger17.error("Failed to navigate:", e);
+      try {
+        location.assign(hrefFor(id, workspaceOf(id) || undefined));
+      } catch (navErr) {
+        logger17.error("Fallback navigation failed:", navErr);
+      }
     }
   }
   function isTrigger(e) {

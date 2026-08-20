@@ -9,7 +9,7 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
-import type { GrokPage, GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
+import type { GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
 import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
@@ -151,8 +151,28 @@ function rememberTitle(id: string, title?: string) {
 function routeConvId(route?: GrokRoute | null): string | null {
     if (!route) return null;
     if (route.conversationId) return route.conversationId;
+    if (typeof route.chat === "string" && route.chat) return route.chat;
     if (route.page === "main") return HOME_ID;
     return null;
+}
+
+function projectIdFromUrl(): string {
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    return m?.[1] ?? "";
+}
+
+function chatIdFromUrl(): string {
+    try {
+        return new URLSearchParams(location.search).get("chat") ?? "";
+    } catch {
+        return "";
+    }
+}
+
+function hrefFor(id: string, workspaceId?: string): string {
+    if (!id) return workspaceId ? `/project/${workspaceId}` : "/";
+    if (workspaceId) return `/project/${workspaceId}?chat=${encodeURIComponent(id)}`;
+    return `/c/${encodeURIComponent(id)}`;
 }
 
 function currentVisit(): string | null {
@@ -163,11 +183,12 @@ function currentVisit(): string | null {
         logger.debug("ChatPageStore unavailable:", e);
     }
     try {
-        return routeConvId(RoutingStore.useRoutingStore.getState().route);
+        const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
+        if (id != null) return id;
     } catch (e) {
         logger.debug("RoutingStore unavailable:", e);
-        return null;
     }
+    return chatIdFromUrl() || null;
 }
 
 function idsFromHistory(): string[] {
@@ -222,6 +243,18 @@ function liveWorkspaceId(): string {
         const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
         if (workspaceId) return workspaceId;
     } catch {}
+    return projectIdFromUrl();
+}
+
+function workspaceFromHistory(id: string): string {
+    try {
+        const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+        if (routeConvId(route) === id && route.workspaceId) return route.workspaceId;
+        for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--) {
+            const r = historyStack[i];
+            if (routeConvId(r) === id && r?.workspaceId) return r.workspaceId;
+        }
+    } catch {}
     return "";
 }
 
@@ -233,7 +266,9 @@ function workspaceOf(id: string): string {
     }
     const conv = lookup(id);
     if (conv?.workspaces?.[0]) return conv.workspaces[0];
-    return settings.plain.workspaceByConv?.[id] ?? "";
+    const cached = settings.plain.workspaceByConv?.[id];
+    if (cached) return cached;
+    return workspaceFromHistory(id);
 }
 
 function labelText(el: Element): string {
@@ -276,8 +311,9 @@ function rememberProject(id: string) {
     let page: string | undefined;
     try {
         const { route } = RoutingStore.useRoutingStore.getState();
-        if (route.conversationId === id) page = route.page;
+        if (routeConvId(route) === id || id === currentVisit()) page = route.page;
     } catch {}
+    if (!page && projectIdFromUrl()) page = "workspace";
     if (page) {
         const prevPages = settings.plain.pages ?? {};
         if (prevPages[id] !== page) settings.store.pages = { ...prevPages, [id]: page };
@@ -390,21 +426,47 @@ function navigateTo(id: string) {
         const { route } = routing;
         const teamId = route.teamId ?? null;
         if (!id) {
-            if (route.page === "main" || (route.page === "chat" && !route.conversationId)) return;
+            if (route.page === "main" || (route.page === "chat" && !route.conversationId && !projectIdFromUrl())) return;
             routing.push({ page: "main", teamId });
             return;
         }
         const workspaceId = workspaceOf(id) || undefined;
-        const savedPage = settings.plain.pages?.[id];
-        const page: GrokPage = savedPage === "workspace" || (workspaceId && route.page === "workspace")
-            ? "workspace"
-            : "chat";
-        if (route.conversationId === id && (route.workspaceId || "") === (workspaceId || "") && route.page === page) return;
-        const next: GrokRoute = { page, conversationId: id, teamId };
-        if (workspaceId) next.workspaceId = workspaceId;
-        routing.push(next);
+        const href = hrefFor(id, workspaceId);
+        // Never push a workspace route without an id — Grok turns that into /project.
+        const next: GrokRoute = workspaceId
+            ? { page: "workspace", conversationId: id, workspaceId, chat: id, teamId }
+            : { page: "chat", conversationId: id, teamId };
+        if (
+            routeConvId(route) === id
+            && (route.workspaceId || "") === (workspaceId || "")
+            && (workspaceId ? route.page === "workspace" : route.page === "chat")
+        ) return;
+        let dest = next;
+        try {
+            const parsed = RoutingStore.urlToRoute?.(href);
+            if (parsed?.page) {
+                if (teamId != null && parsed.teamId == null) parsed.teamId = teamId;
+                if (workspaceId && !parsed.workspaceId) parsed.workspaceId = workspaceId;
+                if (id && !parsed.conversationId) parsed.conversationId = id;
+                if (workspaceId && parsed.page !== "workspace") parsed.page = "workspace";
+                dest = parsed;
+            }
+        } catch (e) {
+            logger.debug("urlToRoute failed:", e);
+        }
+        if (dest.page === "workspace" && !dest.workspaceId) {
+            dest = workspaceId
+                ? { ...dest, workspaceId, conversationId: dest.conversationId || id }
+                : { page: "chat", conversationId: id, teamId };
+        }
+        routing.push(dest);
     } catch (e) {
         logger.error("Failed to navigate:", e);
+        try {
+            location.assign(hrefFor(id, workspaceOf(id) || undefined));
+        } catch (navErr) {
+            logger.error("Fallback navigation failed:", navErr);
+        }
     }
 }
 
