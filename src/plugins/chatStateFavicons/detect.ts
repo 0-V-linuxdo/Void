@@ -24,6 +24,12 @@ export function isVisible(el: Element | null | undefined): el is HTMLElement {
     return style.visibility !== "hidden" && style.display !== "none";
 }
 
+export function isStopControl(el: Element): boolean {
+    const label = el.getAttribute("aria-label") ?? "";
+    const text = el.textContent ?? "";
+    return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
+}
+
 export function getActiveEditor(): HTMLElement | null {
     const list = Array.from(document.querySelectorAll<HTMLElement>(EDITOR_SEL));
     return list.find(isVisible) ?? list[0] ?? null;
@@ -46,29 +52,23 @@ export function collectStopButtons(root: ParentNode): HTMLElement[] {
     }
     if (candidates.length === 0) {
         for (const btn of root.querySelectorAll("button")) {
-            if (!(btn instanceof HTMLElement)) continue;
-            const label = btn.getAttribute("aria-label") ?? "";
-            const text = btn.textContent ?? "";
-            if (/stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止")) candidates.push(btn);
+            if (btn instanceof HTMLElement && isStopControl(btn)) candidates.push(btn);
         }
     }
     return candidates;
 }
 
 export function getStopButton(): HTMLElement | null {
-    for (const root of [getComposerRoot(), document.body]) {
-        const candidates = collectStopButtons(root);
-        const found = candidates.find(isVisible) ?? candidates[0];
-        if (found) return found;
-    }
-    return null;
+    const candidates = collectStopButtons(document);
+    return candidates.find(isVisible) ?? candidates[0] ?? null;
 }
 
 export function submitIsVisible(): boolean {
     const root = getComposerRoot();
     for (const sel of SEND_SELECTORS) {
         for (const node of root.querySelectorAll(sel)) {
-            if (isVisible(node)) return true;
+            if (!isVisible(node) || isStopControl(node)) continue;
+            return true;
         }
     }
     return false;

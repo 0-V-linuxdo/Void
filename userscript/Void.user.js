@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"dcc878f"}`
-    }, `(${"dcc878f"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"3a4a074"}`
+    }, `(${"3a4a074"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text, {
@@ -9066,6 +9066,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const style = getComputedStyle(el);
     return style.visibility !== "hidden" && style.display !== "none";
   }
+  function isStopControl(el) {
+    const label = el.getAttribute("aria-label") ?? "";
+    const text = el.textContent ?? "";
+    return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
+  }
   function getActiveEditor() {
     const list = Array.from(document.querySelectorAll(EDITOR_SEL));
     return list.find(isVisible) ?? list[0] ?? null;
@@ -9084,31 +9089,23 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
     if (candidates.length === 0) {
       for (const btn of root.querySelectorAll("button")) {
-        if (!(btn instanceof HTMLElement))
-          continue;
-        const label = btn.getAttribute("aria-label") ?? "";
-        const text = btn.textContent ?? "";
-        if (/stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止"))
+        if (btn instanceof HTMLElement && isStopControl(btn))
           candidates.push(btn);
       }
     }
     return candidates;
   }
   function getStopButton() {
-    for (const root of [getComposerRoot(), document.body]) {
-      const candidates = collectStopButtons(root);
-      const found = candidates.find(isVisible) ?? candidates[0];
-      if (found)
-        return found;
-    }
-    return null;
+    const candidates = collectStopButtons(document);
+    return candidates.find(isVisible) ?? candidates[0] ?? null;
   }
   function submitIsVisible() {
     const root = getComposerRoot();
     for (const sel of SEND_SELECTORS) {
       for (const node of root.querySelectorAll(sel)) {
-        if (isVisible(node))
-          return true;
+        if (!isVisible(node) || isStopControl(node))
+          continue;
+        return true;
       }
     }
     return false;
@@ -9381,14 +9378,19 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
     if (wasStreaming) {
       const sameContext = !streamContext || !contextKey || streamContext === contextKey;
-      wasStreaming = false;
-      if (sameContext && submitIsVisible()) {
+      if (!sameContext) {
+        wasStreaming = false;
+        justFinished = false;
+        streamContext = null;
+      } else if (!submitIsVisible()) {
+        setKind("rotate");
+        return;
+      } else {
+        wasStreaming = false;
         justFinished = true;
         setKind("done");
         return;
       }
-      justFinished = false;
-      streamContext = null;
     }
     if (justFinished) {
       const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);

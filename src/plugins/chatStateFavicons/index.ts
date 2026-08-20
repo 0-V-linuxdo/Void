@@ -165,14 +165,19 @@ function evaluateState() {
 
     if (wasStreaming) {
         const sameContext = !streamContext || !contextKey || streamContext === contextKey;
-        wasStreaming = false;
-        if (sameContext && submitIsVisible()) {
+        if (!sameContext) {
+            wasStreaming = false;
+            justFinished = false;
+            streamContext = null;
+        } else if (!submitIsVisible()) {
+            setKind("rotate");
+            return;
+        } else {
+            wasStreaming = false;
             justFinished = true;
             setKind("done");
             return;
         }
-        justFinished = false;
-        streamContext = null;
     }
 
     if (justFinished) {
