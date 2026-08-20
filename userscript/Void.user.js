@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260819] v1.0.0
+// @version      [20260820] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260819] v1.0.0 — A modification for grok.com
+ * Void++ [20260820] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5895,9 +5895,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"d011b50"}`
-    }, `(${"d011b50"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"71db80d"}`
+    }, `(${"71db80d"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6534,36 +6534,41 @@ div:has(> button[aria-label*="Dictation"]) {
 
   // void-css:/tmp/void/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root {
-    contain: content;
     isolation: isolate;
     position: fixed;
     inset: 0;
-    z-index: 2147483000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    z-index: 2147483646;
+    display: grid;
+    place-items: center;
     width: 100vw;
     height: 100dvh;
-    gap: 1.25rem;
-    padding: 1.5rem;
     pointer-events: auto;
 }
 
 .void-rt-backdrop {
     position: absolute;
     inset: 0;
-    background: rgb(0 0 0 / 52%);
+    background: rgb(0 0 0 / 42%);
+    backdrop-filter: blur(22px);
+}
+
+.void-rt-hud {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    max-width: 100%;
+    padding: 1.25rem 1rem 1.5rem;
 }
 
 .void-rt-stage {
-    position: relative;
     display: flex;
-    gap: 0.75rem;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    max-width: min(76rem, calc(100vw - 2rem));
-    padding: 1rem 0.25rem;
+    gap: 0.7rem;
+    max-width: min(70rem, calc(100vw - 1.5rem));
+    padding: 1.35rem 0.75rem 1.1rem;
     overflow-x: auto;
     scrollbar-width: none;
 }
@@ -6573,145 +6578,158 @@ div:has(> button[aria-label*="Dictation"]) {
 }
 
 .void-rt-card {
+    appearance: none;
     position: relative;
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;
-    width: 11.5rem;
-    min-height: 9.5rem;
-    padding: 0.75rem;
-    border: 1px solid rgb(255 255 255 / 10%);
-    border-radius: 1rem;
-    background: var(--bg-composer, #161616);
-    color: var(--text-primary, #eee);
-    opacity: 0.46;
-    transform: scale(0.92);
+    width: 13.25rem;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 0.7rem;
+    background: #1d1d1f;
+    color: #f5f5f7;
+    opacity: 0.62;
+    transform: scale(0.84);
+    box-shadow: 0 10px 28px rgb(0 0 0 / 28%);
     cursor: pointer;
-    contain: content;
-    text-align: left;
     font: inherit;
+    text-align: left;
     user-select: none;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    transition: transform 0.12s ease, opacity 0.12s ease;
 }
 
 .void-rt-card-on {
     opacity: 1;
-    transform: scale(1.06);
-    border-color: rgb(255 255 255 / 82%);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 82%);
+    transform: scale(1);
+    border-color: rgb(255 255 255 / 95%);
+    box-shadow:
+        0 0 0 2px #fff,
+        0 22px 48px rgb(0 0 0 / 48%);
     z-index: 1;
 }
 
-.void-rt-card-starred .void-rt-index::after {
-    content: "";
-    display: inline-block;
-    width: 0.35rem;
-    height: 0.35rem;
-    margin-left: 0.4rem;
-    vertical-align: middle;
-    border-radius: 999px;
-    background: currentcolor;
-    opacity: 0.7;
-}
-
-.void-rt-chrome {
+.void-rt-bar {
     display: flex;
-    gap: 0.25rem;
-    margin-bottom: 0.55rem;
+    align-items: center;
+    gap: 0.45rem;
+    height: 1.65rem;
+    padding: 0 0.55rem;
+    background: #2c2c2e;
+    border-bottom: 1px solid rgb(255 255 255 / 6%);
 }
 
-.void-rt-chrome span {
-    width: 0.375rem;
-    height: 0.375rem;
+.void-rt-dots {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.28rem;
+}
+
+.void-rt-dots span {
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 999px;
-    background: currentcolor;
-    opacity: 0.28;
 }
 
-.void-rt-index {
-    font-size: 0.6875rem;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    opacity: 0.45;
+.void-rt-dots span:nth-child(1) {
+    background: #ff5f57;
 }
 
-.void-rt-title {
-    display: -webkit-box;
+.void-rt-dots span:nth-child(2) {
+    background: #febc2e;
+}
+
+.void-rt-dots span:nth-child(3) {
+    background: #28c840;
+}
+
+.void-rt-tab {
+    min-width: 0;
     overflow: hidden;
-    margin-top: 0.35rem;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    font-size: 0.9375rem;
-    font-weight: 550;
-    line-height: 1.3;
-    overflow-wrap: break-word;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    opacity: 0.72;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.void-rt-preview {
+.void-rt-shot {
     display: flex;
     flex-direction: column;
-    gap: 0.28rem;
-    margin-top: 0.7rem;
-    flex: 1;
+    justify-content: flex-end;
+    gap: 0.38rem;
+    height: 8.25rem;
+    padding: 0.7rem 0.65rem 0.75rem;
+    background:
+        linear-gradient(180deg, #141416 0%, #0c0c0d 100%);
 }
 
-.void-rt-preview span {
+.void-rt-bubble {
     display: block;
-    height: 0.32rem;
-    border-radius: 999px;
-    background: currentcolor;
-    opacity: 0.12;
+    height: 1.15rem;
+    border-radius: 0.7rem;
+    background: rgb(255 255 255 / 7%);
 }
 
-.void-rt-preview span:nth-child(2) {
+.void-rt-bubble:nth-child(1) {
+    width: 58%;
+    align-self: flex-end;
+    background: rgb(255 255 255 / 13%);
+}
+
+.void-rt-bubble:nth-child(2) {
     width: 78%;
 }
 
-.void-rt-preview span:nth-child(3) {
-    width: 52%;
+.void-rt-bubble:nth-child(3) {
+    width: 46%;
 }
 
-.void-rt-time {
-    margin-top: auto;
-    padding-top: 0.7rem;
-    font-size: 0.75rem;
-    opacity: 0.5;
+.void-rt-caption {
+    max-width: min(34rem, calc(100vw - 2.5rem));
+    overflow: hidden;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    color: #fff;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .void-rt-hint {
-    position: relative;
-    max-width: min(36rem, calc(100vw - 2rem));
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     font-size: 0.75rem;
     letter-spacing: 0.01em;
-    color: rgb(255 255 255 / 62%);
+    color: rgb(255 255 255 / 46%);
     pointer-events: none;
     text-align: center;
 }
 
 .void-rt-empty {
     position: relative;
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.25rem;
     border: 1px solid rgb(255 255 255 / 10%);
-    border-radius: 1rem;
-    background: var(--bg-composer, #161616);
-    color: var(--text-primary, #eee);
+    border-radius: 0.85rem;
+    background: rgb(28 28 30 / 92%);
+    color: #eee;
 }
 
 @media (width <= 40rem) {
     .void-rt-stage {
         justify-content: flex-start;
         gap: 0.5rem;
+        padding-inline: 0.35rem;
     }
 
     .void-rt-card {
-        width: 8.25rem;
-        min-height: 8rem;
-        padding: 0.625rem;
+        width: 9.75rem;
+    }
+
+    .void-rt-shot {
+        height: 6.5rem;
     }
 }
 
@@ -6726,15 +6744,13 @@ div:has(> button[aria-label*="Dictation"]) {
   var logger17 = new Logger("RecentTopics");
   var cl17 = classNameFactory("void-rt-");
   var HOME_ID = "";
-  var MINUTE = 60000;
-  var HOUR = 60 * MINUTE;
-  var DAY = 24 * HOUR;
   var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
   var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
+  var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
   var settings6 = definePluginSettings({
     maxRecent: {
       type: 5 /* SLIDER */,
-      description: "How many recent conversations to show.",
+      description: "How many recently opened conversations to show.",
       min: 3,
       max: 12,
       default: 5
@@ -6751,96 +6767,133 @@ div:has(> button[aria-label*="Dictation"]) {
   var held = false;
   var ctrlHeld = false;
   var keys = null;
-  function readMru() {
-    return settings6.plain.mru ?? [];
+  function unique(ids) {
+    const seen = new Set;
+    const out = [];
+    for (const id of ids) {
+      if (seen.has(id))
+        continue;
+      seen.add(id);
+      out.push(id);
+    }
+    return out;
   }
-  function writeMru(next) {
-    const prev = readMru();
+  function readVisits() {
+    return settings6.plain.visits ?? [];
+  }
+  function capVisits(ids) {
+    const allowHome = settings6.store.includeHome;
+    return unique(ids).filter((id) => id || allowHome).slice(0, settings6.store.maxRecent);
+  }
+  function writeVisits(next) {
+    const prev = readVisits();
     if (next.length === prev.length && next.every((id, i) => id === prev[i]))
       return;
-    settings6.store.mru = next;
+    const titles = settings6.plain.titles ?? {};
+    const keep = {};
+    for (const id of next) {
+      if (titles[id])
+        keep[id] = titles[id];
+    }
+    settings6.store.visits = next;
+    settings6.store.titles = keep;
     ui.notify();
   }
-  function capMru(ids) {
-    const allowHome = settings6.store.includeHome;
-    return ids.filter((id) => id || allowHome).slice(0, settings6.store.maxRecent);
-  }
-  function bump(id) {
-    if (!id && !settings6.store.includeHome)
+  function rememberTitle(id, title) {
+    const t = title?.trim();
+    if (!id || !t)
       return;
-    writeMru(capMru([id, ...readMru().filter((x) => x !== id)]));
+    const prev = settings6.plain.titles ?? {};
+    if (prev[id] === t)
+      return;
+    settings6.store.titles = { ...prev, [id]: t };
   }
-  function prune(alive) {
-    writeMru(readMru().filter((id) => !id || alive.has(id)));
+  function routeConvId(route) {
+    if (!route)
+      return null;
+    if (route.conversationId)
+      return route.conversationId;
+    if (route.page === "main")
+      return HOME_ID;
+    return null;
   }
-  function activeId() {
+  function currentVisit() {
     try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      if (route?.page === "chat")
-        return route.conversationId ?? HOME_ID;
-      if (route?.page === "main")
-        return HOME_ID;
-    } catch (e) {
-      logger17.debug("RoutingStore unavailable:", e);
-    }
-    try {
-      return ChatPageStore.useChatPageStore.getState().conversationId ?? HOME_ID;
+      const id = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (id)
+        return id;
     } catch (e) {
       logger17.debug("ChatPageStore unavailable:", e);
-      return HOME_ID;
+    }
+    try {
+      return routeConvId(RoutingStore.useRoutingStore.getState().route);
+    } catch (e) {
+      logger17.debug("RoutingStore unavailable:", e);
+      return null;
     }
   }
-  function conversationList() {
+  function idsFromHistory() {
     try {
-      return ConversationStore.useConversationStore.getState().list ?? [];
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      const ids = [];
+      const add = (r) => {
+        const id = routeConvId(r);
+        if (id != null)
+          ids.push(id);
+      };
+      add(route);
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
+        add(historyStack[i]);
+      return unique(ids);
     } catch (e) {
-      logger17.debug("ConversationStore unavailable:", e);
+      logger17.debug("historyStack unavailable:", e);
       return [];
     }
   }
-  function seedIfEmpty() {
-    if (readMru().length)
-      return;
-    const current = activeId();
-    const rest = conversationList().map((c) => c.conversationId).filter((id) => id !== current);
-    writeMru(capMru([current, ...rest]));
+  function pageTitle() {
+    const raw = document.title.replace(TITLE_TAIL, "").trim();
+    if (!raw || /^grok$/i.test(raw))
+      return "";
+    return raw;
   }
   function lookup(id) {
     try {
-      const { byId, list } = ConversationStore.useConversationStore.getState();
-      return byId[id] ?? list.find((c) => c.conversationId === id);
+      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
     } catch (e) {
       logger17.debug("Conversation lookup failed:", e);
       return;
     }
   }
-  function topics() {
-    return capMru(readMru()).map((id) => {
-      if (!id)
-        return { id: HOME_ID, title: "New chat", starred: false, time: "" };
-      const conv = lookup(id);
-      return {
-        id,
-        title: conv?.title?.trim() || "Untitled",
-        starred: !!conv?.starred,
-        time: conv?.modifyTime || conv?.createTime || ""
-      };
-    });
+  function titleOf(id) {
+    if (!id)
+      return "New chat";
+    const conv = lookup(id);
+    if (conv?.title?.trim())
+      return conv.title.trim();
+    const cached = settings6.plain.titles?.[id];
+    if (cached)
+      return cached;
+    if (id === currentVisit())
+      return pageTitle() || "Untitled";
+    return "Untitled";
   }
-  function formatRelative(iso) {
-    if (!iso)
-      return "";
-    const ms = Date.now() - new Date(iso).getTime();
-    if (!Number.isFinite(ms) || ms < 0)
-      return "";
-    if (ms < MINUTE)
-      return "Just now";
-    if (ms < HOUR)
-      return `${Math.floor(ms / MINUTE)}m ago`;
-    if (ms < DAY)
-      return `${Math.floor(ms / HOUR)}h ago`;
-    const d = Math.floor(ms / DAY);
-    return d === 1 ? "Yesterday" : `${d}d ago`;
+  function bump(id) {
+    if (!id && !settings6.store.includeHome)
+      return;
+    const conv = id ? lookup(id) : undefined;
+    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    writeVisits(capVisits([id, ...readVisits()]));
+  }
+  function hydrate() {
+    const current = currentVisit();
+    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
+    writeVisits(capVisits(merged));
+    if (current)
+      rememberTitle(current, lookup(current)?.title || pageTitle());
+  }
+  function topics() {
+    return capVisits(readVisits()).map((id) => ({ id, title: titleOf(id) }));
   }
   function navigateTo(id) {
     try {
@@ -6848,7 +6901,7 @@ div:has(> button[aria-label*="Dictation"]) {
       const { route } = routing;
       const teamId = route.teamId ?? null;
       if (id) {
-        if (route.page === "chat" && route.conversationId === id)
+        if (route.conversationId === id)
           return;
         routing.push({ page: "chat", conversationId: id, teamId });
         return;
@@ -6869,7 +6922,10 @@ div:has(> button[aria-label*="Dictation"]) {
     return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
   }
   function begin(reverse, fromHold) {
-    seedIfEmpty();
+    hydrate();
+    const current = currentVisit();
+    if (current != null)
+      bump(current);
     const items = topics();
     selected = 0;
     if (items.length > 1)
@@ -6956,29 +7012,6 @@ div:has(> button[aria-label*="Dictation"]) {
     selected = index;
     commit();
   }
-  function RecentIcon() {
-    return /* @__PURE__ */ React.createElement("svg", {
-      width: 18,
-      height: 18,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "1.75",
-      "aria-hidden": true
-    }, /* @__PURE__ */ React.createElement("rect", {
-      x: "3",
-      y: "6",
-      width: "10",
-      height: "14",
-      rx: "1.5"
-    }), /* @__PURE__ */ React.createElement("rect", {
-      x: "11",
-      y: "4",
-      width: "10",
-      height: "14",
-      rx: "1.5"
-    }));
-  }
   function Switcher() {
     useExternalStore(ui);
     const stageRef = useRef(null);
@@ -6991,11 +7024,11 @@ div:has(> button[aria-label*="Dictation"]) {
       return null;
     const items = topics();
     const active = items[selected];
-    let hint = "Click a conversation · Esc cancel";
+    let hint = "Esc to cancel";
     if (active && held)
-      hint = `Release Ctrl to open ${active.title}`;
+      hint = "Release Ctrl to switch";
     else if (active)
-      hint = `Click to open ${active.title}`;
+      hint = "Click to switch";
     return /* @__PURE__ */ React.createElement("div", {
       className: cl17("root"),
       role: "dialog",
@@ -7004,7 +7037,9 @@ div:has(> button[aria-label*="Dictation"]) {
     }, /* @__PURE__ */ React.createElement("div", {
       className: cl17("backdrop"),
       onClick: cancel
-    }), items.length ? /* @__PURE__ */ React.createElement("div", {
+    }), /* @__PURE__ */ React.createElement("div", {
+      className: cl17("hud")
+    }, items.length ? /* @__PURE__ */ React.createElement("div", {
       ref: stageRef,
       className: cl17("stage")
     }, items.map((topic, i) => /* @__PURE__ */ React.createElement("button", {
@@ -7013,31 +7048,37 @@ div:has(> button[aria-label*="Dictation"]) {
       tabIndex: -1,
       "aria-label": topic.title,
       "aria-current": i === selected,
-      className: classes(cl17("card"), i === selected && cl17("card-on"), topic.starred && cl17("card-starred")),
+      className: classes(cl17("card"), i === selected && cl17("card-on")),
       onMouseEnter: () => {
         selected = i;
         ui.notify();
       },
       onClick: () => pick(i)
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("chrome"),
+      className: cl17("bar"),
       "aria-hidden": true
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: cl17("dots")
     }, /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null)), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("index")
-    }, String(i + 1).padStart(2, "0")), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("title")
-    }, topic.title), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("preview"),
+      className: cl17("tab")
+    }, topic.title)), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("shot"),
       "aria-hidden": true
-    }, /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null), /* @__PURE__ */ React.createElement("span", null)), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("time")
-    }, formatRelative(topic.time) || (topic.id ? "" : "Home"))))) : /* @__PURE__ */ React.createElement("div", {
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: cl17("bubble")
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("bubble")
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: cl17("bubble")
+    }))))) : /* @__PURE__ */ React.createElement("div", {
       className: cl17("empty")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
-    }, "No recent conversations yet.")), /* @__PURE__ */ React.createElement("div", {
+    }, "Open a few chats, then hold Ctrl+` to switch.")), active ? /* @__PURE__ */ React.createElement("div", {
+      className: cl17("caption")
+    }, active.title) : null, /* @__PURE__ */ React.createElement("div", {
       className: cl17("hint")
-    }, hint));
+    }, hint)));
   }
   var Overlay = ErrorBoundary.wrap(Switcher, null);
   var taken = false;
@@ -7060,28 +7101,20 @@ div:has(> button[aria-label*="Dictation"]) {
   }
   var recentTopics_default = definePlugin({
     name: "RecentTopics",
-    description: "Switch recent conversations with Ctrl+` like Arc's tab switcher.",
+    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
     settings: settings6,
     managedStyle: "recentTopics",
-    dependencies: ["ChatBarButtonAPI"],
     _Overlay() {
       return /* @__PURE__ */ React.createElement(LeadOverlay, null);
     },
-    chatBarButton: {
-      icon: () => /* @__PURE__ */ React.createElement(RecentIcon, null),
-      tooltip: "Recent conversations (Ctrl+`)",
-      onClick() {
-        begin(false, false);
-      },
-      order: 2,
-      "aria-label": "Recent conversations",
-      locations: ["chat"]
-    },
     start() {
-      seedIfEmpty();
+      hydrate();
+      const current = currentVisit();
+      if (current != null)
+        bump(current);
       if (keys)
         return;
       keys = new AbortController;
@@ -7099,31 +7132,23 @@ div:has(> button[aria-label*="Dictation"]) {
       ctrlHeld = false;
     },
     onSettingsChange() {
-      writeMru(capMru(readMru()));
+      writeVisits(capVisits(readVisits()));
     },
     zustand: {
       RoutingStore: {
-        selector: (s) => {
-          const page = s.route?.page;
-          if (page === "chat")
-            return `c:${s.route.conversationId ?? ""}`;
-          if (page === "main")
-            return "m:";
-          return "";
-        },
-        handler(key) {
-          if (open2 || !key)
+        selector: (s) => routeConvId(s.route),
+        handler(id) {
+          if (open2 || id == null)
             return;
-          bump(key === "m:" ? HOME_ID : key.slice(2));
+          bump(id);
         }
       },
-      ConversationStore: {
-        selector: (s) => s.list,
-        handler(list) {
-          prune(new Set(list.map((c) => c.conversationId)));
-          seedIfEmpty();
-          if (open2)
-            ui.notify();
+      ChatPageStore: {
+        selector: (s) => s.conversationId ?? null,
+        handler(id) {
+          if (open2 || id == null)
+            return;
+          bump(id);
         }
       }
     },

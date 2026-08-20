@@ -9,12 +9,13 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Text } from "@components/Text";
-import type { ConversationStoreState, GrokConversation } from "@grok-types/stores/ConversationStore";
-import type { RoutingStoreState } from "@grok-types/stores/RoutingStore";
+import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
+import type { GrokConversation } from "@grok-types/stores/ConversationStore";
+import type { GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
 import { React, useEffect, useRef, useState } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
-import { classes,classNameFactory } from "@utils/css";
+import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { createExternalStore } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
@@ -23,16 +24,14 @@ import definePlugin, { OptionType } from "@utils/types";
 const logger = new Logger("RecentTopics");
 const cl = classNameFactory("void-rt-");
 const HOME_ID = "";
-const MINUTE = 60_000;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
 const TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
 const TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
+const TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
 
 const settings = definePluginSettings({
     maxRecent: {
         type: OptionType.SLIDER,
-        description: "How many recent conversations to show.",
+        description: "How many recently opened conversations to show.",
         min: 3,
         max: 12,
         default: 5,
@@ -42,15 +41,13 @@ const settings = definePluginSettings({
         description: "Include the new-chat home page in the switcher.",
         default: true,
     },
-}).withPrivateSettings<{ mru: string[] }>();
+}).withPrivateSettings<{ visits: string[]; titles: Record<string, string> }>();
 
 const ui = createExternalStore();
 
 interface Topic {
     id: string;
     title: string;
-    starred: boolean;
-    time: string;
 }
 
 let open = false;
@@ -59,95 +56,130 @@ let held = false;
 let ctrlHeld = false;
 let keys: AbortController | null = null;
 
-function readMru(): string[] {
-    return settings.plain.mru ?? [];
+function unique(ids: string[]): string[] {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const id of ids) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out.push(id);
+    }
+    return out;
 }
 
-function writeMru(next: string[]) {
-    const prev = readMru();
+function readVisits(): string[] {
+    return settings.plain.visits ?? [];
+}
+
+function capVisits(ids: string[]): string[] {
+    const allowHome = settings.store.includeHome;
+    return unique(ids).filter(id => id || allowHome).slice(0, settings.store.maxRecent);
+}
+
+function writeVisits(next: string[]) {
+    const prev = readVisits();
     if (next.length === prev.length && next.every((id, i) => id === prev[i])) return;
-    settings.store.mru = next;
+    const titles = settings.plain.titles ?? {};
+    const keep: Record<string, string> = {};
+    for (const id of next) {
+        if (titles[id]) keep[id] = titles[id];
+    }
+    settings.store.visits = next;
+    settings.store.titles = keep;
     ui.notify();
 }
 
-function capMru(ids: string[]): string[] {
-    const allowHome = settings.store.includeHome;
-    return ids.filter(id => id || allowHome).slice(0, settings.store.maxRecent);
+function rememberTitle(id: string, title?: string) {
+    const t = title?.trim();
+    if (!id || !t) return;
+    const prev = settings.plain.titles ?? {};
+    if (prev[id] === t) return;
+    settings.store.titles = { ...prev, [id]: t };
 }
 
-function bump(id: string) {
-    if (!id && !settings.store.includeHome) return;
-    writeMru(capMru([id, ...readMru().filter(x => x !== id)]));
+function routeConvId(route?: GrokRoute | null): string | null {
+    if (!route) return null;
+    if (route.conversationId) return route.conversationId;
+    if (route.page === "main") return HOME_ID;
+    return null;
 }
 
-function prune(alive: Set<string>) {
-    writeMru(readMru().filter(id => !id || alive.has(id)));
-}
-
-function activeId(): string {
+function currentVisit(): string | null {
     try {
-        const { route } = RoutingStore.useRoutingStore.getState();
-        if (route?.page === "chat") return route.conversationId ?? HOME_ID;
-        if (route?.page === "main") return HOME_ID;
-    } catch (e) {
-        logger.debug("RoutingStore unavailable:", e);
-    }
-    try {
-        return ChatPageStore.useChatPageStore.getState().conversationId ?? HOME_ID;
+        const id = ChatPageStore.useChatPageStore.getState().conversationId;
+        if (id) return id;
     } catch (e) {
         logger.debug("ChatPageStore unavailable:", e);
-        return HOME_ID;
+    }
+    try {
+        return routeConvId(RoutingStore.useRoutingStore.getState().route);
+    } catch (e) {
+        logger.debug("RoutingStore unavailable:", e);
+        return null;
     }
 }
 
-function conversationList(): GrokConversation[] {
+function idsFromHistory(): string[] {
     try {
-        return ConversationStore.useConversationStore.getState().list ?? [];
+        const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+        const ids: string[] = [];
+        const add = (r?: GrokRoute) => {
+            const id = routeConvId(r);
+            if (id != null) ids.push(id);
+        };
+        add(route);
+        for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--) add(historyStack[i]);
+        return unique(ids);
     } catch (e) {
-        logger.debug("ConversationStore unavailable:", e);
+        logger.debug("historyStack unavailable:", e);
         return [];
     }
 }
 
-function seedIfEmpty() {
-    if (readMru().length) return;
-    const current = activeId();
-    const rest = conversationList().map(c => c.conversationId).filter(id => id !== current);
-    writeMru(capMru([current, ...rest]));
+function pageTitle(): string {
+    const raw = document.title.replace(TITLE_TAIL, "").trim();
+    if (!raw || /^grok$/i.test(raw)) return "";
+    return raw;
 }
 
 function lookup(id: string): GrokConversation | undefined {
     try {
-        const { byId, list } = ConversationStore.useConversationStore.getState();
-        return byId[id] ?? list.find(c => c.conversationId === id);
+        const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+        return byId[id] ?? byIdWithWorkspaces[id] ?? list.find(c => c.conversationId === id);
     } catch (e) {
         logger.debug("Conversation lookup failed:", e);
         return undefined;
     }
 }
 
-function topics(): Topic[] {
-    return capMru(readMru()).map(id => {
-        if (!id) return { id: HOME_ID, title: "New chat", starred: false, time: "" };
-        const conv = lookup(id);
-        return {
-            id,
-            title: conv?.title?.trim() || "Untitled",
-            starred: !!conv?.starred,
-            time: conv?.modifyTime || conv?.createTime || "",
-        };
-    });
+function titleOf(id: string): string {
+    if (!id) return "New chat";
+    const conv = lookup(id);
+    if (conv?.title?.trim()) return conv.title.trim();
+    const cached = settings.plain.titles?.[id];
+    if (cached) return cached;
+    if (id === currentVisit()) return pageTitle() || "Untitled";
+    return "Untitled";
 }
 
-function formatRelative(iso: string): string {
-    if (!iso) return "";
-    const ms = Date.now() - new Date(iso).getTime();
-    if (!Number.isFinite(ms) || ms < 0) return "";
-    if (ms < MINUTE) return "Just now";
-    if (ms < HOUR) return `${Math.floor(ms / MINUTE)}m ago`;
-    if (ms < DAY) return `${Math.floor(ms / HOUR)}h ago`;
-    const d = Math.floor(ms / DAY);
-    return d === 1 ? "Yesterday" : `${d}d ago`;
+function bump(id: string) {
+    if (!id && !settings.store.includeHome) return;
+    const conv = id ? lookup(id) : undefined;
+    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    writeVisits(capVisits([id, ...readVisits()]));
+}
+
+function hydrate() {
+    const current = currentVisit();
+    const merged = current == null
+        ? [...idsFromHistory(), ...readVisits()]
+        : [current, ...idsFromHistory(), ...readVisits()];
+    writeVisits(capVisits(merged));
+    if (current) rememberTitle(current, lookup(current)?.title || pageTitle());
+}
+
+function topics(): Topic[] {
+    return capVisits(readVisits()).map(id => ({ id, title: titleOf(id) }));
 }
 
 function navigateTo(id: string) {
@@ -156,7 +188,7 @@ function navigateTo(id: string) {
         const { route } = routing;
         const teamId = route.teamId ?? null;
         if (id) {
-            if (route.page === "chat" && route.conversationId === id) return;
+            if (route.conversationId === id) return;
             routing.push({ page: "chat", conversationId: id, teamId });
             return;
         }
@@ -177,7 +209,9 @@ function isCtrlKey(e: KeyboardEvent) {
 }
 
 function begin(reverse: boolean, fromHold: boolean) {
-    seedIfEmpty();
+    hydrate();
+    const current = currentVisit();
+    if (current != null) bump(current);
     const items = topics();
     selected = 0;
     if (items.length > 1) selected = reverse ? items.length - 1 : 1;
@@ -263,15 +297,6 @@ function pick(index: number) {
     commit();
 }
 
-function RecentIcon() {
-    return (
-        <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
-            <rect x="3" y="6" width="10" height="14" rx="1.5" />
-            <rect x="11" y="4" width="10" height="14" rx="1.5" />
-        </svg>
-    );
-}
-
 function Switcher() {
     useExternalStore(ui);
     const stageRef = useRef<HTMLDivElement>(null);
@@ -285,50 +310,53 @@ function Switcher() {
 
     const items = topics();
     const active = items[selected];
-    let hint = "Click a conversation · Esc cancel";
-    if (active && held) hint = `Release Ctrl to open ${active.title}`;
-    else if (active) hint = `Click to open ${active.title}`;
+    let hint = "Esc to cancel";
+    if (active && held) hint = "Release Ctrl to switch";
+    else if (active) hint = "Click to switch";
 
     return (
         <div className={cl("root")} role="dialog" aria-modal="true" aria-label="Recent conversations">
             <div className={cl("backdrop")} onClick={cancel} />
-            {items.length
-                ? (
-                    <div ref={stageRef} className={cl("stage")}>
-                        {items.map((topic, i) => (
-                            <button
-                                key={topic.id || "home"}
-                                type="button"
-                                tabIndex={-1}
-                                aria-label={topic.title}
-                                aria-current={i === selected}
-                                className={classes(cl("card"), i === selected && cl("card-on"), topic.starred && cl("card-starred"))}
-                                onMouseEnter={() => { selected = i; ui.notify(); }}
-                                onClick={() => pick(i)}
-                            >
-                                <span className={cl("chrome")} aria-hidden>
-                                    <span />
-                                    <span />
-                                    <span />
-                                </span>
-                                <span className={cl("index")}>{String(i + 1).padStart(2, "0")}</span>
-                                <span className={cl("title")}>{topic.title}</span>
-                                <span className={cl("preview")} aria-hidden>
-                                    <span />
-                                    <span />
-                                    <span />
-                                </span>
-                                <span className={cl("time")}>{formatRelative(topic.time) || (topic.id ? "" : "Home")}</span>
-                            </button>
-                        ))}
-                    </div>
-                )
-                : (
-                    <div className={cl("empty")}>
-                        <Text size="sm">No recent conversations yet.</Text>
-                    </div>
-                )}
-            <div className={cl("hint")}>{hint}</div>
+            <div className={cl("hud")}>
+                {items.length
+                    ? (
+                        <div ref={stageRef} className={cl("stage")}>
+                            {items.map((topic, i) => (
+                                <button
+                                    key={topic.id || "home"}
+                                    type="button"
+                                    tabIndex={-1}
+                                    aria-label={topic.title}
+                                    aria-current={i === selected}
+                                    className={classes(cl("card"), i === selected && cl("card-on"))}
+                                    onMouseEnter={() => { selected = i; ui.notify(); }}
+                                    onClick={() => pick(i)}
+                                >
+                                    <span className={cl("bar")} aria-hidden>
+                                        <span className={cl("dots")}>
+                                            <span />
+                                            <span />
+                                            <span />
+                                        </span>
+                                        <span className={cl("tab")}>{topic.title}</span>
+                                    </span>
+                                    <span className={cl("shot")} aria-hidden>
+                                        <span className={cl("bubble")} />
+                                        <span className={cl("bubble")} />
+                                        <span className={cl("bubble")} />
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    )
+                    : (
+                        <div className={cl("empty")}>
+                            <Text size="sm">Open a few chats, then hold Ctrl+` to switch.</Text>
+                        </div>
+                    )}
+                {active ? <div className={cl("caption")}>{active.title}</div> : null}
+                <div className={cl("hint")}>{hint}</div>
+            </div>
         </div>
     );
 }
@@ -351,29 +379,21 @@ function LeadOverlay() {
 
 export default definePlugin({
     name: "RecentTopics",
-    description: "Switch recent conversations with Ctrl+` like Arc's tab switcher.",
+    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
     settings,
     managedStyle: "recentTopics",
-    dependencies: ["ChatBarButtonAPI"],
 
     _Overlay() {
         return <LeadOverlay />;
     },
 
-    chatBarButton: {
-        icon: () => <RecentIcon />,
-        tooltip: "Recent conversations (Ctrl+`)",
-        onClick() { begin(false, false); },
-        order: 2,
-        "aria-label": "Recent conversations",
-        locations: ["chat"],
-    },
-
     start() {
-        seedIfEmpty();
+        hydrate();
+        const current = currentVisit();
+        if (current != null) bump(current);
         if (keys) return;
         keys = new AbortController();
         const { signal } = keys;
@@ -392,28 +412,22 @@ export default definePlugin({
     },
 
     onSettingsChange() {
-        writeMru(capMru(readMru()));
+        writeVisits(capVisits(readVisits()));
     },
 
     zustand: {
         RoutingStore: {
-            selector: (s: RoutingStoreState) => {
-                const page = s.route?.page;
-                if (page === "chat") return `c:${s.route.conversationId ?? ""}`;
-                if (page === "main") return "m:";
-                return "";
-            },
-            handler(key: string) {
-                if (open || !key) return;
-                bump(key === "m:" ? HOME_ID : key.slice(2));
+            selector: (s: RoutingStoreState) => routeConvId(s.route),
+            handler(id: string | null) {
+                if (open || id == null) return;
+                bump(id);
             },
         },
-        ConversationStore: {
-            selector: (s: ConversationStoreState) => s.list,
-            handler(list: GrokConversation[]) {
-                prune(new Set(list.map(c => c.conversationId)));
-                seedIfEmpty();
-                if (open) ui.notify();
+        ChatPageStore: {
+            selector: (s: ChatPageStoreState) => s.conversationId ?? null,
+            handler(id: string | null) {
+                if (open || id == null) return;
+                bump(id);
             },
         },
     },
