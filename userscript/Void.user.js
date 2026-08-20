@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820] v1.0.2
+// @version      [20260820] v1.0.3
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820] v1.0.2 — A modification for grok.com
+ * Void++ [20260820] v1.0.3 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820] v1.0.2"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8547d03"}`
-    }, `(${"8547d03"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820] v1.0.3"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"f15501b"}`
+    }, `(${"f15501b"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6933,7 +6933,13 @@ html.void-rt-open [data-sidebar="gap"] {
     writing = true;
     try {
       const visits = capVisits(next);
-      const workspaceByConv = pruneRecord(settings6.plain.workspaceByConv, visits);
+      const rawWs = pruneRecord(settings6.plain.workspaceByConv, visits);
+      const workspaceByConv = {};
+      for (const [id, value] of Object.entries(rawWs)) {
+        const ws = asWorkspaceId(value);
+        if (ws)
+          workspaceByConv[id] = ws;
+      }
       const pages = pruneRecord(settings6.plain.pages, visits);
       const usedWs = new Set(Object.values(workspaceByConv));
       const keepProjects = {};
@@ -6981,7 +6987,7 @@ html.void-rt-open [data-sidebar="gap"] {
     return null;
   }
   function projectIdFromUrl() {
-    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
     return m?.[1] ?? "";
   }
   function chatIdFromUrl() {
@@ -6991,11 +6997,32 @@ html.void-rt-open [data-sidebar="gap"] {
       return "";
     }
   }
+  var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
+  function asWorkspaceId(value) {
+    if (typeof value === "string") {
+      const s = value.trim();
+      return WS_ID.test(s) ? s : "";
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const id = asWorkspaceId(item);
+        if (id)
+          return id;
+      }
+      return "";
+    }
+    if (value && typeof value === "object") {
+      const rec = value;
+      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    }
+    return "";
+  }
   function hrefFor(id, workspaceId) {
+    const ws = asWorkspaceId(workspaceId);
     if (!id)
-      return workspaceId ? `/project/${workspaceId}` : "/";
-    if (workspaceId)
-      return `/project/${workspaceId}?chat=${encodeURIComponent(id)}`;
+      return ws ? `/project/${ws}` : "/";
+    if (ws)
+      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
     return `/c/${encodeURIComponent(id)}`;
   }
   function currentVisit() {
@@ -7063,26 +7090,65 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function liveWorkspaceId() {
     try {
-      const pid = ChatPageStore.useChatPageStore.getState().projectId;
+      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
       if (pid)
         return pid;
     } catch {}
     try {
       const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
-      if (workspaceId)
-        return workspaceId;
+      const id = asWorkspaceId(workspaceId);
+      if (id)
+        return id;
     } catch {}
-    return projectIdFromUrl();
+    return asWorkspaceId(projectIdFromUrl());
   }
   function workspaceFromHistory(id) {
     try {
       const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      if (routeConvId(route) === id && route.workspaceId)
-        return route.workspaceId;
+      if (routeConvId(route) === id) {
+        const ws = asWorkspaceId(route.workspaceId);
+        if (ws)
+          return ws;
+      }
       for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
         const r = historyStack[i];
-        if (routeConvId(r) === id && r?.workspaceId)
-          return r.workspaceId;
+        if (routeConvId(r) === id) {
+          const ws = asWorkspaceId(r?.workspaceId);
+          if (ws)
+            return ws;
+        }
+      }
+    } catch {}
+    return "";
+  }
+  function convWorkspaceId(id) {
+    try {
+      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
+      const fromResolver = asWorkspaceId(resolved);
+      if (fromResolver)
+        return fromResolver;
+      const conv = byId[id] ?? byIdWithWorkspaces[id];
+      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+    } catch (e) {
+      logger17.debug("convWorkspaceId failed:", e);
+      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
+    }
+  }
+  function workspaceFromDom(id) {
+    if (!id)
+      return "";
+    try {
+      for (const a of document.querySelectorAll("a[href]")) {
+        const href = a.getAttribute("href");
+        if (!href || !href.includes(id))
+          continue;
+        const u = new URL(href, location.origin);
+        if (u.searchParams.get("chat") !== id && !u.pathname.includes(id))
+          continue;
+        const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+        if (ws)
+          return ws;
       }
     } catch {}
     return "";
@@ -7095,13 +7161,7 @@ html.void-rt-open [data-sidebar="gap"] {
       if (live)
         return live;
     }
-    const conv = lookup(id);
-    if (conv?.workspaces?.[0])
-      return conv.workspaces[0];
-    const cached = settings6.plain.workspaceByConv?.[id];
-    if (cached)
-      return cached;
-    return workspaceFromHistory(id);
+    return convWorkspaceId(id) || asWorkspaceId(settings6.plain.workspaceByConv?.[id]) || workspaceFromHistory(id) || workspaceFromDom(id);
   }
   function labelText(el) {
     return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
@@ -7148,19 +7208,6 @@ html.void-rt-open [data-sidebar="gap"] {
     const prevWs = settings6.plain.workspaceByConv ?? {};
     if (prevWs[id] !== ws)
       settings6.store.workspaceByConv = { ...prevWs, [id]: ws };
-    let page;
-    try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      if (routeConvId(route) === id || id === currentVisit())
-        page = route.page;
-    } catch {}
-    if (!page && projectIdFromUrl())
-      page = "workspace";
-    if (page) {
-      const prevPages = settings6.plain.pages ?? {};
-      if (prevPages[id] !== page)
-        settings6.store.pages = { ...prevPages, [id]: page };
-    }
     const name = wsNames[ws] || readOpenProjectName() || settings6.plain.projectNames?.[ws] || "";
     if (!name)
       return;
@@ -7264,6 +7311,26 @@ html.void-rt-open [data-sidebar="gap"] {
       project: projectNameOf(id)
     }));
   }
+  function parseHref(href) {
+    try {
+      const u = new URL(href, location.origin);
+      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
+      if (parsed?.page && parsed.page !== "unknown")
+        return parsed;
+    } catch (e) {
+      logger17.debug("urlToRoute failed:", e);
+    }
+    return null;
+  }
+  function applyChatPage(id, workspaceId) {
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      chat.setConversationId(id || undefined);
+      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
+    } catch (e) {
+      logger17.debug("ChatPageStore update failed:", e);
+    }
+  }
   function navigateTo(id) {
     try {
       const routing = RoutingStore.useRoutingStore.getState();
@@ -7273,34 +7340,71 @@ html.void-rt-open [data-sidebar="gap"] {
         if (route.page === "main" || route.page === "chat" && !route.conversationId && !projectIdFromUrl())
           return;
         routing.push({ page: "main", teamId });
+        applyChatPage("");
         return;
       }
-      const workspaceId = workspaceOf(id) || undefined;
+      const workspaceId = workspaceOf(id);
       const href = hrefFor(id, workspaceId);
-      const next = workspaceId ? { page: "workspace", conversationId: id, workspaceId, chat: id, teamId } : { page: "chat", conversationId: id, teamId };
-      if (routeConvId(route) === id && (route.workspaceId || "") === (workspaceId || "") && (workspaceId ? route.page === "workspace" : route.page === "chat"))
+      const parsed = parseHref(href);
+      const dest = workspaceId ? {
+        page: "workspace",
+        workspaceId,
+        tab: "conversations",
+        conversationId: id,
+        teamId
+      } : {
+        page: "chat",
+        conversationId: id,
+        temporary: lookup(id)?.temporary ?? false,
+        teamId
+      };
+      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
+        dest.page = "workspace";
+        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
+        dest.conversationId = parsed.conversationId || id;
+        dest.tab = parsed.tab || "conversations";
+        if (parsed.filePath)
+          dest.filePath = parsed.filePath;
+      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
+        dest.page = "chat";
+        dest.conversationId = parsed.conversationId;
+        dest.temporary = parsed.temporary ?? dest.temporary;
+      }
+      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
+        dest.page = "chat";
+        dest.conversationId = id;
+        delete dest.workspaceId;
+        delete dest.tab;
+      }
+      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
         return;
-      let dest = next;
-      try {
-        const parsed = RoutingStore.urlToRoute?.(href);
-        if (parsed?.page) {
-          if (teamId != null && parsed.teamId == null)
-            parsed.teamId = teamId;
-          if (workspaceId && !parsed.workspaceId)
-            parsed.workspaceId = workspaceId;
-          if (id && !parsed.conversationId)
-            parsed.conversationId = id;
-          if (workspaceId && parsed.page !== "workspace")
-            parsed.page = "workspace";
-          dest = parsed;
-        }
-      } catch (e) {
-        logger17.debug("urlToRoute failed:", e);
-      }
-      if (dest.page === "workspace" && !dest.workspaceId) {
-        dest = workspaceId ? { ...dest, workspaceId, conversationId: dest.conversationId || id } : { page: "chat", conversationId: id, teamId };
-      }
       routing.push(dest);
+      applyChatPage(id, asWorkspaceId(dest.workspaceId));
+      if (dest.page !== "workspace") {
+        try {
+          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+          fetchConv?.(id).then((conv) => {
+            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
+            if (!ws)
+              return;
+            const now = RoutingStore.useRoutingStore.getState();
+            if (routeConvId(now.route) !== id)
+              return;
+            now.replace({
+              page: "workspace",
+              workspaceId: ws,
+              tab: "conversations",
+              conversationId: id,
+              teamId
+            });
+            applyChatPage(id, ws);
+            rememberProject(id);
+          }).catch((e) => logger17.debug("workspace resolve failed:", e));
+        } catch (e) {
+          logger17.debug("workspace fetch skipped:", e);
+        }
+      }
     } catch (e) {
       logger17.error("Failed to navigate:", e);
       try {

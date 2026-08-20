@@ -22,8 +22,10 @@ export interface GrokConversation {
     temporary: boolean;
     /** Media types used in the conversation (e.g. images, files). */
     mediaTypes: string[];
-    /** Workspace IDs this conversation belongs to. */
-    workspaces: string[];
+    /** Workspace IDs this conversation belongs to. Runtime entries are `{ workspaceId }` objects, not bare strings. */
+    workspaces: Array<string | { workspaceId?: string; [key: string]: any }>;
+    /** Project/workspace id when this conversation lives in a Grok project. */
+    workspaceId?: string;
     /** Task execution results associated with this conversation. */
     taskResult: Record<string, any>;
     /** Team/workspace ID, or undefined for personal conversations. */
@@ -136,4 +138,6 @@ export interface ConversationStoreModule {
     useConversationStore: ZustandStore<ConversationStoreState>;
     /** Create an optimistic conversation object before the server responds. */
     createOptimisticConversation: (params: any) => GrokConversation;
+    /** Pull the project workspace UUID off one or more conversation objects. */
+    resolveConversationProjectWorkspaceId: (...conversations: Array<GrokConversation | null | undefined>) => string | undefined;
 }

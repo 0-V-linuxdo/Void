@@ -118,7 +118,12 @@ function writeVisits(next: string[]) {
     writing = true;
     try {
         const visits = capVisits(next);
-        const workspaceByConv = pruneRecord(settings.plain.workspaceByConv, visits);
+        const rawWs = pruneRecord(settings.plain.workspaceByConv, visits);
+        const workspaceByConv: Record<string, string> = {};
+        for (const [id, value] of Object.entries(rawWs)) {
+            const ws = asWorkspaceId(value);
+            if (ws) workspaceByConv[id] = ws;
+        }
         const pages = pruneRecord(settings.plain.pages, visits);
         const usedWs = new Set(Object.values(workspaceByConv));
         const keepProjects: Record<string, string> = {};
@@ -157,7 +162,8 @@ function routeConvId(route?: GrokRoute | null): string | null {
 }
 
 function projectIdFromUrl(): string {
-    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)
+        ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
     return m?.[1] ?? "";
 }
 
@@ -169,9 +175,31 @@ function chatIdFromUrl(): string {
     }
 }
 
+const WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
+
+function asWorkspaceId(value: unknown): string {
+    if (typeof value === "string") {
+        const s = value.trim();
+        return WS_ID.test(s) ? s : "";
+    }
+    if (Array.isArray(value)) {
+        for (const item of value) {
+            const id = asWorkspaceId(item);
+            if (id) return id;
+        }
+        return "";
+    }
+    if (value && typeof value === "object") {
+        const rec = value as Record<string, unknown>;
+        return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    }
+    return "";
+}
+
 function hrefFor(id: string, workspaceId?: string): string {
-    if (!id) return workspaceId ? `/project/${workspaceId}` : "/";
-    if (workspaceId) return `/project/${workspaceId}?chat=${encodeURIComponent(id)}`;
+    const ws = asWorkspaceId(workspaceId);
+    if (!id) return ws ? `/project/${ws}` : "/";
+    if (ws) return `/project/${ws}?chat=${encodeURIComponent(id)}`;
     return `/c/${encodeURIComponent(id)}`;
 }
 
@@ -236,23 +264,59 @@ function titleOf(id: string): string {
 
 function liveWorkspaceId(): string {
     try {
-        const pid = ChatPageStore.useChatPageStore.getState().projectId;
+        const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
         if (pid) return pid;
     } catch {}
     try {
         const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
-        if (workspaceId) return workspaceId;
+        const id = asWorkspaceId(workspaceId);
+        if (id) return id;
     } catch {}
-    return projectIdFromUrl();
+    return asWorkspaceId(projectIdFromUrl());
 }
 
 function workspaceFromHistory(id: string): string {
     try {
         const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-        if (routeConvId(route) === id && route.workspaceId) return route.workspaceId;
+        if (routeConvId(route) === id) {
+            const ws = asWorkspaceId(route.workspaceId);
+            if (ws) return ws;
+        }
         for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--) {
             const r = historyStack[i];
-            if (routeConvId(r) === id && r?.workspaceId) return r.workspaceId;
+            if (routeConvId(r) === id) {
+                const ws = asWorkspaceId(r?.workspaceId);
+                if (ws) return ws;
+            }
+        }
+    } catch {}
+    return "";
+}
+
+function convWorkspaceId(id: string): string {
+    try {
+        const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+        const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
+        const fromResolver = asWorkspaceId(resolved);
+        if (fromResolver) return fromResolver;
+        const conv = byId[id] ?? byIdWithWorkspaces[id];
+        return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+    } catch (e) {
+        logger.debug("convWorkspaceId failed:", e);
+        return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
+    }
+}
+
+function workspaceFromDom(id: string): string {
+    if (!id) return "";
+    try {
+        for (const a of document.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+            const href = a.getAttribute("href");
+            if (!href || !href.includes(id)) continue;
+            const u = new URL(href, location.origin);
+            if (u.searchParams.get("chat") !== id && !u.pathname.includes(id)) continue;
+            const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+            if (ws) return ws;
         }
     } catch {}
     return "";
@@ -264,11 +328,10 @@ function workspaceOf(id: string): string {
         const live = liveWorkspaceId();
         if (live) return live;
     }
-    const conv = lookup(id);
-    if (conv?.workspaces?.[0]) return conv.workspaces[0];
-    const cached = settings.plain.workspaceByConv?.[id];
-    if (cached) return cached;
-    return workspaceFromHistory(id);
+    return convWorkspaceId(id)
+        || asWorkspaceId(settings.plain.workspaceByConv?.[id])
+        || workspaceFromHistory(id)
+        || workspaceFromDom(id);
 }
 
 function labelText(el: Element): string {
@@ -308,16 +371,6 @@ function rememberProject(id: string) {
     if (!ws) return;
     const prevWs = settings.plain.workspaceByConv ?? {};
     if (prevWs[id] !== ws) settings.store.workspaceByConv = { ...prevWs, [id]: ws };
-    let page: string | undefined;
-    try {
-        const { route } = RoutingStore.useRoutingStore.getState();
-        if (routeConvId(route) === id || id === currentVisit()) page = route.page;
-    } catch {}
-    if (!page && projectIdFromUrl()) page = "workspace";
-    if (page) {
-        const prevPages = settings.plain.pages ?? {};
-        if (prevPages[id] !== page) settings.store.pages = { ...prevPages, [id]: page };
-    }
     const name = wsNames[ws] || readOpenProjectName() || settings.plain.projectNames?.[ws] || "";
     if (!name) return;
     wsNames[ws] = name;
@@ -420,6 +473,27 @@ function topics(): Topic[] {
     }));
 }
 
+function parseHref(href: string): GrokRoute | null {
+    try {
+        const u = new URL(href, location.origin);
+        const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
+        if (parsed?.page && parsed.page !== "unknown") return parsed;
+    } catch (e) {
+        logger.debug("urlToRoute failed:", e);
+    }
+    return null;
+}
+
+function applyChatPage(id: string, workspaceId?: string) {
+    try {
+        const chat = ChatPageStore.useChatPageStore.getState();
+        chat.setConversationId(id || undefined);
+        chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
+    } catch (e) {
+        logger.debug("ChatPageStore update failed:", e);
+    }
+}
+
 function navigateTo(id: string) {
     try {
         const routing = RoutingStore.useRoutingStore.getState();
@@ -428,38 +502,84 @@ function navigateTo(id: string) {
         if (!id) {
             if (route.page === "main" || (route.page === "chat" && !route.conversationId && !projectIdFromUrl())) return;
             routing.push({ page: "main", teamId });
+            applyChatPage("");
             return;
         }
-        const workspaceId = workspaceOf(id) || undefined;
+
+        const workspaceId = workspaceOf(id);
         const href = hrefFor(id, workspaceId);
-        // Never push a workspace route without an id — Grok turns that into /project.
-        const next: GrokRoute = workspaceId
-            ? { page: "workspace", conversationId: id, workspaceId, chat: id, teamId }
-            : { page: "chat", conversationId: id, teamId };
-        if (
-            routeConvId(route) === id
-            && (route.workspaceId || "") === (workspaceId || "")
-            && (workspaceId ? route.page === "workspace" : route.page === "chat")
-        ) return;
-        let dest = next;
-        try {
-            const parsed = RoutingStore.urlToRoute?.(href);
-            if (parsed?.page) {
-                if (teamId != null && parsed.teamId == null) parsed.teamId = teamId;
-                if (workspaceId && !parsed.workspaceId) parsed.workspaceId = workspaceId;
-                if (id && !parsed.conversationId) parsed.conversationId = id;
-                if (workspaceId && parsed.page !== "workspace") parsed.page = "workspace";
-                dest = parsed;
+        const parsed = parseHref(href);
+
+        // Mirror Grok's useGrokRouter.routeToConversation:
+        // workspace chats MUST be { page:"workspace", workspaceId:STRING, tab:"conversations", conversationId }.
+        // page:"workspaces" (plural) is the /project list — never push that for a chat.
+        const dest: GrokRoute = workspaceId
+            ? {
+                page: "workspace",
+                workspaceId,
+                tab: "conversations",
+                conversationId: id,
+                teamId,
             }
-        } catch (e) {
-            logger.debug("urlToRoute failed:", e);
+            : {
+                page: "chat",
+                conversationId: id,
+                temporary: lookup(id)?.temporary ?? false,
+                teamId,
+            };
+
+        if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
+            dest.page = "workspace";
+            dest.workspaceId = asWorkspaceId(parsed.workspaceId);
+            dest.conversationId = parsed.conversationId || id;
+            dest.tab = parsed.tab || "conversations";
+            if (parsed.filePath) dest.filePath = parsed.filePath;
+        } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
+            dest.page = "chat";
+            dest.conversationId = parsed.conversationId;
+            dest.temporary = parsed.temporary ?? dest.temporary;
         }
-        if (dest.page === "workspace" && !dest.workspaceId) {
-            dest = workspaceId
-                ? { ...dest, workspaceId, conversationId: dest.conversationId || id }
-                : { page: "chat", conversationId: id, teamId };
+
+        if (dest.page === "workspaces" || (dest.page === "workspace" && !asWorkspaceId(dest.workspaceId))) {
+            dest.page = "chat";
+            dest.conversationId = id;
+            delete dest.workspaceId;
+            delete dest.tab;
         }
+
+        if (
+            routeConvId(route) === dest.conversationId
+            && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "")
+            && route.page === dest.page
+        ) return;
+
         routing.push(dest);
+        applyChatPage(id, asWorkspaceId(dest.workspaceId));
+
+        // Same upgrade Grok does: if we had to open /c/{id}, fetch workspace and replace.
+        if (dest.page !== "workspace") {
+            try {
+                const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+                const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+                fetchConv?.(id).then(conv => {
+                    const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
+                    if (!ws) return;
+                    const now = RoutingStore.useRoutingStore.getState();
+                    if (routeConvId(now.route) !== id) return;
+                    now.replace({
+                        page: "workspace",
+                        workspaceId: ws,
+                        tab: "conversations",
+                        conversationId: id,
+                        teamId,
+                    });
+                    applyChatPage(id, ws);
+                    rememberProject(id);
+                }).catch(e => logger.debug("workspace resolve failed:", e));
+            } catch (e) {
+                logger.debug("workspace fetch skipped:", e);
+            }
+        }
     } catch (e) {
         logger.error("Failed to navigate:", e);
         try {
