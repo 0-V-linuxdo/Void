@@ -619,7 +619,7 @@ function detachHost() {
 }
 
 function mountOverlay(root: HTMLElement) {
-    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:grid;place-items:center;background:rgba(0,0,0,.72);backdrop-filter:blur(36px) saturate(.7) brightness(.55);-webkit-backdrop-filter:blur(36px) saturate(.7) brightness(.55);pointer-events:auto;";
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:grid;place-items:center;background:rgba(0,0,0,.16);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);pointer-events:auto;";
     document.documentElement.append(root);
     document.documentElement.classList.add("void-rt-open");
     if (typeof root.showPopover !== "function") return;

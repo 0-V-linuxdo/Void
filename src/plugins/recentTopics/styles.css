@@ -14,17 +14,17 @@
     padding: 0 !important;
     overflow: hidden !important;
     border: none !important;
-    background: rgb(0 0 0 / 72%) !important;
-    -webkit-backdrop-filter: blur(36px) saturate(0.7) brightness(0.55);
-    backdrop-filter: blur(36px) saturate(0.7) brightness(0.55);
+    background: rgb(0 0 0 / 16%) !important;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
     color: inherit;
     pointer-events: auto !important;
 }
 
 .void-rt-root::backdrop {
-    background: rgb(0 0 0 / 72%);
-    -webkit-backdrop-filter: blur(36px) saturate(0.7) brightness(0.55);
-    backdrop-filter: blur(36px) saturate(0.7) brightness(0.55);
+    background: rgb(0 0 0 / 16%);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
 }
 
 html.void-rt-open [data-sidebar="sidebar"],
@@ -35,7 +35,7 @@ html.void-rt-open [data-sidebar="gap"] {
 .void-rt-backdrop {
     position: absolute;
     inset: 0;
-    background: rgb(0 0 0 / 28%);
+    background: transparent;
 }
 
 .void-rt-hud {

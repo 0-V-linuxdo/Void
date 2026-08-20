@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260820.10] v1.0.0
+// @version      [20260820.11] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260820.10] v1.0.0 — A modification for grok.com
+ * Void++ [20260820.11] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5907,9 +5907,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260820.10] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"acaefe7"}`
-    }, `(${"acaefe7"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260820.11] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"cd28d9f"}`
+    }, `(${"cd28d9f"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6561,17 +6561,17 @@ div:has(> button[aria-label*="Dictation"]) {
     padding: 0 !important;
     overflow: hidden !important;
     border: none !important;
-    background: rgb(0 0 0 / 72%) !important;
-    -webkit-backdrop-filter: blur(36px) saturate(0.7) brightness(0.55);
-    backdrop-filter: blur(36px) saturate(0.7) brightness(0.55);
+    background: rgb(0 0 0 / 16%) !important;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
     color: inherit;
     pointer-events: auto !important;
 }
 
 .void-rt-root::backdrop {
-    background: rgb(0 0 0 / 72%);
-    -webkit-backdrop-filter: blur(36px) saturate(0.7) brightness(0.55);
-    backdrop-filter: blur(36px) saturate(0.7) brightness(0.55);
+    background: rgb(0 0 0 / 16%);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
 }
 
 html.void-rt-open [data-sidebar="sidebar"],
@@ -6582,7 +6582,7 @@ html.void-rt-open [data-sidebar="gap"] {
 .void-rt-backdrop {
     position: absolute;
     inset: 0;
-    background: rgb(0 0 0 / 28%);
+    background: transparent;
 }
 
 .void-rt-hud {
@@ -7461,7 +7461,7 @@ html.void-rt-open [data-sidebar="gap"] {
     });
   }
   function mountOverlay(root) {
-    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:grid;place-items:center;background:rgba(0,0,0,.72);backdrop-filter:blur(36px) saturate(.7) brightness(.55);-webkit-backdrop-filter:blur(36px) saturate(.7) brightness(.55);pointer-events:auto;";
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:grid;place-items:center;background:rgba(0,0,0,.16);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);pointer-events:auto;";
     document.documentElement.append(root);
     document.documentElement.classList.add("void-rt-open");
     if (typeof root.showPopover !== "function")
