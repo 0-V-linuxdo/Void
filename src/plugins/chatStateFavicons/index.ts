@@ -19,12 +19,14 @@ import {
     getComposerRoot,
     getStopButton,
     isInputEmpty,
+    isStopControl,
     submitIsVisible,
 } from "./detect";
 import { buildIcons, type FaviconKind, type IconStyle, isIconStyle, STYLE_OPTIONS } from "./icons";
 
 const logger = new Logger("ChatStateFavicons");
 const ICON_ID = "void-chat-state-favicon";
+const LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
 
 const settings = definePluginSettings({
     style: {
@@ -102,24 +104,40 @@ function rebuildIcons() {
     applyHref(icons[kind]);
 }
 
+function liveResponse(id: string | undefined, byId: Record<string, { state?: string; partial?: boolean; sender?: string }>): boolean {
+    if (!id) return false;
+    const response = byId[id];
+    if (!response) return false;
+    if (response.partial) return true;
+    return LIVE_RESPONSE.has(response.state ?? "");
+}
+
 function storeStreaming(): boolean {
     try {
         const page = ChatPageStore.useChatPageStore.getState();
-        return !!(page.streamedMessageId || page.showStreamingIndicator);
+        if (page.streamedMessageId || page.showStreamingIndicator || page.optimisticMessageId) return true;
+        const { byId } = ResponseStore.useResponseStore.getState();
+        if (liveResponse(page.streamedMessageId, byId)) return true;
+        if (liveResponse(page.lastMessageId, byId)) return true;
+        for (const response of Object.values(byId)) {
+            if (response.sender === "human") continue;
+            if (response.partial || LIVE_RESPONSE.has(response.state ?? "")) return true;
+        }
+        return false;
     } catch (e) {
-        logger.debug("ChatPageStore unavailable:", e);
+        logger.debug("stream stores unavailable:", e);
         return false;
     }
 }
 
 function isStreaming(): boolean {
-    if (getStopButton()) return true;
-    return storeStreaming();
+    if (storeStreaming()) return true;
+    return getStopButton() != null;
 }
 
 function getContextKey(): string {
     const token = conversationToken();
-    if (getStopButton() || storeStreaming()) {
+    if (isStreaming()) {
         if (!lockedToken && token) lockedToken = token;
         return contextKeyFromUrl(lockedToken);
     }
@@ -170,7 +188,7 @@ function evaluateState() {
             wasStreaming = false;
             justFinished = false;
             streamContext = null;
-        } else if (!submitIsVisible()) {
+        } else if (getStopButton() || !submitIsVisible()) {
             setKind("rotate");
             return;
         } else {
@@ -200,6 +218,31 @@ function evaluateState() {
     setKind(isInputEmpty() ? "wait" : "ready");
 }
 
+function nodeTouchesStop(node: Node): boolean {
+    if (!(node instanceof Element)) return false;
+    if (node instanceof HTMLElement && node.tagName === "BUTTON" && isStopControl(node)) return true;
+    for (const btn of node.querySelectorAll("button")) {
+        if (isStopControl(btn)) return true;
+    }
+    return false;
+}
+
+function stopButtonMutation(list: MutationRecord[]): boolean {
+    for (const m of list) {
+        if (nodeTouchesStop(m.target)) return true;
+        for (const n of m.addedNodes) {
+            if (nodeTouchesStop(n)) return true;
+        }
+        for (const n of m.removedNodes) {
+            if (nodeTouchesStop(n)) return true;
+        }
+        if (m.type === "attributes" && m.attributeName === "aria-label" && m.target instanceof HTMLElement) {
+            if (isStopControl(m.target) || /stop|停止/i.test(String(m.oldValue ?? ""))) return true;
+        }
+    }
+    return false;
+}
+
 function nodeInEditor(node: Node | null): boolean {
     const el = node instanceof Element ? node : node?.parentElement;
     return !!el?.closest(EDITOR_SEL);
@@ -222,7 +265,10 @@ function mutationsAreEditorOnly(list: MutationRecord[]): boolean {
 }
 
 function onDomMutate(list: MutationRecord[]) {
-    if ((kind === "rotate" || wasStreaming) && mutationsAreEditorOnly(list)) return;
+    if (kind === "rotate" || wasStreaming) {
+        if (mutationsAreEditorOnly(list)) return;
+        if (!stopButtonMutation(list)) return;
+    }
     scheduleEvaluate();
 }
 
@@ -245,6 +291,7 @@ function scheduleEvaluate() {
         evaluateState();
     });
 }
+
 function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
     try {
         const response = ResponseStore.useResponseStore.getState().byId[responseId];
@@ -297,7 +344,8 @@ function observeComposer() {
         subtree: true,
         characterData: true,
         attributes: true,
-        attributeFilter: ["aria-disabled", "disabled", "data-testid", "class"],
+        attributeFilter: ["aria-label", "aria-disabled", "disabled", "data-testid", "class"],
+        attributeOldValue: true,
     });
 }
 
@@ -309,7 +357,8 @@ function observeButtons() {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ["aria-label", "type", "disabled", "aria-disabled", "class"],
+        attributeFilter: ["aria-label", "type"],
+        attributeOldValue: true,
     });
 }
 

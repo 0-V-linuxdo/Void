@@ -5896,8 +5896,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260819] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"bc891aa"}`
-    }, `(${"bc891aa"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"27691ce"}`
+    }, `(${"27691ce"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -9244,6 +9244,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // src/plugins/chatStateFavicons/index.ts
   var logger22 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
+  var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
   var settings14 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
@@ -9316,23 +9317,46 @@ button:has(.void-ud-trigger > .void-ud-label) {
     icons = buildIcons(currentStyle(), officialHref);
     applyHref(icons[kind]);
   }
+  function liveResponse(id, byId) {
+    if (!id)
+      return false;
+    const response = byId[id];
+    if (!response)
+      return false;
+    if (response.partial)
+      return true;
+    return LIVE_RESPONSE.has(response.state ?? "");
+  }
   function storeStreaming() {
     try {
       const page = ChatPageStore.useChatPageStore.getState();
-      return !!(page.streamedMessageId || page.showStreamingIndicator);
+      if (page.streamedMessageId || page.showStreamingIndicator || page.optimisticMessageId)
+        return true;
+      const { byId } = ResponseStore.useResponseStore.getState();
+      if (liveResponse(page.streamedMessageId, byId))
+        return true;
+      if (liveResponse(page.lastMessageId, byId))
+        return true;
+      for (const response of Object.values(byId)) {
+        if (response.sender === "human")
+          continue;
+        if (response.partial || LIVE_RESPONSE.has(response.state ?? ""))
+          return true;
+      }
+      return false;
     } catch (e) {
-      logger22.debug("ChatPageStore unavailable:", e);
+      logger22.debug("stream stores unavailable:", e);
       return false;
     }
   }
   function isStreaming() {
-    if (getStopButton())
+    if (storeStreaming())
       return true;
-    return storeStreaming();
+    return getStopButton() != null;
   }
   function getContextKey() {
     const token = conversationToken();
-    if (getStopButton() || storeStreaming()) {
+    if (isStreaming()) {
       if (!lockedToken && token)
         lockedToken = token;
       return contextKeyFromUrl(lockedToken);
@@ -9382,7 +9406,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         wasStreaming = false;
         justFinished = false;
         streamContext = null;
-      } else if (!submitIsVisible()) {
+      } else if (getStopButton() || !submitIsVisible()) {
         setKind("rotate");
         return;
       } else {
@@ -9408,6 +9432,36 @@ button:has(.void-ud-trigger > .void-ud-label) {
     streamContext = null;
     lastWasError = false;
     setKind(isInputEmpty() ? "wait" : "ready");
+  }
+  function nodeTouchesStop(node) {
+    if (!(node instanceof Element))
+      return false;
+    if (node instanceof HTMLElement && node.tagName === "BUTTON" && isStopControl(node))
+      return true;
+    for (const btn of node.querySelectorAll("button")) {
+      if (isStopControl(btn))
+        return true;
+    }
+    return false;
+  }
+  function stopButtonMutation(list) {
+    for (const m of list) {
+      if (nodeTouchesStop(m.target))
+        return true;
+      for (const n of m.addedNodes) {
+        if (nodeTouchesStop(n))
+          return true;
+      }
+      for (const n of m.removedNodes) {
+        if (nodeTouchesStop(n))
+          return true;
+      }
+      if (m.type === "attributes" && m.attributeName === "aria-label" && m.target instanceof HTMLElement) {
+        if (isStopControl(m.target) || /stop|停止/i.test(String(m.oldValue ?? "")))
+          return true;
+      }
+    }
+    return false;
   }
   function nodeInEditor(node) {
     const el = node instanceof Element ? node : node?.parentElement;
@@ -9435,8 +9489,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return true;
   }
   function onDomMutate(list) {
-    if ((kind === "rotate" || wasStreaming) && mutationsAreEditorOnly(list))
-      return;
+    if (kind === "rotate" || wasStreaming) {
+      if (mutationsAreEditorOnly(list))
+        return;
+      if (!stopButtonMutation(list))
+        return;
+    }
     scheduleEvaluate();
   }
   function onEditorInput() {
@@ -9511,7 +9569,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
       subtree: true,
       characterData: true,
       attributes: true,
-      attributeFilter: ["aria-disabled", "disabled", "data-testid", "class"]
+      attributeFilter: ["aria-label", "aria-disabled", "disabled", "data-testid", "class"],
+      attributeOldValue: true
     });
   }
   function observeButtons() {
@@ -9522,7 +9581,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["aria-label", "type", "disabled", "aria-disabled", "class"]
+      attributeFilter: ["aria-label", "type"],
+      attributeOldValue: true
     });
   }
   function restoreOfficial() {
