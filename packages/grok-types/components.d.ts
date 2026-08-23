@@ -56,11 +56,21 @@ export type ButtonSize =
 	| "xs"
 	| "sm"
 	| "md"
+	| "lg"
 	| "xl"
 	| "none"
 	| (string & {});
 
 export type ButtonShape = "rectangle" | "pill" | "square" | "circle";
+
+export interface ButtonTooltip {
+    content?: ReactNode;
+    props?: Record<string, any>;
+    contentProps?: Record<string, any>;
+    stayOpenOnClick?: boolean;
+    hideWhenDisabled?: boolean;
+    lazy?: boolean;
+}
 
 export interface ButtonProps {
     variant?: ButtonVariant;
@@ -75,6 +85,7 @@ export interface ButtonProps {
     "aria-label"?: string;
     onClick?: (e: React.MouseEvent) => void;
     children?: ReactNode;
+    tooltip?: ButtonTooltip;
     [key: string]: any;
 }
 

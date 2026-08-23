@@ -28,7 +28,7 @@ import type {
 import type { ComponentType } from "react";
 
 import { filters, findByProps, findByPropsLazy, findExportedComponent, waitFor } from "../turbopack";
-import { type AnyComponent, LazyComponent } from "./react";
+import { type AnyComponent, createElement, LazyComponent } from "./react";
 import { SettingsDescription, SettingsRow, SettingsTitle } from "./settingsPrimitives";
 
 export type * from "@grok-types";
@@ -44,11 +44,25 @@ function lazyExport<P = {}>(name: string): ComponentType<P> {
     return LazyComponent(name, () => findExportedComponent(name)) as unknown as ComponentType<P>;
 }
 
-const buttonLazy = createModuleLazy("Button", "ButtonWithTooltip");
+const buttonLazy = createModuleLazy("Button", "IconButton");
 export const Button = buttonLazy<ButtonProps>("Button");
-export const ButtonWithTooltip = buttonLazy<ButtonWithTooltipProps>("ButtonWithTooltip");
+
+function buttonWithTooltip(props: ButtonWithTooltipProps) {
+    const { tooltipContent, tooltipProps, tooltipContentProps, stayOpenOnClick, ...rest } = props;
+    if (!createElement) return null;
+    return createElement(Button, {
+        ...rest,
+        tooltip: tooltipContent == null ? undefined : {
+            content: tooltipContent,
+            props: tooltipProps,
+            contentProps: tooltipContentProps,
+            stayOpenOnClick,
+        },
+    });
+}
+
+export const ButtonWithTooltip = buttonWithTooltip as ComponentType<ButtonWithTooltipProps>;
 export const ButtonWithTooltipOptimized = ButtonWithTooltip;
-export const ButtonWithPopover = buttonLazy<ButtonWithPopoverProps>("ButtonWithPopover");
 
 const cardLazy = createModuleLazy("Card", "CardContent", "CardHeader", "CardTitle");
 export const Card = cardLazy<CardProps>("Card");
@@ -141,6 +155,18 @@ export const Popover = popoverLazy<PopoverProps>("Popover");
 export const PopoverTrigger = popoverLazy<PopoverTriggerProps>("PopoverTrigger");
 export const PopoverContent = popoverLazy<PopoverContentProps>("PopoverContent");
 export const PopoverArrow = popoverLazy<PopoverArrowProps>("PopoverArrow");
+
+function buttonWithPopover({ popoverContent, popoverProps, popoverContentProps, children, ...rest }: ButtonWithPopoverProps) {
+    if (!createElement) return null;
+    return createElement(
+        Popover,
+        popoverProps,
+        createElement(PopoverTrigger, { asChild: true }, createElement(Button, rest, children)),
+        createElement(PopoverContent, popoverContentProps, popoverContent),
+    );
+}
+
+export const ButtonWithPopover = buttonWithPopover as ComponentType<ButtonWithPopoverProps>;
 
 const tabsLazy = createModuleLazy("Tabs", "TabsList", "TabsTrigger", "TabsContent");
 export const Tabs = tabsLazy<TabsProps>("Tabs");
