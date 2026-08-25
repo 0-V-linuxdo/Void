@@ -9851,12 +9851,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   // src/plugins/noDictation/index.ts
   var STYLE_NAME6 = "noDictation";
   var CSS2 = `
-button[aria-label^="Dictation"],
-button[aria-label*="Dictation"] {
-    display: none !important;
-}
-div:has(> button[aria-label^="Dictation"]),
-div:has(> button[aria-label*="Dictation"]) {
+button[aria-label="Dictation"]:not([role="dialog"] *),
+button[aria-label^="Dictation ("]:not([role="dialog"] *),
+div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
+div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     display: none !important;
 }
 `;

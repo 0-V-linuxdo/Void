@@ -10,18 +10,11 @@ import definePlugin from "@utils/types";
 
 const STYLE_NAME = "noDictation";
 
-/**
- * Hide both the icon-only Dictation button and any text variant
- * that uses the same aria-label ("Dictation (⌃D)").
- * Using :has() to also collapse the sizing wrapper so no empty gap remains.
- */
 const CSS = `
-button[aria-label^="Dictation"],
-button[aria-label*="Dictation"] {
-    display: none !important;
-}
-div:has(> button[aria-label^="Dictation"]),
-div:has(> button[aria-label*="Dictation"]) {
+button[aria-label="Dictation"]:not([role="dialog"] *),
+button[aria-label^="Dictation ("]:not([role="dialog"] *),
+div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
+div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     display: none !important;
 }
 `;
