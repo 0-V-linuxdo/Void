@@ -8,6 +8,7 @@
 
 **New**
 
+- **NoGrokBot** — Hide the top-right Grok Bot promo button.
 - **NoSidebarIdentity** — Hide username and/or email in the Grok sidebar (separate toggles). Avatar stays so the account menu still opens.
 - **ChatStateFavicons** — Tab favicon reflects chat state (streaming, done, ready, error) with five overlay styles.
 - **NoShareLink** — Hide Share Project (in a project) and Create share link (top-right of chats); separate toggles.

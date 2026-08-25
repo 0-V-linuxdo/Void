@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260824] v1.0.4
+// @version      [20260825] v1.0.5
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260824] v1.0.4 — A modification for grok.com
+ * Void++ [20260825] v1.0.5 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5908,9 +5908,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260824] v1.0.4"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"094886a"}`
-    }, `(${"094886a"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260825] v1.0.5"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"55d8ccb"}`
+    }, `(${"55d8ccb"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6364,6 +6364,31 @@ ${sourceUrl}`;
     }
   });
 
+  // src/plugins/noGrokBot/index.ts
+  var STYLE_NAME2 = "noGrokBot";
+  var CSS = `
+#grok-bot-nav-button,
+div:has(> #grok-bot-nav-button) {
+    display: none !important;
+}
+#promo-portal [aria-label*="Grok Bot"] {
+    display: none !important;
+}
+`;
+  var noGrokBot_default = definePlugin({
+    name: "NoGrokBot",
+    description: "Hide the top-right Grok Bot promo button.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    start() {
+      registerStyle(STYLE_NAME2, CSS);
+    },
+    stop() {
+      unregisterStyle(STYLE_NAME2);
+    }
+  });
+
   // src/plugins/responseNotification/index.ts
   var settings6 = definePluginSettings({
     sound: {
@@ -6462,7 +6487,7 @@ ${sourceUrl}`;
   });
 
   // src/plugins/noSidebarIdentity/index.ts
-  var STYLE_NAME2 = "noSidebarIdentity";
+  var STYLE_NAME3 = "noSidebarIdentity";
   var FOOTER = '[data-sidebar="footer"]';
   var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
   var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
@@ -6491,7 +6516,7 @@ ${sourceUrl}`;
       rules.push(`${TEXT_WRAP}{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
     }
-    registerStyle(STYLE_NAME2, rules.join(`
+    registerStyle(STYLE_NAME3, rules.join(`
 `));
   }
   var noSidebarIdentity_default = definePlugin({
@@ -6504,7 +6529,7 @@ ${sourceUrl}`;
     start: apply,
     onSettingsChange: apply,
     stop() {
-      unregisterStyle(STYLE_NAME2);
+      unregisterStyle(STYLE_NAME3);
     }
   });
 
@@ -8908,7 +8933,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   });
 
   // src/plugins/noShareLink/index.ts
-  var STYLE_NAME3 = "noShareLink";
+  var STYLE_NAME4 = "noShareLink";
   var settings11 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
@@ -8929,7 +8954,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     if (settings11.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
-    registerStyle(STYLE_NAME3, rules.join(`
+    registerStyle(STYLE_NAME4, rules.join(`
 `));
   }
   var noShareLink_default = definePlugin({
@@ -8942,7 +8967,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     start: apply2,
     onSettingsChange: apply2,
     stop() {
-      unregisterStyle(STYLE_NAME3);
+      unregisterStyle(STYLE_NAME4);
     }
   });
 
@@ -8968,7 +8993,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   // src/plugins/betterLinks/index.tsx
   var DEFAULT_LINK = "#4a9eff";
   var DEFAULT_VISITED = "#9b59b6";
-  var STYLE_NAME4 = "better-links-dynamic";
+  var STYLE_NAME5 = "better-links-dynamic";
   var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
   function isValidHex(c) {
     return /^#[0-9a-fA-F]{6}$/.test(c);
@@ -8984,7 +9009,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
-    registerStyle(STYLE_NAME4, css);
+    registerStyle(STYLE_NAME5, css);
   }
   function ColorRow2({ settingKey, title, description, fallback }) {
     settings12.use([settingKey]);
@@ -9099,10 +9124,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       settings12.store.linkColor ??= DEFAULT_LINK;
       settings12.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
-      enableStyle(STYLE_NAME4);
+      enableStyle(STYLE_NAME5);
     },
     stop() {
-      disableStyle(STYLE_NAME4);
+      disableStyle(STYLE_NAME5);
     }
   });
 
@@ -9824,8 +9849,8 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/plugins/noDictation/index.ts
-  var STYLE_NAME5 = "noDictation";
-  var CSS = `
+  var STYLE_NAME6 = "noDictation";
+  var CSS2 = `
 button[aria-label^="Dictation"],
 button[aria-label*="Dictation"] {
     display: none !important;
@@ -9842,10 +9867,10 @@ div:has(> button[aria-label*="Dictation"]) {
     tags: ["chat", "ui"],
     enabledByDefault: true,
     start() {
-      registerStyle(STYLE_NAME5, CSS);
+      registerStyle(STYLE_NAME6, CSS2);
     },
     stop() {
-      unregisterStyle(STYLE_NAME5);
+      unregisterStyle(STYLE_NAME6);
     }
   });
 
@@ -11510,7 +11535,7 @@ html.void-rt-open [data-sidebar="gap"] {
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [responseNotification_default.name]: responseNotification_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [noShareLink_default.name]: noShareLink_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [noDictation_default.name]: noDictation_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [placeholder_default.name]: placeholder_default, [messageTimestamps_default.name]: messageTimestamps_default, [cleaner_default.name]: cleaner_default, [recentTopics_default.name]: recentTopics_default };
+  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [noGrokBot_default.name]: noGrokBot_default, [responseNotification_default.name]: responseNotification_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [usageDisplay_default.name]: usageDisplay_default, [exportChat_default.name]: exportChat_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [noShareLink_default.name]: noShareLink_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [noDictation_default.name]: noDictation_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [placeholder_default.name]: placeholder_default, [messageTimestamps_default.name]: messageTimestamps_default, [cleaner_default.name]: cleaner_default, [recentTopics_default.name]: recentTopics_default };
   // void-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
