@@ -1076,6 +1076,22 @@ function faviconImg(className: string): HTMLImageElement {
     return img;
 }
 
+function folderIcon(): SVGSVGElement {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", cl("folder"));
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
+    svg.append(path);
+    return svg;
+}
+
 function applyTheme(panel: HTMLElement) {
     const theme = detectTheme();
     panel.setAttribute("data-theme", theme);
@@ -1134,10 +1150,12 @@ function renderList(items: Topic[]) {
         fillShot(shot, topic.id);
 
         const meta = node("span", cl("meta"));
-        const row = node("span", cl("name-row"));
-        row.append(faviconImg(cl("title-favicon")), node("span", cl("name"), topic.title));
-        meta.append(row);
-        if (topic.project) meta.append(node("span", cl("host"), topic.project));
+        meta.append(node("span", cl("name"), topic.title));
+        if (topic.project) {
+            const proj = node("span", cl("host"));
+            proj.append(folderIcon(), node("span", cl("host-name"), topic.project));
+            meta.append(proj);
+        }
 
         btn.append(shot, meta);
         list!.append(btn);

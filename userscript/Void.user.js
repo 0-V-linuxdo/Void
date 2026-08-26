@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.17] v1.0.24
+// @version      [20260826.18] v1.0.25
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.17] v1.0.24 — A modification for grok.com
+ * Void++ [20260826.18] v1.0.25 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6023,7 +6023,7 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.17] v1.0.24"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260826.18] v1.0.25"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"8f56dd6"}`
     }, `(${"8f56dd6"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6776,20 +6776,10 @@ html.void-rt-open [data-sidebar="gap"] {
 
 .void-rt-name-row {
     min-width: 0;
-    display: grid;
-    grid-template-columns: var(--void-rt-title-icon-size) minmax(0, 1fr);
-    align-items: center;
-    gap: var(--void-rt-title-icon-gap);
 }
 
 .void-rt-title-favicon {
-    width: var(--void-rt-title-icon-size);
-    height: var(--void-rt-title-icon-size);
-    min-width: 0;
-    border-radius: var(--void-rt-radius-title-icon);
-    object-fit: cover;
-    display: block;
-    opacity: 1;
+    display: none;
 }
 
 .void-rt-name {
@@ -6807,11 +6797,26 @@ html.void-rt-open [data-sidebar="gap"] {
 
 .void-rt-host {
     min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     overflow: hidden;
     color: rgb(23 32 51 / 58%);
     font-size: 11px;
     font-weight: 560;
     line-height: 1.18;
+}
+
+.void-rt-folder {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 12px;
+    display: block;
+}
+
+.void-rt-host-name {
+    min-width: 0;
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -8053,6 +8058,21 @@ html.void-rt-open [data-sidebar="gap"] {
       });
       return img;
   }
+  function folderIcon() {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", cl17("folder"));
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "2");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+      svg.setAttribute("aria-hidden", "true");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
+      svg.append(path);
+      return svg;
+  }
   function applyTheme(panel) {
       const theme = detectTheme();
       panel.setAttribute("data-theme", theme);
@@ -8108,11 +8128,12 @@ html.void-rt-open [data-sidebar="gap"] {
           shot.setAttribute("aria-hidden", "true");
           fillShot(shot, topic.id);
           const meta = node("span", cl17("meta"));
-          const row = node("span", cl17("name-row"));
-          row.append(faviconImg(cl17("title-favicon")), node("span", cl17("name"), topic.title));
-          meta.append(row);
-          if (topic.project)
-              meta.append(node("span", cl17("host"), topic.project));
+          meta.append(node("span", cl17("name"), topic.title));
+          if (topic.project) {
+              const proj = node("span", cl17("host"));
+              proj.append(folderIcon(), node("span", cl17("host-name"), topic.project));
+              meta.append(proj);
+          }
           btn.append(shot, meta);
           list.append(btn);
       });
