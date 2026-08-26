@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.2] v1.0.9
+// @version      [20260826.3] v1.0.10
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.2] v1.0.9 — A modification for grok.com
+ * Void++ [20260826.3] v1.0.10 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -2610,7 +2610,7 @@ ${sourceUrl}`;
   function classes(...names) {
     return names.filter(Boolean).join(" ");
   }
-  // void-css:/tmp/void-push/Void/src/components/ColorSettingRow.css
+  // void-css:/tmp/Void/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -2649,7 +2649,7 @@ ${sourceUrl}`;
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/void-push/Void/src/components/ConfirmDialog.css
+  // void-css:/tmp/Void/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     contain: content;
     width: 100%;
@@ -2898,7 +2898,7 @@ ${sourceUrl}`;
     },
     configurable: true
   });
-  // void-css:/tmp/void-push/Void/src/components/ErrorCard.css
+  // void-css:/tmp/Void/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3011,7 +3011,7 @@ ${sourceUrl}`;
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/void-push/Void/src/components/SelectionUI.css
+  // void-css:/tmp/Void/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3644,7 +3644,7 @@ ${sourceUrl}`;
     });
   }
 
-  // void-css:/tmp/void-push/Void/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/Void/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4135,7 +4135,7 @@ ${sourceUrl}`;
     d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
   }));
 
-  // void-css:/tmp/void-push/Void/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4147,7 +4147,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/void-push/Void/src/components/settings/CssEditor.css
+  // void-css:/tmp/Void/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -4419,7 +4419,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:/tmp/void-push/Void/src/components/settings/shared.css
+  // void-css:/tmp/Void/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4470,7 +4470,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/void-push/Void/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
@@ -4485,7 +4485,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/void-push/Void/src/components/settings/PluginCard.css
+  // void-css:/tmp/Void/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -4524,7 +4524,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/void-push/Void/src/components/settings/BaseCard.css
+  // void-css:/tmp/Void/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4746,7 +4746,7 @@ ${sourceUrl}`;
     });
   }
 
-  // void-css:/tmp/void-push/Void/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/Void/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -4762,7 +4762,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/void-push/Void/src/components/settings/SettingField.css
+  // void-css:/tmp/Void/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
 }
@@ -5242,7 +5242,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:/tmp/void-push/Void/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -5265,7 +5265,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/void-push/Void/src/components/settings/ThemeCard.css
+  // void-css:/tmp/Void/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5536,7 +5536,7 @@ ${sourceUrl}`;
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/void-push/Void/src/plugins/experiments/styles.css
+  // void-css:/tmp/Void/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -5969,9 +5969,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.2] v1.0.9"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"7352689"}`
-    }, `(${"7352689"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260826.3] v1.0.10"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"e4b36de"}`
+    }, `(${"e4b36de"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6341,7 +6341,7 @@ ${sourceUrl}`;
     ]
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/downloadTTS/styles.css
+  // void-css:/tmp/Void/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -6401,7 +6401,7 @@ ${sourceUrl}`;
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/recentTopics/styles.css
+  // void-css:/tmp/Void/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -7837,7 +7837,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/streamerMode/styles.css
+  // void-css:/tmp/Void/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -8208,7 +8208,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ]
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/Void/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -8965,7 +8965,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/betterFiles/styles.css
+  // void-css:/tmp/Void/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -9109,7 +9109,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/messageTimestamps/styles.css
+  // void-css:/tmp/Void/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -9172,7 +9172,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/Void/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -9856,7 +9856,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/placeholder/styles.css
+  // void-css:/tmp/Void/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -9942,7 +9942,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     ]
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/betterImagine/styles.css
+  // void-css:/tmp/Void/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -10583,9 +10583,55 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // src/plugins/widerChat/index.ts
-  var STYLE_NAME2 = "widerChat";
+  // src/plugins/composerOpacity/index.ts
+  var STYLE_NAME2 = "composerOpacity";
+  var SHELL = [
+    "form:has([data-query-bar-mode-select])",
+    "form:has([data-query-bar-mode-select])>:first-child",
+    ".max-w-breakout form:has(textarea)",
+    ".max-w-breakout form:has(textarea)>:first-child",
+    ".max-w-breakout form:has([contenteditable=true])",
+    ".max-w-breakout form:has([contenteditable=true])>:first-child"
+  ].join(",");
   var settings13 = definePluginSettings({
+    opacity: {
+      type: 5 /* SLIDER */,
+      description: "Background opacity of the chat input. 100 is fully opaque.",
+      min: 0,
+      max: 100,
+      default: 100
+    },
+    blur: {
+      type: 5 /* SLIDER */,
+      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
+      min: 0,
+      max: 40,
+      default: 16
+    }
+  });
+  function apply() {
+    const pct = clamp(settings13.store.opacity, 0, 100);
+    const blur = clamp(settings13.store.blur, 0, 40);
+    const alpha = pct / 100;
+    registerStyle(STYLE_NAME2, `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + `background-color:color-mix(in srgb,var(--background) ${pct}%,transparent)!important;` + "background-image:none!important;" + "mask-image:none!important;" + "-webkit-mask-image:none!important;" + `-webkit-backdrop-filter:blur(${blur}px)!important;` + `backdrop-filter:blur(${blur}px)!important;` + "}");
+  }
+  var composerOpacity_default = definePlugin({
+    name: "ComposerOpacity",
+    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
+    authors: [Devs.p],
+    tags: ["ui", "chat"],
+    enabledByDefault: true,
+    settings: settings13,
+    start: apply,
+    onSettingsChange: apply,
+    stop() {
+      unregisterStyle(STYLE_NAME2);
+    }
+  });
+
+  // src/plugins/widerChat/index.ts
+  var STYLE_NAME3 = "widerChat";
+  var settings14 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem.",
@@ -10593,18 +10639,18 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
   function applyWidth() {
-    const w = settings13.store.width;
-    registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
+    const w = settings14.store.width;
+    registerStyle(STYLE_NAME3, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
-    settings: settings13,
+    settings: settings14,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
-      unregisterStyle(STYLE_NAME2);
+      unregisterStyle(STYLE_NAME3);
     }
   });
 
@@ -10619,18 +10665,18 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorRow() {
-    const { starColor } = settings14.use(["starColor"]);
+    const { starColor } = settings15.use(["starColor"]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
-        settings14.store.starColor = v;
+        settings15.store.starColor = v;
       },
       title: "Star color",
       description: "Color of the twinkling stars."
     });
   }
   function StarryBackground() {
-    const { starColor } = settings14.use(["starColor"]);
+    const { starColor } = settings15.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -10639,7 +10685,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings14 = definePluginSettings({
+  var settings15 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_COLOR,
@@ -10650,7 +10696,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     name: "Starry",
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
-    settings: settings14,
+    settings: settings15,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -10668,7 +10714,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   });
 
   // src/plugins/noGrokBot/index.ts
-  var STYLE_NAME3 = "noGrokBot";
+  var STYLE_NAME4 = "noGrokBot";
   var CSS2 = `
 #grok-bot-nav-button,
 div:has(> #grok-bot-nav-button) {
@@ -10685,14 +10731,14 @@ div:has(> #grok-bot-nav-button) {
     tags: ["ui"],
     enabledByDefault: true,
     start() {
-      registerStyle(STYLE_NAME3, CSS2);
+      registerStyle(STYLE_NAME4, CSS2);
     },
     stop() {
-      unregisterStyle(STYLE_NAME3);
+      unregisterStyle(STYLE_NAME4);
     }
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/exportChat/styles.css
+  // void-css:/tmp/Void/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -10889,7 +10935,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/customInstructions/styles.css
+  // void-css:/tmp/Void/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -11037,20 +11083,20 @@ div:has(> #grok-bot-nav-button) {
   var TrashIcon2 = findExportedComponentLazy("TrashIcon");
   var PlusIcon = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings15 = definePluginSettings({
+  var settings16 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings15.plain.presets ?? [];
+    return settings16.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings15.store.presets = presets;
+    settings16.store.presets = presets;
   }
   function getAssignments() {
-    return settings15.plain.assignments ?? {};
+    return settings16.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
@@ -11133,7 +11179,7 @@ div:has(> #grok-bot-nav-button) {
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings15.use(["presets"]).presets ?? [];
+    const presets = settings16.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -11145,7 +11191,7 @@ div:has(> #grok-bot-nav-button) {
         if (v === id)
           delete a[k];
       }
-      settings15.store.assignments = a;
+      settings16.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -11180,8 +11226,8 @@ div:has(> #grok-bot-nav-button) {
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings15.use(["presets"]).presets ?? [];
-    const assignments = settings15.use(["assignments"]).assignments ?? {};
+    const presets = settings16.use(["presets"]).presets ?? [];
+    const assignments = settings16.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -11189,7 +11235,7 @@ div:has(> #grok-bot-nav-button) {
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings15.store.assignments = a;
+      settings16.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
@@ -11219,7 +11265,7 @@ div:has(> #grok-bot-nav-button) {
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings15,
+    settings: settings16,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -11249,11 +11295,11 @@ div:has(> #grok-bot-nav-button) {
   });
 
   // src/plugins/noSidebarIdentity/index.ts
-  var STYLE_NAME4 = "noSidebarIdentity";
+  var STYLE_NAME5 = "noSidebarIdentity";
   var FOOTER = '[data-sidebar="footer"]';
   var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
   var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
-  var settings16 = definePluginSettings({
+  var settings17 = definePluginSettings({
     hideUsername: {
       type: 3 /* BOOLEAN */,
       description: "Hide the username next to the sidebar avatar.",
@@ -11265,20 +11311,20 @@ div:has(> #grok-bot-nav-button) {
       default: true
     }
   });
-  function apply() {
+  function apply2() {
     const rules = [];
-    if (settings16.store.hideUsername) {
+    if (settings17.store.hideUsername) {
       rules.push(`${STACK}>:first-child{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
     }
-    if (settings16.store.hideEmail) {
+    if (settings17.store.hideEmail) {
       rules.push(`${STACK}>:nth-child(2){display:none!important}`);
     }
-    if (settings16.store.hideUsername && settings16.store.hideEmail) {
+    if (settings17.store.hideUsername && settings17.store.hideEmail) {
       rules.push(`${TEXT_WRAP}{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
     }
-    registerStyle(STYLE_NAME4, rules.join(`
+    registerStyle(STYLE_NAME5, rules.join(`
 `));
   }
   var noSidebarIdentity_default = definePlugin({
@@ -11287,11 +11333,11 @@ div:has(> #grok-bot-nav-button) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings16,
-    start: apply,
-    onSettingsChange: apply,
+    settings: settings17,
+    start: apply2,
+    onSettingsChange: apply2,
     stop() {
-      unregisterStyle(STYLE_NAME4);
+      unregisterStyle(STYLE_NAME5);
     }
   });
 
@@ -11318,37 +11364,37 @@ div:has(> #grok-bot-nav-button) {
   // src/plugins/betterLinks/index.tsx
   var DEFAULT_LINK = "#4a9eff";
   var DEFAULT_VISITED = "#9b59b6";
-  var STYLE_NAME5 = "better-links-dynamic";
+  var STYLE_NAME6 = "better-links-dynamic";
   var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
   function isValidHex(c) {
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings17.store[key];
+    const val = settings18.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
     const link = getColor("linkColor", DEFAULT_LINK);
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings17.store.enableVisitedColor) {
+    if (settings18.store.enableVisitedColor) {
       const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
-    registerStyle(STYLE_NAME5, css);
+    registerStyle(STYLE_NAME6, css);
   }
   function ColorRow2({ settingKey, title, description, fallback }) {
-    settings17.use([settingKey]);
+    settings18.use([settingKey]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
-        settings17.store[settingKey] = v;
+        settings18.store[settingKey] = v;
         applyColors();
       },
       title,
       description
     });
   }
-  var settings17 = definePluginSettings({
+  var settings18 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -11383,7 +11429,7 @@ div:has(> #grok-bot-nav-button) {
     name: "BetterLinks",
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
-    settings: settings17,
+    settings: settings18,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -11402,7 +11448,7 @@ div:has(> #grok-bot-nav-button) {
       }
     ],
     _remarkLinkify() {
-      const { store: store3 } = settings17;
+      const { store: store3 } = settings18;
       return (tree) => {
         try {
           if (!store3.linkifyDomains)
@@ -11446,17 +11492,17 @@ div:has(> #grok-bot-nav-button) {
       };
     },
     start() {
-      settings17.store.linkColor ??= DEFAULT_LINK;
-      settings17.store.visitedColor ??= DEFAULT_VISITED;
+      settings18.store.linkColor ??= DEFAULT_LINK;
+      settings18.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
-      enableStyle(STYLE_NAME5);
+      enableStyle(STYLE_NAME6);
     },
     stop() {
-      disableStyle(STYLE_NAME5);
+      disableStyle(STYLE_NAME6);
     }
   });
 
-  // void-css:/tmp/void-push/Void/src/plugins/betterSidebar/styles.css
+  // void-css:/tmp/Void/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -11515,7 +11561,7 @@ div:has(> #grok-bot-nav-button) {
   // src/plugins/betterSidebar/index.tsx
   var logger25 = new Logger("BetterSidebar");
   var cl22 = classNameFactory("void-sidebar-");
-  var settings18 = definePluginSettings({
+  var settings19 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -11578,7 +11624,7 @@ div:has(> #grok-bot-nav-button) {
     await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger25.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings18.use(["batchSelect"]).batchSelect;
+    const enabled = settings19.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
@@ -11591,7 +11637,7 @@ div:has(> #grok-bot-nav-button) {
     name: "BetterSidebar",
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
-    settings: settings18,
+    settings: settings19,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
@@ -11605,7 +11651,7 @@ div:has(> #grok-bot-nav-button) {
     },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings18.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings19.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -11615,10 +11661,10 @@ div:has(> #grok-bot-nav-button) {
       };
     },
     _defaultOpen() {
-      return !settings18.store.defaultCollapsed;
+      return !settings19.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings18.store.clickToToggle)
+      if (!settings19.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -11724,8 +11770,8 @@ div:has(> #grok-bot-nav-button) {
   });
 
   // src/plugins/noShareLink/index.ts
-  var STYLE_NAME6 = "noShareLink";
-  var settings19 = definePluginSettings({
+  var STYLE_NAME7 = "noShareLink";
+  var settings20 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
       description: "Inside a project: hide the top-right Share Project button.",
@@ -11737,15 +11783,15 @@ div:has(> #grok-bot-nav-button) {
       default: true
     }
   });
-  function apply2() {
+  function apply3() {
     const rules = [];
-    if (settings19.store.hideShareProject) {
+    if (settings20.store.hideShareProject) {
       rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
-    if (settings19.store.hideCreateShareLink) {
+    if (settings20.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
-    registerStyle(STYLE_NAME6, rules.join(`
+    registerStyle(STYLE_NAME7, rules.join(`
 `));
   }
   var noShareLink_default = definePlugin({
@@ -11754,16 +11800,16 @@ div:has(> #grok-bot-nav-button) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings19,
-    start: apply2,
-    onSettingsChange: apply2,
+    settings: settings20,
+    start: apply3,
+    onSettingsChange: apply3,
     stop() {
-      unregisterStyle(STYLE_NAME6);
+      unregisterStyle(STYLE_NAME7);
     }
   });
 
   // src/plugins/responseNotification/index.ts
-  var settings20 = definePluginSettings({
+  var settings21 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -11810,7 +11856,7 @@ div:has(> #grok-bot-nav-button) {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings20.store.soundUrl?.trim();
+    const url = settings21.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -11823,11 +11869,11 @@ div:has(> #grok-bot-nav-button) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings20.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings21.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings20.store.sound)
+    if (settings21.store.sound)
       playSound();
-    if (settings20.store.browserNotification)
+    if (settings21.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -11835,7 +11881,7 @@ div:has(> #grok-bot-nav-button) {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings20,
+    settings: settings21,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -11862,8 +11908,8 @@ div:has(> #grok-bot-nav-button) {
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [streamerMode_default.name]: streamerMode_default, [autoRetry_default.name]: autoRetry_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterFiles_default.name]: betterFiles_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [messageTimestamps_default.name]: messageTimestamps_default, [usageDisplay_default.name]: usageDisplay_default, [placeholder_default.name]: placeholder_default, [betterImagine_default.name]: betterImagine_default, [widerChat_default.name]: widerChat_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [experiments_default.name]: experiments_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [incognito_default.name]: incognito_default, [autoCollapse_default.name]: autoCollapse_default, [noShareLink_default.name]: noShareLink_default, [responseNotification_default.name]: responseNotification_default };
-  // void-css:/tmp/void-push/Void/src/api/Notices.css
+  var __plugins_default = { [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [streamerMode_default.name]: streamerMode_default, [autoRetry_default.name]: autoRetry_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterFiles_default.name]: betterFiles_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [messageTimestamps_default.name]: messageTimestamps_default, [usageDisplay_default.name]: usageDisplay_default, [placeholder_default.name]: placeholder_default, [betterImagine_default.name]: betterImagine_default, [composerOpacity_default.name]: composerOpacity_default, [widerChat_default.name]: widerChat_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [experiments_default.name]: experiments_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [incognito_default.name]: incognito_default, [autoCollapse_default.name]: autoCollapse_default, [noShareLink_default.name]: noShareLink_default, [responseNotification_default.name]: responseNotification_default };
+  // void-css:/tmp/Void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
