@@ -126,6 +126,7 @@ export interface SettingsPluginData {
     customCSSEnabled?: boolean;
     knownPlugins?: Record<string, number>;
     chunkFingerprint?: string[];
+    pinnedPlugins?: string[];
     [key: string]: unknown;
 }
 
@@ -135,6 +136,23 @@ export function getSettingsPluginData(): SettingsPluginData {
 
 export function updateSettingsPluginData(patch: Partial<SettingsPluginData>) {
     Settings.plugins.Settings = { ...(Settings.plugins.Settings ?? { enabled: true }), ...patch };
+}
+
+export function getPinnedPlugins(): string[] {
+    return getSettingsPluginData().pinnedPlugins ?? [];
+}
+
+export function isPluginPinned(name: string): boolean {
+    return getPinnedPlugins().includes(name);
+}
+
+export function togglePluginPinned(name: string): boolean {
+    const current = getPinnedPlugins();
+    const pinned = current.includes(name);
+    updateSettingsPluginData({
+        pinnedPlugins: pinned ? current.filter(n => n !== name) : [name, ...current],
+    });
+    return !pinned;
 }
 
 export function mergePluginSettings(name: string, patch: Record<string, unknown>) {

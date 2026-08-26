@@ -9,6 +9,7 @@ import "./PluginsTab.css";
 
 import { subscribe } from "@api/Events";
 import { isPluginEnabled, plugins } from "@api/PluginManager";
+import { getPinnedPlugins } from "@api/Settings";
 import {
     Button,
     ConfirmDialog,
@@ -43,6 +44,19 @@ function filterByEnabled(list: string[], filter: ListFilter): string[] {
     if (filter === "all") return list;
     const enabled = filter === "enabled";
     return list.filter(n => isPluginEnabled(n) === enabled);
+}
+
+function sortPinnedFirst(list: string[]): string[] {
+    const pinned = getPinnedPlugins();
+    if (!pinned.length) return list;
+    const rank = new Map(pinned.map((n, i) => [n, i]));
+    return list.toSorted((a, b) => {
+        const pa = rank.has(a);
+        const pb = rank.has(b);
+        if (pa !== pb) return pa ? -1 : 1;
+        if (pa) return (rank.get(a) ?? 0) - (rank.get(b) ?? 0);
+        return 0;
+    });
 }
 
 let pendingPluginDialog: string | null = null;
@@ -92,6 +106,7 @@ export default function PluginsTab() {
     }, []);
 
     useEffect(() => subscribe("pluginToggle", () => setToggleTick(t => t + 1)), []);
+    useEffect(() => subscribe("pluginPin", () => setToggleTick(t => t + 1)), []);
 
     useEffect(() => subscribe("reloadNeeded", () => {
         changedPluginsRef.current.add("__settings__");
@@ -99,7 +114,7 @@ export default function PluginsTab() {
         if (!dismissedRef.current) setShowReload(true);
     }), []);
 
-    const visibleUser = useMemo(() => filterByEnabled(userPlugins, filter), [filter, userPlugins, toggleTick]);
+    const visibleUser = useMemo(() => sortPinnedFirst(filterByEnabled(userPlugins, filter)), [filter, userPlugins, toggleTick]);
     const visibleRequired = useMemo(() => filterByEnabled(requiredPlugins, filter), [filter, requiredPlugins, toggleTick]);
 
     const filteredUser = useFiltered(visibleUser, search, getPluginKey);

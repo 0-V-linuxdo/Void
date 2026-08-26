@@ -13,11 +13,12 @@ interface IconButtonProps {
     icon: ComponentType<IconProps>;
     label: string;
     onClick?(): void;
+    className?: string;
 }
 
-export function IconButton({ icon: Icon, label, onClick }: IconButtonProps) {
+export function IconButton({ icon: Icon, label, onClick, className }: IconButtonProps) {
     return (
-        <Button variant="tertiary" size="xs" shape="square" aria-label={label} onClick={onClick}>
+        <Button variant="tertiary" size="xs" shape="square" aria-label={label} onClick={onClick} className={className}>
             <Icon size={14} />
         </Button>
     );

@@ -8,9 +8,9 @@ import "./PluginCard.css";
 
 import { dispatch } from "@api/Events";
 import { isNewPlugin, isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
-import { mergePluginSettings } from "@api/Settings";
+import { isPluginPinned, mergePluginSettings, togglePluginPinned } from "@api/Settings";
 import { Badge, Switch } from "@components";
-import { CircleAlertIcon, EllipsisVertical, TriangleAlert } from "@components/icons";
+import { CircleAlertIcon, EllipsisVertical, PinFilledIcon, PinIcon, TriangleAlert } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classes, classNameFactory } from "@utils/css";
 import { useForceUpdater } from "@utils/react";
@@ -32,6 +32,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
     const plugin = plugins[name];
     const forceUpdate = useForceUpdater();
     const enabled = isPluginEnabled(name);
+    const pinned = isPluginPinned(name);
     const crashed = enabled && !plugin.started && !plugin.required;
     const hasPatches = !!plugin.patches?.length;
 
@@ -44,9 +45,15 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
         if (hasPatches) onReload(name);
     };
 
+    const handlePin = () => {
+        togglePluginPinned(name);
+        forceUpdate();
+        dispatch("pluginPin");
+    };
+
     return (
         <BaseCard
-            className={classes(plugin.required && cl("required"), crashed && cl("crashed"))}
+            className={classes(plugin.required && cl("required"), crashed && cl("crashed"), pinned && cl("pinned"))}
             name={name}
             badges={
                 <>
@@ -59,6 +66,14 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
             description={plugin.description}
             controls={
                 <>
+                    {!plugin.required && (
+                        <IconButton
+                            icon={pinned ? PinFilledIcon : PinIcon}
+                            label={pinned ? "Unpin from top" : "Pin to top"}
+                            className={classes(cl("pin"), pinned && cl("pin-active"))}
+                            onClick={handlePin}
+                        />
+                    )}
                     {hasVisibleSettings(plugin) && (
                         <IconButton icon={EllipsisVertical} label="Plugin settings" onClick={() => onSettings(name)} />
                     )}

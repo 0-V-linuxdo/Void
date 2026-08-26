@@ -26,3 +26,15 @@
     width: 1em;
     height: 1em;
 }
+
+.void-plugin-card-pinned {
+    box-shadow: inset 0.125rem 0 0 hsl(var(--fg-primary));
+}
+
+.void-plugin-card-pin {
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-plugin-card-pin-active {
+    color: hsl(var(--fg-primary));
+}
