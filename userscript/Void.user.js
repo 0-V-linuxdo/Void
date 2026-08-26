@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826] v1.0.6
+// @version      [20260826] v1.0.7
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826] v1.0.6 — A modification for grok.com
+ * Void++ [20260826] v1.0.7 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4515,10 +4515,6 @@ ${sourceUrl}`;
     height: 1em;
 }
 
-.void-plugin-card-pinned {
-    box-shadow: inset 0.125rem 0 0 hsl(var(--fg-primary));
-}
-
 .void-plugin-card-pin {
     color: hsl(var(--fg-tertiary));
 }
@@ -4713,7 +4709,7 @@ ${sourceUrl}`;
       dispatch("pluginPin");
     };
     return /* @__PURE__ */ React.createElement(BaseCard, {
-      className: classes(plugin.required && cl8("required"), crashed && cl8("crashed"), pinned && cl8("pinned")),
+      className: classes(plugin.required && cl8("required"), crashed && cl8("crashed")),
       name,
       badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: TriangleAlert,
@@ -5973,9 +5969,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826] v1.0.6"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"abd60b0"}`
-    }, `(${"abd60b0"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260826] v1.0.7"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"32064d5"}`
+    }, `(${"32064d5"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {

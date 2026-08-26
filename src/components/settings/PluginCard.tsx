@@ -53,7 +53,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
 
     return (
         <BaseCard
-            className={classes(plugin.required && cl("required"), crashed && cl("crashed"), pinned && cl("pinned"))}
+            className={classes(plugin.required && cl("required"), crashed && cl("crashed"))}
             name={name}
             badges={
                 <>
