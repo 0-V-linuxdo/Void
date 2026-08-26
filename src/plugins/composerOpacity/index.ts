@@ -13,6 +13,8 @@ import definePlugin, { OptionType } from "@utils/types";
 const STYLE_NAME = "composerOpacity";
 const SHELL = ".query-bar";
 const FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
+const FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
+const BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
 
 const settings = definePluginSettings({
     opacity: {
@@ -38,7 +40,9 @@ function apply() {
     const radius = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
     registerStyle(
         STYLE_NAME,
-        `${FRAME}{background:transparent!important;background-image:none!important;}`
+        `${FRAME}{background:transparent!important;background-image:none!important;pointer-events:none!important}`
+        + `${FRAME_KIDS}{pointer-events:auto!important}`
+        + `${BACKDROP}{display:none!important}`
         + `${SHELL}{`
         + `background-color:hsl(var(--surface-l1)/${alpha})!important;`
         + `background-color:color-mix(in srgb,var(--background) ${pct}%,transparent)!important;`

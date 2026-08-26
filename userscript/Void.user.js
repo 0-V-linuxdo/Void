@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.8] v1.0.15
+// @version      [20260826.9] v1.0.16
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.8] v1.0.15 — A modification for grok.com
+ * Void++ [20260826.9] v1.0.16 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5969,9 +5969,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.8] v1.0.15"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"93770e2"}`
-    }, `(${"93770e2"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260826.9] v1.0.16"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"1aab321"}`
+    }, `(${"1aab321"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -10711,6 +10711,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var STYLE_NAME2 = "composerOpacity";
   var SHELL = ".query-bar";
   var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
+  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
+  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
   var settings13 = definePluginSettings({
     opacity: {
       type: 5 /* SLIDER */,
@@ -10732,7 +10734,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const blur = clamp(settings13.store.blur, 0, 40);
     const alpha = pct / 100;
     const radius = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
-    registerStyle(STYLE_NAME2, `${FRAME}{background:transparent!important;background-image:none!important;}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + `background-color:color-mix(in srgb,var(--background) ${pct}%,transparent)!important;` + "background-image:none!important;" + `border-radius:${radius}!important;` + "overflow:hidden!important;" + `-webkit-backdrop-filter:blur(${blur}px)!important;` + `backdrop-filter:blur(${blur}px)!important;` + "}");
+    registerStyle(STYLE_NAME2, `${FRAME}{background:transparent!important;background-image:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + `background-color:color-mix(in srgb,var(--background) ${pct}%,transparent)!important;` + "background-image:none!important;" + `border-radius:${radius}!important;` + "overflow:hidden!important;" + `-webkit-backdrop-filter:blur(${blur}px)!important;` + `backdrop-filter:blur(${blur}px)!important;` + "}");
   }
   var composerOpacity_default = definePlugin({
     name: "ComposerOpacity",
