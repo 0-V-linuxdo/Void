@@ -9,8 +9,9 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
+import type { ResponseStoreState } from "@grok-types/stores/ResponseStore";
 import type { GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
-import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
+import { ChatPageStore, ConversationStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -23,6 +24,9 @@ const TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
 const TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
 const TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
 const SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation)$/i;
+const SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
+const TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
+const STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
 const COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => ({ label: String(n), value: n, default: n === 5 }));
 
 const settings = definePluginSettings({
@@ -427,10 +431,11 @@ function extractLines(pane: HTMLElement): PageLine[] {
     const out: PageLine[] = [];
     const seen = new Set<string>();
     for (const kid of kids) {
-        const raw = (kid.innerText ?? kid.textContent ?? "").replaceAll(/\s+/g, " ").trim();
-        if (raw.length < 4) continue;
-        if (/^(more|copy|share|retry|edit|\d{1,2}:\d{2}\s*(am|pm))$/i.test(raw)) continue;
-        const text = raw.length > 280 ? `${raw.slice(0, 277)}…` : raw;
+        const clone = kid.cloneNode(true) as HTMLElement;
+        clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach(n => n.remove());
+        const raw = (clone.innerText ?? clone.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+        const text = scrubText(raw);
+        if (text.length < 4) continue;
         if (seen.has(text)) continue;
         seen.add(text);
         const cls = `${kid.className} ${kid.getAttribute("class") ?? ""}`;
@@ -441,32 +446,88 @@ function extractLines(pane: HTMLElement): PageLine[] {
     return lastRound(out);
 }
 
+function scrubText(raw: string): string {
+    let t = raw.replaceAll(/\s+/g, " ").trim();
+    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
+    t = t.replaceAll(/\s+/g, " ").trim();
+    if (!t || SKIP_NOISE.test(t)) return "";
+    return t;
+}
+
+function plainText(md: string): string {
+    const t = md
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+        .replace(/^#{1,6}\s+/gm, "")
+        .replace(/[*_~]{1,3}/g, "")
+        .replace(/^>\s+/gm, "");
+    return scrubText(t);
+}
+
 function clipLine(text: string, max: number): string {
-    const t = text.replaceAll(/\s+/g, " ").trim();
+    const t = scrubText(text);
     if (t.length <= max) return t;
     return `${t.slice(0, Math.max(1, max - 1))}…`;
 }
 
 function lastRound(lines: PageLine[]): PageLine[] {
-    if (!lines.length) return [];
+    const cleaned = lines
+        .map(line => ({ role: line.role, text: scrubText(line.text) }))
+        .filter((line): line is PageLine => !!line.text);
+    if (!cleaned.length) return [];
     let asst = -1;
     let user = -1;
-    for (let i = lines.length - 1; i >= 0; i--) {
-        if (asst < 0 && lines[i].role === "assistant") asst = i;
-        if (user < 0 && lines[i].role === "user") user = i;
+    for (let i = cleaned.length - 1; i >= 0; i--) {
+        if (asst < 0 && cleaned[i].role === "assistant") asst = i;
+        if (user < 0 && cleaned[i].role === "user") user = i;
         if (asst >= 0 && user >= 0) break;
     }
     const pick: PageLine[] = user >= 0 && (asst < 0 || user > asst)
-        ? [lines[user]]
+        ? [cleaned[user]]
         : user >= 0 && asst >= 0 && user < asst
-            ? [lines[user], lines[asst]]
+            ? [cleaned[user], cleaned[asst]]
             : asst >= 0
-                ? [lines[asst]]
-                : lines.slice(-1);
+                ? [cleaned[asst]]
+                : cleaned.slice(-1);
     return pick.map(line => ({
         role: line.role,
-        text: clipLine(line.text, line.role === "user" ? 110 : 180),
+        text: clipLine(line.text, line.role === "user" ? 90 : 140),
     }));
+}
+
+function linesFromStore(id: string): PageLine[] {
+    if (!id) return [];
+    try {
+        const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+        let list = byConversationId[id];
+        if (!list?.length) {
+            const nodes = nodesByConversationId[id];
+            if (nodes?.length) list = nodes.map(n => byId[n.responseId]).filter(r => !!r);
+        }
+        if (!list?.length) return [];
+        const sorted = [...list].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+        const out: PageLine[] = [];
+        for (const r of sorted) {
+            if (!r || r.isControl) continue;
+            const sender = String(r.sender ?? "").toLowerCase();
+            const human = sender === "human" || sender === "user";
+            if (human) {
+                const text = plainText(r.message || r.query || "");
+                if (text) out.push({ role: "user", text });
+                continue;
+            }
+            const query = plainText(r.query || "");
+            const message = plainText(r.message || "");
+            if (query && out.at(-1)?.text !== query) out.push({ role: "user", text: query });
+            if (message) out.push({ role: "assistant", text: message });
+        }
+        return lastRound(out);
+    } catch (e) {
+        logger.debug("ResponseStore snapshot failed:", e);
+        return [];
+    }
 }
 
 function parseSnap(raw: string | undefined): PageSnap | null {
@@ -505,25 +566,35 @@ function buildPageShot(snap: PageSnap): HTMLElement {
     return page;
 }
 
+function captureId(id: string) {
+    if (!id) return;
+    const fromStore = linesFromStore(id);
+    let lines = fromStore;
+    if (!lines.length && id === currentVisit()) {
+        const pane = chatPane();
+        if (pane) lines = extractLines(pane);
+    }
+    if (!lines.length) return;
+    const snap: PageSnap = {
+        title: titleOf(id),
+        theme: detectTheme(),
+        lines: lastRound(lines),
+    };
+    thumbs.set(id, snap);
+    rememberPage(id, snap);
+}
+
 let capturing = false;
 
 function captureCurrent() {
     if (capturing || open) return;
-    const id = currentVisit();
-    if (id == null) return;
     capturing = true;
     try {
-        const pane = chatPane();
-        if (!pane) return;
-        const lines = extractLines(pane);
-        if (!lines.length) return;
-        const snap: PageSnap = {
-            title: titleOf(id),
-            theme: detectTheme(),
-            lines,
-        };
-        thumbs.set(id, snap);
-        rememberPage(id, snap);
+        const current = currentVisit();
+        if (current) captureId(current);
+        for (const id of capVisits(readVisits())) {
+            if (id && id !== current) captureId(id);
+        }
     } catch (e) {
         logger.debug("snapshot failed:", e);
     } finally {
@@ -1113,6 +1184,19 @@ export default definePlugin({
                 const id = currentVisit();
                 if (id == null) return;
                 bump(id);
+                scheduleCapture();
+            },
+        },
+        ResponseStore: {
+            selector: (s: ResponseStoreState) => {
+                const id = currentVisit();
+                if (!id) return "";
+                const list = s.byConversationId[id];
+                const last = list?.[list.length - 1];
+                return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
+            },
+            handler() {
+                if (open) return;
                 scheduleCapture();
             },
         },

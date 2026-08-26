@@ -225,6 +225,8 @@ html.void-rt-open [data-sidebar="gap"] {
 
 .void-rt-page-line {
     display: -webkit-box;
+    align-self: flex-start;
+    width: fit-content;
     max-width: 94%;
     overflow: hidden;
     color: #ececec;
@@ -240,6 +242,7 @@ html.void-rt-open [data-sidebar="gap"] {
 
 .void-rt-page-line-user {
     align-self: flex-end;
+    width: fit-content;
     max-width: 82%;
     padding: 6px 9px;
     border-radius: 12px;
