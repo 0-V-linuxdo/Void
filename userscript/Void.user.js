@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.18] v1.0.25
+// @version      [20260826.19] v1.0.26
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.18] v1.0.25 — A modification for grok.com
+ * Void++ [20260826.19] v1.0.26 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6023,7 +6023,7 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.18] v1.0.25"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260826.19] v1.0.26"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"8f56dd6"}`
     }, `(${"8f56dd6"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6575,10 +6575,12 @@ html.void-rt-open [data-sidebar="gap"] {
     gap: var(--void-rt-gap);
     width: max-content;
     max-width: 100%;
+    padding: 2px;
 }
 
 .void-rt-card {
     all: unset;
+    box-sizing: border-box;
     width: var(--void-rt-card-width);
     min-width: var(--void-rt-card-width);
     max-width: var(--void-rt-card-width);
@@ -6595,31 +6597,21 @@ html.void-rt-open [data-sidebar="gap"] {
     box-shadow: none;
     transition:
         border-color 140ms ease,
-        background 140ms ease,
         box-shadow var(--void-rt-motion-card);
 }
 
 .void-rt-card[data-active="true"] {
-    transform: none;
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 32%, rgb(15 23 42 / 8%));
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 16%, rgb(255 255 255 / 88%)),
-            color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 8%, rgb(255 255 255 / 78%))
-        );
+    z-index: 1;
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 82%, rgb(15 23 42 / 18%));
+    background: transparent;
     box-shadow:
-        0 0 16px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 7%, transparent),
-        0 4px 10px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 3%, transparent),
-        inset 0 1px 0 rgb(255 255 255 / 84%),
-        inset 0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 12%, rgb(255 255 255 / 72%));
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 55%, transparent);
 }
 
 .void-rt-card:focus-visible {
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 42%, rgb(15 23 42 / 10%));
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 88%, rgb(15 23 42 / 16%));
     box-shadow:
-        inset 0 1px 0 rgb(255 255 255 / 84%),
-        inset 0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, rgb(255 255 255 / 72%));
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 60%, transparent);
 }
 
 .void-rt-thumb {
@@ -6853,25 +6845,16 @@ html.void-rt-open [data-sidebar="gap"] {
 }
 
 .void-rt-panel[data-theme="dark"] .void-rt-card[data-active="true"] {
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 34%, rgb(255 255 255 / 12%));
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 18%, rgb(30 41 59 / 72%)),
-            color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 10%, rgb(8 13 24 / 72%))
-        );
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 86%, rgb(255 255 255 / 28%));
+    background: transparent;
     box-shadow:
-        0 0 18px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 10%, transparent),
-        0 4px 10px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 5%, transparent),
-        inset 0 1px 0 rgb(255 255 255 / 13%),
-        inset 0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 12%, rgb(255 255 255 / 8%));
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 58%, transparent);
 }
 
 .void-rt-panel[data-theme="dark"] .void-rt-card:focus-visible {
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 42%, rgb(255 255 255 / 16%));
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 90%, rgb(255 255 255 / 32%));
     box-shadow:
-        inset 0 1px 0 rgb(255 255 255 / 13%),
-        inset 0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 12%, rgb(255 255 255 / 8%));
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 62%, transparent);
 }
 
 .void-rt-panel[data-theme="dark"] .void-rt-name {
