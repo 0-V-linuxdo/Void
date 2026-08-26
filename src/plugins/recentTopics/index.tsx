@@ -72,6 +72,7 @@ let ctrlHeld = false;
 let keys: AbortController | null = null;
 let host: HTMLDivElement | null = null;
 let paintedKey = "";
+const shotObservers: ResizeObserver[] = [];
 
 function unique(ids: string[]): string[] {
     const seen = new Set<string>();
@@ -820,14 +821,37 @@ function node(tag: string, className?: string, text?: string) {
 }
 
 function fillShot(box: HTMLElement, id: string) {
-    const fallback = node("span", cl("fallback"));
-    fallback.append(faviconImg(cl("favicon")));
-    box.append(fallback);
     const snap = snapOf(id);
-    if (!snap) return;
+    if (!snap) {
+        const fallback = node("span", cl("fallback"));
+        fallback.append(faviconImg(cl("favicon")));
+        box.append(fallback);
+        return;
+    }
     const shot = node("span", cl("shot"));
     shot.append(buildPageShot(snap));
     box.append(shot);
+    fitShot(box, shot);
+}
+
+function fitShot(thumb: HTMLElement, shot: HTMLElement) {
+    const apply = () => {
+        const w = thumb.clientWidth;
+        if (w > 0) shot.style.transform = `scale(${w / 800})`;
+    };
+    apply();
+    requestAnimationFrame(apply);
+    if (typeof ResizeObserver !== "function") return;
+    const ro = new ResizeObserver(apply);
+    ro.observe(thumb);
+    shotObservers.push(ro);
+}
+
+function clearShotObservers() {
+    for (const ro of shotObservers) {
+        try { ro.disconnect(); } catch {}
+    }
+    shotObservers.length = 0;
 }
 
 const GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
@@ -934,6 +958,8 @@ function renderList(items: Topic[]) {
     const panel = host.querySelector(`.${cl("panel")}`) as HTMLElement | null;
     if (!panel) return;
 
+    clearShotObservers();
+
     let list = panel.querySelector(`.${cl("list")}`) as HTMLElement | null;
     if (!list) {
         panel.replaceChildren();
@@ -1036,6 +1062,7 @@ function paint() {
 function detachHost() {
     document.documentElement.classList.remove("void-rt-open");
     paintedKey = "";
+    clearShotObservers();
     if (host) {
         try { host.hidePopover(); } catch {}
         host.remove();

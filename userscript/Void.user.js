@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.4] v1.0.11
+// @version      [20260826.5] v1.0.12
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.4] v1.0.11 — A modification for grok.com
+ * Void++ [20260826.5] v1.0.12 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5969,7 +5969,7 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.4] v1.0.11"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260826.5] v1.0.12"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"e4b36de"}`
     }, `(${"e4b36de"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6472,6 +6472,8 @@ html.void-rt-open [data-sidebar="gap"] {
     --void-rt-thumb-stroke-color: rgb(15 23 42 / 20%);
     --void-rt-title-icon-size: 16px;
     --void-rt-title-icon-gap: 5px;
+    --void-rt-thumb-width: calc(var(--void-rt-card-width) - (2 * var(--void-rt-padding-card)) - (2 * var(--void-rt-border-card)));
+    --void-rt-shot-scale: calc(var(--void-rt-thumb-width) / 800px);
 
     all: unset;
     color-scheme: light;
@@ -6575,7 +6577,6 @@ html.void-rt-open [data-sidebar="gap"] {
     overflow: hidden;
     border-radius: var(--void-rt-radius-thumb);
     background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, rgb(248 250 252 / 94%));
-    container-type: size;
 }
 
 .void-rt-thumb::after {
@@ -6593,13 +6594,13 @@ html.void-rt-open [data-sidebar="gap"] {
 .void-rt-shot {
     position: absolute;
     top: 0;
-    left: 50%;
+    left: 0;
     z-index: 1;
     width: 800px;
-    min-height: 100%;
+    height: 450px;
     overflow: hidden;
-    transform: translateX(-50%) scale(calc(100cqw / 800));
-    transform-origin: top center;
+    transform: scale(var(--void-rt-shot-scale));
+    transform-origin: top left;
     pointer-events: none;
     user-select: none;
 }
@@ -6608,6 +6609,10 @@ html.void-rt-open [data-sidebar="gap"] {
 .void-rt-shot * {
     pointer-events: none !important;
     scrollbar-width: none;
+}
+
+.void-rt-thumb:has(.void-rt-shot) .void-rt-fallback {
+    display: none;
 }
 
 .void-rt-cover {
@@ -7112,6 +7117,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var keys = null;
   var host = null;
   var paintedKey = "";
+  var shotObservers = [];
   function unique(ids) {
       const seen = new Set();
       const out = [];
@@ -7907,15 +7913,40 @@ html.void-rt-open [data-sidebar="gap"] {
       return el;
   }
   function fillShot(box, id) {
-      const fallback = node("span", cl17("fallback"));
-      fallback.append(faviconImg(cl17("favicon")));
-      box.append(fallback);
       const snap = snapOf(id);
-      if (!snap)
+      if (!snap) {
+          const fallback = node("span", cl17("fallback"));
+          fallback.append(faviconImg(cl17("favicon")));
+          box.append(fallback);
           return;
+      }
       const shot = node("span", cl17("shot"));
       shot.append(buildPageShot(snap));
       box.append(shot);
+      fitShot(box, shot);
+  }
+  function fitShot(thumb, shot) {
+      const apply = () => {
+          const w = thumb.clientWidth;
+          if (w > 0)
+              shot.style.transform = `scale(${w / 800})`;
+      };
+      apply();
+      requestAnimationFrame(apply);
+      if (typeof ResizeObserver !== "function")
+          return;
+      const ro = new ResizeObserver(apply);
+      ro.observe(thumb);
+      shotObservers.push(ro);
+  }
+  function clearShotObservers() {
+      for (const ro of shotObservers) {
+          try {
+              ro.disconnect();
+          }
+          catch { }
+      }
+      shotObservers.length = 0;
   }
   var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
   var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
@@ -8022,6 +8053,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const panel = host.querySelector(`.${cl17("panel")}`);
       if (!panel)
           return;
+      clearShotObservers();
       let list = panel.querySelector(`.${cl17("list")}`);
       if (!list) {
           panel.replaceChildren();
@@ -8116,6 +8148,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function detachHost() {
       document.documentElement.classList.remove("void-rt-open");
       paintedKey = "";
+      clearShotObservers();
       if (host) {
           try {
               host.hidePopover();
