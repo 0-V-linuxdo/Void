@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.11] v1.0.18
+// @version      [20260826.12] v1.0.19
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.11] v1.0.18 — A modification for grok.com
+ * Void++ [20260826.12] v1.0.19 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5969,7 +5969,7 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.11] v1.0.18"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260826.12] v1.0.19"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"6ab483e"}`
     }, `(${"6ab483e"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6639,7 +6639,7 @@ html.void-rt-open [data-sidebar="gap"] {
     width: fit-content;
     max-width: 94%;
     overflow: hidden;
-    color: #ececec;
+    color: #c4c4c4;
     font-size: 11px;
     font-weight: 400;
     line-height: 1.35;
@@ -6650,16 +6650,25 @@ html.void-rt-open [data-sidebar="gap"] {
     line-clamp: 4;
 }
 
-.void-rt-page-line-user {
+.void-rt-page-line-user,
+.void-rt-page-line[data-role="user"] {
     align-self: flex-end;
     width: fit-content;
-    max-width: 82%;
+    max-width: 78%;
     padding: 6px 9px;
-    border-radius: 12px;
-    background: #2a2a2a;
+    border-radius: 14px 14px 4px 14px;
+    background: #2f2f2f;
     color: #fff;
     -webkit-line-clamp: 2;
     line-clamp: 2;
+}
+
+.void-rt-page-line[data-role="assistant"] {
+    align-self: flex-start;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    color: #c4c4c4;
 }
 
 .void-rt-page[data-theme="light"] {
@@ -6667,11 +6676,13 @@ html.void-rt-open [data-sidebar="gap"] {
     color: #171717;
 }
 
-.void-rt-page[data-theme="light"] .void-rt-page-line {
-    color: #171717;
+.void-rt-page[data-theme="light"] .void-rt-page-line,
+.void-rt-page[data-theme="light"] .void-rt-page-line[data-role="assistant"] {
+    color: #3f3f3f;
 }
 
-.void-rt-page[data-theme="light"] .void-rt-page-line-user {
+.void-rt-page[data-theme="light"] .void-rt-page-line-user,
+.void-rt-page[data-theme="light"] .void-rt-page-line[data-role="user"] {
     background: #e8e6e0;
     color: #171717;
 }
@@ -7318,26 +7329,44 @@ html.void-rt-open [data-sidebar="gap"] {
       }
       return node;
   }
+  function chromeOff(el) {
+      const clone = el.cloneNode(true);
+      clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach(n => n.remove());
+      return clone;
+  }
+  function userBubble(root) {
+      const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']")];
+      if (/justify-end|self-end|ml-auto/.test(root.className))
+          cands.unshift(root);
+      if (!cands.length)
+          return null;
+      const inner = cands.filter(el => !cands.some(other => other !== el && el.contains(other)));
+      inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
+      return inner[0] ?? null;
+  }
+  function extractTurn(kid) {
+      const bubble = userBubble(kid);
+      const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
+      const rest = chromeOff(kid);
+      if (bubble && bubble !== kid) {
+          rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach(n => n.remove());
+      }
+      let asstText = scrubText(rest.innerText ?? "");
+      if (userText && asstText.includes(userText))
+          asstText = scrubText(asstText.replace(userText, " "));
+      const lines = [];
+      if (userText)
+          lines.push({ role: "user", text: userText });
+      if (asstText && asstText !== userText)
+          lines.push({ role: "assistant", text: asstText });
+      return lines;
+  }
   function extractLines(pane) {
       const source = messageList(pane);
       const kids = [...source.children].filter((c) => c instanceof HTMLElement);
       const out = [];
-      const seen = new Set();
-      for (const kid of kids) {
-          const clone = kid.cloneNode(true);
-          clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach(n => n.remove());
-          const raw = (clone.innerText ?? clone.textContent ?? "").replaceAll(/\s+/g, " ").trim();
-          const text = scrubText(raw);
-          if (text.length < 4)
-              continue;
-          if (seen.has(text))
-              continue;
-          seen.add(text);
-          const cls = `${kid.className} ${kid.getAttribute("class") ?? ""}`;
-          const isUser = /justify-end|items-end|self-end/.test(cls)
-              || !!kid.querySelector("[class*='justify-end'], [class*='self-end']");
-          out.push({ role: isUser ? "user" : "assistant", text });
-      }
+      for (const kid of kids)
+          out.push(...extractTurn(kid));
       return lastRound(out);
   }
   function scrubText(raw) {
@@ -7381,49 +7410,62 @@ html.void-rt-open [data-sidebar="gap"] {
           if (asst >= 0 && user >= 0)
               break;
       }
-      const pick = user >= 0 && (asst < 0 || user > asst)
-          ? [cleaned[user]]
-          : user >= 0 && asst >= 0 && user < asst
-              ? [cleaned[user], cleaned[asst]]
+      const pick = user >= 0 && asst >= 0 && user < asst
+          ? [cleaned[user], cleaned[asst]]
+          : user >= 0 && (asst < 0 || user > asst)
+              ? [cleaned[user]]
               : asst >= 0
                   ? [cleaned[asst]]
                   : cleaned.slice(-1);
       return pick.map(line => ({
           role: line.role,
-          text: clipLine(line.text, line.role === "user" ? 90 : 140),
+          text: clipLine(line.text, line.role === "user" ? 72 : 140),
       }));
+  }
+  function pickUserText(query, message) {
+      const q = plainText(query);
+      const m = plainText(message);
+      if (q && m) {
+          if (m.startsWith(q) && m.length > q.length)
+              return q;
+          return q.length <= m.length ? q : m;
+      }
+      return q || m;
   }
   function linesFromStore(id) {
       if (!id)
           return [];
       try {
           const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-          let list = byConversationId[id];
-          if (!list?.length) {
-              const nodes = nodesByConversationId[id];
-              if (nodes?.length)
-                  list = nodes.map(n => byId[n.responseId]).filter(r => !!r);
-          }
-          if (!list?.length)
+          const nodes = nodesByConversationId[id] ?? [];
+          let list = nodes.length
+              ? nodes.map(n => byId[n.responseId]).filter((r) => !!r)
+              : byConversationId[id] ?? [];
+          if (!list.length)
               return [];
-          const sorted = [...list].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+          if (!nodes.length) {
+              list = [...list].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+          }
           const out = [];
-          for (const r of sorted) {
+          for (const r of list) {
               if (!r || r.isControl)
                   continue;
               const sender = String(r.sender ?? "").toLowerCase();
               const human = sender === "human" || sender === "user";
               if (human) {
-                  const text = plainText(r.message || r.query || "");
+                  const text = pickUserText(r.query || "", r.message || "");
                   if (text)
                       out.push({ role: "user", text });
                   continue;
               }
-              const query = plainText(r.query || "");
-              const message = plainText(r.message || "");
+              const query = pickUserText(r.query || "", "");
+              let message = plainText(r.message || "");
+              if (query && message.startsWith(query) && message.length > query.length) {
+                  message = scrubText(message.slice(query.length));
+              }
               if (query && out.at(-1)?.text !== query)
                   out.push({ role: "user", text: query });
-              if (message)
+              if (message && message !== query)
                   out.push({ role: "assistant", text: message });
           }
           return lastRound(out);
@@ -7432,6 +7474,14 @@ html.void-rt-open [data-sidebar="gap"] {
           logger17.debug("ResponseStore snapshot failed:", e);
           return [];
       }
+  }
+  function betterLines(store, dom) {
+      const pair = (lines) => lines.some(l => l.role === "user") && lines.some(l => l.role === "assistant");
+      if (pair(store))
+          return store;
+      if (pair(dom))
+          return dom;
+      return store.length ? store : dom;
   }
   function parseSnap(raw) {
       if (!raw)
@@ -7464,7 +7514,9 @@ html.void-rt-open [data-sidebar="gap"] {
       const page = node("span", cl17("page"));
       page.dataset.theme = snap.theme;
       for (const line of lastRound(snap.lines)) {
-          page.append(node("span", cl17("page-line", line.role === "user" && "page-line-user"), line.text));
+          const el = node("span", cl17("page-line", line.role === "user" && "page-line-user"), line.text);
+          el.dataset.role = line.role;
+          page.append(el);
       }
       return page;
   }
@@ -7472,12 +7524,13 @@ html.void-rt-open [data-sidebar="gap"] {
       if (!id)
           return;
       const fromStore = linesFromStore(id);
-      let lines = fromStore;
-      if (!lines.length && id === currentVisit()) {
+      let fromDom = [];
+      if (id === currentVisit()) {
           const pane = chatPane();
           if (pane)
-              lines = extractLines(pane);
+              fromDom = extractLines(pane);
       }
+      const lines = betterLines(fromStore, fromDom);
       if (!lines.length)
           return;
       const snap = {
