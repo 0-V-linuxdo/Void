@@ -209,6 +209,10 @@ html.void-rt-open [data-sidebar="gap"] {
     object-position: top center;
 }
 
+.void-rt-mark {
+    display: none !important;
+}
+
 .void-rt-page {
     width: 100%;
     height: 100%;

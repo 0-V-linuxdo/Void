@@ -11,6 +11,8 @@ import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { ResponseStoreState } from "@grok-types/stores/ResponseStore";
 import type { GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
+import type { GrokResponse } from "@grok-types";
+import { React } from "@turbopack/common/react";
 import { ChatPageStore, ConversationStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -432,8 +434,10 @@ function chromeOff(el: HTMLElement): HTMLElement {
 }
 
 function userBubble(root: HTMLElement): HTMLElement | null {
-    const cands = [...root.querySelectorAll<HTMLElement>("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']")];
-    if (/justify-end|self-end|ml-auto/.test(root.className)) cands.unshift(root);
+    const tagged = root.querySelector<HTMLElement>("[data-void-rt-role='user'], .void-rt-user-msg");
+    if (tagged) return tagged;
+    const cands = [...root.querySelectorAll<HTMLElement>("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
+    if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className)) cands.unshift(root);
     if (!cands.length) return null;
     const inner = cands.filter(el => !cands.some(other => other !== el && el.contains(other)));
     inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
@@ -455,7 +459,21 @@ function extractTurn(kid: HTMLElement): PageLine[] {
     return lines;
 }
 
+function extractMarks(root: ParentNode): PageLine[] {
+    const marks = [...root.querySelectorAll<HTMLElement>(".void-rt-mark")];
+    if (!marks.length) return [];
+    const out: PageLine[] = [];
+    for (const m of marks) {
+        const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
+        const text = scrubText(m.textContent ?? "");
+        if (text) out.push({ role, text });
+    }
+    return lastRound(out);
+}
+
 function extractLines(pane: HTMLElement): PageLine[] {
+    const fromMarks = extractMarks(pane);
+    if (fromMarks.length) return fromMarks;
     const source = messageList(pane);
     const kids = [...source.children].filter((c): c is HTMLElement => c instanceof HTMLElement);
     const out: PageLine[] = [];
@@ -524,37 +542,72 @@ function pickUserText(query: string, message: string): string {
     return q || m;
 }
 
+function walkThread(startId: string | undefined): GrokResponse[] {
+    if (!startId) return [];
+    try {
+        const { byId } = ResponseStore.useResponseStore.getState();
+        const out: GrokResponse[] = [];
+        const seen = new Set<string>();
+        let id: string | undefined = startId;
+        while (id && !seen.has(id) && out.length < 50) {
+            seen.add(id);
+            const r = byId[id];
+            if (!r) break;
+            out.unshift(r);
+            id = r.parentResponseId;
+        }
+        return out;
+    } catch {
+        return [];
+    }
+}
+
+function responsesOf(id: string): GrokResponse[] {
+    const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+    const nodes = nodesByConversationId[id] ?? [];
+    if (nodes.length) {
+        const list = nodes.map(n => byId[n.responseId]).filter((r): r is GrokResponse => !!r);
+        if (list.length) return list;
+        const walked = walkThread(nodes.at(-1)?.responseId);
+        if (walked.length) return walked;
+    }
+    const cached = byConversationId[id];
+    if (cached?.length) return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+    try {
+        const chat = ChatPageStore.useChatPageStore.getState();
+        if (chat.conversationId === id) {
+            return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
+        }
+    } catch { /* ignore */ }
+    return [];
+}
+
+function responsesToLines(list: GrokResponse[]): PageLine[] {
+    const out: PageLine[] = [];
+    for (const r of list) {
+        if (!r || r.isControl) continue;
+        const sender = String(r.sender ?? "").toLowerCase();
+        const human = sender === "human" || sender === "user";
+        if (human) {
+            const text = pickUserText(r.query || "", r.message || "");
+            if (text) out.push({ role: "user", text });
+            continue;
+        }
+        const query = pickUserText(r.query || "", "");
+        let message = plainText(r.message || "");
+        if (query && message.startsWith(query) && message.length > query.length) {
+            message = scrubText(message.slice(query.length));
+        }
+        if (query && out.at(-1)?.text !== query) out.push({ role: "user", text: query });
+        if (message && message !== query) out.push({ role: "assistant", text: message });
+    }
+    return lastRound(out);
+}
+
 function linesFromStore(id: string): PageLine[] {
     if (!id) return [];
     try {
-        const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-        const nodes = nodesByConversationId[id] ?? [];
-        let list = nodes.length
-            ? nodes.map(n => byId[n.responseId]).filter((r): r is NonNullable<typeof r> => !!r)
-            : byConversationId[id] ?? [];
-        if (!list.length) return [];
-        if (!nodes.length) {
-            list = [...list].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
-        }
-        const out: PageLine[] = [];
-        for (const r of list) {
-            if (!r || r.isControl) continue;
-            const sender = String(r.sender ?? "").toLowerCase();
-            const human = sender === "human" || sender === "user";
-            if (human) {
-                const text = pickUserText(r.query || "", r.message || "");
-                if (text) out.push({ role: "user", text });
-                continue;
-            }
-            const query = pickUserText(r.query || "", "");
-            let message = plainText(r.message || "");
-            if (query && message.startsWith(query) && message.length > query.length) {
-                message = scrubText(message.slice(query.length));
-            }
-            if (query && out.at(-1)?.text !== query) out.push({ role: "user", text: query });
-            if (message && message !== query) out.push({ role: "assistant", text: message });
-        }
-        return lastRound(out);
+        return responsesToLines(responsesOf(id));
     } catch (e) {
         logger.debug("ResponseStore snapshot failed:", e);
         return [];
@@ -596,12 +649,39 @@ function rememberPage(id: string, snap: PageSnap) {
     settings.store.pages = { ...prev, [id]: json };
 }
 
+function applyLineStyle(el: HTMLElement, role: "user" | "assistant", theme: "dark" | "light") {
+    el.style.display = "-webkit-box";
+    el.style.webkitBoxOrient = "vertical";
+    el.style.overflow = "hidden";
+    el.style.width = "fit-content";
+    el.style.overflowWrap = "anywhere";
+    el.style.fontSize = "11px";
+    el.style.lineHeight = "1.35";
+    if (role === "user") {
+        el.style.alignSelf = "flex-end";
+        el.style.maxWidth = "78%";
+        el.style.padding = "6px 9px";
+        el.style.borderRadius = "14px 14px 4px 14px";
+        el.style.background = theme === "light" ? "#e8e6e0" : "#2f2f2f";
+        el.style.color = theme === "light" ? "#171717" : "#fff";
+        el.style.webkitLineClamp = "2";
+    } else {
+        el.style.alignSelf = "flex-start";
+        el.style.maxWidth = "94%";
+        el.style.padding = "0";
+        el.style.background = "transparent";
+        el.style.color = theme === "light" ? "#3f3f3f" : "#c4c4c4";
+        el.style.webkitLineClamp = "4";
+    }
+}
+
 function buildPageShot(snap: PageSnap): HTMLElement {
     const page = node("span", cl("page"));
     page.dataset.theme = snap.theme;
     for (const line of lastRound(snap.lines)) {
         const el = node("span", cl("page-line", line.role === "user" && "page-line-user"), line.text);
         el.dataset.role = line.role;
+        applyLineStyle(el, line.role, snap.theme);
         page.append(el);
     }
     return page;
@@ -1167,6 +1247,36 @@ export default definePlugin({
     enabledByDefault: true,
     settings,
     managedStyle: "recentTopics",
+
+    _mark({ response }: { response: GrokResponse }) {
+        try {
+            if (!response || response.isControl) return null;
+            const sender = String(response.sender ?? "").toLowerCase();
+            const human = sender === "human" || sender === "user";
+            const text = human
+                ? pickUserText(response.query || "", response.message || "")
+                : plainText(response.message || "");
+            if (!text) return null;
+            return React.createElement("span", {
+                className: "void-rt-mark",
+                "data-role": human ? "user" : "assistant",
+                hidden: true,
+            }, text);
+        } catch {
+            return null;
+        }
+    },
+
+    patches: [
+        {
+            find: "response-family:handleEditSave",
+            all: true,
+            replacement: {
+                match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+                replace: "$self._mark({response:$1}),$&",
+            },
+        },
+    ],
 
     start() {
         detachHost();
