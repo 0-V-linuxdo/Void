@@ -11,15 +11,7 @@ import { clamp } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 
 const STYLE_NAME = "composerOpacity";
-
-const SHELL = [
-    "form:has([data-query-bar-mode-select])",
-    "form:has([data-query-bar-mode-select])>:first-child",
-    ".max-w-breakout form:has(textarea)",
-    ".max-w-breakout form:has(textarea)>:first-child",
-    ".max-w-breakout form:has([contenteditable=true])",
-    ".max-w-breakout form:has([contenteditable=true])>:first-child",
-].join(",");
+const SHELL = ".query-bar";
 
 const settings = definePluginSettings({
     opacity: {
@@ -48,8 +40,6 @@ function apply() {
         + `background-color:hsl(var(--surface-l1)/${alpha})!important;`
         + `background-color:color-mix(in srgb,var(--background) ${pct}%,transparent)!important;`
         + "background-image:none!important;"
-        + "mask-image:none!important;"
-        + "-webkit-mask-image:none!important;"
         + `-webkit-backdrop-filter:blur(${blur}px)!important;`
         + `backdrop-filter:blur(${blur}px)!important;`
         + "}",
