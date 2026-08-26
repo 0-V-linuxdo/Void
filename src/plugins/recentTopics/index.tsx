@@ -12,7 +12,7 @@ import type { GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { GrokRoute, RoutingStoreState } from "@grok-types/stores/RoutingStore";
 import { ChatPageStore, ConversationStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
-import { classes, classNameFactory } from "@utils/css";
+import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -59,6 +59,7 @@ let held = false;
 let ctrlHeld = false;
 let keys: AbortController | null = null;
 let host: HTMLDivElement | null = null;
+let paintedKey = "";
 
 function unique(ids: string[]): string[] {
     const seen = new Set<string>();
@@ -708,7 +709,9 @@ function node(tag: string, className?: string, text?: string) {
 function fillShot(box: HTMLElement, id: string) {
     const thumb = thumbs.get(id);
     if (!thumb) {
-        box.append(node("span", cl("bubble")), node("span", cl("bubble")), node("span", cl("bubble")));
+        const fallback = node("span", cl("fallback"));
+        fallback.append(node("span", cl("bubble")), node("span", cl("bubble")), node("span", cl("bubble")));
+        box.append(fallback);
         return;
     }
     const mini = node("span", cl("mini"));
@@ -716,76 +719,181 @@ function fillShot(box: HTMLElement, id: string) {
     box.append(mini);
 }
 
-function paint() {
-    detachHost();
-    document.documentElement.classList.toggle("void-rt-open", open);
-    if (!open) return;
+const SPARKLE_SVG = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c.2 2.28 1.38 4.18 3.55 5.55C9.38 8.07 8.2 9.97 8 12.25 7.8 9.97 6.62 8.07 4.45 6.7 6.62 5.33 7.8 3.43 8 1.15z"/></svg>';
+const PLUS_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M8 3.2v9.6M3.2 8h9.6"/></svg>';
+const ACCENTS = [
+    "rgb(37, 99, 235)",
+    "rgb(14, 165, 233)",
+    "rgb(20, 184, 166)",
+    "rgb(249, 115, 22)",
+    "rgb(100, 116, 139)",
+];
 
-    const items = topics();
-    const active = items[selected];
-    let hint = "Esc to cancel";
-    if (active && held) hint = "Release Ctrl to switch";
-    else if (active) hint = "Click to switch";
+function accentOf(id: string): string {
+    if (!id) return ACCENTS[4];
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+    return ACCENTS[hash % ACCENTS.length];
+}
 
-    const root = node("div", cl("root"));
+function detectTheme(): "dark" | "light" {
+    const html = document.documentElement;
+    const { body } = document;
+    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
+    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null) return "dark";
+    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light")) return "light";
+    try {
+        const bg = getComputedStyle(body || html).backgroundColor;
+        const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+        if (m) {
+            const r = Number(m[1]) / 255;
+            const g = Number(m[2]) / 255;
+            const b = Number(m[3]) / 255;
+            const lin = [r, g, b].map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+            const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+            return lum < 0.42 ? "dark" : "light";
+        }
+    } catch {}
+    const scheme = getComputedStyle(html).colorScheme;
+    if (scheme.includes("light") && !scheme.includes("dark")) return "light";
+    return "dark";
+}
+
+function applyTheme(panel: HTMLElement) {
+    const theme = detectTheme();
+    panel.setAttribute("data-theme", theme);
+    panel.style.colorScheme = theme;
+}
+
+function setTitleIcon(el: HTMLElement, id: string) {
+    el.innerHTML = id ? SPARKLE_SVG : PLUS_SVG;
+}
+
+function buildHost(): HTMLDivElement {
+    const root = node("div", cl("root")) as HTMLDivElement;
     root.id = "void-rt-host";
     root.setAttribute("role", "presentation");
+    root.addEventListener("click", cancel);
 
-    const backdrop = node("div", cl("backdrop"));
-    backdrop.addEventListener("click", cancel);
+    const panel = node("div", cl("panel"));
+    panel.setAttribute("role", "listbox");
+    panel.setAttribute("aria-label", "Recent conversations");
+    panel.addEventListener("click", e => e.stopPropagation());
+    panel.append(node("div", cl("list")));
+    root.append(panel);
+    return root;
+}
 
-    const hud = node("div", cl("hud"));
-    hud.setAttribute("role", "dialog");
-    hud.setAttribute("aria-modal", "true");
-    hud.setAttribute("aria-label", "Recent conversations");
-    hud.addEventListener("click", e => e.stopPropagation());
+function renderList(items: Topic[]) {
+    if (!host) return;
+    const panel = host.querySelector(`.${cl("panel")}`) as HTMLElement | null;
+    if (!panel) return;
 
-    if (!items.length) {
-        hud.append(node("div", cl("empty"), "Open a few chats, then hold Ctrl+` to switch."));
-    } else {
-        const stage = node("div", cl("stage"));
-        items.forEach((topic, i) => {
-            const btn = node("button", classes(cl("item"), i === selected && cl("item-on"))) as HTMLButtonElement;
-            btn.type = "button";
-            btn.tabIndex = -1;
-            btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
-            if (i === selected) btn.setAttribute("aria-current", "true");
-            btn.addEventListener("mouseenter", () => {
-                if (selected === i) return;
-                selected = i;
-                paint();
-            });
-            btn.addEventListener("click", () => pick(i));
+    let list = panel.querySelector(`.${cl("list")}`) as HTMLElement | null;
+    if (!list) {
+        panel.replaceChildren();
+        list = node("div", cl("list"));
+        panel.append(list);
+    }
+    list.replaceChildren();
 
-            const win = node("span", cl("window"));
-            const bar = node("span", cl("bar"));
-            bar.setAttribute("aria-hidden", "true");
-            const dots = node("span", cl("dots"));
-            dots.append(node("span"), node("span"), node("span"));
-            bar.append(dots);
-            const shot = node("span", cl("shot"));
-            shot.setAttribute("aria-hidden", "true");
-            fillShot(shot, topic.id);
-            win.append(bar, shot);
-
-            const meta = node("span", cl("meta"));
-            meta.append(node("span", cl("name"), topic.title));
-            if (topic.project) meta.append(node("span", cl("project"), topic.project));
-            btn.append(win, meta);
-            stage.append(btn);
+    items.forEach((topic, i) => {
+        const btn = node("button", cl("card")) as HTMLButtonElement;
+        btn.type = "button";
+        btn.tabIndex = -1;
+        btn.setAttribute("role", "option");
+        btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+        btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
+        btn.addEventListener("pointerenter", () => {
+            if (selected === i) return;
+            selected = i;
+            syncActive();
         });
-        hud.append(stage);
-        stage.querySelector("[aria-current=true]")?.scrollIntoView({ inline: "center", block: "nearest" });
+        btn.addEventListener("focus", () => {
+            if (selected === i) return;
+            selected = i;
+            syncActive();
+        });
+        btn.addEventListener("click", () => pick(i));
+
+        const shot = node("span", cl("thumb"));
+        shot.setAttribute("aria-hidden", "true");
+        fillShot(shot, topic.id);
+
+        const meta = node("span", cl("meta"));
+        const row = node("span", cl("name-row"));
+        const icon = node("span", cl("title-favicon"));
+        setTitleIcon(icon, topic.id);
+        row.append(icon, node("span", cl("name"), topic.title));
+        meta.append(row);
+        const hostLabel = topic.project || (topic.id ? "Grok" : "Home");
+        meta.append(node("span", cl("host"), hostLabel));
+
+        btn.append(shot, meta);
+        list!.append(btn);
+    });
+}
+
+function syncActive() {
+    if (!host) return;
+    const cards = host.querySelectorAll<HTMLElement>(`.${cl("card")}`);
+    cards.forEach((card, i) => {
+        const on = i === selected;
+        card.setAttribute("data-active", on ? "true" : "false");
+        card.setAttribute("aria-selected", on ? "true" : "false");
+        card.tabIndex = on ? 0 : -1;
+        if (on) card.setAttribute("aria-current", "true");
+        else card.removeAttribute("aria-current");
+    });
+    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
+}
+
+function paint() {
+    document.documentElement.classList.toggle("void-rt-open", open);
+    if (!open) {
+        detachHost();
+        return;
     }
 
-    hud.append(node("div", cl("hint"), hint));
-    root.append(backdrop, hud);
-    host = root as HTMLDivElement;
-    mountOverlay(host);
+    const items = topics();
+    const key = items.map(t => `${t.id}\0${t.title}\0${t.project}`).join("|") || "__empty__";
+
+    if (!host) {
+        host = buildHost();
+        mountOverlay(host);
+    }
+
+    const panel = host.querySelector(`.${cl("panel")}`) as HTMLElement | null;
+    if (!panel) return;
+
+    applyTheme(panel);
+    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
+
+    if (!items.length) {
+        if (paintedKey !== "__empty__") {
+            panel.replaceChildren(node("div", cl("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+            paintedKey = "__empty__";
+        }
+        requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+        return;
+    }
+
+    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl("list")}`)) {
+        panel.replaceChildren(node("div", cl("list")));
+        paintedKey = "";
+    }
+
+    if (paintedKey !== key) {
+        renderList(items);
+        paintedKey = key;
+    }
+    syncActive();
+    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
 }
 
 function detachHost() {
     document.documentElement.classList.remove("void-rt-open");
+    paintedKey = "";
     if (host) {
         try { host.hidePopover(); } catch {}
         host.remove();
@@ -801,7 +909,7 @@ function detachHost() {
 }
 
 function mountOverlay(root: HTMLElement) {
-    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:grid;place-items:center;background:rgba(0,0,0,.16);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);pointer-events:auto;";
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
     document.documentElement.append(root);
     document.documentElement.classList.add("void-rt-open");
     if (typeof root.showPopover !== "function") return;
