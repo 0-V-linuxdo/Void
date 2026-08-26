@@ -12,6 +12,7 @@ import definePlugin, { OptionType } from "@utils/types";
 
 const STYLE_NAME = "composerOpacity";
 const SHELL = ".query-bar";
+const FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
 
 const settings = definePluginSettings({
     opacity: {
@@ -34,12 +35,16 @@ function apply() {
     const pct = clamp(settings.store.opacity, 0, 100);
     const blur = clamp(settings.store.blur, 0, 40);
     const alpha = pct / 100;
+    const radius = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
     registerStyle(
         STYLE_NAME,
-        `${SHELL}{`
+        `${FRAME}{background:transparent!important;background-image:none!important;}`
+        + `${SHELL}{`
         + `background-color:hsl(var(--surface-l1)/${alpha})!important;`
         + `background-color:color-mix(in srgb,var(--background) ${pct}%,transparent)!important;`
         + "background-image:none!important;"
+        + `border-radius:${radius}!important;`
+        + "overflow:hidden!important;"
         + `-webkit-backdrop-filter:blur(${blur}px)!important;`
         + `backdrop-filter:blur(${blur}px)!important;`
         + "}",
