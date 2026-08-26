@@ -1,0 +1,21 @@
+.void-ih-hud {
+    contain: content;
+    position: fixed;
+    z-index: 2147483646;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border-l2, var(--border));
+    border-radius: 0.5rem;
+    background: var(--background, #111);
+    color: var(--text-secondary, var(--text-primary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.12s ease;
+}
+
+.void-ih-hud-on {
+    opacity: 1;
+}

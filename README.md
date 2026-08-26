@@ -8,6 +8,7 @@
 
 **New**
 
+- **InputHistory** — Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.
 - **Plugin pin** — Pin plugin cards to the top of the Plugins tab.
 - **NoGrokBot** — Hide the top-right Grok Bot promo button.
 - **NoSidebarIdentity** — Hide username and/or email in the Grok sidebar (separate toggles). Avatar stays so the account menu still opens.
