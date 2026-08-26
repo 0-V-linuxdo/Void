@@ -53,7 +53,6 @@ interface PageSnap {
     title: string;
     theme: "dark" | "light";
     lines: PageLine[];
-    nav: string[];
 }
 
 const thumbs = new Map<string, PageSnap>();
@@ -72,7 +71,6 @@ let ctrlHeld = false;
 let keys: AbortController | null = null;
 let host: HTMLDivElement | null = null;
 let paintedKey = "";
-const shotObservers: ResizeObserver[] = [];
 
 function unique(ids: string[]): string[] {
     const seen = new Set<string>();
@@ -432,7 +430,7 @@ function extractLines(pane: HTMLElement): PageLine[] {
         const raw = (kid.innerText ?? kid.textContent ?? "").replaceAll(/\s+/g, " ").trim();
         if (raw.length < 4) continue;
         if (/^(more|copy|share|retry|edit|\d{1,2}:\d{2}\s*(am|pm))$/i.test(raw)) continue;
-        const text = raw.length > 220 ? `${raw.slice(0, 217)}…` : raw;
+        const text = raw.length > 280 ? `${raw.slice(0, 277)}…` : raw;
         if (seen.has(text)) continue;
         seen.add(text);
         const cls = `${kid.className} ${kid.getAttribute("class") ?? ""}`;
@@ -440,28 +438,35 @@ function extractLines(pane: HTMLElement): PageLine[] {
             || !!kid.querySelector("[class*='justify-end'], [class*='self-end']");
         out.push({ role: isUser ? "user" : "assistant", text });
     }
-    return out.slice(-4);
+    return lastRound(out);
 }
 
-function sidebarTitles(activeId: string): string[] {
-    const fromDom: string[] = [];
-    try {
-        const sidebar = document.querySelector("[data-sidebar=content], [data-sidebar=sidebar]");
-        if (sidebar) {
-            for (const a of sidebar.querySelectorAll<HTMLAnchorElement>("a[href]")) {
-                const href = a.getAttribute("href") ?? "";
-                if (!/\/c\/|chat=/.test(href)) continue;
-                const t = labelText(a);
-                if (!t || SKIP_LABEL.test(t) || t.length > 64) continue;
-                if (!fromDom.includes(t)) fromDom.push(t);
-                if (fromDom.length >= 6) break;
-            }
-        }
-    } catch {}
-    if (fromDom.length) return fromDom;
-    const names = capVisits(readVisits()).map(id => titleOf(id)).filter(Boolean);
-    const active = titleOf(activeId);
-    return unique([active, ...names]).slice(0, 6);
+function clipLine(text: string, max: number): string {
+    const t = text.replaceAll(/\s+/g, " ").trim();
+    if (t.length <= max) return t;
+    return `${t.slice(0, Math.max(1, max - 1))}…`;
+}
+
+function lastRound(lines: PageLine[]): PageLine[] {
+    if (!lines.length) return [];
+    let asst = -1;
+    let user = -1;
+    for (let i = lines.length - 1; i >= 0; i--) {
+        if (asst < 0 && lines[i].role === "assistant") asst = i;
+        if (user < 0 && lines[i].role === "user") user = i;
+        if (asst >= 0 && user >= 0) break;
+    }
+    const pick: PageLine[] = user >= 0 && (asst < 0 || user > asst)
+        ? [lines[user]]
+        : user >= 0 && asst >= 0 && user < asst
+            ? [lines[user], lines[asst]]
+            : asst >= 0
+                ? [lines[asst]]
+                : lines.slice(-1);
+    return pick.map(line => ({
+        role: line.role,
+        text: clipLine(line.text, line.role === "user" ? 110 : 180),
+    }));
 }
 
 function parseSnap(raw: string | undefined): PageSnap | null {
@@ -472,11 +477,8 @@ function parseSnap(raw: string | undefined): PageSnap | null {
         return {
             title: typeof parsed.title === "string" ? parsed.title : "",
             theme: parsed.theme === "light" ? "light" : "dark",
-            lines: parsed.lines.filter((line): line is PageLine =>
-                !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"),
-            nav: Array.isArray(parsed.nav)
-                ? parsed.nav.filter((item): item is string => typeof item === "string" && !!item.trim()).slice(0, 6)
-                : [],
+            lines: lastRound(parsed.lines.filter((line): line is PageLine =>
+                !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string")),
         };
     } catch {
         return null;
@@ -497,30 +499,9 @@ function rememberPage(id: string, snap: PageSnap) {
 function buildPageShot(snap: PageSnap): HTMLElement {
     const page = node("span", cl("page"));
     page.dataset.theme = snap.theme;
-
-    const side = node("span", cl("page-side"));
-    const brand = node("span", cl("page-brand"));
-    const mark = node("span", cl("page-mark"));
-    mark.append(faviconImg(""));
-    brand.append(mark, node("span", cl("page-word")));
-    const nav = node("span", cl("page-nav"));
-    const labels = snap.nav.length ? snap.nav : ["", "", "", "", "", ""];
-    labels.slice(0, 6).forEach((label, i) => {
-        const item = node("span", cl("page-nav-item"), label);
-        if (i === 0 || label === snap.title) item.dataset.on = "true";
-        nav.append(item);
-    });
-    side.append(brand, node("span", cl("page-new")), nav);
-
-    const main = node("span", cl("page-main"));
-    const bar = node("span", cl("page-bar"));
-    bar.append(node("span", cl("page-bar-title"), snap.title));
-    const body = node("span", cl("page-body"));
-    for (const line of snap.lines) {
-        body.append(node("span", cl("page-line", line.role === "user" && "page-line-user"), line.text));
+    for (const line of lastRound(snap.lines)) {
+        page.append(node("span", cl("page-line", line.role === "user" && "page-line-user"), line.text));
     }
-    main.append(bar, body, node("span", cl("page-composer")));
-    page.append(side, main);
     return page;
 }
 
@@ -540,7 +521,6 @@ function captureCurrent() {
             title: titleOf(id),
             theme: detectTheme(),
             lines,
-            nav: sidebarTitles(id),
         };
         thumbs.set(id, snap);
         rememberPage(id, snap);
@@ -831,27 +811,6 @@ function fillShot(box: HTMLElement, id: string) {
     const shot = node("span", cl("shot"));
     shot.append(buildPageShot(snap));
     box.append(shot);
-    fitShot(box, shot);
-}
-
-function fitShot(thumb: HTMLElement, shot: HTMLElement) {
-    const apply = () => {
-        const w = thumb.clientWidth;
-        if (w > 0) shot.style.transform = `scale(${w / 800})`;
-    };
-    apply();
-    requestAnimationFrame(apply);
-    if (typeof ResizeObserver !== "function") return;
-    const ro = new ResizeObserver(apply);
-    ro.observe(thumb);
-    shotObservers.push(ro);
-}
-
-function clearShotObservers() {
-    for (const ro of shotObservers) {
-        try { ro.disconnect(); } catch {}
-    }
-    shotObservers.length = 0;
 }
 
 const GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
@@ -958,8 +917,6 @@ function renderList(items: Topic[]) {
     const panel = host.querySelector(`.${cl("panel")}`) as HTMLElement | null;
     if (!panel) return;
 
-    clearShotObservers();
-
     let list = panel.querySelector(`.${cl("list")}`) as HTMLElement | null;
     if (!list) {
         panel.replaceChildren();
@@ -1062,7 +1019,6 @@ function paint() {
 function detachHost() {
     document.documentElement.classList.remove("void-rt-open");
     paintedKey = "";
-    clearShotObservers();
     if (host) {
         try { host.hidePopover(); } catch {}
         host.remove();
