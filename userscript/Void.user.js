@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.3] v1.0.10
+// @version      [20260826.4] v1.0.11
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.3] v1.0.10 — A modification for grok.com
+ * Void++ [20260826.4] v1.0.11 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -5969,7 +5969,7 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.3] v1.0.10"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260826.4] v1.0.11"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"e4b36de"}`
     }, `(${"e4b36de"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6402,7 +6402,13 @@ ${sourceUrl}`;
   });
 
   // void-css:/tmp/Void/src/plugins/recentTopics/styles.css
-  registerStyle("recentTopics", `.void-rt-root,
+  registerStyle("recentTopics", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
     position: fixed !important;
@@ -6432,10 +6438,18 @@ html.void-rt-open [data-sidebar="gap"] {
 }
 
 .void-rt-panel,
-.void-rt-panel * {
-    box-sizing: border-box;
+.void-rt-card,
+.void-rt-meta,
+.void-rt-name,
+.void-rt-host,
+.void-rt-empty {
     font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     letter-spacing: 0;
+}
+
+.void-rt-panel,
+.void-rt-panel * {
+    box-sizing: border-box;
 }
 
 .void-rt-panel {
@@ -6485,6 +6499,7 @@ html.void-rt-open [data-sidebar="gap"] {
         inset 0 -18px 44px rgb(255 255 255 / 22%),
         inset 0 0 0 1px rgb(255 255 255 / 30%);
     backdrop-filter: blur(56px) saturate(210%);
+    -webkit-backdrop-filter: blur(56px) saturate(210%);
     padding: var(--void-rt-padding-panel);
     pointer-events: auto;
     opacity: 0;
@@ -6505,7 +6520,7 @@ html.void-rt-open [data-sidebar="gap"] {
     grid-template-columns: repeat(var(--void-rt-count, 5), var(--void-rt-card-width));
     gap: var(--void-rt-gap);
     width: max-content;
-    max-width: none;
+    max-width: 100%;
 }
 
 .void-rt-card {
@@ -6560,6 +6575,7 @@ html.void-rt-open [data-sidebar="gap"] {
     overflow: hidden;
     border-radius: var(--void-rt-radius-thumb);
     background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, rgb(248 250 252 / 94%));
+    container-type: size;
 }
 
 .void-rt-thumb::after {
@@ -6574,24 +6590,272 @@ html.void-rt-open [data-sidebar="gap"] {
     pointer-events: none;
 }
 
-.void-rt-mini {
+.void-rt-shot {
     position: absolute;
     top: 0;
-    left: 0;
+    left: 50%;
     z-index: 1;
-    width: 320%;
-    min-height: 320%;
+    width: 800px;
+    min-height: 100%;
     overflow: hidden;
-    transform: scale(0.3125);
-    transform-origin: top left;
+    transform: translateX(-50%) scale(calc(100cqw / 800));
+    transform-origin: top center;
     pointer-events: none;
     user-select: none;
 }
 
-.void-rt-mini,
-.void-rt-mini * {
+.void-rt-shot,
+.void-rt-shot * {
     pointer-events: none !important;
     scrollbar-width: none;
+}
+
+.void-rt-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: top center;
+}
+
+.void-rt-page {
+    width: 800px;
+    height: 450px;
+    display: flex;
+    overflow: hidden;
+    background: #0b0b0c;
+    color: #ececec;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.void-rt-page-side {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 10px;
+    width: 212px;
+    padding: 18px 14px;
+    background: #141414;
+    border-right: 1px solid rgb(255 255 255 / 6%);
+}
+
+.void-rt-page-brand {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 10px;
+    height: 28px;
+    margin-bottom: 4px;
+}
+
+.void-rt-page-mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #050505;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+}
+
+.void-rt-page-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.void-rt-page-word {
+    width: 52px;
+    height: 11px;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 22%);
+}
+
+.void-rt-page-new {
+    flex-shrink: 0;
+    height: 34px;
+    border-radius: 12px;
+    background: rgb(255 255 255 / 8%);
+}
+
+.void-rt-page-nav {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 9px;
+    min-height: 0;
+    padding-top: 8px;
+}
+
+.void-rt-page-nav-item {
+    flex-shrink: 0;
+    overflow: hidden;
+    height: 18px;
+    border-radius: 5px;
+    background: rgb(255 255 255 / 8%);
+    color: rgb(255 255 255 / 42%);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    letter-spacing: -0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 8px;
+}
+
+.void-rt-page-nav-item:nth-child(1) { width: 88%; }
+.void-rt-page-nav-item:nth-child(2) { width: 74%; }
+.void-rt-page-nav-item:nth-child(3) { width: 81%; }
+.void-rt-page-nav-item:nth-child(4) { width: 66%; }
+.void-rt-page-nav-item:nth-child(5) { width: 79%; }
+.void-rt-page-nav-item:nth-child(6) { width: 61%; }
+
+.void-rt-page-nav-item[data-on="true"] {
+    background: rgb(255 255 255 / 16%);
+    color: rgb(255 255 255 / 78%);
+}
+
+.void-rt-page-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.void-rt-page-bar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    height: 52px;
+    padding: 0 28px;
+    border-bottom: 1px solid rgb(255 255 255 / 6%);
+}
+
+.void-rt-page-bar-title {
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-rt-page-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 14px;
+    min-height: 0;
+    padding: 28px 48px 8px;
+}
+
+.void-rt-page-line {
+    max-width: 78%;
+    color: #ececec;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.void-rt-page-line-user {
+    align-self: flex-end;
+    max-width: 62%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    background: #2a2a2a;
+    color: #fff;
+}
+
+.void-rt-page-composer {
+    position: relative;
+    flex-shrink: 0;
+    height: 52px;
+    margin: 12px 48px 24px;
+    border-radius: 999px;
+    background: #1c1c1c;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+
+.void-rt-page-composer::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 8%);
+}
+
+.void-rt-page-composer::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 10%);
+}
+
+.void-rt-page[data-theme="light"] {
+    background: #f5f4f0;
+    color: #171717;
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-side {
+    background: #efece6;
+    border-right-color: rgb(23 23 23 / 8%);
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-mark {
+    background: #171717;
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-word {
+    background: rgb(23 23 23 / 28%);
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-new,
+.void-rt-page[data-theme="light"] .void-rt-page-nav-item {
+    background: rgb(23 23 23 / 8%);
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-nav-item[data-on="true"] {
+    background: rgb(23 23 23 / 12%);
+    color: rgb(23 23 23 / 78%);
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-nav-item {
+    color: rgb(23 23 23 / 42%);
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-bar {
+    border-bottom-color: rgb(23 23 23 / 8%);
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-line {
+    color: #171717;
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-line-user {
+    background: #e8e6e0;
+    color: #171717;
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-composer {
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(23 23 23 / 6%), inset 0 0 0 1px rgb(23 23 23 / 6%);
+}
+
+.void-rt-page[data-theme="light"] .void-rt-page-composer::before,
+.void-rt-page[data-theme="light"] .void-rt-page-composer::after {
+    background: rgb(23 23 23 / 8%);
 }
 
 .void-rt-fallback {
@@ -6599,56 +6863,21 @@ html.void-rt-open [data-sidebar="gap"] {
     inset: 0;
     z-index: 1;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 6px;
-    padding: 10px 9px 11px;
+    align-items: center;
+    justify-content: center;
 }
 
-.void-rt-bubble {
+.void-rt-favicon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--void-rt-radius-icon);
+    object-fit: cover;
     display: block;
-    height: 9px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 18%, rgb(15 23 42 / 8%));
 }
 
-.void-rt-bubble:nth-child(1) {
-    width: 54%;
-    align-self: flex-end;
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 34%, rgb(15 23 42 / 10%));
-}
-
-.void-rt-bubble:nth-child(2) {
-    width: 72%;
-}
-
-.void-rt-bubble:nth-child(3) {
-    width: 44%;
-}
-
-.void-rt-line {
-    display: -webkit-box;
-    max-width: 92%;
-    overflow: hidden;
-    border-radius: 0.55rem;
-    background: rgb(255 255 255 / 8%);
-    color: rgb(255 255 255 / 78%);
-    font-size: 0.58rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    line-height: 1.35;
-    text-align: left;
-    overflow-wrap: break-word;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    padding: 0.32rem 0.45rem;
-}
-
-.void-rt-line-user {
-    align-self: flex-end;
-    background: rgb(255 255 255 / 16%);
-    color: #fff;
+.void-rt-favicon[data-broken="true"],
+.void-rt-title-favicon[data-broken="true"] {
+    visibility: hidden;
 }
 
 .void-rt-meta {
@@ -6670,18 +6899,10 @@ html.void-rt-open [data-sidebar="gap"] {
     width: var(--void-rt-title-icon-size);
     height: var(--void-rt-title-icon-size);
     min-width: 0;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
     border-radius: var(--void-rt-radius-title-icon);
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 22%, rgb(248 250 252 / 92%));
-    color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 72%, #0f172a);
-}
-
-.void-rt-title-favicon svg {
-    width: 10px;
-    height: 10px;
+    object-fit: cover;
     display: block;
+    opacity: 1;
 }
 
 .void-rt-name {
@@ -6778,24 +6999,12 @@ html.void-rt-open [data-sidebar="gap"] {
     background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 18%, rgb(15 23 42 / 92%));
 }
 
-.void-rt-panel[data-theme="dark"] .void-rt-bubble {
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 16%, rgb(248 250 252 / 12%));
-}
-
-.void-rt-panel[data-theme="dark"] .void-rt-bubble:nth-child(1) {
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 28%, rgb(248 250 252 / 20%));
-}
-
-.void-rt-panel[data-theme="dark"] .void-rt-title-favicon {
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 28%, rgb(15 23 42 / 88%));
-    color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 18%, #f8fafc);
-}
-
 @supports (corner-shape: superellipse(1.25)) {
     .void-rt-panel,
     .void-rt-card,
     .void-rt-thumb,
     .void-rt-thumb::after,
+    .void-rt-favicon,
     .void-rt-title-favicon {
         /* stylelint-disable-next-line declaration-property-value-no-unknown */
         corner-shape: superellipse(1.25);
@@ -6836,11 +7045,6 @@ html.void-rt-open [data-sidebar="gap"] {
     .void-rt-host {
         display: none;
     }
-
-    .void-rt-title-favicon svg {
-        width: 8px;
-        height: 8px;
-    }
 }
 
 @media (width <= 600px) {
@@ -6866,13 +7070,19 @@ html.void-rt-open [data-sidebar="gap"] {
 
 @media (prefers-reduced-motion: reduce) {
     .void-rt-panel,
-    .void-rt-card {
+    .void-rt-card,
+    .void-rt-cover {
         transition: none;
     }
 }
 `);
 
   // src/plugins/recentTopics/index.tsx
+  /*
+   * Void, a modification for grok.com
+   * Copyright (c) 2026 Void contributors
+   * SPDX-License-Identifier: GPL-3.0-or-later
+   */
   var logger17 = new Logger("RecentTopics");
   var cl17 = classNameFactory("void-rt-");
   var HOME_ID = "";
@@ -6880,20 +7090,20 @@ html.void-rt-open [data-sidebar="gap"] {
   var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
   var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
   var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation)$/i;
-  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
+  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => ({ label: String(n), value: n, default: n === 5 }));
   var settings4 = definePluginSettings({
-    maxRecent: {
-      type: 4 /* SELECT */,
-      description: "How many recently opened conversations to show.",
-      options: COUNT_OPTIONS
-    },
-    includeHome: {
-      type: 3 /* BOOLEAN */,
-      description: "Include the new-chat home page in the switcher.",
-      default: true
-    }
+      maxRecent: {
+          type: 4 /* SELECT */,
+          description: "How many recently opened conversations to show.",
+          options: COUNT_OPTIONS,
+      },
+      includeHome: {
+          type: 3 /* BOOLEAN */,
+          description: "Include the new-chat home page in the switcher.",
+          default: true,
+      },
   }).withPrivateSettings();
-  var thumbs = new Map;
+  var thumbs = new Map();
   var wsNames = {};
   var open2 = false;
   var selected = 0;
@@ -6903,940 +7113,1119 @@ html.void-rt-open [data-sidebar="gap"] {
   var host = null;
   var paintedKey = "";
   function unique(ids) {
-    const seen = new Set;
-    const out = [];
-    for (const id of ids) {
-      if (seen.has(id))
-        continue;
-      seen.add(id);
-      out.push(id);
-    }
-    return out;
+      const seen = new Set();
+      const out = [];
+      for (const id of ids) {
+          if (seen.has(id))
+              continue;
+          seen.add(id);
+          out.push(id);
+      }
+      return out;
   }
   function readVisits() {
-    return settings4.plain.visits ?? [];
+      return settings4.plain.visits ?? [];
   }
   function maxCount() {
-    const n = Number(settings4.store.maxRecent);
-    return Number.isFinite(n) && n > 0 ? n : 5;
+      const n = Number(settings4.store.maxRecent);
+      return Number.isFinite(n) && n > 0 ? n : 5;
   }
   function capVisits(ids) {
-    const allowHome = settings4.store.includeHome;
-    return unique(ids).filter((id) => id || allowHome).slice(0, maxCount());
+      const allowHome = settings4.store.includeHome;
+      return unique(ids).filter(id => id || allowHome).slice(0, maxCount());
   }
   function pruneRecord(source, ids) {
-    const keep = {};
-    if (!source)
+      const keep = {};
+      if (!source)
+          return keep;
+      for (const id of ids) {
+          if (source[id])
+              keep[id] = source[id];
+      }
       return keep;
-    for (const id of ids) {
-      if (source[id])
-        keep[id] = source[id];
-    }
-    return keep;
   }
   function sameList(a, b) {
-    return a.length === b.length && a.every((id, i) => id === b[i]);
+      return a.length === b.length && a.every((id, i) => id === b[i]);
   }
   function sameRecord(a, b) {
-    const src = a ?? {};
-    const keys2 = Object.keys(b);
-    if (Object.keys(src).length !== keys2.length)
-      return false;
-    return keys2.every((k) => src[k] === b[k]);
+      const src = a ?? {};
+      const keys = Object.keys(b);
+      if (Object.keys(src).length !== keys.length)
+          return false;
+      return keys.every(k => src[k] === b[k]);
   }
   function assignRecord(key, next) {
-    if (sameRecord(settings4.plain[key], next))
-      return false;
-    settings4.store[key] = next;
-    return true;
+      if (sameRecord(settings4.plain[key], next))
+          return false;
+      settings4.store[key] = next;
+      return true;
   }
   var writing = false;
   function writeVisits(next) {
-    if (writing)
-      return;
-    writing = true;
-    try {
-      const visits = capVisits(next);
-      const rawWs = pruneRecord(settings4.plain.workspaceByConv, visits);
-      const workspaceByConv = {};
-      for (const [id, value] of Object.entries(rawWs)) {
-        const ws = asWorkspaceId(value);
-        if (ws)
-          workspaceByConv[id] = ws;
+      if (writing)
+          return;
+      writing = true;
+      try {
+          const visits = capVisits(next);
+          const rawWs = pruneRecord(settings4.plain.workspaceByConv, visits);
+          const workspaceByConv = {};
+          for (const [id, value] of Object.entries(rawWs)) {
+              const ws = asWorkspaceId(value);
+              if (ws)
+                  workspaceByConv[id] = ws;
+          }
+          const pages = pruneRecord(settings4.plain.pages, visits);
+          const usedWs = new Set(Object.values(workspaceByConv));
+          const keepProjects = {};
+          for (const [id, name] of Object.entries(settings4.plain.projectNames ?? {})) {
+              if (usedWs.has(id))
+                  keepProjects[id] = name;
+          }
+          let changed = false;
+          if (!sameList(readVisits(), visits)) {
+              settings4.store.visits = visits;
+              changed = true;
+          }
+          if (assignRecord("titles", pruneRecord(settings4.plain.titles, visits)))
+              changed = true;
+          if (assignRecord("workspaceByConv", workspaceByConv))
+              changed = true;
+          if (assignRecord("pages", pages))
+              changed = true;
+          if (assignRecord("projectNames", keepProjects))
+              changed = true;
+          if (changed && open2)
+              paint();
       }
-      const pages = pruneRecord(settings4.plain.pages, visits);
-      const usedWs = new Set(Object.values(workspaceByConv));
-      const keepProjects = {};
-      for (const [id, name] of Object.entries(settings4.plain.projectNames ?? {})) {
-        if (usedWs.has(id))
-          keepProjects[id] = name;
+      finally {
+          writing = false;
       }
-      let changed = false;
-      if (!sameList(readVisits(), visits)) {
-        settings4.store.visits = visits;
-        changed = true;
-      }
-      if (assignRecord("titles", pruneRecord(settings4.plain.titles, visits)))
-        changed = true;
-      if (assignRecord("workspaceByConv", workspaceByConv))
-        changed = true;
-      if (assignRecord("pages", pages))
-        changed = true;
-      if (assignRecord("projectNames", keepProjects))
-        changed = true;
-      if (changed && open2)
-        paint();
-    } finally {
-      writing = false;
-    }
   }
   function rememberTitle(id, title) {
-    const t = title?.trim();
-    if (!id || !t)
-      return;
-    const prev = settings4.plain.titles ?? {};
-    if (prev[id] === t)
-      return;
-    settings4.store.titles = { ...prev, [id]: t };
+      const t = title?.trim();
+      if (!id || !t)
+          return;
+      const prev = settings4.plain.titles ?? {};
+      if (prev[id] === t)
+          return;
+      settings4.store.titles = { ...prev, [id]: t };
   }
   function routeConvId(route) {
-    if (!route)
+      if (!route)
+          return null;
+      if (route.conversationId)
+          return route.conversationId;
+      if (typeof route.chat === "string" && route.chat)
+          return route.chat;
+      if (route.page === "main")
+          return HOME_ID;
       return null;
-    if (route.conversationId)
-      return route.conversationId;
-    if (typeof route.chat === "string" && route.chat)
-      return route.chat;
-    if (route.page === "main")
-      return HOME_ID;
-    return null;
   }
   function projectIdFromUrl() {
-    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
-    return m?.[1] ?? "";
+      const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)
+          ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
+      return m?.[1] ?? "";
   }
   function chatIdFromUrl() {
-    try {
-      return new URLSearchParams(location.search).get("chat") ?? "";
-    } catch {
-      return "";
-    }
+      try {
+          return new URLSearchParams(location.search).get("chat") ?? "";
+      }
+      catch {
+          return "";
+      }
   }
   var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
   function asWorkspaceId(value) {
-    if (typeof value === "string") {
-      const s = value.trim();
-      return WS_ID.test(s) ? s : "";
-    }
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        const id = asWorkspaceId(item);
-        if (id)
-          return id;
+      if (typeof value === "string") {
+          const s = value.trim();
+          return WS_ID.test(s) ? s : "";
+      }
+      if (Array.isArray(value)) {
+          for (const item of value) {
+              const id = asWorkspaceId(item);
+              if (id)
+                  return id;
+          }
+          return "";
+      }
+      if (value && typeof value === "object") {
+          const rec = value;
+          return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
       }
       return "";
-    }
-    if (value && typeof value === "object") {
-      const rec = value;
-      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
-    }
-    return "";
   }
   function hrefFor(id, workspaceId) {
-    const ws = asWorkspaceId(workspaceId);
-    if (!id)
-      return ws ? `/project/${ws}` : "/";
-    if (ws)
-      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
-    return `/c/${encodeURIComponent(id)}`;
+      const ws = asWorkspaceId(workspaceId);
+      if (!id)
+          return ws ? `/project/${ws}` : "/";
+      if (ws)
+          return `/project/${ws}?chat=${encodeURIComponent(id)}`;
+      return `/c/${encodeURIComponent(id)}`;
   }
   function currentVisit() {
-    try {
-      const id = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (id)
-        return id;
-    } catch (e) {
-      logger17.debug("ChatPageStore unavailable:", e);
-    }
-    try {
-      const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
-      if (id != null)
-        return id;
-    } catch (e) {
-      logger17.debug("RoutingStore unavailable:", e);
-    }
-    return chatIdFromUrl() || null;
+      try {
+          const id = ChatPageStore.useChatPageStore.getState().conversationId;
+          if (id)
+              return id;
+      }
+      catch (e) {
+          logger17.debug("ChatPageStore unavailable:", e);
+      }
+      try {
+          const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
+          if (id != null)
+              return id;
+      }
+      catch (e) {
+          logger17.debug("RoutingStore unavailable:", e);
+      }
+      return chatIdFromUrl() || null;
   }
   function idsFromHistory() {
-    try {
-      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      const ids = [];
-      const add = (r) => {
-        const id = routeConvId(r);
-        if (id != null)
-          ids.push(id);
-      };
-      add(route);
-      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
-        add(historyStack[i]);
-      return unique(ids);
-    } catch (e) {
-      logger17.debug("historyStack unavailable:", e);
-      return [];
-    }
+      try {
+          const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+          const ids = [];
+          const add = (r) => {
+              const id = routeConvId(r);
+              if (id != null)
+                  ids.push(id);
+          };
+          add(route);
+          for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--)
+              add(historyStack[i]);
+          return unique(ids);
+      }
+      catch (e) {
+          logger17.debug("historyStack unavailable:", e);
+          return [];
+      }
   }
   function pageTitle() {
-    const raw = document.title.replace(TITLE_TAIL, "").trim();
-    if (!raw || /^grok$/i.test(raw))
-      return "";
-    return raw;
+      const raw = document.title.replace(TITLE_TAIL, "").trim();
+      if (!raw || /^grok$/i.test(raw))
+          return "";
+      return raw;
   }
   function lookup(id) {
-    try {
-      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
-    } catch (e) {
-      logger17.debug("Conversation lookup failed:", e);
-      return;
-    }
+      try {
+          const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+          return byId[id] ?? byIdWithWorkspaces[id] ?? list.find(c => c.conversationId === id);
+      }
+      catch (e) {
+          logger17.debug("Conversation lookup failed:", e);
+          return undefined;
+      }
   }
   function titleOf(id) {
-    if (!id)
-      return "New chat";
-    const conv = lookup(id);
-    if (conv?.title?.trim())
-      return conv.title.trim();
-    const cached = settings4.plain.titles?.[id];
-    if (cached)
-      return cached;
-    if (id === currentVisit())
-      return pageTitle() || "Untitled";
-    return "Untitled";
+      if (!id)
+          return "New chat";
+      const conv = lookup(id);
+      if (conv?.title?.trim())
+          return conv.title.trim();
+      const cached = settings4.plain.titles?.[id];
+      if (cached)
+          return cached;
+      if (id === currentVisit())
+          return pageTitle() || "Untitled";
+      return "Untitled";
   }
   function liveWorkspaceId() {
-    try {
-      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
-      if (pid)
-        return pid;
-    } catch {}
-    try {
-      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
-      const id = asWorkspaceId(workspaceId);
-      if (id)
-        return id;
-    } catch {}
-    return asWorkspaceId(projectIdFromUrl());
+      try {
+          const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
+          if (pid)
+              return pid;
+      }
+      catch { }
+      try {
+          const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
+          const id = asWorkspaceId(workspaceId);
+          if (id)
+              return id;
+      }
+      catch { }
+      return asWorkspaceId(projectIdFromUrl());
   }
   function workspaceFromHistory(id) {
-    try {
-      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      if (routeConvId(route) === id) {
-        const ws = asWorkspaceId(route.workspaceId);
-        if (ws)
-          return ws;
+      try {
+          const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+          if (routeConvId(route) === id) {
+              const ws = asWorkspaceId(route.workspaceId);
+              if (ws)
+                  return ws;
+          }
+          for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--) {
+              const r = historyStack[i];
+              if (routeConvId(r) === id) {
+                  const ws = asWorkspaceId(r?.workspaceId);
+                  if (ws)
+                      return ws;
+              }
+          }
       }
-      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
-        const r = historyStack[i];
-        if (routeConvId(r) === id) {
-          const ws = asWorkspaceId(r?.workspaceId);
-          if (ws)
-            return ws;
-        }
-      }
-    } catch {}
-    return "";
+      catch { }
+      return "";
   }
   function convWorkspaceId(id) {
-    try {
-      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
-      const fromResolver = asWorkspaceId(resolved);
-      if (fromResolver)
-        return fromResolver;
-      const conv = byId[id] ?? byIdWithWorkspaces[id];
-      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-    } catch (e) {
-      logger17.debug("convWorkspaceId failed:", e);
-      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
-    }
+      try {
+          const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+          const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
+          const fromResolver = asWorkspaceId(resolved);
+          if (fromResolver)
+              return fromResolver;
+          const conv = byId[id] ?? byIdWithWorkspaces[id];
+          return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+      }
+      catch (e) {
+          logger17.debug("convWorkspaceId failed:", e);
+          return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
+      }
   }
   function workspaceFromDom(id) {
-    if (!id)
-      return "";
-    try {
-      for (const a of document.querySelectorAll("a[href]")) {
-        const href = a.getAttribute("href");
-        if (!href || !href.includes(id))
-          continue;
-        const u = new URL(href, location.origin);
-        if (u.searchParams.get("chat") !== id && !u.pathname.includes(id))
-          continue;
-        const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
-        if (ws)
-          return ws;
+      if (!id)
+          return "";
+      try {
+          for (const a of document.querySelectorAll("a[href]")) {
+              const href = a.getAttribute("href");
+              if (!href || !href.includes(id))
+                  continue;
+              const u = new URL(href, location.origin);
+              if (u.searchParams.get("chat") !== id && !u.pathname.includes(id))
+                  continue;
+              const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+              if (ws)
+                  return ws;
+          }
       }
-    } catch {}
-    return "";
+      catch { }
+      return "";
   }
   function workspaceOf(id) {
-    if (!id)
-      return "";
-    if (id === currentVisit()) {
-      const live = liveWorkspaceId();
-      if (live)
-        return live;
-    }
-    return convWorkspaceId(id) || asWorkspaceId(settings4.plain.workspaceByConv?.[id]) || workspaceFromHistory(id) || workspaceFromDom(id);
+      if (!id)
+          return "";
+      if (id === currentVisit()) {
+          const live = liveWorkspaceId();
+          if (live)
+              return live;
+      }
+      return convWorkspaceId(id)
+          || asWorkspaceId(settings4.plain.workspaceByConv?.[id])
+          || workspaceFromHistory(id)
+          || workspaceFromDom(id);
   }
   function labelText(el) {
-    return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+      return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
   }
   function readOpenProjectName() {
-    const sidebar = document.querySelector("[data-sidebar=sidebar]");
-    if (!sidebar)
-      return "";
-    const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
-    let afterProjects = false;
-    for (const el of nodes) {
-      const t = labelText(el);
-      if (!t)
-        continue;
-      if (/^projects$/i.test(t)) {
-        afterProjects = true;
-        continue;
+      const sidebar = document.querySelector("[data-sidebar=sidebar]");
+      if (!sidebar)
+          return "";
+      const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
+      let afterProjects = false;
+      for (const el of nodes) {
+          const t = labelText(el);
+          if (!t)
+              continue;
+          if (/^projects$/i.test(t)) {
+              afterProjects = true;
+              continue;
+          }
+          if (!afterProjects)
+              continue;
+          if (SKIP_LABEL.test(t))
+              break;
+          if (t.length < 2 || t.length > 64)
+              continue;
+          if (el.querySelector("svg"))
+              return t;
       }
-      if (!afterProjects)
-        continue;
-      if (SKIP_LABEL.test(t))
-        break;
-      if (t.length < 2 || t.length > 64)
-        continue;
-      if (el.querySelector("svg"))
-        return t;
-    }
-    return "";
+      return "";
   }
   function projectNameOf(id) {
-    if (!id)
-      return "";
-    const ws = workspaceOf(id);
-    if (!ws)
-      return "";
-    return wsNames[ws] || settings4.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
+      if (!id)
+          return "";
+      const ws = workspaceOf(id);
+      if (!ws)
+          return "";
+      return wsNames[ws] || settings4.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
   }
   function rememberProject(id) {
-    if (!id)
-      return;
-    const ws = workspaceOf(id);
-    if (!ws)
-      return;
-    const prevWs = settings4.plain.workspaceByConv ?? {};
-    if (prevWs[id] !== ws)
-      settings4.store.workspaceByConv = { ...prevWs, [id]: ws };
-    const name = wsNames[ws] || readOpenProjectName() || settings4.plain.projectNames?.[ws] || "";
-    if (!name)
-      return;
-    wsNames[ws] = name;
-    const prevNames = settings4.plain.projectNames ?? {};
-    if (prevNames[ws] !== name)
-      settings4.store.projectNames = { ...prevNames, [ws]: name };
+      if (!id)
+          return;
+      const ws = workspaceOf(id);
+      if (!ws)
+          return;
+      const prevWs = settings4.plain.workspaceByConv ?? {};
+      if (prevWs[id] !== ws)
+          settings4.store.workspaceByConv = { ...prevWs, [id]: ws };
+      const name = wsNames[ws] || readOpenProjectName() || settings4.plain.projectNames?.[ws] || "";
+      if (!name)
+          return;
+      wsNames[ws] = name;
+      const prevNames = settings4.plain.projectNames ?? {};
+      if (prevNames[ws] !== name)
+          settings4.store.projectNames = { ...prevNames, [ws]: name };
   }
   function chatPane() {
-    const main = document.querySelector("main");
-    if (!main)
-      return null;
-    let best = null;
-    let bestScore = 0;
-    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
-      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
-        continue;
-      const r = n.getBoundingClientRect();
-      if (r.width < 240 || r.height < 120)
-        continue;
-      const score = r.width * r.height;
-      if (score > bestScore) {
-        best = n;
-        bestScore = score;
+      const main = document.querySelector("main");
+      if (!main)
+          return null;
+      let best = null;
+      let bestScore = 0;
+      for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
+          if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
+              continue;
+          const r = n.getBoundingClientRect();
+          if (r.width < 240 || r.height < 120)
+              continue;
+          const score = r.width * r.height;
+          if (score > bestScore) {
+              best = n;
+              bestScore = score;
+          }
       }
-    }
-    return best;
+      return best;
   }
   function messageList(pane) {
-    let node = pane;
-    for (let i = 0;i < 8; i++) {
-      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
-      if (kids.length === 1 && kids[0].children.length > 1) {
-        node = kids[0];
-        continue;
+      let node = pane;
+      for (let i = 0; i < 8; i++) {
+          const kids = [...node.children].filter((c) => c instanceof HTMLElement);
+          if (kids.length === 1 && kids[0].children.length > 1) {
+              node = kids[0];
+              continue;
+          }
+          break;
       }
-      break;
-    }
-    return node;
+      return node;
   }
-  function trimClone(rootEl) {
-    rootEl.querySelectorAll("script, iframe, video, textarea, input, canvas, .void-rt-root, #void-rt-host").forEach((n) => n.remove());
+  function extractLines(pane) {
+      const source = messageList(pane);
+      const kids = [...source.children].filter((c) => c instanceof HTMLElement);
+      const out = [];
+      const seen = new Set();
+      for (const kid of kids) {
+          const raw = (kid.innerText ?? kid.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+          if (raw.length < 4)
+              continue;
+          if (/^(more|copy|share|retry|edit|\d{1,2}:\d{2}\s*(am|pm))$/i.test(raw))
+              continue;
+          const text = raw.length > 220 ? `${raw.slice(0, 217)}…` : raw;
+          if (seen.has(text))
+              continue;
+          seen.add(text);
+          const cls = `${kid.className} ${kid.getAttribute("class") ?? ""}`;
+          const isUser = /justify-end|items-end|self-end/.test(cls)
+              || !!kid.querySelector("[class*='justify-end'], [class*='self-end']");
+          out.push({ role: isUser ? "user" : "assistant", text });
+      }
+      return out.slice(-4);
+  }
+  function sidebarTitles(activeId) {
+      const fromDom = [];
+      try {
+          const sidebar = document.querySelector("[data-sidebar=content], [data-sidebar=sidebar]");
+          if (sidebar) {
+              for (const a of sidebar.querySelectorAll("a[href]")) {
+                  const href = a.getAttribute("href") ?? "";
+                  if (!/\/c\/|chat=/.test(href))
+                      continue;
+                  const t = labelText(a);
+                  if (!t || SKIP_LABEL.test(t) || t.length > 64)
+                      continue;
+                  if (!fromDom.includes(t))
+                      fromDom.push(t);
+                  if (fromDom.length >= 6)
+                      break;
+              }
+          }
+      }
+      catch { }
+      if (fromDom.length)
+          return fromDom;
+      const names = capVisits(readVisits()).map(id => titleOf(id)).filter(Boolean);
+      const active = titleOf(activeId);
+      return unique([active, ...names]).slice(0, 6);
+  }
+  function parseSnap(raw) {
+      if (!raw)
+          return null;
+      try {
+          const parsed = JSON.parse(raw);
+          if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
+              return null;
+          return {
+              title: typeof parsed.title === "string" ? parsed.title : "",
+              theme: parsed.theme === "light" ? "light" : "dark",
+              lines: parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"),
+              nav: Array.isArray(parsed.nav)
+                  ? parsed.nav.filter((item) => typeof item === "string" && !!item.trim()).slice(0, 6)
+                  : [],
+          };
+      }
+      catch {
+          return null;
+      }
+  }
+  function snapOf(id) {
+      return thumbs.get(id) ?? parseSnap(settings4.plain.pages?.[id]);
+  }
+  function rememberPage(id, snap) {
+      const json = JSON.stringify(snap);
+      const prev = settings4.plain.pages ?? {};
+      if (prev[id] === json)
+          return;
+      settings4.store.pages = { ...prev, [id]: json };
+  }
+  function buildPageShot(snap) {
+      const page = node("span", cl17("page"));
+      page.dataset.theme = snap.theme;
+      const side = node("span", cl17("page-side"));
+      const brand = node("span", cl17("page-brand"));
+      const mark = node("span", cl17("page-mark"));
+      mark.append(faviconImg(""));
+      brand.append(mark, node("span", cl17("page-word")));
+      const nav = node("span", cl17("page-nav"));
+      const labels = snap.nav.length ? snap.nav : ["", "", "", "", "", ""];
+      labels.slice(0, 6).forEach((label, i) => {
+          const item = node("span", cl17("page-nav-item"), label);
+          if (i === 0 || label === snap.title)
+              item.dataset.on = "true";
+          nav.append(item);
+      });
+      side.append(brand, node("span", cl17("page-new")), nav);
+      const main = node("span", cl17("page-main"));
+      const bar = node("span", cl17("page-bar"));
+      bar.append(node("span", cl17("page-bar-title"), snap.title));
+      const body = node("span", cl17("page-body"));
+      for (const line of snap.lines) {
+          body.append(node("span", cl17("page-line", line.role === "user" && "page-line-user"), line.text));
+      }
+      main.append(bar, body, node("span", cl17("page-composer")));
+      page.append(side, main);
+      return page;
   }
   var capturing = false;
   function captureCurrent() {
-    if (capturing || open2)
-      return;
-    const id = currentVisit();
-    if (id == null)
-      return;
-    capturing = true;
-    try {
-      const pane = chatPane();
-      if (!pane)
-        return;
-      const source = messageList(pane);
-      const shell = source.cloneNode(false);
-      const keep = [...source.children].slice(-6);
-      for (const kid of keep)
-        shell.appendChild(kid.cloneNode(true));
-      trimClone(shell);
-      thumbs.set(id, shell);
-    } catch (e) {
-      logger17.debug("snapshot failed:", e);
-    } finally {
-      capturing = false;
-    }
+      if (capturing || open2)
+          return;
+      const id = currentVisit();
+      if (id == null)
+          return;
+      capturing = true;
+      try {
+          const pane = chatPane();
+          if (!pane)
+              return;
+          const lines = extractLines(pane);
+          if (!lines.length)
+              return;
+          const snap = {
+              title: titleOf(id),
+              theme: detectTheme(),
+              lines,
+              nav: sidebarTitles(id),
+          };
+          thumbs.set(id, snap);
+          rememberPage(id, snap);
+      }
+      catch (e) {
+          logger17.debug("snapshot failed:", e);
+      }
+      finally {
+          capturing = false;
+      }
   }
   function scheduleCapture() {
-    if (open2)
-      return;
-    requestAnimationFrame(() => {
+      if (open2)
+          return;
       requestAnimationFrame(() => {
-        if (!open2)
-          captureCurrent();
+          requestAnimationFrame(() => {
+              if (!open2)
+                  captureCurrent();
+          });
       });
-    });
   }
   function bump(id) {
-    if (!id && !settings4.store.includeHome)
-      return;
-    writeVisits(capVisits([id, ...readVisits()]));
-    const conv = id ? lookup(id) : undefined;
-    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-    if (id)
-      rememberProject(id);
+      if (!id && !settings4.store.includeHome)
+          return;
+      writeVisits(capVisits([id, ...readVisits()]));
+      const conv = id ? lookup(id) : undefined;
+      rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+      if (id)
+          rememberProject(id);
   }
   function hydrate() {
-    const current = currentVisit();
-    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
-    writeVisits(capVisits(merged));
-    if (current) {
-      rememberTitle(current, lookup(current)?.title || pageTitle());
-      rememberProject(current);
-    }
+      const current = currentVisit();
+      const merged = current == null
+          ? [...idsFromHistory(), ...readVisits()]
+          : [current, ...idsFromHistory(), ...readVisits()];
+      writeVisits(capVisits(merged));
+      if (current) {
+          rememberTitle(current, lookup(current)?.title || pageTitle());
+          rememberProject(current);
+      }
   }
   function topics() {
-    return capVisits(readVisits()).map((id) => ({
-      id,
-      title: titleOf(id),
-      project: projectNameOf(id)
-    }));
+      return capVisits(readVisits()).map(id => ({
+          id,
+          title: titleOf(id),
+          project: projectNameOf(id),
+      }));
   }
   function parseHref(href) {
-    try {
-      const u = new URL(href, location.origin);
-      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
-      if (parsed?.page && parsed.page !== "unknown")
-        return parsed;
-    } catch (e) {
-      logger17.debug("urlToRoute failed:", e);
-    }
-    return null;
+      try {
+          const u = new URL(href, location.origin);
+          const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
+          if (parsed?.page && parsed.page !== "unknown")
+              return parsed;
+      }
+      catch (e) {
+          logger17.debug("urlToRoute failed:", e);
+      }
+      return null;
   }
   function applyChatPage(id, workspaceId) {
-    try {
-      const chat = ChatPageStore.useChatPageStore.getState();
-      chat.setConversationId(id || undefined);
-      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
-    } catch (e) {
-      logger17.debug("ChatPageStore update failed:", e);
-    }
+      try {
+          const chat = ChatPageStore.useChatPageStore.getState();
+          chat.setConversationId(id || undefined);
+          chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
+      }
+      catch (e) {
+          logger17.debug("ChatPageStore update failed:", e);
+      }
   }
   function navigateTo(id) {
-    try {
-      const routing = RoutingStore.useRoutingStore.getState();
-      const { route } = routing;
-      const teamId = route.teamId ?? null;
-      if (!id) {
-        if (route.page === "main" || route.page === "chat" && !route.conversationId && !projectIdFromUrl())
-          return;
-        routing.push({ page: "main", teamId });
-        applyChatPage("");
-        return;
-      }
-      const workspaceId = workspaceOf(id);
-      const href = hrefFor(id, workspaceId);
-      const parsed = parseHref(href);
-      const dest = workspaceId ? {
-        page: "workspace",
-        workspaceId,
-        tab: "conversations",
-        conversationId: id,
-        teamId
-      } : {
-        page: "chat",
-        conversationId: id,
-        temporary: lookup(id)?.temporary ?? false,
-        teamId
-      };
-      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
-        dest.page = "workspace";
-        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
-        dest.conversationId = parsed.conversationId || id;
-        dest.tab = parsed.tab || "conversations";
-        if (parsed.filePath)
-          dest.filePath = parsed.filePath;
-      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
-        dest.page = "chat";
-        dest.conversationId = parsed.conversationId;
-        dest.temporary = parsed.temporary ?? dest.temporary;
-      }
-      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
-        dest.page = "chat";
-        dest.conversationId = id;
-        delete dest.workspaceId;
-        delete dest.tab;
-      }
-      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
-        return;
-      routing.push(dest);
-      applyChatPage(id, asWorkspaceId(dest.workspaceId));
-      if (dest.page !== "workspace") {
-        try {
-          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-          fetchConv?.(id).then((conv) => {
-            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
-            if (!ws)
-              return;
-            const now = RoutingStore.useRoutingStore.getState();
-            if (routeConvId(now.route) !== id)
-              return;
-            now.replace({
-              page: "workspace",
-              workspaceId: ws,
-              tab: "conversations",
-              conversationId: id,
-              teamId
-            });
-            applyChatPage(id, ws);
-            rememberProject(id);
-          }).catch((e) => logger17.debug("workspace resolve failed:", e));
-        } catch (e) {
-          logger17.debug("workspace fetch skipped:", e);
-        }
-      }
-    } catch (e) {
-      logger17.error("Failed to navigate:", e);
       try {
-        location.assign(hrefFor(id, workspaceOf(id) || undefined));
-      } catch (navErr) {
-        logger17.error("Fallback navigation failed:", navErr);
+          const routing = RoutingStore.useRoutingStore.getState();
+          const { route } = routing;
+          const teamId = route.teamId ?? null;
+          if (!id) {
+              if (route.page === "main" || (route.page === "chat" && !route.conversationId && !projectIdFromUrl()))
+                  return;
+              routing.push({ page: "main", teamId });
+              applyChatPage("");
+              return;
+          }
+          const workspaceId = workspaceOf(id);
+          const href = hrefFor(id, workspaceId);
+          const parsed = parseHref(href);
+          // Mirror Grok's useGrokRouter.routeToConversation:
+          // workspace chats MUST be { page:"workspace", workspaceId:STRING, tab:"conversations", conversationId }.
+          // page:"workspaces" (plural) is the /project list — never push that for a chat.
+          const dest = workspaceId
+              ? {
+                  page: "workspace",
+                  workspaceId,
+                  tab: "conversations",
+                  conversationId: id,
+                  teamId,
+              }
+              : {
+                  page: "chat",
+                  conversationId: id,
+                  temporary: lookup(id)?.temporary ?? false,
+                  teamId,
+              };
+          if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
+              dest.page = "workspace";
+              dest.workspaceId = asWorkspaceId(parsed.workspaceId);
+              dest.conversationId = parsed.conversationId || id;
+              dest.tab = parsed.tab || "conversations";
+              if (parsed.filePath)
+                  dest.filePath = parsed.filePath;
+          }
+          else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
+              dest.page = "chat";
+              dest.conversationId = parsed.conversationId;
+              dest.temporary = parsed.temporary ?? dest.temporary;
+          }
+          if (dest.page === "workspaces" || (dest.page === "workspace" && !asWorkspaceId(dest.workspaceId))) {
+              dest.page = "chat";
+              dest.conversationId = id;
+              delete dest.workspaceId;
+              delete dest.tab;
+          }
+          if (routeConvId(route) === dest.conversationId
+              && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "")
+              && route.page === dest.page)
+              return;
+          routing.push(dest);
+          applyChatPage(id, asWorkspaceId(dest.workspaceId));
+          // Same upgrade Grok does: if we had to open2 /c/{id}, fetch workspace and replace.
+          if (dest.page !== "workspace") {
+              try {
+                  const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+                  const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+                  fetchConv?.(id).then(conv => {
+                      const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
+                      if (!ws)
+                          return;
+                      const now = RoutingStore.useRoutingStore.getState();
+                      if (routeConvId(now.route) !== id)
+                          return;
+                      now.replace({
+                          page: "workspace",
+                          workspaceId: ws,
+                          tab: "conversations",
+                          conversationId: id,
+                          teamId,
+                      });
+                      applyChatPage(id, ws);
+                      rememberProject(id);
+                  }).catch(e => logger17.debug("workspace resolve failed:", e));
+              }
+              catch (e) {
+                  logger17.debug("workspace fetch skipped:", e);
+              }
+          }
       }
-    }
+      catch (e) {
+          logger17.error("Failed to navigate:", e);
+          try {
+              location.assign(hrefFor(id, workspaceOf(id) || undefined));
+          }
+          catch (navErr) {
+              logger17.error("Fallback navigation failed:", navErr);
+          }
+      }
   }
   function isTrigger(e) {
-    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
-      return true;
-    return TRIGGER_KEYS.has(e.key);
+      if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
+          return true;
+      return TRIGGER_KEYS.has(e.key);
   }
   function isCtrlKey(e) {
-    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
+      return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
   }
   function begin(reverse, fromHold) {
-    held = fromHold;
-    open2 = false;
-    captureCurrent();
-    open2 = true;
-    selected = 0;
-    try {
-      hydrate();
-      const current = currentVisit();
-      if (current != null)
-        bump(current);
-      if (topics().length > 1)
-        selected = reverse ? topics().length - 1 : 1;
-    } catch (e) {
-      logger17.error("Failed to open switcher:", e);
-    }
-    paint();
+      held = fromHold;
+      open2 = false;
+      captureCurrent();
+      open2 = true;
+      selected = 0;
+      try {
+          hydrate();
+          const current = currentVisit();
+          if (current != null)
+              bump(current);
+          if (topics().length > 1)
+              selected = reverse ? topics().length - 1 : 1;
+      }
+      catch (e) {
+          logger17.error("Failed to open2 switcher:", e);
+      }
+      paint();
   }
   function cycle(reverse) {
-    const { length } = topics();
-    if (!length)
-      return;
-    selected = (selected + (reverse ? -1 : 1) + length) % length;
-    paint();
+      const { length } = topics();
+      if (!length)
+          return;
+      selected = (selected + (reverse ? -1 : 1) + length) % length;
+      paint();
   }
   function commit() {
-    if (!open2)
-      return;
-    const target = topics()[selected];
-    open2 = false;
-    held = false;
-    paint();
-    if (target)
-      navigateTo(target.id);
+      if (!open2)
+          return;
+      const target = topics()[selected];
+      open2 = false;
+      held = false;
+      paint();
+      if (target)
+          navigateTo(target.id);
   }
   function cancel() {
-    if (!open2)
-      return;
-    open2 = false;
-    held = false;
-    paint();
+      if (!open2)
+          return;
+      open2 = false;
+      held = false;
+      paint();
   }
   function onKeyDown(e) {
-    if (isCtrlKey(e)) {
-      ctrlHeld = true;
-      return;
-    }
-    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
-    if (combo) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      try {
-        if (open2)
-          cycle(e.shiftKey);
-        else
-          begin(e.shiftKey, true);
-      } catch (err) {
-        logger17.error("Hotkey failed:", err);
+      if (isCtrlKey(e)) {
+          ctrlHeld = true;
+          return;
       }
-      return;
-    }
-    if (!open2)
-      return;
-    if (e.key === "Escape") {
-      e.preventDefault();
-      cancel();
-      return;
-    }
-    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
-      e.preventDefault();
-      cycle(e.shiftKey);
-    }
+      const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
+      if (combo) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          try {
+              if (open2)
+                  cycle(e.shiftKey);
+              else
+                  begin(e.shiftKey, true);
+          }
+          catch (err) {
+              logger17.error("Hotkey failed:", err);
+          }
+          return;
+      }
+      if (!open2)
+          return;
+      if (e.key === "Escape") {
+          e.preventDefault();
+          cancel();
+          return;
+      }
+      if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
+          e.preventDefault();
+          cycle(e.shiftKey);
+      }
   }
   function onKeyUp(e) {
-    if (!isCtrlKey(e))
-      return;
-    ctrlHeld = false;
-    if (open2 && held)
-      commit();
+      if (!isCtrlKey(e))
+          return;
+      ctrlHeld = false;
+      if (open2 && held)
+          commit();
   }
   function onBeforeInput(e) {
-    if (!ctrlHeld && !open2)
-      return;
-    const { data } = e;
-    if (data && TRIGGER_KEYS.has(data))
-      e.preventDefault();
+      if (!ctrlHeld && !open2)
+          return;
+      const { data } = e;
+      if (data && TRIGGER_KEYS.has(data))
+          e.preventDefault();
   }
   function onWindowBlur() {
-    ctrlHeld = false;
+      ctrlHeld = false;
   }
   function onVisibility() {
-    if (document.hidden) {
-      ctrlHeld = false;
-      cancel();
-    }
+      if (document.hidden) {
+          ctrlHeld = false;
+          cancel();
+      }
   }
   function pick(index) {
-    selected = index;
-    commit();
+      selected = index;
+      commit();
   }
   function node(tag, className, text) {
-    const el = document.createElement(tag);
-    if (className)
-      el.className = className;
-    if (text)
-      el.textContent = text;
-    return el;
+      const el = document.createElement(tag);
+      if (className)
+          el.className = className;
+      if (text)
+          el.textContent = text;
+      return el;
   }
   function fillShot(box, id) {
-    const thumb = thumbs.get(id);
-    if (!thumb) {
       const fallback = node("span", cl17("fallback"));
-      fallback.append(node("span", cl17("bubble")), node("span", cl17("bubble")), node("span", cl17("bubble")));
+      fallback.append(faviconImg(cl17("favicon")));
       box.append(fallback);
-      return;
-    }
-    const mini = node("span", cl17("mini"));
-    mini.append(thumb.cloneNode(true));
-    box.append(mini);
+      const snap = snapOf(id);
+      if (!snap)
+          return;
+      const shot = node("span", cl17("shot"));
+      shot.append(buildPageShot(snap));
+      box.append(shot);
   }
-  var SPARKLE_SVG = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c.2 2.28 1.38 4.18 3.55 5.55C9.38 8.07 8.2 9.97 8 12.25 7.8 9.97 6.62 8.07 4.45 6.7 6.62 5.33 7.8 3.43 8 1.15z"/></svg>';
-  var PLUS_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M8 3.2v9.6M3.2 8h9.6"/></svg>';
+  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH}" fill="#050505"/><path d="${GROK_MARK_P1}" fill="#FCFCFC"/><path d="${GROK_MARK_P2}" fill="#FCFCFC"/></svg>`)}`;
   var ACCENTS = [
-    "rgb(37, 99, 235)",
-    "rgb(14, 165, 233)",
-    "rgb(20, 184, 166)",
-    "rgb(249, 115, 22)",
-    "rgb(100, 116, 139)"
+      "rgb(37, 99, 235)",
+      "rgb(14, 165, 233)",
+      "rgb(20, 184, 166)",
+      "rgb(249, 115, 22)",
+      "rgb(100, 116, 139)",
   ];
   function accentOf(id) {
-    if (!id)
-      return ACCENTS[4];
-    let hash = 0;
-    for (let i = 0;i < id.length; i++)
-      hash = hash * 31 + id.charCodeAt(i) >>> 0;
-    return ACCENTS[hash % ACCENTS.length];
+      if (!id)
+          return ACCENTS[4];
+      let hash = 0;
+      for (let i = 0; i < id.length; i++)
+          hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+      return ACCENTS[hash % ACCENTS.length];
   }
   function detectTheme() {
-    const html = document.documentElement;
-    const { body } = document;
-    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
-    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
-      return "dark";
-    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
-      return "light";
-    try {
-      const bg = getComputedStyle(body || html).backgroundColor;
-      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
-      if (m) {
-        const r = Number(m[1]) / 255;
-        const g = Number(m[2]) / 255;
-        const b = Number(m[3]) / 255;
-        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-        return lum < 0.42 ? "dark" : "light";
+      const html = document.documentElement;
+      const { body } = document;
+      const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
+      if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
+          return "dark";
+      if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
+          return "light";
+      try {
+          const bg = getComputedStyle(body || html).backgroundColor;
+          const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+          if (m) {
+              const r = Number(m[1]) / 255;
+              const g = Number(m[2]) / 255;
+              const b = Number(m[3]) / 255;
+              const lin = [r, g, b].map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+              const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+              return lum < 0.42 ? "dark" : "light";
+          }
       }
-    } catch {}
-    const scheme = getComputedStyle(html).colorScheme;
-    if (scheme.includes("light") && !scheme.includes("dark"))
-      return "light";
-    return "dark";
+      catch { }
+      const scheme = getComputedStyle(html).colorScheme;
+      if (scheme.includes("light") && !scheme.includes("dark"))
+          return "light";
+      return "dark";
+  }
+  function grokFaviconSrc() {
+      try {
+          if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
+              const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
+              const href = link?.href;
+              if (href && !href.startsWith("data:"))
+                  return href;
+              return `${location.origin}/images/favicon.svg`;
+          }
+      }
+      catch { }
+      return GROK_ICON_DATA;
+  }
+  function faviconImg(className) {
+      const img = document.createElement("img");
+      img.className = className;
+      img.alt = "";
+      img.draggable = false;
+      img.src = grokFaviconSrc();
+      img.addEventListener("error", () => {
+          if (img.src === GROK_ICON_DATA) {
+              img.dataset.broken = "true";
+              return;
+          }
+          img.src = GROK_ICON_DATA;
+      });
+      return img;
+  }
+  function siteHost() {
+      try {
+          return location.hostname.replace(/^www\./i, "") || "grok.com";
+      }
+      catch {
+          return "grok.com";
+      }
   }
   function applyTheme(panel) {
-    const theme = detectTheme();
-    panel.setAttribute("data-theme", theme);
-    panel.style.colorScheme = theme;
-  }
-  function setTitleIcon(el, id) {
-    el.innerHTML = id ? SPARKLE_SVG : PLUS_SVG;
+      const theme = detectTheme();
+      panel.setAttribute("data-theme", theme);
+      panel.style.colorScheme = theme;
   }
   function buildHost() {
-    const root = node("div", cl17("root"));
-    root.id = "void-rt-host";
-    root.setAttribute("role", "presentation");
-    root.addEventListener("click", cancel);
-    const panel = node("div", cl17("panel"));
-    panel.setAttribute("role", "listbox");
-    panel.setAttribute("aria-label", "Recent conversations");
-    panel.addEventListener("click", (e) => e.stopPropagation());
-    panel.append(node("div", cl17("list")));
-    root.append(panel);
-    return root;
+      const root = node("div", cl17("root"));
+      root.id = "void-rt-host";
+      root.setAttribute("role", "presentation");
+      root.addEventListener("click", cancel);
+      const panel = node("div", cl17("panel"));
+      panel.setAttribute("role", "listbox");
+      panel.setAttribute("aria-label", "Recent conversations");
+      panel.addEventListener("click", e => e.stopPropagation());
+      panel.append(node("div", cl17("list")));
+      root.append(panel);
+      return root;
   }
   function renderList(items) {
-    if (!host)
-      return;
-    const panel = host.querySelector(`.${cl17("panel")}`);
-    if (!panel)
-      return;
-    let list = panel.querySelector(`.${cl17("list")}`);
-    if (!list) {
-      panel.replaceChildren();
-      list = node("div", cl17("list"));
-      panel.append(list);
-    }
-    list.replaceChildren();
-    items.forEach((topic, i) => {
-      const btn = node("button", cl17("card"));
-      btn.type = "button";
-      btn.tabIndex = -1;
-      btn.setAttribute("role", "option");
-      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
-      btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
-      btn.addEventListener("pointerenter", () => {
-        if (selected === i)
+      if (!host)
           return;
-        selected = i;
-        syncActive();
-      });
-      btn.addEventListener("focus", () => {
-        if (selected === i)
+      const panel = host.querySelector(`.${cl17("panel")}`);
+      if (!panel)
           return;
-        selected = i;
-        syncActive();
+      let list = panel.querySelector(`.${cl17("list")}`);
+      if (!list) {
+          panel.replaceChildren();
+          list = node("div", cl17("list"));
+          panel.append(list);
+      }
+      list.replaceChildren();
+      items.forEach((topic, i) => {
+          const btn = node("button", cl17("card"));
+          btn.type = "button";
+          btn.tabIndex = -1;
+          btn.setAttribute("role", "option");
+          btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+          btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
+          btn.addEventListener("pointerenter", () => {
+              if (selected === i)
+                  return;
+              selected = i;
+              syncActive();
+          });
+          btn.addEventListener("focus", () => {
+              if (selected === i)
+                  return;
+              selected = i;
+              syncActive();
+          });
+          btn.addEventListener("click", () => pick(i));
+          const shot = node("span", cl17("thumb"));
+          shot.setAttribute("aria-hidden", "true");
+          fillShot(shot, topic.id);
+          const meta = node("span", cl17("meta"));
+          const row = node("span", cl17("name-row"));
+          row.append(faviconImg(cl17("title-favicon")), node("span", cl17("name"), topic.title));
+          meta.append(row);
+          meta.append(node("span", cl17("host"), siteHost()));
+          btn.append(shot, meta);
+          list.append(btn);
       });
-      btn.addEventListener("click", () => pick(i));
-      const shot = node("span", cl17("thumb"));
-      shot.setAttribute("aria-hidden", "true");
-      fillShot(shot, topic.id);
-      const meta = node("span", cl17("meta"));
-      const row = node("span", cl17("name-row"));
-      const icon = node("span", cl17("title-favicon"));
-      setTitleIcon(icon, topic.id);
-      row.append(icon, node("span", cl17("name"), topic.title));
-      meta.append(row);
-      const hostLabel = topic.project || (topic.id ? "Grok" : "Home");
-      meta.append(node("span", cl17("host"), hostLabel));
-      btn.append(shot, meta);
-      list.append(btn);
-    });
   }
   function syncActive() {
-    if (!host)
-      return;
-    const cards = host.querySelectorAll(`.${cl17("card")}`);
-    cards.forEach((card, i) => {
-      const on = i === selected;
-      card.setAttribute("data-active", on ? "true" : "false");
-      card.setAttribute("aria-selected", on ? "true" : "false");
-      card.tabIndex = on ? 0 : -1;
-      if (on)
-        card.setAttribute("aria-current", "true");
-      else
-        card.removeAttribute("aria-current");
-    });
-    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
+      if (!host)
+          return;
+      const cards = host.querySelectorAll(`.${cl17("card")}`);
+      cards.forEach((card, i) => {
+          const on = i === selected;
+          card.setAttribute("data-active", on ? "true" : "false");
+          card.setAttribute("aria-selected", on ? "true" : "false");
+          card.tabIndex = on ? 0 : -1;
+          if (on)
+              card.setAttribute("aria-current", "true");
+          else
+              card.removeAttribute("aria-current");
+      });
+      cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
   }
   function paint() {
-    document.documentElement.classList.toggle("void-rt-open", open2);
-    if (!open2) {
-      detachHost();
-      return;
-    }
-    const items = topics();
-    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
-    if (!host) {
-      host = buildHost();
-      mountOverlay(host);
-    }
-    const panel = host.querySelector(`.${cl17("panel")}`);
-    if (!panel)
-      return;
-    applyTheme(panel);
-    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
-    if (!items.length) {
-      if (paintedKey !== "__empty__") {
-        panel.replaceChildren(node("div", cl17("empty"), "Open a few chats, then hold Ctrl+` to switch."));
-        paintedKey = "__empty__";
+      document.documentElement.classList.toggle("void-rt-open", open2);
+      if (!open2) {
+          detachHost();
+          return;
       }
+      const items = topics();
+      const key = items.map(t => `${t.id}\0${t.title}\0${t.project}`).join("|") || "__empty__";
+      if (!host) {
+          host = buildHost();
+          mountOverlay(host);
+      }
+      const panel = host.querySelector(`.${cl17("panel")}`);
+      if (!panel)
+          return;
+      applyTheme(panel);
+      panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
+      if (!items.length) {
+          if (paintedKey !== "__empty__") {
+              panel.replaceChildren(node("div", cl17("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+              paintedKey = "__empty__";
+          }
+          requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+          return;
+      }
+      if (paintedKey === "__empty__" || !panel.querySelector(`.${cl17("list")}`)) {
+          panel.replaceChildren(node("div", cl17("list")));
+          paintedKey = "";
+      }
+      if (paintedKey !== key) {
+          renderList(items);
+          paintedKey = key;
+      }
+      syncActive();
       requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-      return;
-    }
-    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl17("list")}`)) {
-      panel.replaceChildren(node("div", cl17("list")));
-      paintedKey = "";
-    }
-    if (paintedKey !== key) {
-      renderList(items);
-      paintedKey = key;
-    }
-    syncActive();
-    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
   }
   function detachHost() {
-    document.documentElement.classList.remove("void-rt-open");
-    paintedKey = "";
-    if (host) {
-      try {
-        host.hidePopover();
-      } catch {}
-      host.remove();
-      host = null;
-    }
-    document.getElementById("void-rt-host")?.remove();
-    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
-      const p = el;
-      try {
-        p.hidePopover?.();
-      } catch {}
-      try {
-        p.close?.();
-      } catch {}
-      el.remove();
-    });
+      document.documentElement.classList.remove("void-rt-open");
+      paintedKey = "";
+      if (host) {
+          try {
+              host.hidePopover();
+          }
+          catch { }
+          host.remove();
+          host = null;
+      }
+      document.getElementById("void-rt-host")?.remove();
+      document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach(el => {
+          const p = el;
+          try {
+              p.hidePopover?.();
+          }
+          catch { }
+          try {
+              p.close?.();
+          }
+          catch { }
+          el.remove();
+      });
   }
   function mountOverlay(root) {
-    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
-    document.documentElement.append(root);
-    document.documentElement.classList.add("void-rt-open");
-    if (typeof root.showPopover !== "function")
-      return;
-    root.setAttribute("popover", "manual");
-    try {
-      root.showPopover();
-    } catch {
-      root.removeAttribute("popover");
-    }
+      root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
+      document.documentElement.append(root);
+      document.documentElement.classList.add("void-rt-open");
+      if (typeof root.showPopover !== "function")
+          return;
+      root.setAttribute("popover", "manual");
+      try {
+          root.showPopover();
+      }
+      catch {
+          root.removeAttribute("popover");
+      }
   }
   var recentTopics_default = definePlugin({
-    name: "RecentTopics",
-    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings4,
-    managedStyle: "recentTopics",
-    start() {
-      detachHost();
-      open2 = false;
-      held = false;
-      ctrlHeld = false;
-      try {
-        hydrate();
-        const current = currentVisit();
-        if (current != null)
-          bump(current);
-        scheduleCapture();
-      } catch (e) {
-        logger17.error("Hydrate failed:", e);
-      }
-      if (!keys) {
-        keys = new AbortController;
-        const { signal } = keys;
-        window.addEventListener("keydown", onKeyDown, { capture: true, signal });
-        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
-        window.addEventListener("blur", onWindowBlur, { signal });
-        document.addEventListener("visibilitychange", onVisibility, { signal });
-        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
-      }
-    },
-    stop() {
-      keys?.abort();
-      keys = null;
-      open2 = false;
-      held = false;
-      ctrlHeld = false;
-      thumbs.clear();
-      detachHost();
-    },
-    onSettingsChange() {
-      try {
-        writeVisits(capVisits(readVisits()));
-      } catch (e) {
-        logger17.error("Settings update failed:", e);
-      }
-    },
-    zustand: {
-      RoutingStore: {
-        selector: (s) => routeConvId(s.route),
-        handler(id) {
-          if (open2 || id == null)
-            return;
-          bump(id);
-          scheduleCapture();
-        }
+      name: "RecentTopics",
+      description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
+      authors: [Devs.p],
+      tags: ["chat", "ui"],
+      enabledByDefault: true,
+      settings: settings4,
+      managedStyle: "recentTopics",
+      start() {
+          detachHost();
+          open2 = false;
+          held = false;
+          ctrlHeld = false;
+          try {
+              hydrate();
+              const current = currentVisit();
+              if (current != null)
+                  bump(current);
+              scheduleCapture();
+          }
+          catch (e) {
+              logger17.error("Hydrate failed:", e);
+          }
+          if (!keys) {
+              keys = new AbortController();
+              const { signal } = keys;
+              window.addEventListener("keydown", onKeyDown, { capture: true, signal });
+              window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+              window.addEventListener("blur", onWindowBlur, { signal });
+              document.addEventListener("visibilitychange", onVisibility, { signal });
+              document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+          }
       },
-      ChatPageStore: {
-        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
-        handler() {
-          if (open2)
-            return;
-          const id = currentVisit();
-          if (id == null)
-            return;
-          bump(id);
-          scheduleCapture();
-        }
-      }
-    }
+      stop() {
+          keys?.abort();
+          keys = null;
+          open2 = false;
+          held = false;
+          ctrlHeld = false;
+          thumbs.clear();
+          detachHost();
+      },
+      onSettingsChange() {
+          try {
+              writeVisits(capVisits(readVisits()));
+          }
+          catch (e) {
+              logger17.error("Settings update failed:", e);
+          }
+      },
+      zustand: {
+          RoutingStore: {
+              selector: (s) => routeConvId(s.route),
+              handler(id) {
+                  if (open2 || id == null)
+                      return;
+                  bump(id);
+                  scheduleCapture();
+              },
+          },
+          ChatPageStore: {
+              selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
+              handler() {
+                  if (open2)
+                      return;
+                  const id = currentVisit();
+                  if (id == null)
+                      return;
+                  bump(id);
+                  scheduleCapture();
+              },
+          },
+      },
   });
-
   // void-css:/tmp/Void/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 

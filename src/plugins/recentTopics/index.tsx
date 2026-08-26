@@ -44,7 +44,19 @@ const settings = definePluginSettings({
     pages: Record<string, string>;
 }>();
 
-const thumbs = new Map<string, HTMLElement>();
+interface PageLine {
+    role: "user" | "assistant";
+    text: string;
+}
+
+interface PageSnap {
+    title: string;
+    theme: "dark" | "light";
+    lines: PageLine[];
+    nav: string[];
+}
+
+const thumbs = new Map<string, PageSnap>();
 const wsNames: Record<string, string> = {};
 
 interface Topic {
@@ -410,8 +422,105 @@ function messageList(pane: HTMLElement): HTMLElement {
     return node;
 }
 
-function trimClone(rootEl: HTMLElement) {
-    rootEl.querySelectorAll("script, iframe, video, textarea, input, canvas, .void-rt-root, #void-rt-host").forEach(n => n.remove());
+function extractLines(pane: HTMLElement): PageLine[] {
+    const source = messageList(pane);
+    const kids = [...source.children].filter((c): c is HTMLElement => c instanceof HTMLElement);
+    const out: PageLine[] = [];
+    const seen = new Set<string>();
+    for (const kid of kids) {
+        const raw = (kid.innerText ?? kid.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+        if (raw.length < 4) continue;
+        if (/^(more|copy|share|retry|edit|\d{1,2}:\d{2}\s*(am|pm))$/i.test(raw)) continue;
+        const text = raw.length > 220 ? `${raw.slice(0, 217)}…` : raw;
+        if (seen.has(text)) continue;
+        seen.add(text);
+        const cls = `${kid.className} ${kid.getAttribute("class") ?? ""}`;
+        const isUser = /justify-end|items-end|self-end/.test(cls)
+            || !!kid.querySelector("[class*='justify-end'], [class*='self-end']");
+        out.push({ role: isUser ? "user" : "assistant", text });
+    }
+    return out.slice(-4);
+}
+
+function sidebarTitles(activeId: string): string[] {
+    const fromDom: string[] = [];
+    try {
+        const sidebar = document.querySelector("[data-sidebar=content], [data-sidebar=sidebar]");
+        if (sidebar) {
+            for (const a of sidebar.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+                const href = a.getAttribute("href") ?? "";
+                if (!/\/c\/|chat=/.test(href)) continue;
+                const t = labelText(a);
+                if (!t || SKIP_LABEL.test(t) || t.length > 64) continue;
+                if (!fromDom.includes(t)) fromDom.push(t);
+                if (fromDom.length >= 6) break;
+            }
+        }
+    } catch {}
+    if (fromDom.length) return fromDom;
+    const names = capVisits(readVisits()).map(id => titleOf(id)).filter(Boolean);
+    const active = titleOf(activeId);
+    return unique([active, ...names]).slice(0, 6);
+}
+
+function parseSnap(raw: string | undefined): PageSnap | null {
+    if (!raw) return null;
+    try {
+        const parsed = JSON.parse(raw) as PageSnap;
+        if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length) return null;
+        return {
+            title: typeof parsed.title === "string" ? parsed.title : "",
+            theme: parsed.theme === "light" ? "light" : "dark",
+            lines: parsed.lines.filter((line): line is PageLine =>
+                !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"),
+            nav: Array.isArray(parsed.nav)
+                ? parsed.nav.filter((item): item is string => typeof item === "string" && !!item.trim()).slice(0, 6)
+                : [],
+        };
+    } catch {
+        return null;
+    }
+}
+
+function snapOf(id: string): PageSnap | null {
+    return thumbs.get(id) ?? parseSnap(settings.plain.pages?.[id]);
+}
+
+function rememberPage(id: string, snap: PageSnap) {
+    const json = JSON.stringify(snap);
+    const prev = settings.plain.pages ?? {};
+    if (prev[id] === json) return;
+    settings.store.pages = { ...prev, [id]: json };
+}
+
+function buildPageShot(snap: PageSnap): HTMLElement {
+    const page = node("span", cl("page"));
+    page.dataset.theme = snap.theme;
+
+    const side = node("span", cl("page-side"));
+    const brand = node("span", cl("page-brand"));
+    const mark = node("span", cl("page-mark"));
+    mark.append(faviconImg(""));
+    brand.append(mark, node("span", cl("page-word")));
+    const nav = node("span", cl("page-nav"));
+    const labels = snap.nav.length ? snap.nav : ["", "", "", "", "", ""];
+    labels.slice(0, 6).forEach((label, i) => {
+        const item = node("span", cl("page-nav-item"), label);
+        if (i === 0 || label === snap.title) item.dataset.on = "true";
+        nav.append(item);
+    });
+    side.append(brand, node("span", cl("page-new")), nav);
+
+    const main = node("span", cl("page-main"));
+    const bar = node("span", cl("page-bar"));
+    bar.append(node("span", cl("page-bar-title"), snap.title));
+    const body = node("span", cl("page-body"));
+    for (const line of snap.lines) {
+        body.append(node("span", cl("page-line", line.role === "user" && "page-line-user"), line.text));
+    }
+    main.append(bar, body, node("span", cl("page-composer")));
+    page.append(side, main);
+    return page;
 }
 
 let capturing = false;
@@ -424,12 +533,16 @@ function captureCurrent() {
     try {
         const pane = chatPane();
         if (!pane) return;
-        const source = messageList(pane);
-        const shell = source.cloneNode(false) as HTMLElement;
-        const keep = [...source.children].slice(-6);
-        for (const kid of keep) shell.appendChild(kid.cloneNode(true));
-        trimClone(shell);
-        thumbs.set(id, shell);
+        const lines = extractLines(pane);
+        if (!lines.length) return;
+        const snap: PageSnap = {
+            title: titleOf(id),
+            theme: detectTheme(),
+            lines,
+            nav: sidebarTitles(id),
+        };
+        thumbs.set(id, snap);
+        rememberPage(id, snap);
     } catch (e) {
         logger.debug("snapshot failed:", e);
     } finally {
@@ -707,20 +820,20 @@ function node(tag: string, className?: string, text?: string) {
 }
 
 function fillShot(box: HTMLElement, id: string) {
-    const thumb = thumbs.get(id);
-    if (!thumb) {
-        const fallback = node("span", cl("fallback"));
-        fallback.append(node("span", cl("bubble")), node("span", cl("bubble")), node("span", cl("bubble")));
-        box.append(fallback);
-        return;
-    }
-    const mini = node("span", cl("mini"));
-    mini.append(thumb.cloneNode(true));
-    box.append(mini);
+    const fallback = node("span", cl("fallback"));
+    fallback.append(faviconImg(cl("favicon")));
+    box.append(fallback);
+    const snap = snapOf(id);
+    if (!snap) return;
+    const shot = node("span", cl("shot"));
+    shot.append(buildPageShot(snap));
+    box.append(shot);
 }
 
-const SPARKLE_SVG = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c.2 2.28 1.38 4.18 3.55 5.55C9.38 8.07 8.2 9.97 8 12.25 7.8 9.97 6.62 8.07 4.45 6.7 6.62 5.33 7.8 3.43 8 1.15z"/></svg>';
-const PLUS_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M8 3.2v9.6M3.2 8h9.6"/></svg>';
+const GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+const GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+const GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+const GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH}" fill="#050505"/><path d="${GROK_MARK_P1}" fill="#FCFCFC"/><path d="${GROK_MARK_P2}" fill="#FCFCFC"/></svg>`)}`;
 const ACCENTS = [
     "rgb(37, 99, 235)",
     "rgb(14, 165, 233)",
@@ -759,14 +872,46 @@ function detectTheme(): "dark" | "light" {
     return "dark";
 }
 
+function grokFaviconSrc(): string {
+    try {
+        if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
+            const link = document.querySelector<HTMLLinkElement>('link[rel*="icon"]:not(#void-chat-state-favicon)');
+            const href = link?.href;
+            if (href && !href.startsWith("data:")) return href;
+            return `${location.origin}/images/favicon.svg`;
+        }
+    } catch {}
+    return GROK_ICON_DATA;
+}
+
+function faviconImg(className: string): HTMLImageElement {
+    const img = document.createElement("img");
+    img.className = className;
+    img.alt = "";
+    img.draggable = false;
+    img.src = grokFaviconSrc();
+    img.addEventListener("error", () => {
+        if (img.src === GROK_ICON_DATA) {
+            img.dataset.broken = "true";
+            return;
+        }
+        img.src = GROK_ICON_DATA;
+    });
+    return img;
+}
+
+function siteHost(): string {
+    try {
+        return location.hostname.replace(/^www\./i, "") || "grok.com";
+    } catch {
+        return "grok.com";
+    }
+}
+
 function applyTheme(panel: HTMLElement) {
     const theme = detectTheme();
     panel.setAttribute("data-theme", theme);
     panel.style.colorScheme = theme;
-}
-
-function setTitleIcon(el: HTMLElement, id: string) {
-    el.innerHTML = id ? SPARKLE_SVG : PLUS_SVG;
 }
 
 function buildHost(): HTMLDivElement {
@@ -822,12 +967,9 @@ function renderList(items: Topic[]) {
 
         const meta = node("span", cl("meta"));
         const row = node("span", cl("name-row"));
-        const icon = node("span", cl("title-favicon"));
-        setTitleIcon(icon, topic.id);
-        row.append(icon, node("span", cl("name"), topic.title));
+        row.append(faviconImg(cl("title-favicon")), node("span", cl("name"), topic.title));
         meta.append(row);
-        const hostLabel = topic.project || (topic.id ? "Grok" : "Home");
-        meta.append(node("span", cl("host"), hostLabel));
+        meta.append(node("span", cl("host"), siteHost()));
 
         btn.append(shot, meta);
         list!.append(btn);
