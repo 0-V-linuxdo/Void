@@ -13,6 +13,7 @@ import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/com
 import { classNameFactory } from "@utils/css";
 import { humanizeKey } from "@utils/text";
 import { OptionType, type PluginSettingBigIntDef, type PluginSettingBooleanDef, type PluginSettingCommon, type PluginSettingComponentDef, type PluginSettingDef, type PluginSettingNumberDef, type PluginSettingSelectDef, type PluginSettingSliderDef, type PluginSettingStringDef, type PluginSettingValue } from "@utils/types";
+import type { CSSProperties } from "react";
 
 import { type InputChangeEvent } from "./utils";
 
@@ -106,10 +107,11 @@ const SliderField: Field<PluginSettingSliderDef & PluginSettingCommon> = ({ id, 
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const { min, max } = setting;
     const n = typeof value === "number" ? value : min;
+    const pct = max === min ? 100 : ((n - min) / (max - min)) * 100;
 
     return (
         <LabeledField id={id} setting={setting}>
-            <Flex gap="0.5rem" className={cl("slider-row")}>
+            <Flex gap="0.75rem" className={cl("slider-row")} style={{ "--void-slider-pct": `${pct}%` } as CSSProperties}>
                 <Input
                     type="range"
                     min={min}

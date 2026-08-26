@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.12] v1.0.19
+// @version      [20260826.13] v1.0.20
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.12] v1.0.19 — A modification for grok.com
+ * Void++ [20260826.13] v1.0.20 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4765,19 +4765,72 @@ ${sourceUrl}`;
   // void-css:/tmp/Void/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
+    width: 100%;
 }
 
-.void-setting-slider {
-    width: 12rem;
+.void-setting-slider,
+.void-setting-slider input[type="range"] {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
     height: 1.25rem;
+    margin: 0;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    min-height: 0 !important;
+    background: transparent !important;
     accent-color: var(--fg, #fff);
     cursor: pointer;
+    appearance: none;
+}
+
+.void-setting-slider::-webkit-slider-runnable-track,
+.void-setting-slider input[type="range"]::-webkit-slider-runnable-track {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--fg, #fff) 0 var(--void-slider-pct), color-mix(in srgb, var(--fg, #fff) 22%, transparent) var(--void-slider-pct) 100%);
+}
+
+.void-setting-slider::-webkit-slider-thumb,
+.void-setting-slider input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    margin-top: -0.3125rem;
+    border: none;
+    border-radius: 50%;
+    background: var(--fg, #fff);
+}
+
+.void-setting-slider::-moz-range-track,
+.void-setting-slider input[type="range"]::-moz-range-track {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--fg, #fff) 22%, transparent);
+}
+
+.void-setting-slider::-moz-range-progress,
+.void-setting-slider input[type="range"]::-moz-range-progress {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--fg, #fff);
+}
+
+.void-setting-slider::-moz-range-thumb,
+.void-setting-slider input[type="range"]::-moz-range-thumb {
+    width: 1rem;
+    height: 1rem;
+    border: none;
+    border-radius: 50%;
+    background: var(--fg, #fff);
 }
 
 .void-setting-slider-value {
     font-variant-numeric: tabular-nums;
-    width: 1.5rem;
+    min-width: 3ch;
     text-align: right;
+    flex-shrink: 0;
 }
 
 .void-setting-number-input {
@@ -4857,12 +4910,14 @@ ${sourceUrl}`;
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const { min, max } = setting;
     const n = typeof value === "number" ? value : min;
+    const pct = max === min ? 100 : (n - min) / (max - min) * 100;
     return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
     }, /* @__PURE__ */ React.createElement(Flex, {
-      gap: "0.5rem",
-      className: cl9("slider-row")
+      gap: "0.75rem",
+      className: cl9("slider-row"),
+      style: { "--void-slider-pct": `${pct}%` }
     }, /* @__PURE__ */ React.createElement(Input, {
       type: "range",
       min,
@@ -5969,9 +6024,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.12] v1.0.19"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"6ab483e"}`
-    }, `(${"6ab483e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260826.13] v1.0.20"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"13bfb52"}`
+    }, `(${"13bfb52"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6402,13 +6457,7 @@ ${sourceUrl}`;
   });
 
   // void-css:/tmp/Void/src/plugins/recentTopics/styles.css
-  registerStyle("recentTopics", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-rt-root,
+  registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
     position: fixed !important;
@@ -6907,11 +6956,6 @@ html.void-rt-open [data-sidebar="gap"] {
 `);
 
   // src/plugins/recentTopics/index.tsx
-  /*
-   * Void, a modification for grok.com
-   * Copyright (c) 2026 Void contributors
-   * SPDX-License-Identifier: GPL-3.0-or-later
-   */
   var logger17 = new Logger("RecentTopics");
   var cl17 = classNameFactory("void-rt-");
   var HOME_ID = "";
@@ -6919,23 +6963,23 @@ html.void-rt-open [data-sidebar="gap"] {
   var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
   var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
   var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation)$/i;
-  const SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
-  const TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
-  const STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
-  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => ({ label: String(n), value: n, default: n === 5 }));
+  var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
+  var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
+  var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
+  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
   var settings4 = definePluginSettings({
-      maxRecent: {
-          type: 4 /* SELECT */,
-          description: "How many recently opened conversations to show.",
-          options: COUNT_OPTIONS,
-      },
-      includeHome: {
-          type: 3 /* BOOLEAN */,
-          description: "Include the new-chat home page in the switcher.",
-          default: true,
-      },
+    maxRecent: {
+      type: 4 /* SELECT */,
+      description: "How many recently opened conversations to show.",
+      options: COUNT_OPTIONS
+    },
+    includeHome: {
+      type: 3 /* BOOLEAN */,
+      description: "Include the new-chat home page in the switcher.",
+      default: true
+    }
   }).withPrivateSettings();
-  var thumbs = new Map();
+  var thumbs = new Map;
   var wsNames = {};
   var open2 = false;
   var selected = 0;
@@ -6945,1231 +6989,1169 @@ html.void-rt-open [data-sidebar="gap"] {
   var host = null;
   var paintedKey = "";
   function unique(ids) {
-      const seen = new Set();
-      const out = [];
-      for (const id of ids) {
-          if (seen.has(id))
-              continue;
-          seen.add(id);
-          out.push(id);
-      }
-      return out;
+    const seen = new Set;
+    const out = [];
+    for (const id of ids) {
+      if (seen.has(id))
+        continue;
+      seen.add(id);
+      out.push(id);
+    }
+    return out;
   }
   function readVisits() {
-      return settings4.plain.visits ?? [];
+    return settings4.plain.visits ?? [];
   }
   function maxCount() {
-      const n = Number(settings4.store.maxRecent);
-      return Number.isFinite(n) && n > 0 ? n : 5;
+    const n = Number(settings4.store.maxRecent);
+    return Number.isFinite(n) && n > 0 ? n : 5;
   }
   function capVisits(ids) {
-      const allowHome = settings4.store.includeHome;
-      return unique(ids).filter(id => id || allowHome).slice(0, maxCount());
+    const allowHome = settings4.store.includeHome;
+    return unique(ids).filter((id) => id || allowHome).slice(0, maxCount());
   }
   function pruneRecord(source, ids) {
-      const keep = {};
-      if (!source)
-          return keep;
-      for (const id of ids) {
-          if (source[id])
-              keep[id] = source[id];
-      }
+    const keep = {};
+    if (!source)
       return keep;
+    for (const id of ids) {
+      if (source[id])
+        keep[id] = source[id];
+    }
+    return keep;
   }
   function sameList(a, b) {
-      return a.length === b.length && a.every((id, i) => id === b[i]);
+    return a.length === b.length && a.every((id, i) => id === b[i]);
   }
   function sameRecord(a, b) {
-      const src = a ?? {};
-      const keys = Object.keys(b);
-      if (Object.keys(src).length !== keys.length)
-          return false;
-      return keys.every(k => src[k] === b[k]);
+    const src = a ?? {};
+    const keys2 = Object.keys(b);
+    if (Object.keys(src).length !== keys2.length)
+      return false;
+    return keys2.every((k) => src[k] === b[k]);
   }
   function assignRecord(key, next) {
-      if (sameRecord(settings4.plain[key], next))
-          return false;
-      settings4.store[key] = next;
-      return true;
+    if (sameRecord(settings4.plain[key], next))
+      return false;
+    settings4.store[key] = next;
+    return true;
   }
   var writing = false;
   function writeVisits(next) {
-      if (writing)
-          return;
-      writing = true;
-      try {
-          const visits = capVisits(next);
-          const rawWs = pruneRecord(settings4.plain.workspaceByConv, visits);
-          const workspaceByConv = {};
-          for (const [id, value] of Object.entries(rawWs)) {
-              const ws = asWorkspaceId(value);
-              if (ws)
-                  workspaceByConv[id] = ws;
-          }
-          const pages = pruneRecord(settings4.plain.pages, visits);
-          const usedWs = new Set(Object.values(workspaceByConv));
-          const keepProjects = {};
-          for (const [id, name] of Object.entries(settings4.plain.projectNames ?? {})) {
-              if (usedWs.has(id))
-                  keepProjects[id] = name;
-          }
-          let changed = false;
-          if (!sameList(readVisits(), visits)) {
-              settings4.store.visits = visits;
-              changed = true;
-          }
-          if (assignRecord("titles", pruneRecord(settings4.plain.titles, visits)))
-              changed = true;
-          if (assignRecord("workspaceByConv", workspaceByConv))
-              changed = true;
-          if (assignRecord("pages", pages))
-              changed = true;
-          if (assignRecord("projectNames", keepProjects))
-              changed = true;
-          if (changed && open2)
-              paint();
+    if (writing)
+      return;
+    writing = true;
+    try {
+      const visits = capVisits(next);
+      const rawWs = pruneRecord(settings4.plain.workspaceByConv, visits);
+      const workspaceByConv = {};
+      for (const [id, value] of Object.entries(rawWs)) {
+        const ws = asWorkspaceId(value);
+        if (ws)
+          workspaceByConv[id] = ws;
       }
-      finally {
-          writing = false;
+      const pages = pruneRecord(settings4.plain.pages, visits);
+      const usedWs = new Set(Object.values(workspaceByConv));
+      const keepProjects = {};
+      for (const [id, name] of Object.entries(settings4.plain.projectNames ?? {})) {
+        if (usedWs.has(id))
+          keepProjects[id] = name;
       }
+      let changed = false;
+      if (!sameList(readVisits(), visits)) {
+        settings4.store.visits = visits;
+        changed = true;
+      }
+      if (assignRecord("titles", pruneRecord(settings4.plain.titles, visits)))
+        changed = true;
+      if (assignRecord("workspaceByConv", workspaceByConv))
+        changed = true;
+      if (assignRecord("pages", pages))
+        changed = true;
+      if (assignRecord("projectNames", keepProjects))
+        changed = true;
+      if (changed && open2)
+        paint();
+    } finally {
+      writing = false;
+    }
   }
   function rememberTitle(id, title) {
-      const t = title?.trim();
-      if (!id || !t)
-          return;
-      const prev = settings4.plain.titles ?? {};
-      if (prev[id] === t)
-          return;
-      settings4.store.titles = { ...prev, [id]: t };
+    const t = title?.trim();
+    if (!id || !t)
+      return;
+    const prev = settings4.plain.titles ?? {};
+    if (prev[id] === t)
+      return;
+    settings4.store.titles = { ...prev, [id]: t };
   }
   function routeConvId(route) {
-      if (!route)
-          return null;
-      if (route.conversationId)
-          return route.conversationId;
-      if (typeof route.chat === "string" && route.chat)
-          return route.chat;
-      if (route.page === "main")
-          return HOME_ID;
+    if (!route)
       return null;
+    if (route.conversationId)
+      return route.conversationId;
+    if (typeof route.chat === "string" && route.chat)
+      return route.chat;
+    if (route.page === "main")
+      return HOME_ID;
+    return null;
   }
   function projectIdFromUrl() {
-      const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)
-          ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
-      return m?.[1] ?? "";
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
+    return m?.[1] ?? "";
   }
   function chatIdFromUrl() {
-      try {
-          return new URLSearchParams(location.search).get("chat") ?? "";
-      }
-      catch {
-          return "";
-      }
+    try {
+      return new URLSearchParams(location.search).get("chat") ?? "";
+    } catch {
+      return "";
+    }
   }
   var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
   function asWorkspaceId(value) {
-      if (typeof value === "string") {
-          const s = value.trim();
-          return WS_ID.test(s) ? s : "";
-      }
-      if (Array.isArray(value)) {
-          for (const item of value) {
-              const id = asWorkspaceId(item);
-              if (id)
-                  return id;
-          }
-          return "";
-      }
-      if (value && typeof value === "object") {
-          const rec = value;
-          return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    if (typeof value === "string") {
+      const s = value.trim();
+      return WS_ID.test(s) ? s : "";
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const id = asWorkspaceId(item);
+        if (id)
+          return id;
       }
       return "";
+    }
+    if (value && typeof value === "object") {
+      const rec = value;
+      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    }
+    return "";
   }
   function hrefFor(id, workspaceId) {
-      const ws = asWorkspaceId(workspaceId);
-      if (!id)
-          return ws ? `/project/${ws}` : "/";
-      if (ws)
-          return `/project/${ws}?chat=${encodeURIComponent(id)}`;
-      return `/c/${encodeURIComponent(id)}`;
+    const ws = asWorkspaceId(workspaceId);
+    if (!id)
+      return ws ? `/project/${ws}` : "/";
+    if (ws)
+      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
+    return `/c/${encodeURIComponent(id)}`;
   }
   function currentVisit() {
-      try {
-          const id = ChatPageStore.useChatPageStore.getState().conversationId;
-          if (id)
-              return id;
-      }
-      catch (e) {
-          logger17.debug("ChatPageStore unavailable:", e);
-      }
-      try {
-          const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
-          if (id != null)
-              return id;
-      }
-      catch (e) {
-          logger17.debug("RoutingStore unavailable:", e);
-      }
-      return chatIdFromUrl() || null;
+    try {
+      const id = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (id)
+        return id;
+    } catch (e) {
+      logger17.debug("ChatPageStore unavailable:", e);
+    }
+    try {
+      const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
+      if (id != null)
+        return id;
+    } catch (e) {
+      logger17.debug("RoutingStore unavailable:", e);
+    }
+    return chatIdFromUrl() || null;
   }
   function idsFromHistory() {
-      try {
-          const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-          const ids = [];
-          const add = (r) => {
-              const id = routeConvId(r);
-              if (id != null)
-                  ids.push(id);
-          };
-          add(route);
-          for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--)
-              add(historyStack[i]);
-          return unique(ids);
-      }
-      catch (e) {
-          logger17.debug("historyStack unavailable:", e);
-          return [];
-      }
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      const ids = [];
+      const add = (r) => {
+        const id = routeConvId(r);
+        if (id != null)
+          ids.push(id);
+      };
+      add(route);
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
+        add(historyStack[i]);
+      return unique(ids);
+    } catch (e) {
+      logger17.debug("historyStack unavailable:", e);
+      return [];
+    }
   }
   function pageTitle() {
-      const raw = document.title.replace(TITLE_TAIL, "").trim();
-      if (!raw || /^grok$/i.test(raw))
-          return "";
-      return raw;
+    const raw = document.title.replace(TITLE_TAIL, "").trim();
+    if (!raw || /^grok$/i.test(raw))
+      return "";
+    return raw;
   }
   function lookup(id) {
-      try {
-          const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-          return byId[id] ?? byIdWithWorkspaces[id] ?? list.find(c => c.conversationId === id);
-      }
-      catch (e) {
-          logger17.debug("Conversation lookup failed:", e);
-          return undefined;
-      }
+    try {
+      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
+    } catch (e) {
+      logger17.debug("Conversation lookup failed:", e);
+      return;
+    }
   }
   function titleOf(id) {
-      if (!id)
-          return "New chat";
-      const conv = lookup(id);
-      if (conv?.title?.trim())
-          return conv.title.trim();
-      const cached = settings4.plain.titles?.[id];
-      if (cached)
-          return cached;
-      if (id === currentVisit())
-          return pageTitle() || "Untitled";
-      return "Untitled";
+    if (!id)
+      return "New chat";
+    const conv = lookup(id);
+    if (conv?.title?.trim())
+      return conv.title.trim();
+    const cached = settings4.plain.titles?.[id];
+    if (cached)
+      return cached;
+    if (id === currentVisit())
+      return pageTitle() || "Untitled";
+    return "Untitled";
   }
   function liveWorkspaceId() {
-      try {
-          const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
-          if (pid)
-              return pid;
-      }
-      catch { }
-      try {
-          const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
-          const id = asWorkspaceId(workspaceId);
-          if (id)
-              return id;
-      }
-      catch { }
-      return asWorkspaceId(projectIdFromUrl());
+    try {
+      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
+      if (pid)
+        return pid;
+    } catch {}
+    try {
+      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
+      const id = asWorkspaceId(workspaceId);
+      if (id)
+        return id;
+    } catch {}
+    return asWorkspaceId(projectIdFromUrl());
   }
   function workspaceFromHistory(id) {
-      try {
-          const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-          if (routeConvId(route) === id) {
-              const ws = asWorkspaceId(route.workspaceId);
-              if (ws)
-                  return ws;
-          }
-          for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--) {
-              const r = historyStack[i];
-              if (routeConvId(r) === id) {
-                  const ws = asWorkspaceId(r?.workspaceId);
-                  if (ws)
-                      return ws;
-              }
-          }
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      if (routeConvId(route) === id) {
+        const ws = asWorkspaceId(route.workspaceId);
+        if (ws)
+          return ws;
       }
-      catch { }
-      return "";
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
+        const r = historyStack[i];
+        if (routeConvId(r) === id) {
+          const ws = asWorkspaceId(r?.workspaceId);
+          if (ws)
+            return ws;
+        }
+      }
+    } catch {}
+    return "";
   }
   function convWorkspaceId(id) {
-      try {
-          const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-          const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
-          const fromResolver = asWorkspaceId(resolved);
-          if (fromResolver)
-              return fromResolver;
-          const conv = byId[id] ?? byIdWithWorkspaces[id];
-          return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-      }
-      catch (e) {
-          logger17.debug("convWorkspaceId failed:", e);
-          return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
-      }
+    try {
+      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
+      const fromResolver = asWorkspaceId(resolved);
+      if (fromResolver)
+        return fromResolver;
+      const conv = byId[id] ?? byIdWithWorkspaces[id];
+      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+    } catch (e) {
+      logger17.debug("convWorkspaceId failed:", e);
+      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
+    }
   }
   function workspaceFromDom(id) {
-      if (!id)
-          return "";
-      try {
-          for (const a of document.querySelectorAll("a[href]")) {
-              const href = a.getAttribute("href");
-              if (!href || !href.includes(id))
-                  continue;
-              const u = new URL(href, location.origin);
-              if (u.searchParams.get("chat") !== id && !u.pathname.includes(id))
-                  continue;
-              const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
-              if (ws)
-                  return ws;
-          }
-      }
-      catch { }
+    if (!id)
       return "";
+    try {
+      for (const a of document.querySelectorAll("a[href]")) {
+        const href = a.getAttribute("href");
+        if (!href || !href.includes(id))
+          continue;
+        const u = new URL(href, location.origin);
+        if (u.searchParams.get("chat") !== id && !u.pathname.includes(id))
+          continue;
+        const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+        if (ws)
+          return ws;
+      }
+    } catch {}
+    return "";
   }
   function workspaceOf(id) {
-      if (!id)
-          return "";
-      if (id === currentVisit()) {
-          const live = liveWorkspaceId();
-          if (live)
-              return live;
-      }
-      return convWorkspaceId(id)
-          || asWorkspaceId(settings4.plain.workspaceByConv?.[id])
-          || workspaceFromHistory(id)
-          || workspaceFromDom(id);
+    if (!id)
+      return "";
+    if (id === currentVisit()) {
+      const live = liveWorkspaceId();
+      if (live)
+        return live;
+    }
+    return convWorkspaceId(id) || asWorkspaceId(settings4.plain.workspaceByConv?.[id]) || workspaceFromHistory(id) || workspaceFromDom(id);
   }
   function labelText(el) {
-      return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+    return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
   }
   function readOpenProjectName() {
-      const sidebar = document.querySelector("[data-sidebar=sidebar]");
-      if (!sidebar)
-          return "";
-      const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
-      let afterProjects = false;
-      for (const el of nodes) {
-          const t = labelText(el);
-          if (!t)
-              continue;
-          if (/^projects$/i.test(t)) {
-              afterProjects = true;
-              continue;
-          }
-          if (!afterProjects)
-              continue;
-          if (SKIP_LABEL.test(t))
-              break;
-          if (t.length < 2 || t.length > 64)
-              continue;
-          if (el.querySelector("svg"))
-              return t;
-      }
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar)
       return "";
+    const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
+    let afterProjects = false;
+    for (const el of nodes) {
+      const t = labelText(el);
+      if (!t)
+        continue;
+      if (/^projects$/i.test(t)) {
+        afterProjects = true;
+        continue;
+      }
+      if (!afterProjects)
+        continue;
+      if (SKIP_LABEL.test(t))
+        break;
+      if (t.length < 2 || t.length > 64)
+        continue;
+      if (el.querySelector("svg"))
+        return t;
+    }
+    return "";
   }
   function projectNameOf(id) {
-      if (!id)
-          return "";
-      const ws = workspaceOf(id);
-      if (!ws)
-          return "";
-      return wsNames[ws] || settings4.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
+    if (!id)
+      return "";
+    const ws = workspaceOf(id);
+    if (!ws)
+      return "";
+    return wsNames[ws] || settings4.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
   }
   function rememberProject(id) {
-      if (!id)
-          return;
-      const ws = workspaceOf(id);
-      if (!ws)
-          return;
-      const prevWs = settings4.plain.workspaceByConv ?? {};
-      if (prevWs[id] !== ws)
-          settings4.store.workspaceByConv = { ...prevWs, [id]: ws };
-      const name = wsNames[ws] || readOpenProjectName() || settings4.plain.projectNames?.[ws] || "";
-      if (!name)
-          return;
-      wsNames[ws] = name;
-      const prevNames = settings4.plain.projectNames ?? {};
-      if (prevNames[ws] !== name)
-          settings4.store.projectNames = { ...prevNames, [ws]: name };
+    if (!id)
+      return;
+    const ws = workspaceOf(id);
+    if (!ws)
+      return;
+    const prevWs = settings4.plain.workspaceByConv ?? {};
+    if (prevWs[id] !== ws)
+      settings4.store.workspaceByConv = { ...prevWs, [id]: ws };
+    const name = wsNames[ws] || readOpenProjectName() || settings4.plain.projectNames?.[ws] || "";
+    if (!name)
+      return;
+    wsNames[ws] = name;
+    const prevNames = settings4.plain.projectNames ?? {};
+    if (prevNames[ws] !== name)
+      settings4.store.projectNames = { ...prevNames, [ws]: name };
   }
   function chatPane() {
-      const main = document.querySelector("main");
-      if (!main)
-          return null;
-      let best = null;
-      let bestScore = 0;
-      for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
-          if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
-              continue;
-          const r = n.getBoundingClientRect();
-          if (r.width < 240 || r.height < 120)
-              continue;
-          const score = r.width * r.height;
-          if (score > bestScore) {
-              best = n;
-              bestScore = score;
-          }
+    const main = document.querySelector("main");
+    if (!main)
+      return null;
+    let best = null;
+    let bestScore = 0;
+    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
+      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
+        continue;
+      const r = n.getBoundingClientRect();
+      if (r.width < 240 || r.height < 120)
+        continue;
+      const score = r.width * r.height;
+      if (score > bestScore) {
+        best = n;
+        bestScore = score;
       }
-      return best;
+    }
+    return best;
   }
   function messageList(pane) {
-      let node = pane;
-      for (let i = 0; i < 8; i++) {
-          const kids = [...node.children].filter((c) => c instanceof HTMLElement);
-          if (kids.length === 1 && kids[0].children.length > 1) {
-              node = kids[0];
-              continue;
-          }
-          break;
+    let node = pane;
+    for (let i = 0;i < 8; i++) {
+      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
+      if (kids.length === 1 && kids[0].children.length > 1) {
+        node = kids[0];
+        continue;
       }
-      return node;
+      break;
+    }
+    return node;
   }
   function chromeOff(el) {
-      const clone = el.cloneNode(true);
-      clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach(n => n.remove());
-      return clone;
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach((n) => n.remove());
+    return clone;
   }
   function userBubble(root) {
-      const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']")];
-      if (/justify-end|self-end|ml-auto/.test(root.className))
-          cands.unshift(root);
-      if (!cands.length)
-          return null;
-      const inner = cands.filter(el => !cands.some(other => other !== el && el.contains(other)));
-      inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
-      return inner[0] ?? null;
+    const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']")];
+    if (/justify-end|self-end|ml-auto/.test(root.className))
+      cands.unshift(root);
+    if (!cands.length)
+      return null;
+    const inner = cands.filter((el) => !cands.some((other) => other !== el && el.contains(other)));
+    inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
+    return inner[0] ?? null;
   }
   function extractTurn(kid) {
-      const bubble = userBubble(kid);
-      const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
-      const rest = chromeOff(kid);
-      if (bubble && bubble !== kid) {
-          rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach(n => n.remove());
-      }
-      let asstText = scrubText(rest.innerText ?? "");
-      if (userText && asstText.includes(userText))
-          asstText = scrubText(asstText.replace(userText, " "));
-      const lines = [];
-      if (userText)
-          lines.push({ role: "user", text: userText });
-      if (asstText && asstText !== userText)
-          lines.push({ role: "assistant", text: asstText });
-      return lines;
+    const bubble = userBubble(kid);
+    const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
+    const rest = chromeOff(kid);
+    if (bubble && bubble !== kid) {
+      rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach((n) => n.remove());
+    }
+    let asstText = scrubText(rest.innerText ?? "");
+    if (userText && asstText.includes(userText))
+      asstText = scrubText(asstText.replace(userText, " "));
+    const lines = [];
+    if (userText)
+      lines.push({ role: "user", text: userText });
+    if (asstText && asstText !== userText)
+      lines.push({ role: "assistant", text: asstText });
+    return lines;
   }
   function extractLines(pane) {
-      const source = messageList(pane);
-      const kids = [...source.children].filter((c) => c instanceof HTMLElement);
-      const out = [];
-      for (const kid of kids)
-          out.push(...extractTurn(kid));
-      return lastRound(out);
+    const source = messageList(pane);
+    const kids = [...source.children].filter((c) => c instanceof HTMLElement);
+    const out = [];
+    for (const kid of kids)
+      out.push(...extractTurn(kid));
+    return lastRound(out);
   }
   function scrubText(raw) {
-      let t = raw.replaceAll(/\s+/g, " ").trim();
-      t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
-      t = t.replaceAll(/\s+/g, " ").trim();
-      if (!t || SKIP_NOISE.test(t))
-          return "";
-      return t;
+    let t = raw.replaceAll(/\s+/g, " ").trim();
+    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
+    t = t.replaceAll(/\s+/g, " ").trim();
+    if (!t || SKIP_NOISE.test(t))
+      return "";
+    return t;
   }
   function plainText(md) {
-      const t = md
-          .replace(/```[\s\S]*?```/g, " ")
-          .replace(/`([^`]+)`/g, "$1")
-          .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
-          .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-          .replace(/^#{1,6}\s+/gm, "")
-          .replace(/[*_~]{1,3}/g, "")
-          .replace(/^>\s+/gm, "");
-      return scrubText(t);
+    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
+    return scrubText(t);
   }
   function clipLine(text, max) {
-      const t = scrubText(text);
-      if (t.length <= max)
-          return t;
-      return `${t.slice(0, Math.max(1, max - 1))}…`;
+    const t = scrubText(text);
+    if (t.length <= max)
+      return t;
+    return `${t.slice(0, Math.max(1, max - 1))}…`;
   }
   function lastRound(lines) {
-      const cleaned = lines
-          .map(line => ({ role: line.role, text: scrubText(line.text) }))
-          .filter((line) => !!line.text);
-      if (!cleaned.length)
-          return [];
-      let asst = -1;
-      let user = -1;
-      for (let i = cleaned.length - 1; i >= 0; i--) {
-          if (asst < 0 && cleaned[i].role === "assistant")
-              asst = i;
-          if (user < 0 && cleaned[i].role === "user")
-              user = i;
-          if (asst >= 0 && user >= 0)
-              break;
-      }
-      const pick = user >= 0 && asst >= 0 && user < asst
-          ? [cleaned[user], cleaned[asst]]
-          : user >= 0 && (asst < 0 || user > asst)
-              ? [cleaned[user]]
-              : asst >= 0
-                  ? [cleaned[asst]]
-                  : cleaned.slice(-1);
-      return pick.map(line => ({
-          role: line.role,
-          text: clipLine(line.text, line.role === "user" ? 72 : 140),
-      }));
+    const cleaned = lines.map((line) => ({ role: line.role, text: scrubText(line.text) })).filter((line) => !!line.text);
+    if (!cleaned.length)
+      return [];
+    let asst = -1;
+    let user = -1;
+    for (let i = cleaned.length - 1;i >= 0; i--) {
+      if (asst < 0 && cleaned[i].role === "assistant")
+        asst = i;
+      if (user < 0 && cleaned[i].role === "user")
+        user = i;
+      if (asst >= 0 && user >= 0)
+        break;
+    }
+    const pick = user >= 0 && asst >= 0 && user < asst ? [cleaned[user], cleaned[asst]] : user >= 0 && (asst < 0 || user > asst) ? [cleaned[user]] : asst >= 0 ? [cleaned[asst]] : cleaned.slice(-1);
+    return pick.map((line) => ({
+      role: line.role,
+      text: clipLine(line.text, line.role === "user" ? 72 : 140)
+    }));
   }
   function pickUserText(query, message) {
-      const q = plainText(query);
-      const m = plainText(message);
-      if (q && m) {
-          if (m.startsWith(q) && m.length > q.length)
-              return q;
-          return q.length <= m.length ? q : m;
-      }
-      return q || m;
+    const q = plainText(query);
+    const m = plainText(message);
+    if (q && m) {
+      if (m.startsWith(q) && m.length > q.length)
+        return q;
+      return q.length <= m.length ? q : m;
+    }
+    return q || m;
   }
   function linesFromStore(id) {
-      if (!id)
-          return [];
-      try {
-          const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-          const nodes = nodesByConversationId[id] ?? [];
-          let list = nodes.length
-              ? nodes.map(n => byId[n.responseId]).filter((r) => !!r)
-              : byConversationId[id] ?? [];
-          if (!list.length)
-              return [];
-          if (!nodes.length) {
-              list = [...list].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
-          }
-          const out = [];
-          for (const r of list) {
-              if (!r || r.isControl)
-                  continue;
-              const sender = String(r.sender ?? "").toLowerCase();
-              const human = sender === "human" || sender === "user";
-              if (human) {
-                  const text = pickUserText(r.query || "", r.message || "");
-                  if (text)
-                      out.push({ role: "user", text });
-                  continue;
-              }
-              const query = pickUserText(r.query || "", "");
-              let message = plainText(r.message || "");
-              if (query && message.startsWith(query) && message.length > query.length) {
-                  message = scrubText(message.slice(query.length));
-              }
-              if (query && out.at(-1)?.text !== query)
-                  out.push({ role: "user", text: query });
-              if (message && message !== query)
-                  out.push({ role: "assistant", text: message });
-          }
-          return lastRound(out);
+    if (!id)
+      return [];
+    try {
+      const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+      const nodes = nodesByConversationId[id] ?? [];
+      let list = nodes.length ? nodes.map((n) => byId[n.responseId]).filter((r) => !!r) : byConversationId[id] ?? [];
+      if (!list.length)
+        return [];
+      if (!nodes.length) {
+        list = [...list].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
       }
-      catch (e) {
-          logger17.debug("ResponseStore snapshot failed:", e);
-          return [];
+      const out = [];
+      for (const r of list) {
+        if (!r || r.isControl)
+          continue;
+        const sender = String(r.sender ?? "").toLowerCase();
+        const human = sender === "human" || sender === "user";
+        if (human) {
+          const text = pickUserText(r.query || "", r.message || "");
+          if (text)
+            out.push({ role: "user", text });
+          continue;
+        }
+        const query = pickUserText(r.query || "", "");
+        let message = plainText(r.message || "");
+        if (query && message.startsWith(query) && message.length > query.length) {
+          message = scrubText(message.slice(query.length));
+        }
+        if (query && out.at(-1)?.text !== query)
+          out.push({ role: "user", text: query });
+        if (message && message !== query)
+          out.push({ role: "assistant", text: message });
       }
+      return lastRound(out);
+    } catch (e) {
+      logger17.debug("ResponseStore snapshot failed:", e);
+      return [];
+    }
   }
-  function betterLines(store, dom) {
-      const pair = (lines) => lines.some(l => l.role === "user") && lines.some(l => l.role === "assistant");
-      if (pair(store))
-          return store;
-      if (pair(dom))
-          return dom;
-      return store.length ? store : dom;
+  function betterLines(store2, dom) {
+    const pair = (lines) => lines.some((l) => l.role === "user") && lines.some((l) => l.role === "assistant");
+    if (pair(store2))
+      return store2;
+    if (pair(dom))
+      return dom;
+    return store2.length ? store2 : dom;
   }
   function parseSnap(raw) {
-      if (!raw)
-          return null;
-      try {
-          const parsed = JSON.parse(raw);
-          if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
-              return null;
-          return {
-              title: typeof parsed.title === "string" ? parsed.title : "",
-              theme: parsed.theme === "light" ? "light" : "dark",
-              lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string")),
-          };
-      }
-      catch {
-          return null;
-      }
+    if (!raw)
+      return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
+        return null;
+      return {
+        title: typeof parsed.title === "string" ? parsed.title : "",
+        theme: parsed.theme === "light" ? "light" : "dark",
+        lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"))
+      };
+    } catch {
+      return null;
+    }
   }
   function snapOf(id) {
-      return thumbs.get(id) ?? parseSnap(settings4.plain.pages?.[id]);
+    return thumbs.get(id) ?? parseSnap(settings4.plain.pages?.[id]);
   }
   function rememberPage(id, snap) {
-      const json = JSON.stringify(snap);
-      const prev = settings4.plain.pages ?? {};
-      if (prev[id] === json)
-          return;
-      settings4.store.pages = { ...prev, [id]: json };
+    const json = JSON.stringify(snap);
+    const prev = settings4.plain.pages ?? {};
+    if (prev[id] === json)
+      return;
+    settings4.store.pages = { ...prev, [id]: json };
   }
   function buildPageShot(snap) {
-      const page = node("span", cl17("page"));
-      page.dataset.theme = snap.theme;
-      for (const line of lastRound(snap.lines)) {
-          const el = node("span", cl17("page-line", line.role === "user" && "page-line-user"), line.text);
-          el.dataset.role = line.role;
-          page.append(el);
-      }
-      return page;
+    const page = node("span", cl17("page"));
+    page.dataset.theme = snap.theme;
+    for (const line of lastRound(snap.lines)) {
+      const el = node("span", cl17("page-line", line.role === "user" && "page-line-user"), line.text);
+      el.dataset.role = line.role;
+      page.append(el);
+    }
+    return page;
   }
   function captureId(id) {
-      if (!id)
-          return;
-      const fromStore = linesFromStore(id);
-      let fromDom = [];
-      if (id === currentVisit()) {
-          const pane = chatPane();
-          if (pane)
-              fromDom = extractLines(pane);
-      }
-      const lines = betterLines(fromStore, fromDom);
-      if (!lines.length)
-          return;
-      const snap = {
-          title: titleOf(id),
-          theme: detectTheme(),
-          lines: lastRound(lines),
-      };
-      thumbs.set(id, snap);
-      rememberPage(id, snap);
+    if (!id)
+      return;
+    const fromStore = linesFromStore(id);
+    let fromDom = [];
+    if (id === currentVisit()) {
+      const pane = chatPane();
+      if (pane)
+        fromDom = extractLines(pane);
+    }
+    const lines = betterLines(fromStore, fromDom);
+    if (!lines.length)
+      return;
+    const snap = {
+      title: titleOf(id),
+      theme: detectTheme(),
+      lines: lastRound(lines)
+    };
+    thumbs.set(id, snap);
+    rememberPage(id, snap);
   }
   var capturing = false;
   function captureCurrent() {
-      if (capturing || open2)
-          return;
-      capturing = true;
-      try {
-          const current = currentVisit();
-          if (current)
-              captureId(current);
-          for (const id of capVisits(readVisits())) {
-              if (id && id !== current)
-                  captureId(id);
-          }
+    if (capturing || open2)
+      return;
+    capturing = true;
+    try {
+      const current = currentVisit();
+      if (current)
+        captureId(current);
+      for (const id of capVisits(readVisits())) {
+        if (id && id !== current)
+          captureId(id);
       }
-      catch (e) {
-          logger17.debug("snapshot failed:", e);
-      }
-      finally {
-          capturing = false;
-      }
+    } catch (e) {
+      logger17.debug("snapshot failed:", e);
+    } finally {
+      capturing = false;
+    }
   }
   function scheduleCapture() {
-      if (open2)
-          return;
+    if (open2)
+      return;
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-              if (!open2)
-                  captureCurrent();
-          });
+        if (!open2)
+          captureCurrent();
       });
+    });
   }
   function bump(id) {
-      if (!id && !settings4.store.includeHome)
-          return;
-      writeVisits(capVisits([id, ...readVisits()]));
-      const conv = id ? lookup(id) : undefined;
-      rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-      if (id)
-          rememberProject(id);
+    if (!id && !settings4.store.includeHome)
+      return;
+    writeVisits(capVisits([id, ...readVisits()]));
+    const conv = id ? lookup(id) : undefined;
+    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    if (id)
+      rememberProject(id);
   }
   function hydrate() {
-      const current = currentVisit();
-      const merged = current == null
-          ? [...idsFromHistory(), ...readVisits()]
-          : [current, ...idsFromHistory(), ...readVisits()];
-      writeVisits(capVisits(merged));
-      if (current) {
-          rememberTitle(current, lookup(current)?.title || pageTitle());
-          rememberProject(current);
-      }
+    const current = currentVisit();
+    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
+    writeVisits(capVisits(merged));
+    if (current) {
+      rememberTitle(current, lookup(current)?.title || pageTitle());
+      rememberProject(current);
+    }
   }
   function topics() {
-      return capVisits(readVisits()).map(id => ({
-          id,
-          title: titleOf(id),
-          project: projectNameOf(id),
-      }));
+    return capVisits(readVisits()).map((id) => ({
+      id,
+      title: titleOf(id),
+      project: projectNameOf(id)
+    }));
   }
   function parseHref(href) {
-      try {
-          const u = new URL(href, location.origin);
-          const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
-          if (parsed?.page && parsed.page !== "unknown")
-              return parsed;
-      }
-      catch (e) {
-          logger17.debug("urlToRoute failed:", e);
-      }
-      return null;
+    try {
+      const u = new URL(href, location.origin);
+      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
+      if (parsed?.page && parsed.page !== "unknown")
+        return parsed;
+    } catch (e) {
+      logger17.debug("urlToRoute failed:", e);
+    }
+    return null;
   }
   function applyChatPage(id, workspaceId) {
-      try {
-          const chat = ChatPageStore.useChatPageStore.getState();
-          chat.setConversationId(id || undefined);
-          chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
-      }
-      catch (e) {
-          logger17.debug("ChatPageStore update failed:", e);
-      }
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      chat.setConversationId(id || undefined);
+      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
+    } catch (e) {
+      logger17.debug("ChatPageStore update failed:", e);
+    }
   }
   function navigateTo(id) {
+    try {
+      const routing = RoutingStore.useRoutingStore.getState();
+      const { route } = routing;
+      const teamId = route.teamId ?? null;
+      if (!id) {
+        if (route.page === "main" || route.page === "chat" && !route.conversationId && !projectIdFromUrl())
+          return;
+        routing.push({ page: "main", teamId });
+        applyChatPage("");
+        return;
+      }
+      const workspaceId = workspaceOf(id);
+      const href = hrefFor(id, workspaceId);
+      const parsed = parseHref(href);
+      const dest = workspaceId ? {
+        page: "workspace",
+        workspaceId,
+        tab: "conversations",
+        conversationId: id,
+        teamId
+      } : {
+        page: "chat",
+        conversationId: id,
+        temporary: lookup(id)?.temporary ?? false,
+        teamId
+      };
+      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
+        dest.page = "workspace";
+        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
+        dest.conversationId = parsed.conversationId || id;
+        dest.tab = parsed.tab || "conversations";
+        if (parsed.filePath)
+          dest.filePath = parsed.filePath;
+      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
+        dest.page = "chat";
+        dest.conversationId = parsed.conversationId;
+        dest.temporary = parsed.temporary ?? dest.temporary;
+      }
+      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
+        dest.page = "chat";
+        dest.conversationId = id;
+        delete dest.workspaceId;
+        delete dest.tab;
+      }
+      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
+        return;
+      routing.push(dest);
+      applyChatPage(id, asWorkspaceId(dest.workspaceId));
+      if (dest.page !== "workspace") {
+        try {
+          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+          fetchConv?.(id).then((conv) => {
+            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
+            if (!ws)
+              return;
+            const now = RoutingStore.useRoutingStore.getState();
+            if (routeConvId(now.route) !== id)
+              return;
+            now.replace({
+              page: "workspace",
+              workspaceId: ws,
+              tab: "conversations",
+              conversationId: id,
+              teamId
+            });
+            applyChatPage(id, ws);
+            rememberProject(id);
+          }).catch((e) => logger17.debug("workspace resolve failed:", e));
+        } catch (e) {
+          logger17.debug("workspace fetch skipped:", e);
+        }
+      }
+    } catch (e) {
+      logger17.error("Failed to navigate:", e);
       try {
-          const routing = RoutingStore.useRoutingStore.getState();
-          const { route } = routing;
-          const teamId = route.teamId ?? null;
-          if (!id) {
-              if (route.page === "main" || (route.page === "chat" && !route.conversationId && !projectIdFromUrl()))
-                  return;
-              routing.push({ page: "main", teamId });
-              applyChatPage("");
-              return;
-          }
-          const workspaceId = workspaceOf(id);
-          const href = hrefFor(id, workspaceId);
-          const parsed = parseHref(href);
-          // Mirror Grok's useGrokRouter.routeToConversation:
-          // workspace chats MUST be { page:"workspace", workspaceId:STRING, tab:"conversations", conversationId }.
-          // page:"workspaces" (plural) is the /project list — never push that for a chat.
-          const dest = workspaceId
-              ? {
-                  page: "workspace",
-                  workspaceId,
-                  tab: "conversations",
-                  conversationId: id,
-                  teamId,
-              }
-              : {
-                  page: "chat",
-                  conversationId: id,
-                  temporary: lookup(id)?.temporary ?? false,
-                  teamId,
-              };
-          if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
-              dest.page = "workspace";
-              dest.workspaceId = asWorkspaceId(parsed.workspaceId);
-              dest.conversationId = parsed.conversationId || id;
-              dest.tab = parsed.tab || "conversations";
-              if (parsed.filePath)
-                  dest.filePath = parsed.filePath;
-          }
-          else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
-              dest.page = "chat";
-              dest.conversationId = parsed.conversationId;
-              dest.temporary = parsed.temporary ?? dest.temporary;
-          }
-          if (dest.page === "workspaces" || (dest.page === "workspace" && !asWorkspaceId(dest.workspaceId))) {
-              dest.page = "chat";
-              dest.conversationId = id;
-              delete dest.workspaceId;
-              delete dest.tab;
-          }
-          if (routeConvId(route) === dest.conversationId
-              && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "")
-              && route.page === dest.page)
-              return;
-          routing.push(dest);
-          applyChatPage(id, asWorkspaceId(dest.workspaceId));
-          // Same upgrade Grok does: if we had to open2 /c/{id}, fetch workspace and replace.
-          if (dest.page !== "workspace") {
-              try {
-                  const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-                  const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-                  fetchConv?.(id).then(conv => {
-                      const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
-                      if (!ws)
-                          return;
-                      const now = RoutingStore.useRoutingStore.getState();
-                      if (routeConvId(now.route) !== id)
-                          return;
-                      now.replace({
-                          page: "workspace",
-                          workspaceId: ws,
-                          tab: "conversations",
-                          conversationId: id,
-                          teamId,
-                      });
-                      applyChatPage(id, ws);
-                      rememberProject(id);
-                  }).catch(e => logger17.debug("workspace resolve failed:", e));
-              }
-              catch (e) {
-                  logger17.debug("workspace fetch skipped:", e);
-              }
-          }
+        location.assign(hrefFor(id, workspaceOf(id) || undefined));
+      } catch (navErr) {
+        logger17.error("Fallback navigation failed:", navErr);
       }
-      catch (e) {
-          logger17.error("Failed to navigate:", e);
-          try {
-              location.assign(hrefFor(id, workspaceOf(id) || undefined));
-          }
-          catch (navErr) {
-              logger17.error("Fallback navigation failed:", navErr);
-          }
-      }
+    }
   }
   function isTrigger(e) {
-      if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
-          return true;
-      return TRIGGER_KEYS.has(e.key);
+    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
+      return true;
+    return TRIGGER_KEYS.has(e.key);
   }
   function isCtrlKey(e) {
-      return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
+    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
   }
   function begin(reverse, fromHold) {
-      held = fromHold;
-      open2 = false;
-      captureCurrent();
-      open2 = true;
-      selected = 0;
-      try {
-          hydrate();
-          const current = currentVisit();
-          if (current != null)
-              bump(current);
-          if (topics().length > 1)
-              selected = reverse ? topics().length - 1 : 1;
-      }
-      catch (e) {
-          logger17.error("Failed to open2 switcher:", e);
-      }
-      paint();
+    held = fromHold;
+    open2 = false;
+    captureCurrent();
+    open2 = true;
+    selected = 0;
+    try {
+      hydrate();
+      const current = currentVisit();
+      if (current != null)
+        bump(current);
+      if (topics().length > 1)
+        selected = reverse ? topics().length - 1 : 1;
+    } catch (e) {
+      logger17.error("Failed to open switcher:", e);
+    }
+    paint();
   }
   function cycle(reverse) {
-      const { length } = topics();
-      if (!length)
-          return;
-      selected = (selected + (reverse ? -1 : 1) + length) % length;
-      paint();
+    const { length } = topics();
+    if (!length)
+      return;
+    selected = (selected + (reverse ? -1 : 1) + length) % length;
+    paint();
   }
   function commit() {
-      if (!open2)
-          return;
-      const target = topics()[selected];
-      open2 = false;
-      held = false;
-      paint();
-      if (target)
-          navigateTo(target.id);
+    if (!open2)
+      return;
+    const target = topics()[selected];
+    open2 = false;
+    held = false;
+    paint();
+    if (target)
+      navigateTo(target.id);
   }
   function cancel() {
-      if (!open2)
-          return;
-      open2 = false;
-      held = false;
-      paint();
+    if (!open2)
+      return;
+    open2 = false;
+    held = false;
+    paint();
   }
   function onKeyDown(e) {
-      if (isCtrlKey(e)) {
-          ctrlHeld = true;
-          return;
-      }
-      const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
-      if (combo) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          try {
-              if (open2)
-                  cycle(e.shiftKey);
-              else
-                  begin(e.shiftKey, true);
-          }
-          catch (err) {
-              logger17.error("Hotkey failed:", err);
-          }
-          return;
-      }
-      if (!open2)
-          return;
-      if (e.key === "Escape") {
-          e.preventDefault();
-          cancel();
-          return;
-      }
-      if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
-          e.preventDefault();
+    if (isCtrlKey(e)) {
+      ctrlHeld = true;
+      return;
+    }
+    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
+    if (combo) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      try {
+        if (open2)
           cycle(e.shiftKey);
+        else
+          begin(e.shiftKey, true);
+      } catch (err) {
+        logger17.error("Hotkey failed:", err);
       }
+      return;
+    }
+    if (!open2)
+      return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancel();
+      return;
+    }
+    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
+      e.preventDefault();
+      cycle(e.shiftKey);
+    }
   }
   function onKeyUp(e) {
-      if (!isCtrlKey(e))
-          return;
-      ctrlHeld = false;
-      if (open2 && held)
-          commit();
-  }
-  function onBeforeInput(e) {
-      if (!ctrlHeld && !open2)
-          return;
-      const { data } = e;
-      if (data && TRIGGER_KEYS.has(data))
-          e.preventDefault();
-  }
-  function onWindowBlur() {
-      ctrlHeld = false;
-  }
-  function onVisibility() {
-      if (document.hidden) {
-          ctrlHeld = false;
-          cancel();
-      }
-  }
-  function pick(index) {
-      selected = index;
+    if (!isCtrlKey(e))
+      return;
+    ctrlHeld = false;
+    if (open2 && held)
       commit();
   }
+  function onBeforeInput(e) {
+    if (!ctrlHeld && !open2)
+      return;
+    const { data } = e;
+    if (data && TRIGGER_KEYS.has(data))
+      e.preventDefault();
+  }
+  function onWindowBlur() {
+    ctrlHeld = false;
+  }
+  function onVisibility() {
+    if (document.hidden) {
+      ctrlHeld = false;
+      cancel();
+    }
+  }
+  function pick(index) {
+    selected = index;
+    commit();
+  }
   function node(tag, className, text) {
-      const el = document.createElement(tag);
-      if (className)
-          el.className = className;
-      if (text)
-          el.textContent = text;
-      return el;
+    const el = document.createElement(tag);
+    if (className)
+      el.className = className;
+    if (text)
+      el.textContent = text;
+    return el;
   }
   function fillShot(box, id) {
-      const snap = snapOf(id);
-      if (!snap) {
-          const fallback = node("span", cl17("fallback"));
-          fallback.append(faviconImg(cl17("favicon")));
-          box.append(fallback);
-          return;
-      }
-      const shot = node("span", cl17("shot"));
-      shot.append(buildPageShot(snap));
-      box.append(shot);
+    const snap = snapOf(id);
+    if (!snap) {
+      const fallback = node("span", cl17("fallback"));
+      fallback.append(faviconImg(cl17("favicon")));
+      box.append(fallback);
+      return;
+    }
+    const shot = node("span", cl17("shot"));
+    shot.append(buildPageShot(snap));
+    box.append(shot);
   }
   var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
   var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
   var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
   var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH}" fill="#050505"/><path d="${GROK_MARK_P1}" fill="#FCFCFC"/><path d="${GROK_MARK_P2}" fill="#FCFCFC"/></svg>`)}`;
   var ACCENTS = [
-      "rgb(37, 99, 235)",
-      "rgb(14, 165, 233)",
-      "rgb(20, 184, 166)",
-      "rgb(249, 115, 22)",
-      "rgb(100, 116, 139)",
+    "rgb(37, 99, 235)",
+    "rgb(14, 165, 233)",
+    "rgb(20, 184, 166)",
+    "rgb(249, 115, 22)",
+    "rgb(100, 116, 139)"
   ];
   function accentOf(id) {
-      if (!id)
-          return ACCENTS[4];
-      let hash = 0;
-      for (let i = 0; i < id.length; i++)
-          hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-      return ACCENTS[hash % ACCENTS.length];
+    if (!id)
+      return ACCENTS[4];
+    let hash = 0;
+    for (let i = 0;i < id.length; i++)
+      hash = hash * 31 + id.charCodeAt(i) >>> 0;
+    return ACCENTS[hash % ACCENTS.length];
   }
   function detectTheme() {
-      const html = document.documentElement;
-      const { body } = document;
-      const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
-      if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
-          return "dark";
-      if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
-          return "light";
-      try {
-          const bg = getComputedStyle(body || html).backgroundColor;
-          const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
-          if (m) {
-              const r = Number(m[1]) / 255;
-              const g = Number(m[2]) / 255;
-              const b = Number(m[3]) / 255;
-              const lin = [r, g, b].map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-              const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-              return lum < 0.42 ? "dark" : "light";
-          }
-      }
-      catch { }
-      const scheme = getComputedStyle(html).colorScheme;
-      if (scheme.includes("light") && !scheme.includes("dark"))
-          return "light";
+    const html = document.documentElement;
+    const { body } = document;
+    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
+    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
       return "dark";
+    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
+      return "light";
+    try {
+      const bg = getComputedStyle(body || html).backgroundColor;
+      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+      if (m) {
+        const r = Number(m[1]) / 255;
+        const g = Number(m[2]) / 255;
+        const b = Number(m[3]) / 255;
+        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+        return lum < 0.42 ? "dark" : "light";
+      }
+    } catch {}
+    const scheme = getComputedStyle(html).colorScheme;
+    if (scheme.includes("light") && !scheme.includes("dark"))
+      return "light";
+    return "dark";
   }
   function grokFaviconSrc() {
-      try {
-          if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
-              const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
-              const href = link?.href;
-              if (href && !href.startsWith("data:"))
-                  return href;
-              return `${location.origin}/images/favicon.svg`;
-          }
+    try {
+      if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
+        const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
+        const href = link?.href;
+        if (href && !href.startsWith("data:"))
+          return href;
+        return `${location.origin}/images/favicon.svg`;
       }
-      catch { }
-      return GROK_ICON_DATA;
+    } catch {}
+    return GROK_ICON_DATA;
   }
   function faviconImg(className) {
-      const img = document.createElement("img");
-      img.className = className;
-      img.alt = "";
-      img.draggable = false;
-      img.src = grokFaviconSrc();
-      img.addEventListener("error", () => {
-          if (img.src === GROK_ICON_DATA) {
-              img.dataset.broken = "true";
-              return;
-          }
-          img.src = GROK_ICON_DATA;
-      });
-      return img;
+    const img = document.createElement("img");
+    img.className = className;
+    img.alt = "";
+    img.draggable = false;
+    img.src = grokFaviconSrc();
+    img.addEventListener("error", () => {
+      if (img.src === GROK_ICON_DATA) {
+        img.dataset.broken = "true";
+        return;
+      }
+      img.src = GROK_ICON_DATA;
+    });
+    return img;
   }
   function siteHost() {
-      try {
-          return location.hostname.replace(/^www\./i, "") || "grok.com";
-      }
-      catch {
-          return "grok.com";
-      }
+    try {
+      return location.hostname.replace(/^www\./i, "") || "grok.com";
+    } catch {
+      return "grok.com";
+    }
   }
   function applyTheme(panel) {
-      const theme = detectTheme();
-      panel.setAttribute("data-theme", theme);
-      panel.style.colorScheme = theme;
+    const theme = detectTheme();
+    panel.setAttribute("data-theme", theme);
+    panel.style.colorScheme = theme;
   }
   function buildHost() {
-      const root = node("div", cl17("root"));
-      root.id = "void-rt-host";
-      root.setAttribute("role", "presentation");
-      root.addEventListener("click", cancel);
-      const panel = node("div", cl17("panel"));
-      panel.setAttribute("role", "listbox");
-      panel.setAttribute("aria-label", "Recent conversations");
-      panel.addEventListener("click", e => e.stopPropagation());
-      panel.append(node("div", cl17("list")));
-      root.append(panel);
-      return root;
+    const root = node("div", cl17("root"));
+    root.id = "void-rt-host";
+    root.setAttribute("role", "presentation");
+    root.addEventListener("click", cancel);
+    const panel = node("div", cl17("panel"));
+    panel.setAttribute("role", "listbox");
+    panel.setAttribute("aria-label", "Recent conversations");
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    panel.append(node("div", cl17("list")));
+    root.append(panel);
+    return root;
   }
   function renderList(items) {
-      if (!host)
+    if (!host)
+      return;
+    const panel = host.querySelector(`.${cl17("panel")}`);
+    if (!panel)
+      return;
+    let list = panel.querySelector(`.${cl17("list")}`);
+    if (!list) {
+      panel.replaceChildren();
+      list = node("div", cl17("list"));
+      panel.append(list);
+    }
+    list.replaceChildren();
+    items.forEach((topic, i) => {
+      const btn = node("button", cl17("card"));
+      btn.type = "button";
+      btn.tabIndex = -1;
+      btn.setAttribute("role", "option");
+      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+      btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
+      btn.addEventListener("pointerenter", () => {
+        if (selected === i)
           return;
-      const panel = host.querySelector(`.${cl17("panel")}`);
-      if (!panel)
-          return;
-      let list = panel.querySelector(`.${cl17("list")}`);
-      if (!list) {
-          panel.replaceChildren();
-          list = node("div", cl17("list"));
-          panel.append(list);
-      }
-      list.replaceChildren();
-      items.forEach((topic, i) => {
-          const btn = node("button", cl17("card"));
-          btn.type = "button";
-          btn.tabIndex = -1;
-          btn.setAttribute("role", "option");
-          btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
-          btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
-          btn.addEventListener("pointerenter", () => {
-              if (selected === i)
-                  return;
-              selected = i;
-              syncActive();
-          });
-          btn.addEventListener("focus", () => {
-              if (selected === i)
-                  return;
-              selected = i;
-              syncActive();
-          });
-          btn.addEventListener("click", () => pick(i));
-          const shot = node("span", cl17("thumb"));
-          shot.setAttribute("aria-hidden", "true");
-          fillShot(shot, topic.id);
-          const meta = node("span", cl17("meta"));
-          const row = node("span", cl17("name-row"));
-          row.append(faviconImg(cl17("title-favicon")), node("span", cl17("name"), topic.title));
-          meta.append(row);
-          meta.append(node("span", cl17("host"), siteHost()));
-          btn.append(shot, meta);
-          list.append(btn);
+        selected = i;
+        syncActive();
       });
+      btn.addEventListener("focus", () => {
+        if (selected === i)
+          return;
+        selected = i;
+        syncActive();
+      });
+      btn.addEventListener("click", () => pick(i));
+      const shot = node("span", cl17("thumb"));
+      shot.setAttribute("aria-hidden", "true");
+      fillShot(shot, topic.id);
+      const meta = node("span", cl17("meta"));
+      const row = node("span", cl17("name-row"));
+      row.append(faviconImg(cl17("title-favicon")), node("span", cl17("name"), topic.title));
+      meta.append(row);
+      meta.append(node("span", cl17("host"), siteHost()));
+      btn.append(shot, meta);
+      list.append(btn);
+    });
   }
   function syncActive() {
-      if (!host)
-          return;
-      const cards = host.querySelectorAll(`.${cl17("card")}`);
-      cards.forEach((card, i) => {
-          const on = i === selected;
-          card.setAttribute("data-active", on ? "true" : "false");
-          card.setAttribute("aria-selected", on ? "true" : "false");
-          card.tabIndex = on ? 0 : -1;
-          if (on)
-              card.setAttribute("aria-current", "true");
-          else
-              card.removeAttribute("aria-current");
-      });
-      cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
+    if (!host)
+      return;
+    const cards = host.querySelectorAll(`.${cl17("card")}`);
+    cards.forEach((card, i) => {
+      const on = i === selected;
+      card.setAttribute("data-active", on ? "true" : "false");
+      card.setAttribute("aria-selected", on ? "true" : "false");
+      card.tabIndex = on ? 0 : -1;
+      if (on)
+        card.setAttribute("aria-current", "true");
+      else
+        card.removeAttribute("aria-current");
+    });
+    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
   }
   function paint() {
-      document.documentElement.classList.toggle("void-rt-open", open2);
-      if (!open2) {
-          detachHost();
-          return;
+    document.documentElement.classList.toggle("void-rt-open", open2);
+    if (!open2) {
+      detachHost();
+      return;
+    }
+    const items = topics();
+    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
+    if (!host) {
+      host = buildHost();
+      mountOverlay(host);
+    }
+    const panel = host.querySelector(`.${cl17("panel")}`);
+    if (!panel)
+      return;
+    applyTheme(panel);
+    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
+    if (!items.length) {
+      if (paintedKey !== "__empty__") {
+        panel.replaceChildren(node("div", cl17("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+        paintedKey = "__empty__";
       }
-      const items = topics();
-      const key = items.map(t => `${t.id}\0${t.title}\0${t.project}`).join("|") || "__empty__";
-      if (!host) {
-          host = buildHost();
-          mountOverlay(host);
-      }
-      const panel = host.querySelector(`.${cl17("panel")}`);
-      if (!panel)
-          return;
-      applyTheme(panel);
-      panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
-      if (!items.length) {
-          if (paintedKey !== "__empty__") {
-              panel.replaceChildren(node("div", cl17("empty"), "Open a few chats, then hold Ctrl+` to switch."));
-              paintedKey = "__empty__";
-          }
-          requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-          return;
-      }
-      if (paintedKey === "__empty__" || !panel.querySelector(`.${cl17("list")}`)) {
-          panel.replaceChildren(node("div", cl17("list")));
-          paintedKey = "";
-      }
-      if (paintedKey !== key) {
-          renderList(items);
-          paintedKey = key;
-      }
-      syncActive();
       requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+      return;
+    }
+    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl17("list")}`)) {
+      panel.replaceChildren(node("div", cl17("list")));
+      paintedKey = "";
+    }
+    if (paintedKey !== key) {
+      renderList(items);
+      paintedKey = key;
+    }
+    syncActive();
+    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
   }
   function detachHost() {
-      document.documentElement.classList.remove("void-rt-open");
-      paintedKey = "";
-      if (host) {
-          try {
-              host.hidePopover();
-          }
-          catch { }
-          host.remove();
-          host = null;
-      }
-      document.getElementById("void-rt-host")?.remove();
-      document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach(el => {
-          const p = el;
-          try {
-              p.hidePopover?.();
-          }
-          catch { }
-          try {
-              p.close?.();
-          }
-          catch { }
-          el.remove();
-      });
+    document.documentElement.classList.remove("void-rt-open");
+    paintedKey = "";
+    if (host) {
+      try {
+        host.hidePopover();
+      } catch {}
+      host.remove();
+      host = null;
+    }
+    document.getElementById("void-rt-host")?.remove();
+    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
+      const p = el;
+      try {
+        p.hidePopover?.();
+      } catch {}
+      try {
+        p.close?.();
+      } catch {}
+      el.remove();
+    });
   }
   function mountOverlay(root) {
-      root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
-      document.documentElement.append(root);
-      document.documentElement.classList.add("void-rt-open");
-      if (typeof root.showPopover !== "function")
-          return;
-      root.setAttribute("popover", "manual");
-      try {
-          root.showPopover();
-      }
-      catch {
-          root.removeAttribute("popover");
-      }
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
+    document.documentElement.append(root);
+    document.documentElement.classList.add("void-rt-open");
+    if (typeof root.showPopover !== "function")
+      return;
+    root.setAttribute("popover", "manual");
+    try {
+      root.showPopover();
+    } catch {
+      root.removeAttribute("popover");
+    }
   }
   var recentTopics_default = definePlugin({
-      name: "RecentTopics",
-      description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
-      authors: [Devs.p],
-      tags: ["chat", "ui"],
-      enabledByDefault: true,
-      settings: settings4,
-      managedStyle: "recentTopics",
-      start() {
-          detachHost();
-          open2 = false;
-          held = false;
-          ctrlHeld = false;
-          try {
-              hydrate();
-              const current = currentVisit();
-              if (current != null)
-                  bump(current);
-              scheduleCapture();
-          }
-          catch (e) {
-              logger17.error("Hydrate failed:", e);
-          }
-          if (!keys) {
-              keys = new AbortController();
-              const { signal } = keys;
-              window.addEventListener("keydown", onKeyDown, { capture: true, signal });
-              window.addEventListener("keyup", onKeyUp, { capture: true, signal });
-              window.addEventListener("blur", onWindowBlur, { signal });
-              document.addEventListener("visibilitychange", onVisibility, { signal });
-              document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
-          }
+    name: "RecentTopics",
+    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings4,
+    managedStyle: "recentTopics",
+    start() {
+      detachHost();
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      try {
+        hydrate();
+        const current = currentVisit();
+        if (current != null)
+          bump(current);
+        scheduleCapture();
+      } catch (e) {
+        logger17.error("Hydrate failed:", e);
+      }
+      if (!keys) {
+        keys = new AbortController;
+        const { signal } = keys;
+        window.addEventListener("keydown", onKeyDown, { capture: true, signal });
+        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+        window.addEventListener("blur", onWindowBlur, { signal });
+        document.addEventListener("visibilitychange", onVisibility, { signal });
+        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+      }
+    },
+    stop() {
+      keys?.abort();
+      keys = null;
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      thumbs.clear();
+      detachHost();
+    },
+    onSettingsChange() {
+      try {
+        writeVisits(capVisits(readVisits()));
+      } catch (e) {
+        logger17.error("Settings update failed:", e);
+      }
+    },
+    zustand: {
+      RoutingStore: {
+        selector: (s) => routeConvId(s.route),
+        handler(id) {
+          if (open2 || id == null)
+            return;
+          bump(id);
+          scheduleCapture();
+        }
       },
-      stop() {
-          keys?.abort();
-          keys = null;
-          open2 = false;
-          held = false;
-          ctrlHeld = false;
-          thumbs.clear();
-          detachHost();
+      ChatPageStore: {
+        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
+        handler() {
+          if (open2)
+            return;
+          const id = currentVisit();
+          if (id == null)
+            return;
+          bump(id);
+          scheduleCapture();
+        }
       },
-      onSettingsChange() {
-          try {
-              writeVisits(capVisits(readVisits()));
-          }
-          catch (e) {
-              logger17.error("Settings update failed:", e);
-          }
-      },
-      zustand: {
-          RoutingStore: {
-              selector: (s) => routeConvId(s.route),
-              handler(id) {
-                  if (open2 || id == null)
-                      return;
-                  bump(id);
-                  scheduleCapture();
-              },
-          },
-          ChatPageStore: {
-              selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
-              handler() {
-                  if (open2)
-                      return;
-                  const id = currentVisit();
-                  if (id == null)
-                      return;
-                  bump(id);
-                  scheduleCapture();
-              },
-          },
-          ResponseStore: {
-              selector: (s) => {
-                  const id = currentVisit();
-                  if (!id)
-                      return "";
-                  const list = s.byConversationId[id];
-                  const last = list?.[list.length - 1];
-                  return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
-              },
-              handler() {
-                  if (open2)
-                      return;
-                  scheduleCapture();
-              },
-          },
-      },
+      ResponseStore: {
+        selector: (s) => {
+          const id = currentVisit();
+          if (!id)
+            return "";
+          const list = s.byConversationId[id];
+          const last = list?.[list.length - 1];
+          return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
+        },
+        handler() {
+          if (open2)
+            return;
+          scheduleCapture();
+        }
+      }
+    }
   });
+
   // void-css:/tmp/Void/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
@@ -12139,8 +12121,344 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // src/plugins/responseNotification/index.ts
+  // void-css:/tmp/Void/src/plugins/inputHistory/styles.css
+  registerStyle("inputHistory", `.void-ih-hud {
+    contain: content;
+    position: fixed;
+    z-index: 2147483646;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border-l2, var(--border));
+    border-radius: 0.5rem;
+    background: var(--background, #111);
+    color: var(--text-secondary, var(--text-primary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.12s ease;
+}
+
+.void-ih-hud-on {
+    opacity: 1;
+}
+`);
+
+  // src/plugins/inputHistory/index.tsx
+  var logger26 = new Logger("InputHistory");
+  var cl23 = classNameFactory("void-ih-");
+  var EDITOR_SEL2 = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
+  var ZWSP = /\u200B/g;
+  var MAX_MIN = 10;
+  var MAX_MAX = 500;
+  var MAX_DEFAULT = 100;
+  var HUD_HIDE_MS = 1200;
+  var HUD_GAP_PX = 8;
+  var LINE_SLOP_PX = 8;
+  var CAPTURE_DEDUPE_MS = 2000;
   var settings21 = definePluginSettings({
+    edgeOnly: {
+      type: 3 /* BOOLEAN */,
+      description: "Only cycle history when the caret is on the first or last line.",
+      default: true
+    },
+    skipDuplicates: {
+      type: 3 /* BOOLEAN */,
+      description: "Skip consecutive duplicate prompts.",
+      default: true
+    },
+    maxEntries: {
+      type: 5 /* SLIDER */,
+      description: "Maximum stored prompts.",
+      min: MAX_MIN,
+      max: MAX_MAX,
+      default: MAX_DEFAULT
+    },
+    clear: {
+      type: 6 /* COMPONENT */,
+      component: ClearHistory
+    }
+  }).withPrivateSettings();
+  var recentAt = new Map;
+  var cursor = 0;
+  var draft = "";
+  var applying = false;
+  var keys2 = null;
+  var hudTimer;
+  function getEntries() {
+    const raw = settings21.plain.entries;
+    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
+  }
+  function cap(entries) {
+    const max = clamp(settings21.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
+    return entries.length > max ? entries.slice(entries.length - max) : entries;
+  }
+  function setEntries(entries) {
+    settings21.store.entries = entries;
+  }
+  function normalize(text) {
+    return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
+  }
+  function resetBrowse(length) {
+    cursor = length;
+    draft = "";
+    hideHud();
+  }
+  function chatEditor(t) {
+    if (!(t instanceof HTMLElement) || !t.isContentEditable)
+      return null;
+    if (!t.classList.contains("ProseMirror"))
+      return null;
+    return t.closest(".query-bar") ? t : null;
+  }
+  function editorText(el) {
+    const blocks = el.querySelectorAll(":scope > *");
+    const raw = blocks.length ? Array.from(blocks, (b) => b.textContent ?? "").join(`
+`) : el.innerText ?? el.textContent ?? "";
+    return normalize(raw);
+  }
+  function caretOnEdge(el) {
+    const sel = window.getSelection();
+    if (!sel?.rangeCount || !sel.isCollapsed)
+      return { first: false, last: false };
+    const caret = sel.getRangeAt(0);
+    if (!el.contains(caret.startContainer))
+      return { first: false, last: false };
+    const start = document.createRange();
+    start.selectNodeContents(el);
+    start.collapse(true);
+    const end = document.createRange();
+    end.selectNodeContents(el);
+    end.collapse(false);
+    const c = caret.getBoundingClientRect();
+    const s = start.getBoundingClientRect();
+    const e = end.getBoundingClientRect();
+    if (c.height === 0 && !el.innerText?.trim())
+      return { first: true, last: true };
+    return {
+      first: Math.abs(c.top - s.top) <= LINE_SLOP_PX || c.top <= s.top + LINE_SLOP_PX,
+      last: Math.abs(c.top - e.top) <= LINE_SLOP_PX || c.bottom >= e.bottom - LINE_SLOP_PX
+    };
+  }
+  function setEditorText(el, text) {
+    el.focus();
+    const sel = window.getSelection();
+    if (!sel)
+      return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    applying = true;
+    try {
+      if (!text)
+        document.execCommand("delete");
+      else
+        document.execCommand("insertText", false, text);
+    } catch (err) {
+      logger26.debug("insertText failed:", err);
+    } finally {
+      queueMicrotask(() => {
+        applying = false;
+      });
+    }
+  }
+  function hudEl() {
+    let el = document.querySelector(`.${cl23("hud")}`);
+    if (el)
+      return el;
+    el = document.createElement("div");
+    el.className = cl23("hud");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+    return el;
+  }
+  function hideHud() {
+    clearTimeout(hudTimer);
+    document.querySelector(`.${cl23("hud")}`)?.classList.remove(cl23("hud-on"));
+  }
+  function showHud(label, editor) {
+    const bar = editor.closest(".query-bar");
+    if (!bar)
+      return;
+    const el = hudEl();
+    el.textContent = label;
+    requestAnimationFrame(() => {
+      const r = bar.getBoundingClientRect();
+      el.style.left = `${r.left + r.width / 2}px`;
+      el.style.top = `${r.top - HUD_GAP_PX}px`;
+      el.classList.add(cl23("hud-on"));
+    });
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(hideHud, HUD_HIDE_MS);
+  }
+  function pushEntry(text) {
+    const value = normalize(text);
+    if (!value)
+      return;
+    const now = Date.now();
+    const prev = recentAt.get(value);
+    if (prev != null && now - prev < CAPTURE_DEDUPE_MS)
+      return;
+    recentAt.set(value, now);
+    const list = getEntries();
+    if (settings21.store.skipDuplicates && list[list.length - 1] === value) {
+      resetBrowse(list.length);
+      return;
+    }
+    const next = cap([...list, value]);
+    setEntries(next);
+    resetBrowse(next.length);
+  }
+  function cycle2(older, el) {
+    const list = getEntries();
+    if (!list.length && older)
+      return;
+    if (cursor >= list.length) {
+      draft = editorText(el);
+      cursor = list.length;
+    }
+    const next = older ? cursor - 1 : cursor + 1;
+    if (next < 0 || next > list.length)
+      return;
+    cursor = next;
+    setEditorText(el, next === list.length ? draft : list[next]);
+    if (next < list.length)
+      showHud(`${next + 1} / ${list.length}`, el);
+    else
+      hideHud();
+  }
+  function onKeyDown3(e) {
+    if (e.isComposing || e.keyCode === 229)
+      return;
+    if (e.ctrlKey || e.metaKey || e.altKey)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    if (e.key === "Enter" && !e.shiftKey) {
+      pushEntry(editorText(el));
+      return;
+    }
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown")
+      return;
+    if (e.shiftKey)
+      return;
+    if (settings21.store.edgeOnly) {
+      const edge = caretOnEdge(el);
+      if (e.key === "ArrowUp" && !edge.first || e.key === "ArrowDown" && !edge.last)
+        return;
+    }
+    const list = getEntries();
+    if (e.key === "ArrowUp" && !list.length)
+      return;
+    if (e.key === "ArrowDown" && cursor >= list.length)
+      return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    cycle2(e.key === "ArrowUp", el);
+  }
+  function onInput(e) {
+    if (applying)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    cursor = getEntries().length;
+    draft = editorText(el);
+    hideHud();
+  }
+  function onSubmit(e) {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement))
+      return;
+    const editor = form.querySelector(EDITOR_SEL2);
+    if (editor instanceof HTMLElement)
+      pushEntry(editorText(editor));
+  }
+  function onClick(e) {
+    const t = e.target;
+    if (!(t instanceof Element))
+      return;
+    const ctrl = t.closest("button, [role='button']");
+    if (!ctrl)
+      return;
+    const bar = ctrl.closest(".query-bar");
+    if (!bar || ctrl.closest("[data-query-bar-mode-select]"))
+      return;
+    const label = (ctrl.getAttribute("aria-label") ?? "").toLowerCase();
+    const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
+    if (!submit && !label.includes("send") && !label.includes("submit"))
+      return;
+    const editor = bar.querySelector(EDITOR_SEL2);
+    if (editor instanceof HTMLElement)
+      pushEntry(editorText(editor));
+  }
+  function ClearHistory() {
+    const { entries } = settings21.use(["entries"]);
+    const list = entries ?? [];
+    const [open3, setOpen] = useState(false);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(list.length, "stored prompt"), "."), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      disabled: !list.length,
+      onClick: () => setOpen(true)
+    }, "Clear history"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open3,
+      onOpenChange: setOpen,
+      title: "Clear input history",
+      description: "Delete all stored prompts? This cannot be undone.",
+      confirmText: "Clear",
+      danger: true,
+      onConfirm: () => {
+        setEntries([]);
+        resetBrowse(0);
+      }
+    }));
+  }
+  var inputHistory_default = definePlugin({
+    name: "InputHistory",
+    description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    enabledByDefault: true,
+    settings: settings21,
+    managedStyle: "inputHistory",
+    cleanupSelectors: [".void-ih-hud"],
+    start() {
+      if (keys2)
+        return;
+      cursor = getEntries().length;
+      keys2 = new AbortController;
+      const { signal } = keys2;
+      document.addEventListener("keydown", onKeyDown3, { capture: true, signal });
+      document.addEventListener("input", onInput, { capture: true, signal });
+      document.addEventListener("submit", onSubmit, { capture: true, signal });
+      document.addEventListener("click", onClick, { capture: true, signal });
+    },
+    stop() {
+      keys2?.abort();
+      keys2 = null;
+      hideHud();
+      recentAt.clear();
+    },
+    onSettingsChange() {
+      const current = getEntries();
+      const next = cap(current);
+      if (next.length !== current.length)
+        setEntries(next);
+      if (cursor > next.length)
+        cursor = next.length;
+    }
+  });
+
+  // src/plugins/responseNotification/index.ts
+  var settings22 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -12187,7 +12505,7 @@ div:has(> #grok-bot-nav-button) {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings21.store.soundUrl?.trim();
+    const url = settings22.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -12200,11 +12518,11 @@ div:has(> #grok-bot-nav-button) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings21.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings22.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings21.store.sound)
+    if (settings22.store.sound)
       playSound();
-    if (settings21.store.browserNotification)
+    if (settings22.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -12212,7 +12530,7 @@ div:has(> #grok-bot-nav-button) {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings21,
+    settings: settings22,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -12239,7 +12557,7 @@ div:has(> #grok-bot-nav-button) {
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [streamerMode_default.name]: streamerMode_default, [autoRetry_default.name]: autoRetry_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterFiles_default.name]: betterFiles_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [messageTimestamps_default.name]: messageTimestamps_default, [usageDisplay_default.name]: usageDisplay_default, [placeholder_default.name]: placeholder_default, [betterImagine_default.name]: betterImagine_default, [composerOpacity_default.name]: composerOpacity_default, [widerChat_default.name]: widerChat_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [experiments_default.name]: experiments_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [incognito_default.name]: incognito_default, [autoCollapse_default.name]: autoCollapse_default, [noShareLink_default.name]: noShareLink_default, [responseNotification_default.name]: responseNotification_default };
+  var __plugins_default = { [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [streamerMode_default.name]: streamerMode_default, [autoRetry_default.name]: autoRetry_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterFiles_default.name]: betterFiles_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [messageTimestamps_default.name]: messageTimestamps_default, [usageDisplay_default.name]: usageDisplay_default, [placeholder_default.name]: placeholder_default, [betterImagine_default.name]: betterImagine_default, [composerOpacity_default.name]: composerOpacity_default, [widerChat_default.name]: widerChat_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [experiments_default.name]: experiments_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [incognito_default.name]: incognito_default, [autoCollapse_default.name]: autoCollapse_default, [noShareLink_default.name]: noShareLink_default, [inputHistory_default.name]: inputHistory_default, [responseNotification_default.name]: responseNotification_default };
   // void-css:/tmp/Void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
@@ -12294,7 +12612,7 @@ div:has(> #grok-bot-nav-button) {
     NoticeType2["ERROR"] = "error";
     NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var cl23 = classNameFactory("void-notice-");
+  var cl24 = classNameFactory("void-notice-");
   var ICONS = {
     ["info" /* INFO */]: () => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
       size: 18
@@ -12312,11 +12630,11 @@ div:has(> #grok-bot-nav-button) {
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl23("root")
+      className: cl24("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl23("icon")
+      className: cl24("icon")
     }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
-      className: cl23("message")
+      className: cl24("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
@@ -12326,7 +12644,7 @@ div:has(> #grok-bot-nav-button) {
       variant: "tertiary",
       size: "sm",
       shape: "square",
-      className: cl23("close"),
+      className: cl24("close"),
       onClick: onClose
     }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
@@ -12496,14 +12814,14 @@ div:has(> #grok-bot-nav-button) {
   });
 
   // src/Void.ts
-  var logger26 = new Logger("TurbopackPatcher", "#e78284");
+  var logger27 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger26.error(`${name} failed:`, e);
+      logger27.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -12524,7 +12842,7 @@ div:has(> #grok-bot-nav-button) {
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger26.info(`${getModuleCache().size} modules loaded, ready`);
+      logger27.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
       safely("checkBuildFingerprint", checkBuildFingerprint);
