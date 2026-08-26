@@ -15,6 +15,7 @@ const SHELL = ".query-bar";
 const FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
 const FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
 const BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
+const RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
 
 const settings = definePluginSettings({
     opacity: {
@@ -37,20 +38,22 @@ function apply() {
     const pct = clamp(settings.store.opacity, 0, 100);
     const blur = clamp(settings.store.blur, 0, 40);
     const alpha = pct / 100;
-    const radius = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
+    const frost = pct < 100 && blur > 0
+        ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;`
+        : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
     registerStyle(
         STYLE_NAME,
-        `${FRAME}{background:transparent!important;background-image:none!important;pointer-events:none!important}`
+        `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}`
         + `${FRAME_KIDS}{pointer-events:auto!important}`
         + `${BACKDROP}{display:none!important}`
         + `${SHELL}{`
-        + `background-color:hsl(var(--surface-l1)/${alpha})!important;`
         + `background-color:color-mix(in srgb,var(--background) ${pct}%,transparent)!important;`
+        + `background-color:hsl(var(--surface-l1)/${alpha})!important;`
         + "background-image:none!important;"
-        + `border-radius:${radius}!important;`
+        + `border-radius:${RADIUS}!important;`
         + "overflow:hidden!important;"
-        + `-webkit-backdrop-filter:blur(${blur}px)!important;`
-        + `backdrop-filter:blur(${blur}px)!important;`
+        + `clip-path:inset(0 round ${RADIUS})!important;`
+        + frost
         + "}",
     );
 }
