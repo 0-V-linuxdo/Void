@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.16] v1.0.23
+// @version      [20260826.17] v1.0.24
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.16] v1.0.23 — A modification for grok.com
+ * Void++ [20260826.17] v1.0.24 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6023,7 +6023,7 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.16] v1.0.23"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260826.17] v1.0.24"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"8f56dd6"}`
     }, `(${"8f56dd6"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6928,10 +6928,6 @@ html.void-rt-open [data-sidebar="gap"] {
         font-size: 10.5px;
         line-height: 1.14;
     }
-
-    .void-rt-host {
-        display: none;
-    }
 }
 
 @media (width <= 600px) {
@@ -6944,10 +6940,6 @@ html.void-rt-open [data-sidebar="gap"] {
         --void-rt-title-icon-size: 14px;
 
         max-width: calc(100vw - 16px);
-    }
-
-    .void-rt-host {
-        display: block;
     }
 
     .void-rt-name {
@@ -8061,14 +8053,6 @@ html.void-rt-open [data-sidebar="gap"] {
       });
       return img;
   }
-  function siteHost() {
-      try {
-          return location.hostname.replace(/^www\./i, "") || "grok.com";
-      }
-      catch {
-          return "grok.com";
-      }
-  }
   function applyTheme(panel) {
       const theme = detectTheme();
       panel.setAttribute("data-theme", theme);
@@ -8127,7 +8111,8 @@ html.void-rt-open [data-sidebar="gap"] {
           const row = node("span", cl17("name-row"));
           row.append(faviconImg(cl17("title-favicon")), node("span", cl17("name"), topic.title));
           meta.append(row);
-          meta.append(node("span", cl17("host"), siteHost()));
+          if (topic.project)
+              meta.append(node("span", cl17("host"), topic.project));
           btn.append(shot, meta);
           list.append(btn);
       });

@@ -464,10 +464,6 @@ html.void-rt-open [data-sidebar="gap"] {
         font-size: 10.5px;
         line-height: 1.14;
     }
-
-    .void-rt-host {
-        display: none;
-    }
 }
 
 @media (width <= 600px) {
@@ -480,10 +476,6 @@ html.void-rt-open [data-sidebar="gap"] {
         --void-rt-title-icon-size: 14px;
 
         max-width: calc(100vw - 16px);
-    }
-
-    .void-rt-host {
-        display: block;
     }
 
     .void-rt-name {

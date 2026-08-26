@@ -1076,14 +1076,6 @@ function faviconImg(className: string): HTMLImageElement {
     return img;
 }
 
-function siteHost(): string {
-    try {
-        return location.hostname.replace(/^www\./i, "") || "grok.com";
-    } catch {
-        return "grok.com";
-    }
-}
-
 function applyTheme(panel: HTMLElement) {
     const theme = detectTheme();
     panel.setAttribute("data-theme", theme);
@@ -1145,7 +1137,7 @@ function renderList(items: Topic[]) {
         const row = node("span", cl("name-row"));
         row.append(faviconImg(cl("title-favicon")), node("span", cl("name"), topic.title));
         meta.append(row);
-        meta.append(node("span", cl("host"), siteHost()));
+        if (topic.project) meta.append(node("span", cl("host"), topic.project));
 
         btn.append(shot, meta);
         list!.append(btn);
