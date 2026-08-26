@@ -13,7 +13,6 @@ import { React, useCallback, useEffect, useMemo, useState } from "@turbopack/com
 import { classNameFactory } from "@utils/css";
 import { humanizeKey } from "@utils/text";
 import { OptionType, type PluginSettingBigIntDef, type PluginSettingBooleanDef, type PluginSettingCommon, type PluginSettingComponentDef, type PluginSettingDef, type PluginSettingNumberDef, type PluginSettingSelectDef, type PluginSettingSliderDef, type PluginSettingStringDef, type PluginSettingValue } from "@utils/types";
-import type { CSSProperties } from "react";
 
 import { type InputChangeEvent } from "./utils";
 
@@ -111,22 +110,28 @@ const SliderField: Field<PluginSettingSliderDef & PluginSettingCommon> = ({ id, 
 
     return (
         <LabeledField id={id} setting={setting}>
-            <Flex gap="0.75rem" className={cl("slider-row")} style={{ "--void-slider-pct": `${pct}%` } as CSSProperties}>
-                <Input
-                    type="range"
-                    min={min}
-                    max={max}
-                    step={1}
-                    value={String(n)}
-                    onChange={(e: InputChangeEvent) => {
-                        const v = Number(e.target.value);
-                        if (!Number.isNaN(v)) update(v);
-                    }}
-                    className={cl("slider")}
-                    aria-valuemin={min}
-                    aria-valuemax={max}
-                    aria-valuenow={n}
-                />
+            <Flex gap="0.75rem" className={cl("slider-row")}>
+                <div className={cl("slider-wrap")}>
+                    <div className={cl("slider-rail")} aria-hidden="true">
+                        <div className={cl("slider-fill")} style={{ width: `${pct}%` }} />
+                        <div className={cl("slider-thumb")} style={{ left: `${pct}%` }} />
+                    </div>
+                    <input
+                        type="range"
+                        min={min}
+                        max={max}
+                        step={1}
+                        value={n}
+                        onChange={(e: InputChangeEvent) => {
+                            const v = Number(e.target.value);
+                            if (!Number.isNaN(v)) update(v);
+                        }}
+                        className={cl("slider")}
+                        aria-valuemin={min}
+                        aria-valuemax={max}
+                        aria-valuenow={n}
+                    />
+                </div>
                 <Text size="sm" color="secondary" className={cl("slider-value")}>{n}</Text>
             </Flex>
         </LabeledField>

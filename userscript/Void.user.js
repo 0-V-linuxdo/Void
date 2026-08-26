@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260826.13] v1.0.20
+// @version      [20260826.14] v1.0.21
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260826.13] v1.0.20 — A modification for grok.com
+ * Void++ [20260826.14] v1.0.21 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4768,62 +4768,51 @@ ${sourceUrl}`;
     width: 100%;
 }
 
-.void-setting-slider,
-.void-setting-slider input[type="range"] {
+.void-setting-slider-wrap {
+    position: relative;
     flex: 1;
     min-width: 0;
-    width: 100%;
     height: 1.25rem;
-    margin: 0;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    min-height: 0 !important;
-    background: transparent !important;
-    accent-color: var(--fg, #fff);
-    cursor: pointer;
-    appearance: none;
 }
 
-.void-setting-slider::-webkit-slider-runnable-track,
-.void-setting-slider input[type="range"]::-webkit-slider-runnable-track {
+.void-setting-slider-rail {
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    top: 50%;
     height: 0.375rem;
-    border-radius: 999px;
-    background: linear-gradient(to right, var(--fg, #fff) 0 var(--void-slider-pct), color-mix(in srgb, var(--fg, #fff) 22%, transparent) var(--void-slider-pct) 100%);
-}
-
-.void-setting-slider::-webkit-slider-thumb,
-.void-setting-slider input[type="range"]::-webkit-slider-thumb {
-    appearance: none;
-    width: 1rem;
-    height: 1rem;
-    margin-top: -0.3125rem;
-    border: none;
-    border-radius: 50%;
-    background: var(--fg, #fff);
-}
-
-.void-setting-slider::-moz-range-track,
-.void-setting-slider input[type="range"]::-moz-range-track {
-    height: 0.375rem;
+    transform: translateY(-50%);
     border-radius: 999px;
     background: color-mix(in srgb, var(--fg, #fff) 22%, transparent);
+    pointer-events: none;
 }
 
-.void-setting-slider::-moz-range-progress,
-.void-setting-slider input[type="range"]::-moz-range-progress {
-    height: 0.375rem;
-    border-radius: 999px;
+.void-setting-slider-fill {
+    height: 100%;
+    border-radius: inherit;
     background: var(--fg, #fff);
 }
 
-.void-setting-slider::-moz-range-thumb,
-.void-setting-slider input[type="range"]::-moz-range-thumb {
+.void-setting-slider-thumb {
+    position: absolute;
+    top: 50%;
     width: 1rem;
     height: 1rem;
-    border: none;
     border-radius: 50%;
     background: var(--fg, #fff);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.void-setting-slider {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
 }
 
 .void-setting-slider-value {
@@ -4916,14 +4905,24 @@ ${sourceUrl}`;
       setting
     }, /* @__PURE__ */ React.createElement(Flex, {
       gap: "0.75rem",
-      className: cl9("slider-row"),
-      style: { "--void-slider-pct": `${pct}%` }
-    }, /* @__PURE__ */ React.createElement(Input, {
+      className: cl9("slider-row")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl9("slider-wrap")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl9("slider-rail"),
+      "aria-hidden": "true"
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl9("slider-fill"),
+      style: { width: `${pct}%` }
+    }), /* @__PURE__ */ React.createElement("div", {
+      className: cl9("slider-thumb"),
+      style: { left: `${pct}%` }
+    })), /* @__PURE__ */ React.createElement("input", {
       type: "range",
       min,
       max,
       step: 1,
-      value: String(n),
+      value: n,
       onChange: (e) => {
         const v = Number(e.target.value);
         if (!Number.isNaN(v))
@@ -4933,7 +4932,7 @@ ${sourceUrl}`;
       "aria-valuemin": min,
       "aria-valuemax": max,
       "aria-valuenow": n
-    }), /* @__PURE__ */ React.createElement(Text2, {
+    })), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       color: "secondary",
       className: cl9("slider-value")
@@ -6024,9 +6023,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260826.13] v1.0.20"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"13bfb52"}`
-    }, `(${"13bfb52"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260826.14] v1.0.21"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8f56dd6"}`
+    }, `(${"8f56dd6"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
