@@ -33,7 +33,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @author       ${pkg.author} & Void Contributors
 // @environment  ${environment}
 // @homepageURL  ${FORK_URL}
-// @icon         ${repoRawUrl}/main/assets/logos/app-icon/void-icon-256.png
+// @icon         ${FORK_RAW_URL}/assets/logos/app-icon/void-icon.svg
 // @match        *://grok.com/*
 // @run-at       document-start
 // @noframes
