@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260827.10] v1.1.2
+// @version      [20260827.10] v1.1.3
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
 // @homepageURL  https://github.com/0-V-linuxdo/Void
-// @icon         https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/assets/logos/app-icon/void-icon-256.png
+// @icon         https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/assets/logos/app-icon/voidpp-256.png
 // @match        *://grok.com/*
 // @run-at       document-start
 // @noframes
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260827.10] v1.1.2 — A modification for grok.com
+ * Void++ [20260827.10] v1.1.3 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -2610,7 +2610,7 @@ ${sourceUrl}`;
   function classes(...names) {
     return names.filter(Boolean).join(" ");
   }
-  // void-css:/tmp/Void/src/components/ColorSettingRow.css
+  // void-css:/tmp/Void-repo/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -2649,7 +2649,7 @@ ${sourceUrl}`;
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/Void/src/components/ConfirmDialog.css
+  // void-css:/tmp/Void-repo/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     contain: content;
     width: 100%;
@@ -2898,7 +2898,7 @@ ${sourceUrl}`;
     },
     configurable: true
   });
-  // void-css:/tmp/Void/src/components/ErrorCard.css
+  // void-css:/tmp/Void-repo/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3011,7 +3011,7 @@ ${sourceUrl}`;
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/Void/src/components/SelectionUI.css
+  // void-css:/tmp/Void-repo/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3644,7 +3644,7 @@ ${sourceUrl}`;
     });
   }
 
-  // void-css:/tmp/Void/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4134,8 +4134,313 @@ ${sourceUrl}`;
   var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
   }));
+  var CircleGaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M15.6 2.7a10 10 0 1 0 5.7 5.7"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M13.4 10.6 19 5"
+  }));
+  var ChevronsDownUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m7 20 5-5 5 5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m7 4 5 5 5-5"
+  }));
+  var RotateCcwIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 3v5h5"
+  }));
+  var AppWindowIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    x: "2",
+    y: "4",
+    width: "20",
+    height: "16",
+    rx: "2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M10 4v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M2 8h20"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6 4v4"
+  }));
+  var BrushCleaningIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m16 22-1-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m8 22 1-4"
+  }));
+  var BlendIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "9",
+    cy: "9",
+    r: "7"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "15",
+    cy: "15",
+    r: "7"
+  }));
+  var TerminalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("polyline", {
+    points: "4 17 10 11 4 5"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "20",
+    y1: "19",
+    y2: "19"
+  }));
+  var MicOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("line", {
+    x1: "2",
+    x2: "22",
+    y1: "2",
+    y2: "22"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 10v2a7 7 0 0 0 12 5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M15 9.34V5a3 3 0 0 0-5.68-1.33"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 9v3a3 3 0 0 0 5.12 2.12"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12",
+    y1: "19",
+    y2: "22"
+  }));
+  var BotOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M13.67 8H18a2 2 0 0 1 2 2v4.33"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M2 14h2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M20 14h2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M22 22 2 2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 8H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 1.414-.586"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 13v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9.67 4H12v2.33"
+  }));
+  var Link2OffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M9 17H7A5 5 0 0 1 7 7"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M15 7h2a5 5 0 0 1 4 8"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "8",
+    x2: "12",
+    y1: "12",
+    y2: "12"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "2",
+    x2: "22",
+    y1: "2",
+    y2: "22"
+  }));
+  var UserRoundXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M2 21a8 8 0 0 1 11.873-7"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "10",
+    cy: "8",
+    r: "5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m17 17 5 5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m22 17-5 5"
+  }));
+  var CatIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 14v.5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 14v.5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M11.25 16.25h1.5L12 17l-.75-.75Z"
+  }));
+  var BellIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10.268 21a2 2 0 0 0 3.464 0"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"
+  }));
+  var EyeOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14.084 14.158a3 3 0 0 1-4.242-4.242"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m2 2 20 20"
+  }));
+  var UnfoldHorizontalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M16 12h6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 12H2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 2v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 8v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 14v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 20v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m19 15 3-3-3-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m5 9-3 3 3 3"
+  }));
+  var FilesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M20 7h-3a2 2 0 0 1-2-2V2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"
+  }));
+  var ImagesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M18 22H4a2 2 0 0 1-2-2V6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "8",
+    r: "2"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    width: "16",
+    height: "16",
+    x: "6",
+    y: "2",
+    rx: "2"
+  }));
+  var LinkIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+  }));
+  var PanelLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    width: "18",
+    height: "18",
+    x: "3",
+    y: "3",
+    rx: "2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 3v18"
+  }));
+  var ScrollTextIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M15 12h-5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M15 8h-5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 17V5a2 2 0 0 0-2-2H4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"
+  }));
+  var Volume2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 9a5 5 0 0 1 0 6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19.364 18.364a9 9 0 0 0 0-12.728"
+  }));
+  var FileDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 2v4a2 2 0 0 0 2 2h4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 18v-6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m9 15 3 3 3-3"
+  }));
+  var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 3v5h5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 7v5l4 2"
+  }));
+  var ClockIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("polyline", {
+    points: "12 6 12 12 16 14"
+  }));
+  var TextCursorInputIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 20h-1a2 2 0 0 1-2-2 2 2 0 0 1-2 2H6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M13 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-7"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6 4h1a2 2 0 0 1 2 2 2 2 0 0 1 2-2h1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 6v12"
+  }));
+  var LayoutGridIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    width: "7",
+    height: "7",
+    x: "3",
+    y: "3",
+    rx: "1"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    width: "7",
+    height: "7",
+    x: "14",
+    y: "3",
+    rx: "1"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    width: "7",
+    height: "7",
+    x: "14",
+    y: "14",
+    rx: "1"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    width: "7",
+    height: "7",
+    x: "3",
+    y: "14",
+    rx: "1"
+  }));
+  var SparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M20 3v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M22 5h-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M4 17v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 18H3"
+  }));
+  var ShieldOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m2 2 20 20"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 5a1 1 0 0 0-1 1v7c0 5 3.5 7.5 7.67 8.94a1 1 0 0 0 .67.01c2.35-.82 4.48-1.97 5.9-3.71"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9.309 3.652A12.252 12.252 0 0 0 11.24 2.28a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1v7a9.784 9.784 0 0 1-.08 1.264"
+  }));
+  var SettingsIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "3"
+  }));
+  var VoidIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M17.6 2.2v3.2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19.2 3.8h-3.2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21.4 2.2v3.2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M23 3.8h-3.2"
+  }));
 
-  // void-css:/tmp/Void/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/Void-repo/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4147,7 +4452,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/CssEditor.css
+  // void-css:/tmp/Void-repo/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -4419,7 +4724,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:/tmp/Void/src/components/settings/shared.css
+  // void-css:/tmp/Void-repo/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4470,7 +4775,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/Void-repo/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
@@ -4485,7 +4790,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/PluginCard.css
+  // void-css:/tmp/Void-repo/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -4524,7 +4829,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/BaseCard.css
+  // void-css:/tmp/Void-repo/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4607,11 +4912,29 @@ ${sourceUrl}`;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.void-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.375rem;
+    color: hsl(var(--fg-secondary));
+    background: hsl(var(--fg-primary) / 0.06);
+    line-height: 0;
+}
+
+.void-card-icon svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
 `);
 
   // src/components/settings/BaseCard.tsx
   var cl7 = classNameFactory("void-card-");
-  function BaseCard({ className, name, nameClassName, badges, description, controls, footer }) {
+  function BaseCard({ className, name, nameClassName, icon, badges, description, controls, footer }) {
     return /* @__PURE__ */ React.createElement(Card, {
       className: classes(cl7("root"), className)
     }, /* @__PURE__ */ React.createElement("div", {
@@ -4622,7 +4945,9 @@ ${sourceUrl}`;
       gap: "0.5rem"
     }, /* @__PURE__ */ React.createElement("div", {
       className: classes(cl7("name"), nameClassName)
-    }, /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+    }, icon != null && /* @__PURE__ */ React.createElement("span", {
+      className: cl7("icon")
+    }, icon), /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
     }, /* @__PURE__ */ React.createElement("span", {
       className: cl7("title")
@@ -4687,6 +5012,7 @@ ${sourceUrl}`;
   var cl8 = classNameFactory("void-plugin-card-");
   function PluginCard({ name, onSettings, onReload }) {
     const plugin = plugins[name];
+    const { icon: Icon } = plugin;
     const forceUpdate = useForceUpdater();
     const enabled = isPluginEnabled(name);
     const pinned = isPluginPinned(name);
@@ -4711,6 +5037,11 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(BaseCard, {
       className: classes(plugin.required && cl8("required"), crashed && cl8("crashed")),
       name,
+      icon: Icon ? /* @__PURE__ */ React.createElement(Icon, {
+        size: 14
+      }) : /* @__PURE__ */ React.createElement(UnplugIcon, {
+        size: 14
+      }),
       badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: TriangleAlert,
         tooltip: "This plugin failed to start",
@@ -4746,7 +5077,7 @@ ${sourceUrl}`;
     });
   }
 
-  // void-css:/tmp/Void/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/Void-repo/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -4762,7 +5093,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/SettingField.css
+  // void-css:/tmp/Void-repo/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -5296,7 +5627,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:/tmp/Void/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/Void-repo/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -5319,7 +5650,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/ThemeCard.css
+  // void-css:/tmp/Void-repo/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5347,6 +5678,9 @@ ${sourceUrl}`;
     return /* @__PURE__ */ React.createElement(BaseCard, {
       name: theme.name ?? theme.url,
       nameClassName: cl12("name"),
+      icon: /* @__PURE__ */ React.createElement(PaletteIcon, {
+        size: 14
+      }),
       description: theme.description,
       controls: /* @__PURE__ */ React.createElement(React.Fragment, null, theme.local ? /* @__PURE__ */ React.createElement(IconButton, {
         icon: PencilIcon,
@@ -5590,7 +5924,7 @@ ${sourceUrl}`;
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/Void/src/plugins/experiments/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -5919,6 +6253,7 @@ ${sourceUrl}`;
   }
   var experiments_default = definePlugin({
     name: "Experiments",
+    icon: TestTubeIcon,
     description: "Unlock and toggle unreleased Grok features.",
     authors: [Devs.Prism],
     settings: settings2,
@@ -5976,7 +6311,6 @@ ${sourceUrl}`;
 
   // src/plugins/_core/settings/index.tsx
   var logger15 = new Logger("Settings");
-  var MoonIcon = findExportedComponentLazy("MoonIcon");
   var cl15 = classNameFactory("void-settings-");
   var settings3 = definePluginSettings({
     showVoidMenu: {
@@ -6023,9 +6357,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260827.10] v1.1.2"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8f56dd6"}`
-    }, `(${"8f56dd6"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260827.10] v1.1.3"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"c057117"}`
+    }, `(${"c057117"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6051,7 +6385,7 @@ ${sourceUrl}`;
     if (!settings3.store.showVoidMenu)
       return null;
     const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).toSorted((a, b) => a.localeCompare(b));
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(MoonIcon, {
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidIcon, {
       className: cl15("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl15("menu-icon")
@@ -6071,6 +6405,7 @@ ${sourceUrl}`;
   var WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
   var settings_default = definePlugin({
     name: "Settings",
+    icon: SettingsIcon,
     description: "Adds Void settings UI.",
     authors: [Devs.Prism],
     required: true,
@@ -6169,6 +6504,7 @@ ${sourceUrl}`;
   // src/plugins/_core/noTelemetry/index.ts
   var noTelemetry_default = definePlugin({
     name: "NoTelemetry",
+    icon: ShieldOffIcon,
     description: "Disables all tracking, telemetry, and event logging.",
     authors: [Devs.Prism],
     required: true,
@@ -6233,6 +6569,7 @@ ${sourceUrl}`;
   // src/plugins/_core/fixChrome.chrome/index.ts
   var fixChrome_default = definePlugin({
     name: "FixChrome",
+    icon: ChromiumIcon,
     description: "Fixes Chromium-specific performance issues like backdrop blur lag.",
     authors: [Devs.Prism],
     required: true,
@@ -6395,7 +6732,7 @@ ${sourceUrl}`;
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/downloadTTS/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -6442,6 +6779,7 @@ ${sourceUrl}`;
   }
   var downloadTTS_default = definePlugin({
     name: "DownloadTTS",
+    icon: Volume2Icon,
     description: "Add a download button to the TTS playback controls.",
     authors: [Devs.Prism],
     patches: [{
@@ -6455,14 +6793,8 @@ ${sourceUrl}`;
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
   });
 
-  // void-css:/tmp/Void/src/plugins/recentTopics/styles.css
-  registerStyle("recentTopics", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-rt-root,
+  // void-css:/tmp/Void-repo/src/plugins/recentTopics/styles.css
+  registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
     position: fixed !important;
@@ -6945,11 +7277,6 @@ html.void-rt-open [data-sidebar="gap"] {
 `);
 
   // src/plugins/recentTopics/index.tsx
-  /*
-   * Void, a modification for grok.com
-   * Copyright (c) 2026 Void contributors
-   * SPDX-License-Identifier: GPL-3.0-or-later
-   */
   var logger17 = new Logger("RecentTopics");
   var cl17 = classNameFactory("void-rt-");
   var HOME_ID = "";
@@ -6957,23 +7284,23 @@ html.void-rt-open [data-sidebar="gap"] {
   var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
   var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
   var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation)$/i;
-  const SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
-  const TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
-  const STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
-  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => ({ label: String(n), value: n, default: n === 5 }));
+  var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
+  var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
+  var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
+  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
   var settings4 = definePluginSettings({
-      maxRecent: {
-          type: 4 /* SELECT */,
-          description: "How many recently opened conversations to show.",
-          options: COUNT_OPTIONS,
-      },
-      includeHome: {
-          type: 3 /* BOOLEAN */,
-          description: "Include the new-chat home page in the switcher.",
-          default: true,
-      },
+    maxRecent: {
+      type: 4 /* SELECT */,
+      description: "How many recently opened conversations to show.",
+      options: COUNT_OPTIONS
+    },
+    includeHome: {
+      type: 3 /* BOOLEAN */,
+      description: "Include the new-chat home page in the switcher.",
+      default: true
+    }
   }).withPrivateSettings();
-  var thumbs = new Map();
+  var thumbs = new Map;
   var wsNames = {};
   var open2 = false;
   var selected = 0;
@@ -6983,1356 +7310,1292 @@ html.void-rt-open [data-sidebar="gap"] {
   var host = null;
   var paintedKey = "";
   function unique(ids) {
-      const seen = new Set();
-      const out = [];
-      for (const id of ids) {
-          if (seen.has(id))
-              continue;
-          seen.add(id);
-          out.push(id);
-      }
-      return out;
+    const seen = new Set;
+    const out = [];
+    for (const id of ids) {
+      if (seen.has(id))
+        continue;
+      seen.add(id);
+      out.push(id);
+    }
+    return out;
   }
   function readVisits() {
-      return settings4.plain.visits ?? [];
+    return settings4.plain.visits ?? [];
   }
   function maxCount() {
-      const n = Number(settings4.store.maxRecent);
-      return Number.isFinite(n) && n > 0 ? n : 5;
+    const n = Number(settings4.store.maxRecent);
+    return Number.isFinite(n) && n > 0 ? n : 5;
   }
   function capVisits(ids) {
-      const allowHome = settings4.store.includeHome;
-      return unique(ids).filter(id => id || allowHome).slice(0, maxCount());
+    const allowHome = settings4.store.includeHome;
+    return unique(ids).filter((id) => id || allowHome).slice(0, maxCount());
   }
   function pruneRecord(source, ids) {
-      const keep = {};
-      if (!source)
-          return keep;
-      for (const id of ids) {
-          if (source[id])
-              keep[id] = source[id];
-      }
+    const keep = {};
+    if (!source)
       return keep;
+    for (const id of ids) {
+      if (source[id])
+        keep[id] = source[id];
+    }
+    return keep;
   }
   function sameList(a, b) {
-      return a.length === b.length && a.every((id, i) => id === b[i]);
+    return a.length === b.length && a.every((id, i) => id === b[i]);
   }
   function sameRecord(a, b) {
-      const src = a ?? {};
-      const keys = Object.keys(b);
-      if (Object.keys(src).length !== keys.length)
-          return false;
-      return keys.every(k => src[k] === b[k]);
+    const src = a ?? {};
+    const keys2 = Object.keys(b);
+    if (Object.keys(src).length !== keys2.length)
+      return false;
+    return keys2.every((k) => src[k] === b[k]);
   }
   function assignRecord(key, next) {
-      if (sameRecord(settings4.plain[key], next))
-          return false;
-      settings4.store[key] = next;
-      return true;
+    if (sameRecord(settings4.plain[key], next))
+      return false;
+    settings4.store[key] = next;
+    return true;
   }
   var writing = false;
   function writeVisits(next) {
-      if (writing)
-          return;
-      writing = true;
-      try {
-          const visits = capVisits(next);
-          const rawWs = pruneRecord(settings4.plain.workspaceByConv, visits);
-          const workspaceByConv = {};
-          for (const [id, value] of Object.entries(rawWs)) {
-              const ws = asWorkspaceId(value);
-              if (ws)
-                  workspaceByConv[id] = ws;
-          }
-          const pages = pruneRecord(settings4.plain.pages, visits);
-          const usedWs = new Set(Object.values(workspaceByConv));
-          const keepProjects = {};
-          for (const [id, name] of Object.entries(settings4.plain.projectNames ?? {})) {
-              if (usedWs.has(id))
-                  keepProjects[id] = name;
-          }
-          let changed = false;
-          if (!sameList(readVisits(), visits)) {
-              settings4.store.visits = visits;
-              changed = true;
-          }
-          if (assignRecord("titles", pruneRecord(settings4.plain.titles, visits)))
-              changed = true;
-          if (assignRecord("workspaceByConv", workspaceByConv))
-              changed = true;
-          if (assignRecord("pages", pages))
-              changed = true;
-          if (assignRecord("projectNames", keepProjects))
-              changed = true;
-          if (changed && open2)
-              paint();
+    if (writing)
+      return;
+    writing = true;
+    try {
+      const visits = capVisits(next);
+      const rawWs = pruneRecord(settings4.plain.workspaceByConv, visits);
+      const workspaceByConv = {};
+      for (const [id, value] of Object.entries(rawWs)) {
+        const ws = asWorkspaceId(value);
+        if (ws)
+          workspaceByConv[id] = ws;
       }
-      finally {
-          writing = false;
+      const pages = pruneRecord(settings4.plain.pages, visits);
+      const usedWs = new Set(Object.values(workspaceByConv));
+      const keepProjects = {};
+      for (const [id, name] of Object.entries(settings4.plain.projectNames ?? {})) {
+        if (usedWs.has(id))
+          keepProjects[id] = name;
       }
+      let changed = false;
+      if (!sameList(readVisits(), visits)) {
+        settings4.store.visits = visits;
+        changed = true;
+      }
+      if (assignRecord("titles", pruneRecord(settings4.plain.titles, visits)))
+        changed = true;
+      if (assignRecord("workspaceByConv", workspaceByConv))
+        changed = true;
+      if (assignRecord("pages", pages))
+        changed = true;
+      if (assignRecord("projectNames", keepProjects))
+        changed = true;
+      if (changed && open2)
+        paint();
+    } finally {
+      writing = false;
+    }
   }
   function rememberTitle(id, title) {
-      const t = title?.trim();
-      if (!id || !t)
-          return;
-      const prev = settings4.plain.titles ?? {};
-      if (prev[id] === t)
-          return;
-      settings4.store.titles = { ...prev, [id]: t };
+    const t = title?.trim();
+    if (!id || !t)
+      return;
+    const prev = settings4.plain.titles ?? {};
+    if (prev[id] === t)
+      return;
+    settings4.store.titles = { ...prev, [id]: t };
   }
   function routeConvId(route) {
-      if (!route)
-          return null;
-      if (route.conversationId)
-          return route.conversationId;
-      if (typeof route.chat === "string" && route.chat)
-          return route.chat;
-      if (route.page === "main")
-          return HOME_ID;
+    if (!route)
       return null;
+    if (route.conversationId)
+      return route.conversationId;
+    if (typeof route.chat === "string" && route.chat)
+      return route.chat;
+    if (route.page === "main")
+      return HOME_ID;
+    return null;
   }
   function projectIdFromUrl() {
-      const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)
-          ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
-      return m?.[1] ?? "";
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
+    return m?.[1] ?? "";
   }
   function chatIdFromUrl() {
-      try {
-          return new URLSearchParams(location.search).get("chat") ?? "";
-      }
-      catch {
-          return "";
-      }
+    try {
+      return new URLSearchParams(location.search).get("chat") ?? "";
+    } catch {
+      return "";
+    }
   }
   var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
   function asWorkspaceId(value) {
-      if (typeof value === "string") {
-          const s = value.trim();
-          return WS_ID.test(s) ? s : "";
-      }
-      if (Array.isArray(value)) {
-          for (const item of value) {
-              const id = asWorkspaceId(item);
-              if (id)
-                  return id;
-          }
-          return "";
-      }
-      if (value && typeof value === "object") {
-          const rec = value;
-          return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    if (typeof value === "string") {
+      const s = value.trim();
+      return WS_ID.test(s) ? s : "";
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const id = asWorkspaceId(item);
+        if (id)
+          return id;
       }
       return "";
+    }
+    if (value && typeof value === "object") {
+      const rec = value;
+      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    }
+    return "";
   }
   function hrefFor(id, workspaceId) {
-      const ws = asWorkspaceId(workspaceId);
-      if (!id)
-          return ws ? `/project/${ws}` : "/";
-      if (ws)
-          return `/project/${ws}?chat=${encodeURIComponent(id)}`;
-      return `/c/${encodeURIComponent(id)}`;
+    const ws = asWorkspaceId(workspaceId);
+    if (!id)
+      return ws ? `/project/${ws}` : "/";
+    if (ws)
+      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
+    return `/c/${encodeURIComponent(id)}`;
   }
   function currentVisit() {
-      try {
-          const id = ChatPageStore.useChatPageStore.getState().conversationId;
-          if (id)
-              return id;
-      }
-      catch (e) {
-          logger17.debug("ChatPageStore unavailable:", e);
-      }
-      try {
-          const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
-          if (id != null)
-              return id;
-      }
-      catch (e) {
-          logger17.debug("RoutingStore unavailable:", e);
-      }
-      return chatIdFromUrl() || null;
+    try {
+      const id = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (id)
+        return id;
+    } catch (e) {
+      logger17.debug("ChatPageStore unavailable:", e);
+    }
+    try {
+      const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
+      if (id != null)
+        return id;
+    } catch (e) {
+      logger17.debug("RoutingStore unavailable:", e);
+    }
+    return chatIdFromUrl() || null;
   }
   function idsFromHistory() {
-      try {
-          const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-          const ids = [];
-          const add = (r) => {
-              const id = routeConvId(r);
-              if (id != null)
-                  ids.push(id);
-          };
-          add(route);
-          for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--)
-              add(historyStack[i]);
-          return unique(ids);
-      }
-      catch (e) {
-          logger17.debug("historyStack unavailable:", e);
-          return [];
-      }
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      const ids = [];
+      const add = (r) => {
+        const id = routeConvId(r);
+        if (id != null)
+          ids.push(id);
+      };
+      add(route);
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
+        add(historyStack[i]);
+      return unique(ids);
+    } catch (e) {
+      logger17.debug("historyStack unavailable:", e);
+      return [];
+    }
   }
   function pageTitle() {
-      const raw = document.title.replace(TITLE_TAIL, "").trim();
-      if (!raw || /^grok$/i.test(raw))
-          return "";
-      return raw;
+    const raw = document.title.replace(TITLE_TAIL, "").trim();
+    if (!raw || /^grok$/i.test(raw))
+      return "";
+    return raw;
   }
   function lookup(id) {
-      try {
-          const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-          return byId[id] ?? byIdWithWorkspaces[id] ?? list.find(c => c.conversationId === id);
-      }
-      catch (e) {
-          logger17.debug("Conversation lookup failed:", e);
-          return undefined;
-      }
+    try {
+      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
+    } catch (e) {
+      logger17.debug("Conversation lookup failed:", e);
+      return;
+    }
   }
   function titleOf(id) {
-      if (!id)
-          return "New chat";
-      const conv = lookup(id);
-      if (conv?.title?.trim())
-          return conv.title.trim();
-      const cached = settings4.plain.titles?.[id];
-      if (cached)
-          return cached;
-      if (id === currentVisit())
-          return pageTitle() || "Untitled";
-      return "Untitled";
+    if (!id)
+      return "New chat";
+    const conv = lookup(id);
+    if (conv?.title?.trim())
+      return conv.title.trim();
+    const cached = settings4.plain.titles?.[id];
+    if (cached)
+      return cached;
+    if (id === currentVisit())
+      return pageTitle() || "Untitled";
+    return "Untitled";
   }
   function liveWorkspaceId() {
-      try {
-          const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
-          if (pid)
-              return pid;
-      }
-      catch { }
-      try {
-          const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
-          const id = asWorkspaceId(workspaceId);
-          if (id)
-              return id;
-      }
-      catch { }
-      return asWorkspaceId(projectIdFromUrl());
+    try {
+      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
+      if (pid)
+        return pid;
+    } catch {}
+    try {
+      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
+      const id = asWorkspaceId(workspaceId);
+      if (id)
+        return id;
+    } catch {}
+    return asWorkspaceId(projectIdFromUrl());
   }
   function workspaceFromHistory(id) {
-      try {
-          const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-          if (routeConvId(route) === id) {
-              const ws = asWorkspaceId(route.workspaceId);
-              if (ws)
-                  return ws;
-          }
-          for (let i = (historyStack?.length ?? 0) - 1; i >= 0; i--) {
-              const r = historyStack[i];
-              if (routeConvId(r) === id) {
-                  const ws = asWorkspaceId(r?.workspaceId);
-                  if (ws)
-                      return ws;
-              }
-          }
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      if (routeConvId(route) === id) {
+        const ws = asWorkspaceId(route.workspaceId);
+        if (ws)
+          return ws;
       }
-      catch { }
-      return "";
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
+        const r = historyStack[i];
+        if (routeConvId(r) === id) {
+          const ws = asWorkspaceId(r?.workspaceId);
+          if (ws)
+            return ws;
+        }
+      }
+    } catch {}
+    return "";
   }
   function convWorkspaceId(id) {
-      try {
-          const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-          const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
-          const fromResolver = asWorkspaceId(resolved);
-          if (fromResolver)
-              return fromResolver;
-          const conv = byId[id] ?? byIdWithWorkspaces[id];
-          return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-      }
-      catch (e) {
-          logger17.debug("convWorkspaceId failed:", e);
-          return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
-      }
+    try {
+      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
+      const fromResolver = asWorkspaceId(resolved);
+      if (fromResolver)
+        return fromResolver;
+      const conv = byId[id] ?? byIdWithWorkspaces[id];
+      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+    } catch (e) {
+      logger17.debug("convWorkspaceId failed:", e);
+      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
+    }
   }
   function workspaceFromDom(id) {
-      if (!id)
-          return "";
-      try {
-          for (const a of document.querySelectorAll("a[href]")) {
-              const href = a.getAttribute("href");
-              if (!href || !href.includes(id))
-                  continue;
-              const u = new URL(href, location.origin);
-              if (u.searchParams.get("chat") !== id && !u.pathname.includes(id))
-                  continue;
-              const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
-              if (ws)
-                  return ws;
-          }
-      }
-      catch { }
+    if (!id)
       return "";
+    try {
+      for (const a of document.querySelectorAll("a[href]")) {
+        const href = a.getAttribute("href");
+        if (!href || !href.includes(id))
+          continue;
+        const u = new URL(href, location.origin);
+        if (u.searchParams.get("chat") !== id && !u.pathname.includes(id))
+          continue;
+        const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+        if (ws)
+          return ws;
+      }
+    } catch {}
+    return "";
   }
   function workspaceOf(id) {
-      if (!id)
-          return "";
-      if (id === currentVisit()) {
-          const live = liveWorkspaceId();
-          if (live)
-              return live;
-      }
-      return convWorkspaceId(id)
-          || asWorkspaceId(settings4.plain.workspaceByConv?.[id])
-          || workspaceFromHistory(id)
-          || workspaceFromDom(id);
+    if (!id)
+      return "";
+    if (id === currentVisit()) {
+      const live = liveWorkspaceId();
+      if (live)
+        return live;
+    }
+    return convWorkspaceId(id) || asWorkspaceId(settings4.plain.workspaceByConv?.[id]) || workspaceFromHistory(id) || workspaceFromDom(id);
   }
   function labelText(el) {
-      return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+    return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
   }
   function readOpenProjectName() {
-      const sidebar = document.querySelector("[data-sidebar=sidebar]");
-      if (!sidebar)
-          return "";
-      const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
-      let afterProjects = false;
-      for (const el of nodes) {
-          const t = labelText(el);
-          if (!t)
-              continue;
-          if (/^projects$/i.test(t)) {
-              afterProjects = true;
-              continue;
-          }
-          if (!afterProjects)
-              continue;
-          if (SKIP_LABEL.test(t))
-              break;
-          if (t.length < 2 || t.length > 64)
-              continue;
-          if (el.querySelector("svg"))
-              return t;
-      }
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar)
       return "";
+    const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
+    let afterProjects = false;
+    for (const el of nodes) {
+      const t = labelText(el);
+      if (!t)
+        continue;
+      if (/^projects$/i.test(t)) {
+        afterProjects = true;
+        continue;
+      }
+      if (!afterProjects)
+        continue;
+      if (SKIP_LABEL.test(t))
+        break;
+      if (t.length < 2 || t.length > 64)
+        continue;
+      if (el.querySelector("svg"))
+        return t;
+    }
+    return "";
   }
   function projectNameOf(id) {
-      if (!id)
-          return "";
-      const ws = workspaceOf(id);
-      if (!ws)
-          return "";
-      return wsNames[ws] || settings4.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
+    if (!id)
+      return "";
+    const ws = workspaceOf(id);
+    if (!ws)
+      return "";
+    return wsNames[ws] || settings4.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
   }
   function rememberProject(id) {
-      if (!id)
-          return;
-      const ws = workspaceOf(id);
-      if (!ws)
-          return;
-      const prevWs = settings4.plain.workspaceByConv ?? {};
-      if (prevWs[id] !== ws)
-          settings4.store.workspaceByConv = { ...prevWs, [id]: ws };
-      const name = wsNames[ws] || readOpenProjectName() || settings4.plain.projectNames?.[ws] || "";
-      if (!name)
-          return;
-      wsNames[ws] = name;
-      const prevNames = settings4.plain.projectNames ?? {};
-      if (prevNames[ws] !== name)
-          settings4.store.projectNames = { ...prevNames, [ws]: name };
+    if (!id)
+      return;
+    const ws = workspaceOf(id);
+    if (!ws)
+      return;
+    const prevWs = settings4.plain.workspaceByConv ?? {};
+    if (prevWs[id] !== ws)
+      settings4.store.workspaceByConv = { ...prevWs, [id]: ws };
+    const name = wsNames[ws] || readOpenProjectName() || settings4.plain.projectNames?.[ws] || "";
+    if (!name)
+      return;
+    wsNames[ws] = name;
+    const prevNames = settings4.plain.projectNames ?? {};
+    if (prevNames[ws] !== name)
+      settings4.store.projectNames = { ...prevNames, [ws]: name };
   }
   function chatPane() {
-      const main = document.querySelector("main");
-      if (!main)
-          return null;
-      let best = null;
-      let bestScore = 0;
-      for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
-          if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
-              continue;
-          const r = n.getBoundingClientRect();
-          if (r.width < 240 || r.height < 120)
-              continue;
-          const score = r.width * r.height;
-          if (score > bestScore) {
-              best = n;
-              bestScore = score;
-          }
+    const main = document.querySelector("main");
+    if (!main)
+      return null;
+    let best = null;
+    let bestScore = 0;
+    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
+      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
+        continue;
+      const r = n.getBoundingClientRect();
+      if (r.width < 240 || r.height < 120)
+        continue;
+      const score = r.width * r.height;
+      if (score > bestScore) {
+        best = n;
+        bestScore = score;
       }
-      return best;
+    }
+    return best;
   }
   function messageList(pane) {
-      let node = pane;
-      for (let i = 0; i < 8; i++) {
-          const kids = [...node.children].filter((c) => c instanceof HTMLElement);
-          if (kids.length === 1 && kids[0].children.length > 1) {
-              node = kids[0];
-              continue;
-          }
-          break;
+    let node = pane;
+    for (let i = 0;i < 8; i++) {
+      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
+      if (kids.length === 1 && kids[0].children.length > 1) {
+        node = kids[0];
+        continue;
       }
-      return node;
+      break;
+    }
+    return node;
   }
   function chromeOff(el) {
-      const clone = el.cloneNode(true);
-      clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach(n => n.remove());
-      return clone;
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach((n) => n.remove());
+    return clone;
   }
   function userBubble(root) {
-      const tagged = root.querySelector("[data-void-rt-role='user'], .void-rt-user-msg");
-      if (tagged)
-          return tagged;
-      const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
-      if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className))
-          cands.unshift(root);
-      if (!cands.length)
-          return null;
-      const inner = cands.filter(el => !cands.some(other => other !== el && el.contains(other)));
-      inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
-      return inner[0] ?? null;
+    const tagged = root.querySelector("[data-void-rt-role='user'], .void-rt-user-msg");
+    if (tagged)
+      return tagged;
+    const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
+    if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className))
+      cands.unshift(root);
+    if (!cands.length)
+      return null;
+    const inner = cands.filter((el) => !cands.some((other) => other !== el && el.contains(other)));
+    inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
+    return inner[0] ?? null;
   }
   function extractTurn(kid) {
-      const bubble = userBubble(kid);
-      const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
-      const rest = chromeOff(kid);
-      if (bubble && bubble !== kid) {
-          rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach(n => n.remove());
-      }
-      let asstText = scrubText(rest.innerText ?? "");
-      if (userText && asstText.includes(userText))
-          asstText = scrubText(asstText.replace(userText, " "));
-      const lines = [];
-      if (userText)
-          lines.push({ role: "user", text: userText });
-      if (asstText && asstText !== userText)
-          lines.push({ role: "assistant", text: asstText });
-      return lines;
+    const bubble = userBubble(kid);
+    const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
+    const rest = chromeOff(kid);
+    if (bubble && bubble !== kid) {
+      rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach((n) => n.remove());
+    }
+    let asstText = scrubText(rest.innerText ?? "");
+    if (userText && asstText.includes(userText))
+      asstText = scrubText(asstText.replace(userText, " "));
+    const lines = [];
+    if (userText)
+      lines.push({ role: "user", text: userText });
+    if (asstText && asstText !== userText)
+      lines.push({ role: "assistant", text: asstText });
+    return lines;
   }
   function extractMarks(root) {
-      const marks = [...root.querySelectorAll(".void-rt-mark")];
-      if (!marks.length)
-          return [];
-      const out = [];
-      for (const m of marks) {
-          const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
-          const text = scrubText(m.textContent ?? "");
-          if (text)
-              out.push({ role, text });
-      }
-      return lastRound(out);
+    const marks = [...root.querySelectorAll(".void-rt-mark")];
+    if (!marks.length)
+      return [];
+    const out = [];
+    for (const m of marks) {
+      const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
+      const text = scrubText(m.textContent ?? "");
+      if (text)
+        out.push({ role, text });
+    }
+    return lastRound(out);
   }
   function extractLines(pane) {
-      const fromMarks = extractMarks(pane);
-      if (fromMarks.length)
-          return fromMarks;
-      const source = messageList(pane);
-      const kids = [...source.children].filter((c) => c instanceof HTMLElement);
-      const out = [];
-      for (const kid of kids)
-          out.push(...extractTurn(kid));
-      return lastRound(out);
+    const fromMarks = extractMarks(pane);
+    if (fromMarks.length)
+      return fromMarks;
+    const source = messageList(pane);
+    const kids = [...source.children].filter((c) => c instanceof HTMLElement);
+    const out = [];
+    for (const kid of kids)
+      out.push(...extractTurn(kid));
+    return lastRound(out);
   }
   function scrubText(raw) {
-      let t = raw.replaceAll(/\s+/g, " ").trim();
-      t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
-      t = t.replaceAll(/\s+/g, " ").trim();
-      if (!t || SKIP_NOISE.test(t))
-          return "";
-      return t;
+    let t = raw.replaceAll(/\s+/g, " ").trim();
+    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
+    t = t.replaceAll(/\s+/g, " ").trim();
+    if (!t || SKIP_NOISE.test(t))
+      return "";
+    return t;
   }
   function plainText(md) {
-      const t = md
-          .replace(/```[\s\S]*?```/g, " ")
-          .replace(/`([^`]+)`/g, "$1")
-          .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
-          .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-          .replace(/^#{1,6}\s+/gm, "")
-          .replace(/[*_~]{1,3}/g, "")
-          .replace(/^>\s+/gm, "");
-      return scrubText(t);
+    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
+    return scrubText(t);
   }
   function clipLine(text, max) {
-      const t = scrubText(text);
-      if (t.length <= max)
-          return t;
-      return `${t.slice(0, Math.max(1, max - 1))}…`;
+    const t = scrubText(text);
+    if (t.length <= max)
+      return t;
+    return `${t.slice(0, Math.max(1, max - 1))}…`;
   }
   function lastRound(lines) {
-      const cleaned = lines
-          .map(line => ({ role: line.role, text: scrubText(line.text) }))
-          .filter((line) => !!line.text);
-      if (!cleaned.length)
-          return [];
-      let asst = -1;
-      let user = -1;
-      for (let i = cleaned.length - 1; i >= 0; i--) {
-          if (asst < 0 && cleaned[i].role === "assistant")
-              asst = i;
-          if (user < 0 && cleaned[i].role === "user")
-              user = i;
-          if (asst >= 0 && user >= 0)
-              break;
-      }
-      const pick = user >= 0 && asst >= 0 && user < asst
-          ? [cleaned[user], cleaned[asst]]
-          : user >= 0 && (asst < 0 || user > asst)
-              ? [cleaned[user]]
-              : asst >= 0
-                  ? [cleaned[asst]]
-                  : cleaned.slice(-1);
-      return pick.map(line => ({
-          role: line.role,
-          text: clipLine(line.text, line.role === "user" ? 72 : 140),
-      }));
+    const cleaned = lines.map((line) => ({ role: line.role, text: scrubText(line.text) })).filter((line) => !!line.text);
+    if (!cleaned.length)
+      return [];
+    let asst = -1;
+    let user = -1;
+    for (let i = cleaned.length - 1;i >= 0; i--) {
+      if (asst < 0 && cleaned[i].role === "assistant")
+        asst = i;
+      if (user < 0 && cleaned[i].role === "user")
+        user = i;
+      if (asst >= 0 && user >= 0)
+        break;
+    }
+    const pick = user >= 0 && asst >= 0 && user < asst ? [cleaned[user], cleaned[asst]] : user >= 0 && (asst < 0 || user > asst) ? [cleaned[user]] : asst >= 0 ? [cleaned[asst]] : cleaned.slice(-1);
+    return pick.map((line) => ({
+      role: line.role,
+      text: clipLine(line.text, line.role === "user" ? 72 : 140)
+    }));
   }
   function pickUserText(query, message) {
-      const q = plainText(query);
-      const m = plainText(message);
-      if (q && m) {
-          if (m.startsWith(q) && m.length > q.length)
-              return q;
-          return q.length <= m.length ? q : m;
-      }
-      return q || m;
+    const q = plainText(query);
+    const m = plainText(message);
+    if (q && m) {
+      if (m.startsWith(q) && m.length > q.length)
+        return q;
+      return q.length <= m.length ? q : m;
+    }
+    return q || m;
   }
   function walkThread(startId) {
-      if (!startId)
-          return [];
-      try {
-          const { byId } = ResponseStore.useResponseStore.getState();
-          const out = [];
-          const seen = new Set();
-          let id = startId;
-          while (id && !seen.has(id) && out.length < 50) {
-              seen.add(id);
-              const r = byId[id];
-              if (!r)
-                  break;
-              out.unshift(r);
-              id = r.parentResponseId;
-          }
-          return out;
+    if (!startId)
+      return [];
+    try {
+      const { byId } = ResponseStore.useResponseStore.getState();
+      const out = [];
+      const seen = new Set;
+      let id = startId;
+      while (id && !seen.has(id) && out.length < 50) {
+        seen.add(id);
+        const r = byId[id];
+        if (!r)
+          break;
+        out.unshift(r);
+        id = r.parentResponseId;
       }
-      catch {
-          return [];
-      }
+      return out;
+    } catch {
+      return [];
+    }
   }
   function responsesOf(id) {
-      const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-      const nodes = nodesByConversationId[id] ?? [];
-      if (nodes.length) {
-          const list = nodes.map(n => byId[n.responseId]).filter((r) => !!r);
-          if (list.length)
-              return list;
-          const walked = walkThread(nodes.at(-1)?.responseId);
-          if (walked.length)
-              return walked;
+    const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+    const nodes = nodesByConversationId[id] ?? [];
+    if (nodes.length) {
+      const list = nodes.map((n) => byId[n.responseId]).filter((r) => !!r);
+      if (list.length)
+        return list;
+      const walked = walkThread(nodes.at(-1)?.responseId);
+      if (walked.length)
+        return walked;
+    }
+    const cached = byConversationId[id];
+    if (cached?.length)
+      return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      if (chat.conversationId === id) {
+        return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
       }
-      const cached = byConversationId[id];
-      if (cached?.length)
-          return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
-      try {
-          const chat = ChatPageStore.useChatPageStore.getState();
-          if (chat.conversationId === id) {
-              return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
-          }
-      }
-      catch { /* ignore */ }
-      return [];
+    } catch {}
+    return [];
   }
   function responsesToLines(list) {
-      const out = [];
-      for (const r of list) {
-          if (!r || r.isControl)
-              continue;
-          const sender = String(r.sender ?? "").toLowerCase();
-          const human = sender === "human" || sender === "user";
-          if (human) {
-              const text = pickUserText(r.query || "", r.message || "");
-              if (text)
-                  out.push({ role: "user", text });
-              continue;
-          }
-          const query = pickUserText(r.query || "", "");
-          let message = plainText(r.message || "");
-          if (query && message.startsWith(query) && message.length > query.length) {
-              message = scrubText(message.slice(query.length));
-          }
-          if (query && out.at(-1)?.text !== query)
-              out.push({ role: "user", text: query });
-          if (message && message !== query)
-              out.push({ role: "assistant", text: message });
+    const out = [];
+    for (const r of list) {
+      if (!r || r.isControl)
+        continue;
+      const sender = String(r.sender ?? "").toLowerCase();
+      const human = sender === "human" || sender === "user";
+      if (human) {
+        const text = pickUserText(r.query || "", r.message || "");
+        if (text)
+          out.push({ role: "user", text });
+        continue;
       }
-      return lastRound(out);
+      const query = pickUserText(r.query || "", "");
+      let message = plainText(r.message || "");
+      if (query && message.startsWith(query) && message.length > query.length) {
+        message = scrubText(message.slice(query.length));
+      }
+      if (query && out.at(-1)?.text !== query)
+        out.push({ role: "user", text: query });
+      if (message && message !== query)
+        out.push({ role: "assistant", text: message });
+    }
+    return lastRound(out);
   }
   function linesFromStore(id) {
-      if (!id)
-          return [];
-      try {
-          return responsesToLines(responsesOf(id));
-      }
-      catch (e) {
-          logger17.debug("ResponseStore snapshot failed:", e);
-          return [];
-      }
+    if (!id)
+      return [];
+    try {
+      return responsesToLines(responsesOf(id));
+    } catch (e) {
+      logger17.debug("ResponseStore snapshot failed:", e);
+      return [];
+    }
   }
-  function betterLines(store, dom) {
-      const pair = (lines) => lines.some(l => l.role === "user") && lines.some(l => l.role === "assistant");
-      if (pair(store))
-          return store;
-      if (pair(dom))
-          return dom;
-      return store.length ? store : dom;
+  function betterLines(store2, dom) {
+    const pair = (lines) => lines.some((l) => l.role === "user") && lines.some((l) => l.role === "assistant");
+    if (pair(store2))
+      return store2;
+    if (pair(dom))
+      return dom;
+    return store2.length ? store2 : dom;
   }
   function parseSnap(raw) {
-      if (!raw)
-          return null;
-      try {
-          const parsed = JSON.parse(raw);
-          if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
-              return null;
-          return {
-              title: typeof parsed.title === "string" ? parsed.title : "",
-              theme: parsed.theme === "light" ? "light" : "dark",
-              lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string")),
-          };
-      }
-      catch {
-          return null;
-      }
+    if (!raw)
+      return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
+        return null;
+      return {
+        title: typeof parsed.title === "string" ? parsed.title : "",
+        theme: parsed.theme === "light" ? "light" : "dark",
+        lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"))
+      };
+    } catch {
+      return null;
+    }
   }
   function snapOf(id) {
-      return thumbs.get(id) ?? parseSnap(settings4.plain.pages?.[id]);
+    return thumbs.get(id) ?? parseSnap(settings4.plain.pages?.[id]);
   }
   function rememberPage(id, snap) {
-      const json = JSON.stringify(snap);
-      const prev = settings4.plain.pages ?? {};
-      if (prev[id] === json)
-          return;
-      settings4.store.pages = { ...prev, [id]: json };
+    const json = JSON.stringify(snap);
+    const prev = settings4.plain.pages ?? {};
+    if (prev[id] === json)
+      return;
+    settings4.store.pages = { ...prev, [id]: json };
   }
   function applyLineStyle(el, role, theme) {
-      el.style.display = "-webkit-box";
-      el.style.webkitBoxOrient = "vertical";
-      el.style.overflow = "hidden";
-      el.style.width = "fit-content";
-      el.style.overflowWrap = "anywhere";
-      el.style.fontSize = "11px";
-      el.style.lineHeight = "1.35";
-      if (role === "user") {
-          el.style.alignSelf = "flex-end";
-          el.style.maxWidth = "78%";
-          el.style.padding = "6px 9px";
-          el.style.borderRadius = "14px 14px 4px 14px";
-          el.style.background = theme === "light" ? "#e8e6e0" : "#2f2f2f";
-          el.style.color = theme === "light" ? "#171717" : "#fff";
-          el.style.webkitLineClamp = "2";
-      }
-      else {
-          el.style.alignSelf = "flex-start";
-          el.style.maxWidth = "94%";
-          el.style.padding = "0";
-          el.style.background = "transparent";
-          el.style.color = theme === "light" ? "#3f3f3f" : "#c4c4c4";
-          el.style.webkitLineClamp = "4";
-      }
+    el.style.display = "-webkit-box";
+    el.style.webkitBoxOrient = "vertical";
+    el.style.overflow = "hidden";
+    el.style.width = "fit-content";
+    el.style.overflowWrap = "anywhere";
+    el.style.fontSize = "11px";
+    el.style.lineHeight = "1.35";
+    if (role === "user") {
+      el.style.alignSelf = "flex-end";
+      el.style.maxWidth = "78%";
+      el.style.padding = "6px 9px";
+      el.style.borderRadius = "14px 14px 4px 14px";
+      el.style.background = theme === "light" ? "#e8e6e0" : "#2f2f2f";
+      el.style.color = theme === "light" ? "#171717" : "#fff";
+      el.style.webkitLineClamp = "2";
+    } else {
+      el.style.alignSelf = "flex-start";
+      el.style.maxWidth = "94%";
+      el.style.padding = "0";
+      el.style.background = "transparent";
+      el.style.color = theme === "light" ? "#3f3f3f" : "#c4c4c4";
+      el.style.webkitLineClamp = "4";
+    }
   }
   function buildPageShot(snap) {
-      const page = node("span", cl17("page"));
-      page.dataset.theme = snap.theme;
-      for (const line of lastRound(snap.lines)) {
-          const el = node("span", cl17("page-line", line.role === "user" && "page-line-user"), line.text);
-          el.dataset.role = line.role;
-          applyLineStyle(el, line.role, snap.theme);
-          page.append(el);
-      }
-      return page;
+    const page = node("span", cl17("page"));
+    page.dataset.theme = snap.theme;
+    for (const line of lastRound(snap.lines)) {
+      const el = node("span", cl17("page-line", line.role === "user" && "page-line-user"), line.text);
+      el.dataset.role = line.role;
+      applyLineStyle(el, line.role, snap.theme);
+      page.append(el);
+    }
+    return page;
   }
   function captureId(id) {
-      if (!id)
-          return;
-      const fromStore = linesFromStore(id);
-      let fromDom = [];
-      if (id === currentVisit()) {
-          const pane = chatPane();
-          if (pane)
-              fromDom = extractLines(pane);
-      }
-      const lines = betterLines(fromStore, fromDom);
-      if (!lines.length)
-          return;
-      const snap = {
-          title: titleOf(id),
-          theme: detectTheme(),
-          lines: lastRound(lines),
-      };
-      thumbs.set(id, snap);
-      rememberPage(id, snap);
+    if (!id)
+      return;
+    const fromStore = linesFromStore(id);
+    let fromDom = [];
+    if (id === currentVisit()) {
+      const pane = chatPane();
+      if (pane)
+        fromDom = extractLines(pane);
+    }
+    const lines = betterLines(fromStore, fromDom);
+    if (!lines.length)
+      return;
+    const snap = {
+      title: titleOf(id),
+      theme: detectTheme(),
+      lines: lastRound(lines)
+    };
+    thumbs.set(id, snap);
+    rememberPage(id, snap);
   }
   var capturing = false;
   function captureCurrent() {
-      if (capturing || open2)
-          return;
-      capturing = true;
-      try {
-          const current = currentVisit();
-          if (current)
-              captureId(current);
-          for (const id of capVisits(readVisits())) {
-              if (id && id !== current)
-                  captureId(id);
-          }
+    if (capturing || open2)
+      return;
+    capturing = true;
+    try {
+      const current = currentVisit();
+      if (current)
+        captureId(current);
+      for (const id of capVisits(readVisits())) {
+        if (id && id !== current)
+          captureId(id);
       }
-      catch (e) {
-          logger17.debug("snapshot failed:", e);
-      }
-      finally {
-          capturing = false;
-      }
+    } catch (e) {
+      logger17.debug("snapshot failed:", e);
+    } finally {
+      capturing = false;
+    }
   }
   function scheduleCapture() {
-      if (open2)
-          return;
+    if (open2)
+      return;
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-              if (!open2)
-                  captureCurrent();
-          });
+        if (!open2)
+          captureCurrent();
       });
+    });
   }
   function bump(id) {
-      if (!id && !settings4.store.includeHome)
-          return;
-      writeVisits(capVisits([id, ...readVisits()]));
-      const conv = id ? lookup(id) : undefined;
-      rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-      if (id)
-          rememberProject(id);
+    if (!id && !settings4.store.includeHome)
+      return;
+    writeVisits(capVisits([id, ...readVisits()]));
+    const conv = id ? lookup(id) : undefined;
+    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    if (id)
+      rememberProject(id);
   }
   function hydrate() {
-      const current = currentVisit();
-      const merged = current == null
-          ? [...idsFromHistory(), ...readVisits()]
-          : [current, ...idsFromHistory(), ...readVisits()];
-      writeVisits(capVisits(merged));
-      if (current) {
-          rememberTitle(current, lookup(current)?.title || pageTitle());
-          rememberProject(current);
-      }
+    const current = currentVisit();
+    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
+    writeVisits(capVisits(merged));
+    if (current) {
+      rememberTitle(current, lookup(current)?.title || pageTitle());
+      rememberProject(current);
+    }
   }
   function topics() {
-      return capVisits(readVisits()).map(id => ({
-          id,
-          title: titleOf(id),
-          project: projectNameOf(id),
-      }));
+    return capVisits(readVisits()).map((id) => ({
+      id,
+      title: titleOf(id),
+      project: projectNameOf(id)
+    }));
   }
   function parseHref(href) {
-      try {
-          const u = new URL(href, location.origin);
-          const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
-          if (parsed?.page && parsed.page !== "unknown")
-              return parsed;
-      }
-      catch (e) {
-          logger17.debug("urlToRoute failed:", e);
-      }
-      return null;
+    try {
+      const u = new URL(href, location.origin);
+      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
+      if (parsed?.page && parsed.page !== "unknown")
+        return parsed;
+    } catch (e) {
+      logger17.debug("urlToRoute failed:", e);
+    }
+    return null;
   }
   function applyChatPage(id, workspaceId) {
-      try {
-          const chat = ChatPageStore.useChatPageStore.getState();
-          chat.setConversationId(id || undefined);
-          chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
-      }
-      catch (e) {
-          logger17.debug("ChatPageStore update failed:", e);
-      }
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      chat.setConversationId(id || undefined);
+      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
+    } catch (e) {
+      logger17.debug("ChatPageStore update failed:", e);
+    }
   }
   function navigateTo(id) {
+    try {
+      const routing = RoutingStore.useRoutingStore.getState();
+      const { route } = routing;
+      const teamId = route.teamId ?? null;
+      if (!id) {
+        if (route.page === "main" || route.page === "chat" && !route.conversationId && !projectIdFromUrl())
+          return;
+        routing.push({ page: "main", teamId });
+        applyChatPage("");
+        return;
+      }
+      const workspaceId = workspaceOf(id);
+      const href = hrefFor(id, workspaceId);
+      const parsed = parseHref(href);
+      const dest = workspaceId ? {
+        page: "workspace",
+        workspaceId,
+        tab: "conversations",
+        conversationId: id,
+        teamId
+      } : {
+        page: "chat",
+        conversationId: id,
+        temporary: lookup(id)?.temporary ?? false,
+        teamId
+      };
+      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
+        dest.page = "workspace";
+        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
+        dest.conversationId = parsed.conversationId || id;
+        dest.tab = parsed.tab || "conversations";
+        if (parsed.filePath)
+          dest.filePath = parsed.filePath;
+      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
+        dest.page = "chat";
+        dest.conversationId = parsed.conversationId;
+        dest.temporary = parsed.temporary ?? dest.temporary;
+      }
+      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
+        dest.page = "chat";
+        dest.conversationId = id;
+        delete dest.workspaceId;
+        delete dest.tab;
+      }
+      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
+        return;
+      routing.push(dest);
+      applyChatPage(id, asWorkspaceId(dest.workspaceId));
+      if (dest.page !== "workspace") {
+        try {
+          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+          fetchConv?.(id).then((conv) => {
+            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
+            if (!ws)
+              return;
+            const now = RoutingStore.useRoutingStore.getState();
+            if (routeConvId(now.route) !== id)
+              return;
+            now.replace({
+              page: "workspace",
+              workspaceId: ws,
+              tab: "conversations",
+              conversationId: id,
+              teamId
+            });
+            applyChatPage(id, ws);
+            rememberProject(id);
+          }).catch((e) => logger17.debug("workspace resolve failed:", e));
+        } catch (e) {
+          logger17.debug("workspace fetch skipped:", e);
+        }
+      }
+    } catch (e) {
+      logger17.error("Failed to navigate:", e);
       try {
-          const routing = RoutingStore.useRoutingStore.getState();
-          const { route } = routing;
-          const teamId = route.teamId ?? null;
-          if (!id) {
-              if (route.page === "main" || (route.page === "chat" && !route.conversationId && !projectIdFromUrl()))
-                  return;
-              routing.push({ page: "main", teamId });
-              applyChatPage("");
-              return;
-          }
-          const workspaceId = workspaceOf(id);
-          const href = hrefFor(id, workspaceId);
-          const parsed = parseHref(href);
-          // Mirror Grok's useGrokRouter.routeToConversation:
-          // workspace chats MUST be { page:"workspace", workspaceId:STRING, tab:"conversations", conversationId }.
-          // page:"workspaces" (plural) is the /project list — never push that for a chat.
-          const dest = workspaceId
-              ? {
-                  page: "workspace",
-                  workspaceId,
-                  tab: "conversations",
-                  conversationId: id,
-                  teamId,
-              }
-              : {
-                  page: "chat",
-                  conversationId: id,
-                  temporary: lookup(id)?.temporary ?? false,
-                  teamId,
-              };
-          if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
-              dest.page = "workspace";
-              dest.workspaceId = asWorkspaceId(parsed.workspaceId);
-              dest.conversationId = parsed.conversationId || id;
-              dest.tab = parsed.tab || "conversations";
-              if (parsed.filePath)
-                  dest.filePath = parsed.filePath;
-          }
-          else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
-              dest.page = "chat";
-              dest.conversationId = parsed.conversationId;
-              dest.temporary = parsed.temporary ?? dest.temporary;
-          }
-          if (dest.page === "workspaces" || (dest.page === "workspace" && !asWorkspaceId(dest.workspaceId))) {
-              dest.page = "chat";
-              dest.conversationId = id;
-              delete dest.workspaceId;
-              delete dest.tab;
-          }
-          if (routeConvId(route) === dest.conversationId
-              && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "")
-              && route.page === dest.page)
-              return;
-          routing.push(dest);
-          applyChatPage(id, asWorkspaceId(dest.workspaceId));
-          // Same upgrade Grok does: if we had to open2 /c/{id}, fetch workspace and replace.
-          if (dest.page !== "workspace") {
-              try {
-                  const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-                  const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-                  fetchConv?.(id).then(conv => {
-                      const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
-                      if (!ws)
-                          return;
-                      const now = RoutingStore.useRoutingStore.getState();
-                      if (routeConvId(now.route) !== id)
-                          return;
-                      now.replace({
-                          page: "workspace",
-                          workspaceId: ws,
-                          tab: "conversations",
-                          conversationId: id,
-                          teamId,
-                      });
-                      applyChatPage(id, ws);
-                      rememberProject(id);
-                  }).catch(e => logger17.debug("workspace resolve failed:", e));
-              }
-              catch (e) {
-                  logger17.debug("workspace fetch skipped:", e);
-              }
-          }
+        location.assign(hrefFor(id, workspaceOf(id) || undefined));
+      } catch (navErr) {
+        logger17.error("Fallback navigation failed:", navErr);
       }
-      catch (e) {
-          logger17.error("Failed to navigate:", e);
-          try {
-              location.assign(hrefFor(id, workspaceOf(id) || undefined));
-          }
-          catch (navErr) {
-              logger17.error("Fallback navigation failed:", navErr);
-          }
-      }
+    }
   }
   function isTrigger(e) {
-      if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
-          return true;
-      return TRIGGER_KEYS.has(e.key);
+    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
+      return true;
+    return TRIGGER_KEYS.has(e.key);
   }
   function isCtrlKey(e) {
-      return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
+    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
   }
   function begin(reverse, fromHold) {
-      held = fromHold;
-      open2 = false;
-      captureCurrent();
-      open2 = true;
-      selected = 0;
-      try {
-          hydrate();
-          const current = currentVisit();
-          if (current != null)
-              bump(current);
-          if (topics().length > 1)
-              selected = reverse ? topics().length - 1 : 1;
-      }
-      catch (e) {
-          logger17.error("Failed to open2 switcher:", e);
-      }
-      paint();
+    held = fromHold;
+    open2 = false;
+    captureCurrent();
+    open2 = true;
+    selected = 0;
+    try {
+      hydrate();
+      const current = currentVisit();
+      if (current != null)
+        bump(current);
+      if (topics().length > 1)
+        selected = reverse ? topics().length - 1 : 1;
+    } catch (e) {
+      logger17.error("Failed to open switcher:", e);
+    }
+    paint();
   }
   function cycle(reverse) {
-      const { length } = topics();
-      if (!length)
-          return;
-      selected = (selected + (reverse ? -1 : 1) + length) % length;
-      paint();
+    const { length } = topics();
+    if (!length)
+      return;
+    selected = (selected + (reverse ? -1 : 1) + length) % length;
+    paint();
   }
   function commit() {
-      if (!open2)
-          return;
-      const target = topics()[selected];
-      open2 = false;
-      held = false;
-      paint();
-      if (target)
-          navigateTo(target.id);
+    if (!open2)
+      return;
+    const target = topics()[selected];
+    open2 = false;
+    held = false;
+    paint();
+    if (target)
+      navigateTo(target.id);
   }
   function cancel() {
-      if (!open2)
-          return;
-      open2 = false;
-      held = false;
-      paint();
+    if (!open2)
+      return;
+    open2 = false;
+    held = false;
+    paint();
   }
   function onKeyDown(e) {
-      if (isCtrlKey(e)) {
-          ctrlHeld = true;
-          return;
-      }
-      const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
-      if (combo) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          try {
-              if (open2)
-                  cycle(e.shiftKey);
-              else
-                  begin(e.shiftKey, true);
-          }
-          catch (err) {
-              logger17.error("Hotkey failed:", err);
-          }
-          return;
-      }
-      if (!open2)
-          return;
-      if (e.key === "Escape") {
-          e.preventDefault();
-          cancel();
-          return;
-      }
-      if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
-          e.preventDefault();
+    if (isCtrlKey(e)) {
+      ctrlHeld = true;
+      return;
+    }
+    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
+    if (combo) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      try {
+        if (open2)
           cycle(e.shiftKey);
+        else
+          begin(e.shiftKey, true);
+      } catch (err) {
+        logger17.error("Hotkey failed:", err);
       }
+      return;
+    }
+    if (!open2)
+      return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancel();
+      return;
+    }
+    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
+      e.preventDefault();
+      cycle(e.shiftKey);
+    }
   }
   function onKeyUp(e) {
-      if (!isCtrlKey(e))
-          return;
-      ctrlHeld = false;
-      if (open2 && held)
-          commit();
-  }
-  function onBeforeInput(e) {
-      if (!ctrlHeld && !open2)
-          return;
-      const { data } = e;
-      if (data && TRIGGER_KEYS.has(data))
-          e.preventDefault();
-  }
-  function onWindowBlur() {
-      ctrlHeld = false;
-  }
-  function onVisibility() {
-      if (document.hidden) {
-          ctrlHeld = false;
-          cancel();
-      }
-  }
-  function pick(index) {
-      selected = index;
+    if (!isCtrlKey(e))
+      return;
+    ctrlHeld = false;
+    if (open2 && held)
       commit();
   }
+  function onBeforeInput(e) {
+    if (!ctrlHeld && !open2)
+      return;
+    const { data } = e;
+    if (data && TRIGGER_KEYS.has(data))
+      e.preventDefault();
+  }
+  function onWindowBlur() {
+    ctrlHeld = false;
+  }
+  function onVisibility() {
+    if (document.hidden) {
+      ctrlHeld = false;
+      cancel();
+    }
+  }
+  function pick(index) {
+    selected = index;
+    commit();
+  }
   function node(tag, className, text) {
-      const el = document.createElement(tag);
-      if (className)
-          el.className = className;
-      if (text)
-          el.textContent = text;
-      return el;
+    const el = document.createElement(tag);
+    if (className)
+      el.className = className;
+    if (text)
+      el.textContent = text;
+    return el;
   }
   function fillShot(box, id) {
-      const snap = snapOf(id);
-      if (!snap) {
-          const fallback = node("span", cl17("fallback"));
-          fallback.append(faviconImg(cl17("favicon")));
-          box.append(fallback);
-          return;
-      }
-      const shot = node("span", cl17("shot"));
-      shot.append(buildPageShot(snap));
-      box.append(shot);
+    const snap = snapOf(id);
+    if (!snap) {
+      const fallback = node("span", cl17("fallback"));
+      fallback.append(faviconImg(cl17("favicon")));
+      box.append(fallback);
+      return;
+    }
+    const shot = node("span", cl17("shot"));
+    shot.append(buildPageShot(snap));
+    box.append(shot);
   }
   var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
   var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
   var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
   var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH}" fill="#050505"/><path d="${GROK_MARK_P1}" fill="#FCFCFC"/><path d="${GROK_MARK_P2}" fill="#FCFCFC"/></svg>`)}`;
   var ACCENTS = [
-      "rgb(37, 99, 235)",
-      "rgb(14, 165, 233)",
-      "rgb(20, 184, 166)",
-      "rgb(249, 115, 22)",
-      "rgb(100, 116, 139)",
+    "rgb(37, 99, 235)",
+    "rgb(14, 165, 233)",
+    "rgb(20, 184, 166)",
+    "rgb(249, 115, 22)",
+    "rgb(100, 116, 139)"
   ];
   function accentOf(id) {
-      if (!id)
-          return ACCENTS[4];
-      let hash = 0;
-      for (let i = 0; i < id.length; i++)
-          hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-      return ACCENTS[hash % ACCENTS.length];
+    if (!id)
+      return ACCENTS[4];
+    let hash = 0;
+    for (let i = 0;i < id.length; i++)
+      hash = hash * 31 + id.charCodeAt(i) >>> 0;
+    return ACCENTS[hash % ACCENTS.length];
   }
   function detectTheme() {
-      const html = document.documentElement;
-      const { body } = document;
-      const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
-      if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
-          return "dark";
-      if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
-          return "light";
-      try {
-          const bg = getComputedStyle(body || html).backgroundColor;
-          const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
-          if (m) {
-              const r = Number(m[1]) / 255;
-              const g = Number(m[2]) / 255;
-              const b = Number(m[3]) / 255;
-              const lin = [r, g, b].map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-              const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-              return lum < 0.42 ? "dark" : "light";
-          }
-      }
-      catch { }
-      const scheme = getComputedStyle(html).colorScheme;
-      if (scheme.includes("light") && !scheme.includes("dark"))
-          return "light";
+    const html = document.documentElement;
+    const { body } = document;
+    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
+    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
       return "dark";
+    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
+      return "light";
+    try {
+      const bg = getComputedStyle(body || html).backgroundColor;
+      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+      if (m) {
+        const r = Number(m[1]) / 255;
+        const g = Number(m[2]) / 255;
+        const b = Number(m[3]) / 255;
+        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+        return lum < 0.42 ? "dark" : "light";
+      }
+    } catch {}
+    const scheme = getComputedStyle(html).colorScheme;
+    if (scheme.includes("light") && !scheme.includes("dark"))
+      return "light";
+    return "dark";
   }
   function grokFaviconSrc() {
-      try {
-          if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
-              const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
-              const href = link?.href;
-              if (href && !href.startsWith("data:"))
-                  return href;
-              return `${location.origin}/images/favicon.svg`;
-          }
+    try {
+      if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
+        const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
+        const href = link?.href;
+        if (href && !href.startsWith("data:"))
+          return href;
+        return `${location.origin}/images/favicon.svg`;
       }
-      catch { }
-      return GROK_ICON_DATA;
+    } catch {}
+    return GROK_ICON_DATA;
   }
   function faviconImg(className) {
-      const img = document.createElement("img");
-      img.className = className;
-      img.alt = "";
-      img.draggable = false;
-      img.src = grokFaviconSrc();
-      img.addEventListener("error", () => {
-          if (img.src === GROK_ICON_DATA) {
-              img.dataset.broken = "true";
-              return;
-          }
-          img.src = GROK_ICON_DATA;
-      });
-      return img;
+    const img = document.createElement("img");
+    img.className = className;
+    img.alt = "";
+    img.draggable = false;
+    img.src = grokFaviconSrc();
+    img.addEventListener("error", () => {
+      if (img.src === GROK_ICON_DATA) {
+        img.dataset.broken = "true";
+        return;
+      }
+      img.src = GROK_ICON_DATA;
+    });
+    return img;
   }
   function folderIcon() {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("class", cl17("folder"));
-      svg.setAttribute("viewBox", "0 0 24 24");
-      svg.setAttribute("fill", "none");
-      svg.setAttribute("stroke", "currentColor");
-      svg.setAttribute("stroke-width", "2");
-      svg.setAttribute("stroke-linecap", "round");
-      svg.setAttribute("stroke-linejoin", "round");
-      svg.setAttribute("aria-hidden", "true");
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
-      svg.append(path);
-      return svg;
+    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg2.setAttribute("class", cl17("folder"));
+    svg2.setAttribute("viewBox", "0 0 24 24");
+    svg2.setAttribute("fill", "none");
+    svg2.setAttribute("stroke", "currentColor");
+    svg2.setAttribute("stroke-width", "2");
+    svg2.setAttribute("stroke-linecap", "round");
+    svg2.setAttribute("stroke-linejoin", "round");
+    svg2.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
+    svg2.append(path);
+    return svg2;
   }
   function applyTheme(panel) {
-      const theme = detectTheme();
-      panel.setAttribute("data-theme", theme);
-      panel.style.colorScheme = theme;
+    const theme = detectTheme();
+    panel.setAttribute("data-theme", theme);
+    panel.style.colorScheme = theme;
   }
   function buildHost() {
-      const root = node("div", cl17("root"));
-      root.id = "void-rt-host";
-      root.setAttribute("role", "presentation");
-      root.addEventListener("click", cancel);
-      const panel = node("div", cl17("panel"));
-      panel.setAttribute("role", "listbox");
-      panel.setAttribute("aria-label", "Recent conversations");
-      panel.addEventListener("click", e => e.stopPropagation());
-      panel.append(node("div", cl17("list")));
-      root.append(panel);
-      return root;
+    const root = node("div", cl17("root"));
+    root.id = "void-rt-host";
+    root.setAttribute("role", "presentation");
+    root.addEventListener("click", cancel);
+    const panel = node("div", cl17("panel"));
+    panel.setAttribute("role", "listbox");
+    panel.setAttribute("aria-label", "Recent conversations");
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    panel.append(node("div", cl17("list")));
+    root.append(panel);
+    return root;
   }
   function renderList(items) {
-      if (!host)
+    if (!host)
+      return;
+    const panel = host.querySelector(`.${cl17("panel")}`);
+    if (!panel)
+      return;
+    let list = panel.querySelector(`.${cl17("list")}`);
+    if (!list) {
+      panel.replaceChildren();
+      list = node("div", cl17("list"));
+      panel.append(list);
+    }
+    list.replaceChildren();
+    items.forEach((topic, i) => {
+      const btn = node("button", cl17("card"));
+      btn.type = "button";
+      btn.tabIndex = -1;
+      btn.setAttribute("role", "option");
+      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+      btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
+      btn.addEventListener("pointerenter", () => {
+        if (selected === i)
           return;
-      const panel = host.querySelector(`.${cl17("panel")}`);
-      if (!panel)
-          return;
-      let list = panel.querySelector(`.${cl17("list")}`);
-      if (!list) {
-          panel.replaceChildren();
-          list = node("div", cl17("list"));
-          panel.append(list);
-      }
-      list.replaceChildren();
-      items.forEach((topic, i) => {
-          const btn = node("button", cl17("card"));
-          btn.type = "button";
-          btn.tabIndex = -1;
-          btn.setAttribute("role", "option");
-          btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
-          btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
-          btn.addEventListener("pointerenter", () => {
-              if (selected === i)
-                  return;
-              selected = i;
-              syncActive();
-          });
-          btn.addEventListener("focus", () => {
-              if (selected === i)
-                  return;
-              selected = i;
-              syncActive();
-          });
-          btn.addEventListener("click", () => pick(i));
-          const shot = node("span", cl17("thumb"));
-          shot.setAttribute("aria-hidden", "true");
-          fillShot(shot, topic.id);
-          const meta = node("span", cl17("meta"));
-          meta.append(node("span", cl17("name"), topic.title));
-          if (topic.project) {
-              const proj = node("span", cl17("host"));
-              proj.append(folderIcon(), node("span", cl17("host-name"), topic.project));
-              meta.append(proj);
-          }
-          btn.append(shot, meta);
-          list.append(btn);
+        selected = i;
+        syncActive();
       });
+      btn.addEventListener("focus", () => {
+        if (selected === i)
+          return;
+        selected = i;
+        syncActive();
+      });
+      btn.addEventListener("click", () => pick(i));
+      const shot = node("span", cl17("thumb"));
+      shot.setAttribute("aria-hidden", "true");
+      fillShot(shot, topic.id);
+      const meta = node("span", cl17("meta"));
+      meta.append(node("span", cl17("name"), topic.title));
+      if (topic.project) {
+        const proj = node("span", cl17("host"));
+        proj.append(folderIcon(), node("span", cl17("host-name"), topic.project));
+        meta.append(proj);
+      }
+      btn.append(shot, meta);
+      list.append(btn);
+    });
   }
   function syncActive() {
-      if (!host)
-          return;
-      const cards = host.querySelectorAll(`.${cl17("card")}`);
-      cards.forEach((card, i) => {
-          const on = i === selected;
-          card.setAttribute("data-active", on ? "true" : "false");
-          card.setAttribute("aria-selected", on ? "true" : "false");
-          card.tabIndex = on ? 0 : -1;
-          if (on)
-              card.setAttribute("aria-current", "true");
-          else
-              card.removeAttribute("aria-current");
-      });
-      cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
+    if (!host)
+      return;
+    const cards = host.querySelectorAll(`.${cl17("card")}`);
+    cards.forEach((card, i) => {
+      const on = i === selected;
+      card.setAttribute("data-active", on ? "true" : "false");
+      card.setAttribute("aria-selected", on ? "true" : "false");
+      card.tabIndex = on ? 0 : -1;
+      if (on)
+        card.setAttribute("aria-current", "true");
+      else
+        card.removeAttribute("aria-current");
+    });
+    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
   }
   function paint() {
-      document.documentElement.classList.toggle("void-rt-open", open2);
-      if (!open2) {
-          detachHost();
-          return;
+    document.documentElement.classList.toggle("void-rt-open", open2);
+    if (!open2) {
+      detachHost();
+      return;
+    }
+    const items = topics();
+    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
+    if (!host) {
+      host = buildHost();
+      mountOverlay(host);
+    }
+    const panel = host.querySelector(`.${cl17("panel")}`);
+    if (!panel)
+      return;
+    applyTheme(panel);
+    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
+    if (!items.length) {
+      if (paintedKey !== "__empty__") {
+        panel.replaceChildren(node("div", cl17("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+        paintedKey = "__empty__";
       }
-      const items = topics();
-      const key = items.map(t => `${t.id}\0${t.title}\0${t.project}`).join("|") || "__empty__";
-      if (!host) {
-          host = buildHost();
-          mountOverlay(host);
-      }
-      const panel = host.querySelector(`.${cl17("panel")}`);
-      if (!panel)
-          return;
-      applyTheme(panel);
-      panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
-      if (!items.length) {
-          if (paintedKey !== "__empty__") {
-              panel.replaceChildren(node("div", cl17("empty"), "Open a few chats, then hold Ctrl+` to switch."));
-              paintedKey = "__empty__";
-          }
-          requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-          return;
-      }
-      if (paintedKey === "__empty__" || !panel.querySelector(`.${cl17("list")}`)) {
-          panel.replaceChildren(node("div", cl17("list")));
-          paintedKey = "";
-      }
-      if (paintedKey !== key) {
-          renderList(items);
-          paintedKey = key;
-      }
-      syncActive();
       requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+      return;
+    }
+    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl17("list")}`)) {
+      panel.replaceChildren(node("div", cl17("list")));
+      paintedKey = "";
+    }
+    if (paintedKey !== key) {
+      renderList(items);
+      paintedKey = key;
+    }
+    syncActive();
+    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
   }
   function detachHost() {
-      document.documentElement.classList.remove("void-rt-open");
-      paintedKey = "";
-      if (host) {
-          try {
-              host.hidePopover();
-          }
-          catch { }
-          host.remove();
-          host = null;
-      }
-      document.getElementById("void-rt-host")?.remove();
-      document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach(el => {
-          const p = el;
-          try {
-              p.hidePopover?.();
-          }
-          catch { }
-          try {
-              p.close?.();
-          }
-          catch { }
-          el.remove();
-      });
+    document.documentElement.classList.remove("void-rt-open");
+    paintedKey = "";
+    if (host) {
+      try {
+        host.hidePopover();
+      } catch {}
+      host.remove();
+      host = null;
+    }
+    document.getElementById("void-rt-host")?.remove();
+    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
+      const p = el;
+      try {
+        p.hidePopover?.();
+      } catch {}
+      try {
+        p.close?.();
+      } catch {}
+      el.remove();
+    });
   }
   function mountOverlay(root) {
-      root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
-      document.documentElement.append(root);
-      document.documentElement.classList.add("void-rt-open");
-      if (typeof root.showPopover !== "function")
-          return;
-      root.setAttribute("popover", "manual");
-      try {
-          root.showPopover();
-      }
-      catch {
-          root.removeAttribute("popover");
-      }
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
+    document.documentElement.append(root);
+    document.documentElement.classList.add("void-rt-open");
+    if (typeof root.showPopover !== "function")
+      return;
+    root.setAttribute("popover", "manual");
+    try {
+      root.showPopover();
+    } catch {
+      root.removeAttribute("popover");
+    }
   }
   var recentTopics_default = definePlugin({
-      name: "RecentTopics",
-      description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
-      authors: [Devs.p],
-      tags: ["chat", "ui"],
-      enabledByDefault: true,
-      settings: settings4,
-      managedStyle: "recentTopics",
-      _mark({ response }) {
-          try {
-              if (!response || response.isControl)
-                  return null;
-              const sender = String(response.sender ?? "").toLowerCase();
-              const human = sender === "human" || sender === "user";
-              const text = human
-                  ? pickUserText(response.query || "", response.message || "")
-                  : plainText(response.message || "");
-              if (!text)
-                  return null;
-              return React.createElement("span", {
-                  className: "void-rt-mark",
-                  "data-role": human ? "user" : "assistant",
-                  hidden: true,
-              }, text);
-          }
-          catch {
-              return null;
-          }
+    name: "RecentTopics",
+    icon: LayoutGridIcon,
+    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings4,
+    managedStyle: "recentTopics",
+    _mark({ response }) {
+      try {
+        if (!response || response.isControl)
+          return null;
+        const sender = String(response.sender ?? "").toLowerCase();
+        const human = sender === "human" || sender === "user";
+        const text = human ? pickUserText(response.query || "", response.message || "") : plainText(response.message || "");
+        if (!text)
+          return null;
+        return React.createElement("span", {
+          className: "void-rt-mark",
+          "data-role": human ? "user" : "assistant",
+          hidden: true
+        }, text);
+      } catch {
+        return null;
+      }
+    },
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._mark({response:$1}),$&"
+        }
+      }
+    ],
+    start() {
+      detachHost();
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      try {
+        hydrate();
+        const current = currentVisit();
+        if (current != null)
+          bump(current);
+        scheduleCapture();
+      } catch (e) {
+        logger17.error("Hydrate failed:", e);
+      }
+      if (!keys) {
+        keys = new AbortController;
+        const { signal } = keys;
+        window.addEventListener("keydown", onKeyDown, { capture: true, signal });
+        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+        window.addEventListener("blur", onWindowBlur, { signal });
+        document.addEventListener("visibilitychange", onVisibility, { signal });
+        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+      }
+    },
+    stop() {
+      keys?.abort();
+      keys = null;
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      thumbs.clear();
+      detachHost();
+    },
+    onSettingsChange() {
+      try {
+        writeVisits(capVisits(readVisits()));
+      } catch (e) {
+        logger17.error("Settings update failed:", e);
+      }
+    },
+    zustand: {
+      RoutingStore: {
+        selector: (s) => routeConvId(s.route),
+        handler(id) {
+          if (open2 || id == null)
+            return;
+          bump(id);
+          scheduleCapture();
+        }
       },
-      patches: [
-          {
-              find: "response-family:handleEditSave",
-              all: true,
-              replacement: {
-                  match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-                  replace: "$self._mark({response:$1}),$&",
-              },
-          },
-      ],
-      start() {
-          detachHost();
-          open2 = false;
-          held = false;
-          ctrlHeld = false;
-          try {
-              hydrate();
-              const current = currentVisit();
-              if (current != null)
-                  bump(current);
-              scheduleCapture();
-          }
-          catch (e) {
-              logger17.error("Hydrate failed:", e);
-          }
-          if (!keys) {
-              keys = new AbortController();
-              const { signal } = keys;
-              window.addEventListener("keydown", onKeyDown, { capture: true, signal });
-              window.addEventListener("keyup", onKeyUp, { capture: true, signal });
-              window.addEventListener("blur", onWindowBlur, { signal });
-              document.addEventListener("visibilitychange", onVisibility, { signal });
-              document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
-          }
+      ChatPageStore: {
+        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
+        handler() {
+          if (open2)
+            return;
+          const id = currentVisit();
+          if (id == null)
+            return;
+          bump(id);
+          scheduleCapture();
+        }
       },
-      stop() {
-          keys?.abort();
-          keys = null;
-          open2 = false;
-          held = false;
-          ctrlHeld = false;
-          thumbs.clear();
-          detachHost();
-      },
-      onSettingsChange() {
-          try {
-              writeVisits(capVisits(readVisits()));
-          }
-          catch (e) {
-              logger17.error("Settings update failed:", e);
-          }
-      },
-      zustand: {
-          RoutingStore: {
-              selector: (s) => routeConvId(s.route),
-              handler(id) {
-                  if (open2 || id == null)
-                      return;
-                  bump(id);
-                  scheduleCapture();
-              },
-          },
-          ChatPageStore: {
-              selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
-              handler() {
-                  if (open2)
-                      return;
-                  const id = currentVisit();
-                  if (id == null)
-                      return;
-                  bump(id);
-                  scheduleCapture();
-              },
-          },
-          ResponseStore: {
-              selector: (s) => {
-                  const id = currentVisit();
-                  if (!id)
-                      return "";
-                  const list = s.byConversationId[id];
-                  const last = list?.[list.length - 1];
-                  return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
-              },
-              handler() {
-                  if (open2)
-                      return;
-                  scheduleCapture();
-              },
-          },
-      },
+      ResponseStore: {
+        selector: (s) => {
+          const id = currentVisit();
+          if (!id)
+            return "";
+          const list = s.byConversationId[id];
+          const last = list?.[list.length - 1];
+          return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
+        },
+        handler() {
+          if (open2)
+            return;
+          scheduleCapture();
+        }
+      }
+    }
   });
-  // void-css:/tmp/Void/src/plugins/streamerMode/styles.css
+
+  // void-css:/tmp/Void-repo/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -8489,6 +8752,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   }
   var streamerMode_default = definePlugin({
     name: "StreamerMode",
+    icon: EyeOffIcon,
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
     settings: settings5,
@@ -8589,6 +8853,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   }
   var autoRetry_default = definePlugin({
     name: "AutoRetry",
+    icon: RotateCcwIcon,
     description: "Automatically retry failed messages on moderation or network errors.",
     authors: [Devs.Prism],
     tags: ["chat"],
@@ -8655,6 +8920,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
   var cleaner_default = definePlugin({
     name: "Cleaner",
+    icon: BrushCleaningIcon,
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
     settings: settings7,
@@ -8703,7 +8969,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -8742,6 +9008,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   }
   var cloneChats_default = definePlugin({
     name: "CloneChats",
+    icon: CopyIcon,
     description: "Clone conversations from the context-menu.",
     authors: [Devs.Prism],
     contextMenuItems: {
@@ -9404,6 +9671,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   }
   var chatStateFavicons_default = definePlugin({
     name: "ChatStateFavicons",
+    icon: AppWindowIcon,
     description: "Show streaming, done, ready, and error states on the tab favicon.",
     authors: [Devs.p],
     tags: ["chat", "ui"],
@@ -9460,7 +9728,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/betterFiles/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -9510,6 +9778,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   }
   var betterFiles_default = definePlugin({
     name: "BetterFiles",
+    icon: FilesIcon,
     description: "Adds bulk delete to the files page.",
     authors: [Devs.Prism],
     managedStyle: "betterFiles",
@@ -9577,6 +9846,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 `;
   var noDictation_default = definePlugin({
     name: "NoDictation",
+    icon: MicOffIcon,
     description: "Hide the Dictation (voice input) button from the chat input bar.",
     authors: [Devs.p],
     tags: ["chat", "ui"],
@@ -9593,6 +9863,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
   var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
   var consoleJanitor_default = definePlugin({
     name: "ConsoleJanitor",
+    icon: TerminalIcon,
     description: "Silences noisy warnings and info logs in the browser console.",
     authors: [Devs.Prism],
     patches: [
@@ -9604,7 +9875,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/messageTimestamps/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -9640,6 +9911,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
   }
   var messageTimestamps_default = definePlugin({
     name: "MessageTimestamps",
+    icon: ClockIcon,
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
     settings: settings9,
@@ -9667,7 +9939,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -10338,6 +10610,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   };
   var usageDisplay_default = definePlugin({
     name: "UsageDisplay",
+    icon: CircleGaugeIcon,
     description: "Shows official weekly SuperGrok usage in the chat bar.",
     authors: [Devs.p],
     tags: ["chat"],
@@ -10351,7 +10624,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/placeholder/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -10418,6 +10691,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   var placeholder_default = definePlugin({
     name: "Placeholder",
+    icon: TextCursorInputIcon,
     description: "Replace the rotating chat input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],
@@ -10437,7 +10711,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/betterImagine/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -10974,6 +11248,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var abortCtrl = null;
   var betterImagine_default = definePlugin({
     name: "BetterImagine",
+    icon: ImagesIcon,
     description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
     settings: settings12,
@@ -11110,6 +11385,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   var composerOpacity_default = definePlugin({
     name: "ComposerOpacity",
+    icon: BlendIcon,
     description: "Customizable chat input background opacity so content behind the bar cannot show through.",
     authors: [Devs.p],
     tags: ["ui", "chat"],
@@ -11137,6 +11413,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   var widerChat_default = definePlugin({
     name: "WiderChat",
+    icon: UnfoldHorizontalIcon,
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
     settings: settings14,
@@ -11187,6 +11464,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }).withPrivateSettings();
   var starry_default = definePlugin({
     name: "Starry",
+    icon: SparklesIcon,
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
     settings: settings15,
@@ -11219,6 +11497,7 @@ div:has(> #grok-bot-nav-button) {
 `;
   var noGrokBot_default = definePlugin({
     name: "NoGrokBot",
+    icon: BotOffIcon,
     description: "Hide the top-right Grok Bot promo button.",
     authors: [Devs.p],
     tags: ["ui"],
@@ -11231,7 +11510,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/exportChat/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -11418,6 +11697,7 @@ div:has(> #grok-bot-nav-button) {
   }
   var exportChat_default = definePlugin({
     name: "ExportChat",
+    icon: FileDownIcon,
     description: "Export conversations in multiple formats from the right-click menu.",
     authors: [Devs.Prism],
     contextMenuItems: {
@@ -11428,7 +11708,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/customInstructions/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -11755,6 +12035,7 @@ div:has(> #grok-bot-nav-button) {
   }
   var customInstructions_default = definePlugin({
     name: "CustomInstructions",
+    icon: ScrollTextIcon,
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
@@ -11822,6 +12103,7 @@ div:has(> #grok-bot-nav-button) {
   }
   var noSidebarIdentity_default = definePlugin({
     name: "NoSidebarIdentity",
+    icon: UserRoundXIcon,
     description: "Hide username and/or email in the Grok sidebar. Avatar stays clickable.",
     authors: [Devs.p],
     tags: ["ui", "privacy"],
@@ -11839,6 +12121,7 @@ div:has(> #grok-bot-nav-button) {
   var ONEKO_SCRIPT = '(function oneko(){const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
   var oneko_default = definePlugin({
     name: "Oneko",
+    icon: CatIcon,
     description: "Cat follows your mouse cursor.",
     authors: [Devs.adryd],
     cleanupSelectors: ["#oneko"],
@@ -11920,6 +12203,7 @@ div:has(> #grok-bot-nav-button) {
   }).withPrivateSettings();
   var betterLinks_default = definePlugin({
     name: "BetterLinks",
+    icon: LinkIcon,
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
     settings: settings18,
@@ -11995,7 +12279,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/betterSidebar/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -12128,6 +12412,7 @@ div:has(> #grok-bot-nav-button) {
   var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
   var betterSidebar_default = definePlugin({
     name: "BetterSidebar",
+    icon: PanelLeftIcon,
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
     settings: settings19,
@@ -12229,6 +12514,7 @@ div:has(> #grok-bot-nav-button) {
   }
   var incognito_default = definePlugin({
     name: "Incognito",
+    icon: GhostFilledIcon,
     description: "Force private chat mode for new conversations.",
     authors: [Devs.Prism],
     startAt: "TurbopackReady" /* TurbopackReady */,
@@ -12246,6 +12532,7 @@ div:has(> #grok-bot-nav-button) {
   // src/plugins/autoCollapse/index.ts
   var autoCollapse_default = definePlugin({
     name: "AutoCollapse",
+    icon: ChevronsDownUpIcon,
     description: "Automatically collapse code blocks in responses.",
     authors: [Devs.Prism],
     tags: ["chat"],
@@ -12289,6 +12576,7 @@ div:has(> #grok-bot-nav-button) {
   }
   var noShareLink_default = definePlugin({
     name: "NoShareLink",
+    icon: Link2OffIcon,
     description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
     authors: [Devs.p],
     tags: ["ui", "privacy"],
@@ -12301,7 +12589,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/inputHistory/styles.css
+  // void-css:/tmp/Void-repo/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -12603,6 +12891,7 @@ div:has(> #grok-bot-nav-button) {
   }
   var inputHistory_default = definePlugin({
     name: "InputHistory",
+    icon: HistoryIcon,
     description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
     authors: [Devs.p],
     tags: ["chat"],
@@ -12707,6 +12996,7 @@ div:has(> #grok-bot-nav-button) {
   }
   var responseNotification_default = definePlugin({
     name: "ResponseNotification",
+    icon: BellIcon,
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
@@ -12738,7 +13028,7 @@ div:has(> #grok-bot-nav-button) {
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
   var __plugins_default = { [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [streamerMode_default.name]: streamerMode_default, [autoRetry_default.name]: autoRetry_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterFiles_default.name]: betterFiles_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [messageTimestamps_default.name]: messageTimestamps_default, [usageDisplay_default.name]: usageDisplay_default, [placeholder_default.name]: placeholder_default, [betterImagine_default.name]: betterImagine_default, [composerOpacity_default.name]: composerOpacity_default, [widerChat_default.name]: widerChat_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [experiments_default.name]: experiments_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [incognito_default.name]: incognito_default, [autoCollapse_default.name]: autoCollapse_default, [noShareLink_default.name]: noShareLink_default, [inputHistory_default.name]: inputHistory_default, [responseNotification_default.name]: responseNotification_default };
-  // void-css:/tmp/Void/src/api/Notices.css
+  // void-css:/tmp/Void-repo/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
