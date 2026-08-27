@@ -42,6 +42,7 @@ export default definePlugin({
     icon: ClockIcon,
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
+    tags: ["chat"],
     settings,
 
     _renderTimestamp: ErrorBoundary.wrap(({ response }: { response: GrokResponse }) => {

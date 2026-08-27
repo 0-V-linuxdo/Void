@@ -216,6 +216,7 @@ export default definePlugin({
     icon: FileDownIcon,
     description: "Export conversations in multiple formats from the right-click menu.",
     authors: [Devs.Prism],
+    tags: ["chat"],
 
     contextMenuItems: {
         conversation: {

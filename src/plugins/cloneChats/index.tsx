@@ -56,6 +56,7 @@ export default definePlugin({
     icon: CopyIcon,
     description: "Clone conversations from the context-menu.",
     authors: [Devs.Prism],
+    tags: ["chat"],
 
     contextMenuItems: {
         conversation: {

@@ -10,3 +10,29 @@
     color: inherit;
     flex: 1;
 }
+
+.void-plugins-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.125rem;
+    border-bottom: 1px solid var(--border-l1);
+}
+
+.void-plugins-tab {
+    position: relative;
+    color: hsl(var(--fg-secondary));
+}
+
+.void-plugins-tab-active {
+    color: hsl(var(--fg-primary));
+}
+
+.void-plugins-tab-active::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0.5rem;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 1px;
+    background: hsl(var(--fg-primary));
+}

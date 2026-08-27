@@ -13,6 +13,7 @@ export default definePlugin({
     icon: ShieldOffIcon,
     description: "Disables all tracking, telemetry, and event logging.",
     authors: [Devs.Prism],
+    tags: ["privacy"],
     required: true,
 
     patches: [

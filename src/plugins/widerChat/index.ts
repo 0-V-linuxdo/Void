@@ -35,6 +35,7 @@ export default definePlugin({
     icon: UnfoldHorizontalIcon,
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
+    tags: ["chat", "ui"],
     settings,
 
     start: applyWidth,

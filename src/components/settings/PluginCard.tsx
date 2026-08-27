@@ -8,9 +8,9 @@ import "./PluginCard.css";
 
 import { dispatch } from "@api/Events";
 import { isNewPlugin, isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
-import { isPluginPinned, mergePluginSettings, togglePluginPinned } from "@api/Settings";
-import { Badge, Switch } from "@components";
-import { CircleAlertIcon, EllipsisVertical, PinFilledIcon, PinIcon, TriangleAlert, UnplugIcon } from "@components/icons";
+import { isPluginPinned, isPluginStarred, mergePluginSettings, togglePluginPinned, togglePluginStarred } from "@api/Settings";
+import { Badge, Switch, Tooltip, TooltipContent, TooltipTrigger } from "@components";
+import { CircleAlertIcon, PinFilledIcon, PinIcon, Settings2Icon, StarFilledIcon, StarIcon, TriangleAlert, UnplugIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classes, classNameFactory } from "@utils/css";
 import { useForceUpdater } from "@utils/react";
@@ -34,6 +34,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
     const forceUpdate = useForceUpdater();
     const enabled = isPluginEnabled(name);
     const pinned = isPluginPinned(name);
+    const starred = isPluginStarred(name);
     const crashed = enabled && !plugin.started && !plugin.required;
     const hasPatches = !!plugin.patches?.length;
 
@@ -52,6 +53,12 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
         dispatch("pluginPin");
     };
 
+    const handleStar = () => {
+        togglePluginStarred(name);
+        forceUpdate();
+        dispatch("pluginStar");
+    };
+
     return (
         <BaseCard
             className={classes(plugin.required && cl("required"), crashed && cl("crashed"))}
@@ -68,6 +75,12 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
             description={plugin.description}
             controls={
                 <>
+                    <IconButton
+                        icon={starred ? StarFilledIcon : StarIcon}
+                        label={starred ? "Remove from favorites" : "Add to favorites"}
+                        className={classes(cl("star"), starred && cl("star-active"))}
+                        onClick={handleStar}
+                    />
                     {!plugin.required && (
                         <IconButton
                             icon={pinned ? PinFilledIcon : PinIcon}
@@ -77,7 +90,17 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
                         />
                     )}
                     {hasVisibleSettings(plugin) && (
-                        <IconButton icon={EllipsisVertical} label="Plugin settings" onClick={() => onSettings(name)} />
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <IconButton
+                                    icon={Settings2Icon}
+                                    label="config"
+                                    className={cl("settings")}
+                                    onClick={() => onSettings(name)}
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>config</TooltipContent>
+                        </Tooltip>
                     )}
                     <Switch checked={enabled} disabled={plugin.required} onCheckedChange={handleToggle} />
                 </>

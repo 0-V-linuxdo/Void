@@ -22,6 +22,7 @@ export default definePlugin({
     icon: GhostFilledIcon,
     description: "Force private chat mode for new conversations.",
     authors: [Devs.Prism],
+    tags: ["privacy"],
     startAt: StartAt.TurbopackReady,
 
     start() {

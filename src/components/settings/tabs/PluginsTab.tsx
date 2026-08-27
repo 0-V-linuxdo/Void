@@ -9,7 +9,7 @@ import "./PluginsTab.css";
 
 import { subscribe } from "@api/Events";
 import { isPluginEnabled, plugins } from "@api/PluginManager";
-import { getPinnedPlugins } from "@api/Settings";
+import { getPinnedPlugins, getStarredPlugins } from "@api/Settings";
 import {
     Button,
     ConfirmDialog,
@@ -22,11 +22,11 @@ import {
     Text,
 } from "@components";
 import { React, useCallback, useEffect, useMemo, useRef, useState } from "@turbopack/common/react";
-import { classNameFactory } from "@utils/css";
+import { classes, classNameFactory } from "@utils/css";
 import { useFiltered } from "@utils/react";
 
 import PluginCard from "../PluginCard";
-import { type ListFilter } from "../utils";
+import { PLUGIN_CATEGORY_TABS, pluginMatchesCategory, type ListFilter, type PluginCategory } from "../utils";
 import PluginDialog from "./PluginDialog";
 import { SearchFilterBar } from "./SearchFilterBar";
 
@@ -44,6 +44,12 @@ function filterByEnabled(list: string[], filter: ListFilter): string[] {
     if (filter === "all") return list;
     const enabled = filter === "enabled";
     return list.filter(n => isPluginEnabled(n) === enabled);
+}
+
+function emptyHint(search: string, category: PluginCategory): string {
+    if (search) return "No plugins match your search.";
+    if (category === "favorites") return "No favorites yet. Star a plugin to see it here.";
+    return "No plugins available.";
 }
 
 function sortPinnedFirst(list: string[]): string[] {
@@ -74,6 +80,7 @@ export function consumePendingPluginDialog(): string | null {
 export default function PluginsTab() {
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState<ListFilter>("all");
+    const [category, setCategory] = useState<PluginCategory>("favorites");
     const [dialogName, setDialogName] = useState<string | null>(null);
     const [showReload, setShowReload] = useState(false);
     const [needsReload, setNeedsReload] = useState(false);
@@ -102,11 +109,17 @@ export default function PluginsTab() {
 
     useEffect(() => {
         const pending = consumePendingPluginDialog();
-        if (pending) setDialogName(pending);
+        if (pending) {
+            setCategory("all");
+            setDialogName(pending);
+        }
     }, []);
 
-    useEffect(() => subscribe("pluginToggle", () => setToggleTick(t => t + 1)), []);
-    useEffect(() => subscribe("pluginPin", () => setToggleTick(t => t + 1)), []);
+    useEffect(() => {
+        const bump = () => setToggleTick(t => t + 1);
+        const unsubs = [subscribe("pluginToggle", bump), subscribe("pluginPin", bump), subscribe("pluginStar", bump)];
+        return () => { for (const u of unsubs) u(); };
+    }, []);
 
     useEffect(() => subscribe("reloadNeeded", () => {
         changedPluginsRef.current.add("__settings__");
@@ -114,11 +127,36 @@ export default function PluginsTab() {
         if (!dismissedRef.current) setShowReload(true);
     }), []);
 
-    const visibleUser = useMemo(() => sortPinnedFirst(filterByEnabled(userPlugins, filter)), [filter, userPlugins, toggleTick]);
-    const visibleRequired = useMemo(() => filterByEnabled(requiredPlugins, filter), [filter, requiredPlugins, toggleTick]);
+    const visibleTabs = useMemo(() => PLUGIN_CATEGORY_TABS.filter(t => {
+        if (t.id === "favorites" || t.id === "all") return true;
+        const pool = t.id === "other" ? userPlugins : [...userPlugins, ...requiredPlugins];
+        return pool.some(n => pluginMatchesCategory(plugins[n], t.id));
+    }), [userPlugins, requiredPlugins]);
 
-    const filteredUser = useFiltered(visibleUser, search, getPluginKey);
-    const filteredRequired = useFiltered(visibleRequired, search, getPluginKey);
+    const { tabUser, tabRequired } = useMemo(() => {
+        if (category === "favorites") {
+            const starred = getStarredPlugins().filter(n => {
+                const p = plugins[n];
+                return !!p && !p.hidden;
+            });
+            return { tabUser: filterByEnabled(starred, filter), tabRequired: [] as string[] };
+        }
+        if (category === "all") {
+            return {
+                tabUser: sortPinnedFirst(filterByEnabled(userPlugins, filter)),
+                tabRequired: filterByEnabled(requiredPlugins, filter),
+            };
+        }
+        const matchingUser = userPlugins.filter(n => pluginMatchesCategory(plugins[n], category));
+        const matchingRequired = requiredPlugins.filter(n => pluginMatchesCategory(plugins[n], category));
+        return {
+            tabUser: sortPinnedFirst(filterByEnabled([...matchingUser, ...matchingRequired], filter)),
+            tabRequired: [] as string[],
+        };
+    }, [category, filter, userPlugins, requiredPlugins, toggleTick]);
+
+    const filteredUser = useFiltered(tabUser, search, getPluginKey);
+    const filteredRequired = useFiltered(tabRequired, search, getPluginKey);
 
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
     const hasResults = filteredUser.length > 0 || filteredRequired.length > 0;
@@ -148,7 +186,7 @@ export default function PluginsTab() {
 
     return (
         <Flex flexDirection="column" gap="1rem" className="void-tab-root">
-            <SectionHeader title="Plugins" description="Turn Void features on or off. Some require a reload to apply. Click the dots on a plugin to configure it." />
+            <SectionHeader title="Plugins" description="Turn Void features on or off. Some require a reload to apply. Click the sliders icon to configure a plugin." />
             {needsReload && !showReload && (
                 <Flex alignItems="center" className={cl("reload-banner")}>
                     <Text size="xs" className={cl("reload-text")}>
@@ -159,8 +197,21 @@ export default function PluginsTab() {
                     </Button>
                 </Flex>
             )}
+            <Flex className={cl("tabs")} gap="0.125rem" flexWrap="wrap">
+                {visibleTabs.map(t => (
+                    <Button
+                        key={t.id}
+                        variant="tertiary"
+                        size="sm"
+                        className={classes(cl("tab"), category === t.id && cl("tab-active"))}
+                        onClick={() => setCategory(t.id)}
+                    >
+                        {t.label}
+                    </Button>
+                ))}
+            </Flex>
             <SearchFilterBar<ListFilter>
-                placeholder={`Search ${visibleUser.length + visibleRequired.length} plugins...`}
+                placeholder={`Search ${tabUser.length + tabRequired.length} plugins...`}
                 search={search}
                 onSearchChange={setSearch}
                 filter={filter}
@@ -190,7 +241,7 @@ export default function PluginsTab() {
             )}
             {!hasResults && (
                 <Paragraph color="secondary" className="void-tab-empty">
-                    {search ? "No plugins match your search." : "No plugins available."}
+                    {emptyHint(search, category)}
                 </Paragraph>
             )}
             {dialogPlugin && <PluginDialog plugin={dialogPlugin} onClose={() => setDialogName(null)} />}

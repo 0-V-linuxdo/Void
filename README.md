@@ -10,7 +10,8 @@
 
 - **Cleaner** — On by default. Hides upgrade nags, the home banner, the composer SuperGrok chip, and locked models.
 - **InputHistory** — Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.
-- **Plugin pin** — Pin plugin cards to the top of the Plugins tab.
+- **Plugin pin** — Pin plugin cards to the top of the current category.
+- **Plugin favorites** — Star a plugin to collect it in the Favorites tab (the default Plugins view). Categories: Favorites, All, Chat, UI, Privacy, Other.
 - **NoGrokBot** — Hide the top-right Grok Bot promo button.
 - **NoSidebarIdentity** — Hide username and/or email in the Grok sidebar (separate toggles). Avatar stays so the account menu still opens.
 - **ChatStateFavicons** — Tab favicon reflects chat state (streaming, done, ready, error) with five overlay styles.

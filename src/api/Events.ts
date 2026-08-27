@@ -10,6 +10,7 @@ import { mapGetOrCreate } from "@utils/misc";
 export interface VoidEventMap {
     pluginToggle: void;
     pluginPin: void;
+    pluginStar: void;
     reloadNeeded: void;
     streamEnd: { responseId: string };
 }

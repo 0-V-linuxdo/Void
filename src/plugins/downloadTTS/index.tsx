@@ -65,6 +65,7 @@ export default definePlugin({
     icon: Volume2Icon,
     description: "Add a download button to the TTS playback controls.",
     authors: [Devs.Prism],
+    tags: ["chat"],
 
     patches: [{
         find: "tts-controls.stop.label\",\"Stop\"",

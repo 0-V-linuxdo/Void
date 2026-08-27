@@ -105,6 +105,7 @@ export default definePlugin({
     icon: PanelLeftIcon,
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
+    tags: ["ui"],
     settings,
     managedStyle: "betterSidebar",
 

@@ -77,6 +77,7 @@ export default definePlugin({
     icon: EyeOffIcon,
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
+    tags: ["privacy"],
     settings,
 
     start: syncClasses,

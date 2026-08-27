@@ -127,6 +127,7 @@ export interface SettingsPluginData {
     knownPlugins?: Record<string, number>;
     chunkFingerprint?: string[];
     pinnedPlugins?: string[];
+    starredPlugins?: string[];
     [key: string]: unknown;
 }
 
@@ -153,6 +154,23 @@ export function togglePluginPinned(name: string): boolean {
         pinnedPlugins: pinned ? current.filter(n => n !== name) : [name, ...current],
     });
     return !pinned;
+}
+
+export function getStarredPlugins(): string[] {
+    return getSettingsPluginData().starredPlugins ?? [];
+}
+
+export function isPluginStarred(name: string): boolean {
+    return getStarredPlugins().includes(name);
+}
+
+export function togglePluginStarred(name: string): boolean {
+    const current = getStarredPlugins();
+    const starred = current.includes(name);
+    updateSettingsPluginData({
+        starredPlugins: starred ? current.filter(n => n !== name) : [name, ...current],
+    });
+    return !starred;
 }
 
 export function mergePluginSettings(name: string, patch: Record<string, unknown>) {

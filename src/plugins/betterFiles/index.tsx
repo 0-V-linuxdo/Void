@@ -57,6 +57,7 @@ export default definePlugin({
     icon: FilesIcon,
     description: "Adds bulk delete to the files page.",
     authors: [Devs.Prism],
+    tags: ["ui"],
     managedStyle: "betterFiles",
 
     start() {
