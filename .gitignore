@@ -6,6 +6,7 @@ assets/logos/*
 !assets/logos/app-icon/
 assets/logos/app-icon/*
 !assets/logos/app-icon/void-icon-256.png
+!assets/logos/app-icon/voidpp-256.png
 !assets/logos/app-icon/void-icon.svg
 *.log
 *.tsbuildinfo
