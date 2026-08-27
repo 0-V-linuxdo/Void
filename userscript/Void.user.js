@@ -6,7 +6,7 @@
 // @author       Prism & Void Contributors
 // @environment  Production
 // @homepageURL  https://github.com/0-V-linuxdo/Void
-// @icon         https://raw.githubusercontent.com/imjustprism/Void/main/assets/logos/app-icon/void-icon-256.png
+// @icon         https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/assets/logos/app-icon/void-icon.svg
 // @match        *://grok.com/*
 // @run-at       document-start
 // @noframes
