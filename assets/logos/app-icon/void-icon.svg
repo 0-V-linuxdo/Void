@@ -1,17 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Void++">
   <rect width="256" height="256" fill="#0e0e10"/>
   <defs>
-    <clipPath id="moon">
-      <circle cx="141.00" cy="128.00" r="100.00"/>
+    <clipPath id="opening">
+      <rect x="0" y="41.56" width="256" height="214.44"/>
     </clipPath>
   </defs>
-  <g clip-path="url(#moon)" fill="#fff">
-    <path fill-rule="evenodd" d="M141.00 28.00a100.00 100.00 0 1 1 0 200.00a100.00 100.00 0 1 1 0 -200.00M171.00 48.00a80.00 80.00 0 1 0 0 160.00a80.00 80.00 0 1 0 0 -160.00"/>
-  </g>
+  <path fill="#fff" fill-rule="evenodd" clip-path="url(#opening)" d="M128.00 -21.48a117.03 117.03 0 1 1 0 234.05a117.03 117.03 0 1 1 0 -234.05M128.00 -6.51a80.44 80.44 0 1 0 0 160.89a80.44 80.44 0 1 0 0 -160.89"/>
   <g fill="#fff">
-    <rect x="108.00" y="110.00" width="12" height="36" rx="3.2"/>
-    <rect x="96.00" y="122.00" width="36" height="12" rx="3.2"/>
-    <rect x="146.00" y="110.00" width="12" height="36" rx="3.2"/>
-    <rect x="134.00" y="122.00" width="36" height="12" rx="3.2"/>
+    <rect x="106.00" y="47.56" width="12" height="32" rx="2.8"/>
+    <rect x="96.00" y="57.56" width="32" height="12" rx="2.8"/>
+    <rect x="138.00" y="47.56" width="12" height="32" rx="2.8"/>
+    <rect x="128.00" y="57.56" width="32" height="12" rx="2.8"/>
   </g>
 </svg>
