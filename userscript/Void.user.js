@@ -8,8 +8,8 @@
 // @homepageURL  https://github.com/0-V-linuxdo/Void
 // @icon         https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/assets/logos/app-icon/void-icon.svg
 // @match        *://grok.com/*
+// @match        *://*.grok-sandbox.com/*
 // @run-at       document-start
-// @noframes
 // @grant        unsafeWindow
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
@@ -48,153 +48,6 @@
         set: __exportSetter.bind(all, name)
       });
   };
-
-  // src/Void.ts
-  var exports_Void = {};
-  __export(exports_Void, {
-    ChunkPathRegex: () => ChunkPathRegex,
-    DefaultChunkLoadRegex: () => DefaultChunkLoadRegex,
-    Devs: () => Devs,
-    ErrorBoundary: () => ErrorBoundary,
-    Logger: () => Logger,
-    NoticeType: () => NoticeType,
-    OptionType: () => OptionType,
-    PlainSettings: () => PlainSettings,
-    Settings: () => Settings,
-    SettingsStore: () => SettingsStore3,
-    StartAt: () => StartAt,
-    ToastType: () => ToastType,
-    addChatBarButton: () => addChatBarButton,
-    addContextMenuItem: () => addContextMenuItem,
-    addLocalTheme: () => addLocalTheme,
-    addPatch: () => addPatch,
-    addTheme: () => addTheme,
-    clamp: () => clamp,
-    classNameFactory: () => classNameFactory,
-    classes: () => classes,
-    closeAllModals: () => closeAllModals,
-    closeModal: () => closeModal,
-    closeNotice: () => closeNotice,
-    common: () => exports_common,
-    copyToClipboard: () => copyToClipboard,
-    createExternalStore: () => createExternalStore,
-    debounce: () => debounce,
-    definePlugin: () => definePlugin,
-    definePluginSettings: () => definePluginSettings,
-    disableStyle: () => disableStyle,
-    disableTheme: () => disableTheme,
-    dismissToast: () => dismissToast,
-    dispatch: () => dispatch,
-    enableStyle: () => enableStyle,
-    enableTheme: () => enableTheme,
-    errorMessage: () => errorMessage,
-    escapeHtml: () => escapeHtml,
-    escapeRegExp: () => escapeRegExp,
-    extractAndLoadChunks: () => extractAndLoadChunks,
-    extractAndLoadChunksLazy: () => extractAndLoadChunksLazy,
-    fetchExternal: () => fetchExternal,
-    filters: () => filters,
-    find: () => find,
-    findAll: () => findAll,
-    findBulk: () => findBulk,
-    findByCode: () => findByCode,
-    findByCodeLazy: () => findByCodeLazy,
-    findByDisplayName: () => findByDisplayName,
-    findByDisplayNameLazy: () => findByDisplayNameLazy,
-    findByEventName: () => findByEventName,
-    findByEventNameLazy: () => findByEventNameLazy,
-    findByProps: () => findByProps,
-    findByPropsLazy: () => findByPropsLazy,
-    findComponentByCode: () => findComponentByCode,
-    findComponentByCodeLazy: () => findComponentByCodeLazy,
-    findCssClasses: () => findCssClasses,
-    findCssClassesLazy: () => findCssClassesLazy,
-    findExportedComponent: () => findExportedComponent,
-    findExportedComponentLazy: () => findExportedComponentLazy,
-    findLazy: () => findLazy,
-    findModuleFactory: () => findModuleFactory,
-    findModuleId: () => findModuleId,
-    findStore: () => findStore,
-    findStoreLazy: () => findStoreLazy,
-    fnSourceCache: () => fnSourceCache,
-    formatCountdown: () => formatCountdown,
-    formatDuration: () => formatDuration,
-    getAllStores: () => getAllStores,
-    getFiber: () => getFiber,
-    getFnSource: () => getFnSource,
-    getModuleCache: () => getModuleCache,
-    getReactRoot: () => getReactRoot,
-    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry2,
-    getRuntimeModuleCache: () => getRuntimeModuleCache,
-    getThemes: () => getThemes,
-    getTurbopackHelpers: () => getTurbopackHelpers,
-    humanizeKey: () => humanizeKey,
-    importModule: () => importModule,
-    init: () => init,
-    initSettings: () => initSettings,
-    injectExports: () => injectExports,
-    isBlacklisted: () => isBlacklisted,
-    isNonNullish: () => isNonNullish,
-    isObject: () => isObject,
-    isOnlineThemesEnabled: () => isOnlineThemesEnabled,
-    isPluginEnabled: () => isPluginEnabled,
-    isThemesEnabled: () => isThemesEnabled,
-    isTruthy: () => isTruthy,
-    isZustandStore: () => isZustandStore,
-    makeLazy: () => makeLazy,
-    mapGetOrCreate: () => mapGetOrCreate,
-    mapMangledCssClasses: () => mapMangledCssClasses,
-    mapMangledModule: () => mapMangledModule,
-    mapMangledModuleLazy: () => mapMangledModuleLazy,
-    matchesAllPatterns: () => matchesAllPatterns,
-    matchesPattern: () => matchesPattern,
-    mergeDefaults: () => mergeDefaults,
-    migratePluginSetting: () => migratePluginSetting,
-    migratePluginSettings: () => migratePluginSettings,
-    migrateSettingsToPlugin: () => migrateSettingsToPlugin,
-    onModuleLoad: () => onModuleLoad,
-    onceReady: () => onceReady,
-    onlyOnce: () => onlyOnce,
-    openModal: () => openModal,
-    patchReport: () => patchReport,
-    patchResults: () => patchResults,
-    patchStats: () => patchStats,
-    patches: () => patches,
-    plugins: () => plugins,
-    pluralize: () => pluralize,
-    proxyLazy: () => proxyLazy,
-    registerPlugin: () => registerPlugin,
-    registerStyle: () => registerStyle,
-    removeChatBarButton: () => removeChatBarButton,
-    removeContextMenuItem: () => removeContextMenuItem,
-    removeTheme: () => removeTheme,
-    reportFailedFinders: () => reportFailedFinders,
-    requireModule: () => requireModule,
-    sanitizeFilename: () => sanitizeFilename,
-    search: () => search,
-    sendBrowserNotification: () => sendBrowserNotification,
-    setOnlineThemesEnabled: () => setOnlineThemesEnabled,
-    setThemesEnabled: () => setThemesEnabled,
-    showNotice: () => showNotice,
-    showToast: () => showToast,
-    sleep: () => sleep,
-    sortedEntries: () => sortedEntries,
-    startPlugin: () => startPlugin,
-    stopPlugin: () => stopPlugin,
-    subscribe: () => subscribe,
-    syncLazyModules: () => syncLazyModules,
-    unregisterStyle: () => unregisterStyle,
-    updateLocalTheme: () => updateLocalTheme,
-    useEventSubscription: () => useEventSubscription,
-    useExternalStore: () => useExternalStore,
-    useForceUpdater: () => useForceUpdater,
-    useIsStreaming: () => useIsStreaming,
-    useSelectionHas: () => useSelectionHas,
-    useSelectionSize: () => useSelectionSize,
-    waitFor: () => waitFor,
-    walkFiberTree: () => walkFiberTree,
-    walkFiberUp: () => walkFiberUp
-  });
 
   // src/utils/Logger.ts
   var isBrowser = typeof window !== "undefined";
@@ -245,6 +98,137 @@
     debug(...args) {
       this._log("debug", args);
     }
+  }
+
+  // src/utils/lazy.ts
+  var logger = new Logger("Lazy");
+  var unconfigurable = ["arguments", "caller", "prototype"];
+  var SYM_LAZY_GET = Symbol.for("void.lazy.get");
+  var SYM_LAZY_CACHED = Symbol.for("void.lazy.cached");
+  var handler = {};
+  for (const method of [
+    "apply",
+    "construct",
+    "defineProperty",
+    "deleteProperty",
+    "getPrototypeOf",
+    "has",
+    "isExtensible",
+    "preventExtensions",
+    "set",
+    "setPrototypeOf"
+  ]) {
+    handler[method] = (target, ...args) => Reflect[method](target[SYM_LAZY_GET]?.() ?? target, ...args);
+  }
+  handler.ownKeys = (target) => {
+    const v = target[SYM_LAZY_GET]?.() ?? target;
+    const keys = Reflect.ownKeys(v);
+    for (const key of unconfigurable) {
+      if (!keys.includes(key))
+        keys.push(key);
+    }
+    return keys;
+  };
+  handler.getOwnPropertyDescriptor = (target, p) => {
+    if (typeof p === "string" && unconfigurable.includes(p))
+      return Reflect.getOwnPropertyDescriptor(target, p);
+    const resolved = target[SYM_LAZY_GET]?.() ?? target;
+    const descriptor = Reflect.getOwnPropertyDescriptor(resolved, p);
+    if (descriptor)
+      Object.defineProperty(target, p, descriptor);
+    return descriptor;
+  };
+  handler.get = (target, p, receiver) => {
+    if (p === SYM_LAZY_CACHED || p === SYM_LAZY_GET)
+      return Reflect.get(target, p, receiver);
+    const value = target[SYM_LAZY_GET]();
+    if (value == null)
+      return;
+    if (typeof value === "object" || typeof value === "function")
+      return Reflect.get(value, p, receiver);
+    throw new Error("proxyLazy: factory returned a primitive value");
+  };
+  var MAX_RETRIES = 50;
+  function makeLazy(factory, maxRetries = MAX_RETRIES) {
+    let cache;
+    let resolved = false;
+    let attempts = 0;
+    return () => {
+      if (!resolved) {
+        if (attempts >= maxRetries) {
+          if (false) {}
+          return cache;
+        }
+        cache = factory();
+        attempts++;
+        if (cache != null)
+          resolved = true;
+      }
+      return cache;
+    };
+  }
+  function proxyLazy(factory) {
+    const getter = makeLazy(factory);
+    const proxyDummy = Object.assign(() => {}, {
+      [SYM_LAZY_CACHED]: undefined,
+      [SYM_LAZY_GET]() {
+        const result = getter();
+        proxyDummy[SYM_LAZY_CACHED] = result;
+        return result;
+      }
+    });
+    return new Proxy(proxyDummy, handler);
+  }
+
+  // src/utils/lazyReact.ts
+  var _createElement = null;
+  function setCreateElement(fn) {
+    _createElement = fn;
+  }
+  var LAZY_MAX_RETRIES = 200;
+  function LazyComponent(name, factory) {
+    const resolve = makeLazy(factory, LAZY_MAX_RETRIES);
+    const wrapper = (props) => {
+      const cached = resolve();
+      if (!cached || !_createElement)
+        return null;
+      return _createElement(cached, props);
+    };
+    Object.defineProperty(wrapper, "name", { value: name });
+    return new Proxy(wrapper, {
+      get(target, prop, receiver) {
+        const cached = resolve();
+        if (cached && Reflect.has(cached, prop))
+          return Reflect.get(cached, prop);
+        return Reflect.get(target, prop, receiver);
+      }
+    });
+  }
+
+  // src/utils/text.ts
+  var CAMEL_BOUNDARY = /([a-z])([A-Z])/g;
+  var WORD_SEPARATOR = /[-_]/g;
+  var WORD_START = /\b\w/g;
+  var REGEXP_SPECIALS = /[.*+?^${}()|[\]\\]/g;
+  function humanizeKey(key, acronyms) {
+    const title = key.replaceAll(CAMEL_BOUNDARY, "$1 $2").replaceAll(WORD_SEPARATOR, " ").replaceAll(WORD_START, (c) => c.toUpperCase());
+    if (!acronyms)
+      return title;
+    let result = title;
+    for (const [from, to] of Object.entries(acronyms)) {
+      result = result.replaceAll(new RegExp(`\\b${escapeRegExp(from)}\\b`, "g"), to);
+    }
+    return result;
+  }
+  function escapeRegExp(s) {
+    return s.replaceAll(REGEXP_SPECIALS, "\\$&");
+  }
+  function pluralize(count, singular, plural) {
+    return `${count} ${count === 1 ? singular : plural ?? singular + "s"}`;
+  }
+  function escapeHtml(s, quotes = false) {
+    const base = s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    return quotes ? base.replaceAll('"', "&quot;") : base;
   }
 
   // src/turbopack/fnSource.ts
@@ -398,6 +382,67 @@
     };
   }
 
+  // src/turbopack/patchReport.ts
+  var logger2 = new Logger("TurbopackPatcher", "#e78284");
+  var patchResults = [];
+  var validateMisses = new Set;
+  var patchStats = {
+    applied: 0,
+    noEffect: 0,
+    errors: 0,
+    runtimeFallbacks: 0,
+    patchedModules: new Set
+  };
+  var chunkFingerprint = new Set;
+  function getChunkFingerprint() {
+    return [...chunkFingerprint];
+  }
+  function isFactoryPending(patch) {
+    const registry = getRuntimeFactoryRegistry2();
+    if (!registry)
+      return false;
+    const find = Array.isArray(patch.find) ? patch.find : [patch.find];
+    for (const [, factory] of registry) {
+      if (matchesAllPatterns(getFnSource(factory), find))
+        return true;
+    }
+    return false;
+  }
+  function patchReport() {
+    const orphaned = [];
+    const pending = [];
+    for (const p of patches) {
+      if (p.all)
+        continue;
+      const entry = { plugin: p.plugin, find: String(p.find) };
+      (isFactoryPending(p) ? pending : orphaned).push(entry);
+    }
+    return { stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] }, results: patchResults, orphaned, pending };
+  }
+  function reportOrphanedPatches() {
+    const orphaned = patches.filter((p) => !p.all && !isFactoryPending(p));
+    const warnOrphaned = orphaned.filter((p) => !p.noWarn);
+    if (warnOrphaned.length)
+      logger2.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
+    if (!patchStats.applied && (warnOrphaned.length || patchStats.noEffect)) {
+      logger2.warn("Zero patches applied this session — grok build likely changed, run the reporter.");
+    }
+    if (validateMisses.size) {
+      logger2.warn(`${validateMisses.size} disabled-plugin patch(es) no longer match:`, [...validateMisses]);
+    }
+    if (patchStats.noEffect || patchStats.errors) {
+      for (const result of patchResults) {
+        for (const rep of result.replacements) {
+          if (rep.status === "noEffect" && !result.noWarn)
+            logger2.debug(`[no effect] ${result.plugin}: ${rep.match}`);
+          else if (rep.status === "error")
+            logger2.debug(`[error] ${result.plugin}: ${rep.match}`);
+        }
+      }
+    }
+    if (false) {}
+  }
+
   // src/turbopack/types.ts
   var SYM_ORIGINAL = Symbol("Void.originalFactory");
   var SYM_PATCHED = Symbol("Void.patched");
@@ -405,7 +450,7 @@
   var SYM_PATCHED_CODE = Symbol("Void.patchedCode");
 
   // src/turbopack/patchTurbopack.ts
-  var logger = new Logger("TurbopackPatcher", "#e78284");
+  var logger3 = new Logger("TurbopackPatcher", "#e78284");
   var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
   var FACTORY_PROBE_ID = 2147483646;
   var motionSymbol = Symbol.for("motionComponentSymbol");
@@ -575,7 +620,7 @@ ${sourceUrl}`;
             callback(exports, id);
           }
         } catch (e) {
-          logger.error("WaitFor listener error:", e);
+          logger3.error("WaitFor listener error:", e);
         }
       }
     }
@@ -584,7 +629,7 @@ ${sourceUrl}`;
         try {
           cb();
         } catch (e) {
-          logger.error("Module load listener error:", e);
+          logger3.error("Module load listener error:", e);
         }
       }
     }
@@ -603,7 +648,7 @@ ${sourceUrl}`;
           if (!patch.predicate())
             continue;
         } catch (e) {
-          logger.error(`predicate threw for ${patch.plugin}:`, e);
+          logger3.error(`predicate threw for ${patch.plugin}:`, e);
           continue;
         }
       }
@@ -649,7 +694,7 @@ ${sourceUrl}`;
             if (!replacement.predicate())
               continue;
           } catch (e) {
-            logger.error(`replacement predicate threw for ${patch.plugin}:`, e);
+            logger3.error(`replacement predicate threw for ${patch.plugin}:`, e);
             continue;
           }
         }
@@ -676,7 +721,7 @@ ${sourceUrl}`;
         } catch (err) {
           groupErrors++;
           result.replacements.push({ match: String(replacement.match), status: "error" });
-          logger.error(`Error in patch by ${patch.plugin} on module ${moduleId}:`, err);
+          logger3.error(`Error in patch by ${patch.plugin} on module ${moduleId}:`, err);
           code = lastCode;
           if (patch.group) {
             allSucceeded = false;
@@ -693,7 +738,7 @@ ${sourceUrl}`;
         }
         patchResults.push(result);
         if (!patch.noWarn)
-          logger.warn(`Group patch by ${patch.plugin} failed, reverting`);
+          logger3.warn(`Group patch by ${patch.plugin} failed, reverting`);
         continue;
       }
       patchResults.push(result);
@@ -717,7 +762,7 @@ ${sourceUrl}`;
         try {
           compiled = compileFactory(code, `// Turbopack Module ${moduleId} - Patched by ${plugins.join(", ")}`, `//# sourceURL=file:///TurbopackModule${moduleId}`);
         } catch (err) {
-          logger.error(`Failed to compile patched module ${moduleId} (${plugins.join(", ")}), using original:`, err);
+          logger3.error(`Failed to compile patched module ${moduleId} (${plugins.join(", ")}), using original:`, err);
           patchStats.errors++;
           compiled = original;
         }
@@ -743,7 +788,7 @@ ${sourceUrl}`;
           if (mod?.exports != null)
             notifyModuleLoaded(mod.exports, actualId);
         } catch (e) {
-          logger.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
+          logger3.error(`Module notification error for ${mod?.id ?? moduleId}:`, e);
         }
         fnSourceCache.delete(factory);
       }
@@ -763,11 +808,11 @@ ${sourceUrl}`;
         if (!isPatched)
           throw err;
         patchStats.runtimeFallbacks++;
-        logger.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
+        logger3.error(`Patched module ${mod?.id ?? moduleId} errored, using original:`, err);
         try {
           original.call(ctx, helpers, mod, exports);
         } catch (origErr) {
-          logger.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
+          logger3.error(`Original module ${mod?.id ?? moduleId} also errored:`, origErr);
           throw origErr;
         }
       }
@@ -821,7 +866,7 @@ ${sourceUrl}`;
         try {
           args[i] = patchChunkEntry(args[i]);
         } catch (e) {
-          logger.error("Failed to patch chunk entry:", e);
+          logger3.error("Failed to patch chunk entry:", e);
         }
       }
     }
@@ -846,7 +891,7 @@ ${sourceUrl}`;
       return;
     const count = scanCache(runtimeModuleCache);
     if (count > 0)
-      logger.info(`Rescan found ${count} new/updated modules`);
+      logger3.info(`Rescan found ${count} new/updated modules`);
   }
   function captureFactoryRegistry() {
     const origMapSet = Map.prototype.set;
@@ -871,7 +916,7 @@ ${sourceUrl}`;
           break;
       }
       if (valid < 3) {
-        logger.debug("Captured Map doesn't look like a factory registry, discarding");
+        logger3.debug("Captured Map doesn't look like a factory registry, discarding");
         return null;
       }
     }
@@ -883,7 +928,7 @@ ${sourceUrl}`;
     helperContractChecked = true;
     const missing = LOAD_BEARING_HELPERS.filter((h) => helpers[h] == null);
     if (missing.length)
-      logger.warn(`Turbopack runtime contract changed, missing helper(s): ${missing.join(", ")} — patching may be degraded.`);
+      logger3.warn(`Turbopack runtime contract changed, missing helper(s): ${missing.join(", ")} — patching may be degraded.`);
   }
   function captureRuntimeState(helpers) {
     if (!turbopackHelpers)
@@ -943,7 +988,7 @@ ${sourceUrl}`;
     try {
       wrapExistingFactories();
     } catch (e) {
-      logger.error("Failed to wrap existing factories:", e);
+      logger3.error("Failed to wrap existing factories:", e);
     }
   }
   function patchTurbopack() {
@@ -970,7 +1015,7 @@ ${sourceUrl}`;
               try {
                 handleChunkPush(chunk);
               } catch (e) {
-                logger.error("Failed to process queued chunk:", e);
+                logger3.error("Failed to process queued chunk:", e);
               }
             }
             queuedChunks.length = 0;
@@ -987,198 +1032,6 @@ ${sourceUrl}`;
         return origPush(...args);
       };
     }
-  }
-
-  // src/turbopack/patchReport.ts
-  var logger2 = new Logger("TurbopackPatcher", "#e78284");
-  var patchResults = [];
-  var validateMisses = new Set;
-  var patchStats = {
-    applied: 0,
-    noEffect: 0,
-    errors: 0,
-    runtimeFallbacks: 0,
-    patchedModules: new Set
-  };
-  var chunkFingerprint = new Set;
-  function getChunkFingerprint() {
-    return [...chunkFingerprint];
-  }
-  function isFactoryPending(patch) {
-    const registry = getRuntimeFactoryRegistry2();
-    if (!registry)
-      return false;
-    const find = Array.isArray(patch.find) ? patch.find : [patch.find];
-    for (const [, factory] of registry) {
-      if (matchesAllPatterns(getFnSource(factory), find))
-        return true;
-    }
-    return false;
-  }
-  function patchReport() {
-    const orphaned = [];
-    const pending = [];
-    for (const p of patches) {
-      if (p.all)
-        continue;
-      const entry = { plugin: p.plugin, find: String(p.find) };
-      (isFactoryPending(p) ? pending : orphaned).push(entry);
-    }
-    return { stats: { ...patchStats, patchedModules: [...patchStats.patchedModules] }, results: patchResults, orphaned, pending };
-  }
-  function reportOrphanedPatches() {
-    const orphaned = patches.filter((p) => !p.all && !isFactoryPending(p));
-    const warnOrphaned = orphaned.filter((p) => !p.noWarn);
-    if (warnOrphaned.length)
-      logger2.warn(`${warnOrphaned.length} patch(es) found no module:`, warnOrphaned.map((p) => `${p.plugin}: ${String(p.find)}`));
-    if (!patchStats.applied && (warnOrphaned.length || patchStats.noEffect)) {
-      logger2.warn("Zero patches applied this session — grok build likely changed, run the reporter.");
-    }
-    if (validateMisses.size) {
-      logger2.warn(`${validateMisses.size} disabled-plugin patch(es) no longer match:`, [...validateMisses]);
-    }
-    if (patchStats.noEffect || patchStats.errors) {
-      for (const result of patchResults) {
-        for (const rep of result.replacements) {
-          if (rep.status === "noEffect" && !result.noWarn)
-            logger2.debug(`[no effect] ${result.plugin}: ${rep.match}`);
-          else if (rep.status === "error")
-            logger2.debug(`[error] ${result.plugin}: ${rep.match}`);
-        }
-      }
-    }
-    if (false) {}
-  }
-
-  // src/utils/lazy.ts
-  var logger3 = new Logger("Lazy");
-  var unconfigurable = ["arguments", "caller", "prototype"];
-  var SYM_LAZY_GET = Symbol.for("void.lazy.get");
-  var SYM_LAZY_CACHED = Symbol.for("void.lazy.cached");
-  var handler = {};
-  for (const method of [
-    "apply",
-    "construct",
-    "defineProperty",
-    "deleteProperty",
-    "getPrototypeOf",
-    "has",
-    "isExtensible",
-    "preventExtensions",
-    "set",
-    "setPrototypeOf"
-  ]) {
-    handler[method] = (target, ...args) => Reflect[method](target[SYM_LAZY_GET]?.() ?? target, ...args);
-  }
-  handler.ownKeys = (target) => {
-    const v = target[SYM_LAZY_GET]?.() ?? target;
-    const keys = Reflect.ownKeys(v);
-    for (const key of unconfigurable) {
-      if (!keys.includes(key))
-        keys.push(key);
-    }
-    return keys;
-  };
-  handler.getOwnPropertyDescriptor = (target, p) => {
-    if (typeof p === "string" && unconfigurable.includes(p))
-      return Reflect.getOwnPropertyDescriptor(target, p);
-    const resolved = target[SYM_LAZY_GET]?.() ?? target;
-    const descriptor = Reflect.getOwnPropertyDescriptor(resolved, p);
-    if (descriptor)
-      Object.defineProperty(target, p, descriptor);
-    return descriptor;
-  };
-  handler.get = (target, p, receiver) => {
-    if (p === SYM_LAZY_CACHED || p === SYM_LAZY_GET)
-      return Reflect.get(target, p, receiver);
-    const value = target[SYM_LAZY_GET]();
-    if (value == null)
-      return;
-    if (typeof value === "object" || typeof value === "function")
-      return Reflect.get(value, p, receiver);
-    throw new Error("proxyLazy: factory returned a primitive value");
-  };
-  var MAX_RETRIES = 50;
-  function makeLazy(factory, maxRetries = MAX_RETRIES) {
-    let cache;
-    let resolved = false;
-    let attempts = 0;
-    return () => {
-      if (!resolved) {
-        if (attempts >= maxRetries) {
-          if (false) {}
-          return cache;
-        }
-        cache = factory();
-        attempts++;
-        if (cache != null)
-          resolved = true;
-      }
-      return cache;
-    };
-  }
-  function proxyLazy(factory) {
-    const getter = makeLazy(factory);
-    const proxyDummy = Object.assign(() => {}, {
-      [SYM_LAZY_CACHED]: undefined,
-      [SYM_LAZY_GET]() {
-        const result = getter();
-        proxyDummy[SYM_LAZY_CACHED] = result;
-        return result;
-      }
-    });
-    return new Proxy(proxyDummy, handler);
-  }
-
-  // src/utils/lazyReact.ts
-  var _createElement = null;
-  function setCreateElement(fn) {
-    _createElement = fn;
-  }
-  var LAZY_MAX_RETRIES = 200;
-  function LazyComponent(name, factory) {
-    const resolve = makeLazy(factory, LAZY_MAX_RETRIES);
-    const wrapper = (props) => {
-      const cached = resolve();
-      if (!cached || !_createElement)
-        return null;
-      return _createElement(cached, props);
-    };
-    Object.defineProperty(wrapper, "name", { value: name });
-    return new Proxy(wrapper, {
-      get(target, prop, receiver) {
-        const cached = resolve();
-        if (cached && Reflect.has(cached, prop))
-          return Reflect.get(cached, prop);
-        return Reflect.get(target, prop, receiver);
-      }
-    });
-  }
-
-  // src/utils/text.ts
-  var CAMEL_BOUNDARY = /([a-z])([A-Z])/g;
-  var WORD_SEPARATOR = /[-_]/g;
-  var WORD_START = /\b\w/g;
-  var REGEXP_SPECIALS = /[.*+?^${}()|[\]\\]/g;
-  function humanizeKey(key, acronyms) {
-    const title = key.replaceAll(CAMEL_BOUNDARY, "$1 $2").replaceAll(WORD_SEPARATOR, " ").replaceAll(WORD_START, (c) => c.toUpperCase());
-    if (!acronyms)
-      return title;
-    let result = title;
-    for (const [from, to] of Object.entries(acronyms)) {
-      result = result.replaceAll(new RegExp(`\\b${escapeRegExp(from)}\\b`, "g"), to);
-    }
-    return result;
-  }
-  function escapeRegExp(s) {
-    return s.replaceAll(REGEXP_SPECIALS, "\\$&");
-  }
-  function pluralize(count, singular, plural) {
-    return `${count} ${count === 1 ? singular : plural ?? singular + "s"}`;
-  }
-  function escapeHtml(s, quotes = false) {
-    const base = s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-    return quotes ? base.replaceAll('"', "&quot;") : base;
   }
 
   // src/turbopack/turbopack.ts
@@ -1711,6 +1564,995 @@ ${sourceUrl}`;
   });
   var Fragment = Symbol.for("react.fragment");
 
+  // src/components/icons.tsx
+  var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
+    width: props.width ?? props.size ?? "1em",
+    height: props.height ?? props.size ?? "1em",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: props.strokeWidth ?? 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className: props.className,
+    "aria-hidden": "true"
+  }, children);
+  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React.createElement("svg", {
+    width: props.width ?? props.size ?? "1em",
+    height: props.height ?? props.size ?? "1em",
+    viewBox,
+    fill: "currentColor",
+    className: props.className,
+    "aria-hidden": "true"
+  }, children);
+  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"
+  }));
+  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    x: "3",
+    y: "8",
+    width: "13",
+    height: "13",
+    rx: "4",
+    stroke: "currentColor"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z",
+    fill: "currentColor"
+  }));
+  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10.88 21.94 15.46 14"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21.17 8H12"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3.95 6.06 8.54 14"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "4"
+  }));
+  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12",
+    y1: "8",
+    y2: "12"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12.01",
+    y1: "16",
+    y2: "16"
+  }));
+  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "13.5",
+    cy: "6.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "17.5",
+    cy: "10.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "6.5",
+    cy: "12.5",
+    r: ".5",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "8.5",
+    cy: "7.5",
+    r: ".5",
+    fill: "currentColor"
+  }));
+  var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 6h18"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+  }));
+  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10 11v6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 11v6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 6h18"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+  }));
+  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01a2.83 2.83 0 0 1 0-4L17 3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m16 2 6 6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 16H4"
+  }));
+  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+  }), /* @__PURE__ */ React.createElement("polyline", {
+    points: "7 10 12 15 17 10"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12",
+    y1: "15",
+    y2: "3"
+  }));
+  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m19 5 3-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m2 22 3-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M7.5 13.5 10 11"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M10.5 16.5 13 14"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"
+  }));
+  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React.createElement("path", {
+    d: "M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",
+    fill: "currentColor",
+    fillRule: "evenodd",
+    clipRule: "evenodd"
+  }));
+  var PinIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 17v5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
+  }));
+  var PinFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 17v5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
+  }));
+  var StarIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+  }));
+  var StarFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+  }));
+  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"
+  }));
+  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 9v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 17h.01"
+  }));
+  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 15H9v-5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 3h5v5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M21 3 9 15"
+  }));
+  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m15 5 4 4"
+  }));
+  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M2 12h20"
+  }));
+  var CircleXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m15 9-6 6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m9 9 6 6"
+  }));
+  var CircleCheckIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m9 12 2 2 4-4"
+  }));
+  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+  }));
+  var CircleGaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M15.6 2.7a10 10 0 1 0 5.7 5.7"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M13.4 10.6 19 5"
+  }));
+  var ChevronsDownUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m7 20 5-5 5 5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m7 4 5 5 5-5"
+  }));
+  var RotateCcwIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 3v5h5"
+  }));
+  var AppWindowIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    x: "2",
+    y: "4",
+    width: "20",
+    height: "16",
+    rx: "2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M10 4v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M2 8h20"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6 4v4"
+  }));
+  var BrushCleaningIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m16 22-1-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m8 22 1-4"
+  }));
+  var BlendIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "9",
+    cy: "9",
+    r: "7"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "15",
+    cy: "15",
+    r: "7"
+  }));
+  var TerminalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("polyline", {
+    points: "4 17 10 11 4 5"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "20",
+    y1: "19",
+    y2: "19"
+  }));
+  var MicOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("line", {
+    x1: "2",
+    x2: "22",
+    y1: "2",
+    y2: "22"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 10v2a7 7 0 0 0 12 5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M15 9.34V5a3 3 0 0 0-5.68-1.33"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 9v3a3 3 0 0 0 5.12 2.12"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "12",
+    x2: "12",
+    y1: "19",
+    y2: "22"
+  }));
+  var BotOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M13.67 8H18a2 2 0 0 1 2 2v4.33"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M2 14h2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M20 14h2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M22 22 2 2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 8H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 1.414-.586"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 13v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9.67 4H12v2.33"
+  }));
+  var Link2OffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M9 17H7A5 5 0 0 1 7 7"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M15 7h2a5 5 0 0 1 4 8"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "8",
+    x2: "12",
+    y1: "12",
+    y2: "12"
+  }), /* @__PURE__ */ React.createElement("line", {
+    x1: "2",
+    x2: "22",
+    y1: "2",
+    y2: "22"
+  }));
+  var UserRoundXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M2 21a8 8 0 0 1 11.873-7"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "10",
+    cy: "8",
+    r: "5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m17 17 5 5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m22 17-5 5"
+  }));
+  var CatIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 14v.5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 14v.5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M11.25 16.25h1.5L12 17l-.75-.75Z"
+  }));
+  var BellIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10.268 21a2 2 0 0 0 3.464 0"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"
+  }));
+  var EyeOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14.084 14.158a3 3 0 0 1-4.242-4.242"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m2 2 20 20"
+  }));
+  var UnfoldHorizontalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M16 12h6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 12H2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 2v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 8v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 14v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 20v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m19 15 3-3-3-3"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m5 9-3 3 3 3"
+  }));
+  var FilesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M20 7h-3a2 2 0 0 1-2-2V2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"
+  }));
+  var ImagesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M18 22H4a2 2 0 0 1-2-2V6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "8",
+    r: "2"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    width: "16",
+    height: "16",
+    x: "6",
+    y: "2",
+    rx: "2"
+  }));
+  var LinkIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+  }));
+  var PanelLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    width: "18",
+    height: "18",
+    x: "3",
+    y: "3",
+    rx: "2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 3v18"
+  }));
+  var ScrollTextIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M15 12h-5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M15 8h-5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19 17V5a2 2 0 0 0-2-2H4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"
+  }));
+  var Volume2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M16 9a5 5 0 0 1 0 6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M19.364 18.364a9 9 0 0 0 0-12.728"
+  }));
+  var FileDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 2v4a2 2 0 0 0 2 2h4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 18v-6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "m9 15 3 3 3-3"
+  }));
+  var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M3 3v5h5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 7v5l4 2"
+  }));
+  var ClockIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("polyline", {
+    points: "12 6 12 12 16 14"
+  }));
+  var TextCursorInputIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12 20h-1a2 2 0 0 1-2-2 2 2 0 0 1-2 2H6"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M13 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-7"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M6 4h1a2 2 0 0 1 2 2 2 2 0 0 1 2-2h1"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9 6v12"
+  }));
+  var LayoutGridIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    width: "7",
+    height: "7",
+    x: "3",
+    y: "3",
+    rx: "1"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    width: "7",
+    height: "7",
+    x: "14",
+    y: "3",
+    rx: "1"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    width: "7",
+    height: "7",
+    x: "14",
+    y: "14",
+    rx: "1"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    width: "7",
+    height: "7",
+    x: "3",
+    y: "14",
+    rx: "1"
+  }));
+  var SparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M20 3v4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M22 5h-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M4 17v2"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 18H3"
+  }));
+  var ShieldOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m2 2 20 20"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M5 5a1 1 0 0 0-1 1v7c0 5 3.5 7.5 7.67 8.94a1 1 0 0 0 .67.01c2.35-.82 4.48-1.97 5.9-3.71"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M9.309 3.652A12.252 12.252 0 0 0 11.24 2.28a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1v7a9.784 9.784 0 0 1-.08 1.264"
+  }));
+  var SettingsIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "3"
+  }));
+  var Settings2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M20 7h-9"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M14 17H5"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "17",
+    cy: "17",
+    r: "3"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "7",
+    cy: "7",
+    r: "3"
+  }));
+  var VoidIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React.createElement("path", {
+    d: "M2.2 7.4 L8.4 20.2 L13.03 11.30"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    stroke: "none",
+    d: "M13.985 11.792 L14.045 11.678 L14.104 11.567 L14.163 11.458 L14.222 11.352 L14.280 11.249 L14.338 11.148 L14.395 11.049 L14.452 10.953 L14.508 10.859 L14.563 10.768 L14.618 10.679 L14.673 10.592 L14.727 10.508 L14.781 10.426 L14.834 10.347 L14.887 10.270 L14.939 10.195 L14.992 10.122 L15.044 10.052 L15.095 9.984 L15.147 9.918 L15.198 9.855 L15.249 9.794 L15.300 9.735 L15.351 9.678 L15.402 9.623 L15.452 9.571 L15.503 9.521 L15.554 9.473 L15.606 9.427 L15.657 9.384 L15.709 9.342 L15.760 9.303 L15.813 9.267 L15.865 9.232 L15.918 9.200 L15.972 9.170 L16.026 9.142 L16.081 9.117 L16.136 9.094 L16.191 9.074 L16.248 9.056 L16.305 9.041 L16.363 9.028 L16.421 9.018 L16.480 9.011 L16.540 9.006 L16.600 9.005 L23.700 9.005 L23.700 7.555 L16.600 7.555 L16.494 7.556 L16.388 7.560 L16.282 7.566 L16.177 7.574 L16.071 7.585 L15.966 7.598 L15.860 7.615 L15.755 7.634 L15.650 7.655 L15.545 7.680 L15.440 7.707 L15.336 7.737 L15.231 7.771 L15.127 7.807 L15.024 7.846 L14.921 7.888 L14.818 7.933 L14.716 7.981 L14.614 8.032 L14.513 8.086 L14.413 8.144 L14.313 8.204 L14.214 8.267 L14.116 8.334 L14.018 8.403 L13.922 8.475 L13.826 8.550 L13.731 8.629 L13.638 8.710 L13.545 8.794 L13.453 8.882 L13.363 8.972 L13.273 9.065 L13.185 9.161 L13.098 9.260 L13.012 9.361 L12.927 9.466 L12.844 9.573 L12.762 9.684 L12.681 9.797 L12.601 9.913 L12.522 10.031 L12.445 10.153 L12.369 10.277 L12.294 10.404 L12.221 10.533 L12.149 10.666 L12.077 10.800 Z"
+  }), /* @__PURE__ */ React.createElement("g", {
+    fill: "currentColor",
+    stroke: "none"
+  }, /* @__PURE__ */ React.createElement("rect", {
+    x: "16.775",
+    y: "5.78",
+    width: "1.45",
+    height: "5.0"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "20.475",
+    y: "5.78",
+    width: "1.45",
+    height: "5.0"
+  })));
+
+  // src/utils/constants.ts
+  var Devs = Object.freeze({
+    Prism: "Prism",
+    adryd: "adryd",
+    p: "0-V"
+  });
+
+  // src/utils/css.ts
+  var logger5 = new Logger("Styles", "#a6d189");
+  var styleRegistry = new Map;
+  var activeStyles = new Map;
+  var container = null;
+  var pendingStyles = [];
+  function getContainer() {
+    if (container?.isConnected)
+      return container;
+    if (!document.head)
+      return null;
+    const wasDisconnected = container != null;
+    container = document.createElement("void-styles");
+    document.head.appendChild(container);
+    if (wasDisconnected) {
+      for (const [name, el] of activeStyles) {
+        if (!el.isConnected) {
+          const css = styleRegistry.get(name);
+          if (css) {
+            const fresh = document.createElement("style");
+            fresh.dataset.void = name;
+            fresh.textContent = css;
+            fresh.disabled = el.disabled;
+            container.appendChild(fresh);
+            activeStyles.set(name, fresh);
+          }
+        }
+      }
+    }
+    return container;
+  }
+  function flushPending() {
+    const root = getContainer();
+    if (!root)
+      return;
+    for (const [name, css] of pendingStyles) {
+      inject(root, name, css);
+    }
+    pendingStyles = [];
+  }
+  function inject(root, name, css) {
+    const existing = activeStyles.get(name);
+    if (existing) {
+      if (existing.textContent !== css)
+        existing.textContent = css;
+      return;
+    }
+    const el = document.createElement("style");
+    el.dataset.void = name;
+    el.textContent = css;
+    root.appendChild(el);
+    activeStyles.set(name, el);
+  }
+  function registerStyle(name, css) {
+    styleRegistry.set(name, css);
+    const root = getContainer();
+    if (root) {
+      inject(root, name, css);
+    } else {
+      pendingStyles.push([name, css]);
+      if (pendingStyles.length === 1) {
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", flushPending, { once: true });
+        } else {
+          flushPending();
+        }
+      }
+    }
+  }
+  function enableStyle(name) {
+    const existing = activeStyles.get(name);
+    if (existing) {
+      if (existing.disabled) {
+        existing.disabled = false;
+        return true;
+      }
+      return false;
+    }
+    const css = styleRegistry.get(name);
+    if (!css) {
+      logger5.warn(`Style "${name}" not registered.`);
+      return false;
+    }
+    const root = getContainer();
+    if (!root)
+      return false;
+    inject(root, name, css);
+    return true;
+  }
+  function disableStyle(name) {
+    const el = activeStyles.get(name);
+    if (!el)
+      return false;
+    el.disabled = true;
+    return true;
+  }
+  function unregisterStyle(name) {
+    activeStyles.get(name)?.remove();
+    activeStyles.delete(name);
+    styleRegistry.delete(name);
+  }
+  var classNameFactory = (prefix = "") => (...args) => {
+    if (args.length === 1 && typeof args[0] === "string")
+      return prefix + args[0];
+    const classNames = new Set;
+    for (const arg of args) {
+      if (typeof arg === "string")
+        classNames.add(arg);
+      else if (Array.isArray(arg)) {
+        for (const name of arg)
+          classNames.add(name);
+      } else if (arg && typeof arg === "object") {
+        for (const [name, value] of Object.entries(arg)) {
+          if (value)
+            classNames.add(name);
+        }
+      }
+    }
+    return Array.from(classNames, (name) => prefix + name).join(" ");
+  };
+  function classes(...names) {
+    return names.filter(Boolean).join(" ");
+  }
+
+  // src/utils/types.ts
+  function definePlugin(p) {
+    return p;
+  }
+  var StartAt;
+  ((StartAt2) => {
+    StartAt2["Init"] = "Init";
+    StartAt2["DOMContentLoaded"] = "DOMContentLoaded";
+    StartAt2["TurbopackReady"] = "TurbopackReady";
+  })(StartAt ||= {});
+  var OptionType;
+  ((OptionType2) => {
+    OptionType2[OptionType2["STRING"] = 0] = "STRING";
+    OptionType2[OptionType2["NUMBER"] = 1] = "NUMBER";
+    OptionType2[OptionType2["BIGINT"] = 2] = "BIGINT";
+    OptionType2[OptionType2["BOOLEAN"] = 3] = "BOOLEAN";
+    OptionType2[OptionType2["SELECT"] = 4] = "SELECT";
+    OptionType2[OptionType2["SLIDER"] = 5] = "SLIDER";
+    OptionType2[OptionType2["COMPONENT"] = 6] = "COMPONENT";
+    OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
+  })(OptionType ||= {});
+
+  // src/plugins/themedScrollbar/index.ts
+  var STYLE_NAME = "themedScrollbar";
+  var FRAME_STYLE_ID = "void-themed-scrollbar";
+  var MSG = "void-themed-scrollbar";
+  var MSG_HELLO = "void-themed-scrollbar-hello";
+  var SCROLLER = '[class*="pane-card"] :is([class*="overflow-auto"],[class*="overflow-y-auto"],[class*="overflow-scroll"],[class*="overflow-y-scroll"])';
+  var IFRAME_SEL = 'iframe[title="Preview"], [class*="pane-card"] iframe';
+  var THUMB = "var(--border-l2,color-mix(in srgb,var(--fg-primary,#888) 28%,transparent))";
+  var THUMB_HOVER = "var(--fg-tertiary,color-mix(in srgb,var(--fg-primary,#888) 42%,transparent))";
+  var TRACK = "var(--surface-l1,var(--surface-inset,transparent))";
+  var CSS = `
+${SCROLLER} {
+    scrollbar-width: thin !important;
+    scrollbar-color: ${THUMB} ${TRACK} !important;
+}
+
+${SCROLLER}::-webkit-scrollbar {
+    width: 0.5rem !important;
+    height: 0.5rem !important;
+}
+
+${SCROLLER}::-webkit-scrollbar-track,
+${SCROLLER}::-webkit-scrollbar-corner {
+    background: ${TRACK} !important;
+}
+
+${SCROLLER}::-webkit-scrollbar-thumb {
+    background-color: ${THUMB} !important;
+    background-clip: padding-box !important;
+    border: 0.125rem solid transparent !important;
+    border-radius: 999px !important;
+}
+
+${SCROLLER}::-webkit-scrollbar-thumb:hover {
+    background-color: ${THUMB_HOVER} !important;
+}
+`;
+  var domObs = null;
+  var themeObs = null;
+  var hooked = new WeakSet;
+  function isGrokPreviewFrame() {
+    const host = location.hostname;
+    return host === "grok-sandbox.com" || host.endsWith(".grok-sandbox.com");
+  }
+  function isDark() {
+    const html = document.documentElement;
+    const tokens = `${html.className} ${document.body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
+    return html.classList.contains("dark") || html.getAttribute("data-theme") === "dark" || /(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens);
+  }
+  function frameCss(dark) {
+    const thumb = dark ? "#4a4a52" : "#c4c4cc";
+    const track = dark ? "#141416" : "#f4f4f5";
+    const hover = dark ? "#9a9aa3" : "#8a8a94";
+    return `html,body{scrollbar-width:thin!important;scrollbar-color:${thumb} ${track}!important}` + "html::-webkit-scrollbar,body::-webkit-scrollbar{width:.5rem!important;height:.5rem!important}" + `html::-webkit-scrollbar-track,body::-webkit-scrollbar-track,html::-webkit-scrollbar-corner,body::-webkit-scrollbar-corner{background:${track}!important}` + `html::-webkit-scrollbar-thumb,body::-webkit-scrollbar-thumb{background-color:${thumb}!important;background-clip:padding-box!important;border:.125rem solid transparent!important;border-radius:999px!important}` + `html::-webkit-scrollbar-thumb:hover,body::-webkit-scrollbar-thumb:hover{background-color:${hover}!important}`;
+  }
+  function applyToDocument(doc, dark) {
+    let el = doc.getElementById(FRAME_STYLE_ID);
+    if (!el) {
+      el = doc.createElement("style");
+      el.id = FRAME_STYLE_ID;
+      (doc.head ?? doc.documentElement).appendChild(el);
+    }
+    el.textContent = frameCss(dark);
+  }
+  function bootstrapPreviewFrame() {
+    applyToDocument(document, matchMedia("(prefers-color-scheme: dark)").matches);
+    window.addEventListener("message", onFrameMessage);
+    try {
+      window.parent.postMessage({ type: MSG_HELLO }, "*");
+    } catch {}
+  }
+  function onFrameMessage(event) {
+    const { data } = event;
+    if (!data || data.type !== MSG)
+      return;
+    applyToDocument(document, data.dark === true);
+  }
+  function paintIframe(iframe) {
+    const dark = isDark();
+    try {
+      const doc = iframe.contentDocument;
+      if (doc)
+        applyToDocument(doc, dark);
+    } catch {}
+    try {
+      iframe.contentWindow?.postMessage({ type: MSG, dark }, "*");
+    } catch {}
+  }
+  function hookIframe(iframe) {
+    paintIframe(iframe);
+    if (hooked.has(iframe))
+      return;
+    hooked.add(iframe);
+    iframe.addEventListener("load", () => paintIframe(iframe));
+  }
+  function scanIframes() {
+    document.querySelectorAll(IFRAME_SEL).forEach(hookIframe);
+  }
+  function onParentMessage(event) {
+    const { data } = event;
+    if (!data || data.type !== MSG_HELLO)
+      return;
+    const src = event.source;
+    if (!src)
+      return;
+    try {
+      src.postMessage({ type: MSG, dark: isDark() }, event.origin === "null" ? "*" : event.origin);
+    } catch {
+      src.postMessage({ type: MSG, dark: isDark() }, "*");
+    }
+  }
+  function startParent() {
+    registerStyle(STYLE_NAME, CSS);
+    scanIframes();
+    window.addEventListener("message", onParentMessage);
+    domObs = new MutationObserver(scanIframes);
+    domObs.observe(document.documentElement, { childList: true, subtree: true });
+    themeObs = new MutationObserver(scanIframes);
+    themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme", "data-color-scheme"] });
+  }
+  function stopParent() {
+    unregisterStyle(STYLE_NAME);
+    window.removeEventListener("message", onParentMessage);
+    domObs?.disconnect();
+    themeObs?.disconnect();
+    domObs = null;
+    themeObs = null;
+  }
+  var themedScrollbar_default = definePlugin({
+    name: "ThemedScrollbar",
+    icon: ScrollTextIcon,
+    description: "Makes the project pane scrollbar follow Grok's dark and light theme.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    start() {
+      startParent();
+    },
+    stop() {
+      stopParent();
+    }
+  });
+
+  // src/Void.ts
+  var exports_Void = {};
+  __export(exports_Void, {
+    ChunkPathRegex: () => ChunkPathRegex,
+    DefaultChunkLoadRegex: () => DefaultChunkLoadRegex,
+    Devs: () => Devs,
+    ErrorBoundary: () => ErrorBoundary,
+    Logger: () => Logger,
+    NoticeType: () => NoticeType,
+    OptionType: () => OptionType,
+    PlainSettings: () => PlainSettings,
+    Settings: () => Settings,
+    SettingsStore: () => SettingsStore3,
+    StartAt: () => StartAt,
+    ToastType: () => ToastType,
+    addChatBarButton: () => addChatBarButton,
+    addContextMenuItem: () => addContextMenuItem,
+    addLocalTheme: () => addLocalTheme,
+    addPatch: () => addPatch,
+    addTheme: () => addTheme,
+    clamp: () => clamp,
+    classNameFactory: () => classNameFactory,
+    classes: () => classes,
+    closeAllModals: () => closeAllModals,
+    closeModal: () => closeModal,
+    closeNotice: () => closeNotice,
+    common: () => exports_common,
+    copyToClipboard: () => copyToClipboard,
+    createExternalStore: () => createExternalStore,
+    debounce: () => debounce,
+    definePlugin: () => definePlugin,
+    definePluginSettings: () => definePluginSettings,
+    disableStyle: () => disableStyle,
+    disableTheme: () => disableTheme,
+    dismissToast: () => dismissToast,
+    dispatch: () => dispatch,
+    enableStyle: () => enableStyle,
+    enableTheme: () => enableTheme,
+    errorMessage: () => errorMessage,
+    escapeHtml: () => escapeHtml,
+    escapeRegExp: () => escapeRegExp,
+    extractAndLoadChunks: () => extractAndLoadChunks,
+    extractAndLoadChunksLazy: () => extractAndLoadChunksLazy,
+    fetchExternal: () => fetchExternal,
+    filters: () => filters,
+    find: () => find,
+    findAll: () => findAll,
+    findBulk: () => findBulk,
+    findByCode: () => findByCode,
+    findByCodeLazy: () => findByCodeLazy,
+    findByDisplayName: () => findByDisplayName,
+    findByDisplayNameLazy: () => findByDisplayNameLazy,
+    findByEventName: () => findByEventName,
+    findByEventNameLazy: () => findByEventNameLazy,
+    findByProps: () => findByProps,
+    findByPropsLazy: () => findByPropsLazy,
+    findComponentByCode: () => findComponentByCode,
+    findComponentByCodeLazy: () => findComponentByCodeLazy,
+    findCssClasses: () => findCssClasses,
+    findCssClassesLazy: () => findCssClassesLazy,
+    findExportedComponent: () => findExportedComponent,
+    findExportedComponentLazy: () => findExportedComponentLazy,
+    findLazy: () => findLazy,
+    findModuleFactory: () => findModuleFactory,
+    findModuleId: () => findModuleId,
+    findStore: () => findStore,
+    findStoreLazy: () => findStoreLazy,
+    fnSourceCache: () => fnSourceCache,
+    formatCountdown: () => formatCountdown,
+    formatDuration: () => formatDuration,
+    getAllStores: () => getAllStores,
+    getFiber: () => getFiber,
+    getFnSource: () => getFnSource,
+    getModuleCache: () => getModuleCache,
+    getReactRoot: () => getReactRoot,
+    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry2,
+    getRuntimeModuleCache: () => getRuntimeModuleCache,
+    getThemes: () => getThemes,
+    getTurbopackHelpers: () => getTurbopackHelpers,
+    humanizeKey: () => humanizeKey,
+    importModule: () => importModule,
+    init: () => init,
+    initSettings: () => initSettings,
+    injectExports: () => injectExports,
+    isBlacklisted: () => isBlacklisted,
+    isNonNullish: () => isNonNullish,
+    isObject: () => isObject,
+    isOnlineThemesEnabled: () => isOnlineThemesEnabled,
+    isPluginEnabled: () => isPluginEnabled,
+    isThemesEnabled: () => isThemesEnabled,
+    isTruthy: () => isTruthy,
+    isZustandStore: () => isZustandStore,
+    makeLazy: () => makeLazy,
+    mapGetOrCreate: () => mapGetOrCreate,
+    mapMangledCssClasses: () => mapMangledCssClasses,
+    mapMangledModule: () => mapMangledModule,
+    mapMangledModuleLazy: () => mapMangledModuleLazy,
+    matchesAllPatterns: () => matchesAllPatterns,
+    matchesPattern: () => matchesPattern,
+    mergeDefaults: () => mergeDefaults,
+    migratePluginSetting: () => migratePluginSetting,
+    migratePluginSettings: () => migratePluginSettings,
+    migrateSettingsToPlugin: () => migrateSettingsToPlugin,
+    onModuleLoad: () => onModuleLoad,
+    onceReady: () => onceReady,
+    onlyOnce: () => onlyOnce,
+    openModal: () => openModal,
+    patchReport: () => patchReport,
+    patchResults: () => patchResults,
+    patchStats: () => patchStats,
+    patches: () => patches,
+    plugins: () => plugins,
+    pluralize: () => pluralize,
+    proxyLazy: () => proxyLazy,
+    registerPlugin: () => registerPlugin,
+    registerStyle: () => registerStyle,
+    removeChatBarButton: () => removeChatBarButton,
+    removeContextMenuItem: () => removeContextMenuItem,
+    removeTheme: () => removeTheme,
+    reportFailedFinders: () => reportFailedFinders,
+    requireModule: () => requireModule,
+    sanitizeFilename: () => sanitizeFilename,
+    search: () => search,
+    sendBrowserNotification: () => sendBrowserNotification,
+    setOnlineThemesEnabled: () => setOnlineThemesEnabled,
+    setThemesEnabled: () => setThemesEnabled,
+    showNotice: () => showNotice,
+    showToast: () => showToast,
+    sleep: () => sleep,
+    sortedEntries: () => sortedEntries,
+    startPlugin: () => startPlugin,
+    stopPlugin: () => stopPlugin,
+    subscribe: () => subscribe,
+    syncLazyModules: () => syncLazyModules,
+    unregisterStyle: () => unregisterStyle,
+    updateLocalTheme: () => updateLocalTheme,
+    useEventSubscription: () => useEventSubscription,
+    useExternalStore: () => useExternalStore,
+    useForceUpdater: () => useForceUpdater,
+    useIsStreaming: () => useIsStreaming,
+    useSelectionHas: () => useSelectionHas,
+    useSelectionSize: () => useSelectionSize,
+    waitFor: () => waitFor,
+    walkFiberTree: () => walkFiberTree,
+    walkFiberUp: () => walkFiberUp
+  });
+
   // src/utils/guards.ts
   function isTruthy(item) {
     return Boolean(item);
@@ -1723,7 +2565,7 @@ ${sourceUrl}`;
   }
 
   // src/utils/idb.ts
-  var logger5 = new Logger("IDB");
+  var logger6 = new Logger("IDB");
   var DB_NAME = "Void";
   var STORE_NAME = "kv";
   var DB_VERSION = 1;
@@ -1960,7 +2802,7 @@ ${sourceUrl}`;
   }
 
   // src/api/Events.ts
-  var logger6 = new Logger("Events");
+  var logger7 = new Logger("Events");
   var listeners = new Map;
   function subscribe(event, handler2) {
     const set = mapGetOrCreate(listeners, event, () => new Set);
@@ -1980,7 +2822,7 @@ ${sourceUrl}`;
       try {
         handler2(data);
       } catch (e) {
-        logger6.error(`Event handler error (${event}):`, e);
+        logger7.error(`Event handler error (${event}):`, e);
       }
     }
   }
@@ -2126,7 +2968,7 @@ ${sourceUrl}`;
   }
 
   // src/utils/SettingsStore.ts
-  var logger7 = new Logger("SettingsStore");
+  var logger8 = new Logger("SettingsStore");
   var STORAGE_KEY = "VoidSettings";
   var SAVE_DEBOUNCE_MS = 100;
 
@@ -2205,7 +3047,7 @@ ${sourceUrl}`;
         try {
           l(path);
         } catch (e) {
-          logger7.error("Settings listener error:", e);
+          logger8.error("Settings listener error:", e);
         }
       }
     }
@@ -2237,10 +3079,10 @@ ${sourceUrl}`;
           try {
             localStorage.setItem(STORAGE_KEY, json);
           } catch {}
-          idbSet(STORAGE_KEY, json).catch((e) => logger7.warn("Failed to save settings to IndexedDB:", e));
+          idbSet(STORAGE_KEY, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
         }
       } catch (e) {
-        logger7.error("Failed to save settings:", e);
+        logger8.error("Failed to save settings:", e);
       }
     }
     markAsChanged() {
@@ -2277,30 +3119,8 @@ ${sourceUrl}`;
     }
   }
 
-  // src/utils/types.ts
-  function definePlugin(p) {
-    return p;
-  }
-  var StartAt;
-  ((StartAt2) => {
-    StartAt2["Init"] = "Init";
-    StartAt2["DOMContentLoaded"] = "DOMContentLoaded";
-    StartAt2["TurbopackReady"] = "TurbopackReady";
-  })(StartAt ||= {});
-  var OptionType;
-  ((OptionType2) => {
-    OptionType2[OptionType2["STRING"] = 0] = "STRING";
-    OptionType2[OptionType2["NUMBER"] = 1] = "NUMBER";
-    OptionType2[OptionType2["BIGINT"] = 2] = "BIGINT";
-    OptionType2[OptionType2["BOOLEAN"] = 3] = "BOOLEAN";
-    OptionType2[OptionType2["SELECT"] = 4] = "SELECT";
-    OptionType2[OptionType2["SLIDER"] = 5] = "SLIDER";
-    OptionType2[OptionType2["COMPONENT"] = 6] = "COMPONENT";
-    OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
-  })(OptionType ||= {});
-
   // src/api/Settings.ts
-  var logger8 = new Logger("Settings");
+  var logger9 = new Logger("Settings");
   var DefaultSettings = { plugins: {} };
   var settings = {};
   mergeDefaults(settings, DefaultSettings);
@@ -2316,22 +3136,22 @@ ${sourceUrl}`;
       try {
         raw = await idbGet(STORAGE_KEY) ?? null;
       } catch (e) {
-        logger8.warn("Failed to read IndexedDB:", e);
+        logger9.warn("Failed to read IndexedDB:", e);
       }
       if (!raw) {
         try {
           raw = localStorage.getItem(STORAGE_KEY);
           if (raw)
-            logger8.info("Migrating settings from localStorage to IndexedDB");
+            logger9.info("Migrating settings from localStorage to IndexedDB");
         } catch (e) {
-          logger8.warn("Failed to read localStorage:", e);
+          logger9.warn("Failed to read localStorage:", e);
         }
         if (raw)
           idbSet(STORAGE_KEY, raw).then(() => {
             try {
               localStorage.removeItem(STORAGE_KEY);
             } catch {}
-          }).catch((e) => logger8.debug("Failed to persist settings to IndexedDB:", e));
+          }).catch((e) => logger9.debug("Failed to persist settings to IndexedDB:", e));
       }
     }
     if (raw) {
@@ -2340,7 +3160,7 @@ ${sourceUrl}`;
         if (isObject(parsed))
           Object.assign(settings, parsed);
       } catch (e) {
-        logger8.error("Failed to parse settings:", e);
+        logger9.error("Failed to parse settings:", e);
       }
     }
     mergeDefaults(settings, DefaultSettings);
@@ -2351,7 +3171,7 @@ ${sourceUrl}`;
       return;
     for (const oldName of oldNames) {
       if (oldName in plugins) {
-        logger8.info(`Migrating settings from old name ${oldName} to ${name}`);
+        logger9.info(`Migrating settings from old name ${oldName} to ${name}`);
         plugins[name] = plugins[oldName];
         delete plugins[oldName];
         SettingsStore3.markAsChanged();
@@ -2363,7 +3183,7 @@ ${sourceUrl}`;
     const pluginSettings = SettingsStore3.plain.plugins[pluginName];
     if (!pluginSettings || !(oldKey in pluginSettings) || newKey in pluginSettings)
       return;
-    logger8.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
+    logger9.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
     pluginSettings[newKey] = pluginSettings[oldKey];
     delete pluginSettings[oldKey];
     SettingsStore3.markAsChanged();
@@ -2382,7 +3202,7 @@ ${sourceUrl}`;
       }
     }
     if (changed) {
-      logger8.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
+      logger9.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
       SettingsStore3.markAsChanged();
     }
   }
@@ -2484,7 +3304,7 @@ ${sourceUrl}`;
   }
 
   // src/api/BuildHealth.ts
-  var logger9 = new Logger("TurbopackPatcher", "#e78284");
+  var logger10 = new Logger("TurbopackPatcher", "#e78284");
   var chunkBasename = (path) => path.slice(path.lastIndexOf("/") + 1);
   function checkBuildFingerprint() {
     const domChunks = [...document.querySelectorAll('script[src*="/_next/static/chunks/"]')].map((s) => chunkBasename(s.src));
@@ -2496,133 +3316,9 @@ ${sourceUrl}`;
       const prev = new Set(previous);
       const overlap = current.filter((c) => prev.has(c)).length / current.length;
       if (overlap < 0.5)
-        logger9.warn("grok build changed (chunk fingerprint shifted)");
+        logger10.warn("grok build changed (chunk fingerprint shifted)");
     }
     updateSettingsPluginData({ chunkFingerprint: current });
-  }
-
-  // src/utils/css.ts
-  var logger10 = new Logger("Styles", "#a6d189");
-  var styleRegistry = new Map;
-  var activeStyles = new Map;
-  var container = null;
-  var pendingStyles = [];
-  function getContainer() {
-    if (container?.isConnected)
-      return container;
-    if (!document.head)
-      return null;
-    const wasDisconnected = container != null;
-    container = document.createElement("void-styles");
-    document.head.appendChild(container);
-    if (wasDisconnected) {
-      for (const [name, el] of activeStyles) {
-        if (!el.isConnected) {
-          const css = styleRegistry.get(name);
-          if (css) {
-            const fresh = document.createElement("style");
-            fresh.dataset.void = name;
-            fresh.textContent = css;
-            fresh.disabled = el.disabled;
-            container.appendChild(fresh);
-            activeStyles.set(name, fresh);
-          }
-        }
-      }
-    }
-    return container;
-  }
-  function flushPending() {
-    const root = getContainer();
-    if (!root)
-      return;
-    for (const [name, css] of pendingStyles) {
-      inject(root, name, css);
-    }
-    pendingStyles = [];
-  }
-  function inject(root, name, css) {
-    const existing = activeStyles.get(name);
-    if (existing) {
-      if (existing.textContent !== css)
-        existing.textContent = css;
-      return;
-    }
-    const el = document.createElement("style");
-    el.dataset.void = name;
-    el.textContent = css;
-    root.appendChild(el);
-    activeStyles.set(name, el);
-  }
-  function registerStyle(name, css) {
-    styleRegistry.set(name, css);
-    const root = getContainer();
-    if (root) {
-      inject(root, name, css);
-    } else {
-      pendingStyles.push([name, css]);
-      if (pendingStyles.length === 1) {
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", flushPending, { once: true });
-        } else {
-          flushPending();
-        }
-      }
-    }
-  }
-  function enableStyle(name) {
-    const existing = activeStyles.get(name);
-    if (existing) {
-      if (existing.disabled) {
-        existing.disabled = false;
-        return true;
-      }
-      return false;
-    }
-    const css = styleRegistry.get(name);
-    if (!css) {
-      logger10.warn(`Style "${name}" not registered.`);
-      return false;
-    }
-    const root = getContainer();
-    if (!root)
-      return false;
-    inject(root, name, css);
-    return true;
-  }
-  function disableStyle(name) {
-    const el = activeStyles.get(name);
-    if (!el)
-      return false;
-    el.disabled = true;
-    return true;
-  }
-  function unregisterStyle(name) {
-    activeStyles.get(name)?.remove();
-    activeStyles.delete(name);
-    styleRegistry.delete(name);
-  }
-  var classNameFactory = (prefix = "") => (...args) => {
-    if (args.length === 1 && typeof args[0] === "string")
-      return prefix + args[0];
-    const classNames = new Set;
-    for (const arg of args) {
-      if (typeof arg === "string")
-        classNames.add(arg);
-      else if (Array.isArray(arg)) {
-        for (const name of arg)
-          classNames.add(name);
-      } else if (arg && typeof arg === "object") {
-        for (const [name, value] of Object.entries(arg)) {
-          if (value)
-            classNames.add(name);
-        }
-      }
-    }
-    return Array.from(classNames, (name) => prefix + name).join(" ");
-  };
-  function classes(...names) {
-    return names.filter(Boolean).join(" ");
   }
   // void-css:/tmp/void/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
@@ -3665,559 +4361,6 @@ ${sourceUrl}`;
       });
     });
   }
-
-  // src/components/icons.tsx
-  var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.width ?? props.size ?? "1em",
-    height: props.height ?? props.size ?? "1em",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: props.strokeWidth ?? 2,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    className: props.className,
-    "aria-hidden": "true"
-  }, children);
-  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.width ?? props.size ?? "1em",
-    height: props.height ?? props.size ?? "1em",
-    viewBox,
-    fill: "currentColor",
-    className: props.className,
-    "aria-hidden": "true"
-  }, children);
-  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"
-  }));
-  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
-    x: "3",
-    y: "8",
-    width: "13",
-    height: "13",
-    rx: "4",
-    stroke: "currentColor"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z",
-    fill: "currentColor"
-  }));
-  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M10.88 21.94 15.46 14"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M21.17 8H12"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3.95 6.06 8.54 14"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "4"
-  }));
-  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "12",
-    x2: "12",
-    y1: "8",
-    y2: "12"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "12",
-    x2: "12.01",
-    y1: "16",
-    y2: "16"
-  }));
-  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "13.5",
-    cy: "6.5",
-    r: ".5",
-    fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "17.5",
-    cy: "10.5",
-    r: ".5",
-    fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "6.5",
-    cy: "12.5",
-    r: ".5",
-    fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "8.5",
-    cy: "7.5",
-    r: ".5",
-    fill: "currentColor"
-  }));
-  var TrashIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3 6h18"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-  }));
-  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M10 11v6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14 11v6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3 6h18"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-  }));
-  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01a2.83 2.83 0 0 1 0-4L17 3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m16 2 6 6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 16H4"
-  }));
-  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-  }), /* @__PURE__ */ React.createElement("polyline", {
-    points: "7 10 12 15 17 10"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "12",
-    x2: "12",
-    y1: "15",
-    y2: "3"
-  }));
-  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m19 5 3-3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m2 22 3-3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M7.5 13.5 10 11"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M10.5 16.5 13 14"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"
-  }));
-  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React.createElement("path", {
-    d: "M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",
-    fill: "currentColor",
-    fillRule: "evenodd",
-    clipRule: "evenodd"
-  }));
-  var PinIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 17v5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
-  }));
-  var PinFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 17v5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
-  }));
-  var StarIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
-  }));
-  var StarFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
-  }));
-  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"
-  }));
-  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 9v4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 17h.01"
-  }));
-  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14 15H9v-5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M16 3h5v5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M21 3 9 15"
-  }));
-  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m15 5 4 4"
-  }));
-  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M2 12h20"
-  }));
-  var CircleXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m15 9-6 6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m9 9 6 6"
-  }));
-  var CircleCheckIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m9 12 2 2 4-4"
-  }));
-  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
-  }));
-  var CircleGaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M15.6 2.7a10 10 0 1 0 5.7 5.7"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M13.4 10.6 19 5"
-  }));
-  var ChevronsDownUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m7 20 5-5 5 5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m7 4 5 5 5-5"
-  }));
-  var RotateCcwIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3 3v5h5"
-  }));
-  var AppWindowIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
-    x: "2",
-    y: "4",
-    width: "20",
-    height: "16",
-    rx: "2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M10 4v4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M2 8h20"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M6 4v4"
-  }));
-  var BrushCleaningIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m16 22-1-4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m8 22 1-4"
-  }));
-  var BlendIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "9",
-    cy: "9",
-    r: "7"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "15",
-    cy: "15",
-    r: "7"
-  }));
-  var TerminalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("polyline", {
-    points: "4 17 10 11 4 5"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "12",
-    x2: "20",
-    y1: "19",
-    y2: "19"
-  }));
-  var MicOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("line", {
-    x1: "2",
-    x2: "22",
-    y1: "2",
-    y2: "22"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M5 10v2a7 7 0 0 0 12 5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M15 9.34V5a3 3 0 0 0-5.68-1.33"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9 9v3a3 3 0 0 0 5.12 2.12"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "12",
-    x2: "12",
-    y1: "19",
-    y2: "22"
-  }));
-  var BotOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M13.67 8H18a2 2 0 0 1 2 2v4.33"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M2 14h2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M20 14h2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M22 22 2 2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M8 8H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 1.414-.586"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9 13v2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9.67 4H12v2.33"
-  }));
-  var Link2OffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M9 17H7A5 5 0 0 1 7 7"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M15 7h2a5 5 0 0 1 4 8"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "8",
-    x2: "12",
-    y1: "12",
-    y2: "12"
-  }), /* @__PURE__ */ React.createElement("line", {
-    x1: "2",
-    x2: "22",
-    y1: "2",
-    y2: "22"
-  }));
-  var UserRoundXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M2 21a8 8 0 0 1 11.873-7"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "10",
-    cy: "8",
-    r: "5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m17 17 5 5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m22 17-5 5"
-  }));
-  var CatIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M8 14v.5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M16 14v.5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M11.25 16.25h1.5L12 17l-.75-.75Z"
-  }));
-  var BellIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M10.268 21a2 2 0 0 0 3.464 0"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"
-  }));
-  var EyeOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14.084 14.158a3 3 0 0 1-4.242-4.242"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m2 2 20 20"
-  }));
-  var UnfoldHorizontalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M16 12h6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M8 12H2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 2v2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 8v2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 14v2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 20v2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m19 15 3-3-3-3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m5 9-3 3 3 3"
-  }));
-  var FilesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M20 7h-3a2 2 0 0 1-2-2V2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"
-  }));
-  var ImagesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M18 22H4a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "8",
-    r: "2"
-  }), /* @__PURE__ */ React.createElement("rect", {
-    width: "16",
-    height: "16",
-    x: "6",
-    y: "2",
-    rx: "2"
-  }));
-  var LinkIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-  }));
-  var PanelLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
-    width: "18",
-    height: "18",
-    x: "3",
-    y: "3",
-    rx: "2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9 3v18"
-  }));
-  var ScrollTextIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M15 12h-5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M15 8h-5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M19 17V5a2 2 0 0 0-2-2H4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"
-  }));
-  var Volume2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M16 9a5 5 0 0 1 0 6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M19.364 18.364a9 9 0 0 0 0-12.728"
-  }));
-  var FileDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14 2v4a2 2 0 0 0 2 2h4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 18v-6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m9 15 3 3 3-3"
-  }));
-  var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M3 3v5h5"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 7v5l4 2"
-  }));
-  var ClockIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), /* @__PURE__ */ React.createElement("polyline", {
-    points: "12 6 12 12 16 14"
-  }));
-  var TextCursorInputIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12 20h-1a2 2 0 0 1-2-2 2 2 0 0 1-2 2H6"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M13 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-7"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M5 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h1"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M6 4h1a2 2 0 0 1 2 2 2 2 0 0 1 2-2h1"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9 6v12"
-  }));
-  var LayoutGridIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
-    width: "7",
-    height: "7",
-    x: "3",
-    y: "3",
-    rx: "1"
-  }), /* @__PURE__ */ React.createElement("rect", {
-    width: "7",
-    height: "7",
-    x: "14",
-    y: "3",
-    rx: "1"
-  }), /* @__PURE__ */ React.createElement("rect", {
-    width: "7",
-    height: "7",
-    x: "14",
-    y: "14",
-    rx: "1"
-  }), /* @__PURE__ */ React.createElement("rect", {
-    width: "7",
-    height: "7",
-    x: "3",
-    y: "14",
-    rx: "1"
-  }));
-  var SparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M20 3v4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M22 5h-4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M4 17v2"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M5 18H3"
-  }));
-  var ShieldOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m2 2 20 20"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M5 5a1 1 0 0 0-1 1v7c0 5 3.5 7.5 7.67 8.94a1 1 0 0 0 .67.01c2.35-.82 4.48-1.97 5.9-3.71"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9.309 3.652A12.252 12.252 0 0 0 11.24 2.28a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1v7a9.784 9.784 0 0 1-.08 1.264"
-  }));
-  var SettingsIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "3"
-  }));
-  var Settings2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M20 7h-9"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14 17H5"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "17",
-    cy: "17",
-    r: "3"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "7",
-    cy: "7",
-    r: "3"
-  }));
-  var VoidIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React.createElement("path", {
-    d: "M2.2 7.4 L8.4 20.2 L13.03 11.30"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    stroke: "none",
-    d: "M13.985 11.792 L14.045 11.678 L14.104 11.567 L14.163 11.458 L14.222 11.352 L14.280 11.249 L14.338 11.148 L14.395 11.049 L14.452 10.953 L14.508 10.859 L14.563 10.768 L14.618 10.679 L14.673 10.592 L14.727 10.508 L14.781 10.426 L14.834 10.347 L14.887 10.270 L14.939 10.195 L14.992 10.122 L15.044 10.052 L15.095 9.984 L15.147 9.918 L15.198 9.855 L15.249 9.794 L15.300 9.735 L15.351 9.678 L15.402 9.623 L15.452 9.571 L15.503 9.521 L15.554 9.473 L15.606 9.427 L15.657 9.384 L15.709 9.342 L15.760 9.303 L15.813 9.267 L15.865 9.232 L15.918 9.200 L15.972 9.170 L16.026 9.142 L16.081 9.117 L16.136 9.094 L16.191 9.074 L16.248 9.056 L16.305 9.041 L16.363 9.028 L16.421 9.018 L16.480 9.011 L16.540 9.006 L16.600 9.005 L23.700 9.005 L23.700 7.555 L16.600 7.555 L16.494 7.556 L16.388 7.560 L16.282 7.566 L16.177 7.574 L16.071 7.585 L15.966 7.598 L15.860 7.615 L15.755 7.634 L15.650 7.655 L15.545 7.680 L15.440 7.707 L15.336 7.737 L15.231 7.771 L15.127 7.807 L15.024 7.846 L14.921 7.888 L14.818 7.933 L14.716 7.981 L14.614 8.032 L14.513 8.086 L14.413 8.144 L14.313 8.204 L14.214 8.267 L14.116 8.334 L14.018 8.403 L13.922 8.475 L13.826 8.550 L13.731 8.629 L13.638 8.710 L13.545 8.794 L13.453 8.882 L13.363 8.972 L13.273 9.065 L13.185 9.161 L13.098 9.260 L13.012 9.361 L12.927 9.466 L12.844 9.573 L12.762 9.684 L12.681 9.797 L12.601 9.913 L12.522 10.031 L12.445 10.153 L12.369 10.277 L12.294 10.404 L12.221 10.533 L12.149 10.666 L12.077 10.800 Z"
-  }), /* @__PURE__ */ React.createElement("g", {
-    fill: "currentColor",
-    stroke: "none"
-  }, /* @__PURE__ */ React.createElement("rect", {
-    x: "16.775",
-    y: "5.78",
-    width: "1.45",
-    height: "5.0"
-  }), /* @__PURE__ */ React.createElement("rect", {
-    x: "20.475",
-    y: "5.78",
-    width: "1.45",
-    height: "5.0"
-  })));
-
-  // src/utils/constants.ts
-  var Devs = Object.freeze({
-    Prism: "Prism",
-    adryd: "adryd",
-    p: "0-V"
-  });
 
   // src/plugins/_core/fixChrome.chrome/index.ts
   var fixChrome_default = definePlugin({
@@ -6534,8 +6677,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260828] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"dcaacf2"}`
-    }, `(${"dcaacf2"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"08f471d"}`
+    }, `(${"08f471d"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7994,7 +8137,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   });
 
   // src/plugins/noShareLink/index.ts
-  var STYLE_NAME = "noShareLink";
+  var STYLE_NAME2 = "noShareLink";
   var settings7 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
@@ -8015,7 +8158,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     if (settings7.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
-    registerStyle(STYLE_NAME, rules.join(`
+    registerStyle(STYLE_NAME2, rules.join(`
 `));
   }
   var noShareLink_default = definePlugin({
@@ -8028,55 +8171,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     settings: settings7,
     start: apply,
     onSettingsChange: apply,
-    stop() {
-      unregisterStyle(STYLE_NAME);
-    }
-  });
-
-  // src/plugins/themedScrollbar/index.ts
-  var STYLE_NAME2 = "themedScrollbar";
-  var HOST = 'aside:has([aria-label="Preview"]):has([aria-label="Files"])';
-  var SCROLLER = `${HOST} :is([class*="overflow-auto"],[class*="overflow-y-auto"],[class*="overflow-scroll"],[class*="overflow-y-scroll"])`;
-  var THUMB = "var(--border-l2,color-mix(in srgb,var(--fg-primary,#888) 28%,transparent))";
-  var THUMB_HOVER = "var(--fg-tertiary,color-mix(in srgb,var(--fg-primary,#888) 42%,transparent))";
-  var TRACK = "var(--surface-l1,var(--surface-inset,transparent))";
-  var CSS = `
-${SCROLLER} {
-    scrollbar-width: thin !important;
-    scrollbar-color: ${THUMB} ${TRACK} !important;
-}
-
-${SCROLLER}::-webkit-scrollbar {
-    width: 0.5rem !important;
-    height: 0.5rem !important;
-}
-
-${SCROLLER}::-webkit-scrollbar-track,
-${SCROLLER}::-webkit-scrollbar-corner {
-    background: ${TRACK} !important;
-}
-
-${SCROLLER}::-webkit-scrollbar-thumb {
-    background-color: ${THUMB} !important;
-    background-clip: padding-box !important;
-    border: 0.125rem solid transparent !important;
-    border-radius: 999px !important;
-}
-
-${SCROLLER}::-webkit-scrollbar-thumb:hover {
-    background-color: ${THUMB_HOVER} !important;
-}
-`;
-  var themedScrollbar_default = definePlugin({
-    name: "ThemedScrollbar",
-    icon: ScrollTextIcon,
-    description: "Makes the project pane scrollbar follow Grok's dark and light theme.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    start() {
-      registerStyle(STYLE_NAME2, CSS);
-    },
     stop() {
       unregisterStyle(STYLE_NAME2);
     }
@@ -8651,6 +8745,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
 .void-ud-detail {
     padding-top: 0.5rem;
     border-top: 1px solid color-mix(in srgb, currentcolor 16%, transparent);
+}
+
+.void-ud-toggle {
+    width: 100%;
 }
 `);
 
@@ -9251,14 +9349,15 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var logger21 = new Logger("UsageDisplay");
   var cl19 = classNameFactory("void-ud-");
   var settings11 = definePluginSettings({
+    usageStats: {
+      type: 6 /* COMPONENT */,
+      description: "Record daily usage. Hover shows today after a delay; click opens history.",
+      component: StatsToggle,
+      default: false
+    },
     showPercent: {
       type: 3 /* BOOLEAN */,
       description: "Show the used-percent label next to the ring.",
-      default: false
-    },
-    trackStats: {
-      type: 3 /* BOOLEAN */,
-      description: "Record daily usage. Hover shows today after a delay; click opens history.",
       default: false
     },
     hoverStatsDelay: {
@@ -9320,7 +9419,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     loadMemory(userId);
   }
   function snapshotToday() {
-    if (!settings11.store.trackStats || !state.userId)
+    if (!settings11.store.usageStats || !state.userId)
       return;
     recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings11.store.retainDays));
   }
@@ -9363,7 +9462,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function onStreamEnd2({ responseId }) {
     refresh("stream");
-    if (!settings11.store.trackStats)
+    if (!settings11.store.usageStats)
       return;
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (response?.state !== "closed" || response.sender === "human")
@@ -9509,15 +9608,15 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function UsagePanel() {
     useExternalStore(store2);
-    const { trackStats, hoverStatsDelay } = settings11.use(["trackStats", "hoverStatsDelay"]);
+    const { usageStats, hoverStatsDelay } = settings11.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
-    const [showToday, setShowToday] = useState(trackStats && delay <= 0);
+    const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const isFree = readPlan();
     const resetAt = weekly?.resetAt ?? null;
     useEffect(() => {
-      if (!trackStats) {
+      if (!usageStats) {
         setShowToday(false);
         return;
       }
@@ -9528,7 +9627,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       setShowToday(false);
       const id = window.setTimeout(() => setShowToday(true), delay * 1000);
       return () => window.clearTimeout(id);
-    }, [trackStats, delay]);
+    }, [usageStats, delay]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 8,
@@ -9543,9 +9642,37 @@ button:has(.void-ud-trigger > .void-ud-label) {
       labeled: showToday
     }));
   }
+  function StatsToggle() {
+    const { usageStats } = settings11.use(["usageStats"]);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem",
+      className: cl19("toggle")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium"
+    }, "Daily usage stats"), /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "muted"
+    }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
+      checked: !!usageStats,
+      onCheckedChange: (value) => {
+        settings11.store.usageStats = value;
+        if (value)
+          refresh("manual");
+        else
+          store2.notify();
+      }
+    }));
+  }
   function StatsModal({ onClose }) {
     useExternalStore(store2);
-    const days = state.userId ? listDays(state.userId) : [];
+    const { usageStats } = settings11.use(["usageStats"]);
+    const days = usageStats && state.userId ? listDays(state.userId) : [];
     const [selected, setSelected] = useState(days[0]?.date ?? "");
     const active = days.find((d) => d.date === selected) ?? days[0] ?? null;
     const todayKey = localDateKey(Date.now());
@@ -9559,7 +9686,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       shape: "square",
       "aria-label": "Close",
       className: cl19("modal-close")
-    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, "Usage by date"), /* @__PURE__ */ React.createElement(Paragraph, null, "Stored on this device.")), days.length === 0 ? /* @__PURE__ */ React.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, "Usage by date"), /* @__PURE__ */ React.createElement(Paragraph, null, "Stored on this device.")), /* @__PURE__ */ React.createElement(StatsToggle, null), !usageStats ? /* @__PURE__ */ React.createElement(Paragraph, null, "Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.") : days.length === 0 ? /* @__PURE__ */ React.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
       className: cl19("history")
@@ -9627,8 +9754,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function openHistory() {
     refresh("manual");
-    if (!settings11.store.trackStats)
-      return;
     openModal((props) => /* @__PURE__ */ React.createElement(SafeStatsModal, {
       ...props
     }), { modalKey: "void-ud-stats" });
@@ -9657,7 +9782,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       streamEnd: onStreamEnd2
     },
     onSettingsChange() {
-      if (settings11.store.trackStats)
+      if (settings11.store.usageStats)
         refresh("manual");
     }
   });
@@ -14268,7 +14393,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 
   // src/index.ts
   var target = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-  if (!target.Void) {
+  if (isGrokPreviewFrame()) {
+    bootstrapPreviewFrame();
+  } else if (window === window.top && !target.Void) {
     Object.defineProperty(target, "Void", {
       value: exports_Void,
       writable: false,

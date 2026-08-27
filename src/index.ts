@@ -4,11 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { bootstrapPreviewFrame, isGrokPreviewFrame } from "./plugins/themedScrollbar";
 import * as Void from "./Void";
 
 const target = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
 
-if (!(target as { Void?: unknown }).Void) {
+if (isGrokPreviewFrame()) {
+    bootstrapPreviewFrame();
+} else if (window === window.top && !(target as { Void?: unknown }).Void) {
     Object.defineProperty(target, "Void", {
         value: Void,
         writable: false,

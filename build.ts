@@ -35,8 +35,8 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @homepageURL  ${FORK_URL}
 // @icon         ${FORK_RAW_URL}/assets/logos/app-icon/void-icon.svg
 // @match        *://grok.com/*
+// @match        *://*.grok-sandbox.com/*
 // @run-at       document-start
-// @noframes
 // @grant        unsafeWindow
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
