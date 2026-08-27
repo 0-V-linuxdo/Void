@@ -7,6 +7,7 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
+import { LayoutGridIcon } from "@components/icons";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { ResponseStoreState } from "@grok-types/stores/ResponseStore";
@@ -1251,6 +1252,7 @@ function mountOverlay(root: HTMLElement) {
 
 export default definePlugin({
     name: "RecentTopics",
+    icon: LayoutGridIcon,
     description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
     authors: [Devs.p],
     tags: ["chat", "ui"],

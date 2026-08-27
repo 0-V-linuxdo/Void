@@ -30,6 +30,7 @@ interface PluginCardProps {
 
 export default function PluginCard({ name, onSettings, onReload }: PluginCardProps) {
     const plugin = plugins[name];
+    const { icon: Icon } = plugin;
     const forceUpdate = useForceUpdater();
     const enabled = isPluginEnabled(name);
     const pinned = isPluginPinned(name);
@@ -55,6 +56,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
         <BaseCard
             className={classes(plugin.required && cl("required"), crashed && cl("crashed"))}
             name={name}
+            icon={Icon ? <Icon size={14} /> : null}
             badges={
                 <>
                     {crashed && <TooltipIcon icon={TriangleAlert} tooltip="This plugin failed to start" className={cl("crashed-icon")} />}

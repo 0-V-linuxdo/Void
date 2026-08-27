@@ -7,6 +7,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { ColorSettingRow } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
+import { SparklesIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
@@ -56,6 +57,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "Starry",
+    icon: SparklesIcon,
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
     settings,

@@ -53,6 +53,7 @@ function CloneItem({ conversationId }: ContextMenuLocationMap["conversation"]) {
 
 export default definePlugin({
     name: "CloneChats",
+    icon: CopyIcon,
     description: "Clone conversations from the context-menu.",
     authors: [Devs.Prism],
 

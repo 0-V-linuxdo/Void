@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { type ContextMenuLocationMap, MenuItem, MenuSub, MenuSubContent, MenuSubTrigger } from "@api/ContextMenus";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { DownloadIcon } from "@components/icons";
+import { DownloadIcon, FileDownIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
 import { React } from "@turbopack/common/react";
 import { ConversationStore } from "@turbopack/common/stores";
@@ -213,6 +213,7 @@ function ExportMenu({ conversationId }: ContextMenuLocationMap["conversation"]) 
 
 export default definePlugin({
     name: "ExportChat",
+    icon: FileDownIcon,
     description: "Export conversations in multiple formats from the right-click menu.",
     authors: [Devs.Prism],
 

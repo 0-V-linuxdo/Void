@@ -5,6 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { UserRoundXIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
@@ -46,6 +47,7 @@ function apply() {
 
 export default definePlugin({
     name: "NoSidebarIdentity",
+    icon: UserRoundXIcon,
     description: "Hide username and/or email in the Grok sidebar. Avatar stays clickable.",
     authors: [Devs.p],
     tags: ["ui", "privacy"],

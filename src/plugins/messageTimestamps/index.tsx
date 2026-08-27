@@ -9,6 +9,7 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Text } from "@components/Text";
+import { ClockIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
 import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
@@ -38,6 +39,7 @@ function formatTimestamp(iso: string, showDate: boolean) {
 
 export default definePlugin({
     name: "MessageTimestamps",
+    icon: ClockIcon,
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
     settings,

@@ -7,6 +7,7 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
+import { EyeOffIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -73,6 +74,7 @@ function syncClasses() {
 
 export default definePlugin({
     name: "StreamerMode",
+    icon: EyeOffIcon,
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
     settings,

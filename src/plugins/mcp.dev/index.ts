@@ -5,6 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { CableIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import { isObject } from "@utils/guards";
 import { Logger } from "@utils/Logger";
@@ -254,6 +255,7 @@ function disconnect() {
 }
 export default definePlugin({
     name: "MCP",
+    icon: CableIcon,
     description: "Connects AI coding agents to Grok via a local bridge for live inspection.",
     authors: [Devs.Prism],
     dev: true,

@@ -16,6 +16,7 @@ import {
     Textarea,
 } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
+import { ScrollTextIcon } from "@components/icons";
 import { React, useCallback, useState } from "@turbopack/common/react";
 import { ChatPageStore } from "@turbopack/common/stores";
 import { findByPropsLazy, findExportedComponentLazy } from "@turbopack/turbopack";
@@ -202,6 +203,7 @@ function InstructionsMenu({ conversationId }: ContextMenuLocationMap["conversati
 
 export default definePlugin({
     name: "CustomInstructions",
+    icon: ScrollTextIcon,
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],

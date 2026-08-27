@@ -6,6 +6,7 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { ColorSettingRow } from "@components";
+import { LinkIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import { disableStyle, enableStyle, registerStyle } from "@utils/css";
@@ -85,6 +86,7 @@ const settings = definePluginSettings({
 
 export default definePlugin({
     name: "BetterLinks",
+    icon: LinkIcon,
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
     settings,

@@ -10,7 +10,7 @@ import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
 import { ErrorBoundary, Flex, Text } from "@components";
-import { BracesIcon, PaletteIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
+import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { hasVisibleSettings } from "@components/settings/utils";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
@@ -160,6 +160,7 @@ const WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
 
 export default definePlugin({
     name: "Settings",
+    icon: SettingsIcon,
     description: "Adds Void settings UI.",
     authors: [Devs.Prism],
     required: true,

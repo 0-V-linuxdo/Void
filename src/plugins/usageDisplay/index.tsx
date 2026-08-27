@@ -11,6 +11,7 @@ import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
+import { CircleGaugeIcon } from "@components/icons";
 import type { GrokSubscription } from "@grok-types";
 import type { XSubscriptionType } from "@grok-types/enums";
 import { getPlanName } from "@turbopack/common/plan";
@@ -255,6 +256,7 @@ const BUTTON_BASE = {
 
 export default definePlugin({
     name: "UsageDisplay",
+    icon: CircleGaugeIcon,
     description: "Shows official weekly SuperGrok usage in the chat bar.",
     authors: [Devs.p],
     tags: ["chat"],

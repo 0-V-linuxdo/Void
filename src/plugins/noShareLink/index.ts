@@ -5,6 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { Link2OffIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
@@ -37,6 +38,7 @@ function apply() {
 
 export default definePlugin({
     name: "NoShareLink",
+    icon: Link2OffIcon,
     description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
     authors: [Devs.p],
     tags: ["ui", "privacy"],

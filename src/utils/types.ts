@@ -6,7 +6,7 @@
 
 import type { VoidEventMap } from "@api/Events";
 import type * as Stores from "@turbopack/common/stores";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 export default function definePlugin<P extends PluginDef>(p: P & Record<PropertyKey, any>) {
     return p as typeof p & Plugin;
@@ -49,6 +49,7 @@ export interface PluginDef {
     name: string;
     description: string;
     authors: string[];
+    icon?: ComponentType<{ size?: number | string; className?: string }>;
     chrome?: boolean;
     start?(): void;
     stop?(): void;

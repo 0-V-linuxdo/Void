@@ -8,6 +8,7 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { Flex, Paragraph, Text, Textarea } from "@components";
+import { TextCursorInputIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -55,6 +56,7 @@ function PhrasesEditor() {
 
 export default definePlugin({
     name: "Placeholder",
+    icon: TextCursorInputIcon,
     description: "Replace the rotating chat input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],

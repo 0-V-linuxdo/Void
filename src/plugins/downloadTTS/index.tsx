@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { Button } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { DownloadIcon } from "@components/icons";
+import { DownloadIcon, Volume2Icon } from "@components/icons";
 import { Spinner } from "@turbopack/common/components";
 import { React } from "@turbopack/common/react";
 import { ChatPageStore, TextToSpeechStore } from "@turbopack/common/stores";
@@ -62,6 +62,7 @@ function DownloadButton() {
 
 export default definePlugin({
     name: "DownloadTTS",
+    icon: Volume2Icon,
     description: "Add a download button to the TTS playback controls.",
     authors: [Devs.Prism],
 

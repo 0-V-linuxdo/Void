@@ -5,6 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { UnfoldHorizontalIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
@@ -31,6 +32,7 @@ function applyWidth() {
 
 export default definePlugin({
     name: "WiderChat",
+    icon: UnfoldHorizontalIcon,
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
     settings,

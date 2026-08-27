@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { GhostFilledIcon } from "@components/icons";
 import { SettingsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import definePlugin, { StartAt } from "@utils/types";
@@ -18,6 +19,7 @@ function enforce() {
 
 export default definePlugin({
     name: "Incognito",
+    icon: GhostFilledIcon,
     description: "Force private chat mode for new conversations.",
     authors: [Devs.Prism],
     startAt: StartAt.TurbopackReady,
