@@ -64,10 +64,61 @@ button:has(.void-ud-trigger > .void-ud-label) {
 }
 
 .void-ud-panel {
-    min-width: 0;
+    min-width: 11rem;
 }
 
 .void-ud-used {
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
+}
+
+.void-ud-today {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, currentcolor 16%, transparent);
+}
+
+.void-ud-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: min(22rem, calc(100vw - 4rem));
+    max-height: min(32rem, calc(100vh - 6rem));
+    padding-right: 1.75rem;
+}
+
+.void-ud-modal-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.void-ud-history {
+    min-height: 0;
+    flex: 1;
+}
+
+.void-ud-days {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow: auto;
+    min-height: 0;
+    max-height: 16rem;
+}
+
+.void-ud-day {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.void-ud-day-meta {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+}
+
+.void-ud-detail {
+    padding-top: 0.5rem;
+    border-top: 1px solid color-mix(in srgb, currentcolor 16%, transparent);
 }

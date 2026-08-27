@@ -7,21 +7,23 @@
 import "./styles.css";
 
 import type { ChatBarButtonDef } from "@api/ChatBarButtons";
+import type { VoidEventMap } from "@api/Events";
+import { type ModalProps, openModal } from "@api/Modals";
 import { definePluginSettings } from "@api/Settings";
+import { Button, ConfirmDialog, DialogClose, DialogHeader, DialogTitle, Flex, Paragraph, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { Flex } from "@components/Flex";
-import { Text } from "@components/Text";
-import { CircleGaugeIcon } from "@components/icons";
+import { CircleGaugeIcon, Cross2Icon } from "@components/icons";
 import type { GrokSubscription } from "@grok-types";
 import type { XSubscriptionType } from "@grok-types/enums";
 import { getPlanName } from "@turbopack/common/plan";
 import { React, useEffect, useState } from "@turbopack/common/react";
-import { SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
+import { ResponseStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { clamp, createExternalStore, formatCountdown } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
+import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 
 import {
@@ -34,6 +36,25 @@ import {
     readStoredUsage,
     usageTone,
 } from "./credits";
+import {
+    DELAY_DEFAULT,
+    DELAY_MAX,
+    DELAY_MIN,
+    RETAIN_DEFAULT,
+    RETAIN_MAX,
+    RETAIN_MIN,
+    clearStats,
+    dayDelta,
+    formatDayLabel,
+    formatDelta,
+    hoverDelayOf,
+    listDays,
+    localDateKey,
+    readToday,
+    recordChat,
+    recordSnapshot,
+    retainDaysOf,
+} from "./stats";
 
 const logger = new Logger("UsageDisplay");
 const cl = classNameFactory("void-ud-");
@@ -43,6 +64,29 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Show the used-percent label next to the ring.",
         default: false,
+    },
+    trackStats: {
+        type: OptionType.BOOLEAN,
+        description: "Record daily usage. Hover shows today after a delay; click opens history.",
+        default: false,
+    },
+    hoverStatsDelay: {
+        type: OptionType.SLIDER,
+        description: "Seconds to hover before showing today's usage stats.",
+        min: DELAY_MIN,
+        max: DELAY_MAX,
+        default: DELAY_DEFAULT,
+    },
+    retainDays: {
+        type: OptionType.SLIDER,
+        description: "Days of usage history to keep.",
+        min: RETAIN_MIN,
+        max: RETAIN_MAX,
+        default: RETAIN_DEFAULT,
+    },
+    clearStats: {
+        type: OptionType.COMPONENT,
+        component: ClearStats,
     },
 });
 
@@ -98,6 +142,16 @@ function syncAccount() {
     loadMemory(userId);
 }
 
+function snapshotToday() {
+    if (!settings.store.trackStats || !state.userId) return;
+    recordSnapshot(
+        state.userId,
+        state.usage?.weekly.usedPercent ?? null,
+        state.usage?.weekly.resetAt ?? null,
+        retainDaysOf(settings.store.retainDays),
+    );
+}
+
 async function refresh(reason = "manual"): Promise<boolean> {
     if (refreshPromise) return refreshPromise;
     if (reason === "poll" && Date.now() - state.lastFetchAt < STALE_MS) return false;
@@ -120,6 +174,7 @@ async function refresh(reason = "manual"): Promise<boolean> {
             if (merged) state.usage = merged;
             if (state.usage || pageUsage) state.lastUpdatedAt = Date.now();
             if (state.userId) persistUsage(state.userId, state.usage, state.lastUpdatedAt);
+            snapshotToday();
             return Boolean(state.usage);
         } finally {
             state.loading = false;
@@ -133,6 +188,17 @@ async function refresh(reason = "manual"): Promise<boolean> {
 
 function onVisibility() {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS) void refresh("visible");
+}
+
+function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
+    void refresh("stream");
+    if (!settings.store.trackStats) return;
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (response?.state !== "closed" || response.sender === "human") return;
+    const userId = currentUserId();
+    if (!userId) return;
+    recordChat(userId, responseId, retainDaysOf(settings.store.retainDays));
+    store.notify();
 }
 
 function readPlan() {
@@ -218,13 +284,14 @@ function ButtonIcon() {
     );
 }
 
-function UsagePanel() {
-    useExternalStore(store);
+function WeekBlock({ isFree, percent, resetAt, loading, labeled }: {
+    isFree: boolean;
+    percent: number | null;
+    resetAt: number | null;
+    loading: boolean;
+    labeled: boolean;
+}) {
     const [now, setNow] = useState(Date.now);
-    const weekly = state.usage?.weekly;
-    const percent = weekly?.usedPercent ?? null;
-    const isFree = readPlan();
-    const resetAt = weekly?.resetAt ?? null;
 
     useEffect(() => {
         if (resetAt == null) return;
@@ -235,29 +302,165 @@ function UsagePanel() {
     const left = resetAt == null ? 0 : Math.max(0, Math.ceil((resetAt - now) / 1000));
 
     return (
-        <Flex flexDirection="column" gap={2} className={cl("panel")}>
-            <Text size="sm" weight="semibold" className={cl("used")}>{usedLabel(isFree, percent, state.loading)}</Text>
+        <Flex flexDirection="column" gap={2} className={cl("week")}>
+            {labeled && <Text size="xs" color="muted">Week</Text>}
+            <Text size="sm" weight="semibold" className={cl("used")}>{usedLabel(isFree, percent, loading)}</Text>
             {resetAt != null && <Text size="xs" color="muted">Resets in {formatResetCountdown(left)}</Text>}
         </Flex>
     );
 }
 
+function TodayBlock({ isFree }: { isFree: boolean }) {
+    const today = state.userId ? readToday(state.userId) : null;
+    const chats = today?.chats ?? 0;
+    return (
+        <Flex flexDirection="column" gap={2} className={cl("today")}>
+            <Text size="xs" color="muted">Today</Text>
+            {!isFree && (
+                <Text size="sm" weight="semibold" className={cl("used")}>
+                    {formatDelta(today ? dayDelta(today) : null)} of weekly quota
+                </Text>
+            )}
+            <Text size="xs" color="muted">{pluralize(chats, "chat")}</Text>
+        </Flex>
+    );
+}
+
+function UsagePanel() {
+    useExternalStore(store);
+    const { trackStats, hoverStatsDelay } = settings.use(["trackStats", "hoverStatsDelay"]);
+    const delay = hoverDelayOf(hoverStatsDelay);
+    const [showToday, setShowToday] = useState(trackStats && delay <= 0);
+    const weekly = state.usage?.weekly;
+    const percent = weekly?.usedPercent ?? null;
+    const isFree = readPlan();
+    const resetAt = weekly?.resetAt ?? null;
+
+    useEffect(() => {
+        if (!trackStats) {
+            setShowToday(false);
+            return;
+        }
+        if (delay <= 0) {
+            setShowToday(true);
+            return;
+        }
+        setShowToday(false);
+        const id = window.setTimeout(() => setShowToday(true), delay * 1000);
+        return () => window.clearTimeout(id);
+    }, [trackStats, delay]);
+
+    return (
+        <Flex flexDirection="column" gap={8} className={cl("panel")}>
+            {showToday && <TodayBlock isFree={isFree} />}
+            <WeekBlock isFree={isFree} percent={percent} resetAt={resetAt} loading={state.loading} labeled={showToday} />
+        </Flex>
+    );
+}
+
+function StatsModal({ onClose }: ModalProps) {
+    useExternalStore(store);
+    const days = state.userId ? listDays(state.userId) : [];
+    const [selected, setSelected] = useState(days[0]?.date ?? "");
+    const active = days.find(d => d.date === selected) ?? days[0] ?? null;
+    const todayKey = localDateKey(Date.now());
+
+    return (
+        <div className={cl("modal")}>
+            <DialogClose asChild>
+                <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className={cl("modal-close")}>
+                    <Cross2Icon />
+                </Button>
+            </DialogClose>
+            <DialogHeader>
+                <DialogTitle>Usage by date</DialogTitle>
+                <Paragraph>Stored on this device.</Paragraph>
+            </DialogHeader>
+            {days.length === 0 ? (
+                <Paragraph>No days recorded yet. Stats start from the moment you enable tracking.</Paragraph>
+            ) : (
+                <Flex flexDirection="column" gap="0.75rem" className={cl("history")}>
+                    <div className={cl("days")}>
+                        {days.map(rec => (
+                            <Button
+                                key={rec.date}
+                                variant={rec.date === active?.date ? "secondary" : "tertiary"}
+                                size="sm"
+                                shape="rectangle"
+                                className={cl("day")}
+                                onClick={() => setSelected(rec.date)}
+                            >
+                                <span>{rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}</span>
+                                <span className={cl("day-meta")}>{formatDelta(dayDelta(rec))} · {rec.chats}</span>
+                            </Button>
+                        ))}
+                    </div>
+                    {active != null && (
+                        <Flex flexDirection="column" gap="0.25rem" className={cl("detail")}>
+                            <Text size="sm" weight="semibold">{active.date === todayKey ? "Today" : formatDayLabel(active.date)}</Text>
+                            <Text size="xs" color="muted">Start {formatPercent(active.startPercent)} → {formatPercent(active.lastPercent)}</Text>
+                            <Text size="xs" color="muted">Today {formatDelta(dayDelta(active))}</Text>
+                            <Text size="xs" color="muted">{pluralize(active.chats, "chat")}</Text>
+                        </Flex>
+                    )}
+                </Flex>
+            )}
+            <Button variant="secondary" size="sm" shape="rectangle" onClick={onClose}>Close</Button>
+        </div>
+    );
+}
+
+function ClearStats() {
+    useExternalStore(store);
+    const [open, setOpen] = useState(false);
+    const userId = state.userId || currentUserId();
+    const days = userId ? listDays(userId) : [];
+
+    return (
+        <Flex flexDirection="column" gap="0.5rem">
+            <Paragraph>{pluralize(days.length, "recorded day")}.</Paragraph>
+            <Button variant="secondary" size="sm" shape="rectangle" disabled={!days.length} onClick={() => setOpen(true)}>
+                Clear usage history
+            </Button>
+            <ConfirmDialog
+                open={open}
+                onOpenChange={setOpen}
+                title="Clear usage history"
+                description="Delete all locally recorded daily usage? This cannot be undone."
+                confirmText="Clear"
+                danger
+                onConfirm={() => {
+                    if (userId) clearStats(userId);
+                    store.notify();
+                }}
+            />
+        </Flex>
+    );
+}
+
+function openHistory() {
+    void refresh("manual");
+    if (!settings.store.trackStats) return;
+    openModal(props => <SafeStatsModal {...props} />, { modalKey: "void-ud-stats" });
+}
+
 const SafeButtonIcon = ErrorBoundary.wrap(ButtonIcon);
 const SafeUsagePanel = ErrorBoundary.wrap(UsagePanel);
+const SafeStatsModal = ErrorBoundary.wrap(StatsModal);
 
 const BUTTON_BASE = {
     icon: () => <SafeButtonIcon />,
-    onClick: () => { void refresh("manual"); },
+    onClick: () => openHistory(),
     order: 1,
     className: "text-fg-primary",
-    "aria-label": "Grok weekly usage",
+    "aria-label": "Grok usage",
     locations: ["chat", "imagine"],
 } satisfies ChatBarButtonDef;
 
 export default definePlugin({
     name: "UsageDisplay",
     icon: CircleGaugeIcon,
-    description: "Shows official weekly SuperGrok usage in the chat bar.",
+    description: "Shows official weekly SuperGrok usage in the chat bar, with optional daily stats.",
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
@@ -266,6 +469,10 @@ export default definePlugin({
     chatBarButton: { ...BUTTON_BASE, tooltip: () => <SafeUsagePanel /> },
 
     events: {
-        streamEnd() { void refresh("stream"); },
+        streamEnd: onStreamEnd,
+    },
+
+    onSettingsChange() {
+        if (settings.store.trackStats) void refresh("manual");
     },
 });
