@@ -89,8 +89,8 @@
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 0.375rem;
-    color: hsl(var(--fg-secondary));
-    background: hsl(var(--fg-primary) / 0.06);
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--fg-primary) / 0.10);
     line-height: 0;
 }
 

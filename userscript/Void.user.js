@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260827.10] v1.1.4
+// @version      [20260827.10] v1.1.5
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260827.10] v1.1.4 — A modification for grok.com
+ * Void++ [20260827.10] v1.1.5 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4921,8 +4921,8 @@ ${sourceUrl}`;
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 0.375rem;
-    color: hsl(var(--fg-secondary));
-    background: hsl(var(--fg-primary) / 0.06);
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--fg-primary) / 0.10);
     line-height: 0;
 }
 
@@ -6357,9 +6357,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260827.10] v1.1.4"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"d401e9e"}`
-    }, `(${"d401e9e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260827.10] v1.1.5"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"09ce1ee"}`
+    }, `(${"09ce1ee"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
