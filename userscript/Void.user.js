@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260827.10] v1.1.7
+// @version      [20260827.15] v1.1.8
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260827.10] v1.1.7 — A modification for grok.com
+ * Void++ [20260827.15] v1.1.8 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4437,15 +4437,11 @@ ${sourceUrl}`;
     r: "3"
   }));
   var VoidIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M8 5v8.2a4 4 0 0 0 8 0V5"
+    d: "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"
   }), /* @__PURE__ */ React.createElement("path", {
-    d: "M10.4 6.35v2.3"
+    d: "M20 3v4"
   }), /* @__PURE__ */ React.createElement("path", {
-    d: "M11.55 7.5h-2.3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M13.45 6.35v2.3"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14.6 7.5h-2.3"
+    d: "M22 5h-4"
   }));
 
   // void-css:/tmp/void/src/components/settings/tabs/CustomCSSTab.css
@@ -6365,9 +6361,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260827.10] v1.1.7"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8fd9e68"}`
-    }, `(${"8fd9e68"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260827.15] v1.1.8"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"535e434"}`
+    }, `(${"535e434"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6397,10 +6393,15 @@ ${sourceUrl}`;
       className: cl15("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl15("menu-icon")
-    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      key: name,
-      onSelect: () => openPluginSettings(name)
-    }, name)))), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
+    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => {
+      const Icon = plugins[name].icon ?? UnplugIcon;
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+        key: name,
+        onSelect: () => openPluginSettings(name)
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl15("menu-icon")
+      }), name);
+    })), "                "), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
       const Icon = t.icon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
