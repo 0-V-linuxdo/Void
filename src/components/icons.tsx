@@ -454,7 +454,9 @@ export const SettingsIcon = (props: IconProps = {}) =>
 export const VoidIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9" />,
-        <path d="M20 3v4" />,
-        <path d="M22 5h-4" />,
+        <path d="M17.6 2.2v3.2" />,
+        <path d="M19.2 3.8h-3.2" />,
+        <path d="M21.4 2.2v3.2" />,
+        <path d="M23 3.8h-3.2" />,
     );
 

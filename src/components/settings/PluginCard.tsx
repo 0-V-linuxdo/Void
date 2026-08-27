@@ -10,7 +10,7 @@ import { dispatch } from "@api/Events";
 import { isNewPlugin, isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
 import { isPluginPinned, mergePluginSettings, togglePluginPinned } from "@api/Settings";
 import { Badge, Switch } from "@components";
-import { CircleAlertIcon, EllipsisVertical, PinFilledIcon, PinIcon, TriangleAlert } from "@components/icons";
+import { CircleAlertIcon, EllipsisVertical, PinFilledIcon, PinIcon, TriangleAlert, UnplugIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classes, classNameFactory } from "@utils/css";
 import { useForceUpdater } from "@utils/react";
@@ -56,7 +56,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
         <BaseCard
             className={classes(plugin.required && cl("required"), crashed && cl("crashed"))}
             name={name}
-            icon={Icon ? <Icon size={14} /> : null}
+            icon={Icon ? <Icon size={14} /> : <UnplugIcon size={14} />}
             badges={
                 <>
                     {crashed && <TooltipIcon icon={TriangleAlert} tooltip="This plugin failed to start" className={cl("crashed-icon")} />}
