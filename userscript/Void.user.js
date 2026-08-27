@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260827.10] v1.1.5
+// @version      [20260827.10] v1.1.6
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
 // @homepageURL  https://github.com/0-V-linuxdo/Void
-// @icon         https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/assets/logos/app-icon/void-plus-256.png
+// @icon         https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/assets/logos/app-icon/void-plus-r256.png
 // @match        *://grok.com/*
 // @run-at       document-start
 // @noframes
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260827.10] v1.1.5 — A modification for grok.com
+ * Void++ [20260827.10] v1.1.6 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4429,15 +4429,15 @@ ${sourceUrl}`;
     r: "3"
   }));
   var VoidIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M7 4.5v8.5a5 5 0 0 0 10 0V4.5"
+    d: "M8 5v8.2a4 4 0 0 0 8 0V5"
   }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9.4 6v2.8"
+    d: "M10.4 6.35v2.3"
   }), /* @__PURE__ */ React.createElement("path", {
-    d: "M10.8 7.4H8"
+    d: "M11.55 7.5h-2.3"
   }), /* @__PURE__ */ React.createElement("path", {
-    d: "M13.2 6v2.8"
+    d: "M13.45 6.35v2.3"
   }), /* @__PURE__ */ React.createElement("path", {
-    d: "M14.6 7.4H12"
+    d: "M14.6 7.5h-2.3"
   }));
 
   // void-css:/tmp/Void-repo/src/components/settings/tabs/CustomCSSTab.css
@@ -6357,9 +6357,9 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260827.10] v1.1.5"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"09ce1ee"}`
-    }, `(${"09ce1ee"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260827.10] v1.1.6"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"3a653a5"}`
+    }, `(${"3a653a5"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
