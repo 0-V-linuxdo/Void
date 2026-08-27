@@ -2610,7 +2610,7 @@ ${sourceUrl}`;
   function classes(...names) {
     return names.filter(Boolean).join(" ");
   }
-  // void-css:/tmp/Void/src/components/ColorSettingRow.css
+  // void-css:/tmp/void-push/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -2649,7 +2649,7 @@ ${sourceUrl}`;
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/Void/src/components/ConfirmDialog.css
+  // void-css:/tmp/void-push/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     contain: content;
     width: 100%;
@@ -2898,7 +2898,7 @@ ${sourceUrl}`;
     },
     configurable: true
   });
-  // void-css:/tmp/Void/src/components/ErrorCard.css
+  // void-css:/tmp/void-push/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3011,7 +3011,7 @@ ${sourceUrl}`;
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/Void/src/components/SelectionUI.css
+  // void-css:/tmp/void-push/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3652,7 +3652,7 @@ ${sourceUrl}`;
     });
   }
 
-  // void-css:/tmp/Void/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/void-push/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4436,18 +4436,7 @@ ${sourceUrl}`;
     cy: "12",
     r: "3"
   }));
-  var VoidIcon = (props = {}) => /* @__PURE__ */ React.createElement("svg", {
-    width: props.width ?? props.size ?? "1em",
-    height: props.height ?? props.size ?? "1em",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: props.strokeWidth ?? 2.15,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    className: props.className,
-    "aria-hidden": "true"
-  }, /* @__PURE__ */ React.createElement("path", {
+  var VoidIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React.createElement("path", {
     d: "M2.2 7.4 L8.4 20.2 L14.6 7.4"
   }), /* @__PURE__ */ React.createElement("g", {
     fill: "currentColor",
@@ -4477,7 +4466,8 @@ ${sourceUrl}`;
     height: "1.45",
     rx: "0.4"
   })));
-  // void-css:/tmp/Void/src/components/settings/tabs/CustomCSSTab.css
+
+  // void-css:/tmp/void-push/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4489,7 +4479,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/CssEditor.css
+  // void-css:/tmp/void-push/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -4761,7 +4751,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:/tmp/Void/src/components/settings/shared.css
+  // void-css:/tmp/void-push/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4812,7 +4802,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/void-push/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
@@ -4827,7 +4817,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/PluginCard.css
+  // void-css:/tmp/void-push/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -4866,7 +4856,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/BaseCard.css
+  // void-css:/tmp/void-push/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5114,7 +5104,7 @@ ${sourceUrl}`;
     });
   }
 
-  // void-css:/tmp/Void/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/void-push/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5130,7 +5120,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/SettingField.css
+  // void-css:/tmp/void-push/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -5664,7 +5654,7 @@ ${sourceUrl}`;
     }));
   }
 
-  // void-css:/tmp/Void/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/void-push/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -5687,7 +5677,7 @@ ${sourceUrl}`;
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/ThemeCard.css
+  // void-css:/tmp/void-push/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5961,7 +5951,7 @@ ${sourceUrl}`;
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/Void/src/plugins/experiments/styles.css
+  // void-css:/tmp/void-push/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6395,8 +6385,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260828] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"0b38fc6"}`
-    }, `(${"0b38fc6"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"e428d47"}`
+    }, `(${"e428d47"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6774,7 +6764,7 @@ ${sourceUrl}`;
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/downloadTTS/styles.css
+  // void-css:/tmp/void-push/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -6835,7 +6825,7 @@ ${sourceUrl}`;
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
   });
 
-  // void-css:/tmp/Void/src/plugins/recentTopics/styles.css
+  // void-css:/tmp/void-push/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -7351,6 +7341,8 @@ html.void-rt-open [data-sidebar="gap"] {
   var keys = null;
   var host = null;
   var paintedKey = "";
+  var sidebarSnap = null;
+  var pendingWs = new Set;
   function unique(ids) {
     const seen = new Set;
     const out = [];
@@ -7465,7 +7457,11 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function chatIdFromUrl() {
     try {
-      return new URLSearchParams(location.search).get("chat") ?? "";
+      const u = new URL(location.href);
+      const q = u.searchParams.get("chat");
+      if (q)
+        return q;
+      return u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] ?? "";
     } catch {
       return "";
     }
@@ -7498,7 +7494,37 @@ html.void-rt-open [data-sidebar="gap"] {
       return `/project/${ws}?chat=${encodeURIComponent(id)}`;
     return `/c/${encodeURIComponent(id)}`;
   }
+  function hrefParts(href) {
+    if (!href)
+      return { ws: "", chat: "" };
+    try {
+      const u = new URL(href, location.origin);
+      const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+      const chat = u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
+      return { ws, chat };
+    } catch {
+      return { ws: "", chat: "" };
+    }
+  }
   function currentVisit() {
+    const urlChat = chatIdFromUrl();
+    if (urlChat)
+      return urlChat;
+    if (projectIdFromUrl())
+      return HOME_ID;
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      if (route.conversationId)
+        return route.conversationId;
+      if (typeof route.chat === "string" && route.chat)
+        return route.chat;
+      if (route.page === "main")
+        return HOME_ID;
+      if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
+        return HOME_ID;
+    } catch (e) {
+      logger17.debug("RoutingStore unavailable:", e);
+    }
     try {
       const id = ChatPageStore.useChatPageStore.getState().conversationId;
       if (id)
@@ -7506,14 +7532,7 @@ html.void-rt-open [data-sidebar="gap"] {
     } catch (e) {
       logger17.debug("ChatPageStore unavailable:", e);
     }
-    try {
-      const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
-      if (id != null)
-        return id;
-    } catch (e) {
-      logger17.debug("RoutingStore unavailable:", e);
-    }
-    return chatIdFromUrl() || null;
+    return null;
   }
   function idsFromHistory() {
     try {
@@ -7616,61 +7635,172 @@ html.void-rt-open [data-sidebar="gap"] {
         const href = a.getAttribute("href");
         if (!href || !href.includes(id))
           continue;
-        const u = new URL(href, location.origin);
-        if (u.searchParams.get("chat") !== id && !u.pathname.includes(id))
-          continue;
-        const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
-        if (ws)
+        const { ws, chat } = hrefParts(href);
+        if (chat === id && ws)
           return ws;
       }
     } catch {}
     return "";
   }
+  function shortOwnText(el) {
+    const parts = [];
+    for (const n of el.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) {
+        parts.push(n.textContent ?? "");
+        continue;
+      }
+      if (!(n instanceof HTMLElement))
+        continue;
+      if (n.matches("svg, a[href]"))
+        continue;
+      const nestedHref = n.getAttribute("href") ?? "";
+      if (nestedHref.includes("chat=") || nestedHref.includes("/c/"))
+        continue;
+      if (n.querySelector("a[href*='chat='], a[href*='/c/']"))
+        continue;
+      const t = (n.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+      if (t.length > 0 && t.length <= 64)
+        parts.push(t);
+    }
+    const out = parts.join(" ").replaceAll(/\s+/g, " ").trim();
+    return out.length >= 2 && out.length <= 64 ? out : "";
+  }
+  function folderLabel(el) {
+    if (!el.querySelector("svg"))
+      return "";
+    const t = shortOwnText(el);
+    if (!t || SKIP_LABEL.test(t))
+      return "";
+    return t;
+  }
+  function projectNameFromAncestors(el) {
+    const sidebar = el.closest("[data-sidebar=sidebar]");
+    let cur = el.parentElement;
+    while (cur && cur !== sidebar) {
+      let sib = cur;
+      while (sib) {
+        const name = folderLabel(sib);
+        if (name)
+          return name;
+        sib = sib.previousElementSibling;
+      }
+      cur = cur.parentElement;
+    }
+    return "";
+  }
+  function invalidateSidebar() {
+    sidebarSnap = null;
+  }
+  function sidebarIndex() {
+    const empty = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar)
+      return empty;
+    const key = `${sidebar.childElementCount}:${(sidebar.textContent ?? "").length}`;
+    if (sidebarSnap?.key === key)
+      return sidebarSnap.index;
+    const index = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    let currentWs = "";
+    let currentName = "";
+    const assignConv = (chat, ws, name) => {
+      if (!chat)
+        return;
+      if (ws) {
+        index.wsByConv[chat] = ws;
+        currentWs = ws;
+        if (name)
+          index.nameByWs[ws] = name;
+      } else if (currentWs) {
+        index.wsByConv[chat] = currentWs;
+      }
+      const label = name || currentName || (ws ? index.nameByWs[ws] : "") || "";
+      if (label)
+        index.nameByConv[chat] = label;
+    };
+    for (const el of sidebar.querySelectorAll("a[href], button, [role='button']")) {
+      const { ws, chat } = hrefParts(el.getAttribute("href"));
+      if (chat) {
+        assignConv(chat, ws, currentName);
+        if (!index.nameByConv[chat]) {
+          const up = projectNameFromAncestors(el);
+          if (up) {
+            index.nameByConv[chat] = up;
+            if (ws)
+              index.nameByWs[ws] ??= up;
+            currentName ||= up;
+          }
+        }
+        continue;
+      }
+      const label = shortOwnText(el) || folderLabel(el);
+      if (label && SKIP_LABEL.test(label) && !ws) {
+        currentWs = "";
+        currentName = "";
+        continue;
+      }
+      if (ws) {
+        currentWs = ws;
+        if (label && !SKIP_LABEL.test(label)) {
+          currentName = label;
+          index.nameByWs[ws] = label;
+        }
+        continue;
+      }
+      const folder = folderLabel(el);
+      if (folder) {
+        currentName = folder;
+        currentWs = "";
+      }
+    }
+    sidebarSnap = { key, index };
+    return index;
+  }
   function workspaceOf(id) {
     if (!id)
       return "";
-    if (id === currentVisit()) {
-      const live = liveWorkspaceId();
-      if (live)
-        return live;
-    }
-    return convWorkspaceId(id) || asWorkspaceId(settings4.plain.workspaceByConv?.[id]) || workspaceFromHistory(id) || workspaceFromDom(id);
-  }
-  function labelText(el) {
-    return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+    const fromConv = convWorkspaceId(id);
+    if (fromConv)
+      return fromConv;
+    const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
+    if (fromSidebar)
+      return fromSidebar;
+    const cached = asWorkspaceId(settings4.plain.workspaceByConv?.[id]);
+    if (cached)
+      return cached;
+    const fromHist = workspaceFromHistory(id);
+    if (fromHist)
+      return fromHist;
+    if (id === currentVisit())
+      return liveWorkspaceId();
+    return "";
   }
   function readOpenProjectName() {
-    const sidebar = document.querySelector("[data-sidebar=sidebar]");
-    if (!sidebar)
-      return "";
-    const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
-    let afterProjects = false;
-    for (const el of nodes) {
-      const t = labelText(el);
-      if (!t)
-        continue;
-      if (/^projects$/i.test(t)) {
-        afterProjects = true;
-        continue;
-      }
-      if (!afterProjects)
-        continue;
-      if (SKIP_LABEL.test(t))
-        break;
-      if (t.length < 2 || t.length > 64)
-        continue;
-      if (el.querySelector("svg"))
-        return t;
-    }
+    const idx = sidebarIndex();
+    const live = liveWorkspaceId();
+    if (live && idx.nameByWs[live])
+      return idx.nameByWs[live];
+    const current = currentVisit();
+    if (current && idx.nameByConv[current])
+      return idx.nameByConv[current];
     return "";
   }
   function projectNameOf(id) {
     if (!id)
       return "";
+    const idx = sidebarIndex();
+    if (idx.nameByConv[id])
+      return idx.nameByConv[id];
     const ws = workspaceOf(id);
     if (!ws)
       return "";
-    return wsNames[ws] || settings4.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
+    if (idx.nameByWs[ws])
+      return idx.nameByWs[ws];
+    const cached = wsNames[ws] || settings4.plain.projectNames?.[ws] || "";
+    const live = liveWorkspaceId();
+    const liveName = readOpenProjectName();
+    if (cached && live && ws !== live && liveName && cached === liveName)
+      return "";
+    return cached;
   }
   function rememberProject(id) {
     if (!id)
@@ -7681,13 +7811,80 @@ html.void-rt-open [data-sidebar="gap"] {
     const prevWs = settings4.plain.workspaceByConv ?? {};
     if (prevWs[id] !== ws)
       settings4.store.workspaceByConv = { ...prevWs, [id]: ws };
-    const name = wsNames[ws] || readOpenProjectName() || settings4.plain.projectNames?.[ws] || "";
+    const idx = sidebarIndex();
+    const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
+    const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
+    const name = sidebarName || wsNames[ws] || liveName || settings4.plain.projectNames?.[ws] || "";
     if (!name)
       return;
     wsNames[ws] = name;
     const prevNames = settings4.plain.projectNames ?? {};
     if (prevNames[ws] !== name)
       settings4.store.projectNames = { ...prevNames, [ws]: name };
+  }
+  function reconcileSidebarCache() {
+    const idx = sidebarIndex();
+    const prevWs = { ...settings4.plain.workspaceByConv };
+    const prevNames = { ...settings4.plain.projectNames };
+    let wsChanged = false;
+    let namesChanged = false;
+    for (const [conv, ws] of Object.entries(idx.wsByConv)) {
+      if (prevWs[conv] !== ws) {
+        prevWs[conv] = ws;
+        wsChanged = true;
+      }
+    }
+    for (const [ws, name] of Object.entries(idx.nameByWs)) {
+      if (!name)
+        continue;
+      wsNames[ws] = name;
+      if (prevNames[ws] !== name) {
+        prevNames[ws] = name;
+        namesChanged = true;
+      }
+    }
+    if (wsChanged)
+      settings4.store.workspaceByConv = prevWs;
+    if (namesChanged)
+      settings4.store.projectNames = prevNames;
+  }
+  function requestWorkspace(id) {
+    if (!id || pendingWs.has(id))
+      return;
+    if (convWorkspaceId(id) || sidebarIndex().wsByConv[id])
+      return;
+    pendingWs.add(id);
+    try {
+      const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+      const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+      if (!fetchConv) {
+        pendingWs.delete(id);
+        return;
+      }
+      fetchConv(id).then((conv) => {
+        const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+        if (!ws)
+          return;
+        const prev = settings4.plain.workspaceByConv ?? {};
+        if (prev[id] !== ws)
+          settings4.store.workspaceByConv = { ...prev, [id]: ws };
+        const live = liveWorkspaceId();
+        const liveName = readOpenProjectName();
+        const names = settings4.plain.projectNames ?? {};
+        if (live && ws !== live && liveName && names[ws] === liveName) {
+          const next = { ...names };
+          delete next[ws];
+          settings4.store.projectNames = next;
+          delete wsNames[ws];
+        }
+        if (open2)
+          paint();
+      }).catch((e) => logger17.debug("workspace fetch failed:", e)).finally(() => {
+        pendingWs.delete(id);
+      });
+    } catch {
+      pendingWs.delete(id);
+    }
   }
   function chatPane() {
     const main = document.querySelector("main");
@@ -8032,16 +8229,36 @@ html.void-rt-open [data-sidebar="gap"] {
     writeVisits(capVisits([id, ...readVisits()]));
     const conv = id ? lookup(id) : undefined;
     rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-    if (id)
+    if (id && shouldRememberProject(id))
       rememberProject(id);
   }
+  function shouldRememberProject(id) {
+    if (!id)
+      return false;
+    const live = liveWorkspaceId();
+    if (!live)
+      return true;
+    const owned = convWorkspaceId(id) || sidebarIndex().wsByConv[id] || "";
+    if (owned && owned !== live)
+      return false;
+    if (projectIdFromUrl() && !chatIdFromUrl() && id !== currentVisit())
+      return false;
+    return true;
+  }
   function hydrate() {
+    invalidateSidebar();
     const current = currentVisit();
     const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
     writeVisits(capVisits(merged));
+    reconcileSidebarCache();
     if (current) {
       rememberTitle(current, lookup(current)?.title || pageTitle());
-      rememberProject(current);
+      if (shouldRememberProject(current))
+        rememberProject(current);
+    }
+    for (const id of capVisits(readVisits())) {
+      if (id)
+        requestWorkspace(id);
     }
   }
   function topics() {
@@ -8601,9 +8818,14 @@ html.void-rt-open [data-sidebar="gap"] {
       RoutingStore: {
         selector: (s) => routeConvId(s.route),
         handler(id) {
-          if (open2 || id == null)
+          if (open2)
             return;
-          bump(id);
+          const current = currentVisit();
+          if (current == null)
+            return;
+          if (id && current === HOME_ID && id !== HOME_ID)
+            return;
+          bump(current);
           scheduleCapture();
         }
       },
@@ -8637,7 +8859,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/streamerMode/styles.css
+  // void-css:/tmp/void-push/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -9013,7 +9235,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/void-push/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -9772,7 +9994,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/betterFiles/styles.css
+  // void-css:/tmp/void-push/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -9919,7 +10141,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/messageTimestamps/styles.css
+  // void-css:/tmp/void-push/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -9983,7 +10205,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/void-push/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -10668,7 +10890,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/placeholder/styles.css
+  // void-css:/tmp/void-push/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -10755,7 +10977,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/betterImagine/styles.css
+  // void-css:/tmp/void-push/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -11554,7 +11776,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/exportChat/styles.css
+  // void-css:/tmp/void-push/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -11752,7 +11974,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/customInstructions/styles.css
+  // void-css:/tmp/void-push/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -12323,7 +12545,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/betterSidebar/styles.css
+  // void-css:/tmp/void-push/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -12633,7 +12855,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/inputHistory/styles.css
+  // void-css:/tmp/void-push/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -13072,7 +13294,7 @@ div:has(> #grok-bot-nav-button) {
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
   var __plugins_default = { [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [streamerMode_default.name]: streamerMode_default, [autoRetry_default.name]: autoRetry_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterFiles_default.name]: betterFiles_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [messageTimestamps_default.name]: messageTimestamps_default, [usageDisplay_default.name]: usageDisplay_default, [placeholder_default.name]: placeholder_default, [betterImagine_default.name]: betterImagine_default, [composerOpacity_default.name]: composerOpacity_default, [widerChat_default.name]: widerChat_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [exportChat_default.name]: exportChat_default, [customInstructions_default.name]: customInstructions_default, [experiments_default.name]: experiments_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [incognito_default.name]: incognito_default, [autoCollapse_default.name]: autoCollapse_default, [noShareLink_default.name]: noShareLink_default, [inputHistory_default.name]: inputHistory_default, [responseNotification_default.name]: responseNotification_default };
-  // void-css:/tmp/Void/src/api/Notices.css
+  // void-css:/tmp/void-push/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;

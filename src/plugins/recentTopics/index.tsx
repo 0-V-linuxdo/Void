@@ -71,6 +71,12 @@ interface Topic {
     project: string;
 }
 
+interface SidebarIndex {
+    wsByConv: Record<string, string>;
+    nameByWs: Record<string, string>;
+    nameByConv: Record<string, string>;
+}
+
 let open = false;
 let selected = 0;
 let held = false;
@@ -78,6 +84,8 @@ let ctrlHeld = false;
 let keys: AbortController | null = null;
 let host: HTMLDivElement | null = null;
 let paintedKey = "";
+let sidebarSnap: { key: string; index: SidebarIndex; } | null = null;
+const pendingWs = new Set<string>();
 
 function unique(ids: string[]): string[] {
     const seen = new Set<string>();
@@ -188,7 +196,10 @@ function projectIdFromUrl(): string {
 
 function chatIdFromUrl(): string {
     try {
-        return new URLSearchParams(location.search).get("chat") ?? "";
+        const u = new URL(location.href);
+        const q = u.searchParams.get("chat");
+        if (q) return q;
+        return u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] ?? "";
     } catch {
         return "";
     }
@@ -222,20 +233,41 @@ function hrefFor(id: string, workspaceId?: string): string {
     return `/c/${encodeURIComponent(id)}`;
 }
 
+function hrefParts(href: string | null | undefined): { ws: string; chat: string; } {
+    if (!href) return { ws: "", chat: "" };
+    try {
+        const u = new URL(href, location.origin);
+        const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+        const chat = u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
+        return { ws, chat };
+    } catch {
+        return { ws: "", chat: "" };
+    }
+}
+
 function currentVisit(): string | null {
+    const urlChat = chatIdFromUrl();
+    if (urlChat) return urlChat;
+    if (projectIdFromUrl()) return HOME_ID;
+
+    try {
+        const { route } = RoutingStore.useRoutingStore.getState();
+        if (route.conversationId) return route.conversationId;
+        if (typeof route.chat === "string" && route.chat) return route.chat;
+        if (route.page === "main") return HOME_ID;
+        if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId) return HOME_ID;
+    } catch (e) {
+        logger.debug("RoutingStore unavailable:", e);
+    }
+
     try {
         const id = ChatPageStore.useChatPageStore.getState().conversationId;
         if (id) return id;
     } catch (e) {
         logger.debug("ChatPageStore unavailable:", e);
     }
-    try {
-        const id = routeConvId(RoutingStore.useRoutingStore.getState().route);
-        if (id != null) return id;
-    } catch (e) {
-        logger.debug("RoutingStore unavailable:", e);
-    }
-    return chatIdFromUrl() || null;
+
+    return null;
 }
 
 function idsFromHistory(): string[] {
@@ -332,56 +364,159 @@ function workspaceFromDom(id: string): string {
         for (const a of document.querySelectorAll<HTMLAnchorElement>("a[href]")) {
             const href = a.getAttribute("href");
             if (!href || !href.includes(id)) continue;
-            const u = new URL(href, location.origin);
-            if (u.searchParams.get("chat") !== id && !u.pathname.includes(id)) continue;
-            const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
-            if (ws) return ws;
+            const { ws, chat } = hrefParts(href);
+            if (chat === id && ws) return ws;
         }
     } catch {}
     return "";
 }
 
-function workspaceOf(id: string): string {
-    if (!id) return "";
-    if (id === currentVisit()) {
-        const live = liveWorkspaceId();
-        if (live) return live;
+function shortOwnText(el: Element): string {
+    const parts: string[] = [];
+    for (const n of el.childNodes) {
+        if (n.nodeType === Node.TEXT_NODE) {
+            parts.push(n.textContent ?? "");
+            continue;
+        }
+        if (!(n instanceof HTMLElement)) continue;
+        if (n.matches("svg, a[href]")) continue;
+        const nestedHref = n.getAttribute("href") ?? "";
+        if (nestedHref.includes("chat=") || nestedHref.includes("/c/")) continue;
+        if (n.querySelector("a[href*='chat='], a[href*='/c/']")) continue;
+        const t = (n.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+        if (t.length > 0 && t.length <= 64) parts.push(t);
     }
-    return convWorkspaceId(id)
-        || asWorkspaceId(settings.plain.workspaceByConv?.[id])
-        || workspaceFromHistory(id)
-        || workspaceFromDom(id);
+    const out = parts.join(" ").replaceAll(/\s+/g, " ").trim();
+    return out.length >= 2 && out.length <= 64 ? out : "";
 }
 
-function labelText(el: Element): string {
-    return (el.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+function folderLabel(el: Element): string {
+    if (!el.querySelector("svg")) return "";
+    const t = shortOwnText(el);
+    if (!t || SKIP_LABEL.test(t)) return "";
+    return t;
+}
+
+function projectNameFromAncestors(el: Element): string {
+    const sidebar = el.closest("[data-sidebar=sidebar]");
+    let cur: Element | null = el.parentElement;
+    while (cur && cur !== sidebar) {
+        let sib: Element | null = cur;
+        while (sib) {
+            const name = folderLabel(sib);
+            if (name) return name;
+            sib = sib.previousElementSibling;
+        }
+        cur = cur.parentElement;
+    }
+    return "";
+}
+
+function invalidateSidebar() {
+    sidebarSnap = null;
+}
+
+function sidebarIndex(): SidebarIndex {
+    const empty: SidebarIndex = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar) return empty;
+    const key = `${sidebar.childElementCount}:${(sidebar.textContent ?? "").length}`;
+    if (sidebarSnap?.key === key) return sidebarSnap.index;
+
+    const index: SidebarIndex = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    let currentWs = "";
+    let currentName = "";
+
+    const assignConv = (chat: string, ws: string, name: string) => {
+        if (!chat) return;
+        if (ws) {
+            index.wsByConv[chat] = ws;
+            currentWs = ws;
+            if (name) index.nameByWs[ws] = name;
+        } else if (currentWs) {
+            index.wsByConv[chat] = currentWs;
+        }
+        const label = name || currentName || (ws ? index.nameByWs[ws] : "") || "";
+        if (label) index.nameByConv[chat] = label;
+    };
+
+    for (const el of sidebar.querySelectorAll<HTMLElement>("a[href], button, [role='button']")) {
+        const { ws, chat } = hrefParts(el.getAttribute("href"));
+        if (chat) {
+            assignConv(chat, ws, currentName);
+            if (!index.nameByConv[chat]) {
+                const up = projectNameFromAncestors(el);
+                if (up) {
+                    index.nameByConv[chat] = up;
+                    if (ws) index.nameByWs[ws] ??= up;
+                    currentName ||= up;
+                }
+            }
+            continue;
+        }
+
+        const label = shortOwnText(el) || folderLabel(el);
+        if (label && SKIP_LABEL.test(label) && !ws) {
+            currentWs = "";
+            currentName = "";
+            continue;
+        }
+
+        if (ws) {
+            currentWs = ws;
+            if (label && !SKIP_LABEL.test(label)) {
+                currentName = label;
+                index.nameByWs[ws] = label;
+            }
+            continue;
+        }
+
+        const folder = folderLabel(el);
+        if (folder) {
+            currentName = folder;
+            currentWs = "";
+        }
+    }
+
+    sidebarSnap = { key, index };
+    return index;
+}
+
+function workspaceOf(id: string): string {
+    if (!id) return "";
+    const fromConv = convWorkspaceId(id);
+    if (fromConv) return fromConv;
+    const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
+    if (fromSidebar) return fromSidebar;
+    const cached = asWorkspaceId(settings.plain.workspaceByConv?.[id]);
+    if (cached) return cached;
+    const fromHist = workspaceFromHistory(id);
+    if (fromHist) return fromHist;
+    if (id === currentVisit()) return liveWorkspaceId();
+    return "";
 }
 
 function readOpenProjectName(): string {
-    const sidebar = document.querySelector("[data-sidebar=sidebar]");
-    if (!sidebar) return "";
-    const nodes = [...sidebar.querySelectorAll("a, button, [role='button']")];
-    let afterProjects = false;
-    for (const el of nodes) {
-        const t = labelText(el);
-        if (!t) continue;
-        if (/^projects$/i.test(t)) {
-            afterProjects = true;
-            continue;
-        }
-        if (!afterProjects) continue;
-        if (SKIP_LABEL.test(t)) break;
-        if (t.length < 2 || t.length > 64) continue;
-        if (el.querySelector("svg")) return t;
-    }
+    const idx = sidebarIndex();
+    const live = liveWorkspaceId();
+    if (live && idx.nameByWs[live]) return idx.nameByWs[live];
+    const current = currentVisit();
+    if (current && idx.nameByConv[current]) return idx.nameByConv[current];
     return "";
 }
 
 function projectNameOf(id: string): string {
     if (!id) return "";
+    const idx = sidebarIndex();
+    if (idx.nameByConv[id]) return idx.nameByConv[id];
     const ws = workspaceOf(id);
     if (!ws) return "";
-    return wsNames[ws] || settings.plain.projectNames?.[ws] || (id === currentVisit() ? readOpenProjectName() : "") || "";
+    if (idx.nameByWs[ws]) return idx.nameByWs[ws];
+    const cached = wsNames[ws] || settings.plain.projectNames?.[ws] || "";
+    const live = liveWorkspaceId();
+    const liveName = readOpenProjectName();
+    if (cached && live && ws !== live && liveName && cached === liveName) return "";
+    return cached;
 }
 
 function rememberProject(id: string) {
@@ -390,11 +525,77 @@ function rememberProject(id: string) {
     if (!ws) return;
     const prevWs = settings.plain.workspaceByConv ?? {};
     if (prevWs[id] !== ws) settings.store.workspaceByConv = { ...prevWs, [id]: ws };
-    const name = wsNames[ws] || readOpenProjectName() || settings.plain.projectNames?.[ws] || "";
+
+    const idx = sidebarIndex();
+    const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
+    const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
+    const name = sidebarName || wsNames[ws] || liveName || settings.plain.projectNames?.[ws] || "";
     if (!name) return;
     wsNames[ws] = name;
     const prevNames = settings.plain.projectNames ?? {};
     if (prevNames[ws] !== name) settings.store.projectNames = { ...prevNames, [ws]: name };
+}
+
+function reconcileSidebarCache() {
+    const idx = sidebarIndex();
+    const prevWs = { ...settings.plain.workspaceByConv };
+    const prevNames = { ...settings.plain.projectNames };
+    let wsChanged = false;
+    let namesChanged = false;
+
+    for (const [conv, ws] of Object.entries(idx.wsByConv)) {
+        if (prevWs[conv] !== ws) {
+            prevWs[conv] = ws;
+            wsChanged = true;
+        }
+    }
+    for (const [ws, name] of Object.entries(idx.nameByWs)) {
+        if (!name) continue;
+        wsNames[ws] = name;
+        if (prevNames[ws] !== name) {
+            prevNames[ws] = name;
+            namesChanged = true;
+        }
+    }
+
+    if (wsChanged) settings.store.workspaceByConv = prevWs;
+    if (namesChanged) settings.store.projectNames = prevNames;
+}
+
+function requestWorkspace(id: string) {
+    if (!id || pendingWs.has(id)) return;
+    if (convWorkspaceId(id) || sidebarIndex().wsByConv[id]) return;
+    pendingWs.add(id);
+    try {
+        const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+        const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+        if (!fetchConv) {
+            pendingWs.delete(id);
+            return;
+        }
+        fetchConv(id).then(conv => {
+            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv))
+                || asWorkspaceId(conv?.workspaceId)
+                || asWorkspaceId(conv?.workspaces);
+            if (!ws) return;
+            const prev = settings.plain.workspaceByConv ?? {};
+            if (prev[id] !== ws) settings.store.workspaceByConv = { ...prev, [id]: ws };
+            const live = liveWorkspaceId();
+            const liveName = readOpenProjectName();
+            const names = settings.plain.projectNames ?? {};
+            if (live && ws !== live && liveName && names[ws] === liveName) {
+                const next = { ...names };
+                delete next[ws];
+                settings.store.projectNames = next;
+                delete wsNames[ws];
+            }
+            if (open) paint();
+        }).catch(e => logger.debug("workspace fetch failed:", e)).finally(() => {
+            pendingWs.delete(id);
+        });
+    } catch {
+        pendingWs.delete(id);
+    }
 }
 
 function chatPane(): HTMLElement | null {
@@ -739,18 +940,33 @@ function bump(id: string) {
     writeVisits(capVisits([id, ...readVisits()]));
     const conv = id ? lookup(id) : undefined;
     rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-    if (id) rememberProject(id);
+    if (id && shouldRememberProject(id)) rememberProject(id);
+}
+
+function shouldRememberProject(id: string): boolean {
+    if (!id) return false;
+    const live = liveWorkspaceId();
+    if (!live) return true;
+    const owned = convWorkspaceId(id) || sidebarIndex().wsByConv[id] || "";
+    if (owned && owned !== live) return false;
+    if (projectIdFromUrl() && !chatIdFromUrl() && id !== currentVisit()) return false;
+    return true;
 }
 
 function hydrate() {
+    invalidateSidebar();
     const current = currentVisit();
     const merged = current == null
         ? [...idsFromHistory(), ...readVisits()]
         : [current, ...idsFromHistory(), ...readVisits()];
     writeVisits(capVisits(merged));
+    reconcileSidebarCache();
     if (current) {
         rememberTitle(current, lookup(current)?.title || pageTitle());
-        rememberProject(current);
+        if (shouldRememberProject(current)) rememberProject(current);
+    }
+    for (const id of capVisits(readVisits())) {
+        if (id) requestWorkspace(id);
     }
 }
 
@@ -1336,8 +1552,11 @@ export default definePlugin({
         RoutingStore: {
             selector: (s: RoutingStoreState) => routeConvId(s.route),
             handler(id: string | null) {
-                if (open || id == null) return;
-                bump(id);
+                if (open) return;
+                const current = currentVisit();
+                if (current == null) return;
+                if (id && current === HOME_ID && id !== HOME_ID) return;
+                bump(current);
                 scheduleCapture();
             },
         },
