@@ -451,3 +451,10 @@ export const SettingsIcon = (props: IconProps = {}) =>
         <circle cx="12" cy="12" r="3" />,
     );
 
+export const VoidIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9" />,
+        <path d="M20 3v4" />,
+        <path d="M22 5h-4" />,
+    );
+
