@@ -453,10 +453,10 @@ export const SettingsIcon = (props: IconProps = {}) =>
 
 export const VoidIcon = (props: IconProps = {}) =>
     svg(props,
-        <path d="M7 4.5v8.5a5 5 0 0 0 10 0V4.5" />,
-        <path d="M9.4 6v2.8" />,
-        <path d="M10.8 7.4H8" />,
-        <path d="M13.2 6v2.8" />,
-        <path d="M14.6 7.4H12" />,
+        <path d="M8 5v8.2a4 4 0 0 0 8 0V5" />,
+        <path d="M10.4 6.35v2.3" />,
+        <path d="M11.55 7.5h-2.3" />,
+        <path d="M13.45 6.35v2.3" />,
+        <path d="M14.6 7.5h-2.3" />,
     );
 
