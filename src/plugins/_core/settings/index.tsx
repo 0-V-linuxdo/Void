@@ -10,7 +10,7 @@ import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
 import { ErrorBoundary, Flex, Text } from "@components";
-import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon } from "@components/icons";
+import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { hasVisibleSettings } from "@components/settings/utils";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
@@ -23,7 +23,6 @@ import {
 import { createElement, React } from "@turbopack/common/react";
 import { setSettingsPrimitive, type SettingsPrimitives } from "@turbopack/common/settingsPrimitives";
 import { SettingsDialogStore } from "@turbopack/common/stores";
-import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -32,8 +31,6 @@ import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType, ReactNode } from "react";
 
 const logger = new Logger("Settings");
-
-const MoonIcon = findExportedComponentLazy("MoonIcon");
 
 const cl = classNameFactory("void-settings-");
 
@@ -125,7 +122,7 @@ function VoidMenu() {
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-                <MoonIcon className={cl("menu-icon")} />
+                <VoidIcon className={cl("menu-icon")} />
                 Void
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
