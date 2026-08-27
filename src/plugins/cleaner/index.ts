@@ -61,6 +61,8 @@ export default definePlugin({
     icon: BrushCleaningIcon,
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
+    tags: ["ui"],
+    enabledByDefault: true,
     settings,
 
     patches: [

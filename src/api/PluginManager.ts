@@ -296,12 +296,20 @@ function pruneOrphanedPluginSettings() {
     if (orphaned.length) SettingsStore.markAsChanged();
 }
 
+function promoteCleanerDefault() {
+    const data = getSettingsPluginData();
+    if (data.cleanerDefaultOn) return;
+    mergePluginSettings("Cleaner", { enabled: true });
+    updateSettingsPluginData({ cleanerDefaultOn: 1 });
+}
+
 export function initPluginManager() {
     if (initialized) return;
     initialized = true;
 
     pruneOrphanedPluginSettings();
     trackNewPlugins();
+    promoteCleanerDefault();
 
     const neededApis = new Set<string>();
 

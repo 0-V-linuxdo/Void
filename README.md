@@ -8,6 +8,7 @@
 
 **New**
 
+- **Cleaner** — On by default. Hides upgrade nags, the home banner, the composer SuperGrok chip, and locked models.
 - **InputHistory** — Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.
 - **Plugin pin** — Pin plugin cards to the top of the Plugins tab.
 - **NoGrokBot** — Hide the top-right Grok Bot promo button.
