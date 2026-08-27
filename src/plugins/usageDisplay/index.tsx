@@ -10,7 +10,7 @@ import type { ChatBarButtonDef } from "@api/ChatBarButtons";
 import type { VoidEventMap } from "@api/Events";
 import { type ModalProps, openModal } from "@api/Modals";
 import { definePluginSettings } from "@api/Settings";
-import { Button, ConfirmDialog, DialogClose, DialogHeader, DialogTitle, Flex, Paragraph, Text } from "@components";
+import { Button, ConfirmDialog, DialogClose, DialogHeader, DialogTitle, Flex, Paragraph, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CircleGaugeIcon, Cross2Icon } from "@components/icons";
 import type { GrokSubscription } from "@grok-types";
@@ -60,14 +60,15 @@ const logger = new Logger("UsageDisplay");
 const cl = classNameFactory("void-ud-");
 
 const settings = definePluginSettings({
+    usageStats: {
+        type: OptionType.COMPONENT,
+        description: "Record daily usage. Hover shows today after a delay; click opens history.",
+        component: StatsToggle,
+        default: false as boolean,
+    },
     showPercent: {
         type: OptionType.BOOLEAN,
         description: "Show the used-percent label next to the ring.",
-        default: false,
-    },
-    trackStats: {
-        type: OptionType.BOOLEAN,
-        description: "Record daily usage. Hover shows today after a delay; click opens history.",
         default: false,
     },
     hoverStatsDelay: {
@@ -143,7 +144,7 @@ function syncAccount() {
 }
 
 function snapshotToday() {
-    if (!settings.store.trackStats || !state.userId) return;
+    if (!settings.store.usageStats || !state.userId) return;
     recordSnapshot(
         state.userId,
         state.usage?.weekly.usedPercent ?? null,
@@ -192,7 +193,7 @@ function onVisibility() {
 
 function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
     void refresh("stream");
-    if (!settings.store.trackStats) return;
+    if (!settings.store.usageStats) return;
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (response?.state !== "closed" || response.sender === "human") return;
     const userId = currentUserId();
@@ -328,16 +329,16 @@ function TodayBlock({ isFree }: { isFree: boolean }) {
 
 function UsagePanel() {
     useExternalStore(store);
-    const { trackStats, hoverStatsDelay } = settings.use(["trackStats", "hoverStatsDelay"]);
+    const { usageStats, hoverStatsDelay } = settings.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
-    const [showToday, setShowToday] = useState(trackStats && delay <= 0);
+    const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const isFree = readPlan();
     const resetAt = weekly?.resetAt ?? null;
 
     useEffect(() => {
-        if (!trackStats) {
+        if (!usageStats) {
             setShowToday(false);
             return;
         }
@@ -348,7 +349,7 @@ function UsagePanel() {
         setShowToday(false);
         const id = window.setTimeout(() => setShowToday(true), delay * 1000);
         return () => window.clearTimeout(id);
-    }, [trackStats, delay]);
+    }, [usageStats, delay]);
 
     return (
         <Flex flexDirection="column" gap={8} className={cl("panel")}>
@@ -358,9 +359,30 @@ function UsagePanel() {
     );
 }
 
+function StatsToggle() {
+    const { usageStats } = settings.use(["usageStats"]);
+    return (
+        <Flex alignItems="center" justifyContent="space-between" gap="0.75rem" className={cl("toggle")}>
+            <Flex flexDirection="column" gap="0">
+                <Text size="sm" weight="medium">Daily usage stats</Text>
+                <Text size="xs" color="muted">Record local daily usage on this device.</Text>
+            </Flex>
+            <Switch
+                checked={!!usageStats}
+                onCheckedChange={value => {
+                    settings.store.usageStats = value;
+                    if (value) void refresh("manual");
+                    else store.notify();
+                }}
+            />
+        </Flex>
+    );
+}
+
 function StatsModal({ onClose }: ModalProps) {
     useExternalStore(store);
-    const days = state.userId ? listDays(state.userId) : [];
+    const { usageStats } = settings.use(["usageStats"]);
+    const days = usageStats && state.userId ? listDays(state.userId) : [];
     const [selected, setSelected] = useState(days[0]?.date ?? "");
     const active = days.find(d => d.date === selected) ?? days[0] ?? null;
     const todayKey = localDateKey(Date.now());
@@ -376,7 +398,10 @@ function StatsModal({ onClose }: ModalProps) {
                 <DialogTitle>Usage by date</DialogTitle>
                 <Paragraph>Stored on this device.</Paragraph>
             </DialogHeader>
-            {days.length === 0 ? (
+            <StatsToggle />
+            {!usageStats ? (
+                <Paragraph>Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.</Paragraph>
+            ) : days.length === 0 ? (
                 <Paragraph>No days recorded yet. Stats start from the moment you enable tracking.</Paragraph>
             ) : (
                 <Flex flexDirection="column" gap="0.75rem" className={cl("history")}>
@@ -440,7 +465,6 @@ function ClearStats() {
 
 function openHistory() {
     void refresh("manual");
-    if (!settings.store.trackStats) return;
     openModal(props => <SafeStatsModal {...props} />, { modalKey: "void-ud-stats" });
 }
 
@@ -473,6 +497,6 @@ export default definePlugin({
     },
 
     onSettingsChange() {
-        if (settings.store.trackStats) void refresh("manual");
+        if (settings.store.usageStats) void refresh("manual");
     },
 });

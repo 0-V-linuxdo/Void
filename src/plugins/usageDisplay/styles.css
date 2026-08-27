@@ -122,3 +122,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     padding-top: 0.5rem;
     border-top: 1px solid color-mix(in srgb, currentcolor 16%, transparent);
 }
+
+.void-ud-toggle {
+    width: 100%;
+}
