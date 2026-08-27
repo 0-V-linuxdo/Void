@@ -21,7 +21,7 @@
 
 **Fixed**
 
-- **Settings** — Void tabs in the Grok settings sidebar.
+- **Settings** — Void tabs in the Grok settings sidebar. Avatar-menu Void row uses a 16px moon-star; the Plugins flyout shows each plugin's icon.
 - **Cleaner** — Hide inaccessible models in the model selector again.
 - **Chat bar buttons** — Restored after Grok removed `ButtonWithTooltipOptimized`.
 

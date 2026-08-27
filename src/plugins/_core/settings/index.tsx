@@ -132,13 +132,16 @@ function VoidMenu() {
                         Plugins
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
-                        {settingsPlugins.map(name => (
-                            <DropdownMenuItem key={name} onSelect={() => openPluginSettings(name)}>
-                                {name}
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuSubContent>
-                </DropdownMenuSub>
+                        {settingsPlugins.map(name => {
+                            const Icon = plugins[name].icon ?? UnplugIcon;
+                            return (
+                                <DropdownMenuItem key={name} onSelect={() => openPluginSettings(name)}>
+                                    <Icon className={cl("menu-icon")} />
+                                    {name}
+                                </DropdownMenuItem>
+                            );
+                        })}
+                    </DropdownMenuSubContent>                </DropdownMenuSub>
                 {getVisibleTabs().filter(t => t.id !== PLUGINS_TAB_ID).map(t => {
                     const Icon = t.icon;
                     return (
