@@ -9,7 +9,7 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import { Button, ConfirmDialog, DropdownMenuItem, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { CopyIcon, ScalingIcon } from "@components/icons";
+import { CopyIcon, ImagesIcon, ScalingIcon } from "@components/icons";
 import type { MediaPostType } from "@grok-types/enums";
 import type { MediaItem } from "@grok-types/stores/MediaStore";
 import { Fragment, React, useRef, useState } from "@turbopack/common/react";
@@ -538,6 +538,7 @@ let abortCtrl: AbortController | null = null;
 
 export default definePlugin({
     name: "BetterImagine",
+    icon: ImagesIcon,
     description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
     settings,

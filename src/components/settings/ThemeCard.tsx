@@ -8,7 +8,7 @@ import "./ThemeCard.css";
 
 import { disableTheme, enableTheme, type ThemeData } from "@api/Themes";
 import { Switch } from "@components";
-import { CopyIcon, FolderIcon, GlobeIcon, PencilIcon, Trash2Icon } from "@components/icons";
+import { CopyIcon, FolderIcon, GlobeIcon, PaletteIcon, PencilIcon, Trash2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -40,6 +40,7 @@ export default function ThemeCard({ theme, onRemove, onToggle, onEdit }: ThemeCa
         <BaseCard
             name={theme.name ?? theme.url}
             nameClassName={cl("name")}
+            icon={<PaletteIcon size={14} />}
             description={theme.description}
             controls={
                 <>

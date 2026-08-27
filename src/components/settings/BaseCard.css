@@ -80,3 +80,21 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.void-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.375rem;
+    color: hsl(var(--fg-secondary));
+    background: hsl(var(--fg-primary) / 0.06);
+    line-height: 0;
+}
+
+.void-card-icon svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}

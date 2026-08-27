@@ -5,6 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { BlendIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
 import { clamp } from "@utils/misc";
@@ -60,6 +61,7 @@ function apply() {
 
 export default definePlugin({
     name: "ComposerOpacity",
+    icon: BlendIcon,
     description: "Customizable chat input background opacity so content behind the bar cannot show through.",
     authors: [Devs.p],
     tags: ["ui", "chat"],

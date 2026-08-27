@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { CatIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
@@ -13,6 +14,7 @@ const ONEKO_SCRIPT = "(function oneko(){const nekoEl=document.createElement(\"di
 
 export default definePlugin({
     name: "Oneko",
+    icon: CatIcon,
     description: "Cat follows your mouse cursor.",
     authors: [Devs.adryd],
     cleanupSelectors: ["#oneko"],

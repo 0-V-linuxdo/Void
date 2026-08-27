@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { BotOffIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
 import definePlugin from "@utils/types";
@@ -22,6 +23,7 @@ div:has(> #grok-bot-nav-button) {
 
 export default definePlugin({
     name: "NoGrokBot",
+    icon: BotOffIcon,
     description: "Hide the top-right Grok Bot promo button.",
     authors: [Devs.p],
     tags: ["ui"],

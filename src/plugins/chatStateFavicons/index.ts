@@ -6,6 +6,7 @@
 
 import type { VoidEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
+import { AppWindowIcon } from "@components/icons";
 import { ChatPageStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
@@ -460,6 +461,7 @@ function restoreOfficial() {
 
 export default definePlugin({
     name: "ChatStateFavicons",
+    icon: AppWindowIcon,
     description: "Show streaming, done, ready, and error states on the tab favicon.",
     authors: [Devs.p],
     tags: ["chat", "ui"],

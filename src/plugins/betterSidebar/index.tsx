@@ -11,6 +11,7 @@ import { SelectionActionBar, SelectionCheckbox } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
 import { Text } from "@components/Text";
+import { PanelLeftIcon } from "@components/icons";
 import { SidebarComponents } from "@turbopack/common/components";
 import { getPlanName } from "@turbopack/common/plan";
 import { createElement, Fragment, React, useRef } from "@turbopack/common/react";
@@ -101,6 +102,7 @@ const WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
 
 export default definePlugin({
     name: "BetterSidebar",
+    icon: PanelLeftIcon,
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
     settings,

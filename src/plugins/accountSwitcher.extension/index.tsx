@@ -11,7 +11,7 @@ import { showToast, ToastType } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import { Button, ConfirmDialog, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { TrashIcon } from "@components/icons";
+import { TrashIcon, UsersRoundIcon } from "@components/icons";
 import type { GrokUser } from "@grok-types/common/User";
 import { getPlanName } from "@turbopack/common/plan";
 import { React, useState } from "@turbopack/common/react";
@@ -321,6 +321,7 @@ function migrateLegacyAccounts() {
 
 export default definePlugin({
     name: "AccountSwitcher",
+    icon: UsersRoundIcon,
     description: "Easily switch between your accounts.",
     authors: [Devs.Prism],
     tags: ["sidebar"],

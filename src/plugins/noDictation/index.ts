@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { MicOffIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
 import definePlugin from "@utils/types";
@@ -21,6 +22,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 
 export default definePlugin({
     name: "NoDictation",
+    icon: MicOffIcon,
     description: "Hide the Dictation (voice input) button from the chat input bar.",
     authors: [Devs.p],
     tags: ["chat", "ui"],

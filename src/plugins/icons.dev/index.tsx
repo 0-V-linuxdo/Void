@@ -116,6 +116,7 @@ function IconsTab() {
 
 export default definePlugin({
     name: "IconsBrowser",
+    icon: TelescopeIcon,
     description: "Browse and copy Grok icon finder codes.",
     authors: [Devs.Prism],
     dev: true,

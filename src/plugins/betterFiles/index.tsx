@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { Button, ConfirmDialog, SelectionActionBar, SelectionCheckbox } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { TrashIcon } from "@components/icons";
+import { FilesIcon, TrashIcon } from "@components/icons";
 import { Fragment, React, useState } from "@turbopack/common/react";
 import { FilesPageStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
@@ -54,6 +54,7 @@ function DeleteAllButton() {
 
 export default definePlugin({
     name: "BetterFiles",
+    icon: FilesIcon,
     description: "Adds bulk delete to the files page.",
     authors: [Devs.Prism],
     managedStyle: "betterFiles",

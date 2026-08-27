@@ -6,6 +6,7 @@
 
 import type { VoidEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
+import { BellIcon } from "@components/icons";
 import { ResponseStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { sendBrowserNotification } from "@utils/misc";
@@ -80,6 +81,7 @@ function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
 
 export default definePlugin({
     name: "ResponseNotification",
+    icon: BellIcon,
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],

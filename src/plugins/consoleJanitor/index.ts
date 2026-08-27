@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { TerminalIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
@@ -11,6 +12,7 @@ const warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" } as const;
 
 export default definePlugin({
     name: "ConsoleJanitor",
+    icon: TerminalIcon,
     description: "Silences noisy warnings and info logs in the browser console.",
     authors: [Devs.Prism],
 

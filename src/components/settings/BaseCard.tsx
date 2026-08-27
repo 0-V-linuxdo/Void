@@ -16,18 +16,20 @@ interface BaseCardProps {
     className?: string;
     name: string;
     nameClassName?: string;
+    icon?: React.ReactNode;
     badges?: React.ReactNode;
     description?: string;
     controls: React.ReactNode;
     footer: React.ReactNode;
 }
 
-export default function BaseCard({ className, name, nameClassName, badges, description, controls, footer }: BaseCardProps) {
+export default function BaseCard({ className, name, nameClassName, icon, badges, description, controls, footer }: BaseCardProps) {
     return (
         <Card className={classes(cl("root"), className)}>
             <div className={cl("body")}>
                 <Flex alignItems="center" justifyContent="space-between" gap="0.5rem">
                     <div className={classes(cl("name"), nameClassName)}>
+                        {icon != null && <span className={cl("icon")}>{icon}</span>}
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span className={cl("title")}>{name}</span>

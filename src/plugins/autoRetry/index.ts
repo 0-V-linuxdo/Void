@@ -7,6 +7,7 @@
 import type { VoidEventMap } from "@api/Events";
 import { showToast, ToastType } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
+import { RotateCcwIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
 import { ChatPageStore, ResponseStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
@@ -111,6 +112,7 @@ function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
 
 export default definePlugin({
     name: "AutoRetry",
+    icon: RotateCcwIcon,
     description: "Automatically retry failed messages on moderation or network errors.",
     authors: [Devs.Prism],
     tags: ["chat"],

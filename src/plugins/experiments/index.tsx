@@ -10,6 +10,7 @@ import { showToast, ToastType } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import { Badge, Button, Card, Flex, Input, Paragraph, SectionHeader, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SettingsDescription, SettingsRow, SettingsTitle, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
+import { TestTubeIcon } from "@components/icons";
 import type { FeatureStoreState } from "@grok-types";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
 import { FeatureStore } from "@turbopack/common/stores";
@@ -259,6 +260,7 @@ function overrideProxy(config: Config, getState: () => FeatureStoreState): Confi
 
 export default definePlugin({
     name: "Experiments",
+    icon: TestTubeIcon,
     description: "Unlock and toggle unreleased Grok features.",
     authors: [Devs.Prism],
     settings,

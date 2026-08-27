@@ -5,6 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { BrushCleaningIcon } from "@components/icons";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -57,6 +58,7 @@ const hideComponentPatch = (name: string, setting: keyof typeof settings.store, 
 
 export default definePlugin({
     name: "Cleaner",
+    icon: BrushCleaningIcon,
     description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
     settings,

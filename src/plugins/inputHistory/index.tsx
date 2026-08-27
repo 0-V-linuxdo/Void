@@ -8,6 +8,7 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { Button, ConfirmDialog, Flex, Paragraph } from "@components";
+import { HistoryIcon } from "@components/icons";
 import { React, useState } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -298,6 +299,7 @@ function ClearHistory() {
 
 export default definePlugin({
     name: "InputHistory",
+    icon: HistoryIcon,
     description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
     authors: [Devs.p],
     tags: ["chat"],
