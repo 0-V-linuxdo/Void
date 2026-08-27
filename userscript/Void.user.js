@@ -6534,8 +6534,8 @@ ${sourceUrl}`;
       as: "span",
       color: "secondary"
     }, "[20260828] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"16407e8"}`
-    }, `(${"16407e8"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"dcaacf2"}`
+    }, `(${"dcaacf2"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -8035,63 +8035,35 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 
   // src/plugins/themedScrollbar/index.ts
   var STYLE_NAME2 = "themedScrollbar";
-  var PANE = [
-    'aside:has([aria-label="Preview"]):has([aria-label="Files"])',
-    'aside:has(iframe[title="Preview"])',
-    ".absolute.inset-y-0.end-0",
-    '[class*="pane-card"]'
-  ].join(",");
-  var PANE_ALL = `${PANE},${PANE} *`;
+  var HOST = 'aside:has([aria-label="Preview"]):has([aria-label="Files"])';
+  var SCROLLER = `${HOST} :is([class*="overflow-auto"],[class*="overflow-y-auto"],[class*="overflow-scroll"],[class*="overflow-y-scroll"])`;
   var THUMB = "var(--border-l2,color-mix(in srgb,var(--fg-primary,#888) 28%,transparent))";
   var THUMB_HOVER = "var(--fg-tertiary,color-mix(in srgb,var(--fg-primary,#888) 42%,transparent))";
+  var TRACK = "var(--surface-l1,var(--surface-inset,transparent))";
   var CSS = `
-html.dark,
-html[data-theme="dark"],
-html[data-color-scheme="dark"] {
-    color-scheme: dark !important;
-}
-
-html.light,
-html[data-theme="light"],
-html[data-color-scheme="light"] {
-    color-scheme: light !important;
-}
-
-html.dark :is(${PANE}),
-html[data-theme="dark"] :is(${PANE}),
-html[data-color-scheme="dark"] :is(${PANE}) {
-    color-scheme: dark !important;
-}
-
-html.light :is(${PANE}),
-html[data-theme="light"] :is(${PANE}),
-html[data-color-scheme="light"] :is(${PANE}) {
-    color-scheme: light !important;
-}
-
-${PANE_ALL} {
+${SCROLLER} {
     scrollbar-width: thin !important;
-    scrollbar-color: ${THUMB} transparent !important;
+    scrollbar-color: ${THUMB} ${TRACK} !important;
 }
 
-${PANE_ALL}::-webkit-scrollbar {
+${SCROLLER}::-webkit-scrollbar {
     width: 0.5rem !important;
     height: 0.5rem !important;
 }
 
-${PANE_ALL}::-webkit-scrollbar-track,
-${PANE_ALL}::-webkit-scrollbar-corner {
-    background: transparent !important;
+${SCROLLER}::-webkit-scrollbar-track,
+${SCROLLER}::-webkit-scrollbar-corner {
+    background: ${TRACK} !important;
 }
 
-${PANE_ALL}::-webkit-scrollbar-thumb {
+${SCROLLER}::-webkit-scrollbar-thumb {
     background-color: ${THUMB} !important;
     background-clip: padding-box !important;
     border: 0.125rem solid transparent !important;
     border-radius: 999px !important;
 }
 
-${PANE_ALL}::-webkit-scrollbar-thumb:hover {
+${SCROLLER}::-webkit-scrollbar-thumb:hover {
     background-color: ${THUMB_HOVER} !important;
 }
 `;
@@ -8622,12 +8594,63 @@ button:has(.void-ud-trigger > .void-ud-label) {
 }
 
 .void-ud-panel {
-    min-width: 0;
+    min-width: 11rem;
 }
 
 .void-ud-used {
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
+}
+
+.void-ud-today {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, currentcolor 16%, transparent);
+}
+
+.void-ud-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: min(22rem, calc(100vw - 4rem));
+    max-height: min(32rem, calc(100vh - 6rem));
+    padding-right: 1.75rem;
+}
+
+.void-ud-modal-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.void-ud-history {
+    min-height: 0;
+    flex: 1;
+}
+
+.void-ud-days {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow: auto;
+    min-height: 0;
+    max-height: 16rem;
+}
+
+.void-ud-day {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.void-ud-day-meta {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+}
+
+.void-ud-detail {
+    padding-top: 0.5rem;
+    border-top: 1px solid color-mix(in srgb, currentcolor 16%, transparent);
 }
 `);
 
@@ -8993,14 +9016,268 @@ button:has(.void-ud-trigger > .void-ud-label) {
     } catch {}
   }
 
-  // src/plugins/usageDisplay/index.tsx
+  // src/plugins/usageDisplay/stats.ts
+  var STATS_STORAGE_PREFIX = "void-usage-display:stats:v1:";
+  var STATS_VERSION = 1;
+  var RESET_DROP_PERCENT = 5;
+  var RETAIN_MIN = 7;
+  var RETAIN_MAX = 180;
+  var RETAIN_DEFAULT = 90;
+  var DELAY_MIN = 0;
+  var DELAY_MAX = 5;
+  var DELAY_DEFAULT = 1;
+  var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  var DAY_MS2 = 86400000;
   var logger20 = new Logger("UsageDisplay");
+  var seen = new Set;
+  var seenDate = "";
+  function isRecord2(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value);
+  }
+  function clampPercent(value) {
+    const n = finiteNumber(value);
+    return n == null ? null : clamp(n, 0, 100);
+  }
+  function localDateKey(at) {
+    const d = new Date(at);
+    const y = d.getFullYear();
+    const m = `${d.getMonth() + 1}`.padStart(2, "0");
+    const day = `${d.getDate()}`.padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+  function startOfLocalDay(at) {
+    const d = new Date(at);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+  function emptyDay(date, now) {
+    return {
+      date,
+      startPercent: null,
+      lastPercent: null,
+      resetAt: null,
+      chats: 0,
+      updatedAt: now
+    };
+  }
+  function normalizeDay(date, value) {
+    if (!DATE_RE.test(date) || !isRecord2(value))
+      return null;
+    return {
+      date,
+      startPercent: clampPercent(value.startPercent),
+      lastPercent: clampPercent(value.lastPercent),
+      resetAt: finiteNumber(value.resetAt),
+      chats: Math.max(0, Math.floor(finiteNumber(value.chats) ?? 0)),
+      updatedAt: finiteNumber(value.updatedAt) ?? 0
+    };
+  }
+  function emptyStore(userId) {
+    return { version: STATS_VERSION, userId, days: {} };
+  }
+  var memory = new Map;
+  function storeGet(key) {
+    if (typeof localStorage === "undefined")
+      return memory.get(key) ?? null;
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      logger20.debug("Failed to read usage stats", error);
+      return memory.get(key) ?? null;
+    }
+  }
+  function storeSet(key, value) {
+    if (typeof localStorage === "undefined") {
+      memory.set(key, value);
+      return;
+    }
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      logger20.debug("Failed to persist usage stats", error);
+      memory.set(key, value);
+    }
+  }
+  function storeRemove(key) {
+    if (typeof localStorage === "undefined") {
+      memory.delete(key);
+      return;
+    }
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      logger20.debug("Failed to clear usage stats", error);
+      memory.delete(key);
+    }
+  }
+  function loadStore(userId) {
+    if (!userId)
+      return emptyStore("");
+    try {
+      const raw = JSON.parse(storeGet(STATS_STORAGE_PREFIX + userId) || "null");
+      if (!isRecord2(raw) || raw.version !== STATS_VERSION || raw.userId !== userId || !isRecord2(raw.days)) {
+        return emptyStore(userId);
+      }
+      const days = {};
+      for (const [date, value] of Object.entries(raw.days)) {
+        const rec = normalizeDay(date, value);
+        if (rec)
+          days[date] = rec;
+      }
+      return { version: STATS_VERSION, userId, days };
+    } catch (error) {
+      logger20.debug("Failed to read usage stats", error);
+      return emptyStore(userId);
+    }
+  }
+  function saveStore(file) {
+    if (!file.userId)
+      return;
+    storeSet(STATS_STORAGE_PREFIX + file.userId, JSON.stringify(file));
+  }
+  function applySnapshot(record, percent, resetAt, now) {
+    const next = { ...record, updatedAt: now };
+    if (resetAt != null && next.resetAt != null && resetAt !== next.resetAt) {
+      next.startPercent = percent;
+      next.lastPercent = percent;
+      next.resetAt = resetAt;
+      return next;
+    }
+    if (resetAt != null)
+      next.resetAt = resetAt;
+    if (percent == null)
+      return next;
+    if (next.lastPercent != null && percent < next.lastPercent - RESET_DROP_PERCENT) {
+      next.startPercent = percent;
+      next.lastPercent = percent;
+      return next;
+    }
+    if (next.startPercent == null)
+      next.startPercent = percent;
+    next.lastPercent = percent;
+    return next;
+  }
+  function dayDelta(record) {
+    if (record.startPercent == null || record.lastPercent == null)
+      return null;
+    return Math.max(0, record.lastPercent - record.startPercent);
+  }
+  function formatDelta(value) {
+    if (value == null)
+      return "—";
+    const label = formatPercent(value);
+    return value > 0 ? `+${label}` : label;
+  }
+  function formatDayLabel(date) {
+    const parts = date.split("-").map(Number);
+    const y = parts[0];
+    const m = parts[1];
+    const d = parts[2];
+    if (!y || !m || !d)
+      return date;
+    return new Date(y, m - 1, d).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  }
+  function pruneDays(days, retainDays, now) {
+    const keep = clamp(Math.floor(retainDays), RETAIN_MIN, RETAIN_MAX);
+    const cutoff = localDateKey(startOfLocalDay(now) - (keep - 1) * DAY_MS2);
+    const out = {};
+    for (const [date, rec] of Object.entries(days)) {
+      if (date >= cutoff)
+        out[date] = rec;
+    }
+    return out;
+  }
+  function persistDay(userId, date, record, retainDays, now) {
+    const file = loadStore(userId);
+    file.days[date] = record;
+    file.days = pruneDays(file.days, retainDays, now);
+    saveStore(file);
+    return file.days[date] ?? record;
+  }
+  function recordSnapshot(userId, percent, resetAt, retainDays, now = Date.now()) {
+    if (!userId)
+      return null;
+    const date = localDateKey(now);
+    const current = loadStore(userId).days[date] ?? emptyDay(date, now);
+    return persistDay(userId, date, applySnapshot(current, percent, resetAt, now), retainDays, now);
+  }
+  function recordChat(userId, responseId, retainDays, now = Date.now()) {
+    if (!userId || !responseId)
+      return null;
+    const date = localDateKey(now);
+    if (seenDate !== date) {
+      seen.clear();
+      seenDate = date;
+    }
+    const key = `${userId}:${responseId}`;
+    if (seen.has(key))
+      return loadStore(userId).days[date] ?? null;
+    seen.add(key);
+    const current = loadStore(userId).days[date] ?? emptyDay(date, now);
+    return persistDay(userId, date, { ...current, chats: current.chats + 1, updatedAt: now }, retainDays, now);
+  }
+  function readToday(userId, now = Date.now()) {
+    if (!userId)
+      return null;
+    return loadStore(userId).days[localDateKey(now)] ?? null;
+  }
+  function listDays(userId) {
+    if (!userId)
+      return [];
+    const { days } = loadStore(userId);
+    const out = [];
+    for (const date of Object.keys(days).toSorted((a, b) => b.localeCompare(a))) {
+      const rec = days[date];
+      if (rec)
+        out.push(rec);
+    }
+    return out;
+  }
+  function clearStats(userId) {
+    if (!userId)
+      return;
+    storeRemove(STATS_STORAGE_PREFIX + userId);
+    seen.clear();
+    seenDate = "";
+  }
+  function retainDaysOf(value) {
+    return clamp(Math.floor(finiteNumber(value) ?? RETAIN_DEFAULT), RETAIN_MIN, RETAIN_MAX);
+  }
+  function hoverDelayOf(value) {
+    return clamp(Math.floor(finiteNumber(value) ?? DELAY_DEFAULT), DELAY_MIN, DELAY_MAX);
+  }
+
+  // src/plugins/usageDisplay/index.tsx
+  var logger21 = new Logger("UsageDisplay");
   var cl19 = classNameFactory("void-ud-");
   var settings11 = definePluginSettings({
     showPercent: {
       type: 3 /* BOOLEAN */,
       description: "Show the used-percent label next to the ring.",
       default: false
+    },
+    trackStats: {
+      type: 3 /* BOOLEAN */,
+      description: "Record daily usage. Hover shows today after a delay; click opens history.",
+      default: false
+    },
+    hoverStatsDelay: {
+      type: 5 /* SLIDER */,
+      description: "Seconds to hover before showing today's usage stats.",
+      min: DELAY_MIN,
+      max: DELAY_MAX,
+      default: DELAY_DEFAULT
+    },
+    retainDays: {
+      type: 5 /* SLIDER */,
+      description: "Days of usage history to keep.",
+      min: RETAIN_MIN,
+      max: RETAIN_MAX,
+      default: RETAIN_DEFAULT
+    },
+    clearStats: {
+      type: 6 /* COMPONENT */,
+      component: ClearStats
     }
   });
   var AUTO_REFRESH_MS = 60 * 1000;
@@ -9042,6 +9319,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return;
     loadMemory(userId);
   }
+  function snapshotToday() {
+    if (!settings11.store.trackStats || !state.userId)
+      return;
+    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings11.store.retainDays));
+  }
   async function refresh(reason = "manual") {
     if (refreshPromise)
       return refreshPromise;
@@ -9055,7 +9337,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       try {
         const pageUsage = readNativeUsage();
         const remote = await fetchOfficialUsage().then((usage) => ({ ok: true, usage })).catch((error) => {
-          logger20.warn("Failed to fetch official usage", error);
+          logger21.warn("Failed to fetch official usage", error);
           return { ok: false };
         });
         const merged = mergeNativeUsage(state.usage, remote.ok ? remote.usage : null, pageUsage);
@@ -9065,6 +9347,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
           state.lastUpdatedAt = Date.now();
         if (state.userId)
           persistUsage(state.userId, state.usage, state.lastUpdatedAt);
+        snapshotToday();
         return Boolean(state.usage);
       } finally {
         state.loading = false;
@@ -9077,6 +9360,19 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function onVisibility() {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS)
       refresh("visible");
+  }
+  function onStreamEnd2({ responseId }) {
+    refresh("stream");
+    if (!settings11.store.trackStats)
+      return;
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (response?.state !== "closed" || response.sender === "human")
+      return;
+    const userId = currentUserId();
+    if (!userId)
+      return;
+    recordChat(userId, responseId, retainDaysOf(settings11.store.retainDays));
+    store2.notify();
   }
   function readPlan() {
     let xSubscriptionType;
@@ -9167,13 +9463,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
       className: cl19("label")
     }, label));
   }
-  function UsagePanel() {
-    useExternalStore(store2);
+  function WeekBlock({ isFree, percent, resetAt, loading, labeled }) {
     const [now, setNow] = useState(Date.now);
-    const weekly = state.usage?.weekly;
-    const percent = weekly?.usedPercent ?? null;
-    const isFree = readPlan();
-    const resetAt = weekly?.resetAt ?? null;
     useEffect(() => {
       if (resetAt == null)
         return;
@@ -9184,41 +9475,190 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl19("panel")
-    }, /* @__PURE__ */ React.createElement(Text2, {
+      className: cl19("week")
+    }, labeled && /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "muted"
+    }, "Week"), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
       className: cl19("used")
-    }, usedLabel(isFree, percent, state.loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
+    }, usedLabel(isFree, percent, loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Resets in ", formatResetCountdown(left)));
   }
+  function TodayBlock({ isFree }) {
+    const today = state.userId ? readToday(state.userId) : null;
+    const chats = today?.chats ?? 0;
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: 2,
+      className: cl19("today")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "muted"
+    }, "Today"), !isFree && /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "semibold",
+      className: cl19("used")
+    }, formatDelta(today ? dayDelta(today) : null), " of weekly quota"), /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "muted"
+    }, pluralize(chats, "chat")));
+  }
+  function UsagePanel() {
+    useExternalStore(store2);
+    const { trackStats, hoverStatsDelay } = settings11.use(["trackStats", "hoverStatsDelay"]);
+    const delay = hoverDelayOf(hoverStatsDelay);
+    const [showToday, setShowToday] = useState(trackStats && delay <= 0);
+    const weekly = state.usage?.weekly;
+    const percent = weekly?.usedPercent ?? null;
+    const isFree = readPlan();
+    const resetAt = weekly?.resetAt ?? null;
+    useEffect(() => {
+      if (!trackStats) {
+        setShowToday(false);
+        return;
+      }
+      if (delay <= 0) {
+        setShowToday(true);
+        return;
+      }
+      setShowToday(false);
+      const id = window.setTimeout(() => setShowToday(true), delay * 1000);
+      return () => window.clearTimeout(id);
+    }, [trackStats, delay]);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: 8,
+      className: cl19("panel")
+    }, showToday && /* @__PURE__ */ React.createElement(TodayBlock, {
+      isFree
+    }), /* @__PURE__ */ React.createElement(WeekBlock, {
+      isFree,
+      percent,
+      resetAt,
+      loading: state.loading,
+      labeled: showToday
+    }));
+  }
+  function StatsModal({ onClose }) {
+    useExternalStore(store2);
+    const days = state.userId ? listDays(state.userId) : [];
+    const [selected, setSelected] = useState(days[0]?.date ?? "");
+    const active = days.find((d) => d.date === selected) ?? days[0] ?? null;
+    const todayKey = localDateKey(Date.now());
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl19("modal")
+    }, /* @__PURE__ */ React.createElement(DialogClose, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Close",
+      className: cl19("modal-close")
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, "Usage by date"), /* @__PURE__ */ React.createElement(Paragraph, null, "Stored on this device.")), days.length === 0 ? /* @__PURE__ */ React.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.75rem",
+      className: cl19("history")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl19("days")
+    }, days.map((rec) => /* @__PURE__ */ React.createElement(Button, {
+      key: rec.date,
+      variant: rec.date === active?.date ? "secondary" : "tertiary",
+      size: "sm",
+      shape: "rectangle",
+      className: cl19("day"),
+      onClick: () => setSelected(rec.date)
+    }, /* @__PURE__ */ React.createElement("span", null, rec.date === todayKey ? "Today" : formatDayLabel(rec.date)), /* @__PURE__ */ React.createElement("span", {
+      className: cl19("day-meta")
+    }, formatDelta(dayDelta(rec)), " · ", rec.chats)))), active != null && /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.25rem",
+      className: cl19("detail")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "semibold"
+    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "muted"
+    }, "Start ", formatPercent(active.startPercent), " → ", formatPercent(active.lastPercent)), /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "muted"
+    }, "Today ", formatDelta(dayDelta(active))), /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "muted"
+    }, pluralize(active.chats, "chat")))), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      onClick: onClose
+    }, "Close"));
+  }
+  function ClearStats() {
+    useExternalStore(store2);
+    const [open2, setOpen] = useState(false);
+    const userId = state.userId || currentUserId();
+    const days = userId ? listDays(userId) : [];
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(days.length, "recorded day"), "."), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      disabled: !days.length,
+      onClick: () => setOpen(true)
+    }, "Clear usage history"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title: "Clear usage history",
+      description: "Delete all locally recorded daily usage? This cannot be undone.",
+      confirmText: "Clear",
+      danger: true,
+      onConfirm: () => {
+        if (userId)
+          clearStats(userId);
+        store2.notify();
+      }
+    }));
+  }
+  function openHistory() {
+    refresh("manual");
+    if (!settings11.store.trackStats)
+      return;
+    openModal((props) => /* @__PURE__ */ React.createElement(SafeStatsModal, {
+      ...props
+    }), { modalKey: "void-ud-stats" });
+  }
   var SafeButtonIcon = ErrorBoundary.wrap(ButtonIcon);
   var SafeUsagePanel = ErrorBoundary.wrap(UsagePanel);
+  var SafeStatsModal = ErrorBoundary.wrap(StatsModal);
   var BUTTON_BASE = {
     icon: () => /* @__PURE__ */ React.createElement(SafeButtonIcon, null),
-    onClick: () => {
-      refresh("manual");
-    },
+    onClick: () => openHistory(),
     order: 1,
     className: "text-fg-primary",
-    "aria-label": "Grok weekly usage",
+    "aria-label": "Grok usage",
     locations: ["chat", "imagine"]
   };
   var usageDisplay_default = definePlugin({
     name: "UsageDisplay",
     icon: CircleGaugeIcon,
-    description: "Shows official weekly SuperGrok usage in the chat bar.",
+    description: "Shows official weekly SuperGrok usage in the chat bar, with optional daily stats.",
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
     settings: settings11,
     chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
     events: {
-      streamEnd() {
-        refresh("stream");
-      }
+      streamEnd: onStreamEnd2
+    },
+    onSettingsChange() {
+      if (settings11.store.trackStats)
+        refresh("manual");
     }
   });
 
@@ -9328,7 +9768,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 `);
 
   // src/plugins/cloneChats/index.tsx
-  var logger21 = new Logger("CloneChats");
+  var logger22 = new Logger("CloneChats");
   async function cloneChat(conversationId) {
     const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
     if (!lastResponseId)
@@ -9351,7 +9791,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
     return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger21.error("Failed to clone chat:", e)),
+      onSelect: () => cloneChat(conversationId).catch((e) => logger22.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
@@ -9516,7 +9956,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   });
 
   // src/plugins/autoRetry/index.ts
-  var logger22 = new Logger("AutoRetry");
+  var logger23 = new Logger("AutoRetry");
   var CONTENT_MODERATED = "grok:content-moderated";
   var settings14 = definePluginSettings({
     retryModeration: {
@@ -9567,7 +10007,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     retryCounts.set(conversationId, count);
     const delaySec = settings14.store.delay;
     showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger22.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    logger23.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
     clearPending();
     pendingTimer = setTimeout(() => {
       pendingTimer = null;
@@ -9585,7 +10025,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       });
     }, delaySec * 1000);
   }
-  function onStreamEnd2({ responseId }) {
+  function onStreamEnd3({ responseId }) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "error") {
       const convId = ChatPageStore.useChatPageStore.getState().conversationId;
@@ -9617,7 +10057,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       retryCounts.clear();
     },
     events: {
-      streamEnd: onStreamEnd2
+      streamEnd: onStreamEnd3
     }
   });
 
@@ -10105,7 +10545,7 @@ html.void-rt-open [data-sidebar="gap"] {
 `);
 
   // src/plugins/recentTopics/index.tsx
-  var logger23 = new Logger("RecentTopics");
+  var logger24 = new Logger("RecentTopics");
   var cl20 = classNameFactory("void-rt-");
   var HOME_ID = "";
   var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
@@ -10140,12 +10580,12 @@ html.void-rt-open [data-sidebar="gap"] {
   var sidebarSnap = null;
   var pendingWs = new Set;
   function unique(ids) {
-    const seen = new Set;
+    const seen2 = new Set;
     const out = [];
     for (const id of ids) {
-      if (seen.has(id))
+      if (seen2.has(id))
         continue;
-      seen.add(id);
+      seen2.add(id);
       out.push(id);
     }
     return out;
@@ -10319,14 +10759,14 @@ html.void-rt-open [data-sidebar="gap"] {
       if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
         return HOME_ID;
     } catch (e) {
-      logger23.debug("RoutingStore unavailable:", e);
+      logger24.debug("RoutingStore unavailable:", e);
     }
     try {
       const id = ChatPageStore.useChatPageStore.getState().conversationId;
       if (id)
         return id;
     } catch (e) {
-      logger23.debug("ChatPageStore unavailable:", e);
+      logger24.debug("ChatPageStore unavailable:", e);
     }
     return null;
   }
@@ -10344,7 +10784,7 @@ html.void-rt-open [data-sidebar="gap"] {
         add(historyStack[i]);
       return unique(ids);
     } catch (e) {
-      logger23.debug("historyStack unavailable:", e);
+      logger24.debug("historyStack unavailable:", e);
       return [];
     }
   }
@@ -10359,7 +10799,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
       return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
     } catch (e) {
-      logger23.debug("Conversation lookup failed:", e);
+      logger24.debug("Conversation lookup failed:", e);
       return;
     }
   }
@@ -10419,7 +10859,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const conv = byId[id] ?? byIdWithWorkspaces[id];
       return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
     } catch (e) {
-      logger23.debug("convWorkspaceId failed:", e);
+      logger24.debug("convWorkspaceId failed:", e);
       return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
     }
   }
@@ -10675,7 +11115,7 @@ html.void-rt-open [data-sidebar="gap"] {
         }
         if (open2)
           paint();
-      }).catch((e) => logger23.debug("workspace fetch failed:", e)).finally(() => {
+      }).catch((e) => logger24.debug("workspace fetch failed:", e)).finally(() => {
         pendingWs.delete(id);
       });
     } catch {
@@ -10827,10 +11267,10 @@ html.void-rt-open [data-sidebar="gap"] {
     try {
       const { byId } = ResponseStore.useResponseStore.getState();
       const out = [];
-      const seen = new Set;
+      const seen2 = new Set;
       let id = startId;
-      while (id && !seen.has(id) && out.length < 50) {
-        seen.add(id);
+      while (id && !seen2.has(id) && out.length < 50) {
+        seen2.add(id);
         const r = byId[id];
         if (!r)
           break;
@@ -10895,7 +11335,7 @@ html.void-rt-open [data-sidebar="gap"] {
     try {
       return responsesToLines(responsesOf(id));
     } catch (e) {
-      logger23.debug("ResponseStore snapshot failed:", e);
+      logger24.debug("ResponseStore snapshot failed:", e);
       return [];
     }
   }
@@ -11004,7 +11444,7 @@ html.void-rt-open [data-sidebar="gap"] {
           captureId(id);
       }
     } catch (e) {
-      logger23.debug("snapshot failed:", e);
+      logger24.debug("snapshot failed:", e);
     } finally {
       capturing = false;
     }
@@ -11071,7 +11511,7 @@ html.void-rt-open [data-sidebar="gap"] {
       if (parsed?.page && parsed.page !== "unknown")
         return parsed;
     } catch (e) {
-      logger23.debug("urlToRoute failed:", e);
+      logger24.debug("urlToRoute failed:", e);
     }
     return null;
   }
@@ -11081,7 +11521,7 @@ html.void-rt-open [data-sidebar="gap"] {
       chat.setConversationId(id || undefined);
       chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
     } catch (e) {
-      logger23.debug("ChatPageStore update failed:", e);
+      logger24.debug("ChatPageStore update failed:", e);
     }
   }
   function navigateTo(id) {
@@ -11153,17 +11593,17 @@ html.void-rt-open [data-sidebar="gap"] {
             });
             applyChatPage(id, ws);
             rememberProject(id);
-          }).catch((e) => logger23.debug("workspace resolve failed:", e));
+          }).catch((e) => logger24.debug("workspace resolve failed:", e));
         } catch (e) {
-          logger23.debug("workspace fetch skipped:", e);
+          logger24.debug("workspace fetch skipped:", e);
         }
       }
     } catch (e) {
-      logger23.error("Failed to navigate:", e);
+      logger24.error("Failed to navigate:", e);
       try {
         location.assign(hrefFor(id, workspaceOf(id) || undefined));
       } catch (navErr) {
-        logger23.error("Fallback navigation failed:", navErr);
+        logger24.error("Fallback navigation failed:", navErr);
       }
     }
   }
@@ -11189,7 +11629,7 @@ html.void-rt-open [data-sidebar="gap"] {
       if (topics().length > 1)
         selected = reverse ? topics().length - 1 : 1;
     } catch (e) {
-      logger23.error("Failed to open switcher:", e);
+      logger24.error("Failed to open switcher:", e);
     }
     paint();
   }
@@ -11232,7 +11672,7 @@ html.void-rt-open [data-sidebar="gap"] {
         else
           begin(e.shiftKey, true);
       } catch (err) {
-        logger23.error("Hotkey failed:", err);
+        logger24.error("Hotkey failed:", err);
       }
       return;
     }
@@ -11582,7 +12022,7 @@ html.void-rt-open [data-sidebar="gap"] {
           bump(current);
         scheduleCapture();
       } catch (e) {
-        logger23.error("Hydrate failed:", e);
+        logger24.error("Hydrate failed:", e);
       }
       if (!keys2) {
         keys2 = new AbortController;
@@ -11607,7 +12047,7 @@ html.void-rt-open [data-sidebar="gap"] {
       try {
         writeVisits(capVisits(readVisits()));
       } catch (e) {
-        logger23.error("Settings update failed:", e);
+        logger24.error("Settings update failed:", e);
       }
     },
     zustand: {
@@ -11869,7 +12309,7 @@ html.void-rt-open [data-sidebar="gap"] {
   }
 
   // src/plugins/chatStateFavicons/index.ts
-  var logger24 = new Logger("ChatStateFavicons");
+  var logger25 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
   var settings16 = definePluginSettings({
@@ -11966,7 +12406,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const { byId } = ResponseStore.useResponseStore.getState();
       return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
     } catch (e) {
-      logger24.debug("stream stores unavailable:", e);
+      logger25.debug("stream stores unavailable:", e);
       return false;
     }
   }
@@ -11981,14 +12421,14 @@ html.void-rt-open [data-sidebar="gap"] {
       if (route.conversationId)
         return String(route.conversationId);
     } catch (e) {
-      logger24.debug("RoutingStore unavailable:", e);
+      logger25.debug("RoutingStore unavailable:", e);
     }
     try {
       const id = ChatPageStore.useChatPageStore.getState().conversationId;
       if (id)
         return id;
     } catch (e) {
-      logger24.debug("ChatPageStore unavailable:", e);
+      logger25.debug("ChatPageStore unavailable:", e);
     }
     return conversationToken();
   }
@@ -12035,7 +12475,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const response = byId[id];
       return response?.state === "error" || response?.error != null;
     } catch (e) {
-      logger24.debug("ResponseStore unavailable:", e);
+      logger25.debug("ResponseStore unavailable:", e);
       return false;
     }
   }
@@ -12192,12 +12632,12 @@ html.void-rt-open [data-sidebar="gap"] {
       evaluateState();
     });
   }
-  function onStreamEnd3({ responseId }) {
+  function onStreamEnd4({ responseId }) {
     try {
       const response = ResponseStore.useResponseStore.getState().byId[responseId];
       lastWasError = response?.state === "error" || response?.error != null;
     } catch (e) {
-      logger24.debug("ResponseStore unavailable:", e);
+      logger25.debug("ResponseStore unavailable:", e);
     }
   }
   function startFaviconGuard() {
@@ -12272,11 +12712,11 @@ html.void-rt-open [data-sidebar="gap"] {
         });
       }
     } catch (e) {
-      logger24.debug("RoutingStore subscribe failed:", e);
+      logger25.debug("RoutingStore subscribe failed:", e);
       try {
         unsubRoute = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
       } catch (err) {
-        logger24.debug("RoutingStore full subscribe failed:", err);
+        logger25.debug("RoutingStore full subscribe failed:", err);
       }
     }
     try {
@@ -12289,7 +12729,7 @@ html.void-rt-open [data-sidebar="gap"] {
         });
       }
     } catch (e) {
-      logger24.debug("ChatPageStore subscribe failed:", e);
+      logger25.debug("ChatPageStore subscribe failed:", e);
     }
   }
   function restoreOfficial() {
@@ -12360,7 +12800,7 @@ html.void-rt-open [data-sidebar="gap"] {
     },
     onSettingsChange: rebuildIcons,
     events: {
-      streamEnd: onStreamEnd3
+      streamEnd: onStreamEnd4
     }
   });
 
@@ -12371,7 +12811,7 @@ html.void-rt-open [data-sidebar="gap"] {
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger25 = new Logger("ExportChat");
+  var logger26 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -12546,7 +12986,7 @@ html.void-rt-open [data-sidebar="gap"] {
       className: "void-export-icon"
     }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger25.error("Failed to export chat", e))
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger26.error("Failed to export chat", e))
     }, label))));
   }
   var exportChat_default = definePlugin({
@@ -12810,7 +13250,7 @@ div:has(> #grok-bot-nav-button) {
 
   // src/plugins/downloadTTS/index.tsx
   var cl22 = classNameFactory("void-download-tts-");
-  var logger26 = new Logger("DownloadTTS");
+  var logger27 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
     if (!currentStreamId)
@@ -12830,7 +13270,7 @@ div:has(> #grok-bot-nav-button) {
       try {
         await fetchAndDownload();
       } catch (e) {
-        logger26.error("Failed to download TTS audio:", e);
+        logger27.error("Failed to download TTS audio:", e);
       }
     });
     return /* @__PURE__ */ React.createElement(Button, {
@@ -13771,14 +14211,14 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   });
 
   // src/Void.ts
-  var logger27 = new Logger("TurbopackPatcher", "#e78284");
+  var logger28 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger27.error(`${name} failed:`, e);
+      logger28.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -13799,7 +14239,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger27.info(`${getModuleCache().size} modules loaded, ready`);
+      logger28.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
       safely("checkBuildFingerprint", checkBuildFingerprint);

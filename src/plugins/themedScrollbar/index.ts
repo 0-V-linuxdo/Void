@@ -11,66 +11,37 @@ import definePlugin from "@utils/types";
 
 const STYLE_NAME = "themedScrollbar";
 
-const PANE = [
-    "aside:has([aria-label=\"Preview\"]):has([aria-label=\"Files\"])",
-    "aside:has(iframe[title=\"Preview\"])",
-    ".absolute.inset-y-0.end-0",
-    "[class*=\"pane-card\"]",
-].join(",");
-
-const PANE_ALL = `${PANE},${PANE} *`;
+const HOST = "aside:has([aria-label=\"Preview\"]):has([aria-label=\"Files\"])";
+const SCROLLER = `${HOST} :is([class*="overflow-auto"],[class*="overflow-y-auto"],[class*="overflow-scroll"],[class*="overflow-y-scroll"])`;
 
 const THUMB = "var(--border-l2,color-mix(in srgb,var(--fg-primary,#888) 28%,transparent))";
 const THUMB_HOVER = "var(--fg-tertiary,color-mix(in srgb,var(--fg-primary,#888) 42%,transparent))";
+const TRACK = "var(--surface-l1,var(--surface-inset,transparent))";
 
 const CSS = `
-html.dark,
-html[data-theme="dark"],
-html[data-color-scheme="dark"] {
-    color-scheme: dark !important;
-}
-
-html.light,
-html[data-theme="light"],
-html[data-color-scheme="light"] {
-    color-scheme: light !important;
-}
-
-html.dark :is(${PANE}),
-html[data-theme="dark"] :is(${PANE}),
-html[data-color-scheme="dark"] :is(${PANE}) {
-    color-scheme: dark !important;
-}
-
-html.light :is(${PANE}),
-html[data-theme="light"] :is(${PANE}),
-html[data-color-scheme="light"] :is(${PANE}) {
-    color-scheme: light !important;
-}
-
-${PANE_ALL} {
+${SCROLLER} {
     scrollbar-width: thin !important;
-    scrollbar-color: ${THUMB} transparent !important;
+    scrollbar-color: ${THUMB} ${TRACK} !important;
 }
 
-${PANE_ALL}::-webkit-scrollbar {
+${SCROLLER}::-webkit-scrollbar {
     width: 0.5rem !important;
     height: 0.5rem !important;
 }
 
-${PANE_ALL}::-webkit-scrollbar-track,
-${PANE_ALL}::-webkit-scrollbar-corner {
-    background: transparent !important;
+${SCROLLER}::-webkit-scrollbar-track,
+${SCROLLER}::-webkit-scrollbar-corner {
+    background: ${TRACK} !important;
 }
 
-${PANE_ALL}::-webkit-scrollbar-thumb {
+${SCROLLER}::-webkit-scrollbar-thumb {
     background-color: ${THUMB} !important;
     background-clip: padding-box !important;
     border: 0.125rem solid transparent !important;
     border-radius: 999px !important;
 }
 
-${PANE_ALL}::-webkit-scrollbar-thumb:hover {
+${SCROLLER}::-webkit-scrollbar-thumb:hover {
     background-color: ${THUMB_HOVER} !important;
 }
 `;
