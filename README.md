@@ -21,7 +21,7 @@
 
 **Fixed**
 
-- **Settings** — Void tabs in the Grok settings sidebar. Avatar-menu Void row uses the Void++ app icon; the Plugins flyout shows each plugin's icon.
+- **Settings** — Void tabs in the Grok settings sidebar. Avatar-menu Void row uses a 16px V++ glyph; script @icon is the same mark on the app tile. The Plugins flyout shows each plugin's icon.
 - **Cleaner** — Hide inaccessible models in the model selector again.
 - **Chat bar buttons** — Restored after Grok removed `ButtonWithTooltipOptimized`.
 

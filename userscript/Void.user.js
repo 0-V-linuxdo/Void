@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260827.16] v1.1.9
+// @version      [20260828] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
 // @homepageURL  https://github.com/0-V-linuxdo/Void
-// @icon         https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/assets/logos/app-icon/void-plus-r256.png
+// @icon         https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/assets/logos/app-icon/void-icon.svg
 // @match        *://grok.com/*
 // @run-at       document-start
 // @noframes
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260827.16] v1.1.9 — A modification for grok.com
+ * Void++ [20260828] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4439,77 +4439,44 @@ ${sourceUrl}`;
   var VoidIcon = (props = {}) => /* @__PURE__ */ React.createElement("svg", {
     width: props.width ?? props.size ?? "1em",
     height: props.height ?? props.size ?? "1em",
-    viewBox: "0 0 256 256",
+    viewBox: "0 0 24 24",
     fill: "none",
+    stroke: "currentColor",
+    strokeWidth: props.strokeWidth ?? 2.15,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
     className: props.className,
     "aria-hidden": "true"
-  }, /* @__PURE__ */ React.createElement("rect", {
-    width: "256",
-    height: "256",
-    rx: "48",
-    fill: "#0e0e10"
-  }), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("mask", {
-    id: "void-pp-icon-mask",
-    maskUnits: "userSpaceOnUse",
-    maskContentUnits: "userSpaceOnUse",
-    x: "0",
-    y: "0",
-    width: "256",
-    height: "256"
-  }, /* @__PURE__ */ React.createElement("rect", {
-    width: "256",
-    height: "256",
-    fill: "#000"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "128",
-    cy: "95.5",
-    r: "117",
-    fill: "#fff"
-  }), /* @__PURE__ */ React.createElement("circle", {
-    cx: "128",
-    cy: "74",
-    r: "80.4",
-    fill: "#000"
-  }), /* @__PURE__ */ React.createElement("rect", {
-    x: "0",
-    y: "0",
-    width: "256",
-    height: "42",
-    fill: "#000"
-  }))), /* @__PURE__ */ React.createElement("rect", {
-    width: "256",
-    height: "256",
-    rx: "48",
-    fill: "#fff",
-    mask: "url(#void-pp-icon-mask)"
+  }, /* @__PURE__ */ React.createElement("path", {
+    d: "M2.2 7.4 L8.4 20.2 L14.6 7.4"
   }), /* @__PURE__ */ React.createElement("g", {
-    fill: "#fff"
+    fill: "currentColor",
+    stroke: "none"
   }, /* @__PURE__ */ React.createElement("rect", {
-    x: "106",
-    y: "48",
-    width: "12",
-    height: "32",
-    rx: "2.8"
+    x: "17.35",
+    y: "6.33",
+    width: "1.45",
+    height: "3.9",
+    rx: "0.4"
   }), /* @__PURE__ */ React.createElement("rect", {
-    x: "96",
-    y: "58",
-    width: "32",
-    height: "12",
-    rx: "2.8"
+    x: "16.15",
+    y: "7.55",
+    width: "3.85",
+    height: "1.45",
+    rx: "0.4"
   }), /* @__PURE__ */ React.createElement("rect", {
-    x: "138",
-    y: "48",
-    width: "12",
-    height: "32",
-    rx: "2.8"
+    x: "21.30",
+    y: "6.33",
+    width: "1.45",
+    height: "3.9",
+    rx: "0.4"
   }), /* @__PURE__ */ React.createElement("rect", {
-    x: "128",
-    y: "58",
-    width: "32",
-    height: "12",
-    rx: "2.8"
+    x: "20.10",
+    y: "7.55",
+    width: "3.85",
+    height: "1.45",
+    rx: "0.4"
   })));
-
   // void-css:/tmp/Void/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
@@ -6427,7 +6394,7 @@ ${sourceUrl}`;
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260827.16] v1.1.9"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260828] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"0b38fc6"}`
     }, `(${"0b38fc6"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",

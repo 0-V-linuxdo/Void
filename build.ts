@@ -15,8 +15,7 @@ const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/Void";
 const FORK_RAW_URL = "https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B";
-const iso = new Date().toISOString();
-const VERSION_DATE = `${iso.slice(0, 4)}${iso.slice(5, 7)}${iso.slice(8, 10)}.${iso.slice(11, 13)}`;
+const VERSION_DATE = "20260828";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
@@ -34,7 +33,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @author       ${pkg.author} & Void Contributors
 // @environment  ${environment}
 // @homepageURL  ${FORK_URL}
-// @icon         ${FORK_RAW_URL}/assets/logos/app-icon/void-plus-r256.png
+// @icon         ${FORK_RAW_URL}/assets/logos/app-icon/void-icon.svg
 // @match        *://grok.com/*
 // @run-at       document-start
 // @noframes
