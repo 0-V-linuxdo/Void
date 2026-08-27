@@ -451,10 +451,32 @@ export const SettingsIcon = (props: IconProps = {}) =>
         <circle cx="12" cy="12" r="3" />,
     );
 
-export const VoidIcon = (props: IconProps = {}) =>
-    svg(props,
-        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9" />,
-        <path d="M20 3v4" />,
-        <path d="M22 5h-4" />,
-    );
+export const VoidIcon = (props: IconProps = {}) => (
+    <svg
+        width={props.width ?? props.size ?? "1em"}
+        height={props.height ?? props.size ?? "1em"}
+        viewBox="0 0 256 256"
+        fill="none"
+        className={props.className}
+        aria-hidden="true"
+    >
+        <rect width="256" height="256" rx="48" fill="#0e0e10" />
+        <defs>
+            <mask id="void-pp-icon-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+                <rect width="256" height="256" fill="#000" />
+                <circle cx="128" cy="95.5" r="117" fill="#fff" />
+                <circle cx="128" cy="74" r="80.4" fill="#000" />
+                <rect x="0" y="0" width="256" height="42" fill="#000" />
+            </mask>
+        </defs>
+        <rect width="256" height="256" rx="48" fill="#fff" mask="url(#void-pp-icon-mask)" />
+        <g fill="#fff">
+            <rect x="106" y="48" width="12" height="32" rx="2.8" />
+            <rect x="96" y="58" width="32" height="12" rx="2.8" />
+            <rect x="138" y="48" width="12" height="32" rx="2.8" />
+            <rect x="128" y="58" width="32" height="12" rx="2.8" />
+        </g>
+    </svg>
+);
+
 
