@@ -6,11 +6,9 @@
 
 import "./styles.css";
 
-import { type ModalProps, openModal } from "@api/Modals";
 import { definePluginSettings } from "@api/Settings";
-import { Button, ButtonWithTooltip, ConfirmDialog, DialogClose, DialogHeader, DialogTitle, Flex, Input, Paragraph } from "@components";
-import { ErrorBoundary } from "@components/ErrorBoundary";
-import { CopyIcon, Cross2Icon, HistoryIcon, TextCursorInputIcon, Trash2Icon } from "@components/icons";
+import { Button, ButtonWithTooltip, ConfirmDialog, Flex, Input, Paragraph } from "@components";
+import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, HistoryIcon, Trash2Icon } from "@components/icons";
 import { React, useState } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -30,6 +28,7 @@ const MAX_DEFAULT = 100;
 const HUD_GAP_PX = 8;
 const APPLY_QUIET_MS = 120;
 const CAPTURE_DEDUPE_MS = 2000;
+const PAGE_SIZE = 10;
 
 interface PrivateSettings {
     entries: string[];
@@ -43,9 +42,9 @@ const settings = definePluginSettings({
         max: MAX_MAX,
         default: MAX_DEFAULT,
     },
-    clear: {
+    history: {
         type: OptionType.COMPONENT,
-        component: ClearHistory,
+        component: HistoryPanel,
     },
 }).withPrivateSettings<PrivateSettings>();
 
@@ -363,64 +362,51 @@ function removeEntry(index: number) {
     resetBrowse(next.length);
 }
 
-function fillComposer(text: string, index: number) {
-    const el = document.querySelector<HTMLElement>(EDITOR_SEL);
-    if (!el) return false;
-    const list = getEntries();
-    cursor = index;
-    recalling = true;
-    setEditorText(el, text, false);
-    if (index < list.length) showHud(`${index + 1} / ${list.length}`, el);
-    return true;
-}
-
-function openHistory() {
-    openModal(props => <SafeHistoryModal {...props} />, { modalKey: "void-ih-history" });
-}
-
-function HistoryModal({ onClose }: ModalProps) {
+function HistoryPanel() {
     const { entries } = settings.use(["entries"]);
     const list = entries ?? [];
     const [query, setQuery] = useState("");
+    const [page, setPage] = useState(0);
     const [openId, setOpenId] = useState<number | null>(null);
+    const [confirm, setConfirm] = useState(false);
     const needle = query.trim().toLowerCase();
     const visible = list
         .map((text, index) => ({ text, index }))
         .filter(row => !needle || row.text.toLowerCase().includes(needle))
         .reverse();
-    const canFill = document.querySelector(EDITOR_SEL) != null;
+    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+    const current = Math.min(page, pageCount - 1);
+    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
 
     return (
-        <div className={cl("modal")}>
-            <DialogClose asChild>
-                <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className={cl("modal-close")}>
-                    <Cross2Icon />
+        <Flex flexDirection="column" gap="0.65rem" className={cl("panel")}>
+            <Flex className={cl("head")} alignItems="center" justifyContent="space-between" gap="0.75rem">
+                <Paragraph>
+                    {needle
+                        ? pluralize(visible.length, "match", "matches")
+                        : pluralize(list.length, "stored prompt")}
+                </Paragraph>
+                <Button variant="secondary" size="sm" shape="rectangle" disabled={!list.length} onClick={() => setConfirm(true)}>
+                    Clear history
                 </Button>
-            </DialogClose>
-            <div className={cl("top")}>
-                <DialogHeader>
-                    <DialogTitle>Input history</DialogTitle>
-                    <Paragraph>
-                        {needle
-                            ? pluralize(visible.length, "match", "matches")
-                            : `${pluralize(list.length, "stored prompt")} on this device.`}
-                    </Paragraph>
-                </DialogHeader>
-                {list.length > 0 && (
-                    <Input
-                        type="text"
-                        placeholder="Search prompts"
-                        value={query}
-                        onChange={(e: { target: { value: string } }) => setQuery(e.target.value)}
-                        className={cl("search")}
-                    />
-                )}
-            </div>
+            </Flex>
+            {list.length > 0 && (
+                <Input
+                    type="text"
+                    placeholder="Search prompts"
+                    value={query}
+                    onChange={(e: { target: { value: string } }) => {
+                        setQuery(e.target.value);
+                        setPage(0);
+                    }}
+                    className={cl("search")}
+                />
+            )}
             {list.length === 0 && <Paragraph className={cl("empty")}>No stored prompts.</Paragraph>}
             {list.length > 0 && visible.length === 0 && <Paragraph className={cl("empty")}>No matches.</Paragraph>}
-            {visible.length > 0 && (
+            {slice.length > 0 && (
                 <div className={cl("list")}>
-                    {visible.map(row => {
+                    {slice.map(row => {
                         const lines = row.text.split("\n").length;
                         const expanded = openId === row.index;
                         return (
@@ -455,17 +441,6 @@ function HistoryModal({ onClose }: ModalProps) {
                                             variant="tertiary"
                                             size="sm"
                                             shape="square"
-                                            tooltipContent="Insert"
-                                            aria-label="Insert"
-                                            disabled={!canFill}
-                                            onClick={() => { if (fillComposer(row.text, row.index)) onClose(); }}
-                                        >
-                                            <TextCursorInputIcon size={18} />
-                                        </ButtonWithTooltip>
-                                        <ButtonWithTooltip
-                                            variant="tertiary"
-                                            size="sm"
-                                            shape="square"
                                             tooltipContent="Delete"
                                             aria-label="Delete"
                                             onClick={() => {
@@ -482,31 +457,34 @@ function HistoryModal({ onClose }: ModalProps) {
                     })}
                 </div>
             )}
-        </div>
-    );
-}
-
-const SafeHistoryModal = ErrorBoundary.wrap(HistoryModal);
-
-function ClearHistory() {
-    const { entries } = settings.use(["entries"]);
-    const list = entries ?? [];
-    const [open, setOpen] = useState(false);
-
-    return (
-        <Flex flexDirection="column" gap="0.5rem">
-            <Paragraph>{pluralize(list.length, "stored prompt")}.</Paragraph>
-            <Flex gap="0.5rem">
-                <Button variant="secondary" size="sm" shape="rectangle" onClick={openHistory}>
-                    View history
-                </Button>
-                <Button variant="secondary" size="sm" shape="rectangle" disabled={!list.length} onClick={() => setOpen(true)}>
-                    Clear history
-                </Button>
-            </Flex>
+            {visible.length > PAGE_SIZE && (
+                <Flex className={cl("pager")} alignItems="center" justifyContent="center" gap="0.5rem">
+                    <Button
+                        variant="tertiary"
+                        size="sm"
+                        shape="square"
+                        aria-label="Previous page"
+                        disabled={current <= 0}
+                        onClick={() => setPage(current - 1)}
+                    >
+                        <ChevronLeftIcon size={18} />
+                    </Button>
+                    <span className={cl("page")}>{current + 1} / {pageCount}</span>
+                    <Button
+                        variant="tertiary"
+                        size="sm"
+                        shape="square"
+                        aria-label="Next page"
+                        disabled={current >= pageCount - 1}
+                        onClick={() => setPage(current + 1)}
+                    >
+                        <ChevronRightIcon size={18} />
+                    </Button>
+                </Flex>
+            )}
             <ConfirmDialog
-                open={open}
-                onOpenChange={setOpen}
+                open={confirm}
+                onOpenChange={setConfirm}
                 title="Clear input history"
                 description="Delete all stored prompts? This cannot be undone."
                 confirmText="Clear"
@@ -514,6 +492,9 @@ function ClearHistory() {
                 onConfirm={() => {
                     setEntries([]);
                     resetBrowse(0);
+                    setOpenId(null);
+                    setQuery("");
+                    setPage(0);
                 }}
             />
         </Flex>

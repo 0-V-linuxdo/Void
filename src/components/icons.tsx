@@ -409,6 +409,16 @@ export const FileDownIcon = (props: IconProps = {}) =>
         <path d="m9 15 3 3 3-3" />,
     );
 
+export const ChevronLeftIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="m15 18-6-6 6-6" />,
+    );
+
+export const ChevronRightIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="m9 18 6-6-6-6" />,
+    );
+
 export const HistoryIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />,

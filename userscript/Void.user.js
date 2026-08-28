@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.10] v1.0.0
+// @version      [20260828.11] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.10] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.11] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -2000,6 +2000,12 @@ ${sourceUrl}`;
     d: "M12 18v-6"
   }), /* @__PURE__ */ React.createElement("path", {
     d: "m9 15 3 3 3-3"
+  }));
+  var ChevronLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m15 18-6-6 6-6"
+  }));
+  var ChevronRightIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m9 18 6-6-6-6"
   }));
   var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
@@ -6742,7 +6748,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.10] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260828.11] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -9891,32 +9897,12 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     opacity: 1;
 }
 
-.void-ih-modal {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    width: min(36rem, calc(100vw - 3rem));
-    max-height: min(40rem, calc(100vh - 5rem));
-    min-height: 18rem;
-    padding: 1.25rem 1.25rem 1rem;
-    overflow: hidden;
+.void-ih-panel {
+    min-width: 0;
 }
 
-.void-ih-modal-close {
-    position: absolute;
-    top: 0.85rem;
-    right: 0.85rem;
-    z-index: 2;
-}
-
-.void-ih-top {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding-right: 2.5rem;
-    padding-bottom: 0.85rem;
-    border-bottom: 1px solid hsl(var(--border-l2) / 0.45);
+.void-ih-head {
+    min-width: 0;
 }
 
 .void-ih-search {
@@ -9924,11 +9910,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 }
 
 .void-ih-empty {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    min-height: 10rem;
     margin: 0;
     color: hsl(var(--fg-tertiary, var(--fg-secondary)));
 }
@@ -9938,13 +9919,115 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     flex-direction: column;
     gap: 0.4rem;
     overflow: auto;
-    min-height: 0;
-    flex: 1;
-    margin-top: 0.85rem;
-    padding-right: 0.15rem;
-    padding-bottom: 0.15rem;
+    max-height: min(22rem, 45vh);
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--border-l2) / 0.8) transparent;
+}
+
+.void-ih-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.7rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    background: hsl(var(--surface-l1) / 0.72);
+}
+
+.void-ih-item:hover {
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 0.45);
+}
+
+.void-ih-item-on {
+    align-items: start;
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 0.6);
+}
+
+.void-ih-main {
+    min-width: 0;
+    cursor: pointer;
+}
+
+.void-ih-body {
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: hsl(var(--fg-primary, var(--text-primary)));
+    font-size: 0.8125rem;
+    line-height: 1.45;
+}
+
+.void-ih-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.void-ih-item-on .void-ih-body {
+    max-height: 12rem;
+    overflow: auto;
+    scrollbar-width: thin;
+}
+
+.void-ih-side {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.void-ih-item-on .void-ih-side {
+    align-items: flex-start;
+    padding-top: 0.1rem;
+}
+
+.void-ih-lines {
+    min-width: 1.5rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: hsl(var(--surface-l3, var(--surface-l2)));
+    color: hsl(var(--fg-tertiary, var(--fg-secondary)));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.void-ih-actions {
+    display: flex;
+    gap: 0.15rem;
+    padding: 0.15rem;
+    border-radius: 0.65rem;
+    background: hsl(var(--surface-l2) / 0.9);
+}
+
+.void-ih-actions :is(button) {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+}
+
+.void-ih-item:hover .void-ih-actions,
+.void-ih-item-on .void-ih-actions {
+    background: hsl(var(--surface-l3, var(--surface-l1)));
+}
+
+.void-ih-pager {
+    min-width: 0;
+}
+
+.void-ih-page {
+    min-width: 3.5rem;
+    color: hsl(var(--fg-secondary, var(--text-secondary)));
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
 }
 
 .void-ih-item {
@@ -10053,6 +10136,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var HUD_GAP_PX = 8;
   var APPLY_QUIET_MS = 120;
   var CAPTURE_DEDUPE_MS = 2000;
+  var PAGE_SIZE = 10;
   var settings12 = definePluginSettings({
     maxEntries: {
       type: 5 /* SLIDER */,
@@ -10061,9 +10145,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       max: MAX_MAX,
       default: MAX_DEFAULT
     },
-    clear: {
+    history: {
       type: 6 /* COMPONENT */,
-      component: ClearHistory
+      component: HistoryPanel
     }
   }).withPrivateSettings();
   var recentAt = new Map;
@@ -10377,56 +10461,49 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     setEntries(next);
     resetBrowse(next.length);
   }
-  function fillComposer(text, index) {
-    const el = document.querySelector(EDITOR_SEL2);
-    if (!el)
-      return false;
-    const list = getEntries();
-    cursor = index;
-    recalling = true;
-    setEditorText(el, text, false);
-    if (index < list.length)
-      showHud(`${index + 1} / ${list.length}`, el);
-    return true;
-  }
-  function openHistory() {
-    openModal((props) => /* @__PURE__ */ React.createElement(SafeHistoryModal, {
-      ...props
-    }), { modalKey: "void-ih-history" });
-  }
-  function HistoryModal({ onClose }) {
+  function HistoryPanel() {
     const { entries } = settings12.use(["entries"]);
     const list = entries ?? [];
     const [query, setQuery] = useState("");
+    const [page, setPage] = useState(0);
     const [openId, setOpenId] = useState(null);
+    const [confirm, setConfirm] = useState(false);
     const needle = query.trim().toLowerCase();
     const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).reverse();
-    const canFill = document.querySelector(EDITOR_SEL2) != null;
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl20("modal")
-    }, /* @__PURE__ */ React.createElement(DialogClose, {
-      asChild: true
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
+    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+    const current = Math.min(page, pageCount - 1);
+    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.65rem",
+      className: cl20("panel")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      className: cl20("head"),
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
       size: "sm",
-      shape: "square",
-      "aria-label": "Close",
-      className: cl20("modal-close")
-    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("top")
-    }, /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, "Input history"), /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : `${pluralize(list.length, "stored prompt")} on this device.`)), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
+      shape: "rectangle",
+      disabled: !list.length,
+      onClick: () => setConfirm(true)
+    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "Search prompts",
       value: query,
-      onChange: (e) => setQuery(e.target.value),
+      onChange: (e) => {
+        setQuery(e.target.value);
+        setPage(0);
+      },
       className: cl20("search")
-    })), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
+    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
       className: cl20("empty")
     }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
       className: cl20("empty")
-    }, "No matches."), visible.length > 0 && /* @__PURE__ */ React.createElement("div", {
+    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
       className: cl20("list")
-    }, visible.map((row) => {
+    }, slice.map((row) => {
       const lines = row.text.split(`
 `).length;
       const expanded = openId === row.index;
@@ -10467,19 +10544,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         variant: "tertiary",
         size: "sm",
         shape: "square",
-        tooltipContent: "Insert",
-        "aria-label": "Insert",
-        disabled: !canFill,
-        onClick: () => {
-          if (fillComposer(row.text, row.index))
-            onClose();
-        }
-      }, /* @__PURE__ */ React.createElement(TextCursorInputIcon, {
-        size: 18
-      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "sm",
-        shape: "square",
         tooltipContent: "Delete",
         "aria-label": "Delete",
         onClick: () => {
@@ -10490,32 +10554,34 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       }, /* @__PURE__ */ React.createElement(Trash2Icon, {
         size: 18
       })))));
-    })));
-  }
-  var SafeHistoryModal = ErrorBoundary.wrap(HistoryModal);
-  function ClearHistory() {
-    const { entries } = settings12.use(["entries"]);
-    const list = entries ?? [];
-    const [open2, setOpen] = useState(false);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(list.length, "stored prompt"), "."), /* @__PURE__ */ React.createElement(Flex, {
+    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
+      className: cl20("pager"),
+      alignItems: "center",
+      justifyContent: "center",
       gap: "0.5rem"
     }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
+      variant: "tertiary",
       size: "sm",
-      shape: "rectangle",
-      onClick: openHistory
-    }, "View history"), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
+      shape: "square",
+      "aria-label": "Previous page",
+      disabled: current <= 0,
+      onClick: () => setPage(current - 1)
+    }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
+      size: 18
+    })), /* @__PURE__ */ React.createElement("span", {
+      className: cl20("page")
+    }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
       size: "sm",
-      shape: "rectangle",
-      disabled: !list.length,
-      onClick: () => setOpen(true)
-    }, "Clear history")), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
-      onOpenChange: setOpen,
+      shape: "square",
+      "aria-label": "Next page",
+      disabled: current >= pageCount - 1,
+      onClick: () => setPage(current + 1)
+    }, /* @__PURE__ */ React.createElement(ChevronRightIcon, {
+      size: 18
+    }))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: confirm,
+      onOpenChange: setConfirm,
       title: "Clear input history",
       description: "Delete all stored prompts? This cannot be undone.",
       confirmText: "Clear",
@@ -10523,6 +10589,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       onConfirm: () => {
         setEntries([]);
         resetBrowse(0);
+        setOpenId(null);
+        setQuery("");
+        setPage(0);
       }
     }));
   }
@@ -11368,7 +11437,8 @@ html.void-rt-open [data-sidebar="gap"] {
   // src/plugins/recentTopics/index.tsx
   var logger25 = new Logger("RecentTopics");
   var cl22 = classNameFactory("void-rt-");
-  var HOME_ID = "";
+  var HOME_KEY = "home";
+  var HOME_SEP = "home:";
   var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
   var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
   var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
@@ -11385,7 +11455,7 @@ html.void-rt-open [data-sidebar="gap"] {
     },
     includeHome: {
       type: 3 /* BOOLEAN */,
-      description: "Include the new-chat home page in the switcher.",
+      description: "Include new-chat home pages in the switcher.",
       default: true
     }
   }).withPrivateSettings();
@@ -11420,7 +11490,7 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function capVisits(ids) {
     const allowHome = settings17.store.includeHome;
-    return unique(ids).filter((id) => id || allowHome).slice(0, maxCount());
+    return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
   }
   function pruneRecord(source, ids) {
     const keep = {};
@@ -11464,6 +11534,13 @@ html.void-rt-open [data-sidebar="gap"] {
       }
       const pages = pruneRecord(settings17.plain.pages, visits);
       const usedWs = new Set(Object.values(workspaceByConv));
+      for (const id of visits) {
+        const ws = workspaceFromHomeId(id);
+        if (!ws)
+          continue;
+        usedWs.add(ws);
+        workspaceByConv[id] = ws;
+      }
       const keepProjects = {};
       for (const [id, name] of Object.entries(settings17.plain.projectNames ?? {})) {
         if (usedWs.has(id))
@@ -11490,12 +11567,22 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function rememberTitle(id, title) {
     const t = title?.trim();
-    if (!id || !t)
+    if (!id || isHomeId(id) || !t)
       return;
     const prev = settings17.plain.titles ?? {};
     if (prev[id] === t)
       return;
     settings17.store.titles = { ...prev, [id]: t };
+  }
+  function isHomeId(id) {
+    return id === HOME_KEY || id.startsWith(HOME_SEP);
+  }
+  function homeId(workspaceId) {
+    const ws = asWorkspaceId(workspaceId);
+    return ws ? HOME_SEP + ws : HOME_KEY;
+  }
+  function workspaceFromHomeId(id) {
+    return id.startsWith(HOME_SEP) ? asWorkspaceId(id.slice(HOME_SEP.length)) : "";
   }
   function routeConvId(route) {
     if (!route)
@@ -11505,7 +11592,9 @@ html.void-rt-open [data-sidebar="gap"] {
     if (typeof route.chat === "string" && route.chat)
       return route.chat;
     if (route.page === "main")
-      return HOME_ID;
+      return HOME_KEY;
+    if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
+      return homeId(route.workspaceId);
     return null;
   }
   function projectIdFromUrl() {
@@ -11544,6 +11633,10 @@ html.void-rt-open [data-sidebar="gap"] {
     return "";
   }
   function hrefFor(id, workspaceId) {
+    if (isHomeId(id)) {
+      const ws2 = workspaceFromHomeId(id) || asWorkspaceId(workspaceId);
+      return ws2 ? `/project/${ws2}` : "/";
+    }
     const ws = asWorkspaceId(workspaceId);
     if (!id)
       return ws ? `/project/${ws}` : "/";
@@ -11567,29 +11660,24 @@ html.void-rt-open [data-sidebar="gap"] {
     const urlChat = chatIdFromUrl();
     if (urlChat)
       return urlChat;
-    if (projectIdFromUrl())
-      return HOME_ID;
     try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      if (route.conversationId)
-        return route.conversationId;
-      if (typeof route.chat === "string" && route.chat)
-        return route.chat;
-      if (route.page === "main")
-        return HOME_ID;
-      if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
-        return HOME_ID;
-    } catch (e) {
-      logger25.debug("RoutingStore unavailable:", e);
-    }
-    try {
-      const id = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (id)
-        return id;
+      const { conversationId, optimisticConversationId } = ChatPageStore.useChatPageStore.getState();
+      if (conversationId)
+        return conversationId;
+      if (optimisticConversationId)
+        return optimisticConversationId;
     } catch (e) {
       logger25.debug("ChatPageStore unavailable:", e);
     }
-    return null;
+    try {
+      const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
+      if (fromRoute != null)
+        return fromRoute;
+    } catch (e) {
+      logger25.debug("RoutingStore unavailable:", e);
+    }
+    const ws = projectIdFromUrl();
+    return ws ? homeId(ws) : null;
   }
   function idsFromHistory() {
     try {
@@ -11625,7 +11713,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   }
   function titleOf(id) {
-    if (!id)
+    if (!id || isHomeId(id))
       return "New chat";
     const conv = lookup(id);
     if (conv?.title?.trim())
@@ -11815,6 +11903,12 @@ html.void-rt-open [data-sidebar="gap"] {
   function workspaceOf(id) {
     if (!id)
       return "";
+    if (isHomeId(id)) {
+      const fromKey = workspaceFromHomeId(id);
+      if (fromKey)
+        return fromKey;
+      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings17.plain.workspaceByConv?.[id]);
+    }
     const fromConv = convWorkspaceId(id);
     if (fromConv)
       return fromConv;
@@ -11906,7 +12000,7 @@ html.void-rt-open [data-sidebar="gap"] {
       settings17.store.projectNames = prevNames;
   }
   function requestWorkspace(id) {
-    if (!id || pendingWs.has(id))
+    if (!id || isHomeId(id) || pendingWs.has(id))
       return;
     if (convWorkspaceId(id) || sidebarIndex().wsByConv[id])
       return;
@@ -12281,17 +12375,26 @@ html.void-rt-open [data-sidebar="gap"] {
     });
   }
   function bump(id) {
-    if (!id && !settings17.store.includeHome)
+    if (!id)
+      return;
+    if (isHomeId(id) && !settings17.store.includeHome)
       return;
     writeVisits(capVisits([id, ...readVisits()]));
-    const conv = id ? lookup(id) : undefined;
+    if (isHomeId(id)) {
+      if (shouldRememberProject(id))
+        rememberProject(id);
+      return;
+    }
+    const conv = lookup(id);
     rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-    if (id && shouldRememberProject(id))
+    if (shouldRememberProject(id))
       rememberProject(id);
   }
   function shouldRememberProject(id) {
     if (!id)
       return false;
+    if (isHomeId(id))
+      return !!workspaceOf(id);
     const live = liveWorkspaceId();
     if (!live)
       return true;
@@ -12350,11 +12453,21 @@ html.void-rt-open [data-sidebar="gap"] {
       const routing = RoutingStore.useRoutingStore.getState();
       const { route } = routing;
       const teamId = route.teamId ?? null;
-      if (!id) {
-        if (route.page === "main" || route.page === "chat" && !route.conversationId && !projectIdFromUrl())
+      if (isHomeId(id) || !id) {
+        const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceOf(id));
+        const hereWs = asWorkspaceId(route.workspaceId) || projectIdFromUrl();
+        const hereChat = route.conversationId || chatIdFromUrl();
+        if (!ws) {
+          if (!hereChat && (route.page === "main" || !hereWs))
+            return;
+          routing.push({ page: "main", teamId });
+          applyChatPage("");
           return;
-        routing.push({ page: "main", teamId });
-        applyChatPage("");
+        }
+        if (!hereChat && hereWs === ws)
+          return;
+        routing.push({ page: "workspace", workspaceId: ws, tab: "conversations", teamId });
+        applyChatPage("", ws);
         return;
       }
       const workspaceId = workspaceOf(id);
@@ -12880,7 +12993,7 @@ html.void-rt-open [data-sidebar="gap"] {
           const current = currentVisit();
           if (current == null)
             return;
-          if (id && current === HOME_ID && id !== HOME_ID)
+          if (id && isHomeId(current) && !isHomeId(id))
             return;
           bump(current);
           scheduleCapture();
@@ -12901,7 +13014,7 @@ html.void-rt-open [data-sidebar="gap"] {
       ResponseStore: {
         selector: (s) => {
           const id = currentVisit();
-          if (!id)
+          if (!id || isHomeId(id))
             return "";
           const list = s.byConversationId[id];
           const last = list?.[list.length - 1];
@@ -14362,7 +14475,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }
     }));
   }
-  function openHistory2() {
+  function openHistory() {
     refresh("manual");
     openModal((props) => /* @__PURE__ */ React.createElement(SafeStatsModal, {
       ...props
@@ -14373,7 +14486,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var SafeStatsModal = ErrorBoundary.wrap(StatsModal);
   var BUTTON_BASE = {
     icon: () => /* @__PURE__ */ React.createElement(SafeButtonIcon, null),
-    onClick: () => openHistory2(),
+    onClick: () => openHistory(),
     order: 1,
     className: "text-fg-primary",
     "aria-label": "Grok usage",
