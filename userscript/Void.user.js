@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.7] v1.0.0
+// @version      [20260828.8] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.7] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.8] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6742,7 +6742,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260828.8] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -9890,6 +9890,88 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 .void-ih-hud-on {
     opacity: 1;
 }
+
+.void-ih-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: min(28rem, calc(100vw - 4rem));
+    max-width: min(40rem, calc(100vw - 3rem));
+    max-height: min(36rem, calc(100vh - 6rem));
+    padding-right: 1.75rem;
+}
+
+.void-ih-modal-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.void-ih-search {
+    width: 100%;
+}
+
+.void-ih-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    overflow: auto;
+    min-height: 0;
+    flex: 1;
+    max-height: 22rem;
+}
+
+.void-ih-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.45rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--border-l2, currentcolor) 35%, transparent);
+    border-radius: 0.5rem;
+}
+
+.void-ih-item:hover {
+    background: color-mix(in srgb, currentcolor 6%, transparent);
+}
+
+.void-ih-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.void-ih-body {
+    flex: 1;
+    min-width: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+}
+
+.void-ih-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.void-ih-lines {
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+    padding-top: 0.15rem;
+}
+
+.void-ih-actions {
+    flex-shrink: 0;
+}
 `);
 
   // src/plugins/inputHistory/index.tsx
@@ -10219,6 +10301,128 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     if (editor instanceof HTMLElement)
       pushEntry(editorText(editor));
   }
+  function removeEntry(index) {
+    const list = getEntries();
+    if (index < 0 || index >= list.length)
+      return;
+    const next = list.filter((_, i) => i !== index);
+    setEntries(next);
+    resetBrowse(next.length);
+  }
+  function fillComposer(text, index) {
+    const el = document.querySelector(EDITOR_SEL2);
+    if (!el)
+      return false;
+    const list = getEntries();
+    cursor = index;
+    recalling = true;
+    setEditorText(el, text, false);
+    if (index < list.length)
+      showHud(`${index + 1} / ${list.length}`, el);
+    return true;
+  }
+  function openHistory() {
+    openModal((props) => /* @__PURE__ */ React.createElement(SafeHistoryModal, {
+      ...props
+    }), { modalKey: "void-ih-history" });
+  }
+  function HistoryModal({ onClose }) {
+    const { entries } = settings12.use(["entries"]);
+    const list = entries ?? [];
+    const [query, setQuery] = useState("");
+    const [openId, setOpenId] = useState(null);
+    const needle = query.trim().toLowerCase();
+    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).reverse();
+    const canFill = document.querySelector(EDITOR_SEL2) != null;
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl20("modal")
+    }, /* @__PURE__ */ React.createElement(DialogClose, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Close",
+      className: cl20("modal-close")
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, "Input history"), /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(list.length, "stored prompt"), " on this device.")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "Search prompts",
+      value: query,
+      onChange: (e) => setQuery(e.target.value),
+      className: cl20("search")
+    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, null, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, null, "No matches."), visible.length > 0 && /* @__PURE__ */ React.createElement("div", {
+      className: cl20("list")
+    }, visible.map((row) => {
+      const lines = row.text.split(`
+`).length;
+      const expanded = openId === row.index;
+      return /* @__PURE__ */ React.createElement("div", {
+        key: row.index,
+        className: cl20("item")
+      }, /* @__PURE__ */ React.createElement("div", {
+        className: cl20("main"),
+        role: "button",
+        tabIndex: 0,
+        onClick: () => setOpenId(expanded ? null : row.index),
+        onKeyDown: (e) => {
+          if (e.key !== "Enter" && e.key !== " ")
+            return;
+          e.preventDefault();
+          setOpenId(expanded ? null : row.index);
+        }
+      }, /* @__PURE__ */ React.createElement("span", {
+        className: cl20("body", !expanded && "clamp")
+      }, row.text), lines > 1 && /* @__PURE__ */ React.createElement("span", {
+        className: cl20("lines")
+      }, lines)), /* @__PURE__ */ React.createElement(Flex, {
+        className: cl20("actions"),
+        gap: "0.125rem"
+      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "xs",
+        shape: "square",
+        tooltipContent: "Copy",
+        "aria-label": "Copy",
+        onClick: () => {
+          copyToClipboard(row.text).catch((err) => logger24.error("copy failed:", err));
+        }
+      }, /* @__PURE__ */ React.createElement(CopyIcon, {
+        size: 14
+      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "xs",
+        shape: "square",
+        tooltipContent: "Insert",
+        "aria-label": "Insert",
+        disabled: !canFill,
+        onClick: () => {
+          if (fillComposer(row.text, row.index))
+            onClose();
+        }
+      }, /* @__PURE__ */ React.createElement(TextCursorInputIcon, {
+        size: 14
+      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "xs",
+        shape: "square",
+        tooltipContent: "Delete",
+        "aria-label": "Delete",
+        onClick: () => {
+          if (openId === row.index)
+            setOpenId(null);
+          removeEntry(row.index);
+        }
+      }, /* @__PURE__ */ React.createElement(Trash2Icon, {
+        size: 14
+      }))));
+    })), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      onClick: onClose
+    }, "Close"));
+  }
+  var SafeHistoryModal = ErrorBoundary.wrap(HistoryModal);
   function ClearHistory() {
     const { entries } = settings12.use(["entries"]);
     const list = entries ?? [];
@@ -10226,13 +10430,20 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(list.length, "stored prompt"), "."), /* @__PURE__ */ React.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(list.length, "stored prompt"), "."), /* @__PURE__ */ React.createElement(Flex, {
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      onClick: openHistory
+    }, "View history"), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       shape: "rectangle",
       disabled: !list.length,
       onClick: () => setOpen(true)
-    }, "Clear history"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+    }, "Clear history")), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: open2,
       onOpenChange: setOpen,
       title: "Clear input history",
@@ -14081,7 +14292,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }
     }));
   }
-  function openHistory() {
+  function openHistory2() {
     refresh("manual");
     openModal((props) => /* @__PURE__ */ React.createElement(SafeStatsModal, {
       ...props
@@ -14092,7 +14303,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var SafeStatsModal = ErrorBoundary.wrap(StatsModal);
   var BUTTON_BASE = {
     icon: () => /* @__PURE__ */ React.createElement(SafeButtonIcon, null),
-    onClick: () => openHistory(),
+    onClick: () => openHistory2(),
     order: 1,
     className: "text-fg-primary",
     "aria-label": "Grok usage",

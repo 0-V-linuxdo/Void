@@ -6,14 +6,16 @@
 
 import "./styles.css";
 
+import { type ModalProps, openModal } from "@api/Modals";
 import { definePluginSettings } from "@api/Settings";
-import { Button, ConfirmDialog, Flex, Paragraph } from "@components";
-import { HistoryIcon } from "@components/icons";
+import { Button, ButtonWithTooltip, ConfirmDialog, DialogClose, DialogHeader, DialogTitle, Flex, Input, Paragraph } from "@components";
+import { ErrorBoundary } from "@components/ErrorBoundary";
+import { CopyIcon, Cross2Icon, HistoryIcon, TextCursorInputIcon, Trash2Icon } from "@components/icons";
 import { React, useState } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { clamp } from "@utils/misc";
+import { clamp, copyToClipboard } from "@utils/misc";
 import { pluralize } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
 
@@ -353,6 +355,132 @@ function onClick(e: MouseEvent) {
     if (editor instanceof HTMLElement) pushEntry(editorText(editor));
 }
 
+function removeEntry(index: number) {
+    const list = getEntries();
+    if (index < 0 || index >= list.length) return;
+    const next = list.filter((_, i) => i !== index);
+    setEntries(next);
+    resetBrowse(next.length);
+}
+
+function fillComposer(text: string, index: number) {
+    const el = document.querySelector<HTMLElement>(EDITOR_SEL);
+    if (!el) return false;
+    const list = getEntries();
+    cursor = index;
+    recalling = true;
+    setEditorText(el, text, false);
+    if (index < list.length) showHud(`${index + 1} / ${list.length}`, el);
+    return true;
+}
+
+function openHistory() {
+    openModal(props => <SafeHistoryModal {...props} />, { modalKey: "void-ih-history" });
+}
+
+function HistoryModal({ onClose }: ModalProps) {
+    const { entries } = settings.use(["entries"]);
+    const list = entries ?? [];
+    const [query, setQuery] = useState("");
+    const [openId, setOpenId] = useState<number | null>(null);
+    const needle = query.trim().toLowerCase();
+    const visible = list
+        .map((text, index) => ({ text, index }))
+        .filter(row => !needle || row.text.toLowerCase().includes(needle))
+        .reverse();
+    const canFill = document.querySelector(EDITOR_SEL) != null;
+
+    return (
+        <div className={cl("modal")}>
+            <DialogClose asChild>
+                <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className={cl("modal-close")}>
+                    <Cross2Icon />
+                </Button>
+            </DialogClose>
+            <DialogHeader>
+                <DialogTitle>Input history</DialogTitle>
+                <Paragraph>{pluralize(list.length, "stored prompt")} on this device.</Paragraph>
+            </DialogHeader>
+            {list.length > 0 && (
+                <Input
+                    type="text"
+                    placeholder="Search prompts"
+                    value={query}
+                    onChange={(e: { target: { value: string } }) => setQuery(e.target.value)}
+                    className={cl("search")}
+                />
+            )}
+            {list.length === 0 && <Paragraph>No stored prompts.</Paragraph>}
+            {list.length > 0 && visible.length === 0 && <Paragraph>No matches.</Paragraph>}
+            {visible.length > 0 && (
+                <div className={cl("list")}>
+                    {visible.map(row => {
+                        const lines = row.text.split("\n").length;
+                        const expanded = openId === row.index;
+                        return (
+                            <div key={row.index} className={cl("item")}>
+                                <div
+                                    className={cl("main")}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => setOpenId(expanded ? null : row.index)}
+                                    onKeyDown={e => {
+                                        if (e.key !== "Enter" && e.key !== " ") return;
+                                        e.preventDefault();
+                                        setOpenId(expanded ? null : row.index);
+                                    }}
+                                >
+                                    <span className={cl("body", !expanded && "clamp")}>{row.text}</span>
+                                    {lines > 1 && <span className={cl("lines")}>{lines}</span>}
+                                </div>
+                                <Flex className={cl("actions")} gap="0.125rem">
+                                    <ButtonWithTooltip
+                                        variant="tertiary"
+                                        size="xs"
+                                        shape="square"
+                                        tooltipContent="Copy"
+                                        aria-label="Copy"
+                                        onClick={() => { copyToClipboard(row.text).catch(err => logger.error("copy failed:", err)); }}
+                                    >
+                                        <CopyIcon size={14} />
+                                    </ButtonWithTooltip>
+                                    <ButtonWithTooltip
+                                        variant="tertiary"
+                                        size="xs"
+                                        shape="square"
+                                        tooltipContent="Insert"
+                                        aria-label="Insert"
+                                        disabled={!canFill}
+                                        onClick={() => { if (fillComposer(row.text, row.index)) onClose(); }}
+                                    >
+                                        <TextCursorInputIcon size={14} />
+                                    </ButtonWithTooltip>
+                                    <ButtonWithTooltip
+                                        variant="tertiary"
+                                        size="xs"
+                                        shape="square"
+                                        tooltipContent="Delete"
+                                        aria-label="Delete"
+                                        onClick={() => {
+                                            if (openId === row.index) setOpenId(null);
+                                            removeEntry(row.index);
+                                        }}
+                                    >
+                                        <Trash2Icon size={14} />
+                                    </ButtonWithTooltip>
+                                </Flex>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+            <Button variant="secondary" size="sm" shape="rectangle" onClick={onClose}>Close</Button>
+        </div>
+    );
+}
+
+const SafeHistoryModal = ErrorBoundary.wrap(HistoryModal);
+
 function ClearHistory() {
     const { entries } = settings.use(["entries"]);
     const list = entries ?? [];
@@ -361,9 +489,14 @@ function ClearHistory() {
     return (
         <Flex flexDirection="column" gap="0.5rem">
             <Paragraph>{pluralize(list.length, "stored prompt")}.</Paragraph>
-            <Button variant="secondary" size="sm" shape="rectangle" disabled={!list.length} onClick={() => setOpen(true)}>
-                Clear history
-            </Button>
+            <Flex gap="0.5rem">
+                <Button variant="secondary" size="sm" shape="rectangle" onClick={openHistory}>
+                    View history
+                </Button>
+                <Button variant="secondary" size="sm" shape="rectangle" disabled={!list.length} onClick={() => setOpen(true)}>
+                    Clear history
+                </Button>
+            </Flex>
             <ConfirmDialog
                 open={open}
                 onOpenChange={setOpen}
