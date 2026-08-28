@@ -11,7 +11,7 @@ rules:
     - use void-mcp to inspect live code, NEVER guess module structure
     - run `bun run lint:fix` + `bun run tsc` after code changes, `bun run lint:styles:fix` after css changes
     - oxlint covers everything (license headers, stylistic, import sort, unused imports) via jsPlugins — eslint is gone
-    - NEVER run `bun run build` unless asked
+    - ALWAYS `bun run build` and commit `userscript/Void.user.js` before any push
     - NEVER commit/push without explicit user instruction
     - NEVER commit design specs/plans/docs to the repo
   code:
@@ -224,5 +224,5 @@ git:
   - NEVER --amend, create a new commit instead
   - NEVER --force push
   - group related files into one commit, dont split atomic changes
-  - NEVER commit userscript/Void.user.js except on version bumps
+  - ALWAYS commit `userscript/Void.user.js` with the matching source on every push
   - examples: `PluginName: fix patch`, `PluginName: add plugin`, `PluginName: drop plugin`, `PluginName: add setting`, `chore: bump deps`, `refactor: flatten plugin loader`, `perf: hoist regex to module scope`, `style: oxlint auto-fixes`

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828] v1.0.0
+// @version      [20260828.1] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.1] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -3320,7 +3320,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // void-css:/tmp/void/src/components/ColorSettingRow.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3359,7 +3359,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/void/src/components/ConfirmDialog.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     contain: content;
     width: 100%;
@@ -3608,7 +3608,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // void-css:/tmp/void/src/components/ErrorCard.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3721,7 +3721,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/void/src/components/SelectionUI.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4381,7 +4381,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4647,7 +4647,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // void-css:/tmp/void/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4659,7 +4659,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void/src/components/settings/CssEditor.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -4931,7 +4931,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/void/src/components/settings/shared.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4982,7 +4982,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
@@ -5022,7 +5022,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--fg-primary));
 }`);
 
-  // void-css:/tmp/void/src/components/settings/PluginCard.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5073,7 +5073,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void/src/components/settings/BaseCard.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5352,7 +5352,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // void-css:/tmp/void/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5368,7 +5368,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void/src/components/settings/SettingField.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -5953,7 +5953,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/void/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -5976,7 +5976,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void/src/components/settings/ThemeCard.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6250,7 +6250,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/void/src/plugins/experiments/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6676,9 +6676,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"08f471d"}`
-    }, `(${"08f471d"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260828.1] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"4a0eba8"}`
+    }, `(${"4a0eba8"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7038,7 +7038,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void/src/plugins/inputHistory/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -7493,7 +7493,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   });
 
-  // void-css:/tmp/void/src/plugins/betterImagine/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8176,7 +8176,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void/src/plugins/betterFiles/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8331,7 +8331,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void/src/plugins/betterSidebar/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -8621,7 +8621,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -9127,8 +9127,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   var DAY_MS2 = 86400000;
   var logger20 = new Logger("UsageDisplay");
-  var seen = new Set;
-  var seenDate = "";
   function isRecord2(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
   }
@@ -9154,7 +9152,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
       startPercent: null,
       lastPercent: null,
       resetAt: null,
-      chats: 0,
       updatedAt: now
     };
   }
@@ -9166,7 +9163,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
       startPercent: clampPercent(value.startPercent),
       lastPercent: clampPercent(value.lastPercent),
       resetAt: finiteNumber(value.resetAt),
-      chats: Math.max(0, Math.floor(finiteNumber(value.chats) ?? 0)),
       updatedAt: finiteNumber(value.updatedAt) ?? 0
     };
   }
@@ -9299,21 +9295,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const current = loadStore(userId).days[date] ?? emptyDay(date, now);
     return persistDay(userId, date, applySnapshot(current, percent, resetAt, now), retainDays, now);
   }
-  function recordChat(userId, responseId, retainDays, now = Date.now()) {
-    if (!userId || !responseId)
-      return null;
-    const date = localDateKey(now);
-    if (seenDate !== date) {
-      seen.clear();
-      seenDate = date;
-    }
-    const key = `${userId}:${responseId}`;
-    if (seen.has(key))
-      return loadStore(userId).days[date] ?? null;
-    seen.add(key);
-    const current = loadStore(userId).days[date] ?? emptyDay(date, now);
-    return persistDay(userId, date, { ...current, chats: current.chats + 1, updatedAt: now }, retainDays, now);
-  }
   function readToday(userId, now = Date.now()) {
     if (!userId)
       return null;
@@ -9335,8 +9316,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
     if (!userId)
       return;
     storeRemove(STATS_STORAGE_PREFIX + userId);
-    seen.clear();
-    seenDate = "";
   }
   function retainDaysOf(value) {
     return clamp(Math.floor(finiteNumber(value) ?? RETAIN_DEFAULT), RETAIN_MIN, RETAIN_MAX);
@@ -9350,9 +9329,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var cl19 = classNameFactory("void-ud-");
   var settings11 = definePluginSettings({
     usageStats: {
-      type: 6 /* COMPONENT */,
+      type: 3 /* BOOLEAN */,
       description: "Record daily usage. Hover shows today after a delay; click opens history.",
-      component: StatsToggle,
       default: false
     },
     showPercent: {
@@ -9418,8 +9396,21 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return;
     loadMemory(userId);
   }
+  function migrateUsageStats() {
+    const stored = PlainSettings.plugins.UsageDisplay;
+    if (!stored || !("trackStats" in stored))
+      return;
+    if (stored.trackStats === true)
+      stored.usageStats = true;
+    delete stored.trackStats;
+    SettingsStore3.markAsChanged();
+  }
   function snapshotToday() {
-    if (!settings11.store.usageStats || !state.userId)
+    if (!settings11.store.usageStats)
+      return;
+    if (!state.userId)
+      syncAccount();
+    if (!state.userId)
       return;
     recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings11.store.retainDays));
   }
@@ -9460,18 +9451,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS)
       refresh("visible");
   }
-  function onStreamEnd2({ responseId }) {
+  function onStreamEnd2() {
     refresh("stream");
-    if (!settings11.store.usageStats)
-      return;
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (response?.state !== "closed" || response.sender === "human")
-      return;
-    const userId = currentUserId();
-    if (!userId)
-      return;
-    recordChat(userId, responseId, retainDaysOf(settings11.store.retainDays));
-    store2.notify();
   }
   function readPlan() {
     let xSubscriptionType;
@@ -9589,7 +9570,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function TodayBlock({ isFree }) {
     const today = state.userId ? readToday(state.userId) : null;
-    const chats = today?.chats ?? 0;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
@@ -9601,10 +9581,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       size: "sm",
       weight: "semibold",
       className: cl19("used")
-    }, formatDelta(today ? dayDelta(today) : null), " of weekly quota"), /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: "muted"
-    }, pluralize(chats, "chat")));
+    }, formatDelta(today ? dayDelta(today) : null), " of weekly quota"));
   }
   function UsagePanel() {
     useExternalStore(store2);
@@ -9628,6 +9605,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
       const id = window.setTimeout(() => setShowToday(true), delay * 1000);
       return () => window.clearTimeout(id);
     }, [usageStats, delay]);
+    useEffect(() => {
+      if (!showToday)
+        return;
+      snapshotToday();
+      store2.notify();
+    }, [showToday]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 8,
@@ -9662,10 +9645,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
       checked: !!usageStats,
       onCheckedChange: (value) => {
         settings11.store.usageStats = value;
+        store2.notify();
         if (value)
           refresh("manual");
-        else
-          store2.notify();
       }
     }));
   }
@@ -9701,7 +9683,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onClick: () => setSelected(rec.date)
     }, /* @__PURE__ */ React.createElement("span", null, rec.date === todayKey ? "Today" : formatDayLabel(rec.date)), /* @__PURE__ */ React.createElement("span", {
       className: cl19("day-meta")
-    }, formatDelta(dayDelta(rec)), " · ", rec.chats)))), active != null && /* @__PURE__ */ React.createElement(Flex, {
+    }, formatDelta(dayDelta(rec)))))), active != null && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.25rem",
       className: cl19("detail")
@@ -9714,10 +9696,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Start ", formatPercent(active.startPercent), " → ", formatPercent(active.lastPercent)), /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, "Today ", formatDelta(dayDelta(active))), /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: "muted"
-    }, pluralize(active.chats, "chat")))), /* @__PURE__ */ React.createElement(Button, {
+    }, "Today ", formatDelta(dayDelta(active))))), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       shape: "rectangle",
@@ -9777,6 +9756,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
     tags: ["chat"],
     enabledByDefault: true,
     settings: settings11,
+    start() {
+      migrateUsageStats();
+    },
     chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
     events: {
       streamEnd: onStreamEnd2
@@ -9886,7 +9868,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     ]
   });
 
-  // void-css:/tmp/void/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -10186,7 +10168,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/void/src/plugins/recentTopics/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -10705,12 +10687,12 @@ html.void-rt-open [data-sidebar="gap"] {
   var sidebarSnap = null;
   var pendingWs = new Set;
   function unique(ids) {
-    const seen2 = new Set;
+    const seen = new Set;
     const out = [];
     for (const id of ids) {
-      if (seen2.has(id))
+      if (seen.has(id))
         continue;
-      seen2.add(id);
+      seen.add(id);
       out.push(id);
     }
     return out;
@@ -11392,10 +11374,10 @@ html.void-rt-open [data-sidebar="gap"] {
     try {
       const { byId } = ResponseStore.useResponseStore.getState();
       const out = [];
-      const seen2 = new Set;
+      const seen = new Set;
       let id = startId;
-      while (id && !seen2.has(id) && out.length < 50) {
-        seen2.add(id);
+      while (id && !seen.has(id) && out.length < 50) {
+        seen.add(id);
         const r = byId[id];
         if (!r)
           break;
@@ -12929,7 +12911,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/void/src/plugins/exportChat/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -13128,7 +13110,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/void/src/plugins/placeholder/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -13215,7 +13197,7 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // void-css:/tmp/void/src/plugins/messageTimestamps/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -13367,7 +13349,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/void/src/plugins/downloadTTS/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -13492,7 +13474,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
   });
 
-  // void-css:/tmp/void/src/plugins/streamerMode/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -13689,7 +13671,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/void/src/plugins/customInstructions/styles.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -14080,7 +14062,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
   var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [inputHistory_default.name]: inputHistory_default, [autoCollapse_default.name]: autoCollapse_default, [responseNotification_default.name]: responseNotification_default, [betterImagine_default.name]: betterImagine_default, [noShareLink_default.name]: noShareLink_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterFiles_default.name]: betterFiles_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [betterSidebar_default.name]: betterSidebar_default, [composerOpacity_default.name]: composerOpacity_default, [usageDisplay_default.name]: usageDisplay_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [recentTopics_default.name]: recentTopics_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [exportChat_default.name]: exportChat_default, [placeholder_default.name]: placeholder_default, [experiments_default.name]: experiments_default, [messageTimestamps_default.name]: messageTimestamps_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [downloadTTS_default.name]: downloadTTS_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [streamerMode_default.name]: streamerMode_default, [incognito_default.name]: incognito_default, [customInstructions_default.name]: customInstructions_default, [widerChat_default.name]: widerChat_default };
-  // void-css:/tmp/void/src/api/Notices.css
+  // void-css:/tmp/tmp.EpBUhOgtRQ/Void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
