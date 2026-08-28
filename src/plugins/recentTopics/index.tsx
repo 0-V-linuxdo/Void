@@ -22,7 +22,8 @@ import definePlugin, { OptionType } from "@utils/types";
 
 const logger = new Logger("RecentTopics");
 const cl = classNameFactory("void-rt-");
-const HOME_ID = "";
+const HOME_KEY = "home";
+const HOME_SEP = "home:";
 const TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
 const TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
 const TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
@@ -40,7 +41,7 @@ const settings = definePluginSettings({
     },
     includeHome: {
         type: OptionType.BOOLEAN,
-        description: "Include the new-chat home page in the switcher.",
+        description: "Include new-chat home pages in the switcher.",
         default: true,
     },
 }).withPrivateSettings<{
@@ -109,7 +110,7 @@ function maxCount(): number {
 
 function capVisits(ids: string[]): string[] {
     const allowHome = settings.store.includeHome;
-    return unique(ids).filter(id => id || allowHome).slice(0, maxCount());
+    return unique(ids).filter(id => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
 }
 
 function pruneRecord(source: Record<string, string> | undefined, ids: string[]): Record<string, string> {
@@ -153,6 +154,12 @@ function writeVisits(next: string[]) {
         }
         const pages = pruneRecord(settings.plain.pages, visits);
         const usedWs = new Set(Object.values(workspaceByConv));
+        for (const id of visits) {
+            const ws = workspaceFromHomeId(id);
+            if (!ws) continue;
+            usedWs.add(ws);
+            workspaceByConv[id] = ws;
+        }
         const keepProjects: Record<string, string> = {};
         for (const [id, name] of Object.entries(settings.plain.projectNames ?? {})) {
             if (usedWs.has(id)) keepProjects[id] = name;
@@ -174,17 +181,31 @@ function writeVisits(next: string[]) {
 
 function rememberTitle(id: string, title?: string) {
     const t = title?.trim();
-    if (!id || !t) return;
+    if (!id || isHomeId(id) || !t) return;
     const prev = settings.plain.titles ?? {};
     if (prev[id] === t) return;
     settings.store.titles = { ...prev, [id]: t };
+}
+
+function isHomeId(id: string) {
+    return id === HOME_KEY || id.startsWith(HOME_SEP);
+}
+
+function homeId(workspaceId?: string) {
+    const ws = asWorkspaceId(workspaceId);
+    return ws ? HOME_SEP + ws : HOME_KEY;
+}
+
+function workspaceFromHomeId(id: string) {
+    return id.startsWith(HOME_SEP) ? asWorkspaceId(id.slice(HOME_SEP.length)) : "";
 }
 
 function routeConvId(route?: GrokRoute | null): string | null {
     if (!route) return null;
     if (route.conversationId) return route.conversationId;
     if (typeof route.chat === "string" && route.chat) return route.chat;
-    if (route.page === "main") return HOME_ID;
+    if (route.page === "main") return HOME_KEY;
+    if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId) return homeId(route.workspaceId);
     return null;
 }
 
@@ -227,6 +248,10 @@ function asWorkspaceId(value: unknown): string {
 }
 
 function hrefFor(id: string, workspaceId?: string): string {
+    if (isHomeId(id)) {
+        const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceId);
+        return ws ? `/project/${ws}` : "/";
+    }
     const ws = asWorkspaceId(workspaceId);
     if (!id) return ws ? `/project/${ws}` : "/";
     if (ws) return `/project/${ws}?chat=${encodeURIComponent(id)}`;
@@ -248,26 +273,24 @@ function hrefParts(href: string | null | undefined): { ws: string; chat: string;
 function currentVisit(): string | null {
     const urlChat = chatIdFromUrl();
     if (urlChat) return urlChat;
-    if (projectIdFromUrl()) return HOME_ID;
 
     try {
-        const { route } = RoutingStore.useRoutingStore.getState();
-        if (route.conversationId) return route.conversationId;
-        if (typeof route.chat === "string" && route.chat) return route.chat;
-        if (route.page === "main") return HOME_ID;
-        if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId) return HOME_ID;
-    } catch (e) {
-        logger.debug("RoutingStore unavailable:", e);
-    }
-
-    try {
-        const id = ChatPageStore.useChatPageStore.getState().conversationId;
-        if (id) return id;
+        const { conversationId, optimisticConversationId } = ChatPageStore.useChatPageStore.getState();
+        if (conversationId) return conversationId;
+        if (optimisticConversationId) return optimisticConversationId;
     } catch (e) {
         logger.debug("ChatPageStore unavailable:", e);
     }
 
-    return null;
+    try {
+        const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
+        if (fromRoute != null) return fromRoute;
+    } catch (e) {
+        logger.debug("RoutingStore unavailable:", e);
+    }
+
+    const ws = projectIdFromUrl();
+    return ws ? homeId(ws) : null;
 }
 
 function idsFromHistory(): string[] {
@@ -304,7 +327,7 @@ function lookup(id: string): GrokConversation | undefined {
 }
 
 function titleOf(id: string): string {
-    if (!id) return "New chat";
+    if (!id || isHomeId(id)) return "New chat";
     const conv = lookup(id);
     if (conv?.title?.trim()) return conv.title.trim();
     const cached = settings.plain.titles?.[id];
@@ -484,6 +507,11 @@ function sidebarIndex(): SidebarIndex {
 
 function workspaceOf(id: string): string {
     if (!id) return "";
+    if (isHomeId(id)) {
+        const fromKey = workspaceFromHomeId(id);
+        if (fromKey) return fromKey;
+        return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings.plain.workspaceByConv?.[id]);
+    }
     const fromConv = convWorkspaceId(id);
     if (fromConv) return fromConv;
     const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
@@ -563,7 +591,7 @@ function reconcileSidebarCache() {
 }
 
 function requestWorkspace(id: string) {
-    if (!id || pendingWs.has(id)) return;
+    if (!id || isHomeId(id) || pendingWs.has(id)) return;
     if (convWorkspaceId(id) || sidebarIndex().wsByConv[id]) return;
     pendingWs.add(id);
     try {
@@ -936,15 +964,21 @@ function scheduleCapture() {
 }
 
 function bump(id: string) {
-    if (!id && !settings.store.includeHome) return;
+    if (!id) return;
+    if (isHomeId(id) && !settings.store.includeHome) return;
     writeVisits(capVisits([id, ...readVisits()]));
-    const conv = id ? lookup(id) : undefined;
+    if (isHomeId(id)) {
+        if (shouldRememberProject(id)) rememberProject(id);
+        return;
+    }
+    const conv = lookup(id);
     rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-    if (id && shouldRememberProject(id)) rememberProject(id);
+    if (shouldRememberProject(id)) rememberProject(id);
 }
 
 function shouldRememberProject(id: string): boolean {
     if (!id) return false;
+    if (isHomeId(id)) return !!workspaceOf(id);
     const live = liveWorkspaceId();
     if (!live) return true;
     const owned = convWorkspaceId(id) || sidebarIndex().wsByConv[id] || "";
@@ -1004,10 +1038,19 @@ function navigateTo(id: string) {
         const routing = RoutingStore.useRoutingStore.getState();
         const { route } = routing;
         const teamId = route.teamId ?? null;
-        if (!id) {
-            if (route.page === "main" || (route.page === "chat" && !route.conversationId && !projectIdFromUrl())) return;
-            routing.push({ page: "main", teamId });
-            applyChatPage("");
+        if (isHomeId(id) || !id) {
+            const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceOf(id));
+            const hereWs = asWorkspaceId(route.workspaceId) || projectIdFromUrl();
+            const hereChat = route.conversationId || chatIdFromUrl();
+            if (!ws) {
+                if (!hereChat && (route.page === "main" || !hereWs)) return;
+                routing.push({ page: "main", teamId });
+                applyChatPage("");
+                return;
+            }
+            if (!hereChat && hereWs === ws) return;
+            routing.push({ page: "workspace", workspaceId: ws, tab: "conversations", teamId });
+            applyChatPage("", ws);
             return;
         }
 
@@ -1555,7 +1598,7 @@ export default definePlugin({
                 if (open) return;
                 const current = currentVisit();
                 if (current == null) return;
-                if (id && current === HOME_ID && id !== HOME_ID) return;
+                if (id && isHomeId(current) && !isHomeId(id)) return;
                 bump(current);
                 scheduleCapture();
             },
@@ -1573,7 +1616,7 @@ export default definePlugin({
         ResponseStore: {
             selector: (s: ResponseStoreState) => {
                 const id = currentVisit();
-                if (!id) return "";
+                if (!id || isHomeId(id)) return "";
                 const list = s.byConversationId[id];
                 const last = list?.[list.length - 1];
                 return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
