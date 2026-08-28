@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.4] v1.0.0
+// @version      [20260828.5] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.4] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.5] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6742,7 +6742,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.4] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260828.5] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -9900,14 +9900,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var MAX_MIN = 10;
   var MAX_MAX = 500;
   var MAX_DEFAULT = 100;
-  var HUD_HIDE_MS = 1200;
   var HUD_GAP_PX = 8;
   var APPLY_QUIET_MS = 120;
   var CAPTURE_DEDUPE_MS = 2000;
   var settings12 = definePluginSettings({
     edgeOnly: {
       type: 3 /* BOOLEAN */,
-      description: "Start cycling only from the first (Up) or last (Down) line. While recalling, arrows keep stepping until you edit.",
+      description: "Cycle only from the first (Up) or last (Down) line. Alt+Up or Alt+Down always cycle. Esc or a click in the box exits.",
       default: true
     },
     skipDuplicates: {
@@ -9934,9 +9933,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var applying = false;
   var applyGen = 0;
   var keys = null;
-  var hudTimer;
   var applyTimer;
   var applyEl = null;
+  var applyAtStart = true;
   function getEntries() {
     const raw = settings12.plain.entries;
     return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
@@ -10023,6 +10022,27 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     recalling = false;
     hideHud();
   }
+  function placeCaret(el, atStart) {
+    try {
+      const view = el.pmViewDesc?.view;
+      if (view) {
+        const Sel = view.state.selection.constructor;
+        const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
+        view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
+        return;
+      }
+    } catch (err) {
+      logger24.debug("placeCaret pm failed:", err);
+    }
+    const native = window.getSelection();
+    if (!native)
+      return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(atStart);
+    native.removeAllRanges();
+    native.addRange(range);
+  }
   function scheduleApplyEnd(gen) {
     clearTimeout(applyTimer);
     applyTimer = setTimeout(() => {
@@ -10030,11 +10050,15 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         return;
       applying = false;
       const el = applyEl;
-      if (el && recalling && !matchesRecall(el))
+      if (!el)
+        return;
+      if (recalling && !matchesRecall(el))
         dropRecall(el);
+      else
+        placeCaret(el, applyAtStart);
     }, APPLY_QUIET_MS);
   }
-  function setEditorText(el, text) {
+  function setEditorText(el, text, atStart) {
     el.focus();
     const sel = window.getSelection();
     if (!sel)
@@ -10045,6 +10069,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     sel.addRange(range);
     applying = true;
     applyEl = el;
+    applyAtStart = atStart;
     const gen = ++applyGen;
     try {
       if (!text)
@@ -10054,6 +10079,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     } catch (err) {
       logger24.debug("insertText failed:", err);
     }
+    placeCaret(el, atStart);
     scheduleApplyEnd(gen);
   }
   function hudEl() {
@@ -10067,7 +10093,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return el;
   }
   function hideHud() {
-    clearTimeout(hudTimer);
     document.querySelector(`.${cl20("hud")}`)?.classList.remove(cl20("hud-on"));
   }
   function showHud(label, editor) {
@@ -10082,8 +10107,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       el.style.top = `${r.top - HUD_GAP_PX}px`;
       el.classList.add(cl20("hud-on"));
     });
-    clearTimeout(hudTimer);
-    hudTimer = setTimeout(hideHud, HUD_HIDE_MS);
   }
   function pushEntry(text) {
     const value = normalize(text);
@@ -10116,7 +10139,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return;
     cursor = next;
     recalling = true;
-    setEditorText(el, next === list.length ? draft : list[next]);
+    setEditorText(el, next === list.length ? draft : list[next], older);
     if (next < list.length)
       showHud(`${next + 1} / ${list.length}`, el);
     else
@@ -10125,12 +10148,18 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   function onKeyDown2(e) {
     if (e.isComposing || e.keyCode === 229)
       return;
-    if (e.ctrlKey || e.metaKey || e.altKey)
+    if (e.ctrlKey || e.metaKey)
       return;
     const el = chatEditor(e.target);
     if (!el)
       return;
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
+      dropRecall(el);
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
       pushEntry(editorText(el));
       return;
     }
@@ -10138,19 +10167,29 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return;
     if (e.shiftKey)
       return;
+    const older = e.key === "ArrowUp";
+    const force = e.altKey;
     const list = getEntries();
-    if (settings12.store.edgeOnly && !recalling) {
+    if (!force && settings12.store.edgeOnly) {
       const edge = caretOnEdge(el);
-      if (e.key === "ArrowUp" && !edge.first || e.key === "ArrowDown" && !edge.last)
+      if (older && !edge.first || !older && !edge.last)
         return;
     }
-    if (e.key === "ArrowUp" && !list.length)
+    if (older && (!list.length || cursor <= 0))
       return;
-    if (e.key === "ArrowDown" && cursor >= list.length)
+    if (!older && cursor >= list.length)
       return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    cycle(e.key === "ArrowUp", el);
+    cycle(older, el);
+  }
+  function onPointerDown(e) {
+    if (!recalling || applying)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    dropRecall(el);
   }
   function onInput(e) {
     const el = chatEditor(e.target);
@@ -10237,6 +10276,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       document.addEventListener("input", onInput, { capture: true, signal });
       document.addEventListener("submit", onSubmit, { capture: true, signal });
       document.addEventListener("click", onClick, { capture: true, signal });
+      document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
     },
     stop() {
       keys?.abort();

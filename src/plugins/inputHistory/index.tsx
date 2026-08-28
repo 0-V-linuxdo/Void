@@ -25,7 +25,6 @@ const ZWSP = /\u200B/g;
 const MAX_MIN = 10;
 const MAX_MAX = 500;
 const MAX_DEFAULT = 100;
-const HUD_HIDE_MS = 1200;
 const HUD_GAP_PX = 8;
 const APPLY_QUIET_MS = 120;
 const CAPTURE_DEDUPE_MS = 2000;
@@ -37,7 +36,7 @@ interface PrivateSettings {
 const settings = definePluginSettings({
     edgeOnly: {
         type: OptionType.BOOLEAN,
-        description: "Start cycling only from the first (Up) or last (Down) line. While recalling, arrows keep stepping until you edit.",
+        description: "Cycle only from the first (Up) or last (Down) line. Alt+Up or Alt+Down always cycle. Esc or a click in the box exits.",
         default: true,
     },
     skipDuplicates: {
@@ -66,9 +65,9 @@ let recalling = false;
 let applying = false;
 let applyGen = 0;
 let keys: AbortController | null = null;
-let hudTimer: ReturnType<typeof setTimeout> | undefined;
 let applyTimer: ReturnType<typeof setTimeout> | undefined;
 let applyEl: HTMLElement | null = null;
+let applyAtStart = true;
 
 function getEntries(): string[] {
     const raw = settings.plain.entries;
@@ -161,17 +160,47 @@ function dropRecall(el: HTMLElement) {
     hideHud();
 }
 
+function placeCaret(el: HTMLElement, atStart: boolean) {
+    try {
+        const view = (el as unknown as { pmViewDesc?: { view?: {
+            state: {
+                doc: unknown;
+                selection: { constructor: { atStart(doc: unknown): unknown; atEnd(doc: unknown): unknown } };
+                tr: { setSelection(sel: unknown): { scrollIntoView(): unknown } };
+            };
+            dispatch(tr: unknown): void;
+        } } }).pmViewDesc?.view;
+        if (view) {
+            const Sel = view.state.selection.constructor;
+            const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
+            view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
+            return;
+        }
+    } catch (err) {
+        logger.debug("placeCaret pm failed:", err);
+    }
+    const native = window.getSelection();
+    if (!native) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(atStart);
+    native.removeAllRanges();
+    native.addRange(range);
+}
+
 function scheduleApplyEnd(gen: number) {
     clearTimeout(applyTimer);
     applyTimer = setTimeout(() => {
         if (gen !== applyGen) return;
         applying = false;
         const el = applyEl;
-        if (el && recalling && !matchesRecall(el)) dropRecall(el);
+        if (!el) return;
+        if (recalling && !matchesRecall(el)) dropRecall(el);
+        else placeCaret(el, applyAtStart);
     }, APPLY_QUIET_MS);
 }
 
-function setEditorText(el: HTMLElement, text: string) {
+function setEditorText(el: HTMLElement, text: string, atStart: boolean) {
     el.focus();
     const sel = window.getSelection();
     if (!sel) return;
@@ -181,6 +210,7 @@ function setEditorText(el: HTMLElement, text: string) {
     sel.addRange(range);
     applying = true;
     applyEl = el;
+    applyAtStart = atStart;
     const gen = ++applyGen;
     try {
         if (!text) document.execCommand("delete");
@@ -188,6 +218,7 @@ function setEditorText(el: HTMLElement, text: string) {
     } catch (err) {
         logger.debug("insertText failed:", err);
     }
+    placeCaret(el, atStart);
     scheduleApplyEnd(gen);
 }
 
@@ -202,7 +233,6 @@ function hudEl(): HTMLElement {
 }
 
 function hideHud() {
-    clearTimeout(hudTimer);
     document.querySelector(`.${cl("hud")}`)?.classList.remove(cl("hud-on"));
 }
 
@@ -217,8 +247,6 @@ function showHud(label: string, editor: HTMLElement) {
         el.style.top = `${r.top - HUD_GAP_PX}px`;
         el.classList.add(cl("hud-on"));
     });
-    clearTimeout(hudTimer);
-    hudTimer = setTimeout(hideHud, HUD_HIDE_MS);
 }
 
 function pushEntry(text: string) {
@@ -251,19 +279,26 @@ function cycle(older: boolean, el: HTMLElement) {
     if (next < 0 || next > list.length) return;
     cursor = next;
     recalling = true;
-    setEditorText(el, next === list.length ? draft : list[next]);
+    setEditorText(el, next === list.length ? draft : list[next], older);
     if (next < list.length) showHud(`${next + 1} / ${list.length}`, el);
     else hideHud();
 }
 
 function onKeyDown(e: KeyboardEvent) {
     if (e.isComposing || e.keyCode === 229) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.ctrlKey || e.metaKey) return;
 
     const el = chatEditor(e.target);
     if (!el) return;
 
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
+        dropRecall(el);
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+    }
+
+    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
         pushEntry(editorText(el));
         return;
     }
@@ -271,18 +306,27 @@ function onKeyDown(e: KeyboardEvent) {
     if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
     if (e.shiftKey) return;
 
+    const older = e.key === "ArrowUp";
+    const force = e.altKey;
     const list = getEntries();
-    if (settings.store.edgeOnly && !recalling) {
+    if (!force && settings.store.edgeOnly) {
         const edge = caretOnEdge(el);
-        if ((e.key === "ArrowUp" && !edge.first) || (e.key === "ArrowDown" && !edge.last)) return;
+        if ((older && !edge.first) || (!older && !edge.last)) return;
     }
 
-    if (e.key === "ArrowUp" && !list.length) return;
-    if (e.key === "ArrowDown" && cursor >= list.length) return;
+    if (older && (!list.length || cursor <= 0)) return;
+    if (!older && cursor >= list.length) return;
 
     e.preventDefault();
     e.stopImmediatePropagation();
-    cycle(e.key === "ArrowUp", el);
+    cycle(older, el);
+}
+
+function onPointerDown(e: PointerEvent) {
+    if (!recalling || applying) return;
+    const el = chatEditor(e.target);
+    if (!el) return;
+    dropRecall(el);
 }
 
 function onInput(e: Event) {
@@ -367,6 +411,7 @@ export default definePlugin({
         document.addEventListener("input", onInput, { capture: true, signal });
         document.addEventListener("submit", onSubmit, { capture: true, signal });
         document.addEventListener("click", onClick, { capture: true, signal });
+        document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
     },
 
     stop() {
