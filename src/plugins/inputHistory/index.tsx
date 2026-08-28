@@ -34,11 +34,6 @@ interface PrivateSettings {
 }
 
 const settings = definePluginSettings({
-    skipDuplicates: {
-        type: OptionType.BOOLEAN,
-        description: "Skip consecutive duplicate prompts.",
-        default: true,
-    },
     maxEntries: {
         type: OptionType.SLIDER,
         description: "Maximum stored prompts.",
@@ -254,7 +249,7 @@ function pushEntry(text: string) {
     recentAt.set(value, now);
 
     const list = getEntries();
-    if (settings.store.skipDuplicates && list[list.length - 1] === value) {
+    if (list[list.length - 1] === value) {
         resetBrowse(list.length);
         return;
     }

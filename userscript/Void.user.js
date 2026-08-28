@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.6] v1.0.0
+// @version      [20260828.7] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.6] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.7] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6742,7 +6742,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.6] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260828.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -9904,11 +9904,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var APPLY_QUIET_MS = 120;
   var CAPTURE_DEDUPE_MS = 2000;
   var settings12 = definePluginSettings({
-    skipDuplicates: {
-      type: 3 /* BOOLEAN */,
-      description: "Skip consecutive duplicate prompts.",
-      default: true
-    },
     maxEntries: {
       type: 5 /* SLIDER */,
       description: "Maximum stored prompts.",
@@ -10113,7 +10108,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return;
     recentAt.set(value, now);
     const list = getEntries();
-    if (settings12.store.skipDuplicates && list[list.length - 1] === value) {
+    if (list[list.length - 1] === value) {
       resetBrowse(list.length);
       return;
     }
