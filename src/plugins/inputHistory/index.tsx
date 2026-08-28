@@ -27,7 +27,7 @@ const MAX_MAX = 500;
 const MAX_DEFAULT = 100;
 const HUD_HIDE_MS = 1200;
 const HUD_GAP_PX = 8;
-const APPLY_HOLD_MS = 120;
+const APPLY_QUIET_MS = 120;
 const CAPTURE_DEDUPE_MS = 2000;
 
 interface PrivateSettings {
@@ -68,6 +68,7 @@ let applyGen = 0;
 let keys: AbortController | null = null;
 let hudTimer: ReturnType<typeof setTimeout> | undefined;
 let applyTimer: ReturnType<typeof setTimeout> | undefined;
+let applyEl: HTMLElement | null = null;
 
 function getEntries(): string[] {
     const raw = settings.plain.entries;
@@ -95,9 +96,9 @@ function resetBrowse(length: number) {
 }
 
 function chatEditor(t: EventTarget | null): HTMLElement | null {
-    if (!(t instanceof HTMLElement) || !t.isContentEditable) return null;
-    if (!t.classList.contains("ProseMirror")) return null;
-    return t.closest(".query-bar") ? t : null;
+    if (t instanceof Text) return t.parentElement?.closest<HTMLElement>(EDITOR_SEL) ?? null;
+    if (t instanceof Element) return t.closest<HTMLElement>(EDITOR_SEL) ?? null;
+    return null;
 }
 
 function editorText(el: HTMLElement): string {
@@ -146,17 +147,31 @@ function caretOnEdge(el: HTMLElement): { first: boolean; last: boolean } {
     };
 }
 
-function placeCaret(el: HTMLElement, atStart: boolean) {
-    const sel = window.getSelection();
-    if (!sel) return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(atStart);
-    sel.removeAllRanges();
-    sel.addRange(range);
+function matchesRecall(el: HTMLElement): boolean {
+    if (!recalling) return false;
+    const list = getEntries();
+    const expected = cursor < list.length ? list[cursor] : draft;
+    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
 }
 
-function setEditorText(el: HTMLElement, text: string, atStart: boolean) {
+function dropRecall(el: HTMLElement) {
+    cursor = getEntries().length;
+    draft = editorText(el);
+    recalling = false;
+    hideHud();
+}
+
+function scheduleApplyEnd(gen: number) {
+    clearTimeout(applyTimer);
+    applyTimer = setTimeout(() => {
+        if (gen !== applyGen) return;
+        applying = false;
+        const el = applyEl;
+        if (el && recalling && !matchesRecall(el)) dropRecall(el);
+    }, APPLY_QUIET_MS);
+}
+
+function setEditorText(el: HTMLElement, text: string) {
     el.focus();
     const sel = window.getSelection();
     if (!sel) return;
@@ -165,6 +180,7 @@ function setEditorText(el: HTMLElement, text: string, atStart: boolean) {
     sel.removeAllRanges();
     sel.addRange(range);
     applying = true;
+    applyEl = el;
     const gen = ++applyGen;
     try {
         if (!text) document.execCommand("delete");
@@ -172,13 +188,7 @@ function setEditorText(el: HTMLElement, text: string, atStart: boolean) {
     } catch (err) {
         logger.debug("insertText failed:", err);
     }
-    placeCaret(el, atStart);
-    clearTimeout(applyTimer);
-    applyTimer = setTimeout(() => {
-        if (gen !== applyGen) return;
-        placeCaret(el, atStart);
-        applying = false;
-    }, APPLY_HOLD_MS);
+    scheduleApplyEnd(gen);
 }
 
 function hudEl(): HTMLElement {
@@ -241,7 +251,7 @@ function cycle(older: boolean, el: HTMLElement) {
     if (next < 0 || next > list.length) return;
     cursor = next;
     recalling = true;
-    setEditorText(el, next === list.length ? draft : list[next], older);
+    setEditorText(el, next === list.length ? draft : list[next]);
     if (next < list.length) showHud(`${next + 1} / ${list.length}`, el);
     else hideHud();
 }
@@ -276,13 +286,16 @@ function onKeyDown(e: KeyboardEvent) {
 }
 
 function onInput(e: Event) {
-    if (applying) return;
     const el = chatEditor(e.target);
     if (!el) return;
-    cursor = getEntries().length;
-    draft = editorText(el);
-    recalling = false;
-    hideHud();
+
+    if (applying) {
+        scheduleApplyEnd(applyGen);
+        return;
+    }
+
+    if (matchesRecall(el)) return;
+    dropRecall(el);
 }
 
 function onSubmit(e: Event) {
@@ -363,6 +376,7 @@ export default definePlugin({
         recentAt.clear();
         clearTimeout(applyTimer);
         applying = false;
+        applyEl = null;
         recalling = false;
     },
 

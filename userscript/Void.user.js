@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.3] v1.0.0
+// @version      [20260828.4] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.3] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.4] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6742,7 +6742,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.3] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260828.4] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -9902,7 +9902,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var MAX_DEFAULT = 100;
   var HUD_HIDE_MS = 1200;
   var HUD_GAP_PX = 8;
-  var APPLY_HOLD_MS = 120;
+  var APPLY_QUIET_MS = 120;
   var CAPTURE_DEDUPE_MS = 2000;
   var settings12 = definePluginSettings({
     edgeOnly: {
@@ -9936,6 +9936,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var keys = null;
   var hudTimer;
   var applyTimer;
+  var applyEl = null;
   function getEntries() {
     const raw = settings12.plain.entries;
     return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
@@ -9957,11 +9958,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     hideHud();
   }
   function chatEditor(t) {
-    if (!(t instanceof HTMLElement) || !t.isContentEditable)
-      return null;
-    if (!t.classList.contains("ProseMirror"))
-      return null;
-    return t.closest(".query-bar") ? t : null;
+    if (t instanceof Text)
+      return t.parentElement?.closest(EDITOR_SEL2) ?? null;
+    if (t instanceof Element)
+      return t.closest(EDITOR_SEL2) ?? null;
+    return null;
   }
   function editorText(el) {
     const blocks = el.querySelectorAll(":scope > *");
@@ -10009,17 +10010,31 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       last: spanHeight(after) <= budget
     };
   }
-  function placeCaret(el, atStart) {
-    const sel = window.getSelection();
-    if (!sel)
-      return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(atStart);
-    sel.removeAllRanges();
-    sel.addRange(range);
+  function matchesRecall(el) {
+    if (!recalling)
+      return false;
+    const list = getEntries();
+    const expected = cursor < list.length ? list[cursor] : draft;
+    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
   }
-  function setEditorText(el, text, atStart) {
+  function dropRecall(el) {
+    cursor = getEntries().length;
+    draft = editorText(el);
+    recalling = false;
+    hideHud();
+  }
+  function scheduleApplyEnd(gen) {
+    clearTimeout(applyTimer);
+    applyTimer = setTimeout(() => {
+      if (gen !== applyGen)
+        return;
+      applying = false;
+      const el = applyEl;
+      if (el && recalling && !matchesRecall(el))
+        dropRecall(el);
+    }, APPLY_QUIET_MS);
+  }
+  function setEditorText(el, text) {
     el.focus();
     const sel = window.getSelection();
     if (!sel)
@@ -10029,6 +10044,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     sel.removeAllRanges();
     sel.addRange(range);
     applying = true;
+    applyEl = el;
     const gen = ++applyGen;
     try {
       if (!text)
@@ -10038,14 +10054,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     } catch (err) {
       logger24.debug("insertText failed:", err);
     }
-    placeCaret(el, atStart);
-    clearTimeout(applyTimer);
-    applyTimer = setTimeout(() => {
-      if (gen !== applyGen)
-        return;
-      placeCaret(el, atStart);
-      applying = false;
-    }, APPLY_HOLD_MS);
+    scheduleApplyEnd(gen);
   }
   function hudEl() {
     let el = document.querySelector(`.${cl20("hud")}`);
@@ -10107,7 +10116,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return;
     cursor = next;
     recalling = true;
-    setEditorText(el, next === list.length ? draft : list[next], older);
+    setEditorText(el, next === list.length ? draft : list[next]);
     if (next < list.length)
       showHud(`${next + 1} / ${list.length}`, el);
     else
@@ -10144,15 +10153,16 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     cycle(e.key === "ArrowUp", el);
   }
   function onInput(e) {
-    if (applying)
-      return;
     const el = chatEditor(e.target);
     if (!el)
       return;
-    cursor = getEntries().length;
-    draft = editorText(el);
-    recalling = false;
-    hideHud();
+    if (applying) {
+      scheduleApplyEnd(applyGen);
+      return;
+    }
+    if (matchesRecall(el))
+      return;
+    dropRecall(el);
   }
   function onSubmit(e) {
     const form = e.target;
@@ -10235,6 +10245,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       recentAt.clear();
       clearTimeout(applyTimer);
       applying = false;
+      applyEl = null;
       recalling = false;
     },
     onSettingsChange() {
