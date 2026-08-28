@@ -4,7 +4,7 @@
 
 ## 安装
 
-[!【安装用户脚本](https://img.shields.io/badge/安装-用户脚本-00d26a?style=for-the-badge)](https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/userscript/Void.user.js)
+[![Install userscript](https://img.shields.io/badge/安装-用户脚本-00d26a?style=for-the-badge)](https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B/userscript/Void.user.js)
 
 ## 变更
 
