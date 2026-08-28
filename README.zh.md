@@ -20,7 +20,7 @@
 | NoSidebarIdentity | 开 | 分开开关，隐藏侧栏用户名 / 邮箱。头像保留，账号菜单仍可打开。 |
 | ChatStateFavicons | 开 | 标签页图标反映会话状态（streaming / done / ready / error），五种叠层样式。 |
 | NoShareLink | 开 | 分开开关，隐藏「分享项目」和「创建分享链接」。 |
-| NoDictation | 开 | 隐藏输入栏语音按钮。 |
+| NoDictation | 开 | 隐藏输入栏语音按钮。可选隐藏设置弹窗 Behavior 里的 Dictation Refinement。 |
 | UsageDisplay | 开 | 聊天栏显示官方 SuperGrok 周用量。可选日统计（`usageStats`，默认关）：悬停先看本周，再看今日；点击打开按日历史。 |
 | Placeholder | 关 | 替换输入框轮换占位文案。 |
 | ThemedScrollbar | 开 | 工程栏滚动条跟随 Grok 亮色 / 暗色主题。 |

@@ -20,7 +20,7 @@
 | NoSidebarIdentity | On | Hide username and/or email in the Grok sidebar (separate toggles). Avatar stays so the account menu still opens. |
 | ChatStateFavicons | On | Tab favicon reflects chat state (streaming, done, ready, error) with five overlay styles. |
 | NoShareLink | On | Hide Share Project (in a project) and Create share link (top-right of chats); separate toggles. |
-| NoDictation | On | Hide the Dictation (voice input) button from the chat input bar. |
+| NoDictation | On | Hide the Dictation (voice input) button from the chat input bar. Optional toggle hides Dictation Refinement in Settings → Behavior. |
 | UsageDisplay | On | Shows official weekly SuperGrok usage in the chat bar. Optional daily stats (`usageStats`, off by default): hover week first, then today; click opens per-day history. |
 | Placeholder | Off | Replace the rotating chat input placeholder. |
 | ThemedScrollbar | On | Project pane scrollbar follows Grok’s light and dark theme. |
