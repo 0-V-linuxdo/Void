@@ -11,6 +11,8 @@ import { registerStyle, unregisterStyle } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
 
 const STYLE_NAME = "noDictation";
+const REFINEMENT_MARK = "void-no-dictation-refinement";
+const REFINEMENT_ROW = `div:has(> .${REFINEMENT_MARK})`;
 
 const BUTTON_CSS = `
 button[aria-label="Dictation"]:not([role="dialog"] *),
@@ -21,8 +23,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 }
 `;
 
-const REFINEMENT_ROW = '.flex.flex-row.items-center.justify-between.w-full.gap-4:has([aria-label="Dictation Refinement"])';
-const REFINEMENT_CSS = `[role="dialog"] ${REFINEMENT_ROW},[role="dialog"] .h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
+const REFINEMENT_CSS = `${REFINEMENT_ROW},.h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
 
 const settings = definePluginSettings({
     hideDictationRefinement: {
@@ -46,6 +47,16 @@ export default definePlugin({
     tags: ["chat", "ui"],
     enabledByDefault: true,
     settings,
+
+    patches: [
+        {
+            find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
+            replacement: {
+                match: /("How much Grok refines your speech-to-text transcriptions".{0,200}?\(0,\i\.jsxs\)\(\i,\{action:\i)(?=,children:\[)/,
+                replace: `$1,className:"${REFINEMENT_MARK}"`,
+            },
+        },
+    ],
 
     start: apply,
     onSettingsChange: apply,

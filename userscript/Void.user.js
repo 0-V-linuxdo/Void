@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.13] v1.0.0
+// @version      [20260828.14] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.13] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.14] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6682,9 +6682,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.13] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
-    }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260828.14] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"023f789"}`
+    }, `(${"023f789"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -13895,6 +13895,8 @@ div:has(> #grok-bot-nav-button) {
 
   // src/plugins/noDictation/index.ts
   var STYLE_NAME7 = "noDictation";
+  var REFINEMENT_MARK = "void-no-dictation-refinement";
+  var REFINEMENT_ROW = `div:has(> .${REFINEMENT_MARK})`;
   var BUTTON_CSS = `
 button[aria-label="Dictation"]:not([role="dialog"] *),
 button[aria-label^="Dictation ("]:not([role="dialog"] *),
@@ -13903,8 +13905,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     display: none !important;
 }
 `;
-  var REFINEMENT_ROW = '.flex.flex-row.items-center.justify-between.w-full.gap-4:has([aria-label="Dictation Refinement"])';
-  var REFINEMENT_CSS = `[role="dialog"] ${REFINEMENT_ROW},[role="dialog"] .h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
+  var REFINEMENT_CSS = `${REFINEMENT_ROW},.h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
   var settings20 = definePluginSettings({
     hideDictationRefinement: {
       type: 3 /* BOOLEAN */,
@@ -13927,6 +13928,15 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     tags: ["chat", "ui"],
     enabledByDefault: true,
     settings: settings20,
+    patches: [
+      {
+        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
+        replacement: {
+          match: /("How much Grok refines your speech-to-text transcriptions".{0,200}?\(0,\i\.jsxs\)\(\i,\{action:\i)(?=,children:\[)/,
+          replace: `$1,className:"${REFINEMENT_MARK}"`
+        }
+      }
+    ],
     start: apply4,
     onSettingsChange: apply4,
     stop() {
