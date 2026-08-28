@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.8] v1.0.0
+// @version      [20260828.9] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.8] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.9] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6742,7 +6742,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.8] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260828.9] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -9895,63 +9895,91 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    min-width: min(28rem, calc(100vw - 4rem));
-    max-width: min(40rem, calc(100vw - 3rem));
-    max-height: min(36rem, calc(100vh - 6rem));
-    padding-right: 1.75rem;
+    gap: 0;
+    width: min(36rem, calc(100vw - 3rem));
+    max-height: min(40rem, calc(100vh - 5rem));
+    min-height: 18rem;
+    overflow: hidden;
 }
 
 .void-ih-modal-close {
     position: absolute;
     top: 0;
     right: 0;
+    z-index: 2;
+}
+
+.void-ih-top {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-right: 2.25rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid hsl(var(--border-l2) / 0.45);
 }
 
 .void-ih-search {
     width: 100%;
 }
 
+.void-ih-empty {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 10rem;
+    margin: 0;
+    color: hsl(var(--fg-tertiary, var(--fg-secondary)));
+}
+
 .void-ih-list {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.4rem;
     overflow: auto;
     min-height: 0;
     flex: 1;
-    max-height: 22rem;
+    margin-top: 0.75rem;
+    padding-right: 0.2rem;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-l2) / 0.8) transparent;
 }
 
 .void-ih-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.35rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
     width: 100%;
-    padding: 0.45rem 0.5rem;
-    border: 1px solid color-mix(in srgb, var(--border-l2, currentcolor) 35%, transparent);
-    border-radius: 0.5rem;
+    padding: 0.7rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    background: hsl(var(--surface-l1) / 0.72);
 }
 
 .void-ih-item:hover {
-    background: color-mix(in srgb, currentcolor 6%, transparent);
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 0.45);
+}
+
+.void-ih-item-on {
+    align-items: start;
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 0.6);
 }
 
 .void-ih-main {
-    flex: 1;
     min-width: 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
     cursor: pointer;
 }
 
 .void-ih-body {
-    flex: 1;
-    min-width: 0;
+    display: block;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    color: hsl(var(--fg-primary, var(--text-primary)));
     font-size: 0.8125rem;
-    line-height: 1.35;
+    line-height: 1.45;
 }
 
 .void-ih-clamp {
@@ -9961,16 +9989,47 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     overflow: hidden;
 }
 
-.void-ih-lines {
+.void-ih-item-on .void-ih-body {
+    max-height: 12rem;
+    overflow: auto;
+    scrollbar-width: thin;
+}
+
+.void-ih-side {
+    display: flex;
     flex-shrink: 0;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.void-ih-item-on .void-ih-side {
+    align-items: flex-start;
+    padding-top: 0.1rem;
+}
+
+.void-ih-lines {
+    min-width: 1.35rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: hsl(var(--surface-l3, var(--surface-l2)));
+    color: hsl(var(--fg-tertiary, var(--fg-secondary)));
     font-size: 0.6875rem;
     font-variant-numeric: tabular-nums;
-    opacity: 0.7;
-    padding-top: 0.15rem;
+    line-height: 1.3;
+    text-align: center;
 }
 
 .void-ih-actions {
-    flex-shrink: 0;
+    display: flex;
+    gap: 0.05rem;
+    padding: 0.1rem;
+    border-radius: 0.5rem;
+    background: hsl(var(--surface-l2) / 0.9);
+}
+
+.void-ih-item:hover .void-ih-actions,
+.void-ih-item-on .void-ih-actions {
+    background: hsl(var(--surface-l3, var(--surface-l1)));
 }
 `);
 
@@ -10344,13 +10403,19 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       shape: "square",
       "aria-label": "Close",
       className: cl20("modal-close")
-    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, "Input history"), /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(list.length, "stored prompt"), " on this device.")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement("div", {
+      className: cl20("top")
+    }, /* @__PURE__ */ React.createElement(DialogHeader, null, /* @__PURE__ */ React.createElement(DialogTitle, null, "Input history"), /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : `${pluralize(list.length, "stored prompt")} on this device.`)), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "Search prompts",
       value: query,
       onChange: (e) => setQuery(e.target.value),
       className: cl20("search")
-    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, null, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, null, "No matches."), visible.length > 0 && /* @__PURE__ */ React.createElement("div", {
+    })), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
+      className: cl20("empty")
+    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
+      className: cl20("empty")
+    }, "No matches."), visible.length > 0 && /* @__PURE__ */ React.createElement("div", {
       className: cl20("list")
     }, visible.map((row) => {
       const lines = row.text.split(`
@@ -10358,7 +10423,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       const expanded = openId === row.index;
       return /* @__PURE__ */ React.createElement("div", {
         key: row.index,
-        className: cl20("item")
+        className: cl20("item", expanded && "item-on")
       }, /* @__PURE__ */ React.createElement("div", {
         className: cl20("main"),
         role: "button",
@@ -10372,11 +10437,12 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         }
       }, /* @__PURE__ */ React.createElement("span", {
         className: cl20("body", !expanded && "clamp")
-      }, row.text), lines > 1 && /* @__PURE__ */ React.createElement("span", {
+      }, row.text)), /* @__PURE__ */ React.createElement("div", {
+        className: cl20("side")
+      }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
         className: cl20("lines")
-      }, lines)), /* @__PURE__ */ React.createElement(Flex, {
-        className: cl20("actions"),
-        gap: "0.125rem"
+      }, lines), /* @__PURE__ */ React.createElement("div", {
+        className: cl20("actions")
       }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
         size: "xs",
@@ -10414,13 +10480,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         }
       }, /* @__PURE__ */ React.createElement(Trash2Icon, {
         size: 14
-      }))));
-    })), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      onClick: onClose
-    }, "Close"));
+      })))));
+    })));
   }
   var SafeHistoryModal = ErrorBoundary.wrap(HistoryModal);
   function ClearHistory() {

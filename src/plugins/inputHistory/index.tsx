@@ -397,28 +397,34 @@ function HistoryModal({ onClose }: ModalProps) {
                     <Cross2Icon />
                 </Button>
             </DialogClose>
-            <DialogHeader>
-                <DialogTitle>Input history</DialogTitle>
-                <Paragraph>{pluralize(list.length, "stored prompt")} on this device.</Paragraph>
-            </DialogHeader>
-            {list.length > 0 && (
-                <Input
-                    type="text"
-                    placeholder="Search prompts"
-                    value={query}
-                    onChange={(e: { target: { value: string } }) => setQuery(e.target.value)}
-                    className={cl("search")}
-                />
-            )}
-            {list.length === 0 && <Paragraph>No stored prompts.</Paragraph>}
-            {list.length > 0 && visible.length === 0 && <Paragraph>No matches.</Paragraph>}
+            <div className={cl("top")}>
+                <DialogHeader>
+                    <DialogTitle>Input history</DialogTitle>
+                    <Paragraph>
+                        {needle
+                            ? pluralize(visible.length, "match", "matches")
+                            : `${pluralize(list.length, "stored prompt")} on this device.`}
+                    </Paragraph>
+                </DialogHeader>
+                {list.length > 0 && (
+                    <Input
+                        type="text"
+                        placeholder="Search prompts"
+                        value={query}
+                        onChange={(e: { target: { value: string } }) => setQuery(e.target.value)}
+                        className={cl("search")}
+                    />
+                )}
+            </div>
+            {list.length === 0 && <Paragraph className={cl("empty")}>No stored prompts.</Paragraph>}
+            {list.length > 0 && visible.length === 0 && <Paragraph className={cl("empty")}>No matches.</Paragraph>}
             {visible.length > 0 && (
                 <div className={cl("list")}>
                     {visible.map(row => {
                         const lines = row.text.split("\n").length;
                         const expanded = openId === row.index;
                         return (
-                            <div key={row.index} className={cl("item")}>
+                            <div key={row.index} className={cl("item", expanded && "item-on")}>
                                 <div
                                     className={cl("main")}
                                     role="button"
@@ -431,50 +437,51 @@ function HistoryModal({ onClose }: ModalProps) {
                                     }}
                                 >
                                     <span className={cl("body", !expanded && "clamp")}>{row.text}</span>
-                                    {lines > 1 && <span className={cl("lines")}>{lines}</span>}
                                 </div>
-                                <Flex className={cl("actions")} gap="0.125rem">
-                                    <ButtonWithTooltip
-                                        variant="tertiary"
-                                        size="xs"
-                                        shape="square"
-                                        tooltipContent="Copy"
-                                        aria-label="Copy"
-                                        onClick={() => { copyToClipboard(row.text).catch(err => logger.error("copy failed:", err)); }}
-                                    >
-                                        <CopyIcon size={14} />
-                                    </ButtonWithTooltip>
-                                    <ButtonWithTooltip
-                                        variant="tertiary"
-                                        size="xs"
-                                        shape="square"
-                                        tooltipContent="Insert"
-                                        aria-label="Insert"
-                                        disabled={!canFill}
-                                        onClick={() => { if (fillComposer(row.text, row.index)) onClose(); }}
-                                    >
-                                        <TextCursorInputIcon size={14} />
-                                    </ButtonWithTooltip>
-                                    <ButtonWithTooltip
-                                        variant="tertiary"
-                                        size="xs"
-                                        shape="square"
-                                        tooltipContent="Delete"
-                                        aria-label="Delete"
-                                        onClick={() => {
-                                            if (openId === row.index) setOpenId(null);
-                                            removeEntry(row.index);
-                                        }}
-                                    >
-                                        <Trash2Icon size={14} />
-                                    </ButtonWithTooltip>
-                                </Flex>
+                                <div className={cl("side")}>
+                                    {lines > 1 && <span className={cl("lines")}>{lines}</span>}
+                                    <div className={cl("actions")}>
+                                        <ButtonWithTooltip
+                                            variant="tertiary"
+                                            size="xs"
+                                            shape="square"
+                                            tooltipContent="Copy"
+                                            aria-label="Copy"
+                                            onClick={() => { copyToClipboard(row.text).catch(err => logger.error("copy failed:", err)); }}
+                                        >
+                                            <CopyIcon size={14} />
+                                        </ButtonWithTooltip>
+                                        <ButtonWithTooltip
+                                            variant="tertiary"
+                                            size="xs"
+                                            shape="square"
+                                            tooltipContent="Insert"
+                                            aria-label="Insert"
+                                            disabled={!canFill}
+                                            onClick={() => { if (fillComposer(row.text, row.index)) onClose(); }}
+                                        >
+                                            <TextCursorInputIcon size={14} />
+                                        </ButtonWithTooltip>
+                                        <ButtonWithTooltip
+                                            variant="tertiary"
+                                            size="xs"
+                                            shape="square"
+                                            tooltipContent="Delete"
+                                            aria-label="Delete"
+                                            onClick={() => {
+                                                if (openId === row.index) setOpenId(null);
+                                                removeEntry(row.index);
+                                            }}
+                                        >
+                                            <Trash2Icon size={14} />
+                                        </ButtonWithTooltip>
+                                    </div>
+                                </div>
                             </div>
                         );
                     })}
                 </div>
             )}
-            <Button variant="secondary" size="sm" shape="rectangle" onClick={onClose}>Close</Button>
         </div>
     );
 }
