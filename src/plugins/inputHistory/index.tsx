@@ -34,11 +34,6 @@ interface PrivateSettings {
 }
 
 const settings = definePluginSettings({
-    edgeOnly: {
-        type: OptionType.BOOLEAN,
-        description: "Cycle only from the first (Up) or last (Down) line. Alt+Up or Alt+Down always cycle. Esc or a click in the box exits.",
-        default: true,
-    },
     skipDuplicates: {
         type: OptionType.BOOLEAN,
         description: "Skip consecutive duplicate prompts.",
@@ -309,7 +304,7 @@ function onKeyDown(e: KeyboardEvent) {
     const older = e.key === "ArrowUp";
     const force = e.altKey;
     const list = getEntries();
-    if (!force && settings.store.edgeOnly) {
+    if (!force) {
         const edge = caretOnEdge(el);
         if ((older && !edge.first) || (!older && !edge.last)) return;
     }
