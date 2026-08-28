@@ -23,15 +23,12 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const DAY_MS = 86_400_000;
 
 const logger = new Logger("UsageDisplay");
-const seen = new Set<string>();
-let seenDate = "";
 
 export interface DailyUsageRecord {
     date: string;
     startPercent: number | null;
     lastPercent: number | null;
     resetAt: number | null;
-    chats: number;
     updatedAt: number;
 }
 
@@ -70,7 +67,6 @@ export function emptyDay(date: string, now: number): DailyUsageRecord {
         startPercent: null,
         lastPercent: null,
         resetAt: null,
-        chats: 0,
         updatedAt: now,
     };
 }
@@ -82,7 +78,6 @@ function normalizeDay(date: string, value: unknown): DailyUsageRecord | null {
         startPercent: clampPercent(value.startPercent),
         lastPercent: clampPercent(value.lastPercent),
         resetAt: finiteNumber(value.resetAt),
-        chats: Math.max(0, Math.floor(finiteNumber(value.chats) ?? 0)),
         updatedAt: finiteNumber(value.updatedAt) ?? 0,
     };
 }
@@ -237,20 +232,6 @@ export function recordSnapshot(
     return persistDay(userId, date, applySnapshot(current, percent, resetAt, now), retainDays, now);
 }
 
-export function recordChat(userId: string, responseId: string, retainDays: number, now = Date.now()): DailyUsageRecord | null {
-    if (!userId || !responseId) return null;
-    const date = localDateKey(now);
-    if (seenDate !== date) {
-        seen.clear();
-        seenDate = date;
-    }
-    const key = `${userId}:${responseId}`;
-    if (seen.has(key)) return loadStore(userId).days[date] ?? null;
-    seen.add(key);
-    const current = loadStore(userId).days[date] ?? emptyDay(date, now);
-    return persistDay(userId, date, { ...current, chats: current.chats + 1, updatedAt: now }, retainDays, now);
-}
-
 export function readToday(userId: string, now = Date.now()): DailyUsageRecord | null {
     if (!userId) return null;
     return loadStore(userId).days[localDateKey(now)] ?? null;
@@ -270,8 +251,6 @@ export function listDays(userId: string): DailyUsageRecord[] {
 export function clearStats(userId: string) {
     if (!userId) return;
     storeRemove(STATS_STORAGE_PREFIX + userId);
-    seen.clear();
-    seenDate = "";
 }
 
 export function retainDaysOf(value: unknown): number {

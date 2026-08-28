@@ -14,7 +14,6 @@ import {
     formatDelta,
     localDateKey,
     pruneDays,
-    recordChat,
     recordSnapshot,
     RETAIN_DEFAULT,
     RESET_DROP_PERCENT,
@@ -101,22 +100,20 @@ describe("pruneDays", () => {
     });
 });
 
-describe("recordSnapshot and recordChat", () => {
+describe("recordSnapshot", () => {
     const userId = "stats-test-user";
 
-    test("writes a day, counts chats once per response, and clears", () => {
+    test("writes a day and clears", () => {
         clearStats(userId);
         const now = noon(2026, 8, 27);
         const snap = recordSnapshot(userId, 10, 100, RETAIN_DEFAULT, now);
         expect(snap?.startPercent).toBe(10);
-        const first = recordChat(userId, "r1", RETAIN_DEFAULT, now);
-        const again = recordChat(userId, "r1", RETAIN_DEFAULT, now);
-        const second = recordChat(userId, "r2", RETAIN_DEFAULT, now);
-        expect(first?.chats).toBe(1);
-        expect(again?.chats).toBe(1);
-        expect(second?.chats).toBe(2);
+        expect(snap?.lastPercent).toBe(10);
+        const next = recordSnapshot(userId, 14, 100, RETAIN_DEFAULT, now);
+        expect(next?.startPercent).toBe(10);
+        expect(next?.lastPercent).toBe(14);
         clearStats(userId);
-        expect(recordChat(userId, "r1", RETAIN_DEFAULT, now)?.chats).toBe(1);
+        expect(recordSnapshot(userId, 8, 100, RETAIN_DEFAULT, now)?.startPercent).toBe(8);
         clearStats(userId);
     });
 });

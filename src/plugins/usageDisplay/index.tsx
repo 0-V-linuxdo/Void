@@ -7,9 +7,8 @@
 import "./styles.css";
 
 import type { ChatBarButtonDef } from "@api/ChatBarButtons";
-import type { VoidEventMap } from "@api/Events";
 import { type ModalProps, openModal } from "@api/Modals";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, PlainSettings, SettingsStore } from "@api/Settings";
 import { Button, ConfirmDialog, DialogClose, DialogHeader, DialogTitle, Flex, Paragraph, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CircleGaugeIcon, Cross2Icon } from "@components/icons";
@@ -17,7 +16,7 @@ import type { GrokSubscription } from "@grok-types";
 import type { XSubscriptionType } from "@grok-types/enums";
 import { getPlanName } from "@turbopack/common/plan";
 import { React, useEffect, useState } from "@turbopack/common/react";
-import { ResponseStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
+import { SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -51,7 +50,6 @@ import {
     listDays,
     localDateKey,
     readToday,
-    recordChat,
     recordSnapshot,
     retainDaysOf,
 } from "./stats";
@@ -61,10 +59,9 @@ const cl = classNameFactory("void-ud-");
 
 const settings = definePluginSettings({
     usageStats: {
-        type: OptionType.COMPONENT,
+        type: OptionType.BOOLEAN,
         description: "Record daily usage. Hover shows today after a delay; click opens history.",
-        component: StatsToggle,
-        default: false as boolean,
+        default: false,
     },
     showPercent: {
         type: OptionType.BOOLEAN,
@@ -143,8 +140,18 @@ function syncAccount() {
     loadMemory(userId);
 }
 
+function migrateUsageStats() {
+    const stored = PlainSettings.plugins.UsageDisplay;
+    if (!stored || !("trackStats" in stored)) return;
+    if (stored.trackStats === true) stored.usageStats = true;
+    delete stored.trackStats;
+    SettingsStore.markAsChanged();
+}
+
 function snapshotToday() {
-    if (!settings.store.usageStats || !state.userId) return;
+    if (!settings.store.usageStats) return;
+    if (!state.userId) syncAccount();
+    if (!state.userId) return;
     recordSnapshot(
         state.userId,
         state.usage?.weekly.usedPercent ?? null,
@@ -191,15 +198,8 @@ function onVisibility() {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS) void refresh("visible");
 }
 
-function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
+function onStreamEnd() {
     void refresh("stream");
-    if (!settings.store.usageStats) return;
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (response?.state !== "closed" || response.sender === "human") return;
-    const userId = currentUserId();
-    if (!userId) return;
-    recordChat(userId, responseId, retainDaysOf(settings.store.retainDays));
-    store.notify();
 }
 
 function readPlan() {
@@ -313,7 +313,6 @@ function WeekBlock({ isFree, percent, resetAt, loading, labeled }: {
 
 function TodayBlock({ isFree }: { isFree: boolean }) {
     const today = state.userId ? readToday(state.userId) : null;
-    const chats = today?.chats ?? 0;
     return (
         <Flex flexDirection="column" gap={2} className={cl("today")}>
             <Text size="xs" color="muted">Today</Text>
@@ -322,7 +321,6 @@ function TodayBlock({ isFree }: { isFree: boolean }) {
                     {formatDelta(today ? dayDelta(today) : null)} of weekly quota
                 </Text>
             )}
-            <Text size="xs" color="muted">{pluralize(chats, "chat")}</Text>
         </Flex>
     );
 }
@@ -351,6 +349,12 @@ function UsagePanel() {
         return () => window.clearTimeout(id);
     }, [usageStats, delay]);
 
+    useEffect(() => {
+        if (!showToday) return;
+        snapshotToday();
+        store.notify();
+    }, [showToday]);
+
     return (
         <Flex flexDirection="column" gap={8} className={cl("panel")}>
             {showToday && <TodayBlock isFree={isFree} />}
@@ -371,8 +375,8 @@ function StatsToggle() {
                 checked={!!usageStats}
                 onCheckedChange={value => {
                     settings.store.usageStats = value;
+                    store.notify();
                     if (value) void refresh("manual");
-                    else store.notify();
                 }}
             />
         </Flex>
@@ -416,7 +420,7 @@ function StatsModal({ onClose }: ModalProps) {
                                 onClick={() => setSelected(rec.date)}
                             >
                                 <span>{rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}</span>
-                                <span className={cl("day-meta")}>{formatDelta(dayDelta(rec))} · {rec.chats}</span>
+                                <span className={cl("day-meta")}>{formatDelta(dayDelta(rec))}</span>
                             </Button>
                         ))}
                     </div>
@@ -425,7 +429,6 @@ function StatsModal({ onClose }: ModalProps) {
                             <Text size="sm" weight="semibold">{active.date === todayKey ? "Today" : formatDayLabel(active.date)}</Text>
                             <Text size="xs" color="muted">Start {formatPercent(active.startPercent)} → {formatPercent(active.lastPercent)}</Text>
                             <Text size="xs" color="muted">Today {formatDelta(dayDelta(active))}</Text>
-                            <Text size="xs" color="muted">{pluralize(active.chats, "chat")}</Text>
                         </Flex>
                     )}
                 </Flex>
@@ -489,6 +492,10 @@ export default definePlugin({
     tags: ["chat"],
     enabledByDefault: true,
     settings,
+
+    start() {
+        migrateUsageStats();
+    },
 
     chatBarButton: { ...BUTTON_BASE, tooltip: () => <SafeUsagePanel /> },
 
