@@ -443,28 +443,28 @@ function HistoryModal({ onClose }: ModalProps) {
                                     <div className={cl("actions")}>
                                         <ButtonWithTooltip
                                             variant="tertiary"
-                                            size="xs"
+                                            size="sm"
                                             shape="square"
                                             tooltipContent="Copy"
                                             aria-label="Copy"
                                             onClick={() => { copyToClipboard(row.text).catch(err => logger.error("copy failed:", err)); }}
                                         >
-                                            <CopyIcon size={14} />
+                                            <CopyIcon size={18} />
                                         </ButtonWithTooltip>
                                         <ButtonWithTooltip
                                             variant="tertiary"
-                                            size="xs"
+                                            size="sm"
                                             shape="square"
                                             tooltipContent="Insert"
                                             aria-label="Insert"
                                             disabled={!canFill}
                                             onClick={() => { if (fillComposer(row.text, row.index)) onClose(); }}
                                         >
-                                            <TextCursorInputIcon size={14} />
+                                            <TextCursorInputIcon size={18} />
                                         </ButtonWithTooltip>
                                         <ButtonWithTooltip
                                             variant="tertiary"
-                                            size="xs"
+                                            size="sm"
                                             shape="square"
                                             tooltipContent="Delete"
                                             aria-label="Delete"
@@ -473,7 +473,7 @@ function HistoryModal({ onClose }: ModalProps) {
                                                 removeEntry(row.index);
                                             }}
                                         >
-                                            <Trash2Icon size={14} />
+                                            <Trash2Icon size={18} />
                                         </ButtonWithTooltip>
                                     </div>
                                 </div>

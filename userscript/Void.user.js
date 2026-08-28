@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.9] v1.0.0
+// @version      [20260828.10] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.9] v1.0.0 — A modification for grok.com
+ * Void++ [20260828.10] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6742,7 +6742,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.9] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260828.10] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -9899,13 +9899,14 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     width: min(36rem, calc(100vw - 3rem));
     max-height: min(40rem, calc(100vh - 5rem));
     min-height: 18rem;
+    padding: 1.25rem 1.25rem 1rem;
     overflow: hidden;
 }
 
 .void-ih-modal-close {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 0.85rem;
+    right: 0.85rem;
     z-index: 2;
 }
 
@@ -9913,7 +9914,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    padding-right: 2.25rem;
+    padding-right: 2.5rem;
     padding-bottom: 0.85rem;
     border-bottom: 1px solid hsl(var(--border-l2) / 0.45);
 }
@@ -9939,8 +9940,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     overflow: auto;
     min-height: 0;
     flex: 1;
-    margin-top: 0.75rem;
-    padding-right: 0.2rem;
+    margin-top: 0.85rem;
+    padding-right: 0.15rem;
+    padding-bottom: 0.15rem;
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--border-l2) / 0.8) transparent;
 }
@@ -10008,12 +10010,12 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 }
 
 .void-ih-lines {
-    min-width: 1.35rem;
-    padding: 0.1rem 0.4rem;
+    min-width: 1.5rem;
+    padding: 0.15rem 0.45rem;
     border-radius: 999px;
     background: hsl(var(--surface-l3, var(--surface-l2)));
     color: hsl(var(--fg-tertiary, var(--fg-secondary)));
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-variant-numeric: tabular-nums;
     line-height: 1.3;
     text-align: center;
@@ -10021,10 +10023,17 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 
 .void-ih-actions {
     display: flex;
-    gap: 0.05rem;
-    padding: 0.1rem;
-    border-radius: 0.5rem;
+    gap: 0.15rem;
+    padding: 0.15rem;
+    border-radius: 0.65rem;
     background: hsl(var(--surface-l2) / 0.9);
+}
+
+.void-ih-actions :is(button) {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
 }
 
 .void-ih-item:hover .void-ih-actions,
@@ -10445,7 +10454,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         className: cl20("actions")
       }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
-        size: "xs",
+        size: "sm",
         shape: "square",
         tooltipContent: "Copy",
         "aria-label": "Copy",
@@ -10453,10 +10462,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           copyToClipboard(row.text).catch((err) => logger24.error("copy failed:", err));
         }
       }, /* @__PURE__ */ React.createElement(CopyIcon, {
-        size: 14
+        size: 18
       })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
-        size: "xs",
+        size: "sm",
         shape: "square",
         tooltipContent: "Insert",
         "aria-label": "Insert",
@@ -10466,10 +10475,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
             onClose();
         }
       }, /* @__PURE__ */ React.createElement(TextCursorInputIcon, {
-        size: 14
+        size: 18
       })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
-        size: "xs",
+        size: "sm",
         shape: "square",
         tooltipContent: "Delete",
         "aria-label": "Delete",
@@ -10479,7 +10488,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           removeEntry(row.index);
         }
       }, /* @__PURE__ */ React.createElement(Trash2Icon, {
-        size: 14
+        size: 18
       })))));
     })));
   }
