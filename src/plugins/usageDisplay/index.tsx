@@ -13,7 +13,6 @@ import { Button, ConfirmDialog, DialogClose, DialogHeader, DialogTitle, Flex, Pa
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CircleGaugeIcon, Cross2Icon } from "@components/icons";
 import type { GrokSubscription } from "@grok-types";
-import type { XSubscriptionType } from "@grok-types/enums";
 import { getPlanName } from "@turbopack/common/plan";
 import { React, useEffect, useState } from "@turbopack/common/react";
 import { SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
@@ -95,6 +94,7 @@ const RING_SIZE = 18;
 const RING_RADIUS = 7;
 const RING_CENTER = RING_SIZE / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+const LOCAL_ACCOUNT = "local";
 
 const store = createExternalStore();
 
@@ -116,12 +116,21 @@ const state: UsageState = {
 
 let refreshPromise: Promise<boolean> | null = null;
 
-function currentUserId(): string {
+function sessionUser() {
     try {
-        return SessionStore.getSessionStoreState?.()?.user?.userId ?? "";
+        const user = SessionStore.getSessionStoreState?.()?.user;
+        if (user) return user;
+    } catch {}
+    try {
+        return SessionStore.sessionStoreState?.getState?.()?.user;
     } catch {
-        return "";
+        return undefined;
     }
+}
+
+function currentUserId(): string {
+    const user = sessionUser();
+    return user?.userId || user?.xUserId || LOCAL_ACCOUNT;
 }
 
 function loadMemory(userId: string) {
@@ -150,7 +159,7 @@ function migrateUsageStats() {
 
 function snapshotToday() {
     if (!settings.store.usageStats) return;
-    if (!state.userId) syncAccount();
+    syncAccount();
     if (!state.userId) return;
     recordSnapshot(
         state.userId,
@@ -203,19 +212,13 @@ function onStreamEnd() {
 }
 
 function readPlan() {
-    let xSubscriptionType: XSubscriptionType | undefined;
-    try {
-        xSubscriptionType = SessionStore.getSessionStoreState?.()?.user?.xSubscriptionType;
-    } catch {
-        xSubscriptionType = undefined;
-    }
     let bestSubscription: GrokSubscription["tier"];
     try {
         bestSubscription = SubscriptionsStore.useSubscriptionsStore.getState().bestSubscription;
     } catch {
         bestSubscription = undefined;
     }
-    return getPlanName(bestSubscription, xSubscriptionType) === "Free";
+    return getPlanName(bestSubscription, sessionUser()?.xSubscriptionType) === "Free";
 }
 
 function triggerLabel(isFree: boolean, percent: number | null, loading: boolean, showPercent: boolean): string | null {
@@ -311,14 +314,15 @@ function WeekBlock({ isFree, percent, resetAt, loading, labeled }: {
     );
 }
 
-function TodayBlock({ isFree }: { isFree: boolean }) {
+function TodayBlock({ isFree, percent }: { isFree: boolean; percent: number | null }) {
     const today = state.userId ? readToday(state.userId) : null;
+    const delta = today ? dayDelta(today) : null;
     return (
         <Flex flexDirection="column" gap={2} className={cl("today")}>
             <Text size="xs" color="muted">Today</Text>
             {!isFree && (
                 <Text size="sm" weight="semibold" className={cl("used")}>
-                    {formatDelta(today ? dayDelta(today) : null)} of weekly quota
+                    {formatDelta(delta ?? (percent != null ? 0 : null))} of weekly quota
                 </Text>
             )}
         </Flex>
@@ -353,11 +357,11 @@ function UsagePanel() {
         if (!showToday) return;
         snapshotToday();
         store.notify();
-    }, [showToday]);
+    }, [showToday, percent]);
 
     return (
         <Flex flexDirection="column" gap={8} className={cl("panel")}>
-            {showToday && <TodayBlock isFree={isFree} />}
+            {showToday && <TodayBlock isFree={isFree} percent={percent} />}
             <WeekBlock isFree={isFree} percent={percent} resetAt={resetAt} loading={state.loading} labeled={showToday} />
         </Flex>
     );
