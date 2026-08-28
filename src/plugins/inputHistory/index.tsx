@@ -27,7 +27,7 @@ const MAX_MAX = 500;
 const MAX_DEFAULT = 100;
 const HUD_HIDE_MS = 1200;
 const HUD_GAP_PX = 8;
-const LINE_SLOP_PX = 8;
+const APPLY_HOLD_MS = 120;
 const CAPTURE_DEDUPE_MS = 2000;
 
 interface PrivateSettings {
@@ -37,7 +37,7 @@ interface PrivateSettings {
 const settings = definePluginSettings({
     edgeOnly: {
         type: OptionType.BOOLEAN,
-        description: "Only cycle history when the caret is on the first or last line.",
+        description: "Start cycling only from the first (Up) or last (Down) line. While recalling, arrows keep stepping until you edit.",
         default: true,
     },
     skipDuplicates: {
@@ -62,9 +62,12 @@ const recentAt = new Map<string, number>();
 
 let cursor = 0;
 let draft = "";
+let recalling = false;
 let applying = false;
+let applyGen = 0;
 let keys: AbortController | null = null;
 let hudTimer: ReturnType<typeof setTimeout> | undefined;
+let applyTimer: ReturnType<typeof setTimeout> | undefined;
 
 function getEntries(): string[] {
     const raw = settings.plain.entries;
@@ -87,6 +90,7 @@ function normalize(text: string): string {
 function resetBrowse(length: number) {
     cursor = length;
     draft = "";
+    recalling = false;
     hideHud();
 }
 
@@ -104,31 +108,55 @@ function editorText(el: HTMLElement): string {
     return normalize(raw);
 }
 
+function spanHeight(range: Range): number {
+    const rects = range.getClientRects();
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (const r of rects) {
+        if (r.height === 0 && r.width === 0) continue;
+        if (r.top < top) top = r.top;
+        if (r.bottom > bottom) bottom = r.bottom;
+    }
+    if (top === Infinity) return range.getBoundingClientRect().height;
+    return bottom - top;
+}
+
 function caretOnEdge(el: HTMLElement): { first: boolean; last: boolean } {
     const sel = window.getSelection();
     if (!sel?.rangeCount || !sel.isCollapsed) return { first: false, last: false };
     const caret = sel.getRangeAt(0);
     if (!el.contains(caret.startContainer)) return { first: false, last: false };
+    if (!el.innerText?.trim()) return { first: true, last: true };
 
-    const start = document.createRange();
-    start.selectNodeContents(el);
-    start.collapse(true);
-    const end = document.createRange();
-    end.selectNodeContents(el);
-    end.collapse(false);
+    const before = document.createRange();
+    before.selectNodeContents(el);
+    before.setEnd(caret.startContainer, caret.startOffset);
+    const after = document.createRange();
+    after.selectNodeContents(el);
+    after.setStart(caret.startContainer, caret.startOffset);
 
-    const c = caret.getBoundingClientRect();
-    const s = start.getBoundingClientRect();
-    const e = end.getBoundingClientRect();
-    if (c.height === 0 && !el.innerText?.trim()) return { first: true, last: true };
+    const { lineHeight, fontSize } = getComputedStyle(el);
+    const lh = parseFloat(lineHeight);
+    const fs = parseFloat(fontSize) || 16;
+    const budget = (lh > 0 ? lh : fs * 1.5) * 1.5;
 
     return {
-        first: Math.abs(c.top - s.top) <= LINE_SLOP_PX || c.top <= s.top + LINE_SLOP_PX,
-        last: Math.abs(c.top - e.top) <= LINE_SLOP_PX || c.bottom >= e.bottom - LINE_SLOP_PX,
+        first: spanHeight(before) <= budget,
+        last: spanHeight(after) <= budget,
     };
 }
 
-function setEditorText(el: HTMLElement, text: string) {
+function placeCaret(el: HTMLElement, atStart: boolean) {
+    const sel = window.getSelection();
+    if (!sel) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(atStart);
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
+
+function setEditorText(el: HTMLElement, text: string, atStart: boolean) {
     el.focus();
     const sel = window.getSelection();
     if (!sel) return;
@@ -137,14 +165,20 @@ function setEditorText(el: HTMLElement, text: string) {
     sel.removeAllRanges();
     sel.addRange(range);
     applying = true;
+    const gen = ++applyGen;
     try {
         if (!text) document.execCommand("delete");
         else document.execCommand("insertText", false, text);
     } catch (err) {
         logger.debug("insertText failed:", err);
-    } finally {
-        queueMicrotask(() => { applying = false; });
     }
+    placeCaret(el, atStart);
+    clearTimeout(applyTimer);
+    applyTimer = setTimeout(() => {
+        if (gen !== applyGen) return;
+        placeCaret(el, atStart);
+        applying = false;
+    }, APPLY_HOLD_MS);
 }
 
 function hudEl(): HTMLElement {
@@ -206,7 +240,8 @@ function cycle(older: boolean, el: HTMLElement) {
     const next = older ? cursor - 1 : cursor + 1;
     if (next < 0 || next > list.length) return;
     cursor = next;
-    setEditorText(el, next === list.length ? draft : list[next]);
+    recalling = true;
+    setEditorText(el, next === list.length ? draft : list[next], older);
     if (next < list.length) showHud(`${next + 1} / ${list.length}`, el);
     else hideHud();
 }
@@ -226,12 +261,12 @@ function onKeyDown(e: KeyboardEvent) {
     if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
     if (e.shiftKey) return;
 
-    if (settings.store.edgeOnly) {
+    const list = getEntries();
+    if (settings.store.edgeOnly && !recalling) {
         const edge = caretOnEdge(el);
         if ((e.key === "ArrowUp" && !edge.first) || (e.key === "ArrowDown" && !edge.last)) return;
     }
 
-    const list = getEntries();
     if (e.key === "ArrowUp" && !list.length) return;
     if (e.key === "ArrowDown" && cursor >= list.length) return;
 
@@ -246,6 +281,7 @@ function onInput(e: Event) {
     if (!el) return;
     cursor = getEntries().length;
     draft = editorText(el);
+    recalling = false;
     hideHud();
 }
 
@@ -311,6 +347,7 @@ export default definePlugin({
     start() {
         if (keys) return;
         cursor = getEntries().length;
+        recalling = false;
         keys = new AbortController();
         const { signal } = keys;
         document.addEventListener("keydown", onKeyDown, { capture: true, signal });
@@ -324,6 +361,9 @@ export default definePlugin({
         keys = null;
         hideHud();
         recentAt.clear();
+        clearTimeout(applyTimer);
+        applying = false;
+        recalling = false;
     },
 
     onSettingsChange() {
