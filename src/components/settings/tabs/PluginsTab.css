@@ -1,6 +1,6 @@
 .void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
-    border-radius: var(--radius);
+    border-radius: 0.5rem;
     background: hsl(var(--yellow-800) / 60%);
     border: 1px solid hsl(var(--yellow-700));
     color: hsl(var(--fg-warning));

@@ -13,6 +13,22 @@
     color: hsl(var(--fg-secondary));
 }
 
+.void-notice-icon-info {
+    color: hsl(var(--fg-secondary));
+}
+
+.void-notice-icon-success {
+    color: hsl(var(--fg-primary));
+}
+
+.void-notice-icon-warning {
+    color: hsl(var(--fg-warning));
+}
+
+.void-notice-icon-error {
+    color: hsl(var(--fg-danger));
+}
+
 .void-notice-message {
     flex: 1;
     min-width: 0;

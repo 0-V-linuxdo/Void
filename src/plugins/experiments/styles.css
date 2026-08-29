@@ -10,7 +10,7 @@
 .void-experiments-warning {
     margin: 0 0.75rem;
     padding: 0.625rem 0.75rem;
-    border-radius: var(--radius);
+    border-radius: 0.5rem;
     background: hsl(var(--yellow-800) / 60%);
     border-color: hsl(var(--yellow-700));
     color: hsl(var(--fg-warning));

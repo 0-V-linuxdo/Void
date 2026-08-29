@@ -39,7 +39,7 @@ const weightClasses = {
 const colorClasses = {
     primary: "",
     secondary: "text-secondary",
-    muted: "text-muted-foreground",
+    muted: "text-secondary",
 } as const satisfies Record<TextColor, string>;
 
 export function Text({ size = "sm", weight = "normal", color = "primary", as = "div", className, ...props }: TextProps) {

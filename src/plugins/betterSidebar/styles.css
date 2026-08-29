@@ -20,7 +20,7 @@
 }
 
 .void-sidebar-card:hover {
-    background-color: var(--button-ghost-hover);
+    background-color: hsl(var(--surface-l2));
 }
 
 .void-sidebar-card button[data-state] {

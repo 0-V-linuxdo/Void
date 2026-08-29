@@ -1,7 +1,7 @@
 .void-error-card-root {
     contain: content;
     padding: 1rem;
-    border-radius: var(--radius);
+    border-radius: 0.5rem;
     background: hsl(var(--red-800) / 60%);
     border: 1px solid hsl(var(--red-700));
     color: hsl(var(--fg-danger));
@@ -16,7 +16,7 @@
     display: block;
     margin-top: 0.5rem;
     padding: 0.5rem;
-    border-radius: calc(var(--radius) / 2);
+    border-radius: 0.25rem;
     background: hsl(var(--black) / 20%);
     font-size: 0.85em;
     white-space: pre-wrap;
