@@ -4,6 +4,7 @@
     padding: 1.5rem;
     border-radius: 1rem;
     border: 1px solid hsl(var(--border-l1));
+    background: hsl(var(--surface-l1));
     display: flex;
     flex-direction: column;
     gap: 1.5rem;

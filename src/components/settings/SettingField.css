@@ -53,7 +53,7 @@
 .void-setting-slider-wrap:focus-within {
     outline: 2px solid hsl(var(--fg-primary));
     outline-offset: 2px;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
 }
 
 .void-setting-slider-value {

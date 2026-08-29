@@ -11,8 +11,8 @@
     margin: 0 0.75rem;
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
-    background: hsl(var(--yellow-800) / 60%);
-    border-color: hsl(var(--yellow-700));
+    background: hsl(var(--fg-warning) / 12%);
+    border-color: hsl(var(--fg-warning) / 40%);
     color: hsl(var(--fg-warning));
 }
 
@@ -23,7 +23,7 @@
 
 .void-experiments-clear-btn {
     flex-shrink: 0;
-    border-color: hsl(var(--yellow-700));
+    border-color: hsl(var(--fg-warning) / 40%);
     color: hsl(var(--fg-warning));
 }
 

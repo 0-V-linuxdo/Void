@@ -19,7 +19,7 @@
 
 .void-plugin-card-crashed {
     opacity: 0.5;
-    border-color: hsl(var(--red-700));
+    border-color: hsl(var(--fg-danger) / 45%);
 }
 
 .void-plugin-card-crashed-icon svg {
