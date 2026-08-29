@@ -6673,6 +6673,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/plugins/_core/settings/index.tsx
   var logger15 = new Logger("Settings");
   var cl15 = classNameFactory("void-settings-");
+  var CogIcon = findExportedComponentLazy("CogIcon");
+  var PersonIcon = findExportedComponentLazy("PersonIcon");
+  var PaintIcon = findExportedComponentLazy("PaintIcon");
+  var VisitIcon = findExportedComponentLazy("VisitIcon");
+  var SlidersIcon = findExportedComponentLazy("SlidersIcon");
+  var DatabaseIcon = findExportedComponentLazy("DatabaseIcon");
   var settings3 = definePluginSettings({
     showVoidMenu: {
       type: 3 /* BOOLEAN */,
@@ -6686,6 +6692,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
     { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
     { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
+  ];
+  var GROK_MENU_TABS = [
+    { id: "account", name: "Account", icon: PersonIcon },
+    { id: "appearance", name: "Appearance", icon: PaintIcon },
+    { id: "behavior", name: "Behavior", icon: VisitIcon },
+    { id: "personality", name: "Customize", icon: SlidersIcon },
+    { id: "data", name: "Data Controls", icon: DatabaseIcon }
   ];
   function getVisibleTabs() {
     return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
@@ -6719,8 +6732,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       as: "span",
       color: "secondary"
     }, "[20260829.2] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"9631646"}`
-    }, `(${"9631646"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"3bbfd06"}`
+    }, `(${"3bbfd06"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6733,12 +6746,40 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function openSettingsTab(tab) {
     const store = SettingsDialogStore.useSettingsDialogStore.getState();
-    store.setTab(tab);
+    if (tab)
+      store.setTab(tab);
     store.setOpen(true);
   }
   function openPluginSettings(name) {
     setPendingPluginDialog(name);
     openSettingsTab(PLUGINS_TAB_ID);
+  }
+  function SettingsMenu() {
+    const forceUpdate = useForceUpdater();
+    useEventSubscription("pluginToggle", forceUpdate);
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
+      className: cl15("menu-icon")
+    }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: () => openSettingsTab()
+    }, /* @__PURE__ */ React.createElement(SettingsIcon, {
+      className: cl15("menu-icon")
+    }), "Open Settings"), GROK_MENU_TABS.map((t) => {
+      const Icon = t.icon;
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+        key: t.id,
+        onSelect: () => openSettingsTab(t.id)
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl15("menu-icon")
+      }), t.name);
+    }), /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), getVisibleTabs().map((t) => {
+      const Icon = t.icon;
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+        key: t.id,
+        onSelect: () => openSettingsTab(t.id)
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl15("menu-icon")
+      }), t.name);
+    })));
   }
   function VoidMenu() {
     const forceUpdate = useForceUpdater();
@@ -6769,6 +6810,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     })));
   }
   var WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
+  var WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
   var settings_default = definePlugin({
     name: "Settings",
     icon: SettingsIcon,
@@ -6777,6 +6819,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     required: true,
     settings: settings3,
     _renderVoidMenu: () => createElement(WrappedVoidMenu),
+    _renderSettingsMenu: () => createElement(WrappedSettingsMenu),
     _setPrimitive(name, component) {
       setSettingsPrimitive(name, component);
       return component;
@@ -6813,6 +6856,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       loadSavedThemes().catch((e) => logger15.error("Failed to load saved themes:", e));
     },
     patches: [
+      {
+        find: '"user-dropdown.settings","Settings"',
+        replacement: {
+          match: /\jsx{\i\.DropdownMenuItem}\{onSelect:\i,children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
+          replace: "$self._renderSettingsMenu()"
+        }
+      },
       {
         find: "avatar_menu_click",
         all: true,
