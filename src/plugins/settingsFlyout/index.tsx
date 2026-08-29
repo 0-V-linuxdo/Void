@@ -6,14 +6,11 @@
 
 import "./styles.css";
 
-import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary } from "@components";
 import { Settings2Icon } from "@components/icons";
-import { allTabs } from "@plugins/_core/settings";
 import {
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
@@ -22,7 +19,6 @@ import { createElement, React } from "@turbopack/common/react";
 import { SettingsDialogStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
-import { useEventSubscription, useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType } from "react";
 
@@ -71,11 +67,6 @@ const settings = definePluginSettings({
         description: "Data Controls",
         default: true,
     },
-    showVoidTabs: {
-        type: OptionType.BOOLEAN,
-        description: "Show Void tabs (Plugins, Themes, Quick CSS).",
-        default: true,
-    },
 });
 
 type GrokTabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data";
@@ -90,10 +81,7 @@ const GROK_TABS: { id: string; name: string; setting: GrokTabSetting; icon: Comp
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon },
 ];
 
-function SettingsMenu({ onOpen }: { onOpen?: () => void }) {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
-
+function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
     const cfg = settings.use([
         "showOpenSettings",
         "account",
@@ -103,21 +91,20 @@ function SettingsMenu({ onOpen }: { onOpen?: () => void }) {
         "billing",
         "usage",
         "data",
-        "showVoidTabs",
     ]);
 
     const grokTabs = GROK_TABS.filter(t => cfg[t.setting]);
-    const voidTabs = cfg.showVoidTabs
-        ? allTabs.filter(t => !t.plugin || isPluginEnabled(t.plugin))
-        : [];
-    const showOpen = cfg.showOpenSettings || (grokTabs.length === 0 && voidTabs.length === 0);
-    const showSeparator = (showOpen || grokTabs.length > 0) && voidTabs.length > 0;
+    const showOpen = cfg.showOpenSettings || grokTabs.length === 0;
 
-    const openTab = (tab?: string) => {
-        onOpen?.();
-        const store = SettingsDialogStore.useSettingsDialogStore.getState();
-        if (tab) store.setTab(tab);
-        store.setOpen(true);
+    const openTab = (tab: string | undefined, event: Event) => {
+        try {
+            onOpen?.(event);
+        } catch {}
+        queueMicrotask(() => {
+            const store = SettingsDialogStore.useSettingsDialogStore.getState();
+            if (tab) store.setTab(tab);
+            store.setOpen(true);
+        });
     };
 
     return (
@@ -128,7 +115,7 @@ function SettingsMenu({ onOpen }: { onOpen?: () => void }) {
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
                 {showOpen && (
-                    <DropdownMenuItem onSelect={() => openTab()}>
+                    <DropdownMenuItem onSelect={e => openTab(undefined, e)}>
                         <CogIcon className={cl("menu-icon")} />
                         Open Settings
                     </DropdownMenuItem>
@@ -136,17 +123,7 @@ function SettingsMenu({ onOpen }: { onOpen?: () => void }) {
                 {grokTabs.map(t => {
                     const Icon = t.icon;
                     return (
-                        <DropdownMenuItem key={t.id} onSelect={() => openTab(t.id)}>
-                            <Icon className={cl("menu-icon")} />
-                            {t.name}
-                        </DropdownMenuItem>
-                    );
-                })}
-                {showSeparator && <DropdownMenuSeparator />}
-                {voidTabs.map(t => {
-                    const Icon = t.icon;
-                    return (
-                        <DropdownMenuItem key={t.id} onSelect={() => openTab(t.id)}>
+                        <DropdownMenuItem key={t.id} onSelect={e => openTab(t.id, e)}>
                             <Icon className={cl("menu-icon")} />
                             {t.name}
                         </DropdownMenuItem>
@@ -169,7 +146,7 @@ export default definePlugin({
     requiresRestart: true,
     settings,
 
-    _renderSettingsMenu: (onOpen?: () => void) => createElement(WrappedSettingsMenu, { onOpen }),
+    _renderSettingsMenu: (onOpen?: (event?: Event) => void) => createElement(WrappedSettingsMenu, { onOpen }),
 
     patches: [
         {

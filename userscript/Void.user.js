@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.5] v1.0.0
+// @version      [20260829.6] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.5] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.6] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6735,9 +6735,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.5] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"3747844"}`
-    }, `(${"3747844"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260829.6] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"abd3cd9"}`
+    }, `(${"abd3cd9"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -9186,11 +9186,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       type: 3 /* BOOLEAN */,
       description: "Data Controls",
       default: true
-    },
-    showVoidTabs: {
-      type: 3 /* BOOLEAN */,
-      description: "Show Void tabs (Plugins, Themes, Quick CSS).",
-      default: true
     }
   });
   var GROK_TABS = [
@@ -9203,8 +9198,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
   ];
   function SettingsMenu({ onOpen }) {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
     const cfg = settings10.use([
       "showOpenSettings",
       "account",
@@ -9213,39 +9206,32 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       "customize",
       "billing",
       "usage",
-      "data",
-      "showVoidTabs"
+      "data"
     ]);
     const grokTabs = GROK_TABS.filter((t) => cfg[t.setting]);
-    const voidTabs = cfg.showVoidTabs ? allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin)) : [];
-    const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidTabs.length === 0;
-    const showSeparator = (showOpen || grokTabs.length > 0) && voidTabs.length > 0;
-    const openTab = (tab) => {
-      onOpen?.();
-      const store2 = SettingsDialogStore.useSettingsDialogStore.getState();
-      if (tab)
-        store2.setTab(tab);
-      store2.setOpen(true);
+    const showOpen = cfg.showOpenSettings || grokTabs.length === 0;
+    const openTab = (tab, event) => {
+      try {
+        onOpen?.(event);
+      } catch {}
+      queueMicrotask(() => {
+        const store2 = SettingsDialogStore.useSettingsDialogStore.getState();
+        if (tab)
+          store2.setTab(tab);
+        store2.setOpen(true);
+      });
     };
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl19("menu-icon")
     }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, showOpen && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => openTab()
+      onSelect: (e) => openTab(undefined, e)
     }, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl19("menu-icon")
     }), "Open Settings"), grokTabs.map((t) => {
       const Icon = t.icon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
-        onSelect: () => openTab(t.id)
-      }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl19("menu-icon")
-      }), t.name);
-    }), showSeparator && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidTabs.map((t) => {
-      const Icon = t.icon;
-      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-        key: t.id,
-        onSelect: () => openTab(t.id)
+        onSelect: (e) => openTab(t.id, e)
       }, /* @__PURE__ */ React.createElement(Icon, {
         className: cl19("menu-icon")
       }), t.name);
