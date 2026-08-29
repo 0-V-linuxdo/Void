@@ -5,8 +5,8 @@
     padding: 0.25rem 0.5rem;
     border: 1px solid hsl(var(--border-l2));
     border-radius: 0.5rem;
-    background: var(--background, #111);
-    color: var(--text-secondary, var(--text-primary));
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-secondary));
     font-size: 0.75rem;
     font-variant-numeric: tabular-nums;
     line-height: 1.2;

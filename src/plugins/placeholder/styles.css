@@ -19,7 +19,7 @@
     background: transparent;
     border: none;
     border-radius: 0.75rem;
-    color: var(--text-primary);
+    color: hsl(var(--fg-primary));
     font-size: 0.875rem;
     resize: vertical;
 }

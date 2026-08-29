@@ -56,11 +56,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
 }
 
 .void-ud-ring-warning {
-    color: #e3b341;
+    color: hsl(var(--fg-warning));
 }
 
 .void-ud-ring-danger {
-    color: #ff7b89;
+    color: hsl(var(--fg-danger));
 }
 
 .void-ud-panel {

@@ -19,7 +19,7 @@
     border-radius: 1rem;
     padding: 0.625rem 0.75rem;
     height: 3.25rem;
-    color: var(--text-primary);
+    color: hsl(var(--fg-primary));
     background: hsl(var(--surface-l1));
     box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
     cursor: pointer;
@@ -86,7 +86,7 @@
     padding-inline: 0.75rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: hsl(var(--fg-primary));
 }
 
 .void-ci-input {
@@ -114,7 +114,7 @@
     background: transparent;
     border: none;
     border-radius: 0.75rem;
-    color: var(--text-primary);
+    color: hsl(var(--fg-primary));
     font-size: 0.875rem;
     resize: vertical;
 }

@@ -22,7 +22,7 @@
 }
 
 .void-icons-item:hover {
-    color: hsl(var(--foreground));
+    color: hsl(var(--fg-primary));
     background: transparent !important;
 }
 

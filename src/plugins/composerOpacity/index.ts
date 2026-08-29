@@ -48,7 +48,6 @@ function apply() {
         + `${FRAME_KIDS}{pointer-events:auto!important}`
         + `${BACKDROP}{display:none!important}`
         + `${SHELL}{`
-        + `background-color:color-mix(in srgb,var(--background) ${pct}%,transparent)!important;`
         + `background-color:hsl(var(--surface-l1)/${alpha})!important;`
         + "background-image:none!important;"
         + `border-radius:${RADIUS}!important;`
