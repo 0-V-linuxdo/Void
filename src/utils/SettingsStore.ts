@@ -16,6 +16,17 @@ const SAVE_DEBOUNCE_MS = 100;
 
 type Listener = (path: string) => void;
 
+export function parseStoredSettings(raw: unknown): Record<string, unknown> | null {
+    if (isObject(raw)) return raw;
+    if (typeof raw !== "string" || !raw) return null;
+    try {
+        const parsed = JSON.parse(raw);
+        return isObject(parsed) ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
 export class SettingsStore<T extends object> {
     private globalListeners = new Set<Listener>();
     private pathListeners = new Map<string, Set<Listener>>();
@@ -121,11 +132,11 @@ export class SettingsStore<T extends object> {
         try {
             const json = JSON.stringify(this.plain);
             if (typeof GM_setValue === "function") {
-                GM_setValue(STORAGE_KEY, json);
+                try { GM_setValue(STORAGE_KEY, json); } catch (e) { logger.warn("Failed to save settings to GM:", e); }
             } else {
                 try { localStorage.setItem(STORAGE_KEY, json); } catch {}
-                idbSet(STORAGE_KEY, json).catch(e => logger.warn("Failed to save settings to IndexedDB:", e));
             }
+            idbSet(STORAGE_KEY, json).catch(e => logger.warn("Failed to save settings to IndexedDB:", e));
         } catch (e) {
             logger.error("Failed to save settings:", e);
         }

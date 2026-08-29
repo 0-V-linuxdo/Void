@@ -5,12 +5,11 @@
  */
 
 import { useEffect } from "@turbopack/common/react";
-import { isObject } from "@utils/guards";
-import { idbGet, idbSet } from "@utils/idb";
+import { idbGet } from "@utils/idb";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
-import { SettingsStore as SettingsStoreClass, STORAGE_KEY } from "@utils/SettingsStore";
+import { parseStoredSettings, SettingsStore as SettingsStoreClass, STORAGE_KEY } from "@utils/SettingsStore";
 import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingValue, type SettingsChecks, type SettingsDefinition } from "@utils/types";
 
 const logger = new Logger("Settings");
@@ -18,7 +17,7 @@ const logger = new Logger("Settings");
 export interface Settings {
     plugins: {
         [plugin: string]: {
-            enabled: boolean;
+            enabled?: boolean;
             [setting: string]: unknown;
         };
     };
@@ -36,40 +35,42 @@ export const Settings = SettingsStore.store;
 
 export const pluginPath = (name: string, key?: string) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
 
+async function readGmValue(): Promise<unknown> {
+    if (typeof GM_getValue !== "function") return null;
+    try {
+        const value = GM_getValue(STORAGE_KEY, null) as unknown;
+        if (value != null && typeof (value as { then?: unknown }).then === "function") {
+            return await (value as Promise<unknown>);
+        }
+        return value;
+    } catch (e) {
+        logger.warn("Failed to read GM storage:", e);
+        return null;
+    }
+}
+
+async function readStoredSettings(): Promise<Record<string, unknown> | null> {
+    const gm = parseStoredSettings(await readGmValue());
+    if (gm) return gm;
+
+    try {
+        const idb = parseStoredSettings(await idbGet(STORAGE_KEY) ?? null);
+        if (idb) return idb;
+    } catch (e) {
+        logger.warn("Failed to read IndexedDB:", e);
+    }
+
+    try {
+        return parseStoredSettings(localStorage.getItem(STORAGE_KEY));
+    } catch (e) {
+        logger.warn("Failed to read localStorage:", e);
+        return null;
+    }
+}
+
 export async function initSettings(): Promise<void> {
-    let raw: string | null = null;
-
-    if (typeof GM_getValue === "function") {
-        raw = GM_getValue(STORAGE_KEY, null);
-    } else {
-        try {
-            raw = await idbGet<string>(STORAGE_KEY) ?? null;
-        } catch (e) {
-            logger.warn("Failed to read IndexedDB:", e);
-        }
-
-        if (!raw) {
-            try {
-                raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) logger.info("Migrating settings from localStorage to IndexedDB");
-            } catch (e) {
-                logger.warn("Failed to read localStorage:", e);
-            }
-            if (raw) idbSet(STORAGE_KEY, raw).then(() => {
-                try { localStorage.removeItem(STORAGE_KEY); } catch {}
-            }).catch((e: unknown) => logger.debug("Failed to persist settings to IndexedDB:", e));
-        }
-    }
-
-    if (raw) {
-        try {
-            const parsed = JSON.parse(raw);
-            if (isObject(parsed)) Object.assign(settings, parsed);
-        } catch (e) {
-            logger.error("Failed to parse settings:", e);
-        }
-    }
-
+    const parsed = await readStoredSettings();
+    if (parsed) Object.assign(settings, parsed);
     mergeDefaults(settings, DefaultSettings);
 }
 
@@ -206,7 +207,7 @@ export function definePluginSettings<Def extends SettingsDefinition, Checks exte
             _pluginName = name;
             if (!name) return;
 
-            if (!PlainSettings.plugins[name]) PlainSettings.plugins[name] = { enabled: false };
+            if (!PlainSettings.plugins[name]) PlainSettings.plugins[name] = {};
 
             SettingsStore.setDefaultGetter(pluginPath(name), key => {
                 const setting = def[key];
