@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.3] v1.0.0
+// @version      [20260829.4] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.3] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.4] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6748,9 +6748,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.3] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"4ae2bde"}`
-    }, `(${"4ae2bde"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260829.4] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"1f52ae6"}`
+    }, `(${"1f52ae6"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6771,20 +6771,27 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     setPendingPluginDialog(name);
     openSettingsTab(PLUGINS_TAB_ID);
   }
-  function SettingsMenu() {
+  function SettingsMenu({ onOpen }) {
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
+    const openGrok = (tab) => {
+      onOpen?.();
+      const store = SettingsDialogStore.useSettingsDialogStore.getState();
+      if (tab)
+        store.setTab(tab);
+      store.setOpen(true);
+    };
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl15("menu-icon")
     }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => openSettingsTab()
+      onSelect: () => openGrok()
     }, /* @__PURE__ */ React.createElement(SettingsIcon, {
       className: cl15("menu-icon")
     }), "Open Settings"), GROK_MENU_TABS.map((t) => {
       const Icon = t.icon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
-        onSelect: () => openSettingsTab(t.id)
+        onSelect: () => openGrok(t.id)
       }, /* @__PURE__ */ React.createElement(Icon, {
         className: cl15("menu-icon")
       }), t.name);
@@ -6836,7 +6843,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     required: true,
     settings: settings3,
     _renderVoidMenu: () => createElement(WrappedVoidMenu),
-    _renderSettingsMenu: () => createElement(WrappedSettingsMenu),
+    _renderSettingsMenu: (onOpen) => createElement(WrappedSettingsMenu, { onOpen }),
     _setPrimitive(name, component) {
       setSettingsPrimitive(name, component);
       return component;
@@ -6876,8 +6883,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       {
         find: '"user-dropdown.settings","Settings"',
         replacement: {
-          match: /\jsx{\i\.DropdownMenuItem}\{onSelect:\i,children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
-          replace: "$self._renderSettingsMenu()"
+          match: /\jsx{\i\.DropdownMenuItem}\{onSelect:(\i),children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
+          replace: "$self._renderSettingsMenu($1)"
         }
       },
       {

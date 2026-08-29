@@ -126,9 +126,16 @@ function openPluginSettings(name: string) {
     openSettingsTab(PLUGINS_TAB_ID);
 }
 
-function SettingsMenu() {
+function SettingsMenu({ onOpen }: { onOpen?: () => void }) {
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
+
+    const openGrok = (tab?: string) => {
+        onOpen?.();
+        const store = SettingsDialogStore.useSettingsDialogStore.getState();
+        if (tab) store.setTab(tab);
+        store.setOpen(true);
+    };
 
     return (
         <DropdownMenuSub>
@@ -137,14 +144,14 @@ function SettingsMenu() {
                 Settings
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-                <DropdownMenuItem onSelect={() => openSettingsTab()}>
+                <DropdownMenuItem onSelect={() => openGrok()}>
                     <SettingsIcon className={cl("menu-icon")} />
                     Open Settings
                 </DropdownMenuItem>
                 {GROK_MENU_TABS.map(t => {
                     const Icon = t.icon;
                     return (
-                        <DropdownMenuItem key={t.id} onSelect={() => openSettingsTab(t.id)}>
+                        <DropdownMenuItem key={t.id} onSelect={() => openGrok(t.id)}>
                             <Icon className={cl("menu-icon")} />
                             {t.name}
                         </DropdownMenuItem>
@@ -224,7 +231,7 @@ export default definePlugin({
     settings,
 
     _renderVoidMenu: () => createElement(WrappedVoidMenu),
-    _renderSettingsMenu: () => createElement(WrappedSettingsMenu),
+    _renderSettingsMenu: (onOpen?: () => void) => createElement(WrappedSettingsMenu, { onOpen }),
 
     _setPrimitive<K extends keyof SettingsPrimitives>(name: K, component: SettingsPrimitives[K]) {
         setSettingsPrimitive(name, component);
@@ -266,8 +273,8 @@ export default definePlugin({
         {
             find: '"user-dropdown.settings","Settings"',
             replacement: {
-                match: /\jsx{\i\.DropdownMenuItem}\{onSelect:\i,children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
-                replace: "$self._renderSettingsMenu()",
+                match: /\jsx{\i\.DropdownMenuItem}\{onSelect:(\i),children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
+                replace: "$self._renderSettingsMenu($1)",
             },
         },
         {
