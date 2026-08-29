@@ -4,15 +4,31 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Button, Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, Flex, Paragraph, Text } from "@components";
+import "../shared.css";
+
+import { Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Flex, Text } from "@components";
 import { Cross2Icon } from "@components/icons";
 import { React } from "@turbopack/common/react";
+import { classes } from "@utils/css";
 import type { ReactNode } from "react";
 
-export function VoidDialogShell({ title, subtitle, onClose, children }: { title: ReactNode; subtitle?: string; onClose(): void; children: ReactNode }) {
+export type DialogSize = "sm" | "md" | "lg";
+
+export function VoidDialogShell({ title, subtitle, onClose, children, size = "md", nested }: {
+    title: ReactNode;
+    subtitle?: string;
+    onClose(): void;
+    children: ReactNode;
+    size?: DialogSize;
+    nested?: boolean;
+}) {
     return (
         <Dialog open onOpenChange={v => { if (!v) onClose(); }}>
-            <DialogContent className="void-dialog-content" aria-describedby={undefined}>
+            <DialogContent
+                className={classes("void-dialog-content", `void-dialog-content-${size}`)}
+                overlayClassname={nested ? "void-dialog-overlay-nested" : undefined}
+                {...(subtitle ? {} : { "aria-describedby": undefined })}
+            >
                 <DialogClose asChild>
                     <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className="void-dialog-close">
                         <Cross2Icon />
@@ -20,7 +36,7 @@ export function VoidDialogShell({ title, subtitle, onClose, children }: { title:
                 </DialogClose>
                 <DialogHeader className="void-dialog-header">
                     <DialogTitle>{title}</DialogTitle>
-                    {subtitle && <Paragraph>{subtitle}</Paragraph>}
+                    {subtitle && <DialogDescription>{subtitle}</DialogDescription>}
                 </DialogHeader>
                 {children}
             </DialogContent>
@@ -45,7 +61,7 @@ export function DialogActions({ className, onCancel, confirmLabel, onConfirm, co
     confirmDisabled?: boolean;
 }) {
     return (
-        <DialogFooter className={className}>
+        <DialogFooter className={classes("void-dialog-footer", className)}>
             <Button variant="secondary" size="sm" onClick={onCancel}>Cancel</Button>
             <Button variant="primary" size="sm" onClick={onConfirm} disabled={confirmDisabled}>{confirmLabel}</Button>
         </DialogFooter>

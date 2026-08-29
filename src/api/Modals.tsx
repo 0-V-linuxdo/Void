@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Dialog, DialogContent } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React, useCallback } from "@turbopack/common/react";
 import { createExternalStore } from "@utils/misc";
@@ -52,12 +51,7 @@ export function closeAllModals() {
 
 const ModalInstance = ErrorBoundary.wrap(function ModalInstance({ entry }: { entry: ModalEntry }) {
     const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
-
-    return (
-        <Dialog open onOpenChange={v => { if (!v) onClose(); }}>
-            <DialogContent aria-describedby={undefined}>{entry.render({ onClose })}</DialogContent>
-        </Dialog>
-    );
+    return entry.render({ onClose });
 });
 
 export function ModalContainer() {

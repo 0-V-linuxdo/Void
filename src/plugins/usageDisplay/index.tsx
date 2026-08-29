@@ -9,9 +9,10 @@ import "./styles.css";
 import type { ChatBarButtonDef } from "@api/ChatBarButtons";
 import { type ModalProps, openModal } from "@api/Modals";
 import { definePluginSettings, PlainSettings, SettingsStore } from "@api/Settings";
-import { Button, ConfirmDialog, DialogClose, DialogHeader, DialogTitle, Flex, Paragraph, Switch, Text } from "@components";
+import { Button, ConfirmDialog, Flex, Paragraph, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { CircleGaugeIcon, Cross2Icon } from "@components/icons";
+import { CircleGaugeIcon } from "@components/icons";
+import { VoidDialogShell } from "@components/settings/tabs/VoidDialogShell";
 import type { GrokSubscription } from "@grok-types";
 import { getPlanName } from "@turbopack/common/plan";
 import { React, useEffect, useState } from "@turbopack/common/react";
@@ -396,16 +397,7 @@ function StatsModal({ onClose }: ModalProps) {
     const todayKey = localDateKey(Date.now());
 
     return (
-        <div className={cl("modal")}>
-            <DialogClose asChild>
-                <Button variant="tertiary" size="sm" shape="square" aria-label="Close" className={cl("modal-close")}>
-                    <Cross2Icon />
-                </Button>
-            </DialogClose>
-            <DialogHeader>
-                <DialogTitle>Usage by date</DialogTitle>
-                <Paragraph>Stored on this device.</Paragraph>
-            </DialogHeader>
+        <VoidDialogShell title="Usage by date" subtitle="Stored on this device." onClose={onClose} size="sm">
             <StatsToggle />
             {!usageStats ? (
                 <Paragraph>Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.</Paragraph>
@@ -437,8 +429,7 @@ function StatsModal({ onClose }: ModalProps) {
                     )}
                 </Flex>
             )}
-            <Button variant="secondary" size="sm" shape="rectangle" onClick={onClose}>Close</Button>
-        </div>
+        </VoidDialogShell>
     );
 }
 

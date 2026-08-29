@@ -78,7 +78,7 @@ function OnlineThemeDialog({ onClose, onSave }: OnlineThemeDialogProps) {
     };
 
     return (
-        <VoidDialogShell title="Add Online Theme" onClose={onClose}>
+        <VoidDialogShell title="Add Online Theme" onClose={onClose} size="sm" nested>
             <DialogField label="URL">
                 <Input
                     type="text"
@@ -121,7 +121,7 @@ function LocalThemeDialog({ onClose, theme, onSave }: LocalThemeDialogProps) {
     };
 
     return (
-        <VoidDialogShell title={theme ? "Edit Local Theme" : "New Local Theme"} onClose={onClose}>
+        <VoidDialogShell title={theme ? "Edit Local Theme" : "New Local Theme"} onClose={onClose} size="lg" nested>
             <DialogField label="Name">
                 <Input
                     type="text"

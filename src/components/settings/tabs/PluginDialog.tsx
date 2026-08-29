@@ -8,7 +8,7 @@ import "../shared.css";
 import "./PluginDialog.css";
 
 import { Settings } from "@api/Settings";
-import { Button, DialogFooter, Flex, Paragraph, Separator } from "@components";
+import { Button, ConfirmDialog, DialogFooter, Flex, Paragraph, Separator } from "@components";
 import { React, useCallback, useMemo, useState } from "@turbopack/common/react";
 import { classNameFactory } from "@utils/css";
 import type { Plugin } from "@utils/types";
@@ -26,7 +26,7 @@ interface PluginDialogProps {
 
 export default function PluginDialog({ plugin, onClose }: PluginDialogProps) {
     const entries = useMemo(() => Object.entries(plugin.settings?.def ?? {}).filter(isVisibleSetting), [plugin.settings?.def]);
-    const [confirming, setConfirming] = useState(false);
+    const [resetOpen, setResetOpen] = useState(false);
 
     const resetSettings = useCallback(() => {
         const current = Settings.plugins[plugin.name];
@@ -35,11 +35,10 @@ export default function PluginDialog({ plugin, onClose }: PluginDialogProps) {
         Settings.plugins[plugin.name] = Object.fromEntries(
             Object.entries(current).filter(([k]) => !entryKeys.has(k)),
         ) as typeof current;
-        setConfirming(false);
     }, [plugin.name, entries]);
 
     return (
-        <VoidDialogShell title={plugin.name} subtitle={plugin.description} onClose={onClose}>
+        <VoidDialogShell title={plugin.name} subtitle={plugin.description} onClose={onClose} nested>
             <Separator />
             {!!plugin.authors?.length && (
                 <DialogField label="Authors">
@@ -59,16 +58,20 @@ export default function PluginDialog({ plugin, onClose }: PluginDialogProps) {
             </DialogField>
             {!!entries.length && (
                 <DialogFooter className={cl("footer")}>
-                    <Button
-                        variant={confirming ? "danger" : "secondary"}
-                        size="sm"
-                        onBlur={() => setConfirming(false)}
-                        onClick={() => confirming ? resetSettings() : setConfirming(true)}
-                    >
-                        {confirming ? "Are you sure?" : "Reset"}
+                    <Button variant="secondary" size="sm" onClick={() => setResetOpen(true)}>
+                        Reset
                     </Button>
                 </DialogFooter>
             )}
+            <ConfirmDialog
+                open={resetOpen}
+                onOpenChange={setResetOpen}
+                title="Reset settings"
+                description="Reset this plugin's settings to defaults? This cannot be undone."
+                confirmText="Reset"
+                danger
+                onConfirm={resetSettings}
+            />
         </VoidDialogShell>
     );
 }

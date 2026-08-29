@@ -41,12 +41,12 @@ export function ConfirmDialog({ open, onOpenChange, title, description, confirmT
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel asChild>
-						<Button variant="secondary" size="md">
+						<Button variant="secondary" size="sm">
 							{cancelText}
 						</Button>
 					</AlertDialogCancel>
 					<AlertDialogAction asChild>
-						<Button variant={danger ? "danger" : "primary"} size="md" onClick={onConfirm}>
+						<Button variant={danger ? "danger" : "primary"} size="sm" onClick={onConfirm}>
 							{confirmText}
 						</Button>
 					</AlertDialogAction>
