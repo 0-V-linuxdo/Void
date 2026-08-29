@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260828.14] v1.0.0
+// @version      [20260829.1] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260828.14] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.1] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6682,9 +6682,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260828.14] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"023f789"}`
-    }, `(${"023f789"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260829.1] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"50db1ff"}`
+    }, `(${"50db1ff"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -11097,7 +11097,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
   var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
   var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
-  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation)$/i;
+  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation|see all(?: chats| conversations)?|show all(?: chats| conversations)?|view all(?: chats| conversations)?|all chats|all conversations|查看全部|显示全部|查看所有|全部会话|所有对话)$/i;
   var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
   var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
   var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
@@ -11125,6 +11125,17 @@ html.void-rt-open [data-sidebar="gap"] {
   var paintedKey = "";
   var sidebarSnap = null;
   var pendingWs = new Set;
+  function isSkipLabel(name) {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    if (!t)
+      return false;
+    SKIP_LABEL.lastIndex = 0;
+    return SKIP_LABEL.test(t);
+  }
+  function usableName(name) {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    return t && !isSkipLabel(t) ? t : "";
+  }
   function unique(ids) {
     const seen = new Set;
     const out = [];
@@ -11198,8 +11209,9 @@ html.void-rt-open [data-sidebar="gap"] {
       }
       const keepProjects = {};
       for (const [id, name] of Object.entries(settings15.plain.projectNames ?? {})) {
-        if (usedWs.has(id))
-          keepProjects[id] = name;
+        const n = usableName(name);
+        if (usedWs.has(id) && n)
+          keepProjects[id] = n;
       }
       let changed = false;
       if (!sameList(readVisits(), visits)) {
@@ -11468,10 +11480,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function folderLabel(el) {
     if (!el.querySelector("svg"))
       return "";
-    const t = shortOwnText(el);
-    if (!t || SKIP_LABEL.test(t))
-      return "";
-    return t;
+    return usableName(shortOwnText(el));
   }
   function projectNameFromAncestors(el) {
     const sidebar = el.closest("[data-sidebar=sidebar]");
@@ -11500,60 +11509,79 @@ html.void-rt-open [data-sidebar="gap"] {
     if (sidebarSnap?.key === key)
       return sidebarSnap.index;
     const index = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
-    let currentWs = "";
     let currentName = "";
     const assignConv = (chat, ws, name) => {
-      if (!chat)
+      if (!chat || !ws)
         return;
-      if (ws) {
-        index.wsByConv[chat] = ws;
-        currentWs = ws;
-        if (name)
-          index.nameByWs[ws] = name;
-      } else if (currentWs) {
-        index.wsByConv[chat] = currentWs;
-      }
-      const label = name || currentName || (ws ? index.nameByWs[ws] : "") || "";
-      if (label)
+      index.wsByConv[chat] = ws;
+      const label = usableName(name || currentName || index.nameByWs[ws] || "");
+      if (label) {
+        index.nameByWs[ws] = label;
         index.nameByConv[chat] = label;
+      }
     };
     for (const el of sidebar.querySelectorAll("a[href], button, [role='button']")) {
       const { ws, chat } = hrefParts(el.getAttribute("href"));
       if (chat) {
         assignConv(chat, ws, currentName);
-        if (!index.nameByConv[chat]) {
-          const up = projectNameFromAncestors(el);
+        if (ws && !index.nameByConv[chat]) {
+          const up = usableName(projectNameFromAncestors(el));
           if (up) {
             index.nameByConv[chat] = up;
-            if (ws)
-              index.nameByWs[ws] ??= up;
+            index.nameByWs[ws] ??= up;
             currentName ||= up;
           }
         }
         continue;
       }
       const label = shortOwnText(el) || folderLabel(el);
-      if (label && SKIP_LABEL.test(label) && !ws) {
-        currentWs = "";
+      if (isSkipLabel(label) && !ws) {
         currentName = "";
         continue;
       }
       if (ws) {
-        currentWs = ws;
-        if (label && !SKIP_LABEL.test(label)) {
-          currentName = label;
-          index.nameByWs[ws] = label;
+        const n = usableName(label);
+        if (n) {
+          currentName = n;
+          index.nameByWs[ws] = n;
+        } else if (isSkipLabel(label)) {
+          currentName = index.nameByWs[ws] || "";
         }
         continue;
       }
       const folder = folderLabel(el);
-      if (folder) {
+      if (folder)
         currentName = folder;
-        currentWs = "";
-      }
     }
     sidebarSnap = { key, index };
     return index;
+  }
+  function workspaceFetchedEmpty(id) {
+    try {
+      const { byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      return !!byIdWithWorkspaces[id] && !convWorkspaceId(id);
+    } catch {
+      return false;
+    }
+  }
+  function routeWorkspaceFor(id) {
+    if (id === chatIdFromUrl())
+      return asWorkspaceId(projectIdFromUrl());
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      const chat = route.conversationId || (typeof route.chat === "string" ? route.chat : "");
+      if (chat === id)
+        return asWorkspaceId(route.workspaceId);
+    } catch {}
+    return "";
+  }
+  function dropWorkspace(id) {
+    const prev = settings15.plain.workspaceByConv ?? {};
+    if (!prev[id])
+      return;
+    const next = { ...prev };
+    delete next[id];
+    settings15.store.workspaceByConv = next;
   }
   function workspaceOf(id) {
     if (!id)
@@ -11567,6 +11595,8 @@ html.void-rt-open [data-sidebar="gap"] {
     const fromConv = convWorkspaceId(id);
     if (fromConv)
       return fromConv;
+    if (workspaceFetchedEmpty(id))
+      return "";
     const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
     if (fromSidebar)
       return fromSidebar;
@@ -11577,36 +11607,38 @@ html.void-rt-open [data-sidebar="gap"] {
     if (fromHist)
       return fromHist;
     if (id === currentVisit())
-      return liveWorkspaceId();
+      return routeWorkspaceFor(id);
     return "";
   }
   function readOpenProjectName() {
     const idx = sidebarIndex();
     const live = liveWorkspaceId();
-    if (live && idx.nameByWs[live])
-      return idx.nameByWs[live];
+    if (live) {
+      const n = usableName(idx.nameByWs[live]);
+      if (n)
+        return n;
+    }
     const current = currentVisit();
-    if (current && idx.nameByConv[current])
-      return idx.nameByConv[current];
-    return "";
+    const ws = current ? workspaceOf(current) : "";
+    if (!current || !ws)
+      return "";
+    return usableName(idx.nameByConv[current] || idx.nameByWs[ws]);
   }
   function projectNameOf(id) {
     if (!id)
       return "";
-    const idx = sidebarIndex();
-    if (idx.nameByConv[id])
-      return idx.nameByConv[id];
     const ws = workspaceOf(id);
     if (!ws)
       return "";
-    if (idx.nameByWs[ws])
-      return idx.nameByWs[ws];
-    const cached = wsNames[ws] || settings15.plain.projectNames?.[ws] || "";
+    const idx = sidebarIndex();
+    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings15.plain.projectNames?.[ws] || "");
+    if (!named)
+      return "";
     const live = liveWorkspaceId();
     const liveName = readOpenProjectName();
-    if (cached && live && ws !== live && liveName && cached === liveName)
+    if (live && ws !== live && liveName && named === liveName)
       return "";
-    return cached;
+    return named;
   }
   function rememberProject(id) {
     if (!id)
@@ -11620,7 +11652,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const idx = sidebarIndex();
     const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
     const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
-    const name = sidebarName || wsNames[ws] || liveName || settings15.plain.projectNames?.[ws] || "";
+    const name = usableName(sidebarName || wsNames[ws] || liveName || settings15.plain.projectNames?.[ws] || "");
     if (!name)
       return;
     wsNames[ws] = name;
@@ -11641,13 +11673,21 @@ html.void-rt-open [data-sidebar="gap"] {
       }
     }
     for (const [ws, name] of Object.entries(idx.nameByWs)) {
-      if (!name)
+      const n = usableName(name);
+      if (!n)
         continue;
-      wsNames[ws] = name;
-      if (prevNames[ws] !== name) {
-        prevNames[ws] = name;
+      wsNames[ws] = n;
+      if (prevNames[ws] !== n) {
+        prevNames[ws] = n;
         namesChanged = true;
       }
+    }
+    for (const [ws, name] of Object.entries(prevNames)) {
+      if (usableName(name))
+        continue;
+      delete prevNames[ws];
+      delete wsNames[ws];
+      namesChanged = true;
     }
     if (wsChanged)
       settings15.store.workspaceByConv = prevWs;
@@ -11657,7 +11697,13 @@ html.void-rt-open [data-sidebar="gap"] {
   function requestWorkspace(id) {
     if (!id || isHomeId(id) || pendingWs.has(id))
       return;
-    if (convWorkspaceId(id) || sidebarIndex().wsByConv[id])
+    if (convWorkspaceId(id))
+      return;
+    if (workspaceFetchedEmpty(id)) {
+      dropWorkspace(id);
+      return;
+    }
+    if (sidebarIndex().wsByConv[id])
       return;
     pendingWs.add(id);
     try {
@@ -11669,13 +11715,17 @@ html.void-rt-open [data-sidebar="gap"] {
       }
       fetchConv(id).then((conv) => {
         const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-        if (!ws)
+        if (!ws) {
+          dropWorkspace(id);
+          if (open2)
+            paint();
           return;
+        }
         const prev = settings15.plain.workspaceByConv ?? {};
         if (prev[id] !== ws)
           settings15.store.workspaceByConv = { ...prev, [id]: ws };
         const live = liveWorkspaceId();
-        const liveName = readOpenProjectName();
+        const liveName = usableName(readOpenProjectName());
         const names = settings15.plain.projectNames ?? {};
         if (live && ws !== live && liveName && names[ws] === liveName) {
           const next = { ...names };
@@ -12046,19 +12096,9 @@ html.void-rt-open [data-sidebar="gap"] {
       rememberProject(id);
   }
   function shouldRememberProject(id) {
-    if (!id)
+    if (!id || workspaceFetchedEmpty(id))
       return false;
-    if (isHomeId(id))
-      return !!workspaceOf(id);
-    const live = liveWorkspaceId();
-    if (!live)
-      return true;
-    const owned = convWorkspaceId(id) || sidebarIndex().wsByConv[id] || "";
-    if (owned && owned !== live)
-      return false;
-    if (projectIdFromUrl() && !chatIdFromUrl() && id !== currentVisit())
-      return false;
-    return true;
+    return !!workspaceOf(id);
   }
   function hydrate() {
     invalidateSidebar();

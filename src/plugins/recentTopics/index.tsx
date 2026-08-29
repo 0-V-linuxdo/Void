@@ -27,7 +27,7 @@ const HOME_SEP = "home:";
 const TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
 const TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
 const TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
-const SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation)$/i;
+const SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation|see all(?: chats| conversations)?|show all(?: chats| conversations)?|view all(?: chats| conversations)?|all chats|all conversations|查看全部|显示全部|查看所有|全部会话|所有对话)$/i;
 const SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
 const TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
 const STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
@@ -87,6 +87,18 @@ let host: HTMLDivElement | null = null;
 let paintedKey = "";
 let sidebarSnap: { key: string; index: SidebarIndex; } | null = null;
 const pendingWs = new Set<string>();
+
+function isSkipLabel(name: string): boolean {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    if (!t) return false;
+    SKIP_LABEL.lastIndex = 0;
+    return SKIP_LABEL.test(t);
+}
+
+function usableName(name: string): string {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    return t && !isSkipLabel(t) ? t : "";
+}
 
 function unique(ids: string[]): string[] {
     const seen = new Set<string>();
@@ -162,7 +174,8 @@ function writeVisits(next: string[]) {
         }
         const keepProjects: Record<string, string> = {};
         for (const [id, name] of Object.entries(settings.plain.projectNames ?? {})) {
-            if (usedWs.has(id)) keepProjects[id] = name;
+            const n = usableName(name);
+            if (usedWs.has(id) && n) keepProjects[id] = n;
         }
         let changed = false;
         if (!sameList(readVisits(), visits)) {
@@ -415,9 +428,7 @@ function shortOwnText(el: Element): string {
 
 function folderLabel(el: Element): string {
     if (!el.querySelector("svg")) return "";
-    const t = shortOwnText(el);
-    if (!t || SKIP_LABEL.test(t)) return "";
-    return t;
+    return usableName(shortOwnText(el));
 }
 
 function projectNameFromAncestors(el: Element): string {
@@ -447,31 +458,27 @@ function sidebarIndex(): SidebarIndex {
     if (sidebarSnap?.key === key) return sidebarSnap.index;
 
     const index: SidebarIndex = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
-    let currentWs = "";
     let currentName = "";
 
     const assignConv = (chat: string, ws: string, name: string) => {
-        if (!chat) return;
-        if (ws) {
-            index.wsByConv[chat] = ws;
-            currentWs = ws;
-            if (name) index.nameByWs[ws] = name;
-        } else if (currentWs) {
-            index.wsByConv[chat] = currentWs;
+        if (!chat || !ws) return;
+        index.wsByConv[chat] = ws;
+        const label = usableName(name || currentName || index.nameByWs[ws] || "");
+        if (label) {
+            index.nameByWs[ws] = label;
+            index.nameByConv[chat] = label;
         }
-        const label = name || currentName || (ws ? index.nameByWs[ws] : "") || "";
-        if (label) index.nameByConv[chat] = label;
     };
 
     for (const el of sidebar.querySelectorAll<HTMLElement>("a[href], button, [role='button']")) {
         const { ws, chat } = hrefParts(el.getAttribute("href"));
         if (chat) {
             assignConv(chat, ws, currentName);
-            if (!index.nameByConv[chat]) {
-                const up = projectNameFromAncestors(el);
+            if (ws && !index.nameByConv[chat]) {
+                const up = usableName(projectNameFromAncestors(el));
                 if (up) {
                     index.nameByConv[chat] = up;
-                    if (ws) index.nameByWs[ws] ??= up;
+                    index.nameByWs[ws] ??= up;
                     currentName ||= up;
                 }
             }
@@ -479,30 +486,55 @@ function sidebarIndex(): SidebarIndex {
         }
 
         const label = shortOwnText(el) || folderLabel(el);
-        if (label && SKIP_LABEL.test(label) && !ws) {
-            currentWs = "";
+        if (isSkipLabel(label) && !ws) {
             currentName = "";
             continue;
         }
 
         if (ws) {
-            currentWs = ws;
-            if (label && !SKIP_LABEL.test(label)) {
-                currentName = label;
-                index.nameByWs[ws] = label;
+            const n = usableName(label);
+            if (n) {
+                currentName = n;
+                index.nameByWs[ws] = n;
+            } else if (isSkipLabel(label)) {
+                currentName = index.nameByWs[ws] || "";
             }
             continue;
         }
 
         const folder = folderLabel(el);
-        if (folder) {
-            currentName = folder;
-            currentWs = "";
-        }
+        if (folder) currentName = folder;
     }
 
     sidebarSnap = { key, index };
     return index;
+}
+
+function workspaceFetchedEmpty(id: string): boolean {
+    try {
+        const { byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+        return !!byIdWithWorkspaces[id] && !convWorkspaceId(id);
+    } catch {
+        return false;
+    }
+}
+
+function routeWorkspaceFor(id: string): string {
+    if (id === chatIdFromUrl()) return asWorkspaceId(projectIdFromUrl());
+    try {
+        const { route } = RoutingStore.useRoutingStore.getState();
+        const chat = route.conversationId || (typeof route.chat === "string" ? route.chat : "");
+        if (chat === id) return asWorkspaceId(route.workspaceId);
+    } catch {}
+    return "";
+}
+
+function dropWorkspace(id: string) {
+    const prev = settings.plain.workspaceByConv ?? {};
+    if (!prev[id]) return;
+    const next = { ...prev };
+    delete next[id];
+    settings.store.workspaceByConv = next;
 }
 
 function workspaceOf(id: string): string {
@@ -514,37 +546,41 @@ function workspaceOf(id: string): string {
     }
     const fromConv = convWorkspaceId(id);
     if (fromConv) return fromConv;
+    if (workspaceFetchedEmpty(id)) return "";
     const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
     if (fromSidebar) return fromSidebar;
     const cached = asWorkspaceId(settings.plain.workspaceByConv?.[id]);
     if (cached) return cached;
     const fromHist = workspaceFromHistory(id);
     if (fromHist) return fromHist;
-    if (id === currentVisit()) return liveWorkspaceId();
+    if (id === currentVisit()) return routeWorkspaceFor(id);
     return "";
 }
 
 function readOpenProjectName(): string {
     const idx = sidebarIndex();
     const live = liveWorkspaceId();
-    if (live && idx.nameByWs[live]) return idx.nameByWs[live];
+    if (live) {
+        const n = usableName(idx.nameByWs[live]);
+        if (n) return n;
+    }
     const current = currentVisit();
-    if (current && idx.nameByConv[current]) return idx.nameByConv[current];
-    return "";
+    const ws = current ? workspaceOf(current) : "";
+    if (!current || !ws) return "";
+    return usableName(idx.nameByConv[current] || idx.nameByWs[ws]);
 }
 
 function projectNameOf(id: string): string {
     if (!id) return "";
-    const idx = sidebarIndex();
-    if (idx.nameByConv[id]) return idx.nameByConv[id];
     const ws = workspaceOf(id);
     if (!ws) return "";
-    if (idx.nameByWs[ws]) return idx.nameByWs[ws];
-    const cached = wsNames[ws] || settings.plain.projectNames?.[ws] || "";
+    const idx = sidebarIndex();
+    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings.plain.projectNames?.[ws] || "");
+    if (!named) return "";
     const live = liveWorkspaceId();
     const liveName = readOpenProjectName();
-    if (cached && live && ws !== live && liveName && cached === liveName) return "";
-    return cached;
+    if (live && ws !== live && liveName && named === liveName) return "";
+    return named;
 }
 
 function rememberProject(id: string) {
@@ -557,7 +593,7 @@ function rememberProject(id: string) {
     const idx = sidebarIndex();
     const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
     const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
-    const name = sidebarName || wsNames[ws] || liveName || settings.plain.projectNames?.[ws] || "";
+    const name = usableName(sidebarName || wsNames[ws] || liveName || settings.plain.projectNames?.[ws] || "");
     if (!name) return;
     wsNames[ws] = name;
     const prevNames = settings.plain.projectNames ?? {};
@@ -578,12 +614,19 @@ function reconcileSidebarCache() {
         }
     }
     for (const [ws, name] of Object.entries(idx.nameByWs)) {
-        if (!name) continue;
-        wsNames[ws] = name;
-        if (prevNames[ws] !== name) {
-            prevNames[ws] = name;
+        const n = usableName(name);
+        if (!n) continue;
+        wsNames[ws] = n;
+        if (prevNames[ws] !== n) {
+            prevNames[ws] = n;
             namesChanged = true;
         }
+    }
+    for (const [ws, name] of Object.entries(prevNames)) {
+        if (usableName(name)) continue;
+        delete prevNames[ws];
+        delete wsNames[ws];
+        namesChanged = true;
     }
 
     if (wsChanged) settings.store.workspaceByConv = prevWs;
@@ -592,7 +635,12 @@ function reconcileSidebarCache() {
 
 function requestWorkspace(id: string) {
     if (!id || isHomeId(id) || pendingWs.has(id)) return;
-    if (convWorkspaceId(id) || sidebarIndex().wsByConv[id]) return;
+    if (convWorkspaceId(id)) return;
+    if (workspaceFetchedEmpty(id)) {
+        dropWorkspace(id);
+        return;
+    }
+    if (sidebarIndex().wsByConv[id]) return;
     pendingWs.add(id);
     try {
         const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
@@ -605,11 +653,15 @@ function requestWorkspace(id: string) {
             const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv))
                 || asWorkspaceId(conv?.workspaceId)
                 || asWorkspaceId(conv?.workspaces);
-            if (!ws) return;
+            if (!ws) {
+                dropWorkspace(id);
+                if (open) paint();
+                return;
+            }
             const prev = settings.plain.workspaceByConv ?? {};
             if (prev[id] !== ws) settings.store.workspaceByConv = { ...prev, [id]: ws };
             const live = liveWorkspaceId();
-            const liveName = readOpenProjectName();
+            const liveName = usableName(readOpenProjectName());
             const names = settings.plain.projectNames ?? {};
             if (live && ws !== live && liveName && names[ws] === liveName) {
                 const next = { ...names };
@@ -977,14 +1029,8 @@ function bump(id: string) {
 }
 
 function shouldRememberProject(id: string): boolean {
-    if (!id) return false;
-    if (isHomeId(id)) return !!workspaceOf(id);
-    const live = liveWorkspaceId();
-    if (!live) return true;
-    const owned = convWorkspaceId(id) || sidebarIndex().wsByConv[id] || "";
-    if (owned && owned !== live) return false;
-    if (projectIdFromUrl() && !chatIdFromUrl() && id !== currentVisit()) return false;
-    return true;
+    if (!id || workspaceFetchedEmpty(id)) return false;
+    return !!workspaceOf(id);
 }
 
 function hydrate() {
