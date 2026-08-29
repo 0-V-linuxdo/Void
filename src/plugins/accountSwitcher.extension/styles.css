@@ -55,7 +55,7 @@
 }
 
 .void-as-row-active .void-as-row {
-    background: var(--surface-l5, rgb(255 255 255 / 4%));
+    background: hsl(var(--surface-l5));
 }
 
 .void-as-avatar {
@@ -70,8 +70,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--surface-l5, rgb(255 255 255 / 10%));
-    color: var(--fg-primary, currentcolor);
+    background: hsl(var(--surface-l5));
+    color: hsl(var(--fg-primary));
     font-size: 0.75rem;
     font-weight: 600;
     line-height: 1;
@@ -102,7 +102,7 @@
 }
 
 .void-as-row-delete:hover {
-    color: var(--destructive, #f87171);
+    color: hsl(var(--fg-danger));
 }
 
 .void-as-row-wrap:hover .void-as-row-delete,

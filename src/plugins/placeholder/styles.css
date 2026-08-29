@@ -3,8 +3,13 @@
 }
 
 .void-ph-textarea-wrap {
-    border: 1px solid var(--border-l2, var(--border));
+    border: 1px solid hsl(var(--border-l2));
     border-radius: 0.75rem;
+}
+
+.void-ph-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
 }
 
 .void-ph-textarea {
@@ -17,4 +22,8 @@
     color: var(--text-primary);
     font-size: 0.875rem;
     resize: vertical;
+}
+
+.void-ph-textarea:focus {
+    outline: none;
 }

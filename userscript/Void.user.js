@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.6] v1.0.0
+// @version      [20260829.7] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.6] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.7] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -2276,9 +2276,9 @@ ${sourceUrl}`;
   var MSG_HELLO = "void-themed-scrollbar-hello";
   var SCROLLER = '[class*="pane-card"] :is([class*="overflow-auto"],[class*="overflow-y-auto"],[class*="overflow-scroll"],[class*="overflow-y-scroll"])';
   var IFRAME_SEL = 'iframe[title="Preview"], [class*="pane-card"] iframe';
-  var THUMB = "var(--border-l2,color-mix(in srgb,var(--fg-primary,#888) 28%,transparent))";
-  var THUMB_HOVER = "var(--fg-tertiary,color-mix(in srgb,var(--fg-primary,#888) 42%,transparent))";
-  var TRACK = "var(--surface-l1,var(--surface-inset,transparent))";
+  var THUMB = "hsl(var(--border-l2))";
+  var THUMB_HOVER = "hsl(var(--fg-tertiary))";
+  var TRACK = "hsl(var(--surface-l1))";
   var CSS = `
 ${SCROLLER} {
     scrollbar-width: thin !important;
@@ -2559,6 +2559,17 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     walkFiberUp: () => walkFiberUp
   });
 
+  // src/utils/guards.ts
+  function isTruthy(item) {
+    return Boolean(item);
+  }
+  function isNonNullish(item) {
+    return item != null;
+  }
+  function isObject(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
   // src/utils/idb.ts
   var logger6 = new Logger("IDB");
   var DB_NAME = "Void";
@@ -2605,17 +2616,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       store.put(value, key);
       store.transaction.oncomplete = () => resolve();
     });
-  }
-
-  // src/utils/guards.ts
-  function isTruthy(item) {
-    return Boolean(item);
-  }
-  function isNonNullish(item) {
-    return item != null;
-  }
-  function isObject(value) {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
   }
 
   // src/utils/misc.ts
@@ -2977,18 +2977,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var logger8 = new Logger("SettingsStore");
   var STORAGE_KEY = "VoidSettings";
   var SAVE_DEBOUNCE_MS = 100;
-  function parseStoredSettings(raw) {
-    if (isObject(raw))
-      return raw;
-    if (typeof raw !== "string" || !raw)
-      return null;
-    try {
-      const parsed = JSON.parse(raw);
-      return isObject(parsed) ? parsed : null;
-    } catch {
-      return null;
-    }
-  }
 
   class SettingsStore2 {
     globalListeners = new Set;
@@ -3092,17 +3080,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       try {
         const json = JSON.stringify(this.plain);
         if (typeof GM_setValue === "function") {
-          try {
-            GM_setValue(STORAGE_KEY, json);
-          } catch (e) {
-            logger8.warn("Failed to save settings to GM:", e);
-          }
+          GM_setValue(STORAGE_KEY, json);
         } else {
           try {
             localStorage.setItem(STORAGE_KEY, json);
           } catch {}
+          idbSet(STORAGE_KEY, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
         }
-        idbSet(STORAGE_KEY, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
       } catch (e) {
         logger8.error("Failed to save settings:", e);
       }
@@ -3150,42 +3134,41 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PlainSettings = settings;
   var Settings = SettingsStore3.store;
   var pluginPath = (name, key) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
-  async function readGmValue() {
-    if (typeof GM_getValue !== "function")
-      return null;
-    try {
-      const value = GM_getValue(STORAGE_KEY, null);
-      if (value != null && typeof value.then === "function") {
-        return await value;
-      }
-      return value;
-    } catch (e) {
-      logger9.warn("Failed to read GM storage:", e);
-      return null;
-    }
-  }
-  async function readStoredSettings() {
-    const gm = parseStoredSettings(await readGmValue());
-    if (gm)
-      return gm;
-    try {
-      const idb = parseStoredSettings(await idbGet(STORAGE_KEY) ?? null);
-      if (idb)
-        return idb;
-    } catch (e) {
-      logger9.warn("Failed to read IndexedDB:", e);
-    }
-    try {
-      return parseStoredSettings(localStorage.getItem(STORAGE_KEY));
-    } catch (e) {
-      logger9.warn("Failed to read localStorage:", e);
-      return null;
-    }
-  }
   async function initSettings() {
-    const parsed = await readStoredSettings();
-    if (parsed)
-      Object.assign(settings, parsed);
+    let raw = null;
+    if (typeof GM_getValue === "function") {
+      raw = GM_getValue(STORAGE_KEY, null);
+    } else {
+      try {
+        raw = await idbGet(STORAGE_KEY) ?? null;
+      } catch (e) {
+        logger9.warn("Failed to read IndexedDB:", e);
+      }
+      if (!raw) {
+        try {
+          raw = localStorage.getItem(STORAGE_KEY);
+          if (raw)
+            logger9.info("Migrating settings from localStorage to IndexedDB");
+        } catch (e) {
+          logger9.warn("Failed to read localStorage:", e);
+        }
+        if (raw)
+          idbSet(STORAGE_KEY, raw).then(() => {
+            try {
+              localStorage.removeItem(STORAGE_KEY);
+            } catch {}
+          }).catch((e) => logger9.debug("Failed to persist settings to IndexedDB:", e));
+      }
+    }
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (isObject(parsed))
+          Object.assign(settings, parsed);
+      } catch (e) {
+        logger9.error("Failed to parse settings:", e);
+      }
+    }
     mergeDefaults(settings, DefaultSettings);
   }
   function migratePluginSettings(name, ...oldNames) {
@@ -3296,7 +3279,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         if (!name)
           return;
         if (!PlainSettings.plugins[name])
-          PlainSettings.plugins[name] = {};
+          PlainSettings.plugins[name] = { enabled: false };
         SettingsStore3.setDefaultGetter(pluginPath(name), (key) => {
           const setting = def[key];
           return setting ? resolveDefault(setting) : undefined;
@@ -3343,7 +3326,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // void-css:/tmp/void-push/src/components/ColorSettingRow.css
+  // void-css:/tmp/Void-src/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3382,7 +3365,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/void-push/src/components/ConfirmDialog.css
+  // void-css:/tmp/Void-src/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3630,7 +3613,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // void-css:/tmp/void-push/src/components/ErrorCard.css
+  // void-css:/tmp/Void-src/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3743,7 +3726,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/void-push/src/components/SelectionUI.css
+  // void-css:/tmp/Void-src/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3760,7 +3743,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 
 .void-sel-checkbox {
-    border-color: oklch(99.24% 0 none / 15%) !important;
+    border-color: hsl(var(--border-l2)) !important;
 }
 
 .void-sel-action-bar {
@@ -3773,7 +3756,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 .void-sel-count {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--color-text-tertiary);
+    color: hsl(var(--fg-tertiary));
 }
 
 .void-sel-buttons {
@@ -4403,7 +4386,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/Void-src/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4669,7 +4652,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // void-css:/tmp/void-push/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/Void-src/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4681,7 +4664,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/CssEditor.css
+  // void-css:/tmp/Void-src/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -4953,7 +4936,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/void-push/src/components/settings/shared.css
+  // void-css:/tmp/Void-src/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5027,7 +5010,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/Void-src/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius);
@@ -5067,7 +5050,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--fg-primary));
 }`);
 
-  // void-css:/tmp/void-push/src/components/settings/PluginCard.css
+  // void-css:/tmp/Void-src/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5118,7 +5101,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/BaseCard.css
+  // void-css:/tmp/Void-src/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5397,7 +5380,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // void-css:/tmp/void-push/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/Void-src/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5415,7 +5398,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/SettingField.css
+  // void-css:/tmp/Void-src/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -5436,14 +5419,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     height: 0.375rem;
     transform: translateY(-50%);
     border-radius: 999px;
-    background: color-mix(in srgb, var(--fg, #fff) 22%, transparent);
+    background: hsl(var(--fg-primary) / 22%);
     pointer-events: none;
 }
 
 .void-setting-slider-fill {
     height: 100%;
     border-radius: inherit;
-    background: var(--fg, #fff);
+    background: hsl(var(--fg-primary));
 }
 
 .void-setting-slider-thumb {
@@ -5452,7 +5435,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     width: 1rem;
     height: 1rem;
     border-radius: 50%;
-    background: var(--fg, #fff);
+    background: hsl(var(--fg-primary));
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
@@ -5466,6 +5449,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     padding: 0;
     opacity: 0;
     cursor: pointer;
+}
+
+.void-setting-slider-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+    border-radius: 0.25rem;
 }
 
 .void-setting-slider-value {
@@ -6008,7 +5997,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/void-push/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/Void-src/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6031,7 +6020,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/ThemeCard.css
+  // void-css:/tmp/Void-src/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6309,7 +6298,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/void-push/src/plugins/experiments/styles.css
+  // void-css:/tmp/Void-src/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6735,9 +6724,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.6] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"abd3cd9"}`
-    }, `(${"abd3cd9"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260829.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
+    }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7089,13 +7078,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/inputHistory/styles.css
+  // void-css:/tmp/Void-src/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
     z-index: 2147483646;
     padding: 0.25rem 0.5rem;
-    border: 1px solid var(--border-l2, var(--border));
+    border: 1px solid hsl(var(--border-l2));
     border-radius: 0.5rem;
     background: var(--background, #111);
     color: var(--text-secondary, var(--text-primary));
@@ -7136,7 +7125,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     overflow: auto;
     max-height: min(22rem, 45vh);
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border-l2) / 0.8) transparent;
+    scrollbar-color: hsl(var(--border-l2) / 80%) transparent;
 }
 
 .void-ih-item {
@@ -7148,18 +7137,23 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     padding: 0.7rem 0.75rem;
     border: 1px solid transparent;
     border-radius: 0.75rem;
-    background: hsl(var(--surface-l1) / 0.72);
+    background: hsl(var(--surface-l1) / 72%);
 }
 
 .void-ih-item:hover {
     background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 0.45);
+    border-color: hsl(var(--border-l2) / 45%);
 }
 
 .void-ih-item-on {
     align-items: start;
     background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 0.6);
+    border-color: hsl(var(--border-l2) / 60%);
+}
+
+.void-ih-item:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
 }
 
 .void-ih-main {
@@ -7171,7 +7165,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     display: block;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    color: hsl(var(--fg-primary, var(--text-primary)));
+    color: hsl(var(--fg-primary));
     font-size: 0.8125rem;
     line-height: 1.45;
 }
@@ -7218,7 +7212,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     gap: 0.15rem;
     padding: 0.15rem;
     border-radius: 0.65rem;
-    background: hsl(var(--surface-l2) / 0.9);
+    background: hsl(var(--surface-l2) / 90%);
 }
 
 .void-ih-actions :is(button) {
@@ -7228,8 +7222,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     min-height: 2.25rem;
 }
 
-.void-ih-item:hover .void-ih-actions,
-.void-ih-item-on .void-ih-actions {
+.void-ih-item-on .void-ih-actions,
+.void-ih-item:hover .void-ih-actions {
     background: hsl(var(--surface-l3, var(--surface-l1)));
 }
 
@@ -7239,106 +7233,17 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
 .void-ih-page {
     min-width: 3.5rem;
-    color: hsl(var(--fg-secondary, var(--text-secondary)));
+    color: hsl(var(--fg-secondary));
     font-size: 0.8125rem;
     font-variant-numeric: tabular-nums;
     text-align: center;
 }
 
-.void-ih-item {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.7rem 0.75rem;
-    border: 1px solid transparent;
-    border-radius: 0.75rem;
-    background: hsl(var(--surface-l1) / 0.72);
-}
-
-.void-ih-item:hover {
-    background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 0.45);
-}
-
-.void-ih-item-on {
-    align-items: start;
-    background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 0.6);
-}
-
-.void-ih-main {
-    min-width: 0;
-    cursor: pointer;
-}
-
-.void-ih-body {
-    display: block;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    color: hsl(var(--fg-primary, var(--text-primary)));
-    font-size: 0.8125rem;
-    line-height: 1.45;
-}
-
-.void-ih-clamp {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-}
-
-.void-ih-item-on .void-ih-body {
-    max-height: 12rem;
-    overflow: auto;
-    scrollbar-width: thin;
-}
-
-.void-ih-side {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 0.45rem;
-}
-
-.void-ih-item-on .void-ih-side {
-    align-items: flex-start;
-    padding-top: 0.1rem;
-}
-
-.void-ih-lines {
-    min-width: 1.5rem;
-    padding: 0.15rem 0.45rem;
-    border-radius: 999px;
-    background: hsl(var(--surface-l3, var(--surface-l2)));
-    color: hsl(var(--fg-tertiary, var(--fg-secondary)));
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.3;
-    text-align: center;
-}
-
-.void-ih-actions {
-    display: flex;
-    gap: 0.15rem;
-    padding: 0.15rem;
-    border-radius: 0.65rem;
-    background: hsl(var(--surface-l2) / 0.9);
-}
-
-.void-ih-actions :is(button) {
-    width: 2.25rem;
-    height: 2.25rem;
-    min-width: 2.25rem;
-    min-height: 2.25rem;
-}
-
-.void-ih-item:hover .void-ih-actions,
-.void-ih-item-on .void-ih-actions {
-    background: hsl(var(--surface-l3, var(--surface-l1)));
-}
-`);
+@media (prefers-reduced-motion: reduce) {
+    .void-ih-hud {
+        transition: none;
+    }
+}`);
 
   // src/plugins/inputHistory/index.tsx
   var logger16 = new Logger("InputHistory");
@@ -7971,7 +7876,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/betterImagine/styles.css
+  // void-css:/tmp/Void-src/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8654,7 +8559,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/betterFiles/styles.css
+  // void-css:/tmp/Void-src/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8809,7 +8714,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/betterSidebar/styles.css
+  // void-css:/tmp/Void-src/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -9054,7 +8959,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/settingsFlyout/styles.css
+  // void-css:/tmp/Void-src/src/plugins/settingsFlyout/styles.css
   registerStyle("settingsFlyout", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -9304,7 +9209,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/Void-src/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -9322,8 +9227,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 }
 
 .void-ud-label {
-    font-size: 14px !important;
-    font-weight: 550 !important;
+    font-size: 0.875rem;
+    font-weight: 550;
     font-variant-numeric: tabular-nums;
 }
 
@@ -10530,7 +10435,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/Void-src/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -10830,7 +10735,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/recentTopics/styles.css
+  // void-css:/tmp/Void-src/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -13657,7 +13562,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/exportChat/styles.css
+  // void-css:/tmp/Void-src/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -13856,14 +13761,19 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/placeholder/styles.css
+  // void-css:/tmp/Void-src/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
 
 .void-ph-textarea-wrap {
-    border: 1px solid var(--border-l2, var(--border));
+    border: 1px solid hsl(var(--border-l2));
     border-radius: 0.75rem;
+}
+
+.void-ph-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
 }
 
 .void-ph-textarea {
@@ -13877,7 +13787,10 @@ html.void-rt-open [data-sidebar="gap"] {
     font-size: 0.875rem;
     resize: vertical;
 }
-`);
+
+.void-ph-textarea:focus {
+    outline: none;
+}`);
 
   // src/plugins/placeholder/index.tsx
   var cl22 = classNameFactory("void-ph-");
@@ -13943,7 +13856,7 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/messageTimestamps/styles.css
+  // void-css:/tmp/Void-src/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -14095,7 +14008,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/downloadTTS/styles.css
+  // void-css:/tmp/Void-src/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -14160,6 +14073,7 @@ div:has(> #grok-bot-nav-button) {
   // src/plugins/noDictation/index.ts
   var STYLE_NAME7 = "noDictation";
   var REFINEMENT_MARK = "void-no-dictation-refinement";
+  var REFINEMENT_ROW = `div:has(> .${REFINEMENT_MARK})`;
   var BUTTON_CSS = `
 button[aria-label="Dictation"]:not([role="dialog"] *),
 button[aria-label^="Dictation ("]:not([role="dialog"] *),
@@ -14168,7 +14082,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     display: none !important;
 }
 `;
-  var REFINEMENT_CSS = `.${REFINEMENT_MARK}{display:none!important}`;
+  var REFINEMENT_CSS = `${REFINEMENT_ROW},.h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
   var settings21 = definePluginSettings({
     hideDictationRefinement: {
       type: 3 /* BOOLEAN */,
@@ -14195,8 +14109,8 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       {
         find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
         replacement: {
-          match: /DISABLE_VOICE_MODE&&\(0,(\i)\.jsxs\)\(\i\.Fragment,\{/,
-          replace: `DISABLE_VOICE_MODE&&(0,$1.jsxs)("div",{className:"${REFINEMENT_MARK}",style:{display:"contents"},`
+          match: /("How much Grok refines your speech-to-text transcriptions".{0,200}?\(0,\i\.jsxs\)\(\i,\{action:\i)(?=,children:\[)/,
+          replace: `$1,className:"${REFINEMENT_MARK}"`
         }
       }
     ],
@@ -14245,7 +14159,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/streamerMode/styles.css
+  // void-css:/tmp/Void-src/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -14442,7 +14356,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/customInstructions/styles.css
+  // void-css:/tmp/Void-src/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -14465,8 +14379,8 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     padding: 0.625rem 0.75rem;
     height: 3.25rem;
     color: var(--text-primary);
-    background: var(--surface-l1);
-    box-shadow: inset 0 0 0 1px var(--border-l1, var(--border));
+    background: hsl(var(--surface-l1));
+    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
     cursor: pointer;
 }
 
@@ -14477,7 +14391,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 .void-ci-card-add {
     justify-content: center;
     box-shadow: none;
-    border: 1px dashed var(--border-l1, var(--border));
+    border: 1px dashed hsl(var(--border-l1));
 }
 
 .void-ci-avatar {
@@ -14516,6 +14430,11 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     opacity: 1;
 }
 
+.void-ci-card:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
 .void-ci-editor {
     display: flex;
     flex-direction: column;
@@ -14534,12 +14453,17 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 }
 
 .void-ci-textarea-wrap {
-    border: 1px solid var(--border-l2, var(--border));
+    border: 1px solid hsl(var(--border-l2));
     border-radius: 0.75rem;
 }
 
+.void-ci-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
 .void-ci-textarea-wrap-error {
-    border-color: var(--fg-danger, #ef4444);
+    border-color: hsl(var(--fg-danger));
 }
 
 .void-ci-textarea {
@@ -14566,7 +14490,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 }
 
 .void-ci-error-text {
-    color: var(--fg-danger, #ef4444);
+    color: hsl(var(--fg-danger));
 }
 
 .void-ci-trigger {
@@ -14578,6 +14502,12 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-ci-card-actions {
+        transition: none;
+    }
 }
 `);
 
@@ -14833,7 +14763,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
   var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [inputHistory_default.name]: inputHistory_default, [autoCollapse_default.name]: autoCollapse_default, [responseNotification_default.name]: responseNotification_default, [betterImagine_default.name]: betterImagine_default, [noShareLink_default.name]: noShareLink_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterFiles_default.name]: betterFiles_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [betterSidebar_default.name]: betterSidebar_default, [settingsFlyout_default.name]: settingsFlyout_default, [composerOpacity_default.name]: composerOpacity_default, [usageDisplay_default.name]: usageDisplay_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [recentTopics_default.name]: recentTopics_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [exportChat_default.name]: exportChat_default, [placeholder_default.name]: placeholder_default, [experiments_default.name]: experiments_default, [messageTimestamps_default.name]: messageTimestamps_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [downloadTTS_default.name]: downloadTTS_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [streamerMode_default.name]: streamerMode_default, [incognito_default.name]: incognito_default, [customInstructions_default.name]: customInstructions_default, [widerChat_default.name]: widerChat_default };
-  // void-css:/tmp/void-push/src/api/Notices.css
+  // void-css:/tmp/Void-src/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;

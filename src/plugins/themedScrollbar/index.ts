@@ -17,9 +17,9 @@ const MSG_HELLO = "void-themed-scrollbar-hello";
 const SCROLLER = '[class*="pane-card"] :is([class*="overflow-auto"],[class*="overflow-y-auto"],[class*="overflow-scroll"],[class*="overflow-y-scroll"])';
 const IFRAME_SEL = 'iframe[title="Preview"], [class*="pane-card"] iframe';
 
-const THUMB = "var(--border-l2,color-mix(in srgb,var(--fg-primary,#888) 28%,transparent))";
-const THUMB_HOVER = "var(--fg-tertiary,color-mix(in srgb,var(--fg-primary,#888) 42%,transparent))";
-const TRACK = "var(--surface-l1,var(--surface-inset,transparent))";
+const THUMB = "hsl(var(--border-l2))";
+const THUMB_HOVER = "hsl(var(--fg-tertiary))";
+const TRACK = "hsl(var(--surface-l1))";
 
 const CSS = `
 ${SCROLLER} {

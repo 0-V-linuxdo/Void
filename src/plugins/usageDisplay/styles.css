@@ -15,8 +15,8 @@
 }
 
 .void-ud-label {
-    font-size: 14px !important;
-    font-weight: 550 !important;
+    font-size: 0.875rem;
+    font-weight: 550;
     font-variant-numeric: tabular-nums;
 }
 
