@@ -16,7 +16,6 @@ import { hasVisibleSettings } from "@components/settings/utils";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import {
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
@@ -24,7 +23,6 @@ import {
 import { createElement, React } from "@turbopack/common/react";
 import { setSettingsPrimitive, type SettingsPrimitives } from "@turbopack/common/settingsPrimitives";
 import { SettingsDialogStore } from "@turbopack/common/stores";
-import { findExportedComponentLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -35,13 +33,6 @@ import type { ComponentType, ReactNode } from "react";
 const logger = new Logger("Settings");
 
 const cl = classNameFactory("void-settings-");
-
-const CogIcon = findExportedComponentLazy("CogIcon");
-const PersonIcon = findExportedComponentLazy("PersonIcon");
-const PaintIcon = findExportedComponentLazy("PaintIcon");
-const VisitIcon = findExportedComponentLazy("VisitIcon");
-const SlidersIcon = findExportedComponentLazy("SlidersIcon");
-const DatabaseIcon = findExportedComponentLazy("DatabaseIcon");
 
 const settings = definePluginSettings({
     showVoidMenu: {
@@ -66,14 +57,6 @@ export const allTabs: SettingsTab[] = [
     { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
     { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
     { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
-];
-
-const GROK_MENU_TABS: { id: string; name: string; icon: ComponentType<any> }[] = [
-    { id: "account", name: "Account", icon: PersonIcon },
-    { id: "appearance", name: "Appearance", icon: PaintIcon },
-    { id: "behavior", name: "Behavior", icon: VisitIcon },
-    { id: "personality", name: "Customize", icon: SlidersIcon },
-    { id: "data", name: "Data Controls", icon: DatabaseIcon },
 ];
 
 function getVisibleTabs() {
@@ -115,61 +98,15 @@ function VersionInfo() {
     );
 }
 
-function openSettingsTab(tab?: string) {
+function openSettingsTab(tab: string) {
     const store = SettingsDialogStore.useSettingsDialogStore.getState();
-    if (tab) store.setTab(tab);
+    store.setTab(tab);
     store.setOpen(true);
 }
 
 function openPluginSettings(name: string) {
     setPendingPluginDialog(name);
     openSettingsTab(PLUGINS_TAB_ID);
-}
-
-function SettingsMenu({ onOpen }: { onOpen?: () => void }) {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
-
-    const openGrok = (tab?: string) => {
-        onOpen?.();
-        const store = SettingsDialogStore.useSettingsDialogStore.getState();
-        if (tab) store.setTab(tab);
-        store.setOpen(true);
-    };
-
-    return (
-        <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-                <CogIcon className={cl("menu-icon")} />
-                Settings
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-                <DropdownMenuItem onSelect={() => openGrok()}>
-                    <SettingsIcon className={cl("menu-icon")} />
-                    Open Settings
-                </DropdownMenuItem>
-                {GROK_MENU_TABS.map(t => {
-                    const Icon = t.icon;
-                    return (
-                        <DropdownMenuItem key={t.id} onSelect={() => openGrok(t.id)}>
-                            <Icon className={cl("menu-icon")} />
-                            {t.name}
-                        </DropdownMenuItem>
-                    );
-                })}
-                <DropdownMenuSeparator />
-                {getVisibleTabs().map(t => {
-                    const Icon = t.icon;
-                    return (
-                        <DropdownMenuItem key={t.id} onSelect={() => openSettingsTab(t.id)}>
-                            <Icon className={cl("menu-icon")} />
-                            {t.name}
-                        </DropdownMenuItem>
-                    );
-                })}
-            </DropdownMenuSubContent>
-        </DropdownMenuSub>
-    );
 }
 
 function VoidMenu() {
@@ -220,7 +157,6 @@ function VoidMenu() {
 }
 
 const WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
-const WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
 
 export default definePlugin({
     name: "Settings",
@@ -231,7 +167,6 @@ export default definePlugin({
     settings,
 
     _renderVoidMenu: () => createElement(WrappedVoidMenu),
-    _renderSettingsMenu: (onOpen?: () => void) => createElement(WrappedSettingsMenu, { onOpen }),
 
     _setPrimitive<K extends keyof SettingsPrimitives>(name: K, component: SettingsPrimitives[K]) {
         setSettingsPrimitive(name, component);
@@ -270,13 +205,6 @@ export default definePlugin({
     },
 
     patches: [
-        {
-            find: '"user-dropdown.settings","Settings"',
-            replacement: {
-                match: /\jsx{\i\.DropdownMenuItem}\{onSelect:(\i),children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
-                replace: "$self._renderSettingsMenu($1)",
-            },
-        },
         {
             find: "avatar_menu_click",
             all: true,
