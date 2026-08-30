@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.7] v1.0.0
+// @version      [20260830.8] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.7] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.8] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6917,7 +6917,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260830.8] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -13254,6 +13254,29 @@ html.void-rt-open [data-sidebar="gap"] {
       description: 'Show "Open Settings" (last used tab).',
       default: true
     },
+    voidPosition: {
+      type: 4 /* SELECT */,
+      description: "Place Void tabs above or below Grok tabs.",
+      options: [
+        { label: "Above Grok tabs", value: "above", default: true },
+        { label: "Below Grok tabs", value: "below" }
+      ]
+    },
+    plugins: {
+      type: 3 /* BOOLEAN */,
+      description: "Plugins",
+      default: true
+    },
+    themes: {
+      type: 3 /* BOOLEAN */,
+      description: "Themes",
+      default: true
+    },
+    css: {
+      type: 3 /* BOOLEAN */,
+      description: "Quick CSS",
+      default: true
+    },
     account: {
       type: 3 /* BOOLEAN */,
       description: "Account",
@@ -13300,9 +13323,9 @@ html.void-rt-open [data-sidebar="gap"] {
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
   ];
   var VOID_TABS = [
-    { id: "void_plugins_tab", name: "Plugins", icon: UnplugIcon },
-    { id: "void_themes_tab", name: "Themes", icon: PaletteIcon },
-    { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon }
+    { id: "void_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
+    { id: "void_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
+    { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
   ];
   function openTab(tab, onOpen, event) {
     const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
@@ -13316,9 +13339,33 @@ html.void-rt-open [data-sidebar="gap"] {
     } catch {}
     store3.setOpen(true);
   }
+  function tabItems(tabs) {
+    return tabs.map((t) => {
+      const Icon = t.icon;
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+        key: t.id,
+        onSelect: () => openTab(t.id)
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl24("menu-icon")
+      }), t.name);
+    });
+  }
+  function VoidSection({ tabs }) {
+    if (tabs.length === 0)
+      return null;
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "secondary",
+      className: cl24("group")
+    }, "Void"), tabItems(tabs));
+  }
   function SettingsMenu({ onOpen }) {
     const cfg = settings21.use([
       "showOpenSettings",
+      "voidPosition",
+      "plugins",
+      "themes",
+      "css",
       "account",
       "appearance",
       "behavior",
@@ -13328,7 +13375,10 @@ html.void-rt-open [data-sidebar="gap"] {
       "data"
     ]);
     const grokTabs = GROK_TABS.filter((t) => cfg[t.setting]);
-    const showOpen = cfg.showOpenSettings || grokTabs.length === 0;
+    const voidTabs = VOID_TABS.filter((t) => cfg[t.setting]);
+    const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidTabs.length === 0;
+    const voidFirst = cfg.voidPosition !== "below";
+    const hasBoth = grokTabs.length > 0 && voidTabs.length > 0;
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl24("menu-icon")
     }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
@@ -13337,26 +13387,10 @@ html.void-rt-open [data-sidebar="gap"] {
       onSelect: (e) => openTab(undefined, onOpen, e)
     }, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl24("menu-icon")
-    }), "Open Settings"), showOpen && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: "secondary",
-      className: cl24("group")
-    }, "Void"), VOID_TABS.map((t) => {
-      const Icon = t.icon;
-      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-        key: t.id,
-        onSelect: () => openTab(t.id)
-      }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl24("menu-icon")
-      }), t.name);
-    }), grokTabs.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), grokTabs.map((t) => {
-      const Icon = t.icon;
-      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-        key: t.id,
-        onSelect: () => openTab(t.id)
-      }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl24("menu-icon")
-      }), t.name);
+    }), "Open Settings"), showOpen && (voidTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidFirst && /* @__PURE__ */ React.createElement(VoidSection, {
+      tabs: voidTabs
+    }), voidFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), !voidFirst && /* @__PURE__ */ React.createElement(VoidSection, {
+      tabs: voidTabs
     })));
   }
   var WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);

@@ -33,6 +33,29 @@ const settings = definePluginSettings({
         description: 'Show "Open Settings" (last used tab).',
         default: true,
     },
+    voidPosition: {
+        type: OptionType.SELECT,
+        description: "Place Void tabs above or below Grok tabs.",
+        options: [
+            { label: "Above Grok tabs", value: "above", default: true },
+            { label: "Below Grok tabs", value: "below" },
+        ],
+    },
+    plugins: {
+        type: OptionType.BOOLEAN,
+        description: "Plugins",
+        default: true,
+    },
+    themes: {
+        type: OptionType.BOOLEAN,
+        description: "Themes",
+        default: true,
+    },
+    css: {
+        type: OptionType.BOOLEAN,
+        description: "Quick CSS",
+        default: true,
+    },
     account: {
         type: OptionType.BOOLEAN,
         description: "Account",
@@ -71,6 +94,7 @@ const settings = definePluginSettings({
 });
 
 type GrokTabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data";
+type VoidTabSetting = "plugins" | "themes" | "css";
 
 interface FlyoutTab {
     id: string;
@@ -80,6 +104,10 @@ interface FlyoutTab {
 
 interface GrokFlyoutTab extends FlyoutTab {
     setting: GrokTabSetting;
+}
+
+interface VoidFlyoutTab extends FlyoutTab {
+    setting: VoidTabSetting;
 }
 
 const GROK_TABS: GrokFlyoutTab[] = [
@@ -92,10 +120,10 @@ const GROK_TABS: GrokFlyoutTab[] = [
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon },
 ];
 
-const VOID_TABS: FlyoutTab[] = [
-    { id: "void_plugins_tab", name: "Plugins", icon: UnplugIcon },
-    { id: "void_themes_tab", name: "Themes", icon: PaletteIcon },
-    { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon },
+const VOID_TABS: VoidFlyoutTab[] = [
+    { id: "void_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
+    { id: "void_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
+    { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon },
 ];
 
 function openTab(tab: string | undefined, onOpen?: (event?: Event) => void, event?: Event) {
@@ -111,9 +139,35 @@ function openTab(tab: string | undefined, onOpen?: (event?: Event) => void, even
     store.setOpen(true);
 }
 
+function tabItems(tabs: FlyoutTab[]) {
+    return tabs.map(t => {
+        const Icon = t.icon;
+        return (
+            <DropdownMenuItem key={t.id} onSelect={() => openTab(t.id)}>
+                <Icon className={cl("menu-icon")} />
+                {t.name}
+            </DropdownMenuItem>
+        );
+    });
+}
+
+function VoidSection({ tabs }: { tabs: FlyoutTab[] }) {
+    if (tabs.length === 0) return null;
+    return (
+        <>
+            <Text size="xs" color="secondary" className={cl("group")}>Void</Text>
+            {tabItems(tabs)}
+        </>
+    );
+}
+
 function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
     const cfg = settings.use([
         "showOpenSettings",
+        "voidPosition",
+        "plugins",
+        "themes",
+        "css",
         "account",
         "appearance",
         "behavior",
@@ -124,7 +178,10 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
     ]);
 
     const grokTabs = GROK_TABS.filter(t => cfg[t.setting]);
-    const showOpen = cfg.showOpenSettings || grokTabs.length === 0;
+    const voidTabs = VOID_TABS.filter(t => cfg[t.setting]);
+    const showOpen = cfg.showOpenSettings || (grokTabs.length === 0 && voidTabs.length === 0);
+    const voidFirst = cfg.voidPosition !== "below";
+    const hasBoth = grokTabs.length > 0 && voidTabs.length > 0;
 
     return (
         <DropdownMenuSub>
@@ -139,27 +196,12 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
                         Open Settings
                     </DropdownMenuItem>
                 )}
-                {showOpen && <DropdownMenuSeparator />}
-                <Text size="xs" color="secondary" className={cl("group")}>Void</Text>
-                {VOID_TABS.map(t => {
-                    const Icon = t.icon;
-                    return (
-                        <DropdownMenuItem key={t.id} onSelect={() => openTab(t.id)}>
-                            <Icon className={cl("menu-icon")} />
-                            {t.name}
-                        </DropdownMenuItem>
-                    );
-                })}
-                {grokTabs.length > 0 && <DropdownMenuSeparator />}
-                {grokTabs.map(t => {
-                    const Icon = t.icon;
-                    return (
-                        <DropdownMenuItem key={t.id} onSelect={() => openTab(t.id)}>
-                            <Icon className={cl("menu-icon")} />
-                            {t.name}
-                        </DropdownMenuItem>
-                    );
-                })}
+                {showOpen && (voidTabs.length > 0 || grokTabs.length > 0) && <DropdownMenuSeparator />}
+                {voidFirst && <VoidSection tabs={voidTabs} />}
+                {voidFirst && hasBoth && <DropdownMenuSeparator />}
+                {tabItems(grokTabs)}
+                {!voidFirst && hasBoth && <DropdownMenuSeparator />}
+                {!voidFirst && <VoidSection tabs={voidTabs} />}
             </DropdownMenuSubContent>
         </DropdownMenuSub>
     );
