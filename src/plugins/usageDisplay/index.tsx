@@ -9,7 +9,7 @@ import "./styles.css";
 import type { ChatBarButtonDef } from "@api/ChatBarButtons";
 import { type ModalProps, openModal } from "@api/Modals";
 import { definePluginSettings, PlainSettings, SettingsStore } from "@api/Settings";
-import { Button, ConfirmDialog, Flex, Grid, Paragraph, Switch, Text } from "@components";
+import { Button, ConfirmDialog, Flex, Paragraph, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CircleGaugeIcon } from "@components/icons";
 import { VoidDialogShell } from "@components/settings/tabs/VoidDialogShell";
@@ -465,24 +465,28 @@ function StatsModal({ onClose }: ModalProps) {
                     {active != null && (
                         <Flex flexDirection="column" gap="0.35rem" className={cl("detail")}>
                             <Text size="sm" weight="semibold">{active.date === todayKey ? "Today" : formatDayLabel(active.date)}</Text>
-                            <Grid
-                                columns="max-content auto max-content auto max-content"
-                                gap="0.15rem 0.5rem"
-                                alignItems="baseline"
-                                justifyItems="center"
-                                className={cl("formula")}
-                            >
-                                <span className={cl("formula-label")}>{active.date === todayKey ? "Current" : "Last"}</span>
-                                <span className={cl("formula-op")}>−</span>
-                                <span className={cl("formula-label")}>Start</span>
-                                <span className={cl("formula-op")}>=</span>
-                                <span className={cl("formula-label")}>Used</span>
-                                <span className={cl("formula-value")}>{formatPercent(active.lastPercent)}</span>
-                                <span className={cl("formula-op")}>−</span>
-                                <span className={cl("formula-value")}>{formatPercent(active.startPercent)}</span>
-                                <span className={cl("formula-op")}>=</span>
-                                <span className={cl("formula-value")}>{formatDelta(dayDelta(active))}</span>
-                            </Grid>
+                            <Flex alignItems="flex-start" gap="0.5rem" className={cl("formula")}>
+                                <Flex flexDirection="column" alignItems="center" className={cl("formula-term")}>
+                                    <span className={cl("formula-label")}>{active.date === todayKey ? "Current" : "Last"}</span>
+                                    <span className={cl("formula-value")}>{formatPercent(active.lastPercent)}</span>
+                                </Flex>
+                                <Flex flexDirection="column" alignItems="center" className={cl("formula-op-col")}>
+                                    <span className={cl("formula-op")}>−</span>
+                                    <span className={cl("formula-op")}>−</span>
+                                </Flex>
+                                <Flex flexDirection="column" alignItems="center" className={cl("formula-term")}>
+                                    <span className={cl("formula-label")}>Start</span>
+                                    <span className={cl("formula-value")}>{formatPercent(active.startPercent)}</span>
+                                </Flex>
+                                <Flex flexDirection="column" alignItems="center" className={cl("formula-op-col")}>
+                                    <span className={cl("formula-op")}>=</span>
+                                    <span className={cl("formula-op")}>=</span>
+                                </Flex>
+                                <Flex flexDirection="column" alignItems="center" className={cl("formula-term")}>
+                                    <span className={cl("formula-label")}>Used</span>
+                                    <span className={cl("formula-value")}>{formatPercent(dayDelta(active))}</span>
+                                </Flex>
+                            </Flex>
                         </Flex>
                     )}
                 </Flex>

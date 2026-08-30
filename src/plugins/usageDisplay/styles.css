@@ -157,23 +157,28 @@ button:has(.void-ud-trigger > .void-ud-label) {
     font-variant-numeric: tabular-nums;
 }
 
-.void-ud-formula-label {
+.void-ud-formula-term,
+.void-ud-formula-op-col {
+    min-width: 0;
+}
+
+.void-ud-formula-label,
+.void-ud-formula-value,
+.void-ud-formula-op {
+    display: block;
+    width: 100%;
+    text-align: center;
     font-size: 0.875rem;
     line-height: 1.2;
+}
+
+.void-ud-formula-label,
+.void-ud-formula-op {
     color: hsl(var(--fg-secondary));
 }
 
 .void-ud-formula-value {
-    font-size: 0.875rem;
-    line-height: 1.2;
     font-weight: 550;
-    letter-spacing: -0.02em;
-}
-
-.void-ud-formula-op {
-    font-size: 0.875rem;
-    line-height: 1.2;
-    color: hsl(var(--fg-secondary));
 }
 
 .void-ud-toggle {

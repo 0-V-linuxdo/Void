@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.12] v1.0.0
+// @version      [20260829.13] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.12] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.13] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6792,7 +6792,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.12] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260829.13] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -13615,23 +13615,28 @@ button:has(.void-ud-trigger > .void-ud-label) {
     font-variant-numeric: tabular-nums;
 }
 
-.void-ud-formula-label {
+.void-ud-formula-term,
+.void-ud-formula-op-col {
+    min-width: 0;
+}
+
+.void-ud-formula-label,
+.void-ud-formula-value,
+.void-ud-formula-op {
+    display: block;
+    width: 100%;
+    text-align: center;
     font-size: 0.875rem;
     line-height: 1.2;
+}
+
+.void-ud-formula-label,
+.void-ud-formula-op {
     color: hsl(var(--fg-secondary));
 }
 
 .void-ud-formula-value {
-    font-size: 0.875rem;
-    line-height: 1.2;
     font-weight: 550;
-    letter-spacing: -0.02em;
-}
-
-.void-ud-formula-op {
-    font-size: 0.875rem;
-    line-height: 1.2;
-    color: hsl(var(--fg-secondary));
 }
 
 .void-ud-toggle {
@@ -14659,33 +14664,51 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold"
-    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(Grid, {
-      columns: "max-content auto max-content auto max-content",
-      gap: "0.15rem 0.5rem",
-      alignItems: "baseline",
-      justifyItems: "center",
+    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "flex-start",
+      gap: "0.5rem",
       className: cl24("formula")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      alignItems: "center",
+      className: cl24("formula-term")
     }, /* @__PURE__ */ React.createElement("span", {
       className: cl24("formula-label")
     }, active.date === todayKey ? "Current" : "Last"), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-value")
+    }, formatPercent(active.lastPercent))), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      alignItems: "center",
+      className: cl24("formula-op-col")
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl24("formula-op")
     }, "−"), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-op")
+    }, "−")), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      alignItems: "center",
+      className: cl24("formula-term")
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl24("formula-label")
     }, "Start"), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-value")
+    }, formatPercent(active.startPercent))), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      alignItems: "center",
+      className: cl24("formula-op-col")
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl24("formula-op")
     }, "="), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-op")
+    }, "=")), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      alignItems: "center",
+      className: cl24("formula-term")
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl24("formula-label")
     }, "Used"), /* @__PURE__ */ React.createElement("span", {
       className: cl24("formula-value")
-    }, formatPercent(active.lastPercent)), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
-    }, "−"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-value")
-    }, formatPercent(active.startPercent)), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
-    }, "="), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-value")
-    }, formatDelta(dayDelta(active)))))));
+    }, formatPercent(dayDelta(active))))))));
   }
   function ClearStats() {
     useExternalStore(store3);
