@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.3] v1.0.0
+// @version      [20260830.4] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.3] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.4] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6917,7 +6917,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.3] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260830.4] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -13297,6 +13297,11 @@ html.void-rt-open [data-sidebar="gap"] {
       type: 3 /* BOOLEAN */,
       description: "Quick CSS",
       default: true
+    },
+    experiments: {
+      type: 3 /* BOOLEAN */,
+      description: "Experiments",
+      default: true
     }
   });
   var GROK_TABS = [
@@ -13308,12 +13313,15 @@ html.void-rt-open [data-sidebar="gap"] {
     { id: "usage", name: "Usage", setting: "usage", icon: LightningIcon },
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
   ];
-  var VOID_TABS = [
-    { id: "void_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
-    { id: "void_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
-    { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
-  ];
+  var VOID_TAB_SETTING = {
+    void_plugins_tab: "plugins",
+    void_themes_tab: "themes",
+    void_css_tab: "css",
+    void_experiments_tab: "experiments"
+  };
   function SettingsMenu({ onOpen }) {
+    const forceUpdate = useForceUpdater();
+    useEventSubscription("pluginToggle", forceUpdate);
     const cfg = settings21.use([
       "showOpenSettings",
       "account",
@@ -13325,10 +13333,14 @@ html.void-rt-open [data-sidebar="gap"] {
       "data",
       "plugins",
       "themes",
-      "css"
+      "css",
+      "experiments"
     ]);
     const grokTabs = GROK_TABS.filter((t) => cfg[t.setting]);
-    const voidTabs = VOID_TABS.filter((t) => cfg[t.setting]);
+    const voidTabs = getVisibleTabs().filter((t) => {
+      const setting = VOID_TAB_SETTING[t.id];
+      return setting != null && cfg[setting];
+    });
     const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidTabs.length === 0;
     const openTab = (tab, event) => {
       try {

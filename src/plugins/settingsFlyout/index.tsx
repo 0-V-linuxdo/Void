@@ -8,7 +8,8 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary, Text } from "@components";
-import { BracesIcon, PaletteIcon, Settings2Icon, UnplugIcon } from "@components/icons";
+import { Settings2Icon } from "@components/icons";
+import { getVisibleTabs } from "@plugins/_core/settings";
 import {
     DropdownMenuItem,
     DropdownMenuSeparator,
@@ -20,6 +21,7 @@ import { createElement, React } from "@turbopack/common/react";
 import { SettingsDialogStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
+import { useEventSubscription, useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType } from "react";
 
@@ -83,18 +85,24 @@ const settings = definePluginSettings({
         description: "Quick CSS",
         default: true,
     },
+    experiments: {
+        type: OptionType.BOOLEAN,
+        description: "Experiments",
+        default: true,
+    },
 });
 
-type TabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data" | "plugins" | "themes" | "css";
+type GrokTabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data";
+type VoidTabSetting = "plugins" | "themes" | "css" | "experiments";
 
-interface FlyoutTab {
+interface GrokFlyoutTab {
     id: string;
     name: string;
-    setting: TabSetting;
+    setting: GrokTabSetting;
     icon: ComponentType<{ className?: string }>;
 }
 
-const GROK_TABS: FlyoutTab[] = [
+const GROK_TABS: GrokFlyoutTab[] = [
     { id: "account", name: "Account", setting: "account", icon: PersonIcon },
     { id: "appearance", name: "Appearance", setting: "appearance", icon: PaintIcon },
     { id: "behavior", name: "Behavior", setting: "behavior", icon: VisitIcon },
@@ -104,13 +112,17 @@ const GROK_TABS: FlyoutTab[] = [
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon },
 ];
 
-const VOID_TABS: FlyoutTab[] = [
-    { id: "void_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
-    { id: "void_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
-    { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon },
-];
+const VOID_TAB_SETTING: Record<string, VoidTabSetting> = {
+    void_plugins_tab: "plugins",
+    void_themes_tab: "themes",
+    void_css_tab: "css",
+    void_experiments_tab: "experiments",
+};
 
 function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
+    const forceUpdate = useForceUpdater();
+    useEventSubscription("pluginToggle", forceUpdate);
+
     const cfg = settings.use([
         "showOpenSettings",
         "account",
@@ -123,10 +135,14 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
         "plugins",
         "themes",
         "css",
+        "experiments",
     ]);
 
     const grokTabs = GROK_TABS.filter(t => cfg[t.setting]);
-    const voidTabs = VOID_TABS.filter(t => cfg[t.setting]);
+    const voidTabs = getVisibleTabs().filter(t => {
+        const setting = VOID_TAB_SETTING[t.id];
+        return setting != null && cfg[setting];
+    });
     const showOpen = cfg.showOpenSettings || (grokTabs.length === 0 && voidTabs.length === 0);
 
     const openTab = (tab: string | undefined, event: Event) => {

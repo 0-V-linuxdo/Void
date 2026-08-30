@@ -59,7 +59,7 @@ export const allTabs: SettingsTab[] = [
     { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
 ];
 
-function getVisibleTabs() {
+export function getVisibleTabs() {
     return allTabs.filter(t => !t.plugin || isPluginEnabled(t.plugin));
 }
 
