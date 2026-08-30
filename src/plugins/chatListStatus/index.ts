@@ -20,7 +20,8 @@ const logger = new Logger("ChatListStatus");
 const MARK = "void-cls";
 const LIVE = new Set(["streaming", "optimistic", "reconnecting"]);
 const SIDEBAR = '[data-sidebar="sidebar"]';
-const BUTTON = '[data-sidebar="menu-button"]';
+const HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
+const ROW = `${HOST}, a[href*="/c/"], a[href*="chat="]`;
 const SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
 
 type Kind = "streaming" | "done" | "error";
@@ -128,7 +129,9 @@ function hrefId(el: Element): string {
     if (!href) return "";
     try {
         const u = new URL(href, location.origin);
-        return u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
+        return u.searchParams.get("chat")
+            || u.pathname.match(/^\/(?:c|chat)\/([^/?#]+)/i)?.[1]
+            || "";
     } catch {
         return "";
     }
@@ -145,6 +148,7 @@ function idFromProps(props: Record<string, unknown> | null | undefined): string 
         if (r.page === "chat" && isConvId(props.id)) return props.id;
     }
     if (isConvId(props.conversationId)) return props.conversationId;
+    if (isConvId(props.chat)) return props.chat;
     return "";
 }
 
@@ -159,6 +163,12 @@ function idFromRow(el: Element): string {
         logger.debug("fiber id failed:", e);
         return "";
     }
+}
+
+function rowHost(el: HTMLElement, sidebar: Element): HTMLElement | null {
+    if (el.classList.contains(MARK)) return null;
+    const wrapped = el.closest<HTMLElement>(HOST);
+    return wrapped && sidebar.contains(wrapped) ? wrapped : el;
 }
 
 function spinSvg(): SVGSVGElement {
@@ -194,7 +204,7 @@ function clearMark(btn: HTMLElement) {
 }
 
 function activeButton(sidebar: Element): HTMLElement | null {
-    return sidebar.querySelector<HTMLElement>(`${BUTTON}[data-active="true"], ${BUTTON}[aria-current="page"], ${BUTTON}[data-state="active"]`);
+    return sidebar.querySelector<HTMLElement>(`${ROW}[data-active="true"], ${ROW}[aria-current="page"], ${ROW}[data-state="active"]`);
 }
 
 function paint() {
@@ -204,22 +214,29 @@ function paint() {
     if (!sidebar) return;
 
     const usedIds = new Set<string>();
-    for (const btn of sidebar.querySelectorAll<HTMLElement>(BUTTON)) {
-        const id = idFromRow(btn);
+    const seen = new Set<HTMLElement>();
+    for (const el of sidebar.querySelectorAll<HTMLElement>(ROW)) {
+        const host = rowHost(el, sidebar);
+        if (!host || seen.has(host)) continue;
+        seen.add(host);
+        const id = idFromRow(host);
         if (!id) {
-            clearMark(btn);
+            clearMark(host);
             continue;
         }
         usedIds.add(id);
-        rowById.set(id, btn);
+        rowById.set(id, host);
         const kind = marks.get(id);
-        if (kind) ensureMark(btn, kind);
-        else clearMark(btn);
+        if (kind) ensureMark(host, kind);
+        else clearMark(host);
     }
 
     for (const [id, el] of rowById) {
         if (!el.isConnected || !usedIds.has(id)) rowById.delete(id);
     }
+
+    const live = [...marks].filter(([, kind]) => kind === "streaming").map(([id]) => id);
+    if (live.length && !usedIds.size) logger.debug("live ids with no rows", live);
 
     try {
         const page = ChatPageStore.useChatPageStore.getState();
@@ -228,8 +245,9 @@ function paint() {
         const active = activeButton(sidebar);
         const kind = marks.get(activeId);
         if (active && kind) {
-            rowById.set(activeId, active);
-            ensureMark(active, kind);
+            const host = rowHost(active, sidebar) ?? active;
+            rowById.set(activeId, host);
+            ensureMark(host, kind);
         }
     } catch (e) {
         logger.debug("active row fallback failed:", e);
@@ -269,7 +287,12 @@ function observe() {
         if (ownMutation(list)) return;
         schedule();
     });
-    obs.observe(root, { childList: true, subtree: true });
+    obs.observe(root, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["href", "data-active", "aria-current", "data-state"],
+    });
 }
 
 function pageKey(s: ChatPageStoreState): string {
@@ -298,6 +321,13 @@ export default definePlugin({
 
     start() {
         started = true;
+        const sidebar = document.querySelector(SIDEBAR);
+        logger.debug(
+            "sidebar", !!sidebar,
+            "menu", sidebar?.querySelectorAll('[data-sidebar="menu-button"]').length ?? 0,
+            "sub", sidebar?.querySelectorAll('[data-sidebar="menu-sub-button"]').length ?? 0,
+            "links", sidebar?.querySelectorAll('a[href*="/c/"], a[href*="chat="]').length ?? 0,
+        );
         observe();
         schedule();
     },
