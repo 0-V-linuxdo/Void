@@ -17,6 +17,7 @@ import {
     dayDelta,
     emptyDay,
     fillChartDays,
+    formatDayLabel,
     formatDayNumber,
     formatDelta,
     localDateKey,
@@ -128,6 +129,15 @@ describe("shiftDateKey", () => {
     test("steps across month ends", () => {
         expect(shiftDateKey("2026-08-31", 1)).toBe("2026-09-01");
         expect(shiftDateKey("2026-08-29", 1 - CHART_WINDOW)).toBe("2026-08-23");
+    });
+});
+
+describe("formatDayLabel", () => {
+    test("stays in English", () => {
+        const label = formatDayLabel("2026-08-29");
+        expect(label).toContain("Aug");
+        expect(label).toContain("29");
+        expect(label).not.toMatch(/[月周]/);
     });
 });
 

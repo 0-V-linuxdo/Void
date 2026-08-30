@@ -85,7 +85,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 .void-ud-chart {
     min-height: 0;
     overflow-x: auto;
-    height: 8.5rem;
+    height: 9.25rem;
     outline: none;
 }
 
@@ -131,6 +131,24 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
 .void-ud-bar-empty .void-ud-bar-fill {
     background: hsl(var(--border-l1));
+}
+
+.void-ud-bar-value {
+    font-size: 0.6875rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-weight: 550;
+    min-height: 0.6875rem;
+    white-space: nowrap;
+    opacity: 0.85;
+}
+
+.void-ud-bar-empty .void-ud-bar-value {
+    opacity: 0;
+}
+
+.void-ud-bar-on .void-ud-bar-value {
+    opacity: 1;
 }
 
 .void-ud-bar-label {

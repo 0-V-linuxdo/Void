@@ -13612,7 +13612,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 .void-ud-chart {
     min-height: 0;
     overflow-x: auto;
-    height: 8.5rem;
+    height: 9.25rem;
     outline: none;
 }
 
@@ -13658,6 +13658,24 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
 .void-ud-bar-empty .void-ud-bar-fill {
     background: hsl(var(--border-l1));
+}
+
+.void-ud-bar-value {
+    font-size: 0.6875rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-weight: 550;
+    min-height: 0.6875rem;
+    white-space: nowrap;
+    opacity: 0.85;
+}
+
+.void-ud-bar-empty .void-ud-bar-value {
+    opacity: 0;
+}
+
+.void-ud-bar-on .void-ud-bar-value {
+    opacity: 1;
 }
 
 .void-ud-bar-label {
@@ -14232,7 +14250,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const d = parts[2];
     if (!y || !m || !d)
       return date;
-    return new Date(y, m - 1, d).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+    return new Date(y, m - 1, d).toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" });
   }
   function formatDayNumber(date) {
     const day = date.split("-")[2];
@@ -14719,6 +14737,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
         className: classes(cl24("bar"), on && cl24("bar-on"), empty && cl24("bar-empty")),
         onClick: () => setSelected(rec.date)
       }, /* @__PURE__ */ React.createElement("span", {
+        className: cl24("bar-value")
+      }, empty ? " " : formatPercent(delta)), /* @__PURE__ */ React.createElement("span", {
         className: cl24("bar-track")
       }, /* @__PURE__ */ React.createElement("span", {
         className: cl24("bar-fill"),

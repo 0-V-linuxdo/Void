@@ -454,6 +454,7 @@ function StatsModal({ onClose }: ModalProps) {
                                     className={classes(cl("bar"), on && cl("bar-on"), empty && cl("bar-empty"))}
                                     onClick={() => setSelected(rec.date)}
                                 >
+                                    <span className={cl("bar-value")}>{empty ? "\u00a0" : formatPercent(delta)}</span>
                                     <span className={cl("bar-track")}>
                                         <span className={cl("bar-fill")} style={{ height: `${pct}%` }} />
                                     </span>

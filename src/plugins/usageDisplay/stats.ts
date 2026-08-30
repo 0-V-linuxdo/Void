@@ -196,7 +196,7 @@ export function formatDayLabel(date: string): string {
     const m = parts[1];
     const d = parts[2];
     if (!y || !m || !d) return date;
-    return new Date(y, m - 1, d).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+    return new Date(y, m - 1, d).toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" });
 }
 
 export function formatDayNumber(date: string): string {
