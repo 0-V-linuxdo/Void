@@ -9,8 +9,10 @@ import "./styles.css";
 import type { VoidEventMap } from "@api/Events";
 import { LoaderCircleIcon } from "@components/icons";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
+import type { ConversationStoreState, GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { GrokResponse, ResponseStoreState } from "@grok-types/stores/ResponseStore";
-import { ChatPageStore, ResponseStore } from "@turbopack/common/stores";
+import type { RoutingStoreState } from "@grok-types/stores/RoutingStore";
+import { ChatPageStore, ConversationStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { type Fiber, getFiber, walkFiberUp } from "@utils/react";
@@ -19,9 +21,10 @@ import definePlugin, { StartAt } from "@utils/types";
 const logger = new Logger("ChatListStatus");
 const MARK = "void-cls";
 const LIVE = new Set(["streaming", "optimistic", "reconnecting"]);
-const SIDEBAR = '[data-sidebar="sidebar"]';
+const DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success"]);
+const SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
 const HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
-const ROW = `${HOST}, a[href*="/c/"], a[href*="chat="]`;
+const ROW = `${HOST}, a[href*="/c/"], a[href*="/chat/"], a[href*="chat="], a[href*="/project/"]`;
 const SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
 
 type Kind = "streaming" | "done" | "error";
@@ -35,26 +38,62 @@ let obs: MutationObserver | null = null;
 function isLiveResponse(r: GrokResponse | undefined): boolean {
     if (!r) return false;
     if (r.partial) return true;
-    return LIVE.has(r.state ?? "");
+    const state = r.state ?? "";
+    if (!state) return false;
+    if (LIVE.has(state)) return true;
+    return !DEAD.has(state.toLowerCase());
 }
 
 function isErrorResponse(r: GrokResponse | undefined): boolean {
     return !!r && (r.state === "error" || r.error != null);
 }
 
+function isLiveTask(task: Record<string, any> | undefined): boolean {
+    if (!task) return false;
+    const status = String(task.status ?? task.state ?? "").toLowerCase();
+    if (!status) return false;
+    return !DEAD.has(status);
+}
+
 function isConvId(value: unknown): value is string {
     return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value);
+}
+
+function currentIds(): string[] {
+    const ids: string[] = [];
+    try {
+        const page = ChatPageStore.useChatPageStore.getState();
+        if (isConvId(page.conversationId)) ids.push(page.conversationId);
+        if (isConvId(page.optimisticConversationId)) ids.push(page.optimisticConversationId);
+    } catch (e) {
+        logger.debug("page ids unavailable:", e);
+    }
+    try {
+        const { route } = RoutingStore.useRoutingStore.getState();
+        if (isConvId(route.conversationId)) ids.push(route.conversationId);
+        if (isConvId(route.chat)) ids.push(route.chat);
+    } catch (e) {
+        logger.debug("route ids unavailable:", e);
+    }
+    return ids;
+}
+
+function considerConversation(ids: Set<string>, conversation: GrokConversation | undefined) {
+    if (!conversation?.conversationId) return;
+    if (conversation.state === "open" || isLiveTask(conversation.taskResult)) ids.add(conversation.conversationId);
 }
 
 function liveIds(): Set<string> {
     const ids = new Set<string>();
     try {
         const page = ChatPageStore.useChatPageStore.getState();
-        const current = page.conversationId || page.optimisticConversationId || "";
-        if (current && (page.streamedMessageId || page.showStreamingIndicator)) ids.add(current);
+        const currents = currentIds();
+        if (page.streamedMessageId || page.showStreamingIndicator) {
+            for (const id of currents) ids.add(id);
+        }
         const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-        if (current && (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]))) {
-            ids.add(current);
+        if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
+            for (const id of currents) ids.add(id);
         }
         for (const id of Object.keys(inflightPromisesByConversationId ?? {})) ids.add(id);
         for (const [id, list] of Object.entries(byConversationId ?? {})) {
@@ -62,6 +101,14 @@ function liveIds(): Set<string> {
         }
     } catch (e) {
         logger.debug("stream stores unavailable:", e);
+    }
+    try {
+        const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+        for (const conversation of list ?? []) considerConversation(ids, conversation);
+        for (const conversation of Object.values(byId ?? {})) considerConversation(ids, conversation);
+        for (const conversation of Object.values(byIdWithWorkspaces ?? {})) considerConversation(ids, conversation);
+    } catch (e) {
+        logger.debug("conversation store unavailable:", e);
     }
     return ids;
 }
@@ -102,8 +149,7 @@ function convOfResponse(responseId: string): string {
         for (const [id, list] of Object.entries(byConversationId ?? {})) {
             if (list?.some(r => r.responseId === responseId)) return id;
         }
-        const page = ChatPageStore.useChatPageStore.getState();
-        return page.conversationId || page.optimisticConversationId || "";
+        return currentIds()[0] ?? "";
     } catch (e) {
         logger.debug("conv lookup failed:", e);
         return "";
@@ -123,18 +169,22 @@ function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
     schedule();
 }
 
-function hrefId(el: Element): string {
-    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
-    const href = a?.getAttribute("href") ?? el.getAttribute("href") ?? "";
+function idFromHref(href: string): string {
     if (!href) return "";
     try {
         const u = new URL(href, location.origin);
         return u.searchParams.get("chat")
+            || u.searchParams.get("conversationId")
             || u.pathname.match(/^\/(?:c|chat)\/([^/?#]+)/i)?.[1]
             || "";
     } catch {
         return "";
     }
+}
+
+function hrefId(el: Element): string {
+    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
+    return idFromHref(a?.getAttribute("href") ?? el.getAttribute("href") ?? "");
 }
 
 function idFromProps(props: Record<string, unknown> | null | undefined): string {
@@ -149,6 +199,10 @@ function idFromProps(props: Record<string, unknown> | null | undefined): string 
     }
     if (isConvId(props.conversationId)) return props.conversationId;
     if (isConvId(props.chat)) return props.chat;
+    if (typeof props.href === "string") {
+        const fromHref = idFromHref(props.href);
+        if (fromHref) return fromHref;
+    }
     return "";
 }
 
@@ -157,7 +211,7 @@ function idFromRow(el: Element): string {
     if (fromHref) return fromHref;
     try {
         const fiber = getFiber(el);
-        const hit = walkFiberUp(fiber, 18, (f: Fiber) => !!idFromProps(f.memoizedProps));
+        const hit = walkFiberUp(fiber, 24, (f: Fiber) => !!idFromProps(f.memoizedProps));
         return idFromProps(hit?.memoizedProps);
     } catch (e) {
         logger.debug("fiber id failed:", e);
@@ -165,10 +219,10 @@ function idFromRow(el: Element): string {
     }
 }
 
-function rowHost(el: HTMLElement, sidebar: Element): HTMLElement | null {
+function rowHost(el: HTMLElement, root: Element): HTMLElement | null {
     if (el.classList.contains(MARK)) return null;
     const wrapped = el.closest<HTMLElement>(HOST);
-    return wrapped && sidebar.contains(wrapped) ? wrapped : el;
+    return wrapped && root.contains(wrapped) ? wrapped : el;
 }
 
 function spinSvg(): SVGSVGElement {
@@ -203,32 +257,37 @@ function clearMark(btn: HTMLElement) {
     btn.querySelector(`:scope > .${MARK}`)?.remove();
 }
 
-function activeButton(sidebar: Element): HTMLElement | null {
-    return sidebar.querySelector<HTMLElement>(`${ROW}[data-active="true"], ${ROW}[aria-current="page"], ${ROW}[data-state="active"]`);
+function roots(): Element[] {
+    const found = [...document.querySelectorAll(SIDEBAR)];
+    return found.length ? found : [document.body];
+}
+
+function activeButton(root: Element): HTMLElement | null {
+    return root.querySelector<HTMLElement>(`${ROW}[data-active="true"], ${ROW}[aria-current="page"], ${ROW}[data-state="active"]`);
 }
 
 function paint() {
     if (!started) return;
     refreshMarks();
-    const sidebar = document.querySelector(SIDEBAR);
-    if (!sidebar) return;
-
     const usedIds = new Set<string>();
     const seen = new Set<HTMLElement>();
-    for (const el of sidebar.querySelectorAll<HTMLElement>(ROW)) {
-        const host = rowHost(el, sidebar);
-        if (!host || seen.has(host)) continue;
-        seen.add(host);
-        const id = idFromRow(host);
-        if (!id) {
-            clearMark(host);
-            continue;
+
+    for (const root of roots()) {
+        for (const el of root.querySelectorAll<HTMLElement>(ROW)) {
+            const host = rowHost(el, root);
+            if (!host || seen.has(host)) continue;
+            seen.add(host);
+            const id = idFromRow(host);
+            if (!id) {
+                clearMark(host);
+                continue;
+            }
+            usedIds.add(id);
+            rowById.set(id, host);
+            const kind = marks.get(id);
+            if (kind) ensureMark(host, kind);
+            else clearMark(host);
         }
-        usedIds.add(id);
-        rowById.set(id, host);
-        const kind = marks.get(id);
-        if (kind) ensureMark(host, kind);
-        else clearMark(host);
     }
 
     for (const [id, el] of rowById) {
@@ -238,19 +297,17 @@ function paint() {
     const live = [...marks].filter(([, kind]) => kind === "streaming").map(([id]) => id);
     if (live.length && !usedIds.size) logger.debug("live ids with no rows", live);
 
-    try {
-        const page = ChatPageStore.useChatPageStore.getState();
-        const activeId = [page.conversationId, page.optimisticConversationId].find(id => id && marks.has(id)) ?? "";
-        if (!activeId || rowById.has(activeId)) return;
-        const active = activeButton(sidebar);
-        const kind = marks.get(activeId);
-        if (active && kind) {
-            const host = rowHost(active, sidebar) ?? active;
-            rowById.set(activeId, host);
-            ensureMark(host, kind);
-        }
-    } catch (e) {
-        logger.debug("active row fallback failed:", e);
+    const activeId = currentIds().find(id => marks.has(id)) ?? "";
+    if (!activeId || rowById.has(activeId)) return;
+    const kind = marks.get(activeId);
+    if (!kind) return;
+    for (const root of roots()) {
+        const active = activeButton(root);
+        if (!active) continue;
+        const host = rowHost(active, root) ?? active;
+        rowById.set(activeId, host);
+        ensureMark(host, kind);
+        return;
     }
 }
 
@@ -282,12 +339,11 @@ function ownMutation(list: MutationRecord[]): boolean {
 
 function observe() {
     obs?.disconnect();
-    const root = document.querySelector(SIDEBAR) ?? document.body;
     obs = new MutationObserver(list => {
         if (ownMutation(list)) return;
         schedule();
     });
-    obs.observe(root, {
+    obs.observe(document.body, {
         childList: true,
         subtree: true,
         attributes: true,
@@ -296,7 +352,7 @@ function observe() {
 }
 
 function pageKey(s: ChatPageStoreState): string {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
 }
 
 function responseKey(s: ResponseStoreState): string {
@@ -306,6 +362,26 @@ function responseKey(s: ResponseStoreState): string {
         if (list?.some(isLiveResponse)) live.push(id);
     }
     return `${inflight}|${live.join(",")}`;
+}
+
+function conversationKey(s: ConversationStoreState): string {
+    const live: string[] = [];
+    const seen = new Set<string>();
+    const consider = (conversation: GrokConversation | undefined) => {
+        if (!conversation?.conversationId || seen.has(conversation.conversationId)) return;
+        if (conversation.state !== "open" && !isLiveTask(conversation.taskResult)) return;
+        seen.add(conversation.conversationId);
+        live.push(conversation.conversationId);
+    };
+    for (const conversation of s.list ?? []) consider(conversation);
+    for (const conversation of Object.values(s.byId ?? {})) consider(conversation);
+    for (const conversation of Object.values(s.byIdWithWorkspaces ?? {})) consider(conversation);
+    return live.join(",");
+}
+
+function routeKey(s: RoutingStoreState): string {
+    const { route } = s;
+    return `${route.conversationId ?? ""}|${route.chat ?? ""}|${route.workspaceId ?? ""}`;
 }
 
 export default definePlugin({
@@ -321,12 +397,12 @@ export default definePlugin({
 
     start() {
         started = true;
-        const sidebar = document.querySelector(SIDEBAR);
+        const sidebar = document.querySelector('[data-sidebar="sidebar"]');
         logger.debug(
             "sidebar", !!sidebar,
             "menu", sidebar?.querySelectorAll('[data-sidebar="menu-button"]').length ?? 0,
             "sub", sidebar?.querySelectorAll('[data-sidebar="menu-sub-button"]').length ?? 0,
-            "links", sidebar?.querySelectorAll('a[href*="/c/"], a[href*="chat="]').length ?? 0,
+            "links", sidebar?.querySelectorAll('a[href*="/c/"], a[href*="chat="], a[href*="/project/"]').length ?? 0,
         );
         observe();
         schedule();
@@ -354,6 +430,14 @@ export default definePlugin({
         },
         ResponseStore: {
             selector: responseKey,
+            handler: schedule,
+        },
+        ConversationStore: {
+            selector: conversationKey,
+            handler: schedule,
+        },
+        RoutingStore: {
+            selector: routeKey,
             handler: schedule,
         },
     },
