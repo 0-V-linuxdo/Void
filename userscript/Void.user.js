@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.26] v1.0.0
+// @version      [20260830.27] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.26] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.27] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6902,9 +6902,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.26] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"a876eac"}`
-    }, `(${"a876eac"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.27] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"18b89ef"}`
+    }, `(${"18b89ef"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -14346,7 +14346,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var WORKING_FOR = /working\s+for|continuing the(?: task)?/i;
   var WORKED_FOR = /worked\s+for/i;
   var SKIP_KEY = /^(message|html|query|thinkingTrace)$/i;
-  var EXTRA_HINT = /computer|sandbox|agent|taskResult|session|toolCall|toolResponse|\bjobs?\b/i;
+  var EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
   var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
   var SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
   var HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
@@ -14443,18 +14443,62 @@ html.void-rt-open [data-sidebar="gap"] {
   function isErrorResponse(r) {
     return !!r && (r.state === "error" || r.error != null);
   }
-  function collectConvIds(value, out, depth = 0) {
+  function ownLive(value) {
+    if (value == null)
+      return false;
+    if (typeof value === "string")
+      return isLiveStatus(value);
+    if (typeof value !== "object" || Array.isArray(value))
+      return false;
+    const rec = value;
+    const status = rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus;
+    if (typeof status === "string") {
+      const s = status.trim().toLowerCase();
+      if (DEAD.has(s) || WORKED_FOR.test(status))
+        return false;
+      if (LIVE.has(s) || LIVE_WORD.test(s) || WORKING_FOR.test(status))
+        return true;
+    }
+    if (rec.workedFor || rec.worked_for)
+      return false;
+    const working = rec.workingFor ?? rec.working_for;
+    if (working) {
+      if (typeof working !== "string")
+        return true;
+      if (!WORKED_FOR.test(working) && !DEAD.has(working.trim().toLowerCase()))
+        return true;
+    }
+    for (const key of Object.keys(rec)) {
+      if (LIVE_FLAG.test(key) && rec[key] === true)
+        return true;
+    }
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+      if (++n > 24)
+        break;
+      if (SKIP_KEY.test(key))
+        continue;
+      if (typeof child === "string" && (WORKING_FOR.test(child) || isLiveStatus(child)))
+        return true;
+    }
+    return false;
+  }
+  function convIdOf(rec) {
+    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
+    return isConvId(id) ? id : "";
+  }
+  function collectLiveIds(value, out, hint = "", depth = 0) {
     if (value == null || typeof value !== "object" || depth > 3)
       return;
     if (Array.isArray(value)) {
       const start = Math.max(0, value.length - 8);
       for (let i = start;i < value.length; i++)
-        collectConvIds(value[i], out, depth + 1);
+        collectLiveIds(value[i], out, hint, depth + 1);
       return;
     }
     const rec = value;
-    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
-    if (isConvId(id))
+    const id = convIdOf(rec) || hint;
+    if (ownLive(rec) && isConvId(id))
       out.add(id);
     let n = 0;
     for (const [key, child] of Object.entries(rec)) {
@@ -14462,10 +14506,11 @@ html.void-rt-open [data-sidebar="gap"] {
         break;
       if (SKIP_KEY.test(key))
         continue;
-      if (isConvId(key))
+      const next = isConvId(key) ? key : id;
+      if (isConvId(key) && ownLive(child))
         out.add(key);
       if (child && typeof child === "object")
-        collectConvIds(child, out, depth + 1);
+        collectLiveIds(child, out, next || hint, depth + 1);
     }
   }
   function currentIds() {
@@ -14501,8 +14546,16 @@ html.void-rt-open [data-sidebar="gap"] {
   function considerConversation(ids, conversation) {
     if (!conversation?.conversationId)
       return;
-    if (bagLive(conversation.taskResult))
-      ids.add(conversation.conversationId);
+    if (!bagLive(conversation.taskResult))
+      return;
+    const found = new Set;
+    collectLiveIds(conversation.taskResult, found, conversation.conversationId);
+    if (found.size) {
+      for (const id of found)
+        ids.add(id);
+      return;
+    }
+    ids.add(conversation.conversationId);
   }
   function looksExtraStore(name, state2) {
     if (EXTRA_HINT.test(name))
@@ -14573,10 +14626,7 @@ html.void-rt-open [data-sidebar="gap"] {
       }
       if (!bagLive(state2))
         continue;
-      const found = new Set;
-      collectConvIds(state2, found);
-      for (const id of found)
-        ids.add(id);
+      collectLiveIds(state2, ids);
     }
   }
   function liveIds() {
@@ -14598,22 +14648,8 @@ html.void-rt-open [data-sidebar="gap"] {
       markMsg(page.streamedMessageId);
       markMsg(page.lastMessageId);
       markMsg(page.sidePanelResponseId);
-      if (bagLive(page.sidePanelContent)) {
-        const found = new Set;
-        collectConvIds(page.sidePanelContent, found);
-        if (found.size) {
-          for (const id of found)
-            add(id);
-        } else {
-          markMsg(page.sidePanelResponseId);
-        }
-      }
-      if (bagLive(page.metadata)) {
-        const found = new Set;
-        collectConvIds(page.metadata, found);
-        for (const id of found)
-          add(id);
-      }
+      collectLiveIds(page.sidePanelContent, ids);
+      collectLiveIds(page.metadata, ids);
       for (const id of Object.keys(inflightPromisesByConversationId ?? {}))
         add(id);
       for (const [id, list] of Object.entries(byConversationId ?? {})) {

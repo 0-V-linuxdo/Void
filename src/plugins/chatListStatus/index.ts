@@ -29,7 +29,7 @@ const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|isA
 const WORKING_FOR = /working\s+for|continuing the(?: task)?/i;
 const WORKED_FOR = /worked\s+for/i;
 const SKIP_KEY = /^(message|html|query|thinkingTrace)$/i;
-const EXTRA_HINT = /computer|sandbox|agent|taskResult|session|toolCall|toolResponse|\bjobs?\b/i;
+const EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
 const OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
 const SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
 const HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
@@ -115,22 +115,57 @@ function isErrorResponse(r: GrokResponse | undefined): boolean {
     return !!r && (r.state === "error" || r.error != null);
 }
 
-function collectConvIds(value: unknown, out: Set<string>, depth = 0) {
-    if (value == null || typeof value !== "object" || depth > 3) return;
-    if (Array.isArray(value)) {
-        const start = Math.max(0, value.length - 8);
-        for (let i = start; i < value.length; i++) collectConvIds(value[i], out, depth + 1);
-        return;
-    }
+function ownLive(value: unknown): boolean {
+    if (value == null) return false;
+    if (typeof value === "string") return isLiveStatus(value);
+    if (typeof value !== "object" || Array.isArray(value)) return false;
     const rec = value as Record<string, any>;
-    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
-    if (isConvId(id)) out.add(id);
+    const status = rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus;
+    if (typeof status === "string") {
+        const s = status.trim().toLowerCase();
+        if (DEAD.has(s) || WORKED_FOR.test(status)) return false;
+        if (LIVE.has(s) || LIVE_WORD.test(s) || WORKING_FOR.test(status)) return true;
+    }
+    if (rec.workedFor || rec.worked_for) return false;
+    const working = rec.workingFor ?? rec.working_for;
+    if (working) {
+        if (typeof working !== "string") return true;
+        if (!WORKED_FOR.test(working) && !DEAD.has(working.trim().toLowerCase())) return true;
+    }
+    for (const key of Object.keys(rec)) {
+        if (LIVE_FLAG.test(key) && rec[key] === true) return true;
+    }
     let n = 0;
     for (const [key, child] of Object.entries(rec)) {
         if (++n > 24) break;
         if (SKIP_KEY.test(key)) continue;
-        if (isConvId(key)) out.add(key);
-        if (child && typeof child === "object") collectConvIds(child, out, depth + 1);
+        if (typeof child === "string" && (WORKING_FOR.test(child) || isLiveStatus(child))) return true;
+    }
+    return false;
+}
+
+function convIdOf(rec: Record<string, any>): string {
+    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
+    return isConvId(id) ? id : "";
+}
+
+function collectLiveIds(value: unknown, out: Set<string>, hint = "", depth = 0) {
+    if (value == null || typeof value !== "object" || depth > 3) return;
+    if (Array.isArray(value)) {
+        const start = Math.max(0, value.length - 8);
+        for (let i = start; i < value.length; i++) collectLiveIds(value[i], out, hint, depth + 1);
+        return;
+    }
+    const rec = value as Record<string, any>;
+    const id = convIdOf(rec) || hint;
+    if (ownLive(rec) && isConvId(id)) out.add(id);
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+        if (++n > 24) break;
+        if (SKIP_KEY.test(key)) continue;
+        const next = isConvId(key) ? key : id;
+        if (isConvId(key) && ownLive(child)) out.add(key);
+        if (child && typeof child === "object") collectLiveIds(child, out, next || hint, depth + 1);
     }
 }
 
@@ -166,7 +201,14 @@ function currentIds(): string[] {
 
 function considerConversation(ids: Set<string>, conversation: GrokConversation | undefined) {
     if (!conversation?.conversationId) return;
-    if (bagLive(conversation.taskResult)) ids.add(conversation.conversationId);
+    if (!bagLive(conversation.taskResult)) return;
+    const found = new Set<string>();
+    collectLiveIds(conversation.taskResult, found, conversation.conversationId);
+    if (found.size) {
+        for (const id of found) ids.add(id);
+        return;
+    }
+    ids.add(conversation.conversationId);
 }
 
 function looksExtraStore(name: string, state: object): boolean {
@@ -230,9 +272,7 @@ function extraLiveIds(ids: Set<string>) {
             continue;
         }
         if (!bagLive(state)) continue;
-        const found = new Set<string>();
-        collectConvIds(state, found);
-        for (const id of found) ids.add(id);
+        collectLiveIds(state, ids);
     }
 }
 
@@ -252,20 +292,8 @@ function liveIds(): Set<string> {
         markMsg(page.streamedMessageId);
         markMsg(page.lastMessageId);
         markMsg(page.sidePanelResponseId);
-        if (bagLive(page.sidePanelContent)) {
-            const found = new Set<string>();
-            collectConvIds(page.sidePanelContent, found);
-            if (found.size) {
-                for (const id of found) add(id);
-            } else {
-                markMsg(page.sidePanelResponseId);
-            }
-        }
-        if (bagLive(page.metadata)) {
-            const found = new Set<string>();
-            collectConvIds(page.metadata, found);
-            for (const id of found) add(id);
-        }
+        collectLiveIds(page.sidePanelContent, ids);
+        collectLiveIds(page.metadata, ids);
         for (const id of Object.keys(inflightPromisesByConversationId ?? {})) add(id);
         for (const [id, list] of Object.entries(byConversationId ?? {})) {
             const last = list?.[list.length - 1];
