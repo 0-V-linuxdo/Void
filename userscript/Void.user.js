@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.19] v1.0.0
+// @version      [20260830.20] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.19] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.20] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6893,9 +6893,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.19] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"a59b8ea"}`
-    }, `(${"a59b8ea"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.20] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"8184803"}`
+    }, `(${"8184803"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -14278,7 +14278,7 @@ html.void-rt-open [data-sidebar="gap"] {
     justify-content: center;
     width: 0.75rem;
     height: 0.75rem;
-    margin-right: 0.3rem;
+    margin-right: 0.25rem;
     pointer-events: none;
     color: #3b82f6;
 }
@@ -14287,7 +14287,7 @@ html.void-rt-open [data-sidebar="gap"] {
 .void-cls[data-kind="error"] {
     width: 0.45rem;
     height: 0.45rem;
-    margin-right: 0.4rem;
+    margin-right: 0.3rem;
     border-radius: 999px;
     background: #3b82f6;
 }
@@ -14296,17 +14296,13 @@ html.void-rt-open [data-sidebar="gap"] {
     background: #ef4444;
 }
 
-[data-void-cls-nest]:has(> .void-cls) {
-    position: relative;
+[data-void-cls-nest] > .void-cls {
+    margin-left: calc(-0.75rem - 0.25rem);
 }
 
-[data-void-cls-nest] > .void-cls {
-    position: absolute;
-    left: 0.35rem;
-    top: 50%;
-    z-index: 1;
-    margin-right: 0;
-    transform: translateY(-50%);
+[data-void-cls-nest] > .void-cls[data-kind="done"],
+[data-void-cls-nest] > .void-cls[data-kind="error"] {
+    margin-left: calc(-0.45rem - 0.3rem);
 }
 
 .void-cls[data-kind="streaming"] svg {
