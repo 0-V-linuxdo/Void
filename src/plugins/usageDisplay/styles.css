@@ -122,7 +122,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     width: 1.1rem;
     min-height: 2px;
     border-radius: 4px 4px 0 0;
-    background: hsl(var(--fg-primary) / 0.45);
+    background: hsl(var(--fg-primary) / 45%);
 }
 
 .void-ud-bar-on .void-ud-bar-fill {
@@ -197,6 +197,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
 .void-ud-formula-value {
     font-weight: 550;
+}
+
+.void-ud-formula-caption {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
 }
 
 .void-ud-toggle {

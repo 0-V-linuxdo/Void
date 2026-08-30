@@ -36,15 +36,13 @@ import {
     usageTone,
 } from "./credits";
 import {
+    chartScale,
+    clearStats,
+    type DailyUsageRecord,
+    dayDelta,
     DELAY_DEFAULT,
     DELAY_MAX,
     DELAY_MIN,
-    RETAIN_DEFAULT,
-    RETAIN_MAX,
-    RETAIN_MIN,
-    chartScale,
-    clearStats,
-    dayDelta,
     fillChartDays,
     formatDayLabel,
     formatDayNumber,
@@ -54,6 +52,9 @@ import {
     localDateKey,
     readToday,
     recordSnapshot,
+    RETAIN_DEFAULT,
+    RETAIN_MAX,
+    RETAIN_MIN,
     retainDaysOf,
 } from "./stats";
 
@@ -128,7 +129,7 @@ function sessionUser() {
     try {
         return SessionStore.sessionStoreState?.getState?.()?.user;
     } catch {
-        return undefined;
+        return;
     }
 }
 
@@ -391,6 +392,75 @@ function StatsToggle() {
     );
 }
 
+function Formula({
+    terms,
+    ops,
+}: {
+    terms: { label: string; value: string }[];
+    ops: string[];
+}) {
+    return (
+        <Flex alignItems="flex-start" gap="0.5rem" className={cl("formula")}>
+            {terms.map((term, i) => (
+                <React.Fragment key={term.label}>
+                    {i > 0 && (
+                        <Flex flexDirection="column" alignItems="center" className={cl("formula-op-col")}>
+                            <span className={cl("formula-op")}>{ops[i - 1]}</span>
+                            <span className={cl("formula-op")}>{ops[i - 1]}</span>
+                        </Flex>
+                    )}
+                    <Flex flexDirection="column" alignItems="center" className={cl("formula-term")}>
+                        <span className={cl("formula-label")}>{term.label}</span>
+                        <span className={cl("formula-value")}>{term.value}</span>
+                    </Flex>
+                </React.Fragment>
+            ))}
+        </Flex>
+    );
+}
+
+function DayFormula({ rec, today }: { rec: DailyUsageRecord; today: boolean }) {
+    const used = dayDelta(rec);
+    const accrued = rec.accruedPercent ?? 0;
+    if (accrued > 0) {
+        const after = rec.startPercent == null || rec.lastPercent == null
+            ? null
+            : Math.max(0, rec.lastPercent - rec.startPercent);
+        let caption: string | null = null;
+        if (rec.priorStartPercent != null && rec.priorLastPercent != null) {
+            caption = `${formatPercent(rec.priorStartPercent)} → ${formatPercent(rec.priorLastPercent)}`;
+            if (rec.startPercent != null && rec.lastPercent != null) {
+                caption += `  +  ${formatPercent(rec.startPercent)} → ${formatPercent(rec.lastPercent)}`;
+            }
+        }
+        return (
+            <Flex flexDirection="column" gap="0.25rem">
+                <Formula
+                    terms={[
+                        { label: "Before", value: formatPercent(accrued) },
+                        { label: "After", value: formatPercent(after) },
+                        { label: "Used", value: formatPercent(used) },
+                    ]}
+                    ops={["+", "="]}
+                />
+                {caption != null && (
+                    <Text size="xs" color="muted" className={cl("formula-caption")}>{caption}</Text>
+                )}
+            </Flex>
+        );
+    }
+    return (
+        <Formula
+            terms={[
+                { label: today ? "Current" : "Last", value: formatPercent(rec.lastPercent) },
+                { label: "Start", value: formatPercent(rec.startPercent) },
+                { label: "Used", value: formatPercent(used) },
+            ]}
+            ops={["−", "="]}
+        />
+    );
+}
+
 function StatsModal({ onClose }: ModalProps) {
     useExternalStore(store);
     const { usageStats } = settings.use(["usageStats"]);
@@ -416,7 +486,7 @@ function StatsModal({ onClose }: ModalProps) {
             <StatsToggle />
             {!usageStats ? (
                 <Paragraph>Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.</Paragraph>
-            ) : days.length === 0 ? (
+            ) : (days.length === 0 ? (
                 <Paragraph>No days recorded yet. Stats start from the moment you enable tracking.</Paragraph>
             ) : (
                 <Flex flexDirection="column" gap="0.75rem" className={cl("history")}>
@@ -466,32 +536,11 @@ function StatsModal({ onClose }: ModalProps) {
                     {active != null && (
                         <Flex flexDirection="column" gap="0.35rem" className={cl("detail")}>
                             <Text size="sm" weight="semibold">{active.date === todayKey ? "Today" : formatDayLabel(active.date)}</Text>
-                            <Flex alignItems="flex-start" gap="0.5rem" className={cl("formula")}>
-                                <Flex flexDirection="column" alignItems="center" className={cl("formula-term")}>
-                                    <span className={cl("formula-label")}>{active.date === todayKey ? "Current" : "Last"}</span>
-                                    <span className={cl("formula-value")}>{formatPercent(active.lastPercent)}</span>
-                                </Flex>
-                                <Flex flexDirection="column" alignItems="center" className={cl("formula-op-col")}>
-                                    <span className={cl("formula-op")}>−</span>
-                                    <span className={cl("formula-op")}>−</span>
-                                </Flex>
-                                <Flex flexDirection="column" alignItems="center" className={cl("formula-term")}>
-                                    <span className={cl("formula-label")}>Start</span>
-                                    <span className={cl("formula-value")}>{formatPercent(active.startPercent)}</span>
-                                </Flex>
-                                <Flex flexDirection="column" alignItems="center" className={cl("formula-op-col")}>
-                                    <span className={cl("formula-op")}>=</span>
-                                    <span className={cl("formula-op")}>=</span>
-                                </Flex>
-                                <Flex flexDirection="column" alignItems="center" className={cl("formula-term")}>
-                                    <span className={cl("formula-label")}>Used</span>
-                                    <span className={cl("formula-value")}>{formatPercent(dayDelta(active))}</span>
-                                </Flex>
-                            </Flex>
+                            <DayFormula rec={active} today={active.date === todayKey} />
                         </Flex>
                     )}
                 </Flex>
-            )}
+            ))}
         </VoidDialogShell>
     );
 }

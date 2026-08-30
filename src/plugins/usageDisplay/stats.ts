@@ -12,6 +12,7 @@ import { finiteNumber, formatPercent } from "./credits";
 export const STATS_STORAGE_PREFIX = "void-usage-display:stats:v1:";
 export const STATS_VERSION = 1;
 export const RESET_DROP_PERCENT = 5;
+export const RESET_AT_TOLERANCE_MS = 60_000;
 export const RETAIN_MIN = 7;
 export const RETAIN_MAX = 180;
 export const RETAIN_DEFAULT = 90;
@@ -31,6 +32,9 @@ export interface DailyUsageRecord {
     startPercent: number | null;
     lastPercent: number | null;
     resetAt: number | null;
+    accruedPercent: number;
+    priorStartPercent: number | null;
+    priorLastPercent: number | null;
     updatedAt: number;
 }
 
@@ -69,6 +73,9 @@ export function emptyDay(date: string, now: number): DailyUsageRecord {
         startPercent: null,
         lastPercent: null,
         resetAt: null,
+        accruedPercent: 0,
+        priorStartPercent: null,
+        priorLastPercent: null,
         updatedAt: now,
     };
 }
@@ -80,6 +87,9 @@ function normalizeDay(date: string, value: unknown): DailyUsageRecord | null {
         startPercent: clampPercent(value.startPercent),
         lastPercent: clampPercent(value.lastPercent),
         resetAt: finiteNumber(value.resetAt),
+        accruedPercent: Math.max(0, finiteNumber(value.accruedPercent) ?? 0),
+        priorStartPercent: clampPercent(value.priorStartPercent),
+        priorLastPercent: clampPercent(value.priorLastPercent),
         updatedAt: finiteNumber(value.updatedAt) ?? 0,
     };
 }
@@ -150,17 +160,31 @@ function saveStore(file: StatsFile) {
     storeSet(STATS_STORAGE_PREFIX + file.userId, JSON.stringify(file));
 }
 
+function closeSegment(record: DailyUsageRecord, percent: number | null) {
+    const { startPercent, lastPercent } = record;
+    if (startPercent != null && lastPercent != null) {
+        record.accruedPercent += Math.max(0, lastPercent - startPercent);
+        record.priorStartPercent = startPercent;
+        record.priorLastPercent = lastPercent;
+    }
+    record.startPercent = percent;
+    record.lastPercent = percent;
+}
+
 export function applySnapshot(
     record: DailyUsageRecord,
     percent: number | null,
     resetAt: number | null,
     now: number,
 ): DailyUsageRecord {
-    const next: DailyUsageRecord = { ...record, updatedAt: now };
+    const next: DailyUsageRecord = {
+        ...record,
+        accruedPercent: record.accruedPercent ?? 0,
+        updatedAt: now,
+    };
 
-    if (resetAt != null && next.resetAt != null && resetAt !== next.resetAt) {
-        next.startPercent = percent;
-        next.lastPercent = percent;
+    if (resetAt != null && next.resetAt != null && Math.abs(resetAt - next.resetAt) >= RESET_AT_TOLERANCE_MS) {
+        closeSegment(next, percent);
         next.resetAt = resetAt;
         return next;
     }
@@ -169,8 +193,7 @@ export function applySnapshot(
     if (percent == null) return next;
 
     if (next.lastPercent != null && percent < next.lastPercent - RESET_DROP_PERCENT) {
-        next.startPercent = percent;
-        next.lastPercent = percent;
+        closeSegment(next, percent);
         return next;
     }
 
@@ -180,8 +203,11 @@ export function applySnapshot(
 }
 
 export function dayDelta(record: DailyUsageRecord): number | null {
-    if (record.startPercent == null || record.lastPercent == null) return null;
-    return Math.max(0, record.lastPercent - record.startPercent);
+    const accrued = record.accruedPercent ?? 0;
+    if (record.startPercent == null || record.lastPercent == null) {
+        return accrued > 0 ? accrued : null;
+    }
+    return accrued + Math.max(0, record.lastPercent - record.startPercent);
 }
 
 export function formatDelta(value: number | null): string {

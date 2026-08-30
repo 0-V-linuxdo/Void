@@ -7,11 +7,9 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+    applySnapshot,
     CHART_SCALE_MIN,
     CHART_WINDOW,
-    RETAIN_DEFAULT,
-    RESET_DROP_PERCENT,
-    applySnapshot,
     chartScale,
     clearStats,
     dayDelta,
@@ -23,6 +21,9 @@ import {
     localDateKey,
     pruneDays,
     recordSnapshot,
+    RESET_AT_TOLERANCE_MS,
+    RESET_DROP_PERCENT,
+    RETAIN_DEFAULT,
     shiftDateKey,
 } from "./stats";
 
@@ -39,6 +40,7 @@ describe("applySnapshot", () => {
         const rec = applySnapshot(emptyDay("2026-08-27", 1), 12.5, 1_787_529_600_000, 2);
         expect(rec.startPercent).toBe(12.5);
         expect(rec.lastPercent).toBe(12.5);
+        expect(rec.accruedPercent).toBe(0);
         expect(rec.resetAt).toBe(1_787_529_600_000);
     });
 
@@ -47,21 +49,54 @@ describe("applySnapshot", () => {
         const rec = applySnapshot(first, 18, 100, 3);
         expect(rec.startPercent).toBe(12.5);
         expect(rec.lastPercent).toBe(18);
+        expect(rec.accruedPercent).toBe(0);
     });
 
-    test("treats a large percent drop as a week reset", () => {
-        const first = applySnapshot(emptyDay("2026-08-27", 1), 80, 100, 2);
-        const rec = applySnapshot(first, 80 - RESET_DROP_PERCENT - 1, 100, 3);
+    test("accrues a large percent drop as a week reset", () => {
+        const first = applySnapshot(emptyDay("2026-08-27", 1), 12.5, 100, 2);
+        const grown = applySnapshot(first, 80, 100, 3);
+        const rec = applySnapshot(grown, 80 - RESET_DROP_PERCENT - 1, 100, 4);
+        expect(rec.accruedPercent).toBe(67.5);
+        expect(rec.priorStartPercent).toBe(12.5);
+        expect(rec.priorLastPercent).toBe(80);
         expect(rec.startPercent).toBe(74);
         expect(rec.lastPercent).toBe(74);
+        expect(dayDelta(rec)).toBe(67.5);
     });
 
-    test("resets start when resetAt changes", () => {
-        const first = applySnapshot(emptyDay("2026-08-27", 1), 80, 100, 2);
-        const rec = applySnapshot(first, 4, 200, 3);
+    test("accrues when resetAt changes", () => {
+        const first = applySnapshot(emptyDay("2026-08-27", 1), 55, 100, 2);
+        const grown = applySnapshot(first, 89, 100, 3);
+        const rec = applySnapshot(grown, 4, 100 + RESET_AT_TOLERANCE_MS, 4);
+        expect(rec.accruedPercent).toBe(34);
+        expect(rec.priorStartPercent).toBe(55);
+        expect(rec.priorLastPercent).toBe(89);
         expect(rec.startPercent).toBe(4);
         expect(rec.lastPercent).toBe(4);
-        expect(rec.resetAt).toBe(200);
+        expect(rec.resetAt).toBe(100 + RESET_AT_TOLERANCE_MS);
+        expect(dayDelta(rec)).toBe(34);
+    });
+
+    test("keeps the open segment when resetAt jitters under the tolerance", () => {
+        const first = applySnapshot(emptyDay("2026-08-27", 1), 12.5, 1000, 2);
+        const rec = applySnapshot(first, 18, 1000 + RESET_AT_TOLERANCE_MS - 1, 3);
+        expect(rec.startPercent).toBe(12.5);
+        expect(rec.lastPercent).toBe(18);
+        expect(rec.accruedPercent).toBe(0);
+        expect(rec.resetAt).toBe(1000 + RESET_AT_TOLERANCE_MS - 1);
+    });
+
+    test("adds the new week after a same-day reset", () => {
+        const start = applySnapshot(emptyDay("2026-08-31", 1), 55, 100, 2);
+        const before = applySnapshot(start, 89, 100, 3);
+        const reset = applySnapshot(before, 0, 200_000, 4);
+        const rec = applySnapshot(reset, 1, 200_000, 5);
+        expect(rec.accruedPercent).toBe(34);
+        expect(rec.priorStartPercent).toBe(55);
+        expect(rec.priorLastPercent).toBe(89);
+        expect(rec.startPercent).toBe(0);
+        expect(rec.lastPercent).toBe(1);
+        expect(dayDelta(rec)).toBe(35);
     });
 
     test("ignores a null percent", () => {
@@ -81,6 +116,13 @@ describe("dayDelta", () => {
         const rec = applySnapshot(emptyDay("2026-08-27", 1), 10, 100, 2);
         expect(dayDelta(applySnapshot(rec, 15.5, 100, 3))).toBe(5.5);
         expect(dayDelta(applySnapshot(rec, 9.5, 100, 3))).toBe(0);
+    });
+
+    test("includes accrued usage from a closed week segment", () => {
+        const grown = applySnapshot(applySnapshot(emptyDay("2026-08-31", 1), 55, 100, 2), 89, 100, 3);
+        const rec = applySnapshot(grown, 1, 200_000, 4);
+        expect(dayDelta(rec)).toBe(34);
+        expect(dayDelta(applySnapshot(rec, 3, 200_000, 5))).toBe(36);
     });
 });
 
