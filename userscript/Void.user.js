@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.23] v1.0.0
+// @version      [20260830.24] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.23] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.24] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6893,9 +6893,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.23] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"011c11c"}`
-    }, `(${"011c11c"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.24] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"b45cf99"}`
+    }, `(${"b45cf99"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -14332,12 +14332,12 @@ html.void-rt-open [data-sidebar="gap"] {
   var MARK = "void-cls";
   var LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
   var DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
-  var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
-  var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
-  var WORKING_FOR = /working\s+for/i;
+  var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started|active|connected|busy)$/i;
+  var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|isActive|isBusy|working)$/;
+  var WORKING_FOR = /working\s+for|connected to computer|continuing the(?: task)?/i;
   var WORKED_FOR = /worked\s+for/i;
-  var SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
-  var EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
+  var SKIP_KEY = /^(message|html|query|thinkingTrace)$/i;
+  var EXTRA_HINT = /computer|sandbox|agent|taskResult|session|toolCall|toolResponse|\bjobs?\b/i;
   var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
   var SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
   var HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
@@ -14367,7 +14367,7 @@ html.void-rt-open [data-sidebar="gap"] {
     return LIVE.has(status) || LIVE_WORD.test(status) || WORKING_FOR.test(status);
   }
   function bagLive(value, depth = 0) {
-    if (value == null || depth > 2)
+    if (value == null || depth > 3)
       return false;
     if (typeof value === "string")
       return isLiveStatus(value);
@@ -14424,7 +14424,9 @@ html.void-rt-open [data-sidebar="gap"] {
       return false;
     if (r.partial)
       return true;
-    return isLiveStatus(r.state);
+    if (isLiveStatus(r.state))
+      return true;
+    return bagLive(r.steps) || bagLive(r.toolResponses) || bagLive(r.fastToolResponse) || bagLive(r.metadata);
   }
   function isErrorResponse(r) {
     return !!r && (r.state === "error" || r.error != null);
@@ -14575,8 +14577,8 @@ html.void-rt-open [data-sidebar="gap"] {
     try {
       const page = ChatPageStore.useChatPageStore.getState();
       const currents = currentIds();
-      const { byId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-      if (page.showStreamingIndicator || bagLive(page.sidePanelContent)) {
+      const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
+      if (page.showStreamingIndicator || bagLive(page.sidePanelContent) || bagLive(page.metadata)) {
         for (const id of currents)
           ids.add(id);
       }
@@ -14586,6 +14588,11 @@ html.void-rt-open [data-sidebar="gap"] {
       }
       for (const id of Object.keys(inflightPromisesByConversationId ?? {}))
         ids.add(id);
+      for (const [id, list] of Object.entries(byConversationId ?? {})) {
+        const last = list?.[list.length - 1];
+        if (last && isLiveResponse(last))
+          ids.add(id);
+      }
     } catch (e) {
       logger27.debug("stream stores unavailable:", e);
     }
@@ -14850,10 +14857,17 @@ html.void-rt-open [data-sidebar="gap"] {
     obs.observe(node2, node2 === document.body ? { childList: true, subtree: true } : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
   }
   function pageKey(s) {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${bagLive(s.sidePanelContent) ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.lastMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${bagLive(s.sidePanelContent) ? 1 : 0}|${bagLive(s.metadata) ? 1 : 0}`;
   }
   function responseKey(s) {
-    return Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
+    const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
+    const live = [];
+    for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
+      const last = list?.[list.length - 1];
+      if (last && isLiveResponse(last))
+        live.push(id);
+    }
+    return `${inflight}|${live.join(",")}`;
   }
   function conversationKey(s) {
     const live = [];

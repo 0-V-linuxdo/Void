@@ -24,12 +24,12 @@ const logger = new Logger("ChatListStatus");
 const MARK = "void-cls";
 const LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
 const DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
-const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
-const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
-const WORKING_FOR = /working\s+for/i;
+const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started|active|connected|busy)$/i;
+const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|isActive|isBusy|working)$/;
+const WORKING_FOR = /working\s+for|connected to computer|continuing the(?: task)?/i;
 const WORKED_FOR = /worked\s+for/i;
-const SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
-const EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
+const SKIP_KEY = /^(message|html|query|thinkingTrace)$/i;
+const EXTRA_HINT = /computer|sandbox|agent|taskResult|session|toolCall|toolResponse|\bjobs?\b/i;
 const OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
 const SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
 const HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
@@ -63,7 +63,7 @@ function isLiveStatus(value: unknown): boolean {
 }
 
 function bagLive(value: unknown, depth = 0): boolean {
-    if (value == null || depth > 2) return false;
+    if (value == null || depth > 3) return false;
     if (typeof value === "string") return isLiveStatus(value);
     if (typeof value !== "object") return false;
     if (Array.isArray(value)) {
@@ -105,7 +105,8 @@ function bagLive(value: unknown, depth = 0): boolean {
 function isLiveResponse(r: GrokResponse | undefined): boolean {
     if (!r) return false;
     if (r.partial) return true;
-    return isLiveStatus(r.state);
+    if (isLiveStatus(r.state)) return true;
+    return bagLive(r.steps) || bagLive(r.toolResponses) || bagLive(r.fastToolResponse) || bagLive(r.metadata);
 }
 
 function isErrorResponse(r: GrokResponse | undefined): boolean {
@@ -242,14 +243,18 @@ function liveIds(): Set<string> {
     try {
         const page = ChatPageStore.useChatPageStore.getState();
         const currents = currentIds();
-        const { byId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-        if (page.showStreamingIndicator || bagLive(page.sidePanelContent)) {
+        const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
+        if (page.showStreamingIndicator || bagLive(page.sidePanelContent) || bagLive(page.metadata)) {
             for (const id of currents) ids.add(id);
         }
         if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
             for (const id of currents) ids.add(id);
         }
         for (const id of Object.keys(inflightPromisesByConversationId ?? {})) ids.add(id);
+        for (const [id, list] of Object.entries(byConversationId ?? {})) {
+            const last = list?.[list.length - 1];
+            if (last && isLiveResponse(last)) ids.add(id);
+        }
     } catch (e) {
         logger.debug("stream stores unavailable:", e);
     }
@@ -510,11 +515,17 @@ function observe() {
 }
 
 function pageKey(s: ChatPageStoreState): string {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${bagLive(s.sidePanelContent) ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.lastMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${bagLive(s.sidePanelContent) ? 1 : 0}|${bagLive(s.metadata) ? 1 : 0}`;
 }
 
 function responseKey(s: ResponseStoreState): string {
-    return Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
+    const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
+    const live: string[] = [];
+    for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
+        const last = list?.[list.length - 1];
+        if (last && isLiveResponse(last)) live.push(id);
+    }
+    return `${inflight}|${live.join(",")}`;
 }
 
 function conversationKey(s: ConversationStoreState): string {
