@@ -164,14 +164,18 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
                 <CogIcon className={cl("menu-icon")} />
                 Settings
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
+            <DropdownMenuSubContent className={cl("menu")}>
                 {showOpen && (
                     <DropdownMenuItem onSelect={e => openTab(undefined, e)}>
                         <CogIcon className={cl("menu-icon")} />
                         Open Settings
                     </DropdownMenuItem>
                 )}
-                {grokTabs.map(t => {
+                {voidTabs.length > 0 && showOpen && <DropdownMenuSeparator />}
+                {voidTabs.length > 0 && (
+                    <Text size="xs" color="secondary" className={cl("group")}>Void</Text>
+                )}
+                {voidTabs.map(t => {
                     const Icon = t.icon;
                     return (
                         <DropdownMenuItem key={t.id} onSelect={e => openTab(t.id, e)}>
@@ -180,11 +184,8 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
                         </DropdownMenuItem>
                     );
                 })}
-                {voidTabs.length > 0 && (showOpen || grokTabs.length > 0) && <DropdownMenuSeparator />}
-                {voidTabs.length > 0 && (
-                    <Text size="xs" color="secondary" className={cl("group")}>Void</Text>
-                )}
-                {voidTabs.map(t => {
+                {grokTabs.length > 0 && (showOpen || voidTabs.length > 0) && <DropdownMenuSeparator />}
+                {grokTabs.map(t => {
                     const Icon = t.icon;
                     return (
                         <DropdownMenuItem key={t.id} onSelect={e => openTab(t.id, e)}>
