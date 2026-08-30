@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.28] v1.0.0
+// @version      [20260830.29] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.28] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.29] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -3384,7 +3384,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // void-css:/tmp/void-push/src/components/ColorSettingRow.css
+  // void-css:/tmp/Void/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3423,7 +3423,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/void-push/src/components/ConfirmDialog.css
+  // void-css:/tmp/Void/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3672,7 +3672,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // void-css:/tmp/void-push/src/components/ErrorCard.css
+  // void-css:/tmp/Void/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3785,7 +3785,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/void-push/src/components/SelectionUI.css
+  // void-css:/tmp/Void/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4458,7 +4458,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/Void/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4731,7 +4731,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // void-css:/tmp/void-push/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4743,7 +4743,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/CssEditor.css
+  // void-css:/tmp/Void/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -5015,7 +5015,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/void-push/src/components/settings/shared.css
+  // void-css:/tmp/Void/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5090,7 +5090,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5131,7 +5131,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/PluginCard.css
+  // void-css:/tmp/Void/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5182,7 +5182,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/BaseCard.css
+  // void-css:/tmp/Void/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5455,7 +5455,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // void-css:/tmp/void-push/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/Void/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5481,7 +5481,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/SettingField.css
+  // void-css:/tmp/Void/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -6081,7 +6081,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/void-push/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6104,7 +6104,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-push/src/components/settings/ThemeCard.css
+  // void-css:/tmp/Void/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6382,7 +6382,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/void-push/src/plugins/experiments/styles.css
+  // void-css:/tmp/Void/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6760,7 +6760,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/pluginsFlyout/styles.css
+  // void-css:/tmp/Void/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -6902,9 +6902,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.28] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"eaf9414"}`
-    }, `(${"eaf9414"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.29] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"552b00a"}`
+    }, `(${"552b00a"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7259,7 +7259,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/inputHistory/styles.css
+  // void-css:/tmp/Void/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -8058,7 +8058,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/betterImagine/styles.css
+  // void-css:/tmp/Void/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8741,7 +8741,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/betterFiles/styles.css
+  // void-css:/tmp/Void/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8896,7 +8896,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/betterSidebar/styles.css
+  // void-css:/tmp/Void/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -9141,7 +9141,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/settingsFlyout/styles.css
+  // void-css:/tmp/Void/src/plugins/settingsFlyout/styles.css
   registerStyle("settingsFlyout", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -9456,7 +9456,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/Void/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -10946,7 +10946,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/Void/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -11266,7 +11266,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/recentTopics/styles.css
+  // void-css:/tmp/Void/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -13953,7 +13953,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/exportChat/styles.css
+  // void-css:/tmp/Void/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -14152,7 +14152,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/placeholder/styles.css
+  // void-css:/tmp/Void/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -14248,7 +14248,7 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/messageTimestamps/styles.css
+  // void-css:/tmp/Void/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -14313,7 +14313,7 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // void-css:/tmp/void-push/src/plugins/chatListStatus/styles.css
+  // void-css:/tmp/Void/src/plugins/chatListStatus/styles.css
   registerStyle("chatListStatus", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -14391,12 +14391,10 @@ html.void-rt-open [data-sidebar="gap"] {
   var MARK = "void-cls";
   var LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
   var DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
-  var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started|active|busy)$/i;
-  var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|isActive|isBusy|working)$/;
-  var WORKING_FOR = /working\s+for|continuing the(?: task)?/i;
-  var WORKED_FOR = /worked\s+for/i;
-  var SKIP_KEY = /^(message|html|query|thinkingTrace)$/i;
-  var EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
+  var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
+  var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
+  var SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
+  var EXTRA_HINT = /computer|sandbox|agent|task|working/i;
   var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
   var SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
   var HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
@@ -14421,59 +14419,39 @@ html.void-rt-open [data-sidebar="gap"] {
     if (typeof value !== "string")
       return false;
     const status = value.trim().toLowerCase();
-    if (!status || DEAD.has(status) || WORKED_FOR.test(status))
+    if (!status || DEAD.has(status))
       return false;
-    return LIVE.has(status) || LIVE_WORD.test(status) || WORKING_FOR.test(status);
+    return LIVE.has(status) || LIVE_WORD.test(status);
   }
-  function bagLive(value, depth = 0) {
-    if (value == null || depth > 3)
+  function isLiveBag(value, depth = 0) {
+    if (value == null || depth > 5)
       return false;
     if (typeof value === "string")
       return isLiveStatus(value);
     if (typeof value !== "object")
       return false;
     if (Array.isArray(value)) {
-      const start = Math.max(0, value.length - 8);
+      const start = Math.max(0, value.length - 24);
       for (let i = value.length - 1;i >= start; i--) {
-        if (bagLive(value[i], depth + 1))
+        if (isLiveBag(value[i], depth + 1))
           return true;
       }
       return false;
     }
     const rec = value;
-    const status = rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus;
-    if (typeof status === "string") {
-      const s = status.trim().toLowerCase();
-      if (DEAD.has(s) || WORKED_FOR.test(status))
-        return false;
-      if (LIVE.has(s) || LIVE_WORD.test(s) || WORKING_FOR.test(status))
-        return true;
-    }
-    if (rec.workedFor || rec.worked_for)
-      return false;
-    const working = rec.workingFor ?? rec.working_for;
-    if (working) {
-      if (typeof working !== "string")
-        return true;
-      if (!WORKED_FOR.test(working) && !DEAD.has(working.trim().toLowerCase()))
-        return true;
-    }
-    for (const key of Object.keys(rec)) {
-      if (LIVE_FLAG.test(key) && rec[key] === true)
-        return true;
-    }
+    if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus))
+      return true;
+    if (rec.workingFor || rec.working_for || rec.workingDuration)
+      return true;
     let n = 0;
     for (const [key, child] of Object.entries(rec)) {
-      if (++n > 24)
+      if (++n > 48)
         break;
       if (SKIP_KEY.test(key))
         continue;
-      if (typeof child === "string") {
-        if (WORKING_FOR.test(child) || isLiveStatus(child))
-          return true;
-        continue;
-      }
-      if (child && typeof child === "object" && bagLive(child, depth + 1))
+      if (LIVE_FLAG.test(key) && child === true)
+        return true;
+      if (isLiveBag(child, depth + 1))
         return true;
     }
     return false;
@@ -14483,84 +14461,40 @@ html.void-rt-open [data-sidebar="gap"] {
       return false;
     if (r.partial)
       return true;
-    const s = typeof r.state === "string" ? r.state.trim().toLowerCase() : "";
-    if (s === "error" || s === "aborted" || s === "cancelled" || s === "canceled")
-      return false;
-    if (LIVE.has(s) || isLiveStatus(r.state))
+    if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata))
       return true;
-    return bagLive(r.steps) || bagLive(r.toolResponses) || bagLive(r.fastToolResponse) || bagLive(r.metadata);
+    const state2 = r.state ?? "";
+    if (!state2)
+      return false;
+    if (LIVE.has(state2))
+      return true;
+    return !DEAD.has(state2.toLowerCase());
   }
   function isErrorResponse(r) {
     return !!r && (r.state === "error" || r.error != null);
   }
-  function ownLive(value) {
-    if (value == null)
-      return false;
-    if (typeof value === "string")
-      return isLiveStatus(value);
-    if (typeof value !== "object" || Array.isArray(value))
-      return false;
-    const rec = value;
-    const status = rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus;
-    if (typeof status === "string") {
-      const s = status.trim().toLowerCase();
-      if (DEAD.has(s) || WORKED_FOR.test(status))
-        return false;
-      if (LIVE.has(s) || LIVE_WORD.test(s) || WORKING_FOR.test(status))
-        return true;
-    }
-    if (rec.workedFor || rec.worked_for)
-      return false;
-    const working = rec.workingFor ?? rec.working_for;
-    if (working) {
-      if (typeof working !== "string")
-        return true;
-      if (!WORKED_FOR.test(working) && !DEAD.has(working.trim().toLowerCase()))
-        return true;
-    }
-    for (const key of Object.keys(rec)) {
-      if (LIVE_FLAG.test(key) && rec[key] === true)
-        return true;
-    }
-    let n = 0;
-    for (const [key, child] of Object.entries(rec)) {
-      if (++n > 24)
-        break;
-      if (SKIP_KEY.test(key))
-        continue;
-      if (typeof child === "string" && (WORKING_FOR.test(child) || isLiveStatus(child)))
-        return true;
-    }
-    return false;
-  }
-  function convIdOf(rec) {
-    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
-    return isConvId(id) ? id : "";
-  }
-  function collectLiveIds(value, out, hint = "", depth = 0) {
-    if (value == null || typeof value !== "object" || depth > 3)
+  function collectConvIds(value, out, depth = 0) {
+    if (value == null || typeof value !== "object" || depth > 5)
       return;
     if (Array.isArray(value)) {
-      const start = Math.max(0, value.length - 8);
+      const start = Math.max(0, value.length - 16);
       for (let i = start;i < value.length; i++)
-        collectLiveIds(value[i], out, hint, depth + 1);
+        collectConvIds(value[i], out, depth + 1);
       return;
     }
     const rec = value;
-    const id = convIdOf(rec) || hint;
-    if (ownLive(rec) && isConvId(id))
+    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
+    if (isConvId(id) && isLiveBag(rec))
       out.add(id);
     let n = 0;
     for (const [key, child] of Object.entries(rec)) {
-      if (++n > 24)
+      if (++n > 48)
         break;
       if (SKIP_KEY.test(key))
         continue;
-      const next = isConvId(key) ? key : id;
-      if (isConvId(key) && ownLive(child))
+      if (isConvId(key) && isLiveBag(child))
         out.add(key);
-      if (child && typeof child === "object")
-        collectLiveIds(child, out, next || hint, depth + 1);
+      collectConvIds(child, out, depth + 1);
     }
   }
   function currentIds() {
@@ -14596,21 +14530,23 @@ html.void-rt-open [data-sidebar="gap"] {
   function considerConversation(ids, conversation) {
     if (!conversation?.conversationId)
       return;
-    if (!bagLive(conversation.taskResult))
-      return;
-    const found = new Set;
-    collectLiveIds(conversation.taskResult, found, conversation.conversationId);
-    if (found.size) {
-      for (const id of found)
-        ids.add(id);
-      return;
-    }
-    ids.add(conversation.conversationId);
+    if (conversation.state === "open" || isLiveBag(conversation.taskResult))
+      ids.add(conversation.conversationId);
   }
   function looksExtraStore(name, state2) {
     if (EXTRA_HINT.test(name))
       return true;
-    return Object.keys(state2).some((key) => EXTRA_HINT.test(key));
+    const keys3 = Object.keys(state2);
+    if (keys3.some((key) => EXTRA_HINT.test(key)))
+      return true;
+    let n = 0;
+    for (const child of Object.values(state2)) {
+      if (++n > 8)
+        break;
+      if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some((key) => EXTRA_HINT.test(key)))
+        return true;
+    }
+    return false;
   }
   function scanModule(exports) {
     if (exports == null || typeof exports !== "object" || isBlacklisted(exports))
@@ -14674,76 +14610,49 @@ html.void-rt-open [data-sidebar="gap"] {
       } catch {
         continue;
       }
-      if (!bagLive(state2))
+      if (!isLiveBag(state2))
         continue;
-      collectLiveIds(state2, ids);
+      const found = new Set;
+      collectConvIds(state2, found);
+      if (found.size) {
+        for (const id of found)
+          ids.add(id);
+        continue;
+      }
+      for (const id of currentIds())
+        ids.add(id);
     }
   }
   function liveIds() {
     const ids = new Set;
-    const add = (id) => {
-      if (isConvId(id))
-        ids.add(id);
-    };
     try {
       const page = ChatPageStore.useChatPageStore.getState();
       const currents = currentIds();
-      const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-      const markRid = (rid, allowCurrent) => {
-        if (!rid)
-          return;
-        const r = byId[rid];
-        if (r) {
-          if (!isLiveResponse(r))
-            return;
-          const owner = convOfResponse(rid);
-          if (owner) {
-            add(owner);
-            return;
-          }
-          if (allowCurrent) {
-            for (const id of currents)
-              add(id);
-          }
-          return;
-        }
-        if (allowCurrent && rid === page.streamedMessageId) {
-          for (const id of currents)
-            add(id);
-        }
-      };
-      markRid(page.streamedMessageId, true);
-      markRid(page.lastMessageId, true);
-      markRid(page.sidePanelResponseId, false);
-      if (page.showStreamingIndicator) {
-        const streamed = page.streamedMessageId ?? "";
-        const streamedRes = byId[streamed];
-        const streamedLive = !!streamed && (!streamedRes || isLiveResponse(streamedRes));
-        const lastLive = isLiveResponse(byId[page.lastMessageId ?? ""]);
-        if (streamedLive || lastLive) {
-          const owner = convOfResponse(streamed) || convOfResponse(page.lastMessageId ?? "");
-          if (owner && !currents.includes(owner))
-            add(owner);
-          else
-            for (const id of currents)
-              add(id);
-        }
+      if (page.streamedMessageId || page.showStreamingIndicator || isLiveBag(page.sidePanelContent) || isLiveBag(page.metadata)) {
+        for (const id of currents)
+          ids.add(id);
       }
-      collectLiveIds(page.sidePanelContent, ids);
-      collectLiveIds(page.metadata, ids);
+      const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
+      if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
+        for (const id of currents)
+          ids.add(id);
+      }
       for (const id of Object.keys(inflightPromisesByConversationId ?? {}))
-        add(id);
+        ids.add(id);
       for (const [id, list] of Object.entries(byConversationId ?? {})) {
         if (list?.some(isLiveResponse))
-          add(id);
+          ids.add(id);
       }
     } catch (e) {
       logger27.debug("stream stores unavailable:", e);
     }
     try {
-      const { list, byId } = ConversationStore.useConversationStore.getState();
-      const rows = list?.length ? list : Object.values(byId ?? {});
-      for (const conversation of rows)
+      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+      for (const conversation of list ?? [])
+        considerConversation(ids, conversation);
+      for (const conversation of Object.values(byId ?? {}))
+        considerConversation(ids, conversation);
+      for (const conversation of Object.values(byIdWithWorkspaces ?? {}))
         considerConversation(ids, conversation);
     } catch (e) {
       logger27.debug("conversation store unavailable:", e);
@@ -14794,7 +14703,7 @@ html.void-rt-open [data-sidebar="gap"] {
         if (list?.some((r) => r.responseId === responseId))
           return id;
       }
-      return "";
+      return currentIds()[0] ?? "";
     } catch (e) {
       logger27.debug("conv lookup failed:", e);
       return "";
@@ -14867,16 +14776,6 @@ html.void-rt-open [data-sidebar="gap"] {
     svg2.append(path);
     return svg2;
   }
-  function placeNestMark(btn, mark) {
-    if (!btn.hasAttribute("data-void-cls-nest")) {
-      mark.style.removeProperty("left");
-      return;
-    }
-    const pad2 = parseFloat(getComputedStyle(btn).paddingLeft);
-    const width = mark.offsetWidth || 12;
-    const left = Math.max(2, (Number.isFinite(pad2) ? pad2 : 8) - width - 4);
-    mark.style.left = `${left}px`;
-  }
   function ensureMark(btn, kind2) {
     btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
     let mark = btn.querySelector(`:scope > .${MARK}`);
@@ -14886,13 +14785,12 @@ html.void-rt-open [data-sidebar="gap"] {
       mark.setAttribute("aria-hidden", "true");
       btn.prepend(mark);
     }
-    if (mark.dataset.kind !== kind2 || kind2 === "streaming" && !mark.querySelector("svg")) {
-      mark.dataset.kind = kind2;
-      mark.replaceChildren();
-      if (kind2 === "streaming")
-        mark.append(spinSvg());
-    }
-    placeNestMark(btn, mark);
+    if (mark.dataset.kind === kind2 && (kind2 !== "streaming" || mark.querySelector("svg")))
+      return;
+    mark.dataset.kind = kind2;
+    mark.replaceChildren();
+    if (kind2 === "streaming")
+      mark.append(spinSvg());
   }
   function clearMark(btn) {
     btn.querySelector(`:scope > .${MARK}`)?.remove();
@@ -14956,6 +14854,9 @@ html.void-rt-open [data-sidebar="gap"] {
         break;
       }
     }
+    const live = [...marks].filter(([, kind2]) => kind2 === "streaming").map(([id]) => id);
+    if (live.length && !rowById.size)
+      logger27.info("live ids with no rows", live);
   }
   function schedule() {
     if (!started3 || raf2)
@@ -14990,44 +14891,31 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function observe() {
     obs?.disconnect();
-    const node2 = document.querySelector(SIDEBAR) ?? document.body;
     obs = new MutationObserver((list) => {
       if (ownMutation(list))
         return;
-      if (node2 === document.body && document.querySelector(SIDEBAR))
-        observe();
       schedule();
     });
+    const node2 = document.querySelector(SIDEBAR) ?? document.body;
     obs.observe(node2, node2 === document.body ? { childList: true, subtree: true } : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
   }
   function pageKey(s) {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.lastMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${bagLive(s.sidePanelContent) ? 1 : 0}|${bagLive(s.metadata) ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.lastMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
   }
   function responseKey(s) {
     const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
-    const live = [];
+    const bits = [];
     for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
       const last = list?.[list.length - 1];
-      if (last && isLiveResponse(last))
-        live.push(id);
+      if (!last)
+        continue;
+      bits.push(`${id}:${last.responseId}:${last.state ?? ""}:${last.partial ? 1 : 0}:${last.steps?.length ?? 0}`);
     }
-    return `${inflight}|${live.join(",")}`;
+    return `${inflight}|${bits.join(",")}`;
   }
   function conversationKey(s) {
-    const live = [];
-    const seen = new Set;
-    const consider = (conversation) => {
-      if (!conversation?.conversationId || seen.has(conversation.conversationId))
-        return;
-      if (!bagLive(conversation.taskResult))
-        return;
-      seen.add(conversation.conversationId);
-      live.push(conversation.conversationId);
-    };
     const rows = s.list?.length ? s.list : Object.values(s.byId ?? {});
-    for (const conversation of rows)
-      consider(conversation);
-    return live.join(",");
+    return rows.map((conversation) => `${conversation?.conversationId ?? ""}:${conversation?.state ?? ""}`).join(",");
   }
   function routeKey(s) {
     const { route } = s;
@@ -15046,9 +14934,7 @@ html.void-rt-open [data-sidebar="gap"] {
     start() {
       started3 = true;
       attachExtraStores();
-      extraOff = onModuleLoad(queueExtraScan);
-      const sidebar = document.querySelector('[data-sidebar="sidebar"]');
-      logger27.info("start", "sidebar", !!sidebar, "rows", sidebar?.querySelectorAll(ROW).length ?? 0, "live", liveIds().size, "current", currentIds()[0] ?? "");
+      extraOff = onModuleLoad(() => queueExtraScan());
       observe();
       schedule();
     },
@@ -15187,7 +15073,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/downloadTTS/styles.css
+  // void-css:/tmp/Void/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -15362,7 +15248,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/streamerMode/styles.css
+  // void-css:/tmp/Void/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -15559,7 +15445,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/void-push/src/plugins/customInstructions/styles.css
+  // void-css:/tmp/Void/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -15966,7 +15852,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
   var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [inputHistory_default.name]: inputHistory_default, [autoCollapse_default.name]: autoCollapse_default, [responseNotification_default.name]: responseNotification_default, [betterImagine_default.name]: betterImagine_default, [noShareLink_default.name]: noShareLink_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterFiles_default.name]: betterFiles_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [betterSidebar_default.name]: betterSidebar_default, [settingsFlyout_default.name]: settingsFlyout_default, [composerOpacity_default.name]: composerOpacity_default, [usageDisplay_default.name]: usageDisplay_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [betterLinks_default.name]: betterLinks_default, [compactModeSelect_default.name]: compactModeSelect_default, [autoRetry_default.name]: autoRetry_default, [recentTopics_default.name]: recentTopics_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [exportChat_default.name]: exportChat_default, [placeholder_default.name]: placeholder_default, [experiments_default.name]: experiments_default, [messageTimestamps_default.name]: messageTimestamps_default, [chatListStatus_default.name]: chatListStatus_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [downloadTTS_default.name]: downloadTTS_default, [userQuotes_default.name]: userQuotes_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [streamerMode_default.name]: streamerMode_default, [incognito_default.name]: incognito_default, [customInstructions_default.name]: customInstructions_default, [widerChat_default.name]: widerChat_default };
-  // void-css:/tmp/void-push/src/api/Notices.css
+  // void-css:/tmp/Void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;

@@ -24,12 +24,10 @@ const logger = new Logger("ChatListStatus");
 const MARK = "void-cls";
 const LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
 const DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
-const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started|active|busy)$/i;
-const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|isActive|isBusy|working)$/;
-const WORKING_FOR = /working\s+for|continuing the(?: task)?/i;
-const WORKED_FOR = /worked\s+for/i;
-const SKIP_KEY = /^(message|html|query|thinkingTrace)$/i;
-const EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
+const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
+const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
+const SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
+const EXTRA_HINT = /computer|sandbox|agent|task|working/i;
 const OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
 const SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
 const HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
@@ -58,46 +56,30 @@ function isConvId(value: unknown): value is string {
 function isLiveStatus(value: unknown): boolean {
     if (typeof value !== "string") return false;
     const status = value.trim().toLowerCase();
-    if (!status || DEAD.has(status) || WORKED_FOR.test(status)) return false;
-    return LIVE.has(status) || LIVE_WORD.test(status) || WORKING_FOR.test(status);
+    if (!status || DEAD.has(status)) return false;
+    return LIVE.has(status) || LIVE_WORD.test(status);
 }
 
-function bagLive(value: unknown, depth = 0): boolean {
-    if (value == null || depth > 3) return false;
+function isLiveBag(value: unknown, depth = 0): boolean {
+    if (value == null || depth > 5) return false;
     if (typeof value === "string") return isLiveStatus(value);
     if (typeof value !== "object") return false;
     if (Array.isArray(value)) {
-        const start = Math.max(0, value.length - 8);
+        const start = Math.max(0, value.length - 24);
         for (let i = value.length - 1; i >= start; i--) {
-            if (bagLive(value[i], depth + 1)) return true;
+            if (isLiveBag(value[i], depth + 1)) return true;
         }
         return false;
     }
     const rec = value as Record<string, any>;
-    const status = rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus;
-    if (typeof status === "string") {
-        const s = status.trim().toLowerCase();
-        if (DEAD.has(s) || WORKED_FOR.test(status)) return false;
-        if (LIVE.has(s) || LIVE_WORD.test(s) || WORKING_FOR.test(status)) return true;
-    }
-    if (rec.workedFor || rec.worked_for) return false;
-    const working = rec.workingFor ?? rec.working_for;
-    if (working) {
-        if (typeof working !== "string") return true;
-        if (!WORKED_FOR.test(working) && !DEAD.has(working.trim().toLowerCase())) return true;
-    }
-    for (const key of Object.keys(rec)) {
-        if (LIVE_FLAG.test(key) && rec[key] === true) return true;
-    }
+    if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus)) return true;
+    if (rec.workingFor || rec.working_for || rec.workingDuration) return true;
     let n = 0;
     for (const [key, child] of Object.entries(rec)) {
-        if (++n > 24) break;
+        if (++n > 48) break;
         if (SKIP_KEY.test(key)) continue;
-        if (typeof child === "string") {
-            if (WORKING_FOR.test(child) || isLiveStatus(child)) return true;
-            continue;
-        }
-        if (child && typeof child === "object" && bagLive(child, depth + 1)) return true;
+        if (LIVE_FLAG.test(key) && child === true) return true;
+        if (isLiveBag(child, depth + 1)) return true;
     }
     return false;
 }
@@ -105,67 +87,33 @@ function bagLive(value: unknown, depth = 0): boolean {
 function isLiveResponse(r: GrokResponse | undefined): boolean {
     if (!r) return false;
     if (r.partial) return true;
-    const s = typeof r.state === "string" ? r.state.trim().toLowerCase() : "";
-    if (s === "error" || s === "aborted" || s === "cancelled" || s === "canceled") return false;
-    if (LIVE.has(s) || isLiveStatus(r.state)) return true;
-    return bagLive(r.steps) || bagLive(r.toolResponses) || bagLive(r.fastToolResponse) || bagLive(r.metadata);
+    if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata)) return true;
+    const state = r.state ?? "";
+    if (!state) return false;
+    if (LIVE.has(state)) return true;
+    return !DEAD.has(state.toLowerCase());
 }
 
 function isErrorResponse(r: GrokResponse | undefined): boolean {
     return !!r && (r.state === "error" || r.error != null);
 }
 
-function ownLive(value: unknown): boolean {
-    if (value == null) return false;
-    if (typeof value === "string") return isLiveStatus(value);
-    if (typeof value !== "object" || Array.isArray(value)) return false;
-    const rec = value as Record<string, any>;
-    const status = rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus;
-    if (typeof status === "string") {
-        const s = status.trim().toLowerCase();
-        if (DEAD.has(s) || WORKED_FOR.test(status)) return false;
-        if (LIVE.has(s) || LIVE_WORD.test(s) || WORKING_FOR.test(status)) return true;
-    }
-    if (rec.workedFor || rec.worked_for) return false;
-    const working = rec.workingFor ?? rec.working_for;
-    if (working) {
-        if (typeof working !== "string") return true;
-        if (!WORKED_FOR.test(working) && !DEAD.has(working.trim().toLowerCase())) return true;
-    }
-    for (const key of Object.keys(rec)) {
-        if (LIVE_FLAG.test(key) && rec[key] === true) return true;
-    }
-    let n = 0;
-    for (const [key, child] of Object.entries(rec)) {
-        if (++n > 24) break;
-        if (SKIP_KEY.test(key)) continue;
-        if (typeof child === "string" && (WORKING_FOR.test(child) || isLiveStatus(child))) return true;
-    }
-    return false;
-}
-
-function convIdOf(rec: Record<string, any>): string {
-    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
-    return isConvId(id) ? id : "";
-}
-
-function collectLiveIds(value: unknown, out: Set<string>, hint = "", depth = 0) {
-    if (value == null || typeof value !== "object" || depth > 3) return;
+function collectConvIds(value: unknown, out: Set<string>, depth = 0) {
+    if (value == null || typeof value !== "object" || depth > 5) return;
     if (Array.isArray(value)) {
-        const start = Math.max(0, value.length - 8);
-        for (let i = start; i < value.length; i++) collectLiveIds(value[i], out, hint, depth + 1);
+        const start = Math.max(0, value.length - 16);
+        for (let i = start; i < value.length; i++) collectConvIds(value[i], out, depth + 1);
         return;
     }
     const rec = value as Record<string, any>;
-    const id = convIdOf(rec) || hint;
-    if (ownLive(rec) && isConvId(id)) out.add(id);
+    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
+    if (isConvId(id) && isLiveBag(rec)) out.add(id);
     let n = 0;
     for (const [key, child] of Object.entries(rec)) {
-        if (++n > 24) break;
+        if (++n > 48) break;
         if (SKIP_KEY.test(key)) continue;
-        const next = isConvId(key) ? key : id;
-        if (isConvId(key) && ownLive(child)) out.add(key);
-        if (child && typeof child === "object") collectLiveIds(child, out, next || hint, depth + 1);
+        if (isConvId(key) && isLiveBag(child)) out.add(key);
+        collectConvIds(child, out, depth + 1);
     }
 }
 
@@ -201,19 +149,19 @@ function currentIds(): string[] {
 
 function considerConversation(ids: Set<string>, conversation: GrokConversation | undefined) {
     if (!conversation?.conversationId) return;
-    if (!bagLive(conversation.taskResult)) return;
-    const found = new Set<string>();
-    collectLiveIds(conversation.taskResult, found, conversation.conversationId);
-    if (found.size) {
-        for (const id of found) ids.add(id);
-        return;
-    }
-    ids.add(conversation.conversationId);
+    if (conversation.state === "open" || isLiveBag(conversation.taskResult)) ids.add(conversation.conversationId);
 }
 
 function looksExtraStore(name: string, state: object): boolean {
     if (EXTRA_HINT.test(name)) return true;
-    return Object.keys(state).some(key => EXTRA_HINT.test(key));
+    const keys = Object.keys(state);
+    if (keys.some(key => EXTRA_HINT.test(key))) return true;
+    let n = 0;
+    for (const child of Object.values(state as Record<string, any>)) {
+        if (++n > 8) break;
+        if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some(key => EXTRA_HINT.test(key))) return true;
+    }
+    return false;
 }
 
 function scanModule(exports: unknown) {
@@ -271,66 +219,41 @@ function extraLiveIds(ids: Set<string>) {
         } catch {
             continue;
         }
-        if (!bagLive(state)) continue;
-        collectLiveIds(state, ids);
+        if (!isLiveBag(state)) continue;
+        const found = new Set<string>();
+        collectConvIds(state, found);
+        if (found.size) {
+            for (const id of found) ids.add(id);
+            continue;
+        }
+        for (const id of currentIds()) ids.add(id);
     }
 }
 
 function liveIds(): Set<string> {
     const ids = new Set<string>();
-    const add = (id: unknown) => {
-        if (isConvId(id)) ids.add(id);
-    };
     try {
         const page = ChatPageStore.useChatPageStore.getState();
         const currents = currentIds();
-        const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-        const markRid = (rid: string | undefined, allowCurrent: boolean) => {
-            if (!rid) return;
-            const r = byId[rid];
-            if (r) {
-                if (!isLiveResponse(r)) return;
-                const owner = convOfResponse(rid);
-                if (owner) {
-                    add(owner);
-                    return;
-                }
-                if (allowCurrent) {
-                    for (const id of currents) add(id);
-                }
-                return;
-            }
-            if (allowCurrent && rid === page.streamedMessageId) {
-                for (const id of currents) add(id);
-            }
-        };
-        markRid(page.streamedMessageId, true);
-        markRid(page.lastMessageId, true);
-        markRid(page.sidePanelResponseId, false);
-        if (page.showStreamingIndicator) {
-            const streamed = page.streamedMessageId ?? "";
-            const streamedRes = byId[streamed];
-            const streamedLive = !!streamed && (!streamedRes || isLiveResponse(streamedRes));
-            const lastLive = isLiveResponse(byId[page.lastMessageId ?? ""]);
-            if (streamedLive || lastLive) {
-                const owner = convOfResponse(streamed) || convOfResponse(page.lastMessageId ?? "");
-                if (owner && !currents.includes(owner)) add(owner);
-                else for (const id of currents) add(id);
-            }
+        if (page.streamedMessageId || page.showStreamingIndicator || isLiveBag(page.sidePanelContent) || isLiveBag(page.metadata)) {
+            for (const id of currents) ids.add(id);
         }
-        collectLiveIds(page.sidePanelContent, ids);
-        collectLiveIds(page.metadata, ids);
-        for (const id of Object.keys(inflightPromisesByConversationId ?? {})) add(id);
+        const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
+        if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
+            for (const id of currents) ids.add(id);
+        }
+        for (const id of Object.keys(inflightPromisesByConversationId ?? {})) ids.add(id);
         for (const [id, list] of Object.entries(byConversationId ?? {})) {
-            if (list?.some(isLiveResponse)) add(id);
+            if (list?.some(isLiveResponse)) ids.add(id);
         }
     } catch (e) {
         logger.debug("stream stores unavailable:", e);
     }
     try {
-        const { list, byId } = ConversationStore.useConversationStore.getState();
-        const rows = list?.length ? list : Object.values(byId ?? {});
-        for (const conversation of rows) considerConversation(ids, conversation);
+        const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+        for (const conversation of list ?? []) considerConversation(ids, conversation);
+        for (const conversation of Object.values(byId ?? {})) considerConversation(ids, conversation);
+        for (const conversation of Object.values(byIdWithWorkspaces ?? {})) considerConversation(ids, conversation);
     } catch (e) {
         logger.debug("conversation store unavailable:", e);
     }
@@ -379,7 +302,7 @@ function convOfResponse(responseId: string): string {
         for (const [id, list] of Object.entries(byConversationId ?? {})) {
             if (list?.some(r => r.responseId === responseId)) return id;
         }
-        return "";
+        return currentIds()[0] ?? "";
     } catch (e) {
         logger.debug("conv lookup failed:", e);
         return "";
@@ -456,17 +379,6 @@ function spinSvg(): SVGSVGElement {
     return svg;
 }
 
-function placeNestMark(btn: HTMLElement, mark: HTMLElement) {
-    if (!btn.hasAttribute("data-void-cls-nest")) {
-        mark.style.removeProperty("left");
-        return;
-    }
-    const pad = parseFloat(getComputedStyle(btn).paddingLeft);
-    const width = mark.offsetWidth || 12;
-    const left = Math.max(2, (Number.isFinite(pad) ? pad : 8) - width - 4);
-    mark.style.left = `${left}px`;
-}
-
 function ensureMark(btn: HTMLElement, kind: Kind) {
     btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
     let mark = btn.querySelector<HTMLElement>(`:scope > .${MARK}`);
@@ -476,12 +388,10 @@ function ensureMark(btn: HTMLElement, kind: Kind) {
         mark.setAttribute("aria-hidden", "true");
         btn.prepend(mark);
     }
-    if (mark.dataset.kind !== kind || (kind === "streaming" && !mark.querySelector("svg"))) {
-        mark.dataset.kind = kind;
-        mark.replaceChildren();
-        if (kind === "streaming") mark.append(spinSvg());
-    }
-    placeNestMark(btn, mark);
+    if (mark.dataset.kind === kind && (kind !== "streaming" || mark.querySelector("svg"))) return;
+    mark.dataset.kind = kind;
+    mark.replaceChildren();
+    if (kind === "streaming") mark.append(spinSvg());
 }
 
 function clearMark(btn: HTMLElement) {
@@ -542,6 +452,9 @@ function paint() {
             break;
         }
     }
+
+    const live = [...marks].filter(([, kind]) => kind === "streaming").map(([id]) => id);
+    if (live.length && !rowById.size) logger.info("live ids with no rows", live);
 }
 
 function schedule() {
@@ -572,43 +485,34 @@ function ownMutation(list: MutationRecord[]): boolean {
 
 function observe() {
     obs?.disconnect();
-    const node = document.querySelector(SIDEBAR) ?? document.body;
     obs = new MutationObserver(list => {
         if (ownMutation(list)) return;
-        if (node === document.body && document.querySelector(SIDEBAR)) observe();
         schedule();
     });
+    const node = document.querySelector(SIDEBAR) ?? document.body;
     obs.observe(node, node === document.body
         ? { childList: true, subtree: true }
         : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
 }
 
 function pageKey(s: ChatPageStoreState): string {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.lastMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${bagLive(s.sidePanelContent) ? 1 : 0}|${bagLive(s.metadata) ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.lastMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
 }
 
 function responseKey(s: ResponseStoreState): string {
     const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
-    const live: string[] = [];
+    const bits: string[] = [];
     for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
         const last = list?.[list.length - 1];
-        if (last && isLiveResponse(last)) live.push(id);
+        if (!last) continue;
+        bits.push(`${id}:${last.responseId}:${last.state ?? ""}:${last.partial ? 1 : 0}:${last.steps?.length ?? 0}`);
     }
-    return `${inflight}|${live.join(",")}`;
+    return `${inflight}|${bits.join(",")}`;
 }
 
 function conversationKey(s: ConversationStoreState): string {
-    const live: string[] = [];
-    const seen = new Set<string>();
-    const consider = (conversation: GrokConversation | undefined) => {
-        if (!conversation?.conversationId || seen.has(conversation.conversationId)) return;
-        if (!bagLive(conversation.taskResult)) return;
-        seen.add(conversation.conversationId);
-        live.push(conversation.conversationId);
-    };
     const rows = s.list?.length ? s.list : Object.values(s.byId ?? {});
-    for (const conversation of rows) consider(conversation);
-    return live.join(",");
+    return rows.map(conversation => `${conversation?.conversationId ?? ""}:${conversation?.state ?? ""}`).join(",");
 }
 
 function routeKey(s: RoutingStoreState): string {
@@ -630,15 +534,7 @@ export default definePlugin({
     start() {
         started = true;
         attachExtraStores();
-        extraOff = onModuleLoad(queueExtraScan);
-        const sidebar = document.querySelector('[data-sidebar="sidebar"]');
-        logger.info(
-            "start",
-            "sidebar", !!sidebar,
-            "rows", sidebar?.querySelectorAll(ROW).length ?? 0,
-            "live", liveIds().size,
-            "current", currentIds()[0] ?? "",
-        );
+        extraOff = onModuleLoad(() => queueExtraScan());
         observe();
         schedule();
     },
