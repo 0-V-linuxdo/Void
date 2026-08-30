@@ -11,3 +11,8 @@
     color: hsl(var(--fg-secondary));
     flex-shrink: 0;
 }
+
+.void-sf-group {
+    padding: 0.25rem 0.5rem 0.125rem;
+    pointer-events: none;
+}

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.2] v1.0.0
+// @version      [20260830.3] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.2] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.3] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6917,7 +6917,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.2] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260830.3] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -13159,6 +13159,11 @@ html.void-rt-open [data-sidebar="gap"] {
     color: hsl(var(--fg-secondary));
     flex-shrink: 0;
 }
+
+.void-sf-group {
+    padding: 0.25rem 0.5rem 0.125rem;
+    pointer-events: none;
+}
 `);
 
   // src/plugins/settingsFlyout/icons.tsx
@@ -13329,12 +13334,14 @@ html.void-rt-open [data-sidebar="gap"] {
       try {
         onOpen?.(event);
       } catch {}
-      queueMicrotask(() => {
+      const apply5 = () => {
         const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
         if (tab)
           store3.setTab(tab);
         store3.setOpen(true);
-      });
+      };
+      apply5();
+      queueMicrotask(apply5);
     };
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl24("menu-icon")
@@ -13350,7 +13357,11 @@ html.void-rt-open [data-sidebar="gap"] {
       }, /* @__PURE__ */ React.createElement(Icon, {
         className: cl24("menu-icon")
       }), t.name);
-    }), voidTabs.length > 0 && (showOpen || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidTabs.map((t) => {
+    }), voidTabs.length > 0 && (showOpen || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidTabs.length > 0 && /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: "secondary",
+      className: cl24("group")
+    }, "Void"), voidTabs.map((t) => {
       const Icon = t.icon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,

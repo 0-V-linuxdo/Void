@@ -7,7 +7,7 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { ErrorBoundary } from "@components";
+import { ErrorBoundary, Text } from "@components";
 import { BracesIcon, PaletteIcon, Settings2Icon, UnplugIcon } from "@components/icons";
 import {
     DropdownMenuItem,
@@ -133,11 +133,13 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
         try {
             onOpen?.(event);
         } catch {}
-        queueMicrotask(() => {
+        const apply = () => {
             const store = SettingsDialogStore.useSettingsDialogStore.getState();
             if (tab) store.setTab(tab);
             store.setOpen(true);
-        });
+        };
+        apply();
+        queueMicrotask(apply);
     };
 
     return (
@@ -163,6 +165,9 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
                     );
                 })}
                 {voidTabs.length > 0 && (showOpen || grokTabs.length > 0) && <DropdownMenuSeparator />}
+                {voidTabs.length > 0 && (
+                    <Text size="xs" color="secondary" className={cl("group")}>Void</Text>
+                )}
                 {voidTabs.map(t => {
                     const Icon = t.icon;
                     return (
