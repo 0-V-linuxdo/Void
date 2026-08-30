@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.21] v1.0.0
+// @version      [20260830.22] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.21] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.22] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6893,9 +6893,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.21] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"72a0708"}`
-    }, `(${"72a0708"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.22] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"dcee62e"}`
+    }, `(${"dcee62e"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -14374,8 +14374,6 @@ html.void-rt-open [data-sidebar="gap"] {
     const rec = value;
     if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus))
       return true;
-    if (rec.workingFor || rec.working_for || rec.workingDuration || rec.partial === true)
-      return true;
     for (const key of Object.keys(rec)) {
       if (LIVE_FLAG.test(key) && rec[key] === true)
         return true;
@@ -14451,7 +14449,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function considerConversation(ids, conversation) {
     if (!conversation?.conversationId)
       return;
-    if (conversation.state === "open" || shallowLive(conversation.taskResult))
+    if (shallowLive(conversation.taskResult))
       ids.add(conversation.conversationId);
   }
   function looksExtraStore(name, state2) {
@@ -14525,12 +14523,7 @@ html.void-rt-open [data-sidebar="gap"] {
         continue;
       const found = new Set;
       collectConvIds(state2, found);
-      if (found.size) {
-        for (const id of found)
-          ids.add(id);
-        continue;
-      }
-      for (const id of currentIds())
+      for (const id of found)
         ids.add(id);
     }
   }
@@ -14540,7 +14533,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const page = ChatPageStore.useChatPageStore.getState();
       const currents = currentIds();
       const { byId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-      if (page.streamedMessageId || page.showStreamingIndicator || page.sidePanelContent) {
+      if (page.showStreamingIndicator) {
         for (const id of currents)
           ids.add(id);
       }
@@ -14814,7 +14807,7 @@ html.void-rt-open [data-sidebar="gap"] {
     obs.observe(node2, node2 === document.body ? { childList: true, subtree: true } : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
   }
   function pageKey(s) {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${s.sidePanelContent ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
   }
   function responseKey(s) {
     return Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
@@ -14825,7 +14818,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const consider = (conversation) => {
       if (!conversation?.conversationId || seen.has(conversation.conversationId))
         return;
-      if (conversation.state !== "open" && !shallowLive(conversation.taskResult))
+      if (!shallowLive(conversation.taskResult))
         return;
       seen.add(conversation.conversationId);
       live.push(conversation.conversationId);

@@ -66,7 +66,6 @@ function shallowLive(value: unknown): boolean {
     if (typeof value !== "object") return false;
     const rec = value as Record<string, any>;
     if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus)) return true;
-    if (rec.workingFor || rec.working_for || rec.workingDuration || rec.partial === true) return true;
     for (const key of Object.keys(rec)) {
         if (LIVE_FLAG.test(key) && rec[key] === true) return true;
     }
@@ -135,7 +134,7 @@ function currentIds(): string[] {
 
 function considerConversation(ids: Set<string>, conversation: GrokConversation | undefined) {
     if (!conversation?.conversationId) return;
-    if (conversation.state === "open" || shallowLive(conversation.taskResult)) ids.add(conversation.conversationId);
+    if (shallowLive(conversation.taskResult)) ids.add(conversation.conversationId);
 }
 
 function looksExtraStore(name: string, state: object): boolean {
@@ -201,11 +200,7 @@ function extraLiveIds(ids: Set<string>) {
         if (!shallowLive(state)) continue;
         const found = new Set<string>();
         collectConvIds(state, found);
-        if (found.size) {
-            for (const id of found) ids.add(id);
-            continue;
-        }
-        for (const id of currentIds()) ids.add(id);
+        for (const id of found) ids.add(id);
     }
 }
 
@@ -215,7 +210,7 @@ function liveIds(): Set<string> {
         const page = ChatPageStore.useChatPageStore.getState();
         const currents = currentIds();
         const { byId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-        if (page.streamedMessageId || page.showStreamingIndicator || page.sidePanelContent) {
+        if (page.showStreamingIndicator) {
             for (const id of currents) ids.add(id);
         }
         if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
@@ -482,7 +477,7 @@ function observe() {
 }
 
 function pageKey(s: ChatPageStoreState): string {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${s.sidePanelContent ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
 }
 
 function responseKey(s: ResponseStoreState): string {
@@ -494,7 +489,7 @@ function conversationKey(s: ConversationStoreState): string {
     const seen = new Set<string>();
     const consider = (conversation: GrokConversation | undefined) => {
         if (!conversation?.conversationId || seen.has(conversation.conversationId)) return;
-        if (conversation.state !== "open" && !shallowLive(conversation.taskResult)) return;
+        if (!shallowLive(conversation.taskResult)) return;
         seen.add(conversation.conversationId);
         live.push(conversation.conversationId);
     };
