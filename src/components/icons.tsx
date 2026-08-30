@@ -479,6 +479,13 @@ export const Settings2Icon = (props: IconProps = {}) =>
         <circle cx="7" cy="7" r="3" />,
     );
 
+export const ListFilterIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M3 6h18" />,
+        <path d="M7 12h10" />,
+        <path d="M10 18h4" />,
+    );
+
 export const VoidIcon = (props: IconProps = {}) =>
     svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 },
         <path d="M2.2 7.4 L8.4 20.2 L13.03 11.30" />,

@@ -45,7 +45,7 @@ export default function PluginDialog({ plugin, onClose }: PluginDialogProps) {
                     <Paragraph>{plugin.authors.join(", ")}</Paragraph>
                 </DialogField>
             )}
-            <DialogField label="Settings">
+            <DialogField label="Settings" className={cl("settings")}>
                 {entries.length ? (
                     <Flex flexDirection="column" gap="0.75rem" className={cl("settings-list")}>
                         {entries.map(([key, setting]) => (

@@ -4,3 +4,14 @@
     color: hsl(var(--fg-secondary));
     flex-shrink: 0;
 }
+
+.void-pf-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    max-height: min(20rem, calc(100vh - 22rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-inline-end: 0.25rem;
+}

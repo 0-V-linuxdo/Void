@@ -130,7 +130,7 @@ function VoidMenu() {
                             <UnplugIcon className={cl("menu-icon")} />
                             Plugins
                         </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
+                        <DropdownMenuSubContent className={cl("plugin-menu")}>
                             {menuPlugins.map(name => {
                                 const Icon = plugins[name].icon ?? UnplugIcon;
                                 return (

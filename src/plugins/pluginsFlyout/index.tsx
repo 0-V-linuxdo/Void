@@ -9,7 +9,7 @@ import "./styles.css";
 import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { Flex, SettingsDescription, SettingsRow, SettingsTitle, Switch } from "@components";
-import { LayoutGridIcon, UnplugIcon } from "@components/icons";
+import { ListFilterIcon, UnplugIcon } from "@components/icons";
 import { hasVisibleSettings } from "@components/settings/utils";
 import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
@@ -64,32 +64,34 @@ function MenuPluginsEditor() {
     settings.use(["menuPlugins"]);
 
     return (
-        <Flex flexDirection="column" gap="0.5rem">
+        <Flex flexDirection="column" gap="0.5rem" className={cl("root")}>
             <Flex flexDirection="column" gap="0">
                 <SettingsTitle>Plugin menu</SettingsTitle>
                 <SettingsDescription>Choose which plugins appear under Void → Plugins.</SettingsDescription>
             </Flex>
-            {listedPlugins().map(name => {
-                const Icon = plugins[name].icon ?? UnplugIcon;
-                return (
-                    <SettingsRow
-                        key={name}
-                        action={<Switch checked={isShownInPluginMenu(name)} onCheckedChange={v => setShownInPluginMenu(name, v)} />}
-                    >
-                        <Flex alignItems="center" gap="0.5rem">
-                            <Icon className={cl("icon")} />
-                            <SettingsTitle>{name}</SettingsTitle>
-                        </Flex>
-                    </SettingsRow>
-                );
-            })}
+            <div className={cl("list")}>
+                {listedPlugins().map(name => {
+                    const Icon = plugins[name].icon ?? UnplugIcon;
+                    return (
+                        <SettingsRow
+                            key={name}
+                            action={<Switch checked={isShownInPluginMenu(name)} onCheckedChange={v => setShownInPluginMenu(name, v)} />}
+                        >
+                            <Flex alignItems="center" gap="0.5rem">
+                                <Icon className={cl("icon")} />
+                                <SettingsTitle>{name}</SettingsTitle>
+                            </Flex>
+                        </SettingsRow>
+                    );
+                })}
+            </div>
         </Flex>
     );
 }
 
 export default definePlugin({
     name: PLUGIN_NAME,
-    icon: LayoutGridIcon,
+    icon: ListFilterIcon,
     description: "Choose which plugins appear in the avatar Void → Plugins menu.",
     authors: [Devs.p],
     tags: ["ui", "settings"],

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.17] v1.0.0
+// @version      [20260829.18] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.17] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.18] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -2094,6 +2094,13 @@ ${sourceUrl}`;
     cx: "7",
     cy: "7",
     r: "3"
+  }));
+  var ListFilterIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M3 6h18"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M7 12h10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M10 18h4"
   }));
   var VoidIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React.createElement("path", {
     d: "M2.2 7.4 L8.4 20.2 L13.03 11.30"
@@ -4503,6 +4510,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     flex-shrink: 0;
 }
 
+.void-settings-plugin-menu {
+    max-height: min(24rem, calc(100vh - 6rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
 .void-settings-row {
     display: flex;
     align-items: center;
@@ -5035,6 +5048,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    overflow: hidden;
 }
 
 .void-dialog-content-sm {
@@ -5462,10 +5476,18 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     padding-right: 0;
 }
 
+.void-plugin-dialog-settings {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
 .void-plugin-dialog-settings-list {
     margin-top: 0.5rem;
     min-height: 0;
+    max-height: min(24rem, calc(100vh - 18rem));
     overflow: auto;
+    overscroll-behavior: contain;
 }
 
 .void-plugin-dialog-footer {
@@ -5803,7 +5825,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(DialogField, {
       label: "Authors"
     }, /* @__PURE__ */ React.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(DialogField, {
-      label: "Settings"
+      label: "Settings",
+      className: cl10("settings")
     }, entries.length ? /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
@@ -6759,6 +6782,17 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     color: hsl(var(--fg-secondary));
     flex-shrink: 0;
 }
+
+.void-pf-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    max-height: min(20rem, calc(100vh - 22rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-inline-end: 0.25rem;
+}
 `);
 
   // src/plugins/pluginsFlyout/index.tsx
@@ -6802,11 +6836,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     settings3.use(["menuPlugins"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
-      gap: "0.5rem"
+      gap: "0.5rem",
+      className: cl15("root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Choose which plugins appear under Void → Plugins.")), listedPlugins().map((name) => {
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Choose which plugins appear under Void → Plugins.")), /* @__PURE__ */ React.createElement("div", {
+      className: cl15("list")
+    }, listedPlugins().map((name) => {
       const Icon = plugins[name].icon ?? UnplugIcon;
       return /* @__PURE__ */ React.createElement(SettingsRow, {
         key: name,
@@ -6820,11 +6857,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       }, /* @__PURE__ */ React.createElement(Icon, {
         className: cl15("icon")
       }), /* @__PURE__ */ React.createElement(SettingsTitle, null, name)));
-    }));
+    })));
   }
   var pluginsFlyout_default = definePlugin({
     name: PLUGIN_NAME,
-    icon: LayoutGridIcon,
+    icon: ListFilterIcon,
     description: "Choose which plugins appear in the avatar Void → Plugins menu.",
     authors: [Devs.p],
     tags: ["ui", "settings"],
@@ -6880,7 +6917,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.17] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260829.18] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6913,7 +6950,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       className: cl16("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl16("menu-icon")
-    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.map((name) => {
+    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
+      className: cl16("plugin-menu")
+    }, menuPlugins.map((name) => {
       const Icon = plugins[name].icon ?? UnplugIcon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: name,
