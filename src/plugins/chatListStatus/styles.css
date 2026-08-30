@@ -7,7 +7,9 @@
 [data-sidebar="menu-button"]:has(> .void-cls),
 [data-sidebar="menu-sub-button"]:has(> .void-cls),
 a[href*="/c/"]:has(> .void-cls),
-a[href*="chat="]:has(> .void-cls) {
+a[href*="/chat/"]:has(> .void-cls),
+a[href*="chat="]:has(> .void-cls),
+a[href*="/project/"]:has(> .void-cls) {
     display: flex;
     align-items: center;
     min-width: 0;
