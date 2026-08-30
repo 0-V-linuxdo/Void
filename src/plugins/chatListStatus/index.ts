@@ -26,6 +26,8 @@ const LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", 
 const DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
 const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
 const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
+const WORKING_FOR = /working\s+for/i;
+const WORKED_FOR = /worked\s+for/i;
 const SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
 const EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
 const OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
@@ -56,18 +58,46 @@ function isConvId(value: unknown): value is string {
 function isLiveStatus(value: unknown): boolean {
     if (typeof value !== "string") return false;
     const status = value.trim().toLowerCase();
-    if (!status || DEAD.has(status)) return false;
-    return LIVE.has(status) || LIVE_WORD.test(status);
+    if (!status || DEAD.has(status) || WORKED_FOR.test(status)) return false;
+    return LIVE.has(status) || LIVE_WORD.test(status) || WORKING_FOR.test(status);
 }
 
-function shallowLive(value: unknown): boolean {
-    if (value == null) return false;
+function bagLive(value: unknown, depth = 0): boolean {
+    if (value == null || depth > 2) return false;
     if (typeof value === "string") return isLiveStatus(value);
     if (typeof value !== "object") return false;
+    if (Array.isArray(value)) {
+        const start = Math.max(0, value.length - 8);
+        for (let i = value.length - 1; i >= start; i--) {
+            if (bagLive(value[i], depth + 1)) return true;
+        }
+        return false;
+    }
     const rec = value as Record<string, any>;
-    if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus)) return true;
+    const status = rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus;
+    if (typeof status === "string") {
+        const s = status.trim().toLowerCase();
+        if (DEAD.has(s) || WORKED_FOR.test(status)) return false;
+        if (LIVE.has(s) || LIVE_WORD.test(s) || WORKING_FOR.test(status)) return true;
+    }
+    if (rec.workedFor || rec.worked_for) return false;
+    const working = rec.workingFor ?? rec.working_for;
+    if (working) {
+        if (typeof working !== "string") return true;
+        if (!WORKED_FOR.test(working) && !DEAD.has(working.trim().toLowerCase())) return true;
+    }
     for (const key of Object.keys(rec)) {
         if (LIVE_FLAG.test(key) && rec[key] === true) return true;
+    }
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+        if (++n > 24) break;
+        if (SKIP_KEY.test(key)) continue;
+        if (typeof child === "string") {
+            if (WORKING_FOR.test(child) || isLiveStatus(child)) return true;
+            continue;
+        }
+        if (child && typeof child === "object" && bagLive(child, depth + 1)) return true;
     }
     return false;
 }
@@ -75,8 +105,7 @@ function shallowLive(value: unknown): boolean {
 function isLiveResponse(r: GrokResponse | undefined): boolean {
     if (!r) return false;
     if (r.partial) return true;
-    const state = r.state ?? "";
-    return !!state && LIVE.has(state);
+    return isLiveStatus(r.state);
 }
 
 function isErrorResponse(r: GrokResponse | undefined): boolean {
@@ -134,7 +163,7 @@ function currentIds(): string[] {
 
 function considerConversation(ids: Set<string>, conversation: GrokConversation | undefined) {
     if (!conversation?.conversationId) return;
-    if (shallowLive(conversation.taskResult)) ids.add(conversation.conversationId);
+    if (bagLive(conversation.taskResult)) ids.add(conversation.conversationId);
 }
 
 function looksExtraStore(name: string, state: object): boolean {
@@ -197,10 +226,14 @@ function extraLiveIds(ids: Set<string>) {
         } catch {
             continue;
         }
-        if (!shallowLive(state)) continue;
+        if (!bagLive(state)) continue;
         const found = new Set<string>();
         collectConvIds(state, found);
-        for (const id of found) ids.add(id);
+        if (found.size) {
+            for (const id of found) ids.add(id);
+            continue;
+        }
+        for (const id of currentIds()) ids.add(id);
     }
 }
 
@@ -210,7 +243,7 @@ function liveIds(): Set<string> {
         const page = ChatPageStore.useChatPageStore.getState();
         const currents = currentIds();
         const { byId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-        if (page.showStreamingIndicator) {
+        if (page.showStreamingIndicator || bagLive(page.sidePanelContent)) {
             for (const id of currents) ids.add(id);
         }
         if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
@@ -477,7 +510,7 @@ function observe() {
 }
 
 function pageKey(s: ChatPageStoreState): string {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${bagLive(s.sidePanelContent) ? 1 : 0}`;
 }
 
 function responseKey(s: ResponseStoreState): string {
@@ -489,7 +522,7 @@ function conversationKey(s: ConversationStoreState): string {
     const seen = new Set<string>();
     const consider = (conversation: GrokConversation | undefined) => {
         if (!conversation?.conversationId || seen.has(conversation.conversationId)) return;
-        if (!shallowLive(conversation.taskResult)) return;
+        if (!bagLive(conversation.taskResult)) return;
         seen.add(conversation.conversationId);
         live.push(conversation.conversationId);
     };

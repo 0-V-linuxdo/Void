@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.22] v1.0.0
+// @version      [20260830.23] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.22] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.23] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6893,9 +6893,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.22] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"dcee62e"}`
-    }, `(${"dcee62e"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.23] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"011c11c"}`
+    }, `(${"011c11c"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -14334,6 +14334,8 @@ html.void-rt-open [data-sidebar="gap"] {
   var DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
   var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
   var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
+  var WORKING_FOR = /working\s+for/i;
+  var WORKED_FOR = /worked\s+for/i;
   var SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
   var EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
   var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
@@ -14360,22 +14362,59 @@ html.void-rt-open [data-sidebar="gap"] {
     if (typeof value !== "string")
       return false;
     const status = value.trim().toLowerCase();
-    if (!status || DEAD.has(status))
+    if (!status || DEAD.has(status) || WORKED_FOR.test(status))
       return false;
-    return LIVE.has(status) || LIVE_WORD.test(status);
+    return LIVE.has(status) || LIVE_WORD.test(status) || WORKING_FOR.test(status);
   }
-  function shallowLive(value) {
-    if (value == null)
+  function bagLive(value, depth = 0) {
+    if (value == null || depth > 2)
       return false;
     if (typeof value === "string")
       return isLiveStatus(value);
     if (typeof value !== "object")
       return false;
+    if (Array.isArray(value)) {
+      const start = Math.max(0, value.length - 8);
+      for (let i = value.length - 1;i >= start; i--) {
+        if (bagLive(value[i], depth + 1))
+          return true;
+      }
+      return false;
+    }
     const rec = value;
-    if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus))
-      return true;
+    const status = rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus;
+    if (typeof status === "string") {
+      const s = status.trim().toLowerCase();
+      if (DEAD.has(s) || WORKED_FOR.test(status))
+        return false;
+      if (LIVE.has(s) || LIVE_WORD.test(s) || WORKING_FOR.test(status))
+        return true;
+    }
+    if (rec.workedFor || rec.worked_for)
+      return false;
+    const working = rec.workingFor ?? rec.working_for;
+    if (working) {
+      if (typeof working !== "string")
+        return true;
+      if (!WORKED_FOR.test(working) && !DEAD.has(working.trim().toLowerCase()))
+        return true;
+    }
     for (const key of Object.keys(rec)) {
       if (LIVE_FLAG.test(key) && rec[key] === true)
+        return true;
+    }
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+      if (++n > 24)
+        break;
+      if (SKIP_KEY.test(key))
+        continue;
+      if (typeof child === "string") {
+        if (WORKING_FOR.test(child) || isLiveStatus(child))
+          return true;
+        continue;
+      }
+      if (child && typeof child === "object" && bagLive(child, depth + 1))
         return true;
     }
     return false;
@@ -14385,8 +14424,7 @@ html.void-rt-open [data-sidebar="gap"] {
       return false;
     if (r.partial)
       return true;
-    const state2 = r.state ?? "";
-    return !!state2 && LIVE.has(state2);
+    return isLiveStatus(r.state);
   }
   function isErrorResponse(r) {
     return !!r && (r.state === "error" || r.error != null);
@@ -14449,7 +14487,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function considerConversation(ids, conversation) {
     if (!conversation?.conversationId)
       return;
-    if (shallowLive(conversation.taskResult))
+    if (bagLive(conversation.taskResult))
       ids.add(conversation.conversationId);
   }
   function looksExtraStore(name, state2) {
@@ -14519,11 +14557,16 @@ html.void-rt-open [data-sidebar="gap"] {
       } catch {
         continue;
       }
-      if (!shallowLive(state2))
+      if (!bagLive(state2))
         continue;
       const found = new Set;
       collectConvIds(state2, found);
-      for (const id of found)
+      if (found.size) {
+        for (const id of found)
+          ids.add(id);
+        continue;
+      }
+      for (const id of currentIds())
         ids.add(id);
     }
   }
@@ -14533,7 +14576,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const page = ChatPageStore.useChatPageStore.getState();
       const currents = currentIds();
       const { byId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-      if (page.showStreamingIndicator) {
+      if (page.showStreamingIndicator || bagLive(page.sidePanelContent)) {
         for (const id of currents)
           ids.add(id);
       }
@@ -14807,7 +14850,7 @@ html.void-rt-open [data-sidebar="gap"] {
     obs.observe(node2, node2 === document.body ? { childList: true, subtree: true } : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
   }
   function pageKey(s) {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${bagLive(s.sidePanelContent) ? 1 : 0}`;
   }
   function responseKey(s) {
     return Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
@@ -14818,7 +14861,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const consider = (conversation) => {
       if (!conversation?.conversationId || seen.has(conversation.conversationId))
         return;
-      if (!shallowLive(conversation.taskResult))
+      if (!bagLive(conversation.taskResult))
         return;
       seen.add(conversation.conversationId);
       live.push(conversation.conversationId);
