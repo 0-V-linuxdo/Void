@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.20] v1.0.0
+// @version      [20260830.21] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.20] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.21] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6893,9 +6893,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.20] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"8184803"}`
-    }, `(${"8184803"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.21] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"72a0708"}`
+    }, `(${"72a0708"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -14265,7 +14265,7 @@ html.void-rt-open [data-sidebar="gap"] {
     [data-sidebar="menu-button"],
     [data-sidebar="menu-sub-button"],
     a
-):has(> .void-cls) {
+):has(> .void-cls):not([data-void-cls-nest]) {
     display: flex;
     align-items: center;
     min-width: 0;
@@ -14296,13 +14296,17 @@ html.void-rt-open [data-sidebar="gap"] {
     background: #ef4444;
 }
 
-[data-void-cls-nest] > .void-cls {
-    margin-left: calc(-0.75rem - 0.25rem);
+[data-void-cls-nest] {
+    position: relative;
 }
 
-[data-void-cls-nest] > .void-cls[data-kind="done"],
-[data-void-cls-nest] > .void-cls[data-kind="error"] {
-    margin-left: calc(-0.45rem - 0.3rem);
+[data-void-cls-nest] > .void-cls {
+    position: absolute;
+    top: 50%;
+    left: 0.25rem;
+    z-index: 1;
+    margin: 0;
+    transform: translateY(-50%);
 }
 
 .void-cls[data-kind="streaming"] svg {
@@ -14331,7 +14335,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
   var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
   var SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
-  var EXTRA_HINT = /computer|sandbox|agent|task|working/i;
+  var EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
   var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
   var SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
   var HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
@@ -14341,8 +14345,11 @@ html.void-rt-open [data-sidebar="gap"] {
   var rowById = new Map;
   var extraStores = [];
   var extraSeen = new WeakSet;
+  var extraScanned = new Set;
   var extraUnsubs = [];
   var raf2 = 0;
+  var extraScanRaf = 0;
+  var extraBusy = false;
   var started3 = false;
   var obs = null;
   var extraOff = null;
@@ -14357,35 +14364,20 @@ html.void-rt-open [data-sidebar="gap"] {
       return false;
     return LIVE.has(status) || LIVE_WORD.test(status);
   }
-  function isLiveBag(value, depth = 0) {
-    if (value == null || depth > 5)
+  function shallowLive(value) {
+    if (value == null)
       return false;
     if (typeof value === "string")
       return isLiveStatus(value);
     if (typeof value !== "object")
       return false;
-    if (Array.isArray(value)) {
-      const start = Math.max(0, value.length - 24);
-      for (let i = value.length - 1;i >= start; i--) {
-        if (isLiveBag(value[i], depth + 1))
-          return true;
-      }
-      return false;
-    }
     const rec = value;
     if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus))
       return true;
-    if (rec.workingFor || rec.working_for || rec.workingDuration)
+    if (rec.workingFor || rec.working_for || rec.workingDuration || rec.partial === true)
       return true;
-    let n = 0;
-    for (const [key, child] of Object.entries(rec)) {
-      if (++n > 48)
-        break;
-      if (SKIP_KEY.test(key))
-        continue;
-      if (LIVE_FLAG.test(key) && child === true)
-        return true;
-      if (isLiveBag(child, depth + 1))
+    for (const key of Object.keys(rec)) {
+      if (LIVE_FLAG.test(key) && rec[key] === true)
         return true;
     }
     return false;
@@ -14395,40 +14387,35 @@ html.void-rt-open [data-sidebar="gap"] {
       return false;
     if (r.partial)
       return true;
-    if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata))
-      return true;
     const state2 = r.state ?? "";
-    if (!state2)
-      return false;
-    if (LIVE.has(state2))
-      return true;
-    return !DEAD.has(state2.toLowerCase());
+    return !!state2 && LIVE.has(state2);
   }
   function isErrorResponse(r) {
     return !!r && (r.state === "error" || r.error != null);
   }
   function collectConvIds(value, out, depth = 0) {
-    if (value == null || typeof value !== "object" || depth > 5)
+    if (value == null || typeof value !== "object" || depth > 3)
       return;
     if (Array.isArray(value)) {
-      const start = Math.max(0, value.length - 16);
+      const start = Math.max(0, value.length - 8);
       for (let i = start;i < value.length; i++)
         collectConvIds(value[i], out, depth + 1);
       return;
     }
     const rec = value;
     const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
-    if (isConvId(id) && isLiveBag(rec))
+    if (isConvId(id))
       out.add(id);
     let n = 0;
     for (const [key, child] of Object.entries(rec)) {
-      if (++n > 48)
+      if (++n > 24)
         break;
       if (SKIP_KEY.test(key))
         continue;
-      if (isConvId(key) && isLiveBag(child))
+      if (isConvId(key))
         out.add(key);
-      collectConvIds(child, out, depth + 1);
+      if (child && typeof child === "object")
+        collectConvIds(child, out, depth + 1);
     }
   }
   function currentIds() {
@@ -14464,52 +14451,67 @@ html.void-rt-open [data-sidebar="gap"] {
   function considerConversation(ids, conversation) {
     if (!conversation?.conversationId)
       return;
-    if (conversation.state === "open" || isLiveBag(conversation.taskResult))
+    if (conversation.state === "open" || shallowLive(conversation.taskResult))
       ids.add(conversation.conversationId);
   }
   function looksExtraStore(name, state2) {
     if (EXTRA_HINT.test(name))
       return true;
-    const keys3 = Object.keys(state2);
-    if (keys3.some((key) => EXTRA_HINT.test(key)))
-      return true;
-    let n = 0;
-    for (const child of Object.values(state2)) {
-      if (++n > 8)
-        break;
-      if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some((key) => EXTRA_HINT.test(key)))
-        return true;
+    return Object.keys(state2).some((key) => EXTRA_HINT.test(key));
+  }
+  function scanModule(exports) {
+    if (exports == null || typeof exports !== "object" || isBlacklisted(exports))
+      return;
+    const mod = exports;
+    for (const key of Object.keys(mod)) {
+      if (OWN_HOOKS.has(key))
+        continue;
+      const val = mod[key];
+      if (!isZustandStore(val) || extraSeen.has(val))
+        continue;
+      let state2;
+      try {
+        state2 = val.getState();
+      } catch {
+        continue;
+      }
+      if (!state2 || typeof state2 !== "object")
+        continue;
+      if (!looksExtraStore(key, state2))
+        continue;
+      extraSeen.add(val);
+      extraStores.push(val);
+      extraUnsubs.push(val.subscribe(() => schedule()));
+      logger27.info("extra store", key);
     }
-    return false;
   }
   function attachExtraStores() {
-    silenceWarns(() => syncLazyModules());
-    for (const [, exports] of getModuleCache()) {
-      if (exports == null || typeof exports !== "object" || isBlacklisted(exports))
-        continue;
-      const mod = exports;
-      for (const key of Object.keys(mod)) {
-        if (OWN_HOOKS.has(key))
+    if (extraBusy)
+      return;
+    extraBusy = true;
+    try {
+      silenceWarns(() => syncLazyModules());
+      const before = extraStores.length;
+      for (const [id, exports] of getModuleCache()) {
+        if (extraScanned.has(id))
           continue;
-        const val = mod[key];
-        if (!isZustandStore(val) || extraSeen.has(val))
-          continue;
-        let state2;
-        try {
-          state2 = val.getState();
-        } catch {
-          continue;
-        }
-        if (!state2 || typeof state2 !== "object")
-          continue;
-        if (!looksExtraStore(key, state2))
-          continue;
-        extraSeen.add(val);
-        extraStores.push(val);
-        extraUnsubs.push(val.subscribe(() => schedule()));
-        logger27.info("extra store", key);
+        extraScanned.add(id);
+        scanModule(exports);
       }
+      if (extraStores.length !== before)
+        schedule();
+    } finally {
+      extraBusy = false;
     }
+  }
+  function queueExtraScan() {
+    if (!started3 || extraScanRaf)
+      return;
+    extraScanRaf = requestAnimationFrame(() => {
+      extraScanRaf = 0;
+      if (started3)
+        attachExtraStores();
+    });
   }
   function extraLiveIds(ids) {
     for (const store3 of extraStores) {
@@ -14519,7 +14521,7 @@ html.void-rt-open [data-sidebar="gap"] {
       } catch {
         continue;
       }
-      if (!isLiveBag(state2))
+      if (!shallowLive(state2))
         continue;
       const found = new Set;
       collectConvIds(state2, found);
@@ -14537,31 +14539,24 @@ html.void-rt-open [data-sidebar="gap"] {
     try {
       const page = ChatPageStore.useChatPageStore.getState();
       const currents = currentIds();
-      if (page.streamedMessageId || page.showStreamingIndicator || isLiveBag(page.sidePanelContent) || isLiveBag(page.metadata)) {
+      const { byId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
+      if (page.streamedMessageId || page.showStreamingIndicator || page.sidePanelContent) {
         for (const id of currents)
           ids.add(id);
       }
-      const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
       if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
         for (const id of currents)
           ids.add(id);
       }
       for (const id of Object.keys(inflightPromisesByConversationId ?? {}))
         ids.add(id);
-      for (const [id, list] of Object.entries(byConversationId ?? {})) {
-        if (list?.some(isLiveResponse))
-          ids.add(id);
-      }
     } catch (e) {
       logger27.debug("stream stores unavailable:", e);
     }
     try {
-      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-      for (const conversation of list ?? [])
-        considerConversation(ids, conversation);
-      for (const conversation of Object.values(byId ?? {}))
-        considerConversation(ids, conversation);
-      for (const conversation of Object.values(byIdWithWorkspaces ?? {}))
+      const { list, byId } = ConversationStore.useConversationStore.getState();
+      const rows = list?.length ? list : Object.values(byId ?? {});
+      for (const conversation of rows)
         considerConversation(ids, conversation);
     } catch (e) {
       logger27.debug("conversation store unavailable:", e);
@@ -14685,6 +14680,16 @@ html.void-rt-open [data-sidebar="gap"] {
     svg2.append(path);
     return svg2;
   }
+  function placeNestMark(btn, mark) {
+    if (!btn.hasAttribute("data-void-cls-nest")) {
+      mark.style.removeProperty("left");
+      return;
+    }
+    const pad2 = parseFloat(getComputedStyle(btn).paddingLeft);
+    const width = mark.offsetWidth || 12;
+    const left = Math.max(2, (Number.isFinite(pad2) ? pad2 : 8) - width - 4);
+    mark.style.left = `${left}px`;
+  }
   function ensureMark(btn, kind2) {
     btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
     let mark = btn.querySelector(`:scope > .${MARK}`);
@@ -14694,12 +14699,13 @@ html.void-rt-open [data-sidebar="gap"] {
       mark.setAttribute("aria-hidden", "true");
       btn.prepend(mark);
     }
-    if (mark.dataset.kind === kind2 && (kind2 !== "streaming" || mark.querySelector("svg")))
-      return;
-    mark.dataset.kind = kind2;
-    mark.replaceChildren();
-    if (kind2 === "streaming")
-      mark.append(spinSvg());
+    if (mark.dataset.kind !== kind2 || kind2 === "streaming" && !mark.querySelector("svg")) {
+      mark.dataset.kind = kind2;
+      mark.replaceChildren();
+      if (kind2 === "streaming")
+        mark.append(spinSvg());
+    }
+    placeNestMark(btn, mark);
   }
   function clearMark(btn) {
     btn.querySelector(`:scope > .${MARK}`)?.remove();
@@ -14763,9 +14769,6 @@ html.void-rt-open [data-sidebar="gap"] {
         break;
       }
     }
-    const live = [...marks].filter(([, kind2]) => kind2 === "streaming").map(([id]) => id);
-    if (live.length && !rowById.size)
-      logger27.info("live ids with no rows", live);
   }
   function schedule() {
     if (!started3 || raf2)
@@ -14800,29 +14803,21 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function observe() {
     obs?.disconnect();
+    const node2 = document.querySelector(SIDEBAR) ?? document.body;
     obs = new MutationObserver((list) => {
       if (ownMutation(list))
         return;
+      if (node2 === document.body && document.querySelector(SIDEBAR))
+        observe();
       schedule();
     });
-    obs.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["href", "data-active", "aria-current", "data-state"]
-    });
+    obs.observe(node2, node2 === document.body ? { childList: true, subtree: true } : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
   }
   function pageKey(s) {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${isLiveBag(s.sidePanelContent) ? 1 : 0}|${isLiveBag(s.metadata) ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${s.sidePanelContent ? 1 : 0}`;
   }
   function responseKey(s) {
-    const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
-    const live = [];
-    for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
-      if (list?.some(isLiveResponse))
-        live.push(id);
-    }
-    return `${inflight}|${live.join(",")}`;
+    return Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
   }
   function conversationKey(s) {
     const live = [];
@@ -14830,16 +14825,13 @@ html.void-rt-open [data-sidebar="gap"] {
     const consider = (conversation) => {
       if (!conversation?.conversationId || seen.has(conversation.conversationId))
         return;
-      if (conversation.state !== "open" && !isLiveBag(conversation.taskResult))
+      if (conversation.state !== "open" && !shallowLive(conversation.taskResult))
         return;
       seen.add(conversation.conversationId);
       live.push(conversation.conversationId);
     };
-    for (const conversation of s.list ?? [])
-      consider(conversation);
-    for (const conversation of Object.values(s.byId ?? {}))
-      consider(conversation);
-    for (const conversation of Object.values(s.byIdWithWorkspaces ?? {}))
+    const rows = s.list?.length ? s.list : Object.values(s.byId ?? {});
+    for (const conversation of rows)
       consider(conversation);
     return live.join(",");
   }
@@ -14860,10 +14852,7 @@ html.void-rt-open [data-sidebar="gap"] {
     start() {
       started3 = true;
       attachExtraStores();
-      extraOff = onModuleLoad(() => {
-        attachExtraStores();
-        schedule();
-      });
+      extraOff = onModuleLoad(queueExtraScan);
       const sidebar = document.querySelector('[data-sidebar="sidebar"]');
       logger27.info("start", "sidebar", !!sidebar, "rows", sidebar?.querySelectorAll(ROW).length ?? 0, "live", liveIds().size, "current", currentIds()[0] ?? "");
       observe();
@@ -14874,6 +14863,9 @@ html.void-rt-open [data-sidebar="gap"] {
       if (raf2)
         cancelAnimationFrame(raf2);
       raf2 = 0;
+      if (extraScanRaf)
+        cancelAnimationFrame(extraScanRaf);
+      extraScanRaf = 0;
       obs?.disconnect();
       obs = null;
       extraOff?.();
@@ -14883,6 +14875,7 @@ html.void-rt-open [data-sidebar="gap"] {
       extraUnsubs.length = 0;
       extraStores.length = 0;
       extraSeen = new WeakSet;
+      extraScanned.clear();
       for (const el of document.querySelectorAll(`.${MARK}`)) {
         el.parentElement?.removeAttribute("data-void-cls-nest");
         el.remove();

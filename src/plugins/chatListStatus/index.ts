@@ -27,7 +27,7 @@ const DEAD = new Set(["closed", "error", "done", "completed", "complete", "cance
 const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
 const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
 const SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
-const EXTRA_HINT = /computer|sandbox|agent|task|working/i;
+const EXTRA_HINT = /computer|sandbox|agent|taskResult/i;
 const OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
 const SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
 const HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
@@ -40,8 +40,11 @@ const marks = new Map<string, Kind>();
 const rowById = new Map<string, HTMLElement>();
 const extraStores: ZustandStore<any>[] = [];
 let extraSeen = new WeakSet<object>();
+const extraScanned = new Set<number>();
 const extraUnsubs: Array<() => void> = [];
 let raf = 0;
+let extraScanRaf = 0;
+let extraBusy = false;
 let started = false;
 let obs: MutationObserver | null = null;
 let extraOff: (() => void) | null = null;
@@ -57,26 +60,15 @@ function isLiveStatus(value: unknown): boolean {
     return LIVE.has(status) || LIVE_WORD.test(status);
 }
 
-function isLiveBag(value: unknown, depth = 0): boolean {
-    if (value == null || depth > 5) return false;
+function shallowLive(value: unknown): boolean {
+    if (value == null) return false;
     if (typeof value === "string") return isLiveStatus(value);
     if (typeof value !== "object") return false;
-    if (Array.isArray(value)) {
-        const start = Math.max(0, value.length - 24);
-        for (let i = value.length - 1; i >= start; i--) {
-            if (isLiveBag(value[i], depth + 1)) return true;
-        }
-        return false;
-    }
     const rec = value as Record<string, any>;
     if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus)) return true;
-    if (rec.workingFor || rec.working_for || rec.workingDuration) return true;
-    let n = 0;
-    for (const [key, child] of Object.entries(rec)) {
-        if (++n > 48) break;
-        if (SKIP_KEY.test(key)) continue;
-        if (LIVE_FLAG.test(key) && child === true) return true;
-        if (isLiveBag(child, depth + 1)) return true;
+    if (rec.workingFor || rec.working_for || rec.workingDuration || rec.partial === true) return true;
+    for (const key of Object.keys(rec)) {
+        if (LIVE_FLAG.test(key) && rec[key] === true) return true;
     }
     return false;
 }
@@ -84,11 +76,8 @@ function isLiveBag(value: unknown, depth = 0): boolean {
 function isLiveResponse(r: GrokResponse | undefined): boolean {
     if (!r) return false;
     if (r.partial) return true;
-    if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata)) return true;
     const state = r.state ?? "";
-    if (!state) return false;
-    if (LIVE.has(state)) return true;
-    return !DEAD.has(state.toLowerCase());
+    return !!state && LIVE.has(state);
 }
 
 function isErrorResponse(r: GrokResponse | undefined): boolean {
@@ -96,21 +85,21 @@ function isErrorResponse(r: GrokResponse | undefined): boolean {
 }
 
 function collectConvIds(value: unknown, out: Set<string>, depth = 0) {
-    if (value == null || typeof value !== "object" || depth > 5) return;
+    if (value == null || typeof value !== "object" || depth > 3) return;
     if (Array.isArray(value)) {
-        const start = Math.max(0, value.length - 16);
+        const start = Math.max(0, value.length - 8);
         for (let i = start; i < value.length; i++) collectConvIds(value[i], out, depth + 1);
         return;
     }
     const rec = value as Record<string, any>;
     const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
-    if (isConvId(id) && isLiveBag(rec)) out.add(id);
+    if (isConvId(id)) out.add(id);
     let n = 0;
     for (const [key, child] of Object.entries(rec)) {
-        if (++n > 48) break;
+        if (++n > 24) break;
         if (SKIP_KEY.test(key)) continue;
-        if (isConvId(key) && isLiveBag(child)) out.add(key);
-        collectConvIds(child, out, depth + 1);
+        if (isConvId(key)) out.add(key);
+        if (child && typeof child === "object") collectConvIds(child, out, depth + 1);
     }
 }
 
@@ -146,44 +135,59 @@ function currentIds(): string[] {
 
 function considerConversation(ids: Set<string>, conversation: GrokConversation | undefined) {
     if (!conversation?.conversationId) return;
-    if (conversation.state === "open" || isLiveBag(conversation.taskResult)) ids.add(conversation.conversationId);
+    if (conversation.state === "open" || shallowLive(conversation.taskResult)) ids.add(conversation.conversationId);
 }
 
 function looksExtraStore(name: string, state: object): boolean {
     if (EXTRA_HINT.test(name)) return true;
-    const keys = Object.keys(state);
-    if (keys.some(key => EXTRA_HINT.test(key))) return true;
-    let n = 0;
-    for (const child of Object.values(state as Record<string, any>)) {
-        if (++n > 8) break;
-        if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some(key => EXTRA_HINT.test(key))) return true;
+    return Object.keys(state).some(key => EXTRA_HINT.test(key));
+}
+
+function scanModule(exports: unknown) {
+    if (exports == null || typeof exports !== "object" || isBlacklisted(exports)) return;
+    const mod = exports as Record<string, unknown>;
+    for (const key of Object.keys(mod)) {
+        if (OWN_HOOKS.has(key)) continue;
+        const val = mod[key];
+        if (!isZustandStore(val) || extraSeen.has(val)) continue;
+        let state: object;
+        try {
+            state = val.getState();
+        } catch {
+            continue;
+        }
+        if (!state || typeof state !== "object") continue;
+        if (!looksExtraStore(key, state)) continue;
+        extraSeen.add(val);
+        extraStores.push(val);
+        extraUnsubs.push(val.subscribe(() => schedule()));
+        logger.info("extra store", key);
     }
-    return false;
 }
 
 function attachExtraStores() {
-    silenceWarns(() => syncLazyModules());
-    for (const [, exports] of getModuleCache()) {
-        if (exports == null || typeof exports !== "object" || isBlacklisted(exports)) continue;
-        const mod = exports as Record<string, unknown>;
-        for (const key of Object.keys(mod)) {
-            if (OWN_HOOKS.has(key)) continue;
-            const val = mod[key];
-            if (!isZustandStore(val) || extraSeen.has(val)) continue;
-            let state: object;
-            try {
-                state = val.getState();
-            } catch {
-                continue;
-            }
-            if (!state || typeof state !== "object") continue;
-            if (!looksExtraStore(key, state)) continue;
-            extraSeen.add(val);
-            extraStores.push(val);
-            extraUnsubs.push(val.subscribe(() => schedule()));
-            logger.info("extra store", key);
+    if (extraBusy) return;
+    extraBusy = true;
+    try {
+        silenceWarns(() => syncLazyModules());
+        const before = extraStores.length;
+        for (const [id, exports] of getModuleCache()) {
+            if (extraScanned.has(id)) continue;
+            extraScanned.add(id);
+            scanModule(exports);
         }
+        if (extraStores.length !== before) schedule();
+    } finally {
+        extraBusy = false;
     }
+}
+
+function queueExtraScan() {
+    if (!started || extraScanRaf) return;
+    extraScanRaf = requestAnimationFrame(() => {
+        extraScanRaf = 0;
+        if (started) attachExtraStores();
+    });
 }
 
 function extraLiveIds(ids: Set<string>) {
@@ -194,7 +198,7 @@ function extraLiveIds(ids: Set<string>) {
         } catch {
             continue;
         }
-        if (!isLiveBag(state)) continue;
+        if (!shallowLive(state)) continue;
         const found = new Set<string>();
         collectConvIds(state, found);
         if (found.size) {
@@ -210,25 +214,21 @@ function liveIds(): Set<string> {
     try {
         const page = ChatPageStore.useChatPageStore.getState();
         const currents = currentIds();
-        if (page.streamedMessageId || page.showStreamingIndicator || isLiveBag(page.sidePanelContent) || isLiveBag(page.metadata)) {
+        const { byId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
+        if (page.streamedMessageId || page.showStreamingIndicator || page.sidePanelContent) {
             for (const id of currents) ids.add(id);
         }
-        const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
         if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
             for (const id of currents) ids.add(id);
         }
         for (const id of Object.keys(inflightPromisesByConversationId ?? {})) ids.add(id);
-        for (const [id, list] of Object.entries(byConversationId ?? {})) {
-            if (list?.some(isLiveResponse)) ids.add(id);
-        }
     } catch (e) {
         logger.debug("stream stores unavailable:", e);
     }
     try {
-        const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-        for (const conversation of list ?? []) considerConversation(ids, conversation);
-        for (const conversation of Object.values(byId ?? {})) considerConversation(ids, conversation);
-        for (const conversation of Object.values(byIdWithWorkspaces ?? {})) considerConversation(ids, conversation);
+        const { list, byId } = ConversationStore.useConversationStore.getState();
+        const rows = list?.length ? list : Object.values(byId ?? {});
+        for (const conversation of rows) considerConversation(ids, conversation);
     } catch (e) {
         logger.debug("conversation store unavailable:", e);
     }
@@ -354,6 +354,17 @@ function spinSvg(): SVGSVGElement {
     return svg;
 }
 
+function placeNestMark(btn: HTMLElement, mark: HTMLElement) {
+    if (!btn.hasAttribute("data-void-cls-nest")) {
+        mark.style.removeProperty("left");
+        return;
+    }
+    const pad = parseFloat(getComputedStyle(btn).paddingLeft);
+    const width = mark.offsetWidth || 12;
+    const left = Math.max(2, (Number.isFinite(pad) ? pad : 8) - width - 4);
+    mark.style.left = `${left}px`;
+}
+
 function ensureMark(btn: HTMLElement, kind: Kind) {
     btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
     let mark = btn.querySelector<HTMLElement>(`:scope > .${MARK}`);
@@ -363,10 +374,12 @@ function ensureMark(btn: HTMLElement, kind: Kind) {
         mark.setAttribute("aria-hidden", "true");
         btn.prepend(mark);
     }
-    if (mark.dataset.kind === kind && (kind !== "streaming" || mark.querySelector("svg"))) return;
-    mark.dataset.kind = kind;
-    mark.replaceChildren();
-    if (kind === "streaming") mark.append(spinSvg());
+    if (mark.dataset.kind !== kind || (kind === "streaming" && !mark.querySelector("svg"))) {
+        mark.dataset.kind = kind;
+        mark.replaceChildren();
+        if (kind === "streaming") mark.append(spinSvg());
+    }
+    placeNestMark(btn, mark);
 }
 
 function clearMark(btn: HTMLElement) {
@@ -427,9 +440,6 @@ function paint() {
             break;
         }
     }
-
-    const live = [...marks].filter(([, kind]) => kind === "streaming").map(([id]) => id);
-    if (live.length && !rowById.size) logger.info("live ids with no rows", live);
 }
 
 function schedule() {
@@ -460,29 +470,23 @@ function ownMutation(list: MutationRecord[]): boolean {
 
 function observe() {
     obs?.disconnect();
+    const node = document.querySelector(SIDEBAR) ?? document.body;
     obs = new MutationObserver(list => {
         if (ownMutation(list)) return;
+        if (node === document.body && document.querySelector(SIDEBAR)) observe();
         schedule();
     });
-    obs.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["href", "data-active", "aria-current", "data-state"],
-    });
+    obs.observe(node, node === document.body
+        ? { childList: true, subtree: true }
+        : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
 }
 
 function pageKey(s: ChatPageStoreState): string {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${isLiveBag(s.sidePanelContent) ? 1 : 0}|${isLiveBag(s.metadata) ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${s.sidePanelContent ? 1 : 0}`;
 }
 
 function responseKey(s: ResponseStoreState): string {
-    const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
-    const live: string[] = [];
-    for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
-        if (list?.some(isLiveResponse)) live.push(id);
-    }
-    return `${inflight}|${live.join(",")}`;
+    return Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
 }
 
 function conversationKey(s: ConversationStoreState): string {
@@ -490,13 +494,12 @@ function conversationKey(s: ConversationStoreState): string {
     const seen = new Set<string>();
     const consider = (conversation: GrokConversation | undefined) => {
         if (!conversation?.conversationId || seen.has(conversation.conversationId)) return;
-        if (conversation.state !== "open" && !isLiveBag(conversation.taskResult)) return;
+        if (conversation.state !== "open" && !shallowLive(conversation.taskResult)) return;
         seen.add(conversation.conversationId);
         live.push(conversation.conversationId);
     };
-    for (const conversation of s.list ?? []) consider(conversation);
-    for (const conversation of Object.values(s.byId ?? {})) consider(conversation);
-    for (const conversation of Object.values(s.byIdWithWorkspaces ?? {})) consider(conversation);
+    const rows = s.list?.length ? s.list : Object.values(s.byId ?? {});
+    for (const conversation of rows) consider(conversation);
     return live.join(",");
 }
 
@@ -519,10 +522,7 @@ export default definePlugin({
     start() {
         started = true;
         attachExtraStores();
-        extraOff = onModuleLoad(() => {
-            attachExtraStores();
-            schedule();
-        });
+        extraOff = onModuleLoad(queueExtraScan);
         const sidebar = document.querySelector('[data-sidebar="sidebar"]');
         logger.info(
             "start",
@@ -539,6 +539,8 @@ export default definePlugin({
         started = false;
         if (raf) cancelAnimationFrame(raf);
         raf = 0;
+        if (extraScanRaf) cancelAnimationFrame(extraScanRaf);
+        extraScanRaf = 0;
         obs?.disconnect();
         obs = null;
         extraOff?.();
@@ -547,6 +549,7 @@ export default definePlugin({
         extraUnsubs.length = 0;
         extraStores.length = 0;
         extraSeen = new WeakSet();
+        extraScanned.clear();
         for (const el of document.querySelectorAll(`.${MARK}`)) {
             el.parentElement?.removeAttribute("data-void-cls-nest");
             el.remove();
