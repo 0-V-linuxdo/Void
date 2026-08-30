@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.9] v1.0.0
+// @version      [20260830.14] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.9] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.14] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -1791,6 +1791,9 @@ ${sourceUrl}`;
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M13.4 10.6 19 5"
   }));
+  var LoaderCircleIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21 12a9 9 0 1 1-6.219-8.56"
+  }));
   var ChevronsDownUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m7 20 5-5 5 5"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -1800,9 +1803,6 @@ ${sourceUrl}`;
     d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M3 3v5h5"
-  }));
-  var LoaderCircleIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21 12a9 9 0 1 1-6.219-8.56"
   }));
   var AppWindowIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
     x: "2",
@@ -2569,17 +2569,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     walkFiberUp: () => walkFiberUp
   });
 
-  // src/utils/guards.ts
-  function isTruthy(item) {
-    return Boolean(item);
-  }
-  function isNonNullish(item) {
-    return item != null;
-  }
-  function isObject(value) {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-  }
-
   // src/utils/idb.ts
   var logger6 = new Logger("IDB");
   var DB_NAME = "Void";
@@ -2626,6 +2615,17 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       store.put(value, key);
       store.transaction.oncomplete = () => resolve();
     });
+  }
+
+  // src/utils/guards.ts
+  function isTruthy(item) {
+    return Boolean(item);
+  }
+  function isNonNullish(item) {
+    return item != null;
+  }
+  function isObject(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
   }
 
   // src/utils/misc.ts
@@ -2987,6 +2987,24 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var logger8 = new Logger("SettingsStore");
   var STORAGE_KEY = "VoidSettings";
   var SAVE_DEBOUNCE_MS = 100;
+  function parseStoredSettings(raw) {
+    if (isObject(raw))
+      return raw;
+    if (typeof raw !== "string" || !raw)
+      return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (isObject(parsed))
+        return parsed;
+      if (typeof parsed === "string") {
+        const nested = JSON.parse(parsed);
+        return isObject(nested) ? nested : null;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 
   class SettingsStore2 {
     globalListeners = new Set;
@@ -3090,13 +3108,21 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       try {
         const json = JSON.stringify(this.plain);
         if (typeof GM_setValue === "function") {
-          GM_setValue(STORAGE_KEY, json);
+          try {
+            GM_setValue(STORAGE_KEY, this.plain);
+          } catch {
+            try {
+              GM_setValue(STORAGE_KEY, json);
+            } catch (e2) {
+              logger8.warn("Failed to save settings to GM:", e2);
+            }
+          }
         } else {
           try {
             localStorage.setItem(STORAGE_KEY, json);
           } catch {}
-          idbSet(STORAGE_KEY, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
         }
+        idbSet(STORAGE_KEY, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
       } catch (e) {
         logger8.error("Failed to save settings:", e);
       }
@@ -3144,42 +3170,46 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PlainSettings = settings;
   var Settings = SettingsStore3.store;
   var pluginPath = (name, key) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
+  async function readGmValue() {
+    if (typeof GM_getValue !== "function")
+      return null;
+    try {
+      const value = GM_getValue(STORAGE_KEY, null);
+      if (value != null && typeof value.then === "function") {
+        return await value;
+      }
+      return value;
+    } catch (e) {
+      logger9.warn("Failed to read GM storage:", e);
+      return null;
+    }
+  }
+  async function readStoredSettings() {
+    const gm = parseStoredSettings(await readGmValue());
+    if (gm)
+      return gm;
+    try {
+      const idb = parseStoredSettings(await idbGet(STORAGE_KEY) ?? null);
+      if (idb)
+        return idb;
+    } catch (e) {
+      logger9.warn("Failed to read IndexedDB:", e);
+    }
+    try {
+      return parseStoredSettings(localStorage.getItem(STORAGE_KEY));
+    } catch (e) {
+      logger9.warn("Failed to read localStorage:", e);
+      return null;
+    }
+  }
   async function initSettings() {
-    let raw = null;
-    if (typeof GM_getValue === "function") {
-      raw = GM_getValue(STORAGE_KEY, null);
-    } else {
-      try {
-        raw = await idbGet(STORAGE_KEY) ?? null;
-      } catch (e) {
-        logger9.warn("Failed to read IndexedDB:", e);
-      }
-      if (!raw) {
-        try {
-          raw = localStorage.getItem(STORAGE_KEY);
-          if (raw)
-            logger9.info("Migrating settings from localStorage to IndexedDB");
-        } catch (e) {
-          logger9.warn("Failed to read localStorage:", e);
-        }
-        if (raw)
-          idbSet(STORAGE_KEY, raw).then(() => {
-            try {
-              localStorage.removeItem(STORAGE_KEY);
-            } catch {}
-          }).catch((e) => logger9.debug("Failed to persist settings to IndexedDB:", e));
-      }
-    }
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (isObject(parsed))
-          Object.assign(settings, parsed);
-      } catch (e) {
-        logger9.error("Failed to parse settings:", e);
-      }
-    }
+    const parsed = await readStoredSettings();
+    if (parsed)
+      Object.assign(settings, parsed);
     mergeDefaults(settings, DefaultSettings);
+    const meta = settings.plugins.Settings;
+    if (meta && meta.enabled === false)
+      meta.enabled = true;
   }
   function migratePluginSettings(name, ...oldNames) {
     const { plugins } = SettingsStore3.plain;
@@ -3289,7 +3319,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         if (!name)
           return;
         if (!PlainSettings.plugins[name])
-          PlainSettings.plugins[name] = { enabled: false };
+          PlainSettings.plugins[name] = {};
         SettingsStore3.setDefaultGetter(pluginPath(name), (key) => {
           const setting = def[key];
           return setting ? resolveDefault(setting) : undefined;
@@ -3336,7 +3366,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // void-css:/tmp/void-build/src/components/ColorSettingRow.css
+  // void-css:/tmp/Void/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3375,7 +3405,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/void-build/src/components/ConfirmDialog.css
+  // void-css:/tmp/Void/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3624,7 +3654,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // void-css:/tmp/void-build/src/components/ErrorCard.css
+  // void-css:/tmp/Void/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3737,7 +3767,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/void-build/src/components/SelectionUI.css
+  // void-css:/tmp/Void/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4391,72 +4421,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // src/plugins/_core/noTelemetry/index.ts
-  var noTelemetry_default = definePlugin({
-    name: "NoTelemetry",
-    icon: ShieldOffIcon,
-    description: "Disables all tracking, telemetry, and event logging.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    required: true,
-    patches: [
-      {
-        find: '"opentelemetry.js.api."',
-        replacement: {
-          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
-          replace: "$1function(){}"
-        }
-      },
-      {
-        find: '"after-init"),(0,',
-        group: true,
-        replacement: [
-          {
-            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
-            replace: "$1return}function _ignore(){"
-          },
-          {
-            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
-            replace: '"startRecordingImagineSession",0,function(){}'
-          },
-          {
-            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
-            replace: '"stopRecordingImagineSession",0,function(){}'
-          }
-        ]
-      },
-      {
-        find: "sendBatchLogEvent",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
-            replace: "sendBatchLogEvent=()=>{}"
-          },
-          {
-            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
-            replace: "sendBatchLogExperimentExposure=()=>{}"
-          }
-        ]
-      },
-      {
-        find: '"/api/log_metric"',
-        replacement: {
-          match: /"\/api\/log_metric",\i\)/,
-          replace: '"/api/log_metric",[])'
-        }
-      },
-      {
-        find: "isEnvVarsSet(){return void 0!=",
-        replacement: {
-          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
-          replace: "isEnvVarsSet(){return false}"
-        }
-      }
-    ]
-  });
-
   // src/plugins/_core/fixChrome.chrome/index.ts
   var fixChrome_default = definePlugin({
     name: "FixChrome",
@@ -4476,7 +4440,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void-build/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/Void/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4749,7 +4713,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // void-css:/tmp/void-build/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4761,7 +4725,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-build/src/components/settings/CssEditor.css
+  // void-css:/tmp/Void/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -4809,23 +4773,23 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 
 .void-css-sel {
-    color: color-mix(in srgb, hsl(var(--fg-primary)) 72%, hsl(210deg 45% 48%));
+    color: hsl(215deg 50% 68%);
 }
 
 .void-css-prop {
-    color: color-mix(in srgb, hsl(var(--fg-secondary)) 55%, hsl(195deg 40% 42%));
+    color: hsl(195deg 35% 64%);
 }
 
 .void-css-val {
-    color: color-mix(in srgb, hsl(var(--fg-primary)) 70%, hsl(28deg 50% 46%));
+    color: hsl(28deg 45% 68%);
 }
 
 .void-css-str {
-    color: color-mix(in srgb, hsl(var(--fg-secondary)) 50%, hsl(155deg 35% 40%));
+    color: hsl(155deg 30% 64%);
 }
 
 .void-css-num {
-    color: color-mix(in srgb, hsl(var(--fg-primary)) 68%, hsl(265deg 35% 52%));
+    color: hsl(265deg 30% 74%);
 }
 
 .void-css-com {
@@ -4834,7 +4798,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 
 .void-css-at {
-    color: color-mix(in srgb, hsl(var(--fg-primary)) 70%, hsl(335deg 40% 48%));
+    color: hsl(335deg 35% 70%);
 }
 
 .void-css-brace {
@@ -5033,7 +4997,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/void-build/src/components/settings/shared.css
+  // void-css:/tmp/Void/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5108,7 +5072,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-build/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5149,7 +5113,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-build/src/components/settings/PluginCard.css
+  // void-css:/tmp/Void/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5200,7 +5164,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-build/src/components/settings/BaseCard.css
+  // void-css:/tmp/Void/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5293,7 +5257,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     height: 1.5rem;
     border-radius: 0.5rem;
     color: hsl(var(--fg-primary));
-    background: hsl(var(--fg-primary) / 10%);
+    background: hsl(var(--fg-primary) / 0.10);
     line-height: 0;
 }
 
@@ -5473,7 +5437,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // void-css:/tmp/void-build/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/Void/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5499,7 +5463,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-build/src/components/settings/SettingField.css
+  // void-css:/tmp/Void/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -6099,7 +6063,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/void-build/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/Void/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6122,7 +6086,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/void-build/src/components/settings/ThemeCard.css
+  // void-css:/tmp/Void/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6335,7 +6299,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       description: "Load themes from a URL. Re-fetched on every page load so updates apply automatically."
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
-      size: "sm",
+      size: "md",
       onClick: () => setOnlineDialogOpen(true)
     }, "Manage")), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6346,7 +6310,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       description: "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly."
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
-      size: "sm",
+      size: "md",
       onClick: () => {
         setEditingTheme(undefined);
         setLocalDialogOpen(true);
@@ -6400,7 +6364,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/void-build/src/plugins/experiments/styles.css
+  // void-css:/tmp/Void/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6778,7 +6742,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/void-build/src/plugins/pluginsFlyout/styles.css
+  // void-css:/tmp/Void/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -6920,9 +6884,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.9] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
-    }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.14] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"ce4de00"}`
+    }, `(${"ce4de00"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7072,6 +7036,72 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
+  // src/plugins/_core/noTelemetry/index.ts
+  var noTelemetry_default = definePlugin({
+    name: "NoTelemetry",
+    icon: ShieldOffIcon,
+    description: "Disables all tracking, telemetry, and event logging.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    required: true,
+    patches: [
+      {
+        find: '"opentelemetry.js.api."',
+        replacement: {
+          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
+          replace: "$1function(){}"
+        }
+      },
+      {
+        find: '"after-init"),(0,',
+        group: true,
+        replacement: [
+          {
+            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
+            replace: "$1return}function _ignore(){"
+          },
+          {
+            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
+            replace: '"startRecordingImagineSession",0,function(){}'
+          },
+          {
+            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
+            replace: '"stopRecordingImagineSession",0,function(){}'
+          }
+        ]
+      },
+      {
+        find: "sendBatchLogEvent",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogEvent=()=>{}"
+          },
+          {
+            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogExperimentExposure=()=>{}"
+          }
+        ]
+      },
+      {
+        find: '"/api/log_metric"',
+        replacement: {
+          match: /"\/api\/log_metric",\i\)/,
+          replace: '"/api/log_metric",[])'
+        }
+      },
+      {
+        find: "isEnvVarsSet(){return void 0!=",
+        replacement: {
+          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
+          replace: "isEnvVarsSet(){return false}"
+        }
+      }
+    ]
+  });
+
   // src/api/Modals.tsx
   var nextId = 0;
   var modalStack = [];
@@ -7211,4458 +7241,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // src/plugins/autoRetry/index.ts
-  var logger16 = new Logger("AutoRetry");
-  var CONTENT_MODERATED = "grok:content-moderated";
-  var settings5 = definePluginSettings({
-    retryModeration: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry content moderation errors.",
-      default: true
-    },
-    retryNetwork: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry network and stream errors.",
-      default: true
-    },
-    maxRetries: {
-      type: 1 /* NUMBER */,
-      description: "Maximum consecutive retries per conversation.",
-      default: 3
-    },
-    delay: {
-      type: 1 /* NUMBER */,
-      description: "Seconds to wait before retrying.",
-      default: 2
-    }
-  });
-  var retryCounts = new Map;
-  var pendingTimer = null;
-  function clearPending() {
-    if (pendingTimer != null) {
-      clearTimeout(pendingTimer);
-      pendingTimer = null;
-    }
-  }
-  function isModeration(response) {
-    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
-  }
-  function shouldRetry(response) {
-    if (isModeration(response))
-      return settings5.store.retryModeration;
-    return settings5.store.retryNetwork;
-  }
-  function retry(responseId, conversationId, response) {
-    const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings5.store.maxRetries;
-    if (count > max) {
-      showToast("Max retries reached.", 2 /* ERROR */);
-      retryCounts.delete(conversationId);
-      return;
-    }
-    retryCounts.set(conversationId, count);
-    const delaySec = settings5.store.delay;
-    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger16.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
-    clearPending();
-    pendingTimer = setTimeout(() => {
-      pendingTimer = null;
-      const state = ChatPageStore.useChatPageStore.getState();
-      if (state.streamedMessageId)
-        return;
-      state.sendResponse({
-        message: "",
-        parentResponseId: responseId,
-        conversationId,
-        fileAttachmentIds: response.fileAttachments,
-        setOpimisticUserResponse: false,
-        setUserResponse: false,
-        enableRetries: true
-      });
-    }, delaySec * 1000);
-  }
-  function onStreamEnd({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "error") {
-      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (convId)
-        retryCounts.delete(convId);
-      return;
-    }
-    if (!shouldRetry(response))
-      return;
-    const { conversationId } = ChatPageStore.useChatPageStore.getState();
-    if (!conversationId)
-      return;
-    retry(responseId, conversationId, response);
-  }
-  var autoRetry_default = definePlugin({
-    name: "AutoRetry",
-    icon: RotateCcwIcon,
-    description: "Automatically retry failed messages on moderation or network errors.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings5,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      retryCounts.clear();
-      clearPending();
-    },
-    stop() {
-      clearPending();
-      retryCounts.clear();
-    },
-    events: {
-      streamEnd: onStreamEnd
-    }
-  });
-
-  // src/plugins/oneko/index.ts
-  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
-  var ONEKO_SCRIPT = '(function oneko(){const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
-  var oneko_default = definePlugin({
-    name: "Oneko",
-    icon: CatIcon,
-    description: "Cat follows your mouse cursor.",
-    authors: [Devs.adryd],
-    tags: ["ui"],
-    cleanupSelectors: ["#oneko"],
-    start() {
-      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
-      const el = document.createElement("script");
-      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
-      document.head.appendChild(el);
-      el.addEventListener("load", () => {
-        el.remove();
-        URL.revokeObjectURL(el.src);
-      }, { once: true });
-    }
-  });
-
-  // void-css:/tmp/void-build/src/plugins/downloadTTS/styles.css
-  registerStyle("downloadTTS", `.void-download-tts-spinner {
-    pointer-events: none;
-}
-`);
-
-  // src/plugins/downloadTTS/index.tsx
-  var cl17 = classNameFactory("void-download-tts-");
-  var logger17 = new Logger("DownloadTTS");
-  async function fetchAndDownload() {
-    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
-    if (!currentStreamId)
-      return;
-    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
-    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
-    if (voiceId)
-      url += `?voiceId=${encodeURIComponent(voiceId)}`;
-    const res = await fetch(url);
-    if (!res.ok)
-      throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
-    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
-  }
-  function DownloadButton() {
-    const [loading, onClick] = useAsyncAction(async () => {
-      try {
-        await fetchAndDownload();
-      } catch (e) {
-        logger17.error("Failed to download TTS audio:", e);
-      }
-    });
-    return /* @__PURE__ */ React.createElement(Button, {
-      "aria-label": "Download audio",
-      onClick,
-      disabled: loading,
-      size: "md",
-      shape: "square",
-      variant: "tertiary"
-    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
-      size: "sm",
-      className: cl17("spinner")
-    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 16
-    }));
-  }
-  var downloadTTS_default = definePlugin({
-    name: "DownloadTTS",
-    icon: Volume2Icon,
-    description: "Add a download button to the TTS playback controls.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    patches: [{
-      find: 'tts-controls.stop.label","Stop"',
-      all: true,
-      replacement: {
-        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
-        replace: "$1,$self._renderDownloadButton()]"
-      }
-    }],
-    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
-  });
-
-  // src/plugins/noShareLink/index.ts
-  var STYLE_NAME2 = "noShareLink";
-  var settings6 = definePluginSettings({
-    hideShareProject: {
-      type: 3 /* BOOLEAN */,
-      description: "Inside a project: hide the top-right Share Project button.",
-      default: true
-    },
-    hideCreateShareLink: {
-      type: 3 /* BOOLEAN */,
-      description: "Not in a project: hide the top-right Create share link button on chats.",
-      default: true
-    }
-  });
-  function apply() {
-    const rules = [];
-    if (settings6.store.hideShareProject) {
-      rules.push('button[aria-label="Share Project"]{display:none!important}');
-    }
-    if (settings6.store.hideCreateShareLink) {
-      rules.push('button[aria-label="Create share link"]{display:none!important}');
-    }
-    registerStyle(STYLE_NAME2, rules.join(`
-`));
-  }
-  var noShareLink_default = definePlugin({
-    name: "NoShareLink",
-    icon: Link2OffIcon,
-    description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
-    authors: [Devs.p],
-    tags: ["ui", "privacy"],
-    enabledByDefault: true,
-    settings: settings6,
-    start: apply,
-    onSettingsChange: apply,
-    stop() {
-      unregisterStyle(STYLE_NAME2);
-    }
-  });
-
-  // void-css:/tmp/void-build/src/plugins/cloneChats/styles.css
-  registerStyle("cloneChats", `.void-clone-icon {
-    margin-inline-end: 0.5rem;
-}
-`);
-
-  // src/plugins/cloneChats/index.tsx
-  var logger18 = new Logger("CloneChats");
-  async function cloneChat(conversationId) {
-    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
-    if (!lastResponseId)
-      throw new Error("No responses found in conversation.");
-    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
-      conversationId,
-      body: { responseId: lastResponseId, allowIndexing: false }
-    });
-    if (!shareLinkId)
-      throw new Error("Failed to create share link.");
-    try {
-      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
-      if (conversation?.conversationId) {
-        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
-      }
-    } finally {
-      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
-    }
-  }
-  function CloneItem({ conversationId }) {
-    const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger18.error("Failed to clone chat:", e)),
-      disabled: streaming
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      size: 16,
-      className: "void-clone-icon"
-    }), "Clone");
-  }
-  var cloneChats_default = definePlugin({
-    name: "CloneChats",
-    icon: CopyIcon,
-    description: "Clone conversations from the context-menu.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    contextMenuItems: {
-      conversation: {
-        label: "Clone",
-        render: ErrorBoundary.wrap(CloneItem)
-      }
-    }
-  });
-
-  // void-css:/tmp/void-build/src/plugins/placeholder/styles.css
-  registerStyle("placeholder", `.void-ph-root {
-    contain: content;
-}
-
-.void-ph-textarea-wrap {
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.75rem;
-}
-
-.void-ph-textarea-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ph-textarea {
-    width: 100%;
-    min-height: 7.5rem;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    color: hsl(var(--fg-primary));
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.void-ph-textarea:focus {
-    outline: none;
-}
-`);
-
-  // src/plugins/placeholder/index.tsx
-  var cl18 = classNameFactory("void-ph-");
-  var DEFAULT_PHRASES = [
-    "What do you want to know?",
-    "How can I help you today?",
-    "What's on your mind?"
-  ].join(`
-`);
-  function parsePhrases(raw) {
-    return String(raw ?? "").split(`
-`).map((s) => s.trim()).filter(Boolean);
-  }
-  var settings7 = definePluginSettings({
-    phrases: {
-      type: 6 /* COMPONENT */,
-      default: DEFAULT_PHRASES,
-      component: PhrasesEditor
-    }
-  }).withPrivateSettings();
-  function PhrasesEditor() {
-    const { phrases } = settings7.use(["phrases"]);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem",
-      className: cl18("root")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium"
-    }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("textarea-wrap")
-    }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl18("textarea"),
-      value: phrases ?? DEFAULT_PHRASES,
-      onChange: (e) => {
-        settings7.store.phrases = e.target.value;
-      },
-      placeholder: DEFAULT_PHRASES
-    })));
-  }
-  var placeholder_default = definePlugin({
-    name: "Placeholder",
-    icon: TextCursorInputIcon,
-    description: "Replace the rotating chat input placeholder.",
-    authors: [Devs.p],
-    tags: ["chat"],
-    settings: settings7,
-    _phrases() {
-      const lines = parsePhrases(settings7.store.phrases ?? DEFAULT_PHRASES);
-      return lines.length ? lines : null;
-    },
-    patches: [
-      {
-        find: `query-bar-placeholder.whats-on-your-mind","What's on your mind?"`,
-        replacement: {
-          match: /("query-bar-placeholder\.whats-on-your-mind","What's on your mind\?"\)\],\[\i,\i,\i,\i\]\),)(\i)=(\i\(\)),(\i)=(\i)\.map\(\2\)/,
-          replace: "$1$2=$3,$4=($self._phrases()??$5).map($2)"
-        }
-      }
-    ]
-  });
-
-  // void-css:/tmp/void-build/src/plugins/exportChat/styles.css
-  registerStyle("exportChat", `.void-export-icon {
-    margin-inline-end: 0.5rem;
-}
-`);
-
-  // src/plugins/exportChat/index.tsx
-  var logger19 = new Logger("ExportChat");
-  function buildExportMessage(r) {
-    return {
-      id: r.responseId,
-      sender: r.sender,
-      message: r.message,
-      query: r.query,
-      createTime: r.createTime,
-      model: r.requestMetadata?.model ?? r.model,
-      ...r.thinkingTrace && { thinkingTrace: r.thinkingTrace },
-      ...r.webSearchResults?.length && { webSearchResults: r.webSearchResults },
-      ...r.generatedImageUrls?.length && { generatedImageUrls: r.generatedImageUrls },
-      ...r.fileAttachments?.length && { fileAttachments: r.fileAttachments },
-      ...r.steps?.length && { steps: r.steps }
-    };
-  }
-  function formatTs(ts) {
-    return ts ? new Date(ts).toLocaleString() : "";
-  }
-  function sender(s) {
-    return s.toLowerCase() === "human" ? "You" : "Grok";
-  }
-  function toMarkdown(title, messages) {
-    const lines = [`# ${title}`, ""];
-    for (const m of messages) {
-      const ts = formatTs(m.createTime);
-      lines.push(`## ${sender(m.sender)}${ts ? ` — ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
-      if (m.thinkingTrace)
-        lines.push("<details><summary>Thinking</summary>", "", m.thinkingTrace, "", "</details>", "");
-      const mdText = m.query || m.message;
-      if (mdText)
-        lines.push(mdText, "");
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls)
-          lines.push(`![image](${url})`);
-        lines.push("");
-      }
-      if (m.webSearchResults?.length) {
-        lines.push("**Web search results:**", "");
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (url)
-            lines.push(`- [${t ?? url}](${url})`);
-        }
-        lines.push("");
-      }
-      lines.push("---", "");
-    }
-    return lines.join(`
-`);
-  }
-  function toPlainText(title, messages) {
-    const lines = [title, "=".repeat(title.length), ""];
-    for (const m of messages) {
-      const ts = formatTs(m.createTime);
-      lines.push(`[${sender(m.sender)}]${ts ? ` ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
-      if (m.thinkingTrace)
-        lines.push("[Thinking]", m.thinkingTrace, "");
-      const txtText = m.query || m.message;
-      if (txtText)
-        lines.push(txtText, "");
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls)
-          lines.push(`  ${url}`);
-        lines.push("");
-      }
-      if (m.webSearchResults?.length) {
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (url)
-            lines.push(`  ${t ?? ""} - ${url}`);
-        }
-        lines.push("");
-      }
-      lines.push("-".repeat(40), "");
-    }
-    return lines.join(`
-`);
-  }
-  var HTML_HEAD = [
-    '<!DOCTYPE html><html><head><meta charset="utf-8">',
-    "<style>",
-    "body{font-family:system-ui,sans-serif;max-width:50rem;margin:2rem auto;padding:0 1rem;background:#0d0d0d;color:#e0e0e0}",
-    ".m{margin:1.5rem 0;padding:1rem;border-radius:.5rem;border:1px solid #222}",
-    ".h{background:#1a1a2e}.g{background:#111}",
-    ".s{font-weight:600;margin-bottom:.5rem;color:#aaa}.t{font-size:.8rem;color:#666}",
-    ".th{margin:.5rem 0;padding:.5rem;background:#1a1a1a;border-left:3px solid #444;font-size:.9rem;color:#999}",
-    "a{color:#6ea8fe}",
-    "</style></head><body>"
-  ].join(`
-`);
-  function toHtml(title, messages) {
-    const p = [HTML_HEAD, `<h1>${escapeHtml(title)}</h1>`];
-    for (const m of messages) {
-      const cls = m.sender.toLowerCase() === "human" ? "h" : "g";
-      const ts = formatTs(m.createTime);
-      p.push(`<div class="m ${cls}"><div class="s">${sender(m.sender)} <span class="t">${ts ? escapeHtml(ts) : ""}${m.model ? ` · ${escapeHtml(m.model)}` : ""}</span></div>`);
-      if (m.thinkingTrace)
-        p.push(`<details><summary>Thinking</summary><div class="th">${escapeHtml(m.thinkingTrace)}</div></details>`);
-      const text = m.query || m.message;
-      if (text)
-        p.push(`<div>${escapeHtml(text).replaceAll(`
-`, "<br>")}</div>`);
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls) {
-          const safe = safeUrl(url);
-          if (safe)
-            p.push(`<img src="${escapeHtml(safe, true)}" style="max-width:100%;margin:.5rem 0">`);
-        }
-      }
-      if (m.webSearchResults?.length) {
-        p.push("<ul>");
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (!url)
-            continue;
-          const safe = safeUrl(url);
-          if (safe)
-            p.push(`<li><a href="${escapeHtml(safe, true)}" rel="noopener noreferrer">${escapeHtml(t ?? safe)}</a></li>`);
-          else
-            p.push(`<li>${escapeHtml(t ?? url)}</li>`);
-        }
-        p.push("</ul>");
-      }
-      p.push("</div>");
-    }
-    p.push("</body></html>");
-    return p.join(`
-`);
-  }
-  var FORMATS = [
-    { fmt: "json", label: "JSON" },
-    { fmt: "md", label: "Markdown" },
-    { fmt: "txt", label: "Plain Text" },
-    { fmt: "html", label: "HTML" }
-  ];
-  async function exportChat(conversationId, format) {
-    const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
-    if (!responses?.length)
-      return;
-    const conversation = ConversationStore.useConversationStore.getState().byId[conversationId];
-    const title = conversation?.title ?? "Untitled Chat";
-    const messages = responses.map(buildExportMessage);
-    const filename = sanitizeFilename(title, "chat");
-    let content;
-    let mime;
-    switch (format) {
-      case "json":
-        content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
-        mime = "application/json";
-        break;
-      case "md":
-        content = toMarkdown(title, messages);
-        mime = "text/markdown";
-        break;
-      case "txt":
-        content = toPlainText(title, messages);
-        mime = "text/plain";
-        break;
-      case "html":
-        content = toHtml(title, messages);
-        mime = "text/html";
-        break;
-    }
-    await FileUtils.downloadBlob(new Blob([content], { type: mime }), `${filename}.${format}`);
-  }
-  function ExportMenu({ conversationId }) {
-    const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      disabled: streaming
-    }, /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 16,
-      className: "void-export-icon"
-    }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
-      key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger19.error("Failed to export chat", e))
-    }, label))));
-  }
-  var exportChat_default = definePlugin({
-    name: "ExportChat",
-    icon: FileDownIcon,
-    description: "Export conversations in multiple formats from the right-click menu.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    contextMenuItems: {
-      conversation: {
-        label: "Export",
-        render: ErrorBoundary.wrap(ExportMenu)
-      }
-    }
-  });
-
-  // src/plugins/chatStateFavicons/detect.ts
-  var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
-  var STOP_SELECTORS = [
-    'button[aria-label="Stop model response"]',
-    'button[aria-label*="Stop"]',
-    'button[aria-label*="stop"]',
-    'button[aria-label*="停止"]'
-  ];
-  var SEND_SELECTORS = [
-    'button[aria-label*="Send"]',
-    'button[aria-label*="Submit"]',
-    'button[type="submit"]'
-  ];
-  function isVisible(el) {
-    if (!(el instanceof HTMLElement) || !el.isConnected)
-      return false;
-    if (!el.getClientRects().length)
-      return false;
-    const style = getComputedStyle(el);
-    return style.visibility !== "hidden" && style.display !== "none";
-  }
-  function isStopControl(el) {
-    const label = el.getAttribute("aria-label") ?? "";
-    const text = el.textContent ?? "";
-    return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
-  }
-  function getActiveEditor() {
-    const list = Array.from(document.querySelectorAll(EDITOR_SEL));
-    return list.find(isVisible) ?? list[0] ?? null;
-  }
-  function getComposerRoot() {
-    const editor = getActiveEditor();
-    return editor?.closest("form") ?? editor?.closest("div.relative") ?? editor?.parentElement ?? document.body;
-  }
-  function collectStopButtons(root) {
-    const candidates = [];
-    for (const sel of STOP_SELECTORS) {
-      for (const node of root.querySelectorAll(sel)) {
-        if (node instanceof HTMLElement)
-          candidates.push(node);
-      }
-    }
-    if (candidates.length === 0) {
-      for (const btn of root.querySelectorAll("button")) {
-        if (btn instanceof HTMLElement && isStopControl(btn))
-          candidates.push(btn);
-      }
-    }
-    return candidates;
-  }
-  function getStopButton() {
-    const candidates = collectStopButtons(document);
-    return candidates.find(isVisible) ?? candidates[0] ?? null;
-  }
-  function isDisabledControl(el) {
-    if (el instanceof HTMLButtonElement && el.disabled)
-      return true;
-    if (el.hasAttribute("disabled"))
-      return true;
-    if (el.getAttribute("aria-disabled") === "true")
-      return true;
-    if (el.getAttribute("data-disabled") === "true")
-      return true;
-    return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
-  }
-  function getSubmitButton() {
-    for (const root of [getComposerRoot(), document]) {
-      for (const sel of SEND_SELECTORS) {
-        for (const node of root.querySelectorAll(sel)) {
-          if (!(node instanceof HTMLElement) || isStopControl(node))
-            continue;
-          if (isVisible(node) || isDisabledControl(node))
-            return node;
-        }
-      }
-    }
-    return null;
-  }
-  function submitIsGray() {
-    const btn = getSubmitButton();
-    return !!btn && isDisabledControl(btn);
-  }
-  function isInputEmpty() {
-    const editor = getActiveEditor();
-    if (!editor)
-      return true;
-    if (editor.querySelector("p.is-empty.is-editor-empty"))
-      return true;
-    return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
-  }
-  function conversationToken() {
-    const params = new URLSearchParams(location.search);
-    const paramId = params.get("conversationId") ?? params.get("conversation_id") ?? params.get("chatId") ?? params.get("chat_id") ?? params.get("cid") ?? params.get("id") ?? "";
-    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
-    const pathId = /^[a-z0-9_-]{8,}$/i.test(lastSeg) ? lastSeg : "";
-    const dataId = document.querySelector("[data-conversation-id]")?.getAttribute("data-conversation-id") ?? "";
-    return [dataId, paramId, pathId].filter(Boolean).join("|");
-  }
-  function contextKeyFromUrl(token) {
-    const base = `${location.origin}${location.pathname}`;
-    return token ? `${base}|${token}` : `${base}|draft`;
-  }
-
-  // src/plugins/chatStateFavicons/icons.ts
-  var ICON_STYLES = ["original", "badge", "dot", "hole", "bg"];
-  var STYLE_OPTIONS = [
-    { label: "only emoji", value: "original" },
-    { label: "Badge + glyph", value: "badge", default: true },
-    { label: "Color dot", value: "dot" },
-    { label: "Mark tint", value: "hole" },
-    { label: "Background tint", value: "bg" }
-  ];
-  var KIND_COLOR = {
-    rotate: "#3B82F6",
-    done: "#22C55E",
-    ready: "#F59E0B",
-    error: "#EF4444"
-  };
-  var HOLE_IDLE = "#050505";
-  var MARK_FILL = "#FCFCFC";
-  var GROK_MARK_PATH = "M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815";
-  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
-  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
-  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
-  var ORIGINAL_EMOJI = {
-    rotate: "\uD83D\uDD04",
-    done: "✔️",
-    ready: "\uD83D\uDC4D",
-    error: "\uD83D\uDEAB"
-  };
-  function isIconStyle(value) {
-    return typeof value === "string" && ICON_STYLES.includes(value);
-  }
-  function svgEmoji(emoji) {
-    return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`)}`;
-  }
-  function toSvgData(inner, viewBox = "0 0 64 64") {
-    const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg2)}`;
-  }
-  function grokMarkSvg() {
-    return [
-      `<rect width="64" height="64" rx="14" fill="${HOLE_IDLE}"/>`,
-      `<g transform="translate(8 8) scale(2)" fill="${MARK_FILL}" fill-rule="evenodd">`,
-      `<path d="${GROK_MARK_PATH}"/>`,
-      "</g>"
-    ].join("");
-  }
-  function officialGrokSvg(markColor, bgColor) {
-    return [
-      `<path d="${GROK_BG_PATH}" fill="${bgColor}"/>`,
-      `<path d="${GROK_MARK_P1}" fill="${markColor}"/>`,
-      `<path d="${GROK_MARK_P2}" fill="${markColor}"/>`
-    ].join("");
-  }
-  function badgeGlyph(kind) {
-    if (kind === "rotate") {
-      return [
-        '<g transform="translate(51.5 51.5)"><g>',
-        '<path d="M0-6.1 A6.1 6.1 0 1 1 -5.3 3.05" fill="none" stroke="#fff" stroke-width="2.15" stroke-linecap="round"/>',
-        '<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.85s" repeatCount="indefinite"/>',
-        "</g></g>"
-      ].join("");
-    }
-    if (kind === "done") {
-      return '<path d="M46.6 51.7 L50.1 55.3 L56.8 47.4" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>';
-    }
-    if (kind === "ready") {
-      return [
-        '<path d="M51.5 56.4 V46.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
-        '<path d="M46.6 51.2 L51.5 46.2 L56.4 51.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
-      ].join("");
-    }
-    return [
-      '<path d="M47.2 47.2 L55.8 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
-      '<path d="M55.8 47.2 L47.2 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
-    ].join("");
-  }
-  function composeIcon(style, kind, officialHref) {
-    if (style === "original") {
-      if (kind === "wait")
-        return officialHref;
-      return svgEmoji(ORIGINAL_EMOJI[kind]);
-    }
-    const color = kind === "wait" ? undefined : KIND_COLOR[kind];
-    if (style === "hole") {
-      return toSvgData(officialGrokSvg(color ?? MARK_FILL, HOLE_IDLE), "0 0 512 512");
-    }
-    if (style === "bg") {
-      return toSvgData(officialGrokSvg(MARK_FILL, color ?? HOLE_IDLE), "0 0 512 512");
-    }
-    if (!color || kind === "wait")
-      return toSvgData(grokMarkSvg());
-    const badge = style === "dot" ? [
-      '<circle cx="52.2" cy="52.2" r="10.4" fill="#050505"/>',
-      `<circle cx="52.2" cy="52.2" r="7.7" fill="${color}"/>`
-    ].join("") : [
-      '<circle cx="51.5" cy="51.5" r="12.15" fill="#050505"/>',
-      `<circle cx="51.5" cy="51.5" r="9.55" fill="${color}"/>`,
-      badgeGlyph(kind)
-    ].join("");
-    return toSvgData(grokMarkSvg() + badge);
-  }
-  function buildIcons(style, officialHref) {
-    return {
-      wait: composeIcon(style, "wait", officialHref),
-      rotate: composeIcon(style, "rotate", officialHref),
-      done: composeIcon(style, "done", officialHref),
-      ready: composeIcon(style, "ready", officialHref),
-      error: composeIcon(style, "error", officialHref)
-    };
-  }
-
-  // src/plugins/chatStateFavicons/index.ts
-  var logger20 = new Logger("ChatStateFavicons");
-  var ICON_ID = "void-chat-state-favicon";
-  var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var settings8 = definePluginSettings({
-    style: {
-      type: 4 /* SELECT */,
-      description: "How the Grok mark is overlaid with chat state.",
-      options: STYLE_OPTIONS
-    }
-  });
-  var officialHref = "/images/favicon.svg";
-  var icons = buildIcons("badge", officialHref);
-  var kind = "wait";
-  var wasStreaming = false;
-  var justFinished = false;
-  var streamContext = null;
-  var lockedToken = "";
-  var lastWasError = false;
-  var lastConvId = "";
-  var primedReady = true;
-  var faviconObs = null;
-  var globalObs = null;
-  var composerObs = null;
-  var buttonObs = null;
-  var inputCtrl = null;
-  var unsubRoute = null;
-  var unsubPage = null;
-  var raf = 0;
-  var started2 = false;
-  function currentStyle() {
-    const value = settings8.store.style;
-    return isIconStyle(value) ? value : "badge";
-  }
-  function captureOfficial() {
-    const existing = document.querySelector(`link[rel~="icon"]:not(#${ICON_ID})`);
-    const href = existing?.href;
-    if (href && !href.startsWith("data:"))
-      return href;
-    return `${location.origin}/images/favicon.svg`;
-  }
-  function isIconLink(node) {
-    return node instanceof HTMLLinkElement && (node.relList.contains("icon") || /\bicon\b/i.test(node.rel));
-  }
-  function stripCompetitors() {
-    const { head } = document;
-    if (!head)
-      return;
-    for (const node of head.querySelectorAll("link")) {
-      if (node.id !== ICON_ID && isIconLink(node))
-        node.remove();
-    }
-  }
-  function applyHref(href) {
-    const { head } = document;
-    if (!head)
-      return;
-    stripCompetitors();
-    let link = document.getElementById(ICON_ID);
-    if (!link) {
-      link = document.createElement("link");
-      link.id = ICON_ID;
-      link.rel = "icon shortcut icon";
-      link.type = "image/svg+xml";
-      link.setAttribute("sizes", "any");
-      head.prepend(link);
-    } else if (head.firstChild !== link) {
-      head.prepend(link);
-    }
-    if (link.getAttribute("href") !== href)
-      link.setAttribute("href", href);
-  }
-  function setKind(next) {
-    kind = next;
-    applyHref(icons[next]);
-  }
-  function rebuildIcons() {
-    icons = buildIcons(currentStyle(), officialHref);
-    applyHref(icons[kind]);
-  }
-  function liveResponse(id, byId) {
-    if (!id)
-      return false;
-    const response = byId[id];
-    if (!response)
-      return false;
-    if (response.partial)
-      return true;
-    return LIVE_RESPONSE.has(response.state ?? "");
-  }
-  function storeStreaming() {
-    try {
-      const page = ChatPageStore.useChatPageStore.getState();
-      if (page.streamedMessageId || page.showStreamingIndicator)
-        return true;
-      const { byId } = ResponseStore.useResponseStore.getState();
-      return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
-    } catch (e) {
-      logger20.debug("stream stores unavailable:", e);
-      return false;
-    }
-  }
-  function isStreaming() {
-    if (storeStreaming())
-      return true;
-    return getStopButton() != null;
-  }
-  function currentConversationId() {
-    try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      if (route.conversationId)
-        return String(route.conversationId);
-    } catch (e) {
-      logger20.debug("RoutingStore unavailable:", e);
-    }
-    try {
-      const id = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (id)
-        return id;
-    } catch (e) {
-      logger20.debug("ChatPageStore unavailable:", e);
-    }
-    return conversationToken();
-  }
-  function getContextKey() {
-    const id = currentConversationId();
-    const key = id || contextKeyFromUrl("");
-    if (isStreaming()) {
-      if (!lockedToken && key)
-        lockedToken = key;
-      return lockedToken;
-    }
-    lockedToken = "";
-    return key;
-  }
-  function sameStreamContext(key) {
-    return !!streamContext && !!key && streamContext === key;
-  }
-  function resetStreamFlags() {
-    wasStreaming = false;
-    justFinished = false;
-    streamContext = null;
-    lockedToken = "";
-    lastWasError = false;
-  }
-  function onConversationSwitch(id) {
-    lastConvId = id;
-    resetStreamFlags();
-    primedReady = false;
-    composerObs?.disconnect();
-    composerObs = null;
-    buttonObs?.disconnect();
-    buttonObs = null;
-    setKind("wait");
-  }
-  function hasError() {
-    if (lastWasError)
-      return true;
-    try {
-      const { byId } = ResponseStore.useResponseStore.getState();
-      const page = ChatPageStore.useChatPageStore.getState();
-      const id = page.streamedMessageId ?? page.lastMessageId;
-      if (!id)
-        return false;
-      const response = byId[id];
-      return response?.state === "error" || response?.error != null;
-    } catch (e) {
-      logger20.debug("ResponseStore unavailable:", e);
-      return false;
-    }
-  }
-  function evaluateState() {
-    if (!started2)
-      return;
-    const conv = currentConversationId();
-    if (lastConvId && conv && lastConvId !== conv) {
-      onConversationSwitch(conv);
-      return;
-    }
-    if (conv)
-      lastConvId = conv;
-    const contextKey = getContextKey();
-    const streaming = isStreaming();
-    const empty = isInputEmpty();
-    const gray = submitIsGray();
-    if (hasError() && !streaming) {
-      setKind("error");
-      wasStreaming = false;
-      justFinished = false;
-      streamContext = null;
-      lastWasError = false;
-      return;
-    }
-    if (streaming && empty) {
-      wasStreaming = true;
-      justFinished = false;
-      lastWasError = false;
-      streamContext = contextKey;
-      setKind("rotate");
-      return;
-    }
-    if (wasStreaming) {
-      const sameContext = sameStreamContext(contextKey);
-      wasStreaming = false;
-      if (sameContext && gray) {
-        justFinished = true;
-        streamContext = contextKey;
-        setKind("done");
-        return;
-      }
-      justFinished = false;
-      streamContext = null;
-    }
-    if (justFinished) {
-      const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);
-      if (contextChanged) {
-        justFinished = false;
-        streamContext = null;
-      } else if (empty) {
-        setKind("done");
-        return;
-      } else if (primedReady) {
-        justFinished = false;
-        setKind("ready");
-        return;
-      } else {
-        justFinished = false;
-        setKind("wait");
-        return;
-      }
-    }
-    streamContext = null;
-    lastWasError = false;
-    if (empty)
-      setKind("wait");
-    else if (primedReady)
-      setKind("ready");
-    else
-      setKind("wait");
-  }
-  function nodeTouchesStop(node) {
-    if (!(node instanceof Element))
-      return false;
-    if (node instanceof HTMLElement && node.tagName === "BUTTON" && isStopControl(node))
-      return true;
-    for (const btn of node.querySelectorAll("button")) {
-      if (isStopControl(btn))
-        return true;
-    }
-    return false;
-  }
-  function stopButtonMutation(list) {
-    for (const m of list) {
-      if (nodeTouchesStop(m.target))
-        return true;
-      for (const n of m.addedNodes) {
-        if (nodeTouchesStop(n))
-          return true;
-      }
-      for (const n of m.removedNodes) {
-        if (nodeTouchesStop(n))
-          return true;
-      }
-      if (m.type === "attributes" && m.attributeName === "aria-label" && m.target instanceof HTMLElement) {
-        if (isStopControl(m.target) || /stop|停止/i.test(String(m.oldValue ?? "")))
-          return true;
-      }
-    }
-    return false;
-  }
-  function nodeInEditor(node) {
-    const el = node instanceof Element ? node : node?.parentElement;
-    return !!el?.closest(EDITOR_SEL);
-  }
-  function mutationsAreEditorOnly(list) {
-    if (!list.length)
-      return false;
-    for (const m of list) {
-      if (!nodeInEditor(m.target))
-        return false;
-      for (const n of m.addedNodes) {
-        if (n instanceof Text)
-          continue;
-        if (!nodeInEditor(n))
-          return false;
-      }
-      for (const n of m.removedNodes) {
-        if (n instanceof Text)
-          continue;
-        if (!nodeInEditor(n))
-          return false;
-      }
-    }
-    return true;
-  }
-  function onDomMutate(list) {
-    if (kind === "rotate" || wasStreaming) {
-      if (mutationsAreEditorOnly(list))
-        return;
-      if (!stopButtonMutation(list))
-        return;
-    }
-    scheduleEvaluate();
-  }
-  function onEditorInput() {
-    primedReady = true;
-    scheduleEvaluate();
-  }
-  function scheduleEvaluate() {
-    if (!started2 || raf)
-      return;
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      if (!started2)
-        return;
-      bindEditorInput();
-      const root = getComposerRoot();
-      if (!composerObs || !root.isConnected) {
-        observeComposer();
-        observeButtons();
-      }
-      evaluateState();
-    });
-  }
-  function onStreamEnd2({ responseId }) {
-    try {
-      const response = ResponseStore.useResponseStore.getState().byId[responseId];
-      lastWasError = response?.state === "error" || response?.error != null;
-    } catch (e) {
-      logger20.debug("ResponseStore unavailable:", e);
-    }
-  }
-  function startFaviconGuard() {
-    faviconObs?.disconnect();
-    const { head } = document;
-    if (!head)
-      return;
-    faviconObs = new MutationObserver((list) => {
-      for (const m of list) {
-        if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
-          applyHref(icons[kind]);
-          return;
-        }
-        for (const node of m.addedNodes) {
-          if (isIconLink(node) && node.id !== ICON_ID) {
-            applyHref(icons[kind]);
-            return;
-          }
-        }
-      }
-    });
-    faviconObs.observe(head, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["href", "rel"]
-    });
-  }
-  function bindEditorInput() {
-    const editor = getActiveEditor();
-    if (!editor || editor.dataset.voidCsfBound === "1")
-      return;
-    editor.dataset.voidCsfBound = "1";
-    editor.addEventListener("input", onEditorInput, { passive: true });
-    editor.addEventListener("compositionend", onEditorInput, { passive: true });
-  }
-  function observeComposer() {
-    composerObs?.disconnect();
-    const root = getComposerRoot();
-    composerObs = new MutationObserver(onDomMutate);
-    composerObs.observe(root, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ["aria-label", "aria-disabled", "disabled", "data-testid", "class"],
-      attributeOldValue: true
-    });
-  }
-  function observeButtons() {
-    buttonObs?.disconnect();
-    const target = getComposerRoot();
-    buttonObs = new MutationObserver(onDomMutate);
-    buttonObs.observe(target, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["aria-label", "type"],
-      attributeOldValue: true
-    });
-  }
-  function attachStores() {
-    unsubRoute?.();
-    unsubPage?.();
-    try {
-      const routeStore = RoutingStore.useRoutingStore;
-      if (typeof routeStore?.subscribe === "function") {
-        unsubRoute = routeStore.subscribe((s) => s.route.conversationId, (id, prev) => {
-          if (!id || id === prev)
-            return;
-          onConversationSwitch(String(id));
-        });
-      }
-    } catch (e) {
-      logger20.debug("RoutingStore subscribe failed:", e);
-      try {
-        unsubRoute = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
-      } catch (err) {
-        logger20.debug("RoutingStore full subscribe failed:", err);
-      }
-    }
-    try {
-      const pageStore = ChatPageStore.useChatPageStore;
-      if (typeof pageStore?.subscribe === "function") {
-        unsubPage = pageStore.subscribe((s) => s.conversationId, (id, prev) => {
-          if (!id || id === prev)
-            return;
-          onConversationSwitch(id);
-        });
-      }
-    } catch (e) {
-      logger20.debug("ChatPageStore subscribe failed:", e);
-    }
-  }
-  function restoreOfficial() {
-    faviconObs?.disconnect();
-    faviconObs = null;
-    document.getElementById(ICON_ID)?.remove();
-    const { head } = document;
-    if (!head)
-      return;
-    const link = document.createElement("link");
-    link.rel = "icon";
-    link.type = "image/svg+xml";
-    link.href = officialHref;
-    head.prepend(link);
-  }
-  var chatStateFavicons_default = definePlugin({
-    name: "ChatStateFavicons",
-    icon: AppWindowIcon,
-    description: "Show streaming, done, ready, and error states on the tab favicon.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings8,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    cleanupSelectors: [`#${ICON_ID}`],
-    start() {
-      started2 = true;
-      officialHref = captureOfficial();
-      rebuildIcons();
-      startFaviconGuard();
-      inputCtrl?.abort();
-      inputCtrl = new AbortController;
-      window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
-      globalObs?.disconnect();
-      globalObs = new MutationObserver(onDomMutate);
-      globalObs.observe(document.body, { childList: true, subtree: true });
-      bindEditorInput();
-      observeComposer();
-      observeButtons();
-      attachStores();
-      evaluateState();
-    },
-    stop() {
-      started2 = false;
-      if (raf)
-        cancelAnimationFrame(raf);
-      raf = 0;
-      inputCtrl?.abort();
-      inputCtrl = null;
-      unsubRoute?.();
-      unsubRoute = null;
-      unsubPage?.();
-      unsubPage = null;
-      globalObs?.disconnect();
-      globalObs = null;
-      composerObs?.disconnect();
-      composerObs = null;
-      buttonObs?.disconnect();
-      buttonObs = null;
-      wasStreaming = false;
-      justFinished = false;
-      streamContext = null;
-      lockedToken = "";
-      lastConvId = "";
-      primedReady = true;
-      lastWasError = false;
-      restoreOfficial();
-    },
-    onSettingsChange: rebuildIcons,
-    events: {
-      streamEnd: onStreamEnd2
-    }
-  });
-
-  // src/plugins/composerOpacity/index.ts
-  var STYLE_NAME3 = "composerOpacity";
-  var SHELL = ".query-bar";
-  var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
-  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
-  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
-  var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
-  var settings9 = definePluginSettings({
-    opacity: {
-      type: 5 /* SLIDER */,
-      description: "Background opacity of the chat input. 100 is fully opaque.",
-      min: 0,
-      max: 100,
-      default: 100
-    },
-    blur: {
-      type: 5 /* SLIDER */,
-      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
-      min: 0,
-      max: 40,
-      default: 16
-    }
-  });
-  function apply2() {
-    const pct = clamp(settings9.store.opacity, 0, 100);
-    const blur = clamp(settings9.store.blur, 0, 40);
-    const alpha = pct / 100;
-    const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
-    registerStyle(STYLE_NAME3, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
-  }
-  var composerOpacity_default = definePlugin({
-    name: "ComposerOpacity",
-    icon: BlendIcon,
-    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
-    authors: [Devs.p],
-    tags: ["ui", "chat"],
-    enabledByDefault: true,
-    settings: settings9,
-    start: apply2,
-    onSettingsChange: apply2,
-    stop() {
-      unregisterStyle(STYLE_NAME3);
-    }
-  });
-
-  // void-css:/tmp/void-build/src/plugins/recentTopics/styles.css
-  registerStyle("recentTopics", `.void-rt-root,
-.void-rt-root:popover-open {
-    isolation: isolate;
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 2147483647 !important;
-    display: block !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    max-width: none !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    border: none !important;
-    background: transparent !important;
-    color: inherit;
-    pointer-events: auto !important;
-}
-
-.void-rt-root::backdrop {
-    background: transparent;
-}
-
-html.void-rt-open [data-sidebar="sidebar"],
-html.void-rt-open [data-sidebar="gap"] {
-    z-index: 0 !important;
-}
-
-.void-rt-panel,
-.void-rt-card,
-.void-rt-meta,
-.void-rt-name,
-.void-rt-host,
-.void-rt-empty {
-    font-family: inherit;
-    letter-spacing: inherit;
-}
-
-.void-rt-panel,
-.void-rt-panel * {
-    box-sizing: border-box;
-}
-
-.void-rt-panel {
-    --void-rt-accent: hsl(var(--fg-primary));
-    --void-rt-card-width: clamp(136px, calc((100vw - 68px) / 5), 204px);
-    --void-rt-gap: 8px;
-    --void-rt-padding-panel: 12px;
-    --void-rt-padding-card: 8px;
-    --void-rt-border-card: 1px;
-    --void-rt-radius-panel: 16px;
-    --void-rt-radius-card: calc(var(--void-rt-radius-panel) - var(--void-rt-padding-panel));
-    --void-rt-radius-thumb: calc(var(--void-rt-radius-card) - var(--void-rt-padding-card) - var(--void-rt-border-card));
-    --void-rt-radius-icon: 8px;
-    --void-rt-radius-title-icon: 8px;
-    --void-rt-meta-inline-padding: 4px;
-    --void-rt-motion-card: 180ms cubic-bezier(0.22, 1, 0.36, 1);
-    --void-rt-motion-cover: 220ms cubic-bezier(0.22, 1, 0.36, 1);
-    --void-rt-thumb-stroke-inset: -0.5px;
-    --void-rt-thumb-stroke-radius-offset: 0.5px;
-    --void-rt-thumb-stroke-color: hsl(var(--border-l2));
-    --void-rt-title-icon-size: 16px;
-    --void-rt-title-icon-gap: 4px;
-
-    all: unset;
-    color-scheme: inherit;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate3d(-50%, -50%, 0);
-    transform-origin: center center;
-    z-index: 1;
-    display: block;
-    width: fit-content;
-    max-width: calc(100vw - 24px);
-    overflow: auto hidden;
-    scrollbar-width: none;
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l1) / 92%);
-    border: 1px solid hsl(var(--border-l1));
-    border-radius: var(--void-rt-radius-panel);
-    box-shadow: 0 4px 16px hsl(var(--black) / 12%);
-    backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    padding: var(--void-rt-padding-panel);
-    pointer-events: auto;
-    opacity: 0;
-    transition: opacity 90ms ease;
-    will-change: opacity;
-}
-
-.void-rt-panel::-webkit-scrollbar {
-    display: none;
-}
-
-.void-rt-panel[data-visible="true"] {
-    opacity: 1;
-}
-
-.void-rt-list {
-    display: grid;
-    grid-template-columns: repeat(var(--void-rt-count, 5), var(--void-rt-card-width));
-    gap: var(--void-rt-gap);
-    width: max-content;
-    max-width: 100%;
-    padding: 2px;
-}
-
-.void-rt-card {
-    all: unset;
-    box-sizing: border-box;
-    width: var(--void-rt-card-width);
-    min-width: var(--void-rt-card-width);
-    max-width: var(--void-rt-card-width);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border-radius: var(--void-rt-radius-card);
-    border: var(--void-rt-border-card) solid transparent;
-    outline: 0;
-    background: transparent;
-    padding: var(--void-rt-padding-card);
-    color: hsl(var(--fg-primary));
-    cursor: pointer;
-    box-shadow: none;
-    transition:
-        border-color 140ms ease,
-        box-shadow var(--void-rt-motion-card);
-}
-
-.void-rt-card[data-active="true"] {
-    z-index: 1;
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 82%, hsl(var(--border-l2)));
-    background: transparent;
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 55%, transparent);
-}
-
-.void-rt-card:focus-visible {
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 88%, hsl(var(--border-l2)));
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 60%, transparent);
-}
-
-.void-rt-thumb {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    border-radius: var(--void-rt-radius-thumb);
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, hsl(var(--surface-l1)));
-}
-
-.void-rt-thumb::after {
-    content: "";
-    position: absolute;
-    inset: var(--void-rt-thumb-stroke-inset);
-    z-index: 2;
-    border-radius: calc(var(--void-rt-radius-thumb) + var(--void-rt-thumb-stroke-radius-offset));
-    box-sizing: border-box;
-    border: 1px solid var(--void-rt-thumb-stroke-color);
-    box-shadow: none;
-    pointer-events: none;
-}
-
-.void-rt-shot {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-    user-select: none;
-}
-
-.void-rt-shot,
-.void-rt-shot * {
-    pointer-events: none !important;
-    scrollbar-width: none;
-}
-
-.void-rt-thumb:has(.void-rt-shot) .void-rt-fallback {
-    display: none;
-}
-
-.void-rt-cover {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    object-position: top center;
-}
-
-.void-rt-mark {
-    display: none !important;
-}
-
-.void-rt-page {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 8px;
-    overflow: hidden;
-    padding: 8px 12px 12px;
-    background: hsl(var(--surface-l1));
-    color: hsl(var(--fg-primary));
-    font-family: inherit;
-}
-
-.void-rt-page-line {
-    display: -webkit-box;
-    align-self: flex-start;
-    width: fit-content;
-    max-width: 94%;
-    overflow: hidden;
-    color: hsl(var(--fg-secondary));
-    font-size: 11px;
-    font-weight: 400;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-    /* stylelint-disable-next-line property-no-vendor-prefix */
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-}
-
-.void-rt-page-line-user,
-.void-rt-page-line[data-role="user"] {
-    align-self: flex-end;
-    width: fit-content;
-    max-width: 78%;
-    padding: 6px 8px;
-    border-radius: 12px 12px 4px;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-primary));
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-}
-
-.void-rt-page-line[data-role="assistant"] {
-    align-self: flex-start;
-    padding: 0;
-    border-radius: 0;
-    background: none;
-    color: hsl(var(--fg-secondary));
-}
-
-.void-rt-fallback {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.void-rt-favicon {
-    width: 38px;
-    height: 38px;
-    border-radius: var(--void-rt-radius-icon);
-    object-fit: cover;
-    display: block;
-}
-
-.void-rt-favicon[data-broken="true"],
-.void-rt-title-favicon[data-broken="true"] {
-    visibility: hidden;
-}
-
-.void-rt-meta {
-    min-width: 0;
-    display: grid;
-    gap: 4px;
-    padding: 0 var(--void-rt-meta-inline-padding);
-}
-
-.void-rt-name-row {
-    min-width: 0;
-}
-
-.void-rt-title-favicon {
-    display: none;
-}
-
-.void-rt-name {
-    min-width: 0;
-    display: block;
-    overflow: hidden;
-    color: hsl(var(--fg-primary));
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.16;
-    letter-spacing: inherit;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.void-rt-host {
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    overflow: hidden;
-    color: hsl(var(--fg-secondary));
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.18;
-}
-
-.void-rt-folder {
-    width: 12px;
-    height: 12px;
-    flex: 0 0 12px;
-    display: block;
-}
-
-.void-rt-host-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.void-rt-empty {
-    min-width: min(22rem, calc(100vw - 3rem));
-    padding: 16px 20px;
-    color: hsl(var(--fg-primary));
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.4;
-}
-
-.void-rt-panel[data-theme="dark"] {
-    color-scheme: dark;
-}
-`);
-
-  // src/plugins/recentTopics/index.tsx
-  var logger21 = new Logger("RecentTopics");
-  var cl19 = classNameFactory("void-rt-");
-  var HOME_KEY = "home";
-  var HOME_SEP = "home:";
-  var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
-  var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
-  var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
-  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation|see all(?: chats| conversations)?|show all(?: chats| conversations)?|view all(?: chats| conversations)?|all chats|all conversations|查看全部|显示全部|查看所有|全部会话|所有对话)$/i;
-  var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
-  var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
-  var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
-  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
-  var settings10 = definePluginSettings({
-    maxRecent: {
-      type: 4 /* SELECT */,
-      description: "How many recently opened conversations to show.",
-      options: COUNT_OPTIONS
-    },
-    includeHome: {
-      type: 3 /* BOOLEAN */,
-      description: "Include new-chat home pages in the switcher.",
-      default: true
-    }
-  }).withPrivateSettings();
-  var thumbs = new Map;
-  var wsNames = {};
-  var open2 = false;
-  var selected = 0;
-  var held = false;
-  var ctrlHeld = false;
-  var keys = null;
-  var host = null;
-  var paintedKey = "";
-  var sidebarSnap = null;
-  var pendingWs = new Set;
-  function isSkipLabel(name) {
-    const t = name.replaceAll(/\s+/g, " ").trim();
-    if (!t)
-      return false;
-    SKIP_LABEL.lastIndex = 0;
-    return SKIP_LABEL.test(t);
-  }
-  function usableName(name) {
-    const t = name.replaceAll(/\s+/g, " ").trim();
-    return t && !isSkipLabel(t) ? t : "";
-  }
-  function unique(ids) {
-    const seen = new Set;
-    const out = [];
-    for (const id of ids) {
-      if (seen.has(id))
-        continue;
-      seen.add(id);
-      out.push(id);
-    }
-    return out;
-  }
-  function readVisits() {
-    return settings10.plain.visits ?? [];
-  }
-  function maxCount() {
-    const n = Number(settings10.store.maxRecent);
-    return Number.isFinite(n) && n > 0 ? n : 5;
-  }
-  function capVisits(ids) {
-    const allowHome = settings10.store.includeHome;
-    return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
-  }
-  function pruneRecord(source, ids) {
-    const keep = {};
-    if (!source)
-      return keep;
-    for (const id of ids) {
-      if (source[id])
-        keep[id] = source[id];
-    }
-    return keep;
-  }
-  function sameList(a, b) {
-    return a.length === b.length && a.every((id, i) => id === b[i]);
-  }
-  function sameRecord(a, b) {
-    const src = a ?? {};
-    const keys2 = Object.keys(b);
-    if (Object.keys(src).length !== keys2.length)
-      return false;
-    return keys2.every((k) => src[k] === b[k]);
-  }
-  function assignRecord(key, next) {
-    if (sameRecord(settings10.plain[key], next))
-      return false;
-    settings10.store[key] = next;
-    return true;
-  }
-  var writing = false;
-  function writeVisits(next) {
-    if (writing)
-      return;
-    writing = true;
-    try {
-      const visits = capVisits(next);
-      const rawWs = pruneRecord(settings10.plain.workspaceByConv, visits);
-      const workspaceByConv = {};
-      for (const [id, value] of Object.entries(rawWs)) {
-        const ws = asWorkspaceId(value);
-        if (ws)
-          workspaceByConv[id] = ws;
-      }
-      const pages = pruneRecord(settings10.plain.pages, visits);
-      const usedWs = new Set(Object.values(workspaceByConv));
-      for (const id of visits) {
-        const ws = workspaceFromHomeId(id);
-        if (!ws)
-          continue;
-        usedWs.add(ws);
-        workspaceByConv[id] = ws;
-      }
-      const keepProjects = {};
-      for (const [id, name] of Object.entries(settings10.plain.projectNames ?? {})) {
-        const n = usableName(name);
-        if (usedWs.has(id) && n)
-          keepProjects[id] = n;
-      }
-      let changed = false;
-      if (!sameList(readVisits(), visits)) {
-        settings10.store.visits = visits;
-        changed = true;
-      }
-      if (assignRecord("titles", pruneRecord(settings10.plain.titles, visits)))
-        changed = true;
-      if (assignRecord("workspaceByConv", workspaceByConv))
-        changed = true;
-      if (assignRecord("pages", pages))
-        changed = true;
-      if (assignRecord("projectNames", keepProjects))
-        changed = true;
-      if (changed && open2)
-        paint();
-    } finally {
-      writing = false;
-    }
-  }
-  function rememberTitle(id, title) {
-    const t = title?.trim();
-    if (!id || isHomeId(id) || !t)
-      return;
-    const prev = settings10.plain.titles ?? {};
-    if (prev[id] === t)
-      return;
-    settings10.store.titles = { ...prev, [id]: t };
-  }
-  function isHomeId(id) {
-    return id === HOME_KEY || id.startsWith(HOME_SEP);
-  }
-  function homeId(workspaceId) {
-    const ws = asWorkspaceId(workspaceId);
-    return ws ? HOME_SEP + ws : HOME_KEY;
-  }
-  function workspaceFromHomeId(id) {
-    return id.startsWith(HOME_SEP) ? asWorkspaceId(id.slice(HOME_SEP.length)) : "";
-  }
-  function routeConvId(route) {
-    if (!route)
-      return null;
-    if (route.conversationId)
-      return route.conversationId;
-    if (typeof route.chat === "string" && route.chat)
-      return route.chat;
-    if (route.page === "main")
-      return HOME_KEY;
-    if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
-      return homeId(route.workspaceId);
-    return null;
-  }
-  function projectIdFromUrl() {
-    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
-    return m?.[1] ?? "";
-  }
-  function chatIdFromUrl() {
-    try {
-      const u = new URL(location.href);
-      const q = u.searchParams.get("chat");
-      if (q)
-        return q;
-      return u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] ?? "";
-    } catch {
-      return "";
-    }
-  }
-  var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
-  function asWorkspaceId(value) {
-    if (typeof value === "string") {
-      const s = value.trim();
-      return WS_ID.test(s) ? s : "";
-    }
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        const id = asWorkspaceId(item);
-        if (id)
-          return id;
-      }
-      return "";
-    }
-    if (value && typeof value === "object") {
-      const rec = value;
-      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
-    }
-    return "";
-  }
-  function hrefFor(id, workspaceId) {
-    if (isHomeId(id)) {
-      const ws2 = workspaceFromHomeId(id) || asWorkspaceId(workspaceId);
-      return ws2 ? `/project/${ws2}` : "/";
-    }
-    const ws = asWorkspaceId(workspaceId);
-    if (!id)
-      return ws ? `/project/${ws}` : "/";
-    if (ws)
-      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
-    return `/c/${encodeURIComponent(id)}`;
-  }
-  function hrefParts(href) {
-    if (!href)
-      return { ws: "", chat: "" };
-    try {
-      const u = new URL(href, location.origin);
-      const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
-      const chat = u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
-      return { ws, chat };
-    } catch {
-      return { ws: "", chat: "" };
-    }
-  }
-  function currentVisit() {
-    const urlChat = chatIdFromUrl();
-    if (urlChat)
-      return urlChat;
-    try {
-      const { conversationId, optimisticConversationId } = ChatPageStore.useChatPageStore.getState();
-      if (conversationId)
-        return conversationId;
-      if (optimisticConversationId)
-        return optimisticConversationId;
-    } catch (e) {
-      logger21.debug("ChatPageStore unavailable:", e);
-    }
-    try {
-      const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
-      if (fromRoute != null)
-        return fromRoute;
-    } catch (e) {
-      logger21.debug("RoutingStore unavailable:", e);
-    }
-    const ws = projectIdFromUrl();
-    return ws ? homeId(ws) : null;
-  }
-  function idsFromHistory() {
-    try {
-      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      const ids = [];
-      const add = (r) => {
-        const id = routeConvId(r);
-        if (id != null)
-          ids.push(id);
-      };
-      add(route);
-      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
-        add(historyStack[i]);
-      return unique(ids);
-    } catch (e) {
-      logger21.debug("historyStack unavailable:", e);
-      return [];
-    }
-  }
-  function pageTitle() {
-    const raw = document.title.replace(TITLE_TAIL, "").trim();
-    if (!raw || /^grok$/i.test(raw))
-      return "";
-    return raw;
-  }
-  function lookup(id) {
-    try {
-      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
-    } catch (e) {
-      logger21.debug("Conversation lookup failed:", e);
-      return;
-    }
-  }
-  function titleOf(id) {
-    if (!id || isHomeId(id))
-      return "New chat";
-    const conv = lookup(id);
-    if (conv?.title?.trim())
-      return conv.title.trim();
-    const cached = settings10.plain.titles?.[id];
-    if (cached)
-      return cached;
-    if (id === currentVisit())
-      return pageTitle() || "Untitled";
-    return "Untitled";
-  }
-  function liveWorkspaceId() {
-    try {
-      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
-      if (pid)
-        return pid;
-    } catch {}
-    try {
-      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
-      const id = asWorkspaceId(workspaceId);
-      if (id)
-        return id;
-    } catch {}
-    return asWorkspaceId(projectIdFromUrl());
-  }
-  function workspaceFromHistory(id) {
-    try {
-      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      if (routeConvId(route) === id) {
-        const ws = asWorkspaceId(route.workspaceId);
-        if (ws)
-          return ws;
-      }
-      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
-        const r = historyStack[i];
-        if (routeConvId(r) === id) {
-          const ws = asWorkspaceId(r?.workspaceId);
-          if (ws)
-            return ws;
-        }
-      }
-    } catch {}
-    return "";
-  }
-  function convWorkspaceId(id) {
-    try {
-      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
-      const fromResolver = asWorkspaceId(resolved);
-      if (fromResolver)
-        return fromResolver;
-      const conv = byId[id] ?? byIdWithWorkspaces[id];
-      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-    } catch (e) {
-      logger21.debug("convWorkspaceId failed:", e);
-      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
-    }
-  }
-  function workspaceFromDom(id) {
-    if (!id)
-      return "";
-    try {
-      for (const a of document.querySelectorAll("a[href]")) {
-        const href = a.getAttribute("href");
-        if (!href || !href.includes(id))
-          continue;
-        const { ws, chat } = hrefParts(href);
-        if (chat === id && ws)
-          return ws;
-      }
-    } catch {}
-    return "";
-  }
-  function shortOwnText(el) {
-    const parts = [];
-    for (const n of el.childNodes) {
-      if (n.nodeType === Node.TEXT_NODE) {
-        parts.push(n.textContent ?? "");
-        continue;
-      }
-      if (!(n instanceof HTMLElement))
-        continue;
-      if (n.matches("svg, a[href]"))
-        continue;
-      const nestedHref = n.getAttribute("href") ?? "";
-      if (nestedHref.includes("chat=") || nestedHref.includes("/c/"))
-        continue;
-      if (n.querySelector("a[href*='chat='], a[href*='/c/']"))
-        continue;
-      const t = (n.textContent ?? "").replaceAll(/\s+/g, " ").trim();
-      if (t.length > 0 && t.length <= 64)
-        parts.push(t);
-    }
-    const out = parts.join(" ").replaceAll(/\s+/g, " ").trim();
-    return out.length >= 2 && out.length <= 64 ? out : "";
-  }
-  function folderLabel(el) {
-    if (!el.querySelector("svg"))
-      return "";
-    return usableName(shortOwnText(el));
-  }
-  function projectNameFromAncestors(el) {
-    const sidebar = el.closest("[data-sidebar=sidebar]");
-    let cur = el.parentElement;
-    while (cur && cur !== sidebar) {
-      let sib = cur;
-      while (sib) {
-        const name = folderLabel(sib);
-        if (name)
-          return name;
-        sib = sib.previousElementSibling;
-      }
-      cur = cur.parentElement;
-    }
-    return "";
-  }
-  function invalidateSidebar() {
-    sidebarSnap = null;
-  }
-  function sidebarIndex() {
-    const empty = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
-    const sidebar = document.querySelector("[data-sidebar=sidebar]");
-    if (!sidebar)
-      return empty;
-    const key = `${sidebar.childElementCount}:${(sidebar.textContent ?? "").length}`;
-    if (sidebarSnap?.key === key)
-      return sidebarSnap.index;
-    const index = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
-    let currentName = "";
-    const assignConv = (chat, ws, name) => {
-      if (!chat || !ws)
-        return;
-      index.wsByConv[chat] = ws;
-      const label = usableName(name || currentName || index.nameByWs[ws] || "");
-      if (label) {
-        index.nameByWs[ws] = label;
-        index.nameByConv[chat] = label;
-      }
-    };
-    for (const el of sidebar.querySelectorAll("a[href], button, [role='button']")) {
-      const { ws, chat } = hrefParts(el.getAttribute("href"));
-      if (chat) {
-        assignConv(chat, ws, currentName);
-        if (ws && !index.nameByConv[chat]) {
-          const up = usableName(projectNameFromAncestors(el));
-          if (up) {
-            index.nameByConv[chat] = up;
-            index.nameByWs[ws] ??= up;
-            currentName ||= up;
-          }
-        }
-        continue;
-      }
-      const label = shortOwnText(el) || folderLabel(el);
-      if (isSkipLabel(label) && !ws) {
-        currentName = "";
-        continue;
-      }
-      if (ws) {
-        const n = usableName(label);
-        if (n) {
-          currentName = n;
-          index.nameByWs[ws] = n;
-        } else if (isSkipLabel(label)) {
-          currentName = index.nameByWs[ws] || "";
-        }
-        continue;
-      }
-      const folder = folderLabel(el);
-      if (folder)
-        currentName = folder;
-    }
-    sidebarSnap = { key, index };
-    return index;
-  }
-  function workspaceFetchedEmpty(id) {
-    try {
-      const { byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-      return !!byIdWithWorkspaces[id] && !convWorkspaceId(id);
-    } catch {
-      return false;
-    }
-  }
-  function routeWorkspaceFor(id) {
-    if (id === chatIdFromUrl())
-      return asWorkspaceId(projectIdFromUrl());
-    try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      const chat = route.conversationId || (typeof route.chat === "string" ? route.chat : "");
-      if (chat === id)
-        return asWorkspaceId(route.workspaceId);
-    } catch {}
-    return "";
-  }
-  function dropWorkspace(id) {
-    const prev = settings10.plain.workspaceByConv ?? {};
-    if (!prev[id])
-      return;
-    const next = { ...prev };
-    delete next[id];
-    settings10.store.workspaceByConv = next;
-  }
-  function workspaceOf(id) {
-    if (!id)
-      return "";
-    if (isHomeId(id)) {
-      const fromKey = workspaceFromHomeId(id);
-      if (fromKey)
-        return fromKey;
-      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings10.plain.workspaceByConv?.[id]);
-    }
-    const fromConv = convWorkspaceId(id);
-    if (fromConv)
-      return fromConv;
-    if (workspaceFetchedEmpty(id))
-      return "";
-    const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
-    if (fromSidebar)
-      return fromSidebar;
-    const cached = asWorkspaceId(settings10.plain.workspaceByConv?.[id]);
-    if (cached)
-      return cached;
-    const fromHist = workspaceFromHistory(id);
-    if (fromHist)
-      return fromHist;
-    if (id === currentVisit())
-      return routeWorkspaceFor(id);
-    return "";
-  }
-  function readOpenProjectName() {
-    const idx = sidebarIndex();
-    const live = liveWorkspaceId();
-    if (live) {
-      const n = usableName(idx.nameByWs[live]);
-      if (n)
-        return n;
-    }
-    const current = currentVisit();
-    const ws = current ? workspaceOf(current) : "";
-    if (!current || !ws)
-      return "";
-    return usableName(idx.nameByConv[current] || idx.nameByWs[ws]);
-  }
-  function projectNameOf(id) {
-    if (!id)
-      return "";
-    const ws = workspaceOf(id);
-    if (!ws)
-      return "";
-    const idx = sidebarIndex();
-    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings10.plain.projectNames?.[ws] || "");
-    if (!named)
-      return "";
-    const live = liveWorkspaceId();
-    const liveName = readOpenProjectName();
-    if (live && ws !== live && liveName && named === liveName)
-      return "";
-    return named;
-  }
-  function rememberProject(id) {
-    if (!id)
-      return;
-    const ws = workspaceOf(id);
-    if (!ws)
-      return;
-    const prevWs = settings10.plain.workspaceByConv ?? {};
-    if (prevWs[id] !== ws)
-      settings10.store.workspaceByConv = { ...prevWs, [id]: ws };
-    const idx = sidebarIndex();
-    const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
-    const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
-    const name = usableName(sidebarName || wsNames[ws] || liveName || settings10.plain.projectNames?.[ws] || "");
-    if (!name)
-      return;
-    wsNames[ws] = name;
-    const prevNames = settings10.plain.projectNames ?? {};
-    if (prevNames[ws] !== name)
-      settings10.store.projectNames = { ...prevNames, [ws]: name };
-  }
-  function reconcileSidebarCache() {
-    const idx = sidebarIndex();
-    const prevWs = { ...settings10.plain.workspaceByConv };
-    const prevNames = { ...settings10.plain.projectNames };
-    let wsChanged = false;
-    let namesChanged = false;
-    for (const [conv, ws] of Object.entries(idx.wsByConv)) {
-      if (prevWs[conv] !== ws) {
-        prevWs[conv] = ws;
-        wsChanged = true;
-      }
-    }
-    for (const [ws, name] of Object.entries(idx.nameByWs)) {
-      const n = usableName(name);
-      if (!n)
-        continue;
-      wsNames[ws] = n;
-      if (prevNames[ws] !== n) {
-        prevNames[ws] = n;
-        namesChanged = true;
-      }
-    }
-    for (const [ws, name] of Object.entries(prevNames)) {
-      if (usableName(name))
-        continue;
-      delete prevNames[ws];
-      delete wsNames[ws];
-      namesChanged = true;
-    }
-    if (wsChanged)
-      settings10.store.workspaceByConv = prevWs;
-    if (namesChanged)
-      settings10.store.projectNames = prevNames;
-  }
-  function requestWorkspace(id) {
-    if (!id || isHomeId(id) || pendingWs.has(id))
-      return;
-    if (convWorkspaceId(id))
-      return;
-    if (workspaceFetchedEmpty(id)) {
-      dropWorkspace(id);
-      return;
-    }
-    if (sidebarIndex().wsByConv[id])
-      return;
-    pendingWs.add(id);
-    try {
-      const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-      const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-      if (!fetchConv) {
-        pendingWs.delete(id);
-        return;
-      }
-      fetchConv(id).then((conv) => {
-        const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-        if (!ws) {
-          dropWorkspace(id);
-          if (open2)
-            paint();
-          return;
-        }
-        const prev = settings10.plain.workspaceByConv ?? {};
-        if (prev[id] !== ws)
-          settings10.store.workspaceByConv = { ...prev, [id]: ws };
-        const live = liveWorkspaceId();
-        const liveName = usableName(readOpenProjectName());
-        const names = settings10.plain.projectNames ?? {};
-        if (live && ws !== live && liveName && names[ws] === liveName) {
-          const next = { ...names };
-          delete next[ws];
-          settings10.store.projectNames = next;
-          delete wsNames[ws];
-        }
-        if (open2)
-          paint();
-      }).catch((e) => logger21.debug("workspace fetch failed:", e)).finally(() => {
-        pendingWs.delete(id);
-      });
-    } catch {
-      pendingWs.delete(id);
-    }
-  }
-  function chatPane() {
-    const main = document.querySelector("main");
-    if (!main)
-      return null;
-    let best = null;
-    let bestScore = 0;
-    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
-      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
-        continue;
-      const r = n.getBoundingClientRect();
-      if (r.width < 240 || r.height < 120)
-        continue;
-      const score = r.width * r.height;
-      if (score > bestScore) {
-        best = n;
-        bestScore = score;
-      }
-    }
-    return best;
-  }
-  function messageList(pane) {
-    let node = pane;
-    for (let i = 0;i < 8; i++) {
-      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
-      if (kids.length === 1 && kids[0].children.length > 1) {
-        node = kids[0];
-        continue;
-      }
-      break;
-    }
-    return node;
-  }
-  function chromeOff(el) {
-    const clone = el.cloneNode(true);
-    clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach((n) => n.remove());
-    return clone;
-  }
-  function userBubble(root) {
-    const tagged = root.querySelector("[data-void-rt-role='user'], .void-rt-user-msg");
-    if (tagged)
-      return tagged;
-    const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
-    if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className))
-      cands.unshift(root);
-    if (!cands.length)
-      return null;
-    const inner = cands.filter((el) => !cands.some((other) => other !== el && el.contains(other)));
-    inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
-    return inner[0] ?? null;
-  }
-  function extractTurn(kid) {
-    const bubble = userBubble(kid);
-    const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
-    const rest = chromeOff(kid);
-    if (bubble && bubble !== kid) {
-      rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach((n) => n.remove());
-    }
-    let asstText = scrubText(rest.innerText ?? "");
-    if (userText && asstText.includes(userText))
-      asstText = scrubText(asstText.replace(userText, " "));
-    const lines = [];
-    if (userText)
-      lines.push({ role: "user", text: userText });
-    if (asstText && asstText !== userText)
-      lines.push({ role: "assistant", text: asstText });
-    return lines;
-  }
-  function extractMarks(root) {
-    const marks = [...root.querySelectorAll(".void-rt-mark")];
-    if (!marks.length)
-      return [];
-    const out = [];
-    for (const m of marks) {
-      const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
-      const text = scrubText(m.textContent ?? "");
-      if (text)
-        out.push({ role, text });
-    }
-    return lastRound(out);
-  }
-  function extractLines(pane) {
-    const fromMarks = extractMarks(pane);
-    if (fromMarks.length)
-      return fromMarks;
-    const source = messageList(pane);
-    const kids = [...source.children].filter((c) => c instanceof HTMLElement);
-    const out = [];
-    for (const kid of kids)
-      out.push(...extractTurn(kid));
-    return lastRound(out);
-  }
-  function scrubText(raw) {
-    let t = raw.replaceAll(/\s+/g, " ").trim();
-    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
-    t = t.replaceAll(/\s+/g, " ").trim();
-    if (!t || SKIP_NOISE.test(t))
-      return "";
-    return t;
-  }
-  function plainText(md) {
-    const t = md.replaceAll(/```[\s\S]*?```/g, " ").replaceAll(/`([^`]+)`/g, "$1").replaceAll(/!\[[^\]]*\]\([^)]*\)/g, " ").replaceAll(/\[([^\]]+)\]\([^)]*\)/g, "$1").replaceAll(/^#{1,6}\s+/gm, "").replaceAll(/[*_~]{1,3}/g, "").replaceAll(/^>\s+/gm, "");
-    return scrubText(t);
-  }
-  function clipLine(text, max) {
-    const t = scrubText(text);
-    if (t.length <= max)
-      return t;
-    return `${t.slice(0, Math.max(1, max - 1))}…`;
-  }
-  function lastRound(lines) {
-    const cleaned = lines.map((line) => ({ role: line.role, text: scrubText(line.text) })).filter((line) => !!line.text);
-    if (!cleaned.length)
-      return [];
-    let asst = -1;
-    let user = -1;
-    for (let i = cleaned.length - 1;i >= 0; i--) {
-      if (asst < 0 && cleaned[i].role === "assistant")
-        asst = i;
-      if (user < 0 && cleaned[i].role === "user")
-        user = i;
-      if (asst >= 0 && user >= 0)
-        break;
-    }
-    const pick = user >= 0 && asst >= 0 && user < asst ? [cleaned[user], cleaned[asst]] : user >= 0 && (asst < 0 || user > asst) ? [cleaned[user]] : asst >= 0 ? [cleaned[asst]] : cleaned.slice(-1);
-    return pick.map((line) => ({
-      role: line.role,
-      text: clipLine(line.text, line.role === "user" ? 72 : 140)
-    }));
-  }
-  function pickUserText(query, message) {
-    const q = plainText(query);
-    const m = plainText(message);
-    if (q && m) {
-      if (m.startsWith(q) && m.length > q.length)
-        return q;
-      return q.length <= m.length ? q : m;
-    }
-    return q || m;
-  }
-  function walkThread(startId) {
-    if (!startId)
-      return [];
-    try {
-      const { byId } = ResponseStore.useResponseStore.getState();
-      const out = [];
-      const seen = new Set;
-      let id = startId;
-      while (id && !seen.has(id) && out.length < 50) {
-        seen.add(id);
-        const r = byId[id];
-        if (!r)
-          break;
-        out.unshift(r);
-        id = r.parentResponseId;
-      }
-      return out;
-    } catch {
-      return [];
-    }
-  }
-  function responsesOf(id) {
-    const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-    const nodes = nodesByConversationId[id] ?? [];
-    if (nodes.length) {
-      const list = nodes.map((n) => byId[n.responseId]).filter((r) => !!r);
-      if (list.length)
-        return list;
-      const walked = walkThread(nodes.at(-1)?.responseId);
-      if (walked.length)
-        return walked;
-    }
-    const cached = byConversationId[id];
-    if (cached?.length)
-      return [...cached].toSorted((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
-    try {
-      const chat = ChatPageStore.useChatPageStore.getState();
-      if (chat.conversationId === id) {
-        return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
-      }
-    } catch {}
-    return [];
-  }
-  function responsesToLines(list) {
-    const out = [];
-    for (const r of list) {
-      if (!r || r.isControl)
-        continue;
-      const sender2 = String(r.sender ?? "").toLowerCase();
-      const human = sender2 === "human" || sender2 === "user";
-      if (human) {
-        const text = pickUserText(r.query || "", r.message || "");
-        if (text)
-          out.push({ role: "user", text });
-        continue;
-      }
-      const query = pickUserText(r.query || "", "");
-      let message = plainText(r.message || "");
-      if (query && message.startsWith(query) && message.length > query.length) {
-        message = scrubText(message.slice(query.length));
-      }
-      if (query && out.at(-1)?.text !== query)
-        out.push({ role: "user", text: query });
-      if (message && message !== query)
-        out.push({ role: "assistant", text: message });
-    }
-    return lastRound(out);
-  }
-  function linesFromStore(id) {
-    if (!id)
-      return [];
-    try {
-      return responsesToLines(responsesOf(id));
-    } catch (e) {
-      logger21.debug("ResponseStore snapshot failed:", e);
-      return [];
-    }
-  }
-  function betterLines(store2, dom) {
-    const pair = (lines) => lines.some((l) => l.role === "user") && lines.some((l) => l.role === "assistant");
-    if (pair(store2))
-      return store2;
-    if (pair(dom))
-      return dom;
-    return store2.length ? store2 : dom;
-  }
-  function parseSnap(raw) {
-    if (!raw)
-      return null;
-    try {
-      const parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
-        return null;
-      return {
-        title: typeof parsed.title === "string" ? parsed.title : "",
-        theme: parsed.theme === "light" ? "light" : "dark",
-        lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"))
-      };
-    } catch {
-      return null;
-    }
-  }
-  function snapOf(id) {
-    return thumbs.get(id) ?? parseSnap(settings10.plain.pages?.[id]);
-  }
-  function rememberPage(id, snap) {
-    const json = JSON.stringify(snap);
-    const prev = settings10.plain.pages ?? {};
-    if (prev[id] === json)
-      return;
-    settings10.store.pages = { ...prev, [id]: json };
-  }
-  function applyLineStyle(el, role) {
-    el.style.display = "-webkit-box";
-    el.style.webkitBoxOrient = "vertical";
-    el.style.overflow = "hidden";
-    el.style.width = "fit-content";
-    el.style.overflowWrap = "anywhere";
-    el.style.fontSize = "11px";
-    el.style.lineHeight = "1.35";
-    if (role === "user") {
-      el.style.alignSelf = "flex-end";
-      el.style.maxWidth = "78%";
-      el.style.padding = "6px 9px";
-      el.style.borderRadius = "14px 14px 4px 14px";
-      el.style.webkitLineClamp = "2";
-    } else {
-      el.style.alignSelf = "flex-start";
-      el.style.maxWidth = "94%";
-      el.style.padding = "0";
-      el.style.webkitLineClamp = "4";
-    }
-  }
-  function buildPageShot(snap) {
-    const page = node("span", cl19("page"));
-    page.dataset.theme = snap.theme;
-    for (const line of lastRound(snap.lines)) {
-      const el = node("span", cl19("page-line", line.role === "user" && "page-line-user"), line.text);
-      el.dataset.role = line.role;
-      applyLineStyle(el, line.role);
-      page.append(el);
-    }
-    return page;
-  }
-  function captureId(id) {
-    if (!id)
-      return;
-    const fromStore = linesFromStore(id);
-    let fromDom = [];
-    if (id === currentVisit()) {
-      const pane = chatPane();
-      if (pane)
-        fromDom = extractLines(pane);
-    }
-    const lines = betterLines(fromStore, fromDom);
-    if (!lines.length)
-      return;
-    const snap = {
-      title: titleOf(id),
-      theme: detectTheme(),
-      lines: lastRound(lines)
-    };
-    thumbs.set(id, snap);
-    rememberPage(id, snap);
-  }
-  var capturing = false;
-  function captureCurrent() {
-    if (capturing || open2)
-      return;
-    capturing = true;
-    try {
-      const current = currentVisit();
-      if (current)
-        captureId(current);
-      for (const id of capVisits(readVisits())) {
-        if (id && id !== current)
-          captureId(id);
-      }
-    } catch (e) {
-      logger21.debug("snapshot failed:", e);
-    } finally {
-      capturing = false;
-    }
-  }
-  function scheduleCapture() {
-    if (open2)
-      return;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!open2)
-          captureCurrent();
-      });
-    });
-  }
-  function bump(id) {
-    if (!id)
-      return;
-    if (isHomeId(id) && !settings10.store.includeHome)
-      return;
-    writeVisits(capVisits([id, ...readVisits()]));
-    if (isHomeId(id)) {
-      if (shouldRememberProject(id))
-        rememberProject(id);
-      return;
-    }
-    const conv = lookup(id);
-    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-    if (shouldRememberProject(id))
-      rememberProject(id);
-  }
-  function shouldRememberProject(id) {
-    if (!id || workspaceFetchedEmpty(id))
-      return false;
-    return !!workspaceOf(id);
-  }
-  function hydrate() {
-    invalidateSidebar();
-    const current = currentVisit();
-    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
-    writeVisits(capVisits(merged));
-    reconcileSidebarCache();
-    if (current) {
-      rememberTitle(current, lookup(current)?.title || pageTitle());
-      if (shouldRememberProject(current))
-        rememberProject(current);
-    }
-    for (const id of capVisits(readVisits())) {
-      if (id)
-        requestWorkspace(id);
-    }
-  }
-  function topics() {
-    return capVisits(readVisits()).map((id) => ({
-      id,
-      title: titleOf(id),
-      project: projectNameOf(id)
-    }));
-  }
-  function parseHref(href) {
-    try {
-      const u = new URL(href, location.origin);
-      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
-      if (parsed?.page && parsed.page !== "unknown")
-        return parsed;
-    } catch (e) {
-      logger21.debug("urlToRoute failed:", e);
-    }
-    return null;
-  }
-  function applyChatPage(id, workspaceId) {
-    try {
-      const chat = ChatPageStore.useChatPageStore.getState();
-      chat.setConversationId(id || undefined);
-      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
-    } catch (e) {
-      logger21.debug("ChatPageStore update failed:", e);
-    }
-  }
-  function navigateTo(id) {
-    try {
-      const routing = RoutingStore.useRoutingStore.getState();
-      const { route } = routing;
-      const teamId = route.teamId ?? null;
-      if (isHomeId(id) || !id) {
-        const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceOf(id));
-        const hereWs = asWorkspaceId(route.workspaceId) || projectIdFromUrl();
-        const hereChat = route.conversationId || chatIdFromUrl();
-        if (!ws) {
-          if (!hereChat && (route.page === "main" || !hereWs))
-            return;
-          routing.push({ page: "main", teamId });
-          applyChatPage("");
-          return;
-        }
-        if (!hereChat && hereWs === ws)
-          return;
-        routing.push({ page: "workspace", workspaceId: ws, tab: "conversations", teamId });
-        applyChatPage("", ws);
-        return;
-      }
-      const workspaceId = workspaceOf(id);
-      const href = hrefFor(id, workspaceId);
-      const parsed = parseHref(href);
-      const dest = workspaceId ? {
-        page: "workspace",
-        workspaceId,
-        tab: "conversations",
-        conversationId: id,
-        teamId
-      } : {
-        page: "chat",
-        conversationId: id,
-        temporary: lookup(id)?.temporary ?? false,
-        teamId
-      };
-      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
-        dest.page = "workspace";
-        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
-        dest.conversationId = parsed.conversationId || id;
-        dest.tab = parsed.tab || "conversations";
-        if (parsed.filePath)
-          dest.filePath = parsed.filePath;
-      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
-        dest.page = "chat";
-        dest.conversationId = parsed.conversationId;
-        dest.temporary = parsed.temporary ?? dest.temporary;
-      }
-      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
-        dest.page = "chat";
-        dest.conversationId = id;
-        delete dest.workspaceId;
-        delete dest.tab;
-      }
-      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
-        return;
-      routing.push(dest);
-      applyChatPage(id, asWorkspaceId(dest.workspaceId));
-      if (dest.page !== "workspace") {
-        try {
-          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-          fetchConv?.(id).then((conv) => {
-            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
-            if (!ws)
-              return;
-            const now = RoutingStore.useRoutingStore.getState();
-            if (routeConvId(now.route) !== id)
-              return;
-            now.replace({
-              page: "workspace",
-              workspaceId: ws,
-              tab: "conversations",
-              conversationId: id,
-              teamId
-            });
-            applyChatPage(id, ws);
-            rememberProject(id);
-          }).catch((e) => logger21.debug("workspace resolve failed:", e));
-        } catch (e) {
-          logger21.debug("workspace fetch skipped:", e);
-        }
-      }
-    } catch (e) {
-      logger21.error("Failed to navigate:", e);
-      try {
-        location.assign(hrefFor(id, workspaceOf(id) || undefined));
-      } catch (navErr) {
-        logger21.error("Fallback navigation failed:", navErr);
-      }
-    }
-  }
-  function isTrigger(e) {
-    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
-      return true;
-    return TRIGGER_KEYS.has(e.key);
-  }
-  function isCtrlKey(e) {
-    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
-  }
-  function begin(reverse, fromHold) {
-    held = fromHold;
-    open2 = false;
-    captureCurrent();
-    open2 = true;
-    selected = 0;
-    try {
-      hydrate();
-      const current = currentVisit();
-      if (current != null)
-        bump(current);
-      if (topics().length > 1)
-        selected = reverse ? topics().length - 1 : 1;
-    } catch (e) {
-      logger21.error("Failed to open switcher:", e);
-    }
-    paint();
-  }
-  function cycle(reverse) {
-    const { length } = topics();
-    if (!length)
-      return;
-    selected = (selected + (reverse ? -1 : 1) + length) % length;
-    paint();
-  }
-  function commit() {
-    if (!open2)
-      return;
-    const target = topics()[selected];
-    open2 = false;
-    held = false;
-    paint();
-    if (target)
-      navigateTo(target.id);
-  }
-  function cancel() {
-    if (!open2)
-      return;
-    open2 = false;
-    held = false;
-    paint();
-  }
-  function onKeyDown(e) {
-    if (isCtrlKey(e)) {
-      ctrlHeld = true;
-      return;
-    }
-    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
-    if (combo) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      try {
-        if (open2)
-          cycle(e.shiftKey);
-        else
-          begin(e.shiftKey, true);
-      } catch (err) {
-        logger21.error("Hotkey failed:", err);
-      }
-      return;
-    }
-    if (!open2)
-      return;
-    if (e.key === "Escape") {
-      e.preventDefault();
-      cancel();
-      return;
-    }
-    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
-      e.preventDefault();
-      cycle(e.shiftKey);
-    }
-  }
-  function onKeyUp(e) {
-    if (!isCtrlKey(e))
-      return;
-    ctrlHeld = false;
-    if (open2 && held)
-      commit();
-  }
-  function onBeforeInput(e) {
-    if (!ctrlHeld && !open2)
-      return;
-    const { data } = e;
-    if (data && TRIGGER_KEYS.has(data))
-      e.preventDefault();
-  }
-  function onWindowBlur() {
-    ctrlHeld = false;
-  }
-  function onVisibility() {
-    if (document.hidden) {
-      ctrlHeld = false;
-      cancel();
-    }
-  }
-  function pick(index) {
-    selected = index;
-    commit();
-  }
-  function node(tag, className, text) {
-    const el = document.createElement(tag);
-    if (className)
-      el.className = className;
-    if (text)
-      el.textContent = text;
-    return el;
-  }
-  function fillShot(box, id) {
-    const snap = snapOf(id);
-    if (!snap) {
-      const fallback = node("span", cl19("fallback"));
-      fallback.append(faviconImg(cl19("favicon")));
-      box.append(fallback);
-      return;
-    }
-    const shot = node("span", cl19("shot"));
-    shot.append(buildPageShot(snap));
-    box.append(shot);
-  }
-  var GROK_BG_PATH2 = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
-  var GROK_MARK_P12 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
-  var GROK_MARK_P22 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
-  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH2}" fill="#050505"/><path d="${GROK_MARK_P12}" fill="#FCFCFC"/><path d="${GROK_MARK_P22}" fill="#FCFCFC"/></svg>`)}`;
-  function accentOf() {
-    return "hsl(var(--fg-primary))";
-  }
-  function detectTheme() {
-    const html = document.documentElement;
-    const { body } = document;
-    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
-    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
-      return "dark";
-    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
-      return "light";
-    try {
-      const bg = getComputedStyle(body || html).backgroundColor;
-      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
-      if (m) {
-        const r = Number(m[1]) / 255;
-        const g = Number(m[2]) / 255;
-        const b = Number(m[3]) / 255;
-        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-        return lum < 0.42 ? "dark" : "light";
-      }
-    } catch {}
-    const scheme = getComputedStyle(html).colorScheme;
-    if (scheme.includes("light") && !scheme.includes("dark"))
-      return "light";
-    return "dark";
-  }
-  function grokFaviconSrc() {
-    try {
-      if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
-        const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
-        const href = link?.href;
-        if (href && !href.startsWith("data:"))
-          return href;
-        return `${location.origin}/images/favicon.svg`;
-      }
-    } catch {}
-    return GROK_ICON_DATA;
-  }
-  function faviconImg(className) {
-    const img = document.createElement("img");
-    img.className = className;
-    img.alt = "";
-    img.draggable = false;
-    img.src = grokFaviconSrc();
-    img.addEventListener("error", () => {
-      if (img.src === GROK_ICON_DATA) {
-        img.dataset.broken = "true";
-        return;
-      }
-      img.src = GROK_ICON_DATA;
-    });
-    return img;
-  }
-  function folderIcon() {
-    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg2.setAttribute("class", cl19("folder"));
-    svg2.setAttribute("viewBox", "0 0 24 24");
-    svg2.setAttribute("fill", "none");
-    svg2.setAttribute("stroke", "currentColor");
-    svg2.setAttribute("stroke-width", "2");
-    svg2.setAttribute("stroke-linecap", "round");
-    svg2.setAttribute("stroke-linejoin", "round");
-    svg2.setAttribute("aria-hidden", "true");
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
-    svg2.append(path);
-    return svg2;
-  }
-  function applyTheme(panel) {
-    const theme = detectTheme();
-    panel.setAttribute("data-theme", theme);
-    panel.style.colorScheme = theme;
-  }
-  function buildHost() {
-    const root = node("div", cl19("root"));
-    root.id = "void-rt-host";
-    root.setAttribute("role", "presentation");
-    root.addEventListener("click", cancel);
-    const panel = node("div", cl19("panel"));
-    panel.setAttribute("role", "listbox");
-    panel.setAttribute("aria-label", "Recent conversations");
-    panel.addEventListener("click", (e) => e.stopPropagation());
-    panel.append(node("div", cl19("list")));
-    root.append(panel);
-    return root;
-  }
-  function renderList(items) {
-    if (!host)
-      return;
-    const panel = host.querySelector(`.${cl19("panel")}`);
-    if (!panel)
-      return;
-    let list = panel.querySelector(`.${cl19("list")}`);
-    if (!list) {
-      panel.replaceChildren();
-      list = node("div", cl19("list"));
-      panel.append(list);
-    }
-    list.replaceChildren();
-    items.forEach((topic, i) => {
-      const btn = node("button", cl19("card"));
-      btn.type = "button";
-      btn.tabIndex = -1;
-      btn.setAttribute("role", "option");
-      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
-      btn.style.setProperty("--void-rt-card-accent", accentOf());
-      btn.addEventListener("pointerenter", () => {
-        if (selected === i)
-          return;
-        selected = i;
-        syncActive();
-      });
-      btn.addEventListener("focus", () => {
-        if (selected === i)
-          return;
-        selected = i;
-        syncActive();
-      });
-      btn.addEventListener("click", () => pick(i));
-      const shot = node("span", cl19("thumb"));
-      shot.setAttribute("aria-hidden", "true");
-      fillShot(shot, topic.id);
-      const meta = node("span", cl19("meta"));
-      meta.append(node("span", cl19("name"), topic.title));
-      if (topic.project) {
-        const proj = node("span", cl19("host"));
-        proj.append(folderIcon(), node("span", cl19("host-name"), topic.project));
-        meta.append(proj);
-      }
-      btn.append(shot, meta);
-      list.append(btn);
-    });
-  }
-  function syncActive() {
-    if (!host)
-      return;
-    const cards = host.querySelectorAll(`.${cl19("card")}`);
-    cards.forEach((card, i) => {
-      const on = i === selected;
-      card.setAttribute("data-active", on ? "true" : "false");
-      card.setAttribute("aria-selected", on ? "true" : "false");
-      card.tabIndex = on ? 0 : -1;
-      if (on)
-        card.setAttribute("aria-current", "true");
-      else
-        card.removeAttribute("aria-current");
-    });
-    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
-  }
-  function paint() {
-    document.documentElement.classList.toggle("void-rt-open", open2);
-    if (!open2) {
-      detachHost();
-      return;
-    }
-    const items = topics();
-    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
-    if (!host) {
-      host = buildHost();
-      mountOverlay(host);
-    }
-    const panel = host.querySelector(`.${cl19("panel")}`);
-    if (!panel)
-      return;
-    applyTheme(panel);
-    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
-    if (!items.length) {
-      if (paintedKey !== "__empty__") {
-        panel.replaceChildren(node("div", cl19("empty"), "Open a few chats, then hold Ctrl+` to switch."));
-        paintedKey = "__empty__";
-      }
-      requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-      return;
-    }
-    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl19("list")}`)) {
-      panel.replaceChildren(node("div", cl19("list")));
-      paintedKey = "";
-    }
-    if (paintedKey !== key) {
-      renderList(items);
-      paintedKey = key;
-    }
-    syncActive();
-    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-  }
-  function detachHost() {
-    document.documentElement.classList.remove("void-rt-open");
-    paintedKey = "";
-    if (host) {
-      try {
-        host.hidePopover();
-      } catch {}
-      host.remove();
-      host = null;
-    }
-    document.getElementById("void-rt-host")?.remove();
-    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
-      const p = el;
-      try {
-        p.hidePopover?.();
-      } catch {}
-      try {
-        p.close?.();
-      } catch {}
-      el.remove();
-    });
-  }
-  function mountOverlay(root) {
-    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
-    document.documentElement.append(root);
-    document.documentElement.classList.add("void-rt-open");
-    if (typeof root.showPopover !== "function")
-      return;
-    root.setAttribute("popover", "manual");
-    try {
-      root.showPopover();
-    } catch {
-      root.removeAttribute("popover");
-    }
-  }
-  var recentTopics_default = definePlugin({
-    name: "RecentTopics",
-    icon: LayoutGridIcon,
-    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings10,
-    managedStyle: "recentTopics",
-    _mark({ response }) {
-      try {
-        if (!response || response.isControl)
-          return null;
-        const sender2 = String(response.sender ?? "").toLowerCase();
-        const human = sender2 === "human" || sender2 === "user";
-        const text = human ? pickUserText(response.query || "", response.message || "") : plainText(response.message || "");
-        if (!text)
-          return null;
-        return React.createElement("span", {
-          className: "void-rt-mark",
-          "data-role": human ? "user" : "assistant",
-          hidden: true
-        }, text);
-      } catch {
-        return null;
-      }
-    },
-    patches: [
-      {
-        find: "response-family:handleEditSave",
-        all: true,
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._mark({response:$1}),$&"
-        }
-      }
-    ],
-    start() {
-      detachHost();
-      open2 = false;
-      held = false;
-      ctrlHeld = false;
-      try {
-        hydrate();
-        const current = currentVisit();
-        if (current != null)
-          bump(current);
-        scheduleCapture();
-      } catch (e) {
-        logger21.error("Hydrate failed:", e);
-      }
-      if (!keys) {
-        keys = new AbortController;
-        const { signal } = keys;
-        window.addEventListener("keydown", onKeyDown, { capture: true, signal });
-        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
-        window.addEventListener("blur", onWindowBlur, { signal });
-        document.addEventListener("visibilitychange", onVisibility, { signal });
-        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
-      }
-    },
-    stop() {
-      keys?.abort();
-      keys = null;
-      open2 = false;
-      held = false;
-      ctrlHeld = false;
-      thumbs.clear();
-      detachHost();
-    },
-    onSettingsChange() {
-      try {
-        writeVisits(capVisits(readVisits()));
-      } catch (e) {
-        logger21.error("Settings update failed:", e);
-      }
-    },
-    zustand: {
-      RoutingStore: {
-        selector: (s) => routeConvId(s.route),
-        handler(id) {
-          if (open2)
-            return;
-          const current = currentVisit();
-          if (current == null)
-            return;
-          if (id && isHomeId(current) && !isHomeId(id))
-            return;
-          bump(current);
-          scheduleCapture();
-        }
-      },
-      ChatPageStore: {
-        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
-        handler() {
-          if (open2)
-            return;
-          const id = currentVisit();
-          if (id == null)
-            return;
-          bump(id);
-          scheduleCapture();
-        }
-      },
-      ResponseStore: {
-        selector: (s) => {
-          const id = currentVisit();
-          if (!id || isHomeId(id))
-            return "";
-          const list = s.byConversationId[id];
-          const last = list?.[list.length - 1];
-          return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
-        },
-        handler() {
-          if (open2)
-            return;
-          scheduleCapture();
-        }
-      }
-    }
-  });
-
-  // void-css:/tmp/void-build/src/plugins/betterSidebar/styles.css
-  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
-.group.peer [data-sidebar="content"] > .grow {
-    cursor: default !important;
-}
-
-.group.peer [data-sidebar="sidebar"] + div::after {
-    background-color: transparent !important;
-}
-
-.void-sidebar-card {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    min-width: 0;
-    flex: 1;
-}
-
-.void-sidebar-card:hover {
-    background-color: hsl(var(--surface-l2));
-}
-
-.void-sidebar-card button[data-state] {
-    pointer-events: none;
-    background-color: transparent !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.void-sidebar-info {
-    min-width: 0;
-    overflow: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-sidebar-card { transition: none; }
-}
-
-.void-sidebar-name,
-.void-sidebar-plan {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    user-select: none;
-}
-
-/* stylelint-disable-next-line selector-class-pattern */
-.group\\/sidebar-menu-item:hover .void-sel-wrap {
-    display: inline-flex;
-}
-`);
-
-  // src/turbopack/common/plan.ts
-  var PLAN_NAMES = {
-    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
-    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
-    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
-    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
-  };
-  var X_SUB_NAMES = {
-    PremiumPlus: "SuperGrok",
-    Premium: "X Premium",
-    Basic: "X Basic"
-  };
-  function getPlanName(bestSubscription, xSubscriptionType) {
-    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
-  }
-
-  // src/plugins/betterSidebar/index.tsx
-  var logger22 = new Logger("BetterSidebar");
-  var cl20 = classNameFactory("void-sidebar-");
-  var settings11 = definePluginSettings({
-    clickToToggle: {
-      type: 3 /* BOOLEAN */,
-      description: "Click anywhere on the sidebar to toggle it.",
-      default: true
-    },
-    defaultCollapsed: {
-      type: 3 /* BOOLEAN */,
-      description: "Start with the sidebar collapsed on page load.",
-      default: false
-    },
-    batchSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Show checkboxes on conversations for bulk selection and deletion.",
-      default: true
-    }
-  });
-  function UserCard({ AvatarMenu }) {
-    const { open: open3 } = SidebarComponents.useSidebar();
-    const { user } = SessionStore.useSession();
-    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
-    const cardRef = useRef(null);
-    if (!open3 || !user)
-      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
-    const forward = (e, type) => {
-      if (!e.isTrusted)
-        return;
-      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
-    };
-    return /* @__PURE__ */ React.createElement("div", {
-      ref: cardRef,
-      className: cl20("card"),
-      onPointerDown: (e) => forward(e, "pointerdown"),
-      onPointerUp: (e) => forward(e, "pointerup")
-    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      justifyContent: "center",
-      gap: "0",
-      className: cl20("info")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      size: "sm",
-      weight: "medium",
-      className: cl20("name")
-    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      size: "xs",
-      color: "secondary",
-      className: cl20("plan")
-    }, getPlanName(bestSubscription, user.xSubscriptionType))));
-  }
-  var selection = createSelectionStore();
-  var CONVERSATION_PAGE = "chat";
-  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
-  async function deleteConversations(ids) {
-    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
-    if (currentConvId && ids.includes(currentConvId)) {
-      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
-    }
-    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger22.error("Failed to delete", id, e))));
-  }
-  function SelectCheckbox({ id, route }) {
-    const enabled = settings11.use(["batchSelect"]).batchSelect;
-    if (!enabled || !id || !isConversationRoute(route))
-      return null;
-    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
-      selection,
-      id
-    });
-  }
-  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
-  var betterSidebar_default = definePlugin({
-    name: "BetterSidebar",
-    icon: PanelLeftIcon,
-    description: "Various sidebar improvements.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings11,
-    managedStyle: "betterSidebar",
-    _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
-      selection,
-      noun: "conversation",
-      title: "Delete conversations",
-      onDelete: deleteConversations
-    }), null),
-    _wrapCheckbox(item, id, route) {
-      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
-    },
-    _wrapSidebarClick(onClick, id, route) {
-      return (e) => {
-        if (id && settings11.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection.toggle(id);
-          return;
-        }
-        onClick?.(e);
-      };
-    },
-    _defaultOpen() {
-      return !settings11.store.defaultCollapsed;
-    },
-    _onSidebarClick() {
-      if (!settings11.store.clickToToggle)
-        return;
-      return (e) => {
-        const target = e.target;
-        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
-          return;
-        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
-      };
-    },
-    start() {
-      selection.clear();
-    },
-    stop() {
-      selection.clear();
-    },
-    patches: [
-      {
-        find: "AvatarDropdownMenu,{expanded:",
-        replacement: {
-          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
-          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
-        }
-      },
-      {
-        find: "useSidebar must be used within a SidebarProvider",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /\{defaultOpen:(\i),open:/,
-            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
-          },
-          {
-            match: /data-sidebar":"sidebar",className:/,
-            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
-          }
-        ]
-      },
-      {
-        find: '"Editing actions","Editing actions"',
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
-            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
-          },
-          {
-            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
-            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
-          }
-        ]
-      },
-      {
-        find: '"sidebar-expand","Expand"',
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
-          replace: "$self._renderActionBar(),$&"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/cleaner/index.ts
-  var settings12 = definePluginSettings({
-    hideUpgradePlan: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade plan button in the user menu.",
-      default: true
-    },
-    hideUpsellCard: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upsell card banner.",
-      default: true
-    },
-    hideUpsellSmall: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the small SuperGrok upsell banner.",
-      default: true
-    },
-    hideModelUpsell: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade prompt in the model selector.",
-      default: true
-    },
-    hideInaccessibleModels: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide locked/inaccessible models in the model selector.",
-      default: true
-    },
-    hideNotificationBanner: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Get notified when Grok finishes answering" banner.',
-      default: true
-    },
-    hideConnectX: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
-      default: true
-    }
-  });
-  var hideComponentPatch = (name, setting, all = true) => ({
-    find: `"${name}",0,`,
-    all,
-    replacement: {
-      match: new RegExp(`"${name}",0,`),
-      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
-    }
-  });
-  var cleaner_default = definePlugin({
-    name: "Cleaner",
-    icon: BrushCleaningIcon,
-    description: "Hides upgrade nags and upsell banners.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    enabledByDefault: true,
-    settings: settings12,
-    patches: [
-      {
-        find: '"user-dropdown.upgrade","Upgrade plan"',
-        all: true,
-        replacement: {
-          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
-          replace: ",$self.settings.store.hideUpgradePlan||$1"
-        }
-      },
-      {
-        find: "UPSELL_CARD_PRIORITY)",
-        all: true,
-        replacement: {
-          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
-          replace: "$1&&!$self.settings.store.hideUpsellCard"
-        }
-      },
-      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
-      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
-      {
-        find: "connect-x-upsell-dismissed",
-        replacement: {
-          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
-          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
-        }
-      },
-      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
-      {
-        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
-            replace: "$&$self.settings.store.hideModelUpsell||"
-          },
-          {
-            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
-            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
-          }
-        ]
-      }
-    ]
-  });
-
-  // src/plugins/incognito/index.ts
-  var store2 = () => SettingsStore.useSettingsStore.getState();
-  var unsubscribe = null;
-  function enforce() {
-    if (!store2().isIncognito)
-      store2().setIsIncognito(true);
-  }
-  var incognito_default = definePlugin({
-    name: "Incognito",
-    icon: GhostFilledIcon,
-    description: "Force private chat mode for new conversations.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      enforce();
-      unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce);
-    },
-    stop() {
-      unsubscribe?.();
-      unsubscribe = null;
-      store2().setIsIncognito(false);
-    }
-  });
-
-  // src/plugins/noDictation/index.ts
-  var STYLE_NAME4 = "noDictation";
-  var REFINEMENT_MARK = "void-no-dictation-refinement";
-  var REFINEMENT_ROW = `div:has(> .${REFINEMENT_MARK})`;
-  var BUTTON_CSS = `
-button[aria-label="Dictation"]:not([role="dialog"] *),
-button[aria-label^="Dictation ("]:not([role="dialog"] *),
-div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
-div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
-    display: none !important;
-}
-`;
-  var REFINEMENT_CSS = `${REFINEMENT_ROW},.h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
-  var settings13 = definePluginSettings({
-    hideDictationRefinement: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
-      default: true
-    }
-  });
-  function apply3() {
-    const rules = [BUTTON_CSS];
-    if (settings13.store.hideDictationRefinement)
-      rules.push(REFINEMENT_CSS);
-    registerStyle(STYLE_NAME4, rules.join(`
-`));
-  }
-  var noDictation_default = definePlugin({
-    name: "NoDictation",
-    icon: MicOffIcon,
-    description: "Hide the Dictation (voice input) button from the chat input bar, and optionally Dictation Refinement in Settings.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings13,
-    patches: [
-      {
-        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
-        replacement: {
-          match: /("How much Grok refines your speech-to-text transcriptions".{0,200}?\(0,\i\.jsxs\)\(\i,\{action:\i)(?=,children:\[)/,
-          replace: `$1,className:"${REFINEMENT_MARK}"`
-        }
-      }
-    ],
-    start: apply3,
-    onSettingsChange: apply3,
-    stop() {
-      unregisterStyle(STYLE_NAME4);
-    }
-  });
-
-  // void-css:/tmp/void-build/src/plugins/messageTimestamps/styles.css
-  registerStyle("messageTimestamps", `.void-timestamp {
-    margin-bottom: 0.125rem;
-}
-
-@media print {
-    .void-timestamp {
-        display: none;
-    }
-}
-`);
-
-  // src/plugins/messageTimestamps/index.tsx
-  var settings14 = definePluginSettings({
-    showDate: {
-      type: 3 /* BOOLEAN */,
-      description: "Show the full date for messages older than today.",
-      default: true
-    },
-    hideOwnMessages: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide timestamps on your own messages.",
-      default: false
-    }
-  });
-  function formatTimestamp(iso, showDate) {
-    const date = new Date(iso);
-    const now = new Date;
-    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
-    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (!showDate || today)
-      return time;
-    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
-  }
-  var messageTimestamps_default = definePlugin({
-    name: "MessageTimestamps",
-    icon: ClockIcon,
-    description: "Shows timestamps on chat messages.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings14,
-    _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
-      if (!response?.createTime)
-        return null;
-      if (settings14.store.hideOwnMessages && response.sender === "human")
-        return null;
-      return /* @__PURE__ */ React.createElement(Text2, {
-        as: "span",
-        size: "xs",
-        color: "muted",
-        className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings14.store.showDate));
-    }),
-    patches: [
-      {
-        find: "response-family:handleEditSave",
-        all: true,
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._renderTimestamp({response:$1}),$&"
-        }
-      }
-    ]
-  });
-
-  // void-css:/tmp/void-build/src/plugins/chatListStatus/styles.css
-  registerStyle("chatListStatus", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-[data-sidebar="menu-button"]:has(> .void-cls) {
-    position: relative;
-}
-
-.void-cls {
-    position: absolute;
-    left: 0.5rem;
-    top: 50%;
-    width: 0.75rem;
-    height: 0.75rem;
-    margin-top: -0.375rem;
-    pointer-events: none;
-    z-index: 1;
-    contain: content;
-    color: #3b82f6;
-}
-
-.void-cls[data-kind="done"],
-.void-cls[data-kind="error"] {
-    width: 0.375rem;
-    height: 0.375rem;
-    margin-top: -0.1875rem;
-    left: 0.625rem;
-    border-radius: 999px;
-    background: #3b82f6;
-}
-
-.void-cls[data-kind="error"] {
-    background: #ef4444;
-}
-
-.void-cls[data-kind="streaming"] svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-    animation: void-cls-spin 0.8s linear infinite;
-}
-
-@keyframes void-cls-spin {
-    to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-cls[data-kind="streaming"] svg {
-        animation: none;
-    }
-}
-`);
-
-  // src/plugins/chatListStatus/index.ts
-  var logger23 = new Logger("ChatListStatus");
-  var MARK = "void-cls";
-  var LIVE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var SIDEBAR = '[data-sidebar="sidebar"]';
-  var BUTTON = '[data-sidebar="menu-button"]';
-  var SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
-  var marks = new Map;
-  var rowById = new Map;
-  var raf2 = 0;
-  var started3 = false;
-  var obs = null;
-  function isLiveResponse(r) {
-    if (!r)
-      return false;
-    if (r.partial)
-      return true;
-    return LIVE.has(r.state ?? "");
-  }
-  function isErrorResponse(r) {
-    return !!r && (r.state === "error" || r.error != null);
-  }
-  function isConvId(value) {
-    return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value);
-  }
-  function liveIds() {
-    const ids = new Set;
-    try {
-      const page = ChatPageStore.useChatPageStore.getState();
-      const current = page.conversationId || page.optimisticConversationId || "";
-      if (current && (page.streamedMessageId || page.showStreamingIndicator))
-        ids.add(current);
-      const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-      if (current && (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]))) {
-        ids.add(current);
-      }
-      for (const id of Object.keys(inflightPromisesByConversationId ?? {}))
-        ids.add(id);
-      for (const [id, list] of Object.entries(byConversationId ?? {})) {
-        if (list?.some(isLiveResponse))
-          ids.add(id);
-      }
-    } catch (e) {
-      logger23.debug("stream stores unavailable:", e);
-    }
-    return ids;
-  }
-  function errorOf(id) {
-    try {
-      const { byConversationId, byId } = ResponseStore.useResponseStore.getState();
-      const list = byConversationId[id];
-      if (list?.length) {
-        for (let i = list.length - 1;i >= 0; i--) {
-          const r = list[i];
-          if (String(r.sender ?? "").toLowerCase() === "human")
-            continue;
-          return isErrorResponse(r);
-        }
-      }
-      const page = ChatPageStore.useChatPageStore.getState();
-      if ((page.conversationId === id || page.optimisticConversationId === id) && page.lastMessageId) {
-        return isErrorResponse(byId[page.lastMessageId]);
-      }
-    } catch (e) {
-      logger23.debug("error lookup failed:", e);
-    }
-    return false;
-  }
-  function refreshMarks() {
-    const live = liveIds();
-    for (const id of live)
-      marks.set(id, "streaming");
-    for (const [id, kind2] of marks) {
-      if (kind2 !== "streaming" || live.has(id))
-        continue;
-      marks.set(id, errorOf(id) ? "error" : "done");
-    }
-  }
-  function convOfResponse(responseId) {
-    try {
-      const { byConversationId } = ResponseStore.useResponseStore.getState();
-      for (const [id, list] of Object.entries(byConversationId ?? {})) {
-        if (list?.some((r) => r.responseId === responseId))
-          return id;
-      }
-      const page = ChatPageStore.useChatPageStore.getState();
-      return page.conversationId || page.optimisticConversationId || "";
-    } catch (e) {
-      logger23.debug("conv lookup failed:", e);
-      return "";
-    }
-  }
-  function onStreamEnd3({ responseId }) {
-    const cid = convOfResponse(responseId);
-    if (!cid)
-      return;
-    try {
-      const response = ResponseStore.useResponseStore.getState().byId[responseId];
-      marks.set(cid, isErrorResponse(response) ? "error" : "done");
-    } catch (e) {
-      logger23.debug("streamEnd failed:", e);
-      marks.set(cid, "done");
-    }
-    schedule();
-  }
-  function hrefId(el) {
-    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
-    const href = a?.getAttribute("href") ?? el.getAttribute("href") ?? "";
-    if (!href)
-      return "";
-    try {
-      const u = new URL(href, location.origin);
-      return u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
-    } catch {
-      return "";
-    }
-  }
-  function idFromProps(props) {
-    if (!props)
-      return "";
-    const { route } = props;
-    if (route && typeof route === "object") {
-      const r = route;
-      if (isConvId(r.conversationId))
-        return r.conversationId;
-      if (isConvId(r.chat))
-        return r.chat;
-      if (r.page === "workspace")
-        return "";
-      if (r.page === "chat" && isConvId(props.id))
-        return props.id;
-    }
-    if (isConvId(props.conversationId))
-      return props.conversationId;
-    return "";
-  }
-  function idFromRow(el) {
-    const fromHref = hrefId(el);
-    if (fromHref)
-      return fromHref;
-    try {
-      const fiber = getFiber(el);
-      const hit = walkFiberUp(fiber, 18, (f) => !!idFromProps(f.memoizedProps));
-      return idFromProps(hit?.memoizedProps);
-    } catch (e) {
-      logger23.debug("fiber id failed:", e);
-      return "";
-    }
-  }
-  function spinSvg() {
-    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg2.setAttribute("viewBox", "0 0 24 24");
-    svg2.setAttribute("fill", "none");
-    svg2.setAttribute("stroke", "currentColor");
-    svg2.setAttribute("stroke-width", "2.5");
-    svg2.setAttribute("stroke-linecap", "round");
-    svg2.setAttribute("aria-hidden", "true");
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", SPIN_PATH);
-    svg2.append(path);
-    return svg2;
-  }
-  function ensureMark(btn, kind2) {
-    let mark = btn.querySelector(`:scope > .${MARK}`);
-    if (!mark) {
-      mark = document.createElement("span");
-      mark.className = MARK;
-      mark.setAttribute("aria-hidden", "true");
-      btn.prepend(mark);
-    }
-    if (mark.dataset.kind === kind2 && (kind2 !== "streaming" || mark.querySelector("svg")))
-      return;
-    mark.dataset.kind = kind2;
-    mark.replaceChildren();
-    if (kind2 === "streaming")
-      mark.append(spinSvg());
-  }
-  function clearMark(btn) {
-    btn.querySelector(`:scope > .${MARK}`)?.remove();
-  }
-  function activeButton(sidebar) {
-    return sidebar.querySelector(`${BUTTON}[data-active="true"], ${BUTTON}[aria-current="page"], ${BUTTON}[data-state="active"]`);
-  }
-  function paint2() {
-    if (!started3)
-      return;
-    refreshMarks();
-    const sidebar = document.querySelector(SIDEBAR);
-    if (!sidebar)
-      return;
-    const usedIds = new Set;
-    for (const btn of sidebar.querySelectorAll(BUTTON)) {
-      const id = idFromRow(btn);
-      if (!id) {
-        clearMark(btn);
-        continue;
-      }
-      usedIds.add(id);
-      rowById.set(id, btn);
-      const kind2 = marks.get(id);
-      if (kind2)
-        ensureMark(btn, kind2);
-      else
-        clearMark(btn);
-    }
-    for (const [id, el] of rowById) {
-      if (!el.isConnected || !usedIds.has(id))
-        rowById.delete(id);
-    }
-    try {
-      const page = ChatPageStore.useChatPageStore.getState();
-      const activeId = [page.conversationId, page.optimisticConversationId].find((id) => id && marks.has(id)) ?? "";
-      if (!activeId || rowById.has(activeId))
-        return;
-      const active = activeButton(sidebar);
-      const kind2 = marks.get(activeId);
-      if (active && kind2) {
-        rowById.set(activeId, active);
-        ensureMark(active, kind2);
-      }
-    } catch (e) {
-      logger23.debug("active row fallback failed:", e);
-    }
-  }
-  function schedule() {
-    if (!started3 || raf2)
-      return;
-    raf2 = requestAnimationFrame(() => {
-      raf2 = 0;
-      if (started3)
-        paint2();
-    });
-  }
-  function ownMutation(list) {
-    if (!list.length)
-      return false;
-    for (const m of list) {
-      const { target } = m;
-      if (target instanceof Element && (target.classList.contains(MARK) || target.closest(`.${MARK}`)))
-        continue;
-      for (const n of m.addedNodes) {
-        if (n instanceof Element && (n.classList.contains(MARK) || n.querySelector(`.${MARK}`)))
-          continue;
-        return false;
-      }
-      for (const n of m.removedNodes) {
-        if (n instanceof Element && n.classList.contains(MARK))
-          continue;
-        return false;
-      }
-      if (m.type === "attributes")
-        return false;
-    }
-    return true;
-  }
-  function observe() {
-    obs?.disconnect();
-    const root = document.querySelector(SIDEBAR) ?? document.body;
-    obs = new MutationObserver((list) => {
-      if (ownMutation(list))
-        return;
-      schedule();
-    });
-    obs.observe(root, { childList: true, subtree: true });
-  }
-  function pageKey(s) {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
-  }
-  function responseKey(s) {
-    const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
-    const live = [];
-    for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
-      if (list?.some(isLiveResponse))
-        live.push(id);
-    }
-    return `${inflight}|${live.join(",")}`;
-  }
-  var chatListStatus_default = definePlugin({
-    name: "ChatListStatus",
-    icon: LoaderCircleIcon,
-    description: "Show Grok reply status on sidebar chats: spinner, blue dot, or error.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    managedStyle: "chatListStatus",
-    cleanupSelectors: [`.${MARK}`],
-    start() {
-      started3 = true;
-      observe();
-      schedule();
-    },
-    stop() {
-      started3 = false;
-      if (raf2)
-        cancelAnimationFrame(raf2);
-      raf2 = 0;
-      obs?.disconnect();
-      obs = null;
-      for (const el of document.querySelectorAll(`.${MARK}`))
-        el.remove();
-      marks.clear();
-      rowById.clear();
-    },
-    events: {
-      streamEnd: onStreamEnd3
-    },
-    zustand: {
-      ChatPageStore: {
-        selector: pageKey,
-        handler: schedule
-      },
-      ResponseStore: {
-        selector: responseKey,
-        handler: schedule
-      }
-    }
-  });
-
-  // void-css:/tmp/void-build/src/plugins/streamerMode/styles.css
-  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
-
-/* Sidebar avatar */
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
-html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
-    filter: none;
-}
-
-/* Sidebar username */
-html.void-streamer-sidebar-name .void-sidebar-info {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
-    filter: none;
-}
-
-/* Account tab avatar (inside settings dialog) */
-html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
-    filter: none;
-}
-
-/* Account tab username */
-html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
-    filter: none;
-}
-
-/* Account tab email */
-html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
-    filter: none;
-}
-
-/* Account tab birth year */
-html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
-    filter: none;
-}
-
-/* Conversation titles in sidebar (pinned + recent buckets) */
-html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
-    filter: none;
-}
-
-/* Project names in sidebar */
-html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
-    filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
-    html.void-streamer-sidebar-name .void-sidebar-info,
-    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
-    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
-    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
-    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
-    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
-    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
-}
-`);
-
-  // src/plugins/streamerMode/index.ts
-  var CSS_CLASSES = {
-    sidebarAvatar: "void-streamer-sidebar-avatar",
-    sidebarName: "void-streamer-sidebar-name",
-    accountAvatar: "void-streamer-account-avatar",
-    accountName: "void-streamer-account-name",
-    accountEmail: "void-streamer-account-email",
-    accountAge: "void-streamer-account-age",
-    projects: "void-streamer-projects",
-    conversations: "void-streamer-conversations"
-  };
-  var settings15 = definePluginSettings({
-    sidebarAvatar: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your avatar in the sidebar.",
-      default: true
-    },
-    sidebarName: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your username in the sidebar.",
-      default: true
-    },
-    accountAvatar: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your avatar in the account settings tab.",
-      default: true
-    },
-    accountName: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your name in the account settings tab.",
-      default: true
-    },
-    accountEmail: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your email in the account settings tab.",
-      default: true
-    },
-    accountAge: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your birth year in the account settings tab.",
-      default: true
-    },
-    projects: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur project names in the sidebar.",
-      default: true
-    },
-    conversations: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur conversation titles in the sidebar.",
-      default: true
-    }
-  });
-  function syncClasses() {
-    const { classList } = document.documentElement;
-    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings15.store[key]);
-    }
-  }
-  var streamerMode_default = definePlugin({
-    name: "StreamerMode",
-    icon: EyeOffIcon,
-    description: "Blurs personal information for privacy while streaming.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    settings: settings15,
-    start: syncClasses,
-    onSettingsChange: syncClasses,
-    stop() {
-      const { classList } = document.documentElement;
-      for (const cls of Object.values(CSS_CLASSES)) {
-        classList.remove(cls);
-      }
-    }
-  });
-
-  // src/plugins/autoCollapse/index.ts
-  var autoCollapse_default = definePlugin({
-    name: "AutoCollapse",
-    icon: ChevronsDownUpIcon,
-    description: "Automatically collapse code blocks in responses.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    _collapse: () => true,
-    patches: [
-      {
-        find: ["isInitiallyCollapsed", "showRunCode"],
-        all: true,
-        replacement: {
-          match: /isInitiallyCollapsed:(\i)=!1/g,
-          replace: "isInitiallyCollapsed:$1=$self._collapse()"
-        }
-      }
-    ]
-  });
-
-  // void-css:/tmp/void-build/src/plugins/betterFiles/styles.css
-  registerStyle("betterFiles", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.group:hover .void-sel-wrap {
-    display: inline-flex;
-}
-`);
-
-  // src/plugins/betterFiles/index.tsx
-  var logger24 = new Logger("BetterFiles");
-  var selection2 = createSelectionStore();
-  async function deleteAssets(ids) {
-    const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
-    for (const id of ids) {
-      try {
-        await deleteAsset(id);
-      } catch (e) {
-        logger24.error("Failed to delete asset", id, e);
-      }
-    }
-  }
-  function DeleteAllButton() {
-    const [open3, setOpen] = useState(false);
-    const list = FilesPageStore.useFilesPageStore((s) => s.list);
-    if (!list.length)
-      return null;
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      shape: "square",
-      size: "sm",
-      onClick: () => setOpen(true)
-    }, /* @__PURE__ */ React.createElement(TrashIcon, {
-      size: 18,
-      className: "text-fg-secondary"
-    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open3,
-      onOpenChange: setOpen,
-      title: "Delete all files",
-      description: `Are you sure you want to delete all ${pluralize(list.length, "file")}? This cannot be undone.`,
-      confirmText: "Delete all",
-      danger: true,
-      onConfirm: () => deleteAssets([...list])
-    }));
-  }
-  var betterFiles_default = definePlugin({
-    name: "BetterFiles",
-    icon: FilesIcon,
-    description: "Adds bulk delete to the files page.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    managedStyle: "betterFiles",
-    start() {
-      selection2.clear();
-    },
-    stop() {
-      selection2.clear();
-    },
-    renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
-    _renderFileCheckbox: ErrorBoundary.wrap(({ id }) => /* @__PURE__ */ React.createElement(SelectionCheckbox, {
-      selection: selection2,
-      id
-    }), null),
-    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
-      selection: selection2,
-      noun: "file",
-      title: "Delete files",
-      onDelete: deleteAssets
-    }), null),
-    _wrapFileClick(onClick, asset) {
-      return (e) => {
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection2.toggle(asset.assetId);
-          return;
-        }
-        onClick();
-      };
-    },
-    patches: [
-      {
-        find: `files.no-results",'No files matching`,
-        all: true,
-        noWarn: true,
-        group: true,
-        replacement: [
-          {
-            match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
-            replace: "$1,$self.renderDeleteAllButton()]"
-          },
-          {
-            match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
-            replace: 'role:"button",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),'
-          },
-          {
-            match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
-            replace: "$1,$self._renderFileActionBar()]"
-          }
-        ]
-      }
-    ]
-  });
-
-  // void-css:/tmp/void-build/src/plugins/inputHistory/styles.css
+  // void-css:/tmp/Void/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -11831,9 +7410,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 `);
 
   // src/plugins/inputHistory/index.tsx
-  var logger25 = new Logger("InputHistory");
-  var cl21 = classNameFactory("void-ih-");
-  var EDITOR_SEL2 = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
+  var logger16 = new Logger("InputHistory");
+  var cl17 = classNameFactory("void-ih-");
+  var EDITOR_SEL = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
   var ZWSP = /\u200B/g;
   var MAX_MIN = 10;
   var MAX_MAX = 500;
@@ -11842,7 +7421,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var APPLY_QUIET_MS = 120;
   var CAPTURE_DEDUPE_MS = 2000;
   var PAGE_SIZE = 10;
-  var settings16 = definePluginSettings({
+  var settings5 = definePluginSettings({
     maxEntries: {
       type: 5 /* SLIDER */,
       description: "Maximum stored prompts.",
@@ -11861,20 +7440,20 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   var recalling = false;
   var applying = false;
   var applyGen = 0;
-  var keys2 = null;
+  var keys = null;
   var applyTimer;
   var applyEl = null;
   var applyAtStart = true;
   function getEntries() {
-    const raw = settings16.plain.entries;
+    const raw = settings5.plain.entries;
     return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
   }
   function cap(entries) {
-    const max = clamp(settings16.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
+    const max = clamp(settings5.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
     return entries.length > max ? entries.slice(entries.length - max) : entries;
   }
   function setEntries(entries) {
-    settings16.store.entries = entries;
+    settings5.store.entries = entries;
   }
   function normalize(text) {
     return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
@@ -11887,9 +7466,9 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   }
   function chatEditor(t) {
     if (t instanceof Text)
-      return t.parentElement?.closest(EDITOR_SEL2) ?? null;
+      return t.parentElement?.closest(EDITOR_SEL) ?? null;
     if (t instanceof Element)
-      return t.closest(EDITOR_SEL2) ?? null;
+      return t.closest(EDITOR_SEL) ?? null;
     return null;
   }
   function editorText(el) {
@@ -11961,7 +7540,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         return;
       }
     } catch (err) {
-      logger25.debug("placeCaret pm failed:", err);
+      logger16.debug("placeCaret pm failed:", err);
     }
     const native = window.getSelection();
     if (!native)
@@ -12006,23 +7585,23 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       else
         document.execCommand("insertText", false, text);
     } catch (err) {
-      logger25.debug("insertText failed:", err);
+      logger16.debug("insertText failed:", err);
     }
     placeCaret(el, atStart);
     scheduleApplyEnd(gen);
   }
   function hudEl() {
-    let el = document.querySelector(`.${cl21("hud")}`);
+    let el = document.querySelector(`.${cl17("hud")}`);
     if (el)
       return el;
     el = document.createElement("div");
-    el.className = cl21("hud");
+    el.className = cl17("hud");
     el.setAttribute("aria-live", "polite");
     document.body.appendChild(el);
     return el;
   }
   function hideHud() {
-    document.querySelector(`.${cl21("hud")}`)?.classList.remove(cl21("hud-on"));
+    document.querySelector(`.${cl17("hud")}`)?.classList.remove(cl17("hud-on"));
   }
   function showHud(label, editor) {
     const bar = editor.closest(".query-bar");
@@ -12034,7 +7613,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       const r = bar.getBoundingClientRect();
       el.style.left = `${r.left + r.width / 2}px`;
       el.style.top = `${r.top - HUD_GAP_PX}px`;
-      el.classList.add(cl21("hud-on"));
+      el.classList.add(cl17("hud-on"));
     });
   }
   function pushEntry(text) {
@@ -12055,7 +7634,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     setEntries(next);
     resetBrowse(next.length);
   }
-  function cycle2(older, el) {
+  function cycle(older, el) {
     const list = getEntries();
     if (!list.length && older)
       return;
@@ -12074,7 +7653,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     else
       hideHud();
   }
-  function onKeyDown2(e) {
+  function onKeyDown(e) {
     if (e.isComposing || e.keyCode === 229)
       return;
     if (e.ctrlKey || e.metaKey)
@@ -12110,7 +7689,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    cycle2(older, el);
+    cycle(older, el);
   }
   function onPointerDown(e) {
     if (!recalling || applying)
@@ -12136,7 +7715,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     const form = e.target;
     if (!(form instanceof HTMLFormElement))
       return;
-    const editor = form.querySelector(EDITOR_SEL2);
+    const editor = form.querySelector(EDITOR_SEL);
     if (editor instanceof HTMLElement)
       pushEntry(editorText(editor));
   }
@@ -12154,7 +7733,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
     if (!submit && !label.includes("send") && !label.includes("submit"))
       return;
-    const editor = bar.querySelector(EDITOR_SEL2);
+    const editor = bar.querySelector(EDITOR_SEL);
     if (editor instanceof HTMLElement)
       pushEntry(editorText(editor));
   }
@@ -12167,23 +7746,23 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     resetBrowse(next.length);
   }
   function HistoryPanel() {
-    const { entries } = settings16.use(["entries"]);
+    const { entries } = settings5.use(["entries"]);
     const list = entries ?? [];
     const [query, setQuery] = useState("");
     const [page, setPage] = useState(0);
     const [openId, setOpenId] = useState(null);
     const [confirm, setConfirm] = useState(false);
     const needle = query.trim().toLowerCase();
-    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).toReversed();
+    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).reverse();
     const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
     const current = Math.min(page, pageCount - 1);
     const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.65rem",
-      className: cl21("panel")
+      className: cl17("panel")
     }, /* @__PURE__ */ React.createElement(Flex, {
-      className: cl21("head"),
+      className: cl17("head"),
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
@@ -12201,22 +7780,22 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         setQuery(e.target.value);
         setPage(0);
       },
-      className: cl21("search")
+      className: cl17("search")
     }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl21("empty")
+      className: cl17("empty")
     }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl21("empty")
+      className: cl17("empty")
     }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
-      className: cl21("list")
+      className: cl17("list")
     }, slice.map((row) => {
       const lines = row.text.split(`
 `).length;
       const expanded = openId === row.index;
       return /* @__PURE__ */ React.createElement("div", {
         key: row.index,
-        className: cl21("item", expanded && "item-on")
+        className: cl17("item", expanded && "item-on")
       }, /* @__PURE__ */ React.createElement("div", {
-        className: cl21("main"),
+        className: cl17("main"),
         role: "button",
         tabIndex: 0,
         onClick: () => setOpenId(expanded ? null : row.index),
@@ -12227,13 +7806,13 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
           setOpenId(expanded ? null : row.index);
         }
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl21("body", !expanded && "clamp")
+        className: cl17("body", !expanded && "clamp")
       }, row.text)), /* @__PURE__ */ React.createElement("div", {
-        className: cl21("side")
+        className: cl17("side")
       }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
-        className: cl21("lines")
+        className: cl17("lines")
       }, lines), /* @__PURE__ */ React.createElement("div", {
-        className: cl21("actions")
+        className: cl17("actions")
       }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
         size: "sm",
@@ -12241,7 +7820,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         tooltipContent: "Copy",
         "aria-label": "Copy",
         onClick: () => {
-          copyToClipboard(row.text).catch((err) => logger25.error("copy failed:", err));
+          copyToClipboard(row.text).catch((err) => logger16.error("copy failed:", err));
         }
       }, /* @__PURE__ */ React.createElement(CopyIcon, {
         size: 18
@@ -12260,7 +7839,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         size: 18
       })))));
     })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
-      className: cl21("pager"),
+      className: cl17("pager"),
       alignItems: "center",
       justifyContent: "center",
       gap: "0.5rem"
@@ -12274,7 +7853,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
       size: 18
     })), /* @__PURE__ */ React.createElement("span", {
-      className: cl21("page")
+      className: cl17("page")
     }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
@@ -12307,25 +7886,25 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings16,
+    settings: settings5,
     managedStyle: "inputHistory",
     cleanupSelectors: [".void-ih-hud"],
     start() {
-      if (keys2)
+      if (keys)
         return;
       cursor = getEntries().length;
       recalling = false;
-      keys2 = new AbortController;
-      const { signal } = keys2;
-      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
+      keys = new AbortController;
+      const { signal } = keys;
+      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
       document.addEventListener("input", onInput, { capture: true, signal });
       document.addEventListener("submit", onSubmit, { capture: true, signal });
       document.addEventListener("click", onClick, { capture: true, signal });
       document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
     },
     stop() {
-      keys2?.abort();
-      keys2 = null;
+      keys?.abort();
+      keys = null;
       hideHud();
       recentAt.clear();
       clearTimeout(applyTimer);
@@ -12343,7 +7922,1208 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/void-build/src/plugins/settingsFlyout/styles.css
+  // src/plugins/autoCollapse/index.ts
+  var autoCollapse_default = definePlugin({
+    name: "AutoCollapse",
+    icon: ChevronsDownUpIcon,
+    description: "Automatically collapse code blocks in responses.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    _collapse: () => true,
+    patches: [
+      {
+        find: ["isInitiallyCollapsed", "showRunCode"],
+        all: true,
+        replacement: {
+          match: /isInitiallyCollapsed:(\i)=!1/g,
+          replace: "isInitiallyCollapsed:$1=$self._collapse()"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/responseNotification/index.ts
+  var settings6 = definePluginSettings({
+    sound: {
+      type: 3 /* BOOLEAN */,
+      description: "Play a notification sound.",
+      default: true
+    },
+    soundUrl: {
+      type: 0 /* STRING */,
+      description: "Custom sound URL (leave empty for default beep).",
+      default: "",
+      placeholder: "https://example.com/sound.mp3"
+    },
+    browserNotification: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a browser notification.",
+      default: true
+    },
+    onlyWhenHidden: {
+      type: 3 /* BOOLEAN */,
+      description: "Only notify when the tab is not focused.",
+      default: true
+    }
+  });
+  var userGestured = false;
+  var gestureCtrl = null;
+  function playBeep() {
+    const ctx = new AudioContext;
+    const start = () => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.value = 0.15;
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+      osc.onended = () => ctx.close();
+    };
+    if (ctx.state === "suspended")
+      ctx.resume().then(start, () => ctx.close());
+    else
+      start();
+  }
+  function playSound() {
+    if (!userGestured)
+      return;
+    const url = settings6.store.soundUrl?.trim();
+    if (url) {
+      const audio = new Audio(url);
+      audio.volume = 0.3;
+      audio.play().catch(() => playBeep());
+    } else {
+      playBeep();
+    }
+  }
+  function onStreamEnd({ responseId }) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (!response || response.state !== "closed")
+      return;
+    if (settings6.store.onlyWhenHidden && document.visibilityState === "visible")
+      return;
+    if (settings6.store.sound)
+      playSound();
+    if (settings6.store.browserNotification)
+      sendBrowserNotification("Grok", "Response complete.");
+  }
+  var responseNotification_default = definePlugin({
+    name: "ResponseNotification",
+    icon: BellIcon,
+    description: "Notify when Grok finishes responding.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings6,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      if (gestureCtrl)
+        return;
+      gestureCtrl = new AbortController;
+      const markGestured = () => {
+        userGestured = true;
+        gestureCtrl?.abort();
+        gestureCtrl = null;
+      };
+      for (const evt of ["pointerdown", "keydown", "touchstart"]) {
+        addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
+      }
+    },
+    stop() {
+      gestureCtrl?.abort();
+      gestureCtrl = null;
+    },
+    events: {
+      streamEnd: onStreamEnd
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/betterImagine/styles.css
+  registerStyle("betterImagine", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-imagine-chip {
+    background: hsl(var(--surface-l1));
+}
+
+.void-imagine-chip:hover {
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-search {
+    width: 10rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+}
+
+.void-imagine-date-select,
+.void-imagine-sort-select {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+    border: none;
+}
+
+.void-imagine-sort-active {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+}
+`);
+
+  // src/plugins/betterImagine/index.tsx
+  var logger17 = new Logger("BetterImagine");
+  var cl18 = classNameFactory("void-imagine-");
+  var settings7 = definePluginSettings({
+    hideDefaultPreviews: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the community image grid and templates on the Imagine home page.",
+      default: true
+    },
+    noAutoplay: {
+      type: 3 /* BOOLEAN */,
+      description: "Stop video thumbnails from autoplaying.",
+      default: true
+    },
+    playOnHover: {
+      type: 3 /* BOOLEAN */,
+      description: "Play video thumbnails when hovered.",
+      default: true
+    },
+    hideModerated: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide moderated images and videos that cannot be interacted with.",
+      default: true
+    },
+    pauseWhenHidden: {
+      type: 3 /* BOOLEAN */,
+      description: "Pause any playing video thumbnails when the tab loses focus.",
+      default: true
+    },
+    persistFilters: {
+      type: 3 /* BOOLEAN */,
+      description: "Remember Favorites filter + sort across reloads.",
+      default: true
+    },
+    smartFilenames: {
+      type: 3 /* BOOLEAN */,
+      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
+      default: true
+    },
+    bypassPaywall: {
+      type: 3 /* BOOLEAN */,
+      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
+      default: false
+    },
+    ctrlClickSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
+      default: true
+    }
+  });
+  function buildFilename(post, isVideo) {
+    if (!settings7.store.smartFilenames || !post)
+      return null;
+    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
+    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
+    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
+    const id = post.id?.slice(0, 8) ?? "";
+    const ext = isVideo ? "mp4" : "png";
+    const parts = [date, slug, id].filter(Boolean);
+    if (!parts.length)
+      return null;
+    return `${parts.join("_")}.${ext}`;
+  }
+  var FILTER_MAP = {
+    image: "MEDIA_POST_TYPE_IMAGE",
+    video: "MEDIA_POST_TYPE_VIDEO"
+  };
+  var DATE_LABELS = {
+    all: "Any time",
+    today: "Today",
+    week: "This week",
+    month: "This month"
+  };
+  var SORT_LABELS = {
+    newest: "Newest first",
+    oldest: "Oldest first",
+    "prompt-az": "Prompt A → Z",
+    "prompt-za": "Prompt Z → A",
+    random: "Shuffle"
+  };
+  var SORT_KEYS = Object.keys(SORT_LABELS);
+  var DAY_MS = 86400000;
+  var DATE_CUTOFFS = {
+    all: 0,
+    today: DAY_MS,
+    week: 7 * DAY_MS,
+    month: 30 * DAY_MS
+  };
+  var STORAGE_KEY2 = "void-imagine-filters";
+  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
+  function loadFilters() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY2);
+      if (!raw)
+        return DEFAULT_FILTERS;
+      const parsed = JSON.parse(raw);
+      return {
+        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
+        search: typeof parsed.search === "string" ? parsed.search : "",
+        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
+        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
+      };
+    } catch {
+      return DEFAULT_FILTERS;
+    }
+  }
+  var initial = loadFilters();
+  var currentFilter = initial.filter;
+  var currentSearch = initial.search;
+  var currentDate = initial.date;
+  var currentSort = initial.sort;
+  var randomSeed = Date.now();
+  var filterStore = createExternalStore();
+  function persist() {
+    if (!settings7.store.persistFilters)
+      return;
+    try {
+      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
+    } catch {}
+  }
+  function setFilter(f) {
+    currentFilter = f;
+    filterStore.notify();
+    persist();
+  }
+  var setSearch = debounce((s) => {
+    currentSearch = s;
+    filterStore.notify();
+    persist();
+  }, 200);
+  function setDate(d) {
+    currentDate = d;
+    filterStore.notify();
+    persist();
+  }
+  function setSort(s) {
+    if (s === "random" && currentSort === "random")
+      randomSeed = Date.now();
+    currentSort = s;
+    filterStore.notify();
+    persist();
+  }
+  function resetFilters() {
+    currentFilter = "all";
+    currentSearch = "";
+    currentDate = "all";
+    currentSort = "newest";
+    filterStore.notify();
+    persist();
+  }
+  function hasActiveFilters() {
+    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
+  }
+  function isModerated(p) {
+    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
+  }
+  var haystackCache = new WeakMap;
+  var tsCache = new WeakMap;
+  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+  function getHaystack(p) {
+    let h = haystackCache.get(p);
+    if (h === undefined) {
+      h = `${p.prompt ?? ""}
+${p.originalPrompt ?? ""}`.toLowerCase();
+      haystackCache.set(p, h);
+    }
+    return h;
+  }
+  function getTs(p) {
+    let t = tsCache.get(p);
+    if (t === undefined) {
+      t = new Date(p.createTime).getTime() || 0;
+      tsCache.set(p, t);
+    }
+    return t;
+  }
+  function matchesFilters(p, target, q, cutoff, hideModerated) {
+    if (!p)
+      return false;
+    if (hideModerated && isModerated(p))
+      return false;
+    if (target && p.mediaType !== target)
+      return false;
+    if (cutoff && getTs(p) < cutoff)
+      return false;
+    if (q && !getHaystack(p).includes(q))
+      return false;
+    return true;
+  }
+  var cacheKey = null;
+  var cacheList = null;
+  var cacheResult = [];
+  function filterItems(items) {
+    const { hideModerated } = settings7.store;
+    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
+    if (cacheList === items && cacheKey === key)
+      return cacheResult;
+    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
+    let out = items;
+    if (needsFilter) {
+      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
+      const q = currentSearch.toLowerCase();
+      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
+      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
+    }
+    cacheList = items;
+    cacheKey = key;
+    cacheResult = currentSort === "newest" ? out : sortItems(out);
+    return cacheResult;
+  }
+  function mulberry32(seed) {
+    let a = seed;
+    return () => {
+      a |= 0;
+      a = a + 1831565813 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function sortItems(items) {
+    if (items.length < 2)
+      return items;
+    const arr = [...items];
+    switch (currentSort) {
+      case "oldest":
+        return arr.toSorted((a, b) => getTs(a) - getTs(b));
+      case "prompt-az":
+        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
+      case "prompt-za":
+        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
+      case "random": {
+        const rand = mulberry32(randomSeed);
+        for (let i = arr.length - 1;i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+      default:
+        return arr;
+    }
+  }
+  var pending = new WeakMap;
+  function pauseVideo(video) {
+    const promise = pending.get(video);
+    pending.delete(video);
+    if (promise) {
+      promise.then(() => {
+        if (pending.has(video))
+          return;
+        video.pause();
+        video.currentTime = 0;
+      }).catch((e) => logger17.warn("Failed to pause video:", e));
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }
+  var onMouseEnter = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pending.set(video, video.play().catch((e2) => logger17.error("Failed to play video", e2)));
+  };
+  var onMouseLeave = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pauseVideo(video);
+  };
+  function useFilteredFavorites() {
+    const list = MediaStore.useMediaStore((s) => s.favoritesList);
+    useExternalStore(filterStore);
+    return filterItems(list);
+  }
+  function mediaState() {
+    return MediaStore.useMediaStore.getState();
+  }
+  function selectVisible() {
+    const state = mediaState();
+    const list = state.favoritesList ?? [];
+    const visible = filterItems(list);
+    if (!visible.length)
+      return;
+    state.setMultiSelectItems(visible);
+    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
+  }
+  function deselectAll() {
+    const state = mediaState();
+    state.clearMultiSelect?.();
+  }
+  function selectedPosts() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    return ids.map((id) => state.byId[id]).filter((p) => !!p);
+  }
+  async function copyLines(lines, label) {
+    if (!lines.length) {
+      Toaster.toast.info(`Selected items have no ${label}s.`);
+      return;
+    }
+    try {
+      await copyToClipboard(lines.join(`
+`));
+      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
+    } catch (e) {
+      logger17.error(`Failed to copy ${label}s`, e);
+      Toaster.toast.error(`Failed to copy ${label}s.`);
+    }
+  }
+  async function copySelectedPrompts() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
+  }
+  async function copySelectedUrls() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    const { videoByMediaId } = mediaState();
+    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
+    await copyLines(urls, "URL");
+  }
+  async function bulkUpscaleSelected() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    let upscaled = 0;
+    let alreadyHd = 0;
+    let inProgress = 0;
+    for (const id of ids) {
+      const videos = state.videoByMediaId[id];
+      if (!videos?.length)
+        continue;
+      for (const video of videos) {
+        if (video.hdMediaUrl) {
+          alreadyHd++;
+          continue;
+        }
+        if (video.upscalingInProgress) {
+          inProgress++;
+          continue;
+        }
+        try {
+          await state.upscaleVideo(id, video.id);
+          upscaled++;
+        } catch (e) {
+          logger17.error("Failed to upscale video:", id, video.id, e);
+        }
+      }
+    }
+    if (upscaled)
+      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
+    else if (alreadyHd)
+      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
+    else if (inProgress)
+      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
+    else
+      Toaster.toast.info("No videos to upscale.");
+  }
+  function FilterButtons() {
+    useExternalStore(filterStore);
+    const [searchInput, setSearchInput] = useState(currentSearch);
+    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
+    const sortActive = currentSort !== "newest";
+    const lastSync = useRef(currentSearch);
+    if (lastSync.current !== currentSearch) {
+      lastSync.current = currentSearch;
+      setSearchInput(currentSearch);
+    }
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
+      value: currentDate,
+      onValueChange: (v) => setDate(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: cl18("date-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: d,
+      value: d
+    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
+      value: currentSort,
+      onValueChange: (v) => setSort(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: sortActive ? cl18("sort-select", "sort-active") : cl18("sort-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: s,
+      value: s
+    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "Search...",
+      value: searchInput,
+      onChange: (e) => {
+        setSearchInput(e.target.value);
+        setSearch(e.target.value);
+      },
+      className: cl18("search")
+    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
+      key: f,
+      variant: currentFilter === f ? "primary" : "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: currentFilter !== f ? cl18("chip") : undefined,
+      onClick: () => setFilter(currentFilter === f ? "all" : f)
+    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: cl18("chip"),
+      onClick: resetFilters
+    }, "Clear"));
+  }
+  function UpscaleItem() {
+    const [open2, setOpen] = useState(false);
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: () => setOpen(true)
+    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
+      className: "size-4 me-2"
+    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title: "Upscale selected videos",
+      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
+      confirmText: "Upscale",
+      onConfirm: bulkUpscaleSelected
+    }));
+  }
+  function CopyActions() {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: copySelectedPrompts
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: copySelectedUrls
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy URLs"));
+  }
+  function isImaginePage() {
+    const page = RoutingStore.useRoutingStore.getState().route?.page;
+    return page === "imagine" || page === "imagine-favorites";
+  }
+  function isFavoritesPage() {
+    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
+  }
+  function isTypingTarget(t) {
+    if (!(t instanceof HTMLElement))
+      return false;
+    if (t.isContentEditable)
+      return true;
+    const tag = t.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+  }
+  function onKeyDown2(e) {
+    if (!isImaginePage())
+      return;
+    if (e.ctrlKey || e.metaKey || e.altKey)
+      return;
+    if (isTypingTarget(e.target))
+      return;
+    if (e.key === "i" || e.key === "I") {
+      setFilter(currentFilter === "image" ? "all" : "image");
+      e.preventDefault();
+    } else if (e.key === "v" || e.key === "V") {
+      setFilter(currentFilter === "video" ? "all" : "video");
+      e.preventDefault();
+    } else if (e.key === "r" || e.key === "R") {
+      resetFilters();
+      e.preventDefault();
+    } else if (e.key === "A") {
+      if (isFavoritesPage()) {
+        deselectAll();
+        e.preventDefault();
+      }
+    } else if (e.key === "a") {
+      if (isFavoritesPage()) {
+        selectVisible();
+        e.preventDefault();
+      }
+    } else if (e.key === "c" || e.key === "C") {
+      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
+        copySelectedPrompts();
+        e.preventDefault();
+      }
+    }
+  }
+  function onVisibilityChange() {
+    if (!settings7.store.pauseWhenHidden)
+      return;
+    if (document.visibilityState !== "hidden")
+      return;
+    for (const video of document.querySelectorAll("video")) {
+      if (!video.paused)
+        video.pause();
+    }
+  }
+  var abortCtrl = null;
+  var betterImagine_default = definePlugin({
+    name: "BetterImagine",
+    icon: ImagesIcon,
+    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings7,
+    _hideDefault: () => settings7.store.hideDefaultPreviews,
+    _NullGrid: () => null,
+    _autoPlay: () => !settings7.store.noAutoplay,
+    _bypassPaywall: () => settings7.store.bypassPaywall,
+    _ctrlClickSelect: () => settings7.store.ctrlClickSelect,
+    _hoverProps: () => settings7.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _useFilteredFavorites: useFilteredFavorites,
+    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
+    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
+    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
+    _buildFilename: buildFilename,
+    start() {
+      if (abortCtrl)
+        return;
+      abortCtrl = new AbortController;
+      const { signal } = abortCtrl;
+      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
+      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
+    },
+    stop() {
+      abortCtrl?.abort();
+      abortCtrl = null;
+    },
+    patches: [
+      {
+        find: "image_feed_opened",
+        group: true,
+        replacement: [
+          {
+            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
+            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
+          },
+          {
+            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
+            replace: "=$self._useFilteredFavorites()"
+          }
+        ]
+      },
+      {
+        find: "image_feed_image_selected",
+        group: true,
+        replacement: [
+          {
+            match: /autoPlay:!0/g,
+            replace: "autoPlay:$self._autoPlay()"
+          },
+          {
+            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
+            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          }
+        ]
+      },
+      {
+        find: 'imagine-folder.all","All"',
+        replacement: {
+          match: /"imagine-folder\.all","All"\)\}\)/,
+          replace: "$&,$self._renderFilterButtons({})"
+        }
+      },
+      {
+        find: "imagine-templates.section-title",
+        all: true,
+        noWarn: true,
+        replacement: {
+          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
+          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
+        }
+      },
+      {
+        find: '"imagine-set-resolution"',
+        all: true,
+        replacement: {
+          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
+          replace: "if(!$self._bypassPaywall())$&"
+        }
+      },
+      {
+        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
+        group: true,
+        replacement: [
+          {
+            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
+            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
+          },
+          {
+            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
+            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/noShareLink/index.ts
+  var STYLE_NAME2 = "noShareLink";
+  var settings8 = definePluginSettings({
+    hideShareProject: {
+      type: 3 /* BOOLEAN */,
+      description: "Inside a project: hide the top-right Share Project button.",
+      default: true
+    },
+    hideCreateShareLink: {
+      type: 3 /* BOOLEAN */,
+      description: "Not in a project: hide the top-right Create share link button on chats.",
+      default: true
+    }
+  });
+  function apply() {
+    const rules = [];
+    if (settings8.store.hideShareProject) {
+      rules.push('button[aria-label="Share Project"]{display:none!important}');
+    }
+    if (settings8.store.hideCreateShareLink) {
+      rules.push('button[aria-label="Create share link"]{display:none!important}');
+    }
+    registerStyle(STYLE_NAME2, rules.join(`
+`));
+  }
+  var noShareLink_default = definePlugin({
+    name: "NoShareLink",
+    icon: Link2OffIcon,
+    description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
+    authors: [Devs.p],
+    tags: ["ui", "privacy"],
+    enabledByDefault: true,
+    settings: settings8,
+    start: apply,
+    onSettingsChange: apply,
+    stop() {
+      unregisterStyle(STYLE_NAME2);
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/betterFiles/styles.css
+  registerStyle("betterFiles", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.group:hover .void-sel-wrap {
+    display: inline-flex;
+}
+`);
+
+  // src/plugins/betterFiles/index.tsx
+  var logger18 = new Logger("BetterFiles");
+  var selection = createSelectionStore();
+  async function deleteAssets(ids) {
+    const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
+    for (const id of ids) {
+      try {
+        await deleteAsset(id);
+      } catch (e) {
+        logger18.error("Failed to delete asset", id, e);
+      }
+    }
+  }
+  function DeleteAllButton() {
+    const [open2, setOpen] = useState(false);
+    const list = FilesPageStore.useFilesPageStore((s) => s.list);
+    if (!list.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      shape: "square",
+      size: "sm",
+      onClick: () => setOpen(true)
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
+      size: 18,
+      className: "text-fg-secondary"
+    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title: "Delete all files",
+      description: `Are you sure you want to delete all ${pluralize(list.length, "file")}? This cannot be undone.`,
+      confirmText: "Delete all",
+      danger: true,
+      onConfirm: () => deleteAssets([...list])
+    }));
+  }
+  var betterFiles_default = definePlugin({
+    name: "BetterFiles",
+    icon: FilesIcon,
+    description: "Adds bulk delete to the files page.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    managedStyle: "betterFiles",
+    start() {
+      selection.clear();
+    },
+    stop() {
+      selection.clear();
+    },
+    renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
+    _renderFileCheckbox: ErrorBoundary.wrap(({ id }) => /* @__PURE__ */ React.createElement(SelectionCheckbox, {
+      selection,
+      id
+    }), null),
+    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
+      selection,
+      noun: "file",
+      title: "Delete files",
+      onDelete: deleteAssets
+    }), null),
+    _wrapFileClick(onClick2, asset) {
+      return (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          selection.toggle(asset.assetId);
+          return;
+        }
+        onClick2();
+      };
+    },
+    patches: [
+      {
+        find: `files.no-results",'No files matching`,
+        all: true,
+        noWarn: true,
+        group: true,
+        replacement: [
+          {
+            match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
+            replace: "$1,$self.renderDeleteAllButton()]"
+          },
+          {
+            match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
+            replace: 'role:"button",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),'
+          },
+          {
+            match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
+            replace: "$1,$self._renderFileActionBar()]"
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/noSidebarIdentity/index.ts
+  var STYLE_NAME3 = "noSidebarIdentity";
+  var FOOTER = '[data-sidebar="footer"]';
+  var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
+  var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
+  var settings9 = definePluginSettings({
+    hideUsername: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the username next to the sidebar avatar.",
+      default: true
+    },
+    hideEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the email next to the sidebar avatar.",
+      default: true
+    }
+  });
+  function apply2() {
+    const rules = [];
+    if (settings9.store.hideUsername) {
+      rules.push(`${STACK}>:first-child{display:none!important}`);
+      rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
+    }
+    if (settings9.store.hideEmail) {
+      rules.push(`${STACK}>:nth-child(2){display:none!important}`);
+    }
+    if (settings9.store.hideUsername && settings9.store.hideEmail) {
+      rules.push(`${TEXT_WRAP}{display:none!important}`);
+      rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
+    }
+    registerStyle(STYLE_NAME3, rules.join(`
+`));
+  }
+  var noSidebarIdentity_default = definePlugin({
+    name: "NoSidebarIdentity",
+    icon: UserRoundXIcon,
+    description: "Hide username and/or email in the Grok sidebar. Avatar stays clickable.",
+    authors: [Devs.p],
+    tags: ["ui", "privacy"],
+    enabledByDefault: true,
+    settings: settings9,
+    start: apply2,
+    onSettingsChange: apply2,
+    stop() {
+      unregisterStyle(STYLE_NAME3);
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/betterSidebar/styles.css
+  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
+.group.peer [data-sidebar="content"] > .grow {
+    cursor: default !important;
+}
+
+.group.peer [data-sidebar="sidebar"] + div::after {
+    background-color: transparent !important;
+}
+
+.void-sidebar-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    min-width: 0;
+    flex: 1;
+}
+
+.void-sidebar-card:hover {
+    background-color: hsl(var(--surface-l2));
+}
+
+.void-sidebar-card button[data-state] {
+    pointer-events: none;
+    background-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.void-sidebar-info {
+    min-width: 0;
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-sidebar-card { transition: none; }
+}
+
+.void-sidebar-name,
+.void-sidebar-plan {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.group\\/sidebar-menu-item:hover .void-sel-wrap {
+    display: inline-flex;
+}
+`);
+
+  // src/turbopack/common/plan.ts
+  var PLAN_NAMES = {
+    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
+    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
+    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
+    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
+  };
+  var X_SUB_NAMES = {
+    PremiumPlus: "SuperGrok",
+    Premium: "X Premium",
+    Basic: "X Basic"
+  };
+  function getPlanName(bestSubscription, xSubscriptionType) {
+    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
+  }
+
+  // src/plugins/betterSidebar/index.tsx
+  var logger19 = new Logger("BetterSidebar");
+  var cl19 = classNameFactory("void-sidebar-");
+  var settings10 = definePluginSettings({
+    clickToToggle: {
+      type: 3 /* BOOLEAN */,
+      description: "Click anywhere on the sidebar to toggle it.",
+      default: true
+    },
+    defaultCollapsed: {
+      type: 3 /* BOOLEAN */,
+      description: "Start with the sidebar collapsed on page load.",
+      default: false
+    },
+    batchSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Show checkboxes on conversations for bulk selection and deletion.",
+      default: true
+    }
+  });
+  function UserCard({ AvatarMenu }) {
+    const { open: open2 } = SidebarComponents.useSidebar();
+    const { user } = SessionStore.useSession();
+    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
+    const cardRef = useRef(null);
+    if (!open2 || !user)
+      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
+    const forward = (e, type) => {
+      if (!e.isTrusted)
+        return;
+      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
+    };
+    return /* @__PURE__ */ React.createElement("div", {
+      ref: cardRef,
+      className: cl19("card"),
+      onPointerDown: (e) => forward(e, "pointerdown"),
+      onPointerUp: (e) => forward(e, "pointerup")
+    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      justifyContent: "center",
+      gap: "0",
+      className: cl19("info")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      size: "sm",
+      weight: "medium",
+      className: cl19("name")
+    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      size: "xs",
+      color: "secondary",
+      className: cl19("plan")
+    }, getPlanName(bestSubscription, user.xSubscriptionType))));
+  }
+  var selection2 = createSelectionStore();
+  var CONVERSATION_PAGE = "chat";
+  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
+  async function deleteConversations(ids) {
+    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
+    if (currentConvId && ids.includes(currentConvId)) {
+      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
+    }
+    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger19.error("Failed to delete", id, e))));
+  }
+  function SelectCheckbox({ id, route }) {
+    const enabled = settings10.use(["batchSelect"]).batchSelect;
+    if (!enabled || !id || !isConversationRoute(route))
+      return null;
+    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
+      selection: selection2,
+      id
+    });
+  }
+  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
+  var betterSidebar_default = definePlugin({
+    name: "BetterSidebar",
+    icon: PanelLeftIcon,
+    description: "Various sidebar improvements.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings10,
+    managedStyle: "betterSidebar",
+    _UserCard: ErrorBoundary.wrap(UserCard),
+    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
+      selection: selection2,
+      noun: "conversation",
+      title: "Delete conversations",
+      onDelete: deleteConversations
+    }), null),
+    _wrapCheckbox(item, id, route) {
+      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
+    },
+    _wrapSidebarClick(onClick2, id, route) {
+      return (e) => {
+        if (id && settings10.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          e.stopPropagation();
+          selection2.toggle(id);
+          return;
+        }
+        onClick2?.(e);
+      };
+    },
+    _defaultOpen() {
+      return !settings10.store.defaultCollapsed;
+    },
+    _onSidebarClick() {
+      if (!settings10.store.clickToToggle)
+        return;
+      return (e) => {
+        const target = e.target;
+        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
+          return;
+        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
+      };
+    },
+    start() {
+      selection2.clear();
+    },
+    stop() {
+      selection2.clear();
+    },
+    patches: [
+      {
+        find: "AvatarDropdownMenu,{expanded:",
+        replacement: {
+          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
+          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
+        }
+      },
+      {
+        find: "useSidebar must be used within a SidebarProvider",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /\{defaultOpen:(\i),open:/,
+            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
+          },
+          {
+            match: /data-sidebar":"sidebar",className:/,
+            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
+          }
+        ]
+      },
+      {
+        find: '"Editing actions","Editing actions"',
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
+            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
+          },
+          {
+            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
+            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
+          }
+        ]
+      },
+      {
+        find: '"sidebar-expand","Expand"',
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
+          replace: "$self._renderActionBar(),$&"
+        }
+      }
+    ]
+  });
+
+  // void-css:/tmp/Void/src/plugins/settingsFlyout/styles.css
   registerStyle("settingsFlyout", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -12445,8 +9225,8 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   }));
 
   // src/plugins/settingsFlyout/index.tsx
-  var cl22 = classNameFactory("void-sf-");
-  var settings17 = definePluginSettings({
+  var cl20 = classNameFactory("void-sf-");
+  var settings11 = definePluginSettings({
     showOpenSettings: {
       type: 3 /* BOOLEAN */,
       description: 'Show "Open Settings" (last used tab).',
@@ -12526,16 +9306,16 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
   ];
   function openTab(tab, onOpen, event) {
-    const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
+    const store2 = SettingsDialogStore.useSettingsDialogStore.getState();
     if (tab) {
-      store3.setTab(tab);
-      store3.setOpen(true);
+      store2.setTab(tab);
+      store2.setOpen(true);
       return;
     }
     try {
       onOpen?.(event);
     } catch {}
-    store3.setOpen(true);
+    store2.setOpen(true);
   }
   function tabItems(tabs) {
     return tabs.map((t) => {
@@ -12544,7 +9324,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
         key: t.id,
         onSelect: () => openTab(t.id)
       }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl22("menu-icon")
+        className: cl20("menu-icon")
       }), t.name);
     });
   }
@@ -12554,11 +9334,11 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "secondary",
-      className: cl22("group")
+      className: cl20("group")
     }, "Void"), tabItems(tabs));
   }
   function SettingsMenu({ onOpen }) {
-    const cfg = settings17.use([
+    const cfg = settings11.use([
       "showOpenSettings",
       "voidPosition",
       "plugins",
@@ -12578,13 +9358,13 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     const voidFirst = cfg.voidPosition !== "below";
     const hasBoth = grokTabs.length > 0 && voidTabs.length > 0;
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl22("menu-icon")
+      className: cl20("menu-icon")
     }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
-      className: cl22("menu")
+      className: cl20("menu")
     }, showOpen && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: (e) => openTab(undefined, onOpen, e)
     }, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl22("menu-icon")
+      className: cl20("menu-icon")
     }), "Open Settings"), showOpen && (voidTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidFirst && /* @__PURE__ */ React.createElement(VoidSection, {
       tabs: voidTabs
     }), voidFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), !voidFirst && /* @__PURE__ */ React.createElement(VoidSection, {
@@ -12600,7 +9380,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     tags: ["ui", "settings"],
     enabledByDefault: true,
     requiresRestart: true,
-    settings: settings17,
+    settings: settings11,
     _renderSettingsMenu: (onOpen) => createElement(WrappedSettingsMenu, { onOpen }),
     patches: [
       {
@@ -12613,508 +9393,52 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     ]
   });
 
-  // src/plugins/starry/index.tsx
-  var DEFAULT_COLOR = "#ffffff";
-  var StarsBackground = findExportedComponentLazy("StarsBackground");
-  function hexToRgb(hex) {
-    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
-    if (!m)
-      return [255, 255, 255];
-    const n = parseInt(m[1], 16);
-    return [n >> 16 & 255, n >> 8 & 255, n & 255];
-  }
-  function ColorRow() {
-    const { starColor } = settings18.use(["starColor"]);
-    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
-      value: starColor,
-      onChange: (v) => {
-        settings18.store.starColor = v;
-      },
-      title: "Star color",
-      description: "Color of the twinkling stars."
-    });
-  }
-  function StarryBackground() {
-    const { starColor } = settings18.use(["starColor"]);
-    return /* @__PURE__ */ React.createElement("div", {
-      "aria-hidden": true,
-      className: "fixed inset-0 -z-10 pointer-events-none"
-    }, /* @__PURE__ */ React.createElement(StarsBackground, {
-      starColor: hexToRgb(starColor)
-    }));
-  }
-  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings18 = definePluginSettings({
-    starColor: {
-      type: 6 /* COMPONENT */,
-      default: DEFAULT_COLOR,
-      component: ColorRow
-    }
-  }).withPrivateSettings();
-  var starry_default = definePlugin({
-    name: "Starry",
-    icon: SparklesIcon,
-    description: "Adds Grok's native twinkling starry background to the main page.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings18,
-    _StarryBg() {
-      return /* @__PURE__ */ React.createElement(WrappedStarry, {
-        key: "void-starry-bg"
-      });
+  // src/plugins/composerOpacity/index.ts
+  var STYLE_NAME4 = "composerOpacity";
+  var SHELL = ".query-bar";
+  var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
+  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
+  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
+  var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
+  var settings12 = definePluginSettings({
+    opacity: {
+      type: 5 /* SLIDER */,
+      description: "Background opacity of the chat input. 100 is fully opaque.",
+      min: 0,
+      max: 100,
+      default: 100
     },
-    patches: [
-      {
-        find: '"chat-page")',
-        replacement: {
-          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
-          replace: "$1$self._StarryBg(),$2"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/noSidebarIdentity/index.ts
-  var STYLE_NAME5 = "noSidebarIdentity";
-  var FOOTER = '[data-sidebar="footer"]';
-  var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
-  var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
-  var settings19 = definePluginSettings({
-    hideUsername: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the username next to the sidebar avatar.",
-      default: true
-    },
-    hideEmail: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the email next to the sidebar avatar.",
-      default: true
+    blur: {
+      type: 5 /* SLIDER */,
+      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
+      min: 0,
+      max: 40,
+      default: 16
     }
   });
-  function apply4() {
-    const rules = [];
-    if (settings19.store.hideUsername) {
-      rules.push(`${STACK}>:first-child{display:none!important}`);
-      rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
-    }
-    if (settings19.store.hideEmail) {
-      rules.push(`${STACK}>:nth-child(2){display:none!important}`);
-    }
-    if (settings19.store.hideUsername && settings19.store.hideEmail) {
-      rules.push(`${TEXT_WRAP}{display:none!important}`);
-      rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
-    }
-    registerStyle(STYLE_NAME5, rules.join(`
-`));
+  function apply3() {
+    const pct = clamp(settings12.store.opacity, 0, 100);
+    const blur = clamp(settings12.store.blur, 0, 40);
+    const alpha = pct / 100;
+    const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
+    registerStyle(STYLE_NAME4, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
   }
-  var noSidebarIdentity_default = definePlugin({
-    name: "NoSidebarIdentity",
-    icon: UserRoundXIcon,
-    description: "Hide username and/or email in the Grok sidebar. Avatar stays clickable.",
+  var composerOpacity_default = definePlugin({
+    name: "ComposerOpacity",
+    icon: BlendIcon,
+    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
     authors: [Devs.p],
-    tags: ["ui", "privacy"],
+    tags: ["ui", "chat"],
     enabledByDefault: true,
-    settings: settings19,
-    start: apply4,
-    onSettingsChange: apply4,
+    settings: settings12,
+    start: apply3,
+    onSettingsChange: apply3,
     stop() {
-      unregisterStyle(STYLE_NAME5);
+      unregisterStyle(STYLE_NAME4);
     }
   });
 
-  // void-css:/tmp/void-build/src/plugins/customInstructions/styles.css
-  registerStyle("customInstructions", `.void-ci-root {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.void-ci-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-}
-
-.void-ci-card {
-    position: relative;
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 0.625rem;
-    border-radius: 1rem;
-    padding: 0.625rem 0.75rem;
-    height: 3.25rem;
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l1));
-    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
-    cursor: pointer;
-}
-
-.void-ci-card:hover {
-    background: hsl(var(--surface-l2));
-}
-
-.void-ci-card-add {
-    justify-content: center;
-    box-shadow: none;
-    border: 1px dashed hsl(var(--border-l1));
-}
-
-.void-ci-avatar {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.void-ci-card-name {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-    flex: 1;
-    gap: 0.125rem;
-}
-
-.void-ci-card-name>* {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-}
-
-.void-ci-card-actions {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-end: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.125rem;
-    opacity: 0;
-    transition: opacity 0.15s;
-}
-
-.void-ci-card:hover .void-ci-card-actions {
-    opacity: 1;
-}
-
-.void-ci-card:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ci-editor {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.void-ci-label {
-    padding-inline: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: hsl(var(--fg-primary));
-}
-
-.void-ci-input {
-    width: 100%;
-}
-
-.void-ci-textarea-wrap {
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.75rem;
-}
-
-.void-ci-textarea-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ci-textarea-wrap-error {
-    border-color: hsl(var(--fg-danger));
-}
-
-.void-ci-textarea {
-    width: 100%;
-    min-height: 7.5rem;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    color: hsl(var(--fg-primary));
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.void-ci-textarea:focus {
-    outline: none;
-}
-
-.void-ci-editor-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-inline: 0.25rem;
-}
-
-.void-ci-error-text {
-    color: hsl(var(--fg-danger));
-}
-
-.void-ci-trigger {
-    gap: 0.5rem;
-}
-
-.void-ci-menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-ci-card-actions {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/customInstructions/index.tsx
-  var cl23 = classNameFactory("void-ci-");
-  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
-  var CheckIcon = findExportedComponentLazy("CheckIcon");
-  var BookIcon = findExportedComponentLazy("BookIcon");
-  var PenIcon = findExportedComponentLazy("PenIcon");
-  var TrashIcon2 = findExportedComponentLazy("TrashIcon");
-  var PlusIcon = findExportedComponentLazy("PlusIcon");
-  var MAX_LENGTH = 4000;
-  var settings20 = definePluginSettings({
-    editor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
-    }
-  }).withPrivateSettings();
-  function getPresets() {
-    return settings20.plain.presets ?? [];
-  }
-  function setPresets(presets) {
-    settings20.store.presets = presets;
-  }
-  function getAssignments() {
-    return settings20.plain.assignments ?? {};
-  }
-  function PresetCard({ preset, onEdit, onDelete }) {
-    return /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl23("card"),
-      onClick: onEdit
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl23("avatar")
-    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
-      seed: preset.id,
-      size: 32
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl23("card-name")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium"
-    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl23("card-actions")
-    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Edit",
-      onClick: (e) => {
-        e.stopPropagation();
-        onEdit();
-      }
-    }, /* @__PURE__ */ React.createElement(PenIcon, {
-      className: "size-3.5 text-secondary"
-    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Delete",
-      onClick: (e) => {
-        e.stopPropagation();
-        onDelete();
-      }
-    }, /* @__PURE__ */ React.createElement(TrashIcon2, {
-      className: "size-3.5 text-secondary"
-    }))));
-  }
-  function PresetEditor({ preset, onUpdate, onClose }) {
-    const overLimit = preset.prompt.length > MAX_LENGTH;
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl23("editor")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      className: cl23("label")
-    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      className: cl23("input"),
-      placeholder: "Preset name",
-      value: preset.name,
-      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
-      autoComplete: "off"
-    }), /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      className: cl23("label")
-    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl23("textarea-wrap", { "textarea-wrap-error": overLimit })
-    }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl23("textarea"),
-      placeholder: "How should Grok behave?",
-      value: preset.prompt,
-      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl23("editor-footer")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: overLimit ? undefined : "muted",
-      className: overLimit ? cl23("error-text") : undefined
-    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      onClick: onClose
-    }, "Done")));
-  }
-  function PresetsEditor() {
-    const presets = settings20.use(["presets"]).presets ?? [];
-    const [editingId, setEditingId] = useState(null);
-    const updatePreset = useCallback((updated) => {
-      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
-    }, []);
-    const deletePreset = useCallback((id) => {
-      setPresets(getPresets().filter((p) => p.id !== id));
-      const a = { ...getAssignments() };
-      for (const [k, v] of Object.entries(a)) {
-        if (v === id)
-          delete a[k];
-      }
-      settings20.store.assignments = a;
-      setEditingId((prev) => prev === id ? null : prev);
-    }, []);
-    const addPreset = useCallback(() => {
-      const id = randomId();
-      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
-      setEditingId(id);
-    }, []);
-    const editing = presets.find((p) => p.id === editingId);
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl23("root")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl23("grid")
-    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
-      key: p.id,
-      preset: p,
-      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
-      onDelete: () => deletePreset(p.id)
-    })), /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl23("card", "card-add"),
-      onClick: addPreset
-    }, /* @__PURE__ */ React.createElement(PlusIcon, {
-      className: "size-4 text-secondary"
-    }), /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      color: "muted"
-    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
-      preset: editing,
-      onUpdate: updatePreset,
-      onClose: () => setEditingId(null)
-    }));
-  }
-  function InstructionsMenu({ conversationId }) {
-    const presets = settings20.use(["presets"]).presets ?? [];
-    const assignments = settings20.use(["assignments"]).assignments ?? {};
-    const activePresetId = assignments[conversationId];
-    const assign = useCallback((presetId) => {
-      const a = { ...getAssignments() };
-      if (presetId)
-        a[conversationId] = presetId;
-      else
-        delete a[conversationId];
-      settings20.store.assignments = a;
-    }, [conversationId]);
-    if (!presets.length)
-      return null;
-    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl23("trigger")
-    }, /* @__PURE__ */ React.createElement(BookIcon, {
-      size: 16
-    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => assign(),
-      className: cl23("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
-      key: p.id,
-      onSelect: () => assign(p.id),
-      className: cl23("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })))));
-  }
-  var customInstructions_default = definePlugin({
-    name: "CustomInstructions",
-    icon: ScrollTextIcon,
-    description: "Create instruction presets and assign them to conversations.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings20,
-    contextMenuItems: {
-      conversation: {
-        label: "Instructions",
-        render: ErrorBoundary.wrap(InstructionsMenu)
-      }
-    },
-    _getPrompt() {
-      const { conversationId } = ChatPageStore.useChatPageStore.getState();
-      if (!conversationId)
-        return;
-      const presetId = getAssignments()[conversationId];
-      if (!presetId)
-        return;
-      const preset = getPresets().find((p) => p.id === presetId);
-      return preset?.prompt?.trim() || undefined;
-    },
-    patches: [
-      {
-        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
-        all: true,
-        replacement: {
-          match: /customInstructions:(\i)\.customInstructions/g,
-          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/consoleJanitor/index.ts
-  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
-  var consoleJanitor_default = definePlugin({
-    name: "ConsoleJanitor",
-    icon: TerminalIcon,
-    description: "Silences noisy warnings and info logs in the browser console.",
-    authors: [Devs.Prism],
-    patches: [
-      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
-      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
-      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
-      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
-      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
-    ]
-  });
-
-  // void-css:/tmp/void-build/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/Void/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -13239,7 +9563,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     width: 1.1rem;
     min-height: 2px;
     border-radius: 4px 4px 0 0;
-    background: hsl(var(--fg-primary) / 45%);
+    background: hsl(var(--fg-primary) / 0.45);
 }
 
 .void-ud-bar-on .void-ud-bar-fill {
@@ -13696,8 +10020,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var CHART_WINDOW = 7;
   var CHART_SCALE_MIN = 20;
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-  var DAY_MS = 86400000;
-  var logger26 = new Logger("UsageDisplay");
+  var DAY_MS2 = 86400000;
+  var logger20 = new Logger("UsageDisplay");
   function isRecord2(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
   }
@@ -13747,7 +10071,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      logger26.debug("Failed to read usage stats", error);
+      logger20.debug("Failed to read usage stats", error);
       return memory.get(key) ?? null;
     }
   }
@@ -13759,7 +10083,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       localStorage.setItem(key, value);
     } catch (error) {
-      logger26.debug("Failed to persist usage stats", error);
+      logger20.debug("Failed to persist usage stats", error);
       memory.set(key, value);
     }
   }
@@ -13771,7 +10095,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      logger26.debug("Failed to clear usage stats", error);
+      logger20.debug("Failed to clear usage stats", error);
       memory.delete(key);
     }
   }
@@ -13791,7 +10115,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }
       return { version: STATS_VERSION, userId, days };
     } catch (error) {
-      logger26.debug("Failed to read usage stats", error);
+      logger20.debug("Failed to read usage stats", error);
       return emptyStore(userId);
     }
   }
@@ -13883,7 +10207,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function pruneDays(days, retainDays, now) {
     const keep = clamp(Math.floor(retainDays), RETAIN_MIN, RETAIN_MAX);
-    const cutoff = localDateKey(startOfLocalDay(now) - (keep - 1) * DAY_MS);
+    const cutoff = localDateKey(startOfLocalDay(now) - (keep - 1) * DAY_MS2);
     const out = {};
     for (const [date, rec] of Object.entries(days)) {
       if (date >= cutoff)
@@ -13935,9 +10259,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
 
   // src/plugins/usageDisplay/index.tsx
-  var logger27 = new Logger("UsageDisplay");
-  var cl24 = classNameFactory("void-ud-");
-  var settings21 = definePluginSettings({
+  var logger21 = new Logger("UsageDisplay");
+  var cl21 = classNameFactory("void-ud-");
+  var settings13 = definePluginSettings({
     usageStats: {
       type: 3 /* BOOLEAN */,
       description: "Record daily usage. Hover shows today after a delay; click opens history.",
@@ -13975,7 +10299,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var RING_CENTER = RING_SIZE / 2;
   var RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
   var LOCAL_ACCOUNT = "local";
-  var store3 = createExternalStore();
+  var store2 = createExternalStore();
   var state = {
     loading: false,
     lastFetchAt: 0,
@@ -14008,7 +10332,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     state.usage = stored;
     state.lastUpdatedAt = stored ? Date.now() : 0;
     state.lastFetchAt = 0;
-    store3.notify();
+    store2.notify();
   }
   function syncAccount() {
     const userId = currentUserId();
@@ -14026,12 +10350,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     SettingsStore3.markAsChanged();
   }
   function snapshotToday() {
-    if (!settings21.store.usageStats)
+    if (!settings13.store.usageStats)
       return;
     syncAccount();
     if (!state.userId)
       return;
-    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings21.store.retainDays));
+    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings13.store.retainDays));
   }
   async function refresh(reason = "manual") {
     if (refreshPromise)
@@ -14041,12 +10365,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     syncAccount();
     state.loading = true;
     state.lastFetchAt = Date.now();
-    store3.notify();
+    store2.notify();
     refreshPromise = (async () => {
       try {
         const pageUsage = readNativeUsage();
         const remote = await fetchOfficialUsage().then((usage) => ({ ok: true, usage })).catch((error) => {
-          logger27.warn("Failed to fetch official usage", error);
+          logger21.warn("Failed to fetch official usage", error);
           return { ok: false };
         });
         const merged = mergeNativeUsage(state.usage, remote.ok ? remote.usage : null, pageUsage);
@@ -14061,16 +10385,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
       } finally {
         state.loading = false;
         refreshPromise = null;
-        store3.notify();
+        store2.notify();
       }
     })();
     return refreshPromise;
   }
-  function onVisibility2() {
+  function onVisibility() {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS)
       refresh("visible");
   }
-  function onStreamEnd4() {
+  function onStreamEnd2() {
     refresh("stream");
   }
   function readPlan() {
@@ -14111,25 +10435,25 @@ button:has(.void-ud-trigger > .void-ud-label) {
       width: RING_SIZE,
       height: RING_SIZE,
       viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
-      className: classes(cl24("ring"), cl24(`ring-${tone}`))
+      className: classes(cl21("ring"), cl21(`ring-${tone}`))
     }, /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl24("ring-track")
+      className: cl21("ring-track")
     }), /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl24("ring-fill"),
+      className: cl21("ring-fill"),
       strokeDasharray: RING_CIRCUMFERENCE,
       strokeDashoffset: RING_CIRCUMFERENCE * (1 - fraction),
       transform: `rotate(-90 ${RING_CENTER} ${RING_CENTER})`
     }));
   }
   function ButtonIcon() {
-    useExternalStore(store3);
-    const { showPercent } = settings21.use(["showPercent"]);
+    useExternalStore(store2);
+    const { showPercent } = settings13.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -14141,19 +10465,19 @@ button:has(.void-ud-trigger > .void-ud-label) {
         if (!document.hidden)
           refresh("poll");
       }, AUTO_REFRESH_MS);
-      document.addEventListener("visibilitychange", onVisibility2);
+      document.addEventListener("visibilitychange", onVisibility);
       return () => {
         window.clearInterval(id);
-        document.removeEventListener("visibilitychange", onVisibility2);
+        document.removeEventListener("visibilitychange", onVisibility);
       };
     }, []);
     return /* @__PURE__ */ React.createElement("span", {
-      className: classes(cl24("trigger"), label == null && cl24("icon-only"))
+      className: classes(cl21("trigger"), label == null && cl21("icon-only"))
     }, /* @__PURE__ */ React.createElement(ProgressRing, {
       percent: isFree ? null : percent,
       tone: isFree ? "waiting" : tone
     }), label != null && /* @__PURE__ */ React.createElement("span", {
-      className: cl24("label")
+      className: cl21("label")
     }, label));
   }
   function WeekBlock({ isFree, percent, resetAt, loading, labeled }) {
@@ -14168,14 +10492,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl24("week")
+      className: cl21("week")
     }, labeled && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Week"), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl24("used")
+      className: cl21("used")
     }, usedLabel(isFree, percent, loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
@@ -14187,19 +10511,19 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl24("today")
+      className: cl21("today")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Today"), !isFree && /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl24("used")
+      className: cl21("used")
     }, formatDelta(delta ?? (percent != null ? 0 : null)), " of weekly quota"));
   }
   function UsagePanel() {
-    useExternalStore(store3);
-    const { usageStats, hoverStatsDelay } = settings21.use(["usageStats", "hoverStatsDelay"]);
+    useExternalStore(store2);
+    const { usageStats, hoverStatsDelay } = settings13.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
     const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
@@ -14223,12 +10547,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
       if (!showToday)
         return;
       snapshotToday();
-      store3.notify();
+      store2.notify();
     }, [showToday, percent]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 8,
-      className: cl24("panel")
+      className: cl21("panel")
     }, showToday && /* @__PURE__ */ React.createElement(TodayBlock, {
       isFree,
       percent
@@ -14241,12 +10565,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function StatsToggle() {
-    const { usageStats } = settings21.use(["usageStats"]);
+    const { usageStats } = settings13.use(["usageStats"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem",
-      className: cl24("toggle")
+      className: cl21("toggle")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -14259,31 +10583,31 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: !!usageStats,
       onCheckedChange: (value) => {
-        settings21.store.usageStats = value;
-        store3.notify();
+        settings13.store.usageStats = value;
+        store2.notify();
         if (value)
           refresh("manual");
       }
     }));
   }
   function StatsModal({ onClose }) {
-    useExternalStore(store3);
-    const { usageStats } = settings21.use(["usageStats"]);
+    useExternalStore(store2);
+    const { usageStats } = settings13.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
     const todayKey = localDateKey(Date.now());
     const bars = days.length ? fillChartDays(days) : [];
     const scale = chartScale(bars);
-    const [selected2, setSelected] = useState(todayKey);
-    const active = bars.find((d) => d.date === selected2) ?? bars.at(-1) ?? null;
+    const [selected, setSelected] = useState(todayKey);
+    const active = bars.find((d) => d.date === selected) ?? bars.at(-1) ?? null;
     const chartRef = useRef(null);
     useEffect(() => {
-      const node2 = chartRef.current;
-      if (node2)
-        node2.scrollLeft = node2.scrollWidth;
+      const node = chartRef.current;
+      if (node)
+        node.scrollLeft = node.scrollWidth;
     }, [bars.length]);
     useEffect(() => {
-      chartRef.current?.querySelector(`.${cl24("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
-    }, [selected2]);
+      chartRef.current?.querySelector(`.${cl21("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
+    }, [selected]);
     return /* @__PURE__ */ React.createElement(VoidDialogShell, {
       title: "Usage by date",
       subtitle: "Stored on this device.",
@@ -14292,10 +10616,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, /* @__PURE__ */ React.createElement(StatsToggle, null), !usageStats ? /* @__PURE__ */ React.createElement(Paragraph, null, "Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.") : days.length === 0 ? /* @__PURE__ */ React.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl24("history")
+      className: cl21("history")
     }, /* @__PURE__ */ React.createElement(Flex, {
       ref: chartRef,
-      className: cl24("chart"),
+      className: cl21("chart"),
       alignItems: "stretch",
       gap: "0.35rem",
       tabIndex: 0,
@@ -14324,74 +10648,74 @@ button:has(.void-ud-trigger > .void-ud-label) {
         role: "option",
         "aria-selected": on,
         "aria-label": `${rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}, ${formatDelta(delta)}`,
-        className: classes(cl24("bar"), on && cl24("bar-on"), empty && cl24("bar-empty")),
+        className: classes(cl21("bar"), on && cl21("bar-on"), empty && cl21("bar-empty")),
         onClick: () => setSelected(rec.date)
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl24("bar-value")
+        className: cl21("bar-value")
       }, empty ? " " : formatPercent(delta)), /* @__PURE__ */ React.createElement("span", {
-        className: cl24("bar-track")
+        className: cl21("bar-track")
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl24("bar-fill"),
+        className: cl21("bar-fill"),
         style: { height: `${pct}%` }
       })), /* @__PURE__ */ React.createElement("span", {
-        className: cl24("bar-label")
+        className: cl21("bar-label")
       }, rec.date === todayKey ? "Today" : formatDayNumber(rec.date)));
     })), active != null && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.35rem",
-      className: cl24("detail")
+      className: cl21("detail")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold"
     }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "flex-start",
       gap: "0.5rem",
-      className: cl24("formula")
+      className: cl21("formula")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-term")
+      className: cl21("formula-term")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-label")
+      className: cl21("formula-label")
     }, active.date === todayKey ? "Current" : "Last"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-value")
+      className: cl21("formula-value")
     }, formatPercent(active.lastPercent))), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-op-col")
+      className: cl21("formula-op-col")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
+      className: cl21("formula-op")
     }, "−"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
+      className: cl21("formula-op")
     }, "−")), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-term")
+      className: cl21("formula-term")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-label")
+      className: cl21("formula-label")
     }, "Start"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-value")
+      className: cl21("formula-value")
     }, formatPercent(active.startPercent))), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-op-col")
+      className: cl21("formula-op-col")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
+      className: cl21("formula-op")
     }, "="), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
+      className: cl21("formula-op")
     }, "=")), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-term")
+      className: cl21("formula-term")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-label")
+      className: cl21("formula-label")
     }, "Used"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-value")
+      className: cl21("formula-value")
     }, formatPercent(dayDelta(active))))))));
   }
   function ClearStats() {
-    useExternalStore(store3);
-    const [open3, setOpen] = useState(false);
+    useExternalStore(store2);
+    const [open2, setOpen] = useState(false);
     const userId = state.userId || currentUserId();
     const days = userId ? listDays(userId) : [];
     return /* @__PURE__ */ React.createElement(Flex, {
@@ -14404,7 +10728,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       disabled: !days.length,
       onClick: () => setOpen(true)
     }, "Clear usage history"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open3,
+      open: open2,
       onOpenChange: setOpen,
       title: "Clear usage history",
       description: "Delete all locally recorded daily usage? This cannot be undone.",
@@ -14413,7 +10737,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onConfirm: () => {
         if (userId)
           clearStats(userId);
-        store3.notify();
+        store2.notify();
       }
     }));
   }
@@ -14441,852 +10765,204 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings21,
+    settings: settings13,
     start() {
       migrateUsageStats();
     },
     chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
     events: {
-      streamEnd: onStreamEnd4
+      streamEnd: onStreamEnd2
     },
     onSettingsChange() {
-      if (settings21.store.usageStats)
+      if (settings13.store.usageStats)
         refresh("manual");
     }
   });
 
-  // src/plugins/widerChat/index.ts
-  var STYLE_NAME6 = "widerChat";
-  var settings22 = definePluginSettings({
-    width: {
-      type: 1 /* NUMBER */,
-      description: "Maximum chat width in rem.",
-      default: 64
-    }
-  });
-  function applyWidth() {
-    const w = settings22.store.width;
-    registerStyle(STYLE_NAME6, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
-  }
-  var widerChat_default = definePlugin({
-    name: "WiderChat",
-    icon: UnfoldHorizontalIcon,
-    description: "Adjustable chat width for big monitors.",
-    authors: [Devs.Prism],
-    tags: ["chat", "ui"],
-    settings: settings22,
-    start: applyWidth,
-    onSettingsChange: applyWidth,
-    stop() {
-      unregisterStyle(STYLE_NAME6);
-    }
-  });
-
-  // src/plugins/responseNotification/index.ts
-  var settings23 = definePluginSettings({
-    sound: {
+  // src/plugins/cleaner/index.ts
+  var settings14 = definePluginSettings({
+    hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
-      description: "Play a notification sound.",
+      description: "Hide the upgrade plan button in the user menu.",
       default: true
     },
-    soundUrl: {
-      type: 0 /* STRING */,
-      description: "Custom sound URL (leave empty for default beep).",
-      default: "",
-      placeholder: "https://example.com/sound.mp3"
-    },
-    browserNotification: {
+    hideUpsellCard: {
       type: 3 /* BOOLEAN */,
-      description: "Show a browser notification.",
+      description: "Hide the upsell card banner.",
       default: true
     },
-    onlyWhenHidden: {
+    hideUpsellSmall: {
       type: 3 /* BOOLEAN */,
-      description: "Only notify when the tab is not focused.",
+      description: "Hide the small SuperGrok upsell banner.",
+      default: true
+    },
+    hideModelUpsell: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade prompt in the model selector.",
+      default: true
+    },
+    hideInaccessibleModels: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide locked/inaccessible models in the model selector.",
+      default: true
+    },
+    hideNotificationBanner: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Get notified when Grok finishes answering" banner.',
+      default: true
+    },
+    hideConnectX: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
       default: true
     }
   });
-  var userGestured = false;
-  var gestureCtrl = null;
-  function playBeep() {
-    const ctx = new AudioContext;
-    const start = () => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 800;
-      gain.gain.value = 0.15;
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-      osc.onended = () => ctx.close();
-    };
-    if (ctx.state === "suspended")
-      ctx.resume().then(start, () => ctx.close());
-    else
-      start();
-  }
-  function playSound() {
-    if (!userGestured)
-      return;
-    const url = settings23.store.soundUrl?.trim();
-    if (url) {
-      const audio = new Audio(url);
-      audio.volume = 0.3;
-      audio.play().catch(() => playBeep());
-    } else {
-      playBeep();
-    }
-  }
-  function onStreamEnd5({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "closed")
-      return;
-    if (settings23.store.onlyWhenHidden && document.visibilityState === "visible")
-      return;
-    if (settings23.store.sound)
-      playSound();
-    if (settings23.store.browserNotification)
-      sendBrowserNotification("Grok", "Response complete.");
-  }
-  var responseNotification_default = definePlugin({
-    name: "ResponseNotification",
-    icon: BellIcon,
-    description: "Notify when Grok finishes responding.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings23,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      if (gestureCtrl)
-        return;
-      gestureCtrl = new AbortController;
-      const markGestured = () => {
-        userGestured = true;
-        gestureCtrl?.abort();
-        gestureCtrl = null;
-      };
-      for (const evt of ["pointerdown", "keydown", "touchstart"]) {
-        addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
-      }
-    },
-    stop() {
-      gestureCtrl?.abort();
-      gestureCtrl = null;
-    },
-    events: {
-      streamEnd: onStreamEnd5
+  var hideComponentPatch = (name, setting, all = true) => ({
+    find: `"${name}",0,`,
+    all,
+    replacement: {
+      match: new RegExp(`"${name}",0,`),
+      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
     }
   });
-
-  // void-css:/tmp/void-build/src/plugins/betterImagine/styles.css
-  registerStyle("betterImagine", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-imagine-chip {
-    background: hsl(var(--surface-l1));
-}
-
-.void-imagine-chip:hover {
-    background: hsl(var(--surface-l2));
-}
-
-.void-imagine-search {
-    width: 10rem;
-    flex-shrink: 0;
-    border-radius: 9999px;
-}
-
-.void-imagine-date-select,
-.void-imagine-sort-select {
-    flex-shrink: 0;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    background: hsl(var(--surface-l1));
-    color: hsl(var(--fg-secondary));
-    border: none;
-}
-
-.void-imagine-sort-active {
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l2));
-}
-`);
-
-  // src/plugins/betterImagine/index.tsx
-  var logger28 = new Logger("BetterImagine");
-  var cl25 = classNameFactory("void-imagine-");
-  var settings24 = definePluginSettings({
-    hideDefaultPreviews: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the community image grid and templates on the Imagine home page.",
-      default: true
-    },
-    noAutoplay: {
-      type: 3 /* BOOLEAN */,
-      description: "Stop video thumbnails from autoplaying.",
-      default: true
-    },
-    playOnHover: {
-      type: 3 /* BOOLEAN */,
-      description: "Play video thumbnails when hovered.",
-      default: true
-    },
-    hideModerated: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide moderated images and videos that cannot be interacted with.",
-      default: true
-    },
-    pauseWhenHidden: {
-      type: 3 /* BOOLEAN */,
-      description: "Pause any playing video thumbnails when the tab loses focus.",
-      default: true
-    },
-    persistFilters: {
-      type: 3 /* BOOLEAN */,
-      description: "Remember Favorites filter + sort across reloads.",
-      default: true
-    },
-    smartFilenames: {
-      type: 3 /* BOOLEAN */,
-      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
-      default: true
-    },
-    bypassPaywall: {
-      type: 3 /* BOOLEAN */,
-      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
-      default: false
-    },
-    ctrlClickSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
-      default: true
-    }
-  });
-  function buildFilename(post, isVideo) {
-    if (!settings24.store.smartFilenames || !post)
-      return null;
-    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
-    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
-    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
-    const id = post.id?.slice(0, 8) ?? "";
-    const ext = isVideo ? "mp4" : "png";
-    const parts = [date, slug, id].filter(Boolean);
-    if (!parts.length)
-      return null;
-    return `${parts.join("_")}.${ext}`;
-  }
-  var FILTER_MAP = {
-    image: "MEDIA_POST_TYPE_IMAGE",
-    video: "MEDIA_POST_TYPE_VIDEO"
-  };
-  var DATE_LABELS = {
-    all: "Any time",
-    today: "Today",
-    week: "This week",
-    month: "This month"
-  };
-  var SORT_LABELS = {
-    newest: "Newest first",
-    oldest: "Oldest first",
-    "prompt-az": "Prompt A → Z",
-    "prompt-za": "Prompt Z → A",
-    random: "Shuffle"
-  };
-  var SORT_KEYS = Object.keys(SORT_LABELS);
-  var DAY_MS2 = 86400000;
-  var DATE_CUTOFFS = {
-    all: 0,
-    today: DAY_MS2,
-    week: 7 * DAY_MS2,
-    month: 30 * DAY_MS2
-  };
-  var STORAGE_KEY2 = "void-imagine-filters";
-  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
-  function loadFilters() {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY2);
-      if (!raw)
-        return DEFAULT_FILTERS;
-      const parsed = JSON.parse(raw);
-      return {
-        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
-        search: typeof parsed.search === "string" ? parsed.search : "",
-        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
-        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
-      };
-    } catch {
-      return DEFAULT_FILTERS;
-    }
-  }
-  var initial = loadFilters();
-  var currentFilter = initial.filter;
-  var currentSearch = initial.search;
-  var currentDate = initial.date;
-  var currentSort = initial.sort;
-  var randomSeed = Date.now();
-  var filterStore = createExternalStore();
-  function persist() {
-    if (!settings24.store.persistFilters)
-      return;
-    try {
-      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
-    } catch {}
-  }
-  function setFilter(f) {
-    currentFilter = f;
-    filterStore.notify();
-    persist();
-  }
-  var setSearch = debounce((s) => {
-    currentSearch = s;
-    filterStore.notify();
-    persist();
-  }, 200);
-  function setDate(d) {
-    currentDate = d;
-    filterStore.notify();
-    persist();
-  }
-  function setSort(s) {
-    if (s === "random" && currentSort === "random")
-      randomSeed = Date.now();
-    currentSort = s;
-    filterStore.notify();
-    persist();
-  }
-  function resetFilters() {
-    currentFilter = "all";
-    currentSearch = "";
-    currentDate = "all";
-    currentSort = "newest";
-    filterStore.notify();
-    persist();
-  }
-  function hasActiveFilters() {
-    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
-  }
-  function isModerated(p) {
-    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
-  }
-  var haystackCache = new WeakMap;
-  var tsCache = new WeakMap;
-  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
-  function getHaystack(p) {
-    let h = haystackCache.get(p);
-    if (h === undefined) {
-      h = `${p.prompt ?? ""}
-${p.originalPrompt ?? ""}`.toLowerCase();
-      haystackCache.set(p, h);
-    }
-    return h;
-  }
-  function getTs(p) {
-    let t = tsCache.get(p);
-    if (t === undefined) {
-      t = new Date(p.createTime).getTime() || 0;
-      tsCache.set(p, t);
-    }
-    return t;
-  }
-  function matchesFilters(p, target, q, cutoff, hideModerated) {
-    if (!p)
-      return false;
-    if (hideModerated && isModerated(p))
-      return false;
-    if (target && p.mediaType !== target)
-      return false;
-    if (cutoff && getTs(p) < cutoff)
-      return false;
-    if (q && !getHaystack(p).includes(q))
-      return false;
-    return true;
-  }
-  var cacheKey = null;
-  var cacheList = null;
-  var cacheResult = [];
-  function filterItems(items) {
-    const { hideModerated } = settings24.store;
-    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
-    if (cacheList === items && cacheKey === key)
-      return cacheResult;
-    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
-    let out = items;
-    if (needsFilter) {
-      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
-      const q = currentSearch.toLowerCase();
-      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
-      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
-    }
-    cacheList = items;
-    cacheKey = key;
-    cacheResult = currentSort === "newest" ? out : sortItems(out);
-    return cacheResult;
-  }
-  function mulberry32(seed) {
-    let a = seed;
-    return () => {
-      a |= 0;
-      a = a + 1831565813 | 0;
-      let t = Math.imul(a ^ a >>> 15, 1 | a);
-      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-  function sortItems(items) {
-    if (items.length < 2)
-      return items;
-    const arr = [...items];
-    switch (currentSort) {
-      case "oldest":
-        return arr.toSorted((a, b) => getTs(a) - getTs(b));
-      case "prompt-az":
-        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
-      case "prompt-za":
-        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
-      case "random": {
-        const rand = mulberry32(randomSeed);
-        for (let i = arr.length - 1;i > 0; i--) {
-          const j = Math.floor(rand() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      }
-      default:
-        return arr;
-    }
-  }
-  var pending = new WeakMap;
-  function pauseVideo(video) {
-    const promise = pending.get(video);
-    pending.delete(video);
-    if (promise) {
-      promise.then(() => {
-        if (pending.has(video))
-          return;
-        video.pause();
-        video.currentTime = 0;
-      }).catch((e) => logger28.warn("Failed to pause video:", e));
-    } else {
-      video.pause();
-      video.currentTime = 0;
-    }
-  }
-  var onMouseEnter = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pending.set(video, video.play().catch((e2) => logger28.error("Failed to play video", e2)));
-  };
-  var onMouseLeave = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pauseVideo(video);
-  };
-  function useFilteredFavorites() {
-    const list = MediaStore.useMediaStore((s) => s.favoritesList);
-    useExternalStore(filterStore);
-    return filterItems(list);
-  }
-  function mediaState() {
-    return MediaStore.useMediaStore.getState();
-  }
-  function selectVisible() {
-    const state2 = mediaState();
-    const list = state2.favoritesList ?? [];
-    const visible = filterItems(list);
-    if (!visible.length)
-      return;
-    state2.setMultiSelectItems(visible);
-    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
-  }
-  function deselectAll() {
-    const state2 = mediaState();
-    state2.clearMultiSelect?.();
-  }
-  function selectedPosts() {
-    const state2 = mediaState();
-    const ids = Object.keys(state2.multiSelectIds ?? {});
-    return ids.map((id) => state2.byId[id]).filter((p) => !!p);
-  }
-  async function copyLines(lines, label) {
-    if (!lines.length) {
-      Toaster.toast.info(`Selected items have no ${label}s.`);
-      return;
-    }
-    try {
-      await copyToClipboard(lines.join(`
-`));
-      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
-    } catch (e) {
-      logger28.error(`Failed to copy ${label}s`, e);
-      Toaster.toast.error(`Failed to copy ${label}s.`);
-    }
-  }
-  async function copySelectedPrompts() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
-  }
-  async function copySelectedUrls() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    const { videoByMediaId } = mediaState();
-    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
-    await copyLines(urls, "URL");
-  }
-  async function bulkUpscaleSelected() {
-    const state2 = mediaState();
-    const ids = Object.keys(state2.multiSelectIds ?? {});
-    let upscaled = 0;
-    let alreadyHd = 0;
-    let inProgress = 0;
-    for (const id of ids) {
-      const videos = state2.videoByMediaId[id];
-      if (!videos?.length)
-        continue;
-      for (const video of videos) {
-        if (video.hdMediaUrl) {
-          alreadyHd++;
-          continue;
-        }
-        if (video.upscalingInProgress) {
-          inProgress++;
-          continue;
-        }
-        try {
-          await state2.upscaleVideo(id, video.id);
-          upscaled++;
-        } catch (e) {
-          logger28.error("Failed to upscale video:", id, video.id, e);
-        }
-      }
-    }
-    if (upscaled)
-      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
-    else if (alreadyHd)
-      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
-    else if (inProgress)
-      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
-    else
-      Toaster.toast.info("No videos to upscale.");
-  }
-  function FilterButtons() {
-    useExternalStore(filterStore);
-    const [searchInput, setSearchInput] = useState(currentSearch);
-    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
-    const sortActive = currentSort !== "newest";
-    const lastSync = useRef(currentSearch);
-    if (lastSync.current !== currentSearch) {
-      lastSync.current = currentSearch;
-      setSearchInput(currentSearch);
-    }
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
-      value: currentDate,
-      onValueChange: (v) => setDate(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl25("date-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: d,
-      value: d
-    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
-      value: currentSort,
-      onValueChange: (v) => setSort(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: sortActive ? cl25("sort-select", "sort-active") : cl25("sort-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: s,
-      value: s
-    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      placeholder: "Search...",
-      value: searchInput,
-      onChange: (e) => {
-        setSearchInput(e.target.value);
-        setSearch(e.target.value);
-      },
-      className: cl25("search")
-    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
-      key: f,
-      variant: currentFilter === f ? "primary" : "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: currentFilter !== f ? cl25("chip") : undefined,
-      onClick: () => setFilter(currentFilter === f ? "all" : f)
-    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: cl25("chip"),
-      onClick: resetFilters
-    }, "Clear"));
-  }
-  function UpscaleItem() {
-    const [open3, setOpen] = useState(false);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => setOpen(true)
-    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
-      className: "size-4 me-2"
-    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open3,
-      onOpenChange: setOpen,
-      title: "Upscale selected videos",
-      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
-      confirmText: "Upscale",
-      onConfirm: bulkUpscaleSelected
-    }));
-  }
-  function CopyActions() {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedPrompts
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedUrls
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy URLs"));
-  }
-  function isImaginePage() {
-    const page = RoutingStore.useRoutingStore.getState().route?.page;
-    return page === "imagine" || page === "imagine-favorites";
-  }
-  function isFavoritesPage() {
-    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
-  }
-  function isTypingTarget(t) {
-    if (!(t instanceof HTMLElement))
-      return false;
-    if (t.isContentEditable)
-      return true;
-    const tag = t.tagName;
-    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-  }
-  function onKeyDown3(e) {
-    if (!isImaginePage())
-      return;
-    if (e.ctrlKey || e.metaKey || e.altKey)
-      return;
-    if (isTypingTarget(e.target))
-      return;
-    if (e.key === "i" || e.key === "I") {
-      setFilter(currentFilter === "image" ? "all" : "image");
-      e.preventDefault();
-    } else if (e.key === "v" || e.key === "V") {
-      setFilter(currentFilter === "video" ? "all" : "video");
-      e.preventDefault();
-    } else if (e.key === "r" || e.key === "R") {
-      resetFilters();
-      e.preventDefault();
-    } else if (e.key === "A") {
-      if (isFavoritesPage()) {
-        deselectAll();
-        e.preventDefault();
-      }
-    } else if (e.key === "a") {
-      if (isFavoritesPage()) {
-        selectVisible();
-        e.preventDefault();
-      }
-    } else if (e.key === "c" || e.key === "C") {
-      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
-        copySelectedPrompts();
-        e.preventDefault();
-      }
-    }
-  }
-  function onVisibilityChange() {
-    if (!settings24.store.pauseWhenHidden)
-      return;
-    if (document.visibilityState !== "hidden")
-      return;
-    for (const video of document.querySelectorAll("video")) {
-      if (!video.paused)
-        video.pause();
-    }
-  }
-  var abortCtrl = null;
-  var betterImagine_default = definePlugin({
-    name: "BetterImagine",
-    icon: ImagesIcon,
-    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
+  var cleaner_default = definePlugin({
+    name: "Cleaner",
+    icon: BrushCleaningIcon,
+    description: "Hides upgrade nags and upsell banners.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings24,
-    _hideDefault: () => settings24.store.hideDefaultPreviews,
-    _NullGrid: () => null,
-    _autoPlay: () => !settings24.store.noAutoplay,
-    _bypassPaywall: () => settings24.store.bypassPaywall,
-    _ctrlClickSelect: () => settings24.store.ctrlClickSelect,
-    _hoverProps: () => settings24.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
-    _useFilteredFavorites: useFilteredFavorites,
-    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
-    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
-    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
-    _buildFilename: buildFilename,
-    start() {
-      if (abortCtrl)
-        return;
-      abortCtrl = new AbortController;
-      const { signal } = abortCtrl;
-      document.addEventListener("keydown", onKeyDown3, { capture: true, signal });
-      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
-    },
-    stop() {
-      abortCtrl?.abort();
-      abortCtrl = null;
-    },
+    enabledByDefault: true,
+    settings: settings14,
     patches: [
       {
-        find: "image_feed_opened",
-        group: true,
-        replacement: [
-          {
-            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
-            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
-          },
-          {
-            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
-            replace: "=$self._useFilteredFavorites()"
-          }
-        ]
-      },
-      {
-        find: "image_feed_image_selected",
-        group: true,
-        replacement: [
-          {
-            match: /autoPlay:!0/g,
-            replace: "autoPlay:$self._autoPlay()"
-          },
-          {
-            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
-            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          }
-        ]
-      },
-      {
-        find: 'imagine-folder.all","All"',
-        replacement: {
-          match: /"imagine-folder\.all","All"\)\}\)/,
-          replace: "$&,$self._renderFilterButtons({})"
-        }
-      },
-      {
-        find: "imagine-templates.section-title",
-        all: true,
-        noWarn: true,
-        replacement: {
-          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
-          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
-        }
-      },
-      {
-        find: '"imagine-set-resolution"',
+        find: '"user-dropdown.upgrade","Upgrade plan"',
         all: true,
         replacement: {
-          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
-          replace: "if(!$self._bypassPaywall())$&"
+          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          replace: ",$self.settings.store.hideUpgradePlan||$1"
         }
       },
       {
-        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
+        find: "UPSELL_CARD_PRIORITY)",
+        all: true,
+        replacement: {
+          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
+          replace: "$1&&!$self.settings.store.hideUpsellCard"
+        }
+      },
+      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
+      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
+      {
+        find: "connect-x-upsell-dismissed",
+        replacement: {
+          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
+          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
+        }
+      },
+      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
+      {
+        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
+        all: true,
         group: true,
         replacement: [
           {
-            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
-            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
+            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
+            replace: "$&$self.settings.store.hideModelUpsell||"
           },
           {
-            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
-            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
+            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
+            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
           }
         ]
       }
     ]
   });
 
-  // src/plugins/noGrokBot/index.ts
-  var STYLE_NAME7 = "noGrokBot";
-  var CSS2 = `
-#grok-bot-nav-button,
-div:has(> #grok-bot-nav-button) {
-    display: none !important;
+  // void-css:/tmp/Void/src/plugins/cloneChats/styles.css
+  registerStyle("cloneChats", `.void-clone-icon {
+    margin-inline-end: 0.5rem;
 }
-#promo-portal [aria-label*="Grok Bot"] {
-    display: none !important;
-}
-`;
-  var noGrokBot_default = definePlugin({
-    name: "NoGrokBot",
-    icon: BotOffIcon,
-    description: "Hide the top-right Grok Bot promo button.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    start() {
-      registerStyle(STYLE_NAME7, CSS2);
-    },
-    stop() {
-      unregisterStyle(STYLE_NAME7);
+`);
+
+  // src/plugins/cloneChats/index.tsx
+  var logger22 = new Logger("CloneChats");
+  async function cloneChat(conversationId) {
+    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
+    if (!lastResponseId)
+      throw new Error("No responses found in conversation.");
+    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
+      conversationId,
+      body: { responseId: lastResponseId, allowIndexing: false }
+    });
+    if (!shareLinkId)
+      throw new Error("Failed to create share link.");
+    try {
+      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
+      if (conversation?.conversationId) {
+        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
+      }
+    } finally {
+      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
+    }
+  }
+  function CloneItem({ conversationId }) {
+    const streaming = useIsStreaming(conversationId);
+    return /* @__PURE__ */ React.createElement(MenuItem, {
+      onSelect: () => cloneChat(conversationId).catch((e) => logger22.error("Failed to clone chat:", e)),
+      disabled: streaming
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      size: 16,
+      className: "void-clone-icon"
+    }), "Clone");
+  }
+  var cloneChats_default = definePlugin({
+    name: "CloneChats",
+    icon: CopyIcon,
+    description: "Clone conversations from the context-menu.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    contextMenuItems: {
+      conversation: {
+        label: "Clone",
+        render: ErrorBoundary.wrap(CloneItem)
+      }
     }
   });
 
   // src/plugins/betterLinks/index.tsx
-  var DEFAULT_LINK = "#FCFCFC";
-  var DEFAULT_VISITED = "#9E9E9E";
-  var TOKEN_LINK = "hsl(var(--fg-primary))";
-  var TOKEN_VISITED = "hsl(var(--fg-tertiary))";
-  var STYLE_NAME8 = "better-links-dynamic";
+  var DEFAULT_LINK = "#4a9eff";
+  var DEFAULT_VISITED = "#9b59b6";
+  var STYLE_NAME5 = "better-links-dynamic";
   var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
   function isValidHex(c) {
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings25.store[key];
+    const val = settings15.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
-    const customLink = settings25.store.linkColor;
-    const link = customLink && isValidHex(customLink) ? customLink : TOKEN_LINK;
+    const link = getColor("linkColor", DEFAULT_LINK);
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings25.store.enableVisitedColor) {
-      const customVisited = settings25.store.visitedColor;
-      const visited = customVisited && isValidHex(customVisited) ? customVisited : TOKEN_VISITED;
+    if (settings15.store.enableVisitedColor) {
+      const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
-    registerStyle(STYLE_NAME8, css);
+    registerStyle(STYLE_NAME5, css);
   }
-  function ColorRow2({ settingKey, title, description, fallback }) {
-    settings25.use([settingKey]);
+  function ColorRow({ settingKey, title, description, fallback }) {
+    settings15.use([settingKey]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
-        settings25.store[settingKey] = v;
+        settings15.store[settingKey] = v;
         applyColors();
       },
       title,
       description
     });
   }
-  var settings25 = definePluginSettings({
+  var settings15 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -15300,7 +10976,7 @@ div:has(> #grok-bot-nav-button) {
     },
     linkColor: {
       type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
+      component: () => /* @__PURE__ */ React.createElement(ColorRow, {
         settingKey: "linkColor",
         title: "Link color",
         description: "Colorize links in messages.",
@@ -15309,7 +10985,7 @@ div:has(> #grok-bot-nav-button) {
     },
     visitedColor: {
       type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
+      component: () => /* @__PURE__ */ React.createElement(ColorRow, {
         settingKey: "visitedColor",
         title: "Visited color",
         description: "Colorize links you already visited.",
@@ -15323,7 +10999,7 @@ div:has(> #grok-bot-nav-button) {
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings25,
+    settings: settings15,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -15342,17 +11018,17 @@ div:has(> #grok-bot-nav-button) {
       }
     ],
     _remarkLinkify() {
-      const { store: store4 } = settings25;
+      const { store: store3 } = settings15;
       return (tree) => {
         try {
-          if (!store4.linkifyDomains)
+          if (!store3.linkifyDomains)
             return;
-          const walk = (node2) => {
-            if (!node2.children)
+          const walk = (node) => {
+            if (!node.children)
               return;
             const out = [];
             let changed = false;
-            for (const child of node2.children) {
+            for (const child of node.children) {
               if (child.type !== "text") {
                 walk(child);
                 out.push(child);
@@ -15377,7 +11053,7 @@ div:has(> #grok-bot-nav-button) {
               changed = true;
             }
             if (changed)
-              node2.children = out;
+              node.children = out;
           };
           walk(tree);
         } catch {
@@ -15386,19 +11062,4386 @@ div:has(> #grok-bot-nav-button) {
       };
     },
     start() {
+      settings15.store.linkColor ??= DEFAULT_LINK;
+      settings15.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
-      enableStyle(STYLE_NAME8);
+      enableStyle(STYLE_NAME5);
     },
     stop() {
-      disableStyle(STYLE_NAME8);
+      disableStyle(STYLE_NAME5);
+    }
+  });
+
+  // src/plugins/autoRetry/index.ts
+  var logger23 = new Logger("AutoRetry");
+  var CONTENT_MODERATED = "grok:content-moderated";
+  var settings16 = definePluginSettings({
+    retryModeration: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry content moderation errors.",
+      default: true
+    },
+    retryNetwork: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry network and stream errors.",
+      default: true
+    },
+    maxRetries: {
+      type: 1 /* NUMBER */,
+      description: "Maximum consecutive retries per conversation.",
+      default: 3
+    },
+    delay: {
+      type: 1 /* NUMBER */,
+      description: "Seconds to wait before retrying.",
+      default: 2
+    }
+  });
+  var retryCounts = new Map;
+  var pendingTimer = null;
+  function clearPending() {
+    if (pendingTimer != null) {
+      clearTimeout(pendingTimer);
+      pendingTimer = null;
+    }
+  }
+  function isModeration(response) {
+    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
+  }
+  function shouldRetry(response) {
+    if (isModeration(response))
+      return settings16.store.retryModeration;
+    return settings16.store.retryNetwork;
+  }
+  function retry(responseId, conversationId, response) {
+    const count = (retryCounts.get(conversationId) ?? 0) + 1;
+    const max = settings16.store.maxRetries;
+    if (count > max) {
+      showToast("Max retries reached.", 2 /* ERROR */);
+      retryCounts.delete(conversationId);
+      return;
+    }
+    retryCounts.set(conversationId, count);
+    const delaySec = settings16.store.delay;
+    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
+    logger23.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    clearPending();
+    pendingTimer = setTimeout(() => {
+      pendingTimer = null;
+      const state2 = ChatPageStore.useChatPageStore.getState();
+      if (state2.streamedMessageId)
+        return;
+      state2.sendResponse({
+        message: "",
+        parentResponseId: responseId,
+        conversationId,
+        fileAttachmentIds: response.fileAttachments,
+        setOpimisticUserResponse: false,
+        setUserResponse: false,
+        enableRetries: true
+      });
+    }, delaySec * 1000);
+  }
+  function onStreamEnd3({ responseId }) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (!response || response.state !== "error") {
+      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (convId)
+        retryCounts.delete(convId);
+      return;
+    }
+    if (!shouldRetry(response))
+      return;
+    const { conversationId } = ChatPageStore.useChatPageStore.getState();
+    if (!conversationId)
+      return;
+    retry(responseId, conversationId, response);
+  }
+  var autoRetry_default = definePlugin({
+    name: "AutoRetry",
+    icon: RotateCcwIcon,
+    description: "Automatically retry failed messages on moderation or network errors.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings16,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      retryCounts.clear();
+      clearPending();
+    },
+    stop() {
+      clearPending();
+      retryCounts.clear();
+    },
+    events: {
+      streamEnd: onStreamEnd3
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/recentTopics/styles.css
+  registerStyle("recentTopics", `.void-rt-root,
+.void-rt-root:popover-open {
+    isolation: isolate;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    background: transparent !important;
+    color: inherit;
+    pointer-events: auto !important;
+}
+
+.void-rt-root::backdrop {
+    background: transparent;
+}
+
+html.void-rt-open [data-sidebar="sidebar"],
+html.void-rt-open [data-sidebar="gap"] {
+    z-index: 0 !important;
+}
+
+.void-rt-panel,
+.void-rt-card,
+.void-rt-meta,
+.void-rt-name,
+.void-rt-host,
+.void-rt-empty {
+    font-family: inherit;
+    letter-spacing: inherit;
+}
+
+.void-rt-panel,
+.void-rt-panel * {
+    box-sizing: border-box;
+}
+
+.void-rt-panel {
+    --void-rt-accent: hsl(var(--fg-primary));
+    --void-rt-card-width: clamp(136px, calc((100vw - 68px) / 5), 204px);
+    --void-rt-gap: 8px;
+    --void-rt-padding-panel: 12px;
+    --void-rt-padding-card: 8px;
+    --void-rt-border-card: 1px;
+    --void-rt-radius-panel: 16px;
+    --void-rt-radius-card: calc(var(--void-rt-radius-panel) - var(--void-rt-padding-panel));
+    --void-rt-radius-thumb: calc(var(--void-rt-radius-card) - var(--void-rt-padding-card) - var(--void-rt-border-card));
+    --void-rt-radius-icon: 8px;
+    --void-rt-radius-title-icon: 8px;
+    --void-rt-meta-inline-padding: 4px;
+    --void-rt-motion-card: 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    --void-rt-motion-cover: 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    --void-rt-thumb-stroke-inset: -0.5px;
+    --void-rt-thumb-stroke-radius-offset: 0.5px;
+    --void-rt-thumb-stroke-color: hsl(var(--border-l2));
+    --void-rt-title-icon-size: 16px;
+    --void-rt-title-icon-gap: 4px;
+
+    all: unset;
+    color-scheme: inherit;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    transform-origin: center center;
+    z-index: 1;
+    display: block;
+    width: fit-content;
+    max-width: calc(100vw - 24px);
+    overflow: auto hidden;
+    scrollbar-width: none;
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l1) / 92%);
+    border: 1px solid hsl(var(--border-l1));
+    border-radius: var(--void-rt-radius-panel);
+    box-shadow: 0 4px 16px hsl(var(--black) / 12%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: var(--void-rt-padding-panel);
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity 90ms ease;
+    will-change: opacity;
+}
+
+.void-rt-panel::-webkit-scrollbar {
+    display: none;
+}
+
+.void-rt-panel[data-visible="true"] {
+    opacity: 1;
+}
+
+.void-rt-list {
+    display: grid;
+    grid-template-columns: repeat(var(--void-rt-count, 5), var(--void-rt-card-width));
+    gap: var(--void-rt-gap);
+    width: max-content;
+    max-width: 100%;
+    padding: 2px;
+}
+
+.void-rt-card {
+    all: unset;
+    box-sizing: border-box;
+    width: var(--void-rt-card-width);
+    min-width: var(--void-rt-card-width);
+    max-width: var(--void-rt-card-width);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: var(--void-rt-radius-card);
+    border: var(--void-rt-border-card) solid transparent;
+    outline: 0;
+    background: transparent;
+    padding: var(--void-rt-padding-card);
+    color: hsl(var(--fg-primary));
+    cursor: pointer;
+    box-shadow: none;
+    transition:
+        border-color 140ms ease,
+        box-shadow var(--void-rt-motion-card);
+}
+
+.void-rt-card[data-active="true"] {
+    z-index: 1;
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 82%, hsl(var(--border-l2)));
+    background: transparent;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 55%, transparent);
+}
+
+.void-rt-card:focus-visible {
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 88%, hsl(var(--border-l2)));
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 60%, transparent);
+}
+
+.void-rt-thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--void-rt-radius-thumb);
+    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, hsl(var(--surface-l1)));
+}
+
+.void-rt-thumb::after {
+    content: "";
+    position: absolute;
+    inset: var(--void-rt-thumb-stroke-inset);
+    z-index: 2;
+    border-radius: calc(var(--void-rt-radius-thumb) + var(--void-rt-thumb-stroke-radius-offset));
+    box-sizing: border-box;
+    border: 1px solid var(--void-rt-thumb-stroke-color);
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.void-rt-shot {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+}
+
+.void-rt-shot,
+.void-rt-shot * {
+    pointer-events: none !important;
+    scrollbar-width: none;
+}
+
+.void-rt-thumb:has(.void-rt-shot) .void-rt-fallback {
+    display: none;
+}
+
+.void-rt-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: top center;
+}
+
+.void-rt-mark {
+    display: none !important;
+}
+
+.void-rt-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    overflow: hidden;
+    padding: 8px 12px 12px;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-primary));
+    font-family: inherit;
+}
+
+.void-rt-page-line {
+    display: -webkit-box;
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 94%;
+    overflow: hidden;
+    color: hsl(var(--fg-secondary));
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+}
+
+.void-rt-page-line-user,
+.void-rt-page-line[data-role="user"] {
+    align-self: flex-end;
+    width: fit-content;
+    max-width: 78%;
+    padding: 6px 8px;
+    border-radius: 12px 12px 4px 12px;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-primary));
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.void-rt-page-line[data-role="assistant"] {
+    align-self: flex-start;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    color: hsl(var(--fg-secondary));
+}
+
+.void-rt-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.void-rt-favicon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--void-rt-radius-icon);
+    object-fit: cover;
+    display: block;
+}
+
+.void-rt-favicon[data-broken="true"],
+.void-rt-title-favicon[data-broken="true"] {
+    visibility: hidden;
+}
+
+.void-rt-meta {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+    padding: 0 var(--void-rt-meta-inline-padding);
+}
+
+.void-rt-name-row {
+    min-width: 0;
+}
+
+.void-rt-title-favicon {
+    display: none;
+}
+
+.void-rt-name {
+    min-width: 0;
+    display: block;
+    overflow: hidden;
+    color: hsl(var(--fg-primary));
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.16;
+    letter-spacing: inherit;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-rt-host {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    color: hsl(var(--fg-secondary));
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.18;
+}
+
+.void-rt-folder {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 12px;
+    display: block;
+}
+
+.void-rt-host-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-rt-empty {
+    min-width: min(22rem, calc(100vw - 3rem));
+    padding: 16px 20px;
+    color: hsl(var(--fg-primary));
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.void-rt-panel[data-theme="dark"] {
+    color-scheme: dark;
+}
+`);
+
+  // src/plugins/recentTopics/index.tsx
+  var logger24 = new Logger("RecentTopics");
+  var cl22 = classNameFactory("void-rt-");
+  var HOME_KEY = "home";
+  var HOME_SEP = "home:";
+  var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
+  var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
+  var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
+  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation|see all(?: chats| conversations)?|show all(?: chats| conversations)?|view all(?: chats| conversations)?|all chats|all conversations|查看全部|显示全部|查看所有|全部会话|所有对话)$/i;
+  var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
+  var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
+  var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
+  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
+  var settings17 = definePluginSettings({
+    maxRecent: {
+      type: 4 /* SELECT */,
+      description: "How many recently opened conversations to show.",
+      options: COUNT_OPTIONS
+    },
+    includeHome: {
+      type: 3 /* BOOLEAN */,
+      description: "Include new-chat home pages in the switcher.",
+      default: true
+    }
+  }).withPrivateSettings();
+  var thumbs = new Map;
+  var wsNames = {};
+  var open2 = false;
+  var selected = 0;
+  var held = false;
+  var ctrlHeld = false;
+  var keys2 = null;
+  var host = null;
+  var paintedKey = "";
+  var sidebarSnap = null;
+  var pendingWs = new Set;
+  function isSkipLabel(name) {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    if (!t)
+      return false;
+    SKIP_LABEL.lastIndex = 0;
+    return SKIP_LABEL.test(t);
+  }
+  function usableName(name) {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    return t && !isSkipLabel(t) ? t : "";
+  }
+  function unique(ids) {
+    const seen = new Set;
+    const out = [];
+    for (const id of ids) {
+      if (seen.has(id))
+        continue;
+      seen.add(id);
+      out.push(id);
+    }
+    return out;
+  }
+  function readVisits() {
+    return settings17.plain.visits ?? [];
+  }
+  function maxCount() {
+    const n = Number(settings17.store.maxRecent);
+    return Number.isFinite(n) && n > 0 ? n : 5;
+  }
+  function capVisits(ids) {
+    const allowHome = settings17.store.includeHome;
+    return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
+  }
+  function pruneRecord(source, ids) {
+    const keep = {};
+    if (!source)
+      return keep;
+    for (const id of ids) {
+      if (source[id])
+        keep[id] = source[id];
+    }
+    return keep;
+  }
+  function sameList(a, b) {
+    return a.length === b.length && a.every((id, i) => id === b[i]);
+  }
+  function sameRecord(a, b) {
+    const src = a ?? {};
+    const keys3 = Object.keys(b);
+    if (Object.keys(src).length !== keys3.length)
+      return false;
+    return keys3.every((k) => src[k] === b[k]);
+  }
+  function assignRecord(key, next) {
+    if (sameRecord(settings17.plain[key], next))
+      return false;
+    settings17.store[key] = next;
+    return true;
+  }
+  var writing = false;
+  function writeVisits(next) {
+    if (writing)
+      return;
+    writing = true;
+    try {
+      const visits = capVisits(next);
+      const rawWs = pruneRecord(settings17.plain.workspaceByConv, visits);
+      const workspaceByConv = {};
+      for (const [id, value] of Object.entries(rawWs)) {
+        const ws = asWorkspaceId(value);
+        if (ws)
+          workspaceByConv[id] = ws;
+      }
+      const pages = pruneRecord(settings17.plain.pages, visits);
+      const usedWs = new Set(Object.values(workspaceByConv));
+      for (const id of visits) {
+        const ws = workspaceFromHomeId(id);
+        if (!ws)
+          continue;
+        usedWs.add(ws);
+        workspaceByConv[id] = ws;
+      }
+      const keepProjects = {};
+      for (const [id, name] of Object.entries(settings17.plain.projectNames ?? {})) {
+        const n = usableName(name);
+        if (usedWs.has(id) && n)
+          keepProjects[id] = n;
+      }
+      let changed = false;
+      if (!sameList(readVisits(), visits)) {
+        settings17.store.visits = visits;
+        changed = true;
+      }
+      if (assignRecord("titles", pruneRecord(settings17.plain.titles, visits)))
+        changed = true;
+      if (assignRecord("workspaceByConv", workspaceByConv))
+        changed = true;
+      if (assignRecord("pages", pages))
+        changed = true;
+      if (assignRecord("projectNames", keepProjects))
+        changed = true;
+      if (changed && open2)
+        paint();
+    } finally {
+      writing = false;
+    }
+  }
+  function rememberTitle(id, title) {
+    const t = title?.trim();
+    if (!id || isHomeId(id) || !t)
+      return;
+    const prev = settings17.plain.titles ?? {};
+    if (prev[id] === t)
+      return;
+    settings17.store.titles = { ...prev, [id]: t };
+  }
+  function isHomeId(id) {
+    return id === HOME_KEY || id.startsWith(HOME_SEP);
+  }
+  function homeId(workspaceId) {
+    const ws = asWorkspaceId(workspaceId);
+    return ws ? HOME_SEP + ws : HOME_KEY;
+  }
+  function workspaceFromHomeId(id) {
+    return id.startsWith(HOME_SEP) ? asWorkspaceId(id.slice(HOME_SEP.length)) : "";
+  }
+  function routeConvId(route) {
+    if (!route)
+      return null;
+    if (route.conversationId)
+      return route.conversationId;
+    if (typeof route.chat === "string" && route.chat)
+      return route.chat;
+    if (route.page === "main")
+      return HOME_KEY;
+    if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
+      return homeId(route.workspaceId);
+    return null;
+  }
+  function projectIdFromUrl() {
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
+    return m?.[1] ?? "";
+  }
+  function chatIdFromUrl() {
+    try {
+      const u = new URL(location.href);
+      const q = u.searchParams.get("chat");
+      if (q)
+        return q;
+      return u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] ?? "";
+    } catch {
+      return "";
+    }
+  }
+  var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
+  function asWorkspaceId(value) {
+    if (typeof value === "string") {
+      const s = value.trim();
+      return WS_ID.test(s) ? s : "";
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const id = asWorkspaceId(item);
+        if (id)
+          return id;
+      }
+      return "";
+    }
+    if (value && typeof value === "object") {
+      const rec = value;
+      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    }
+    return "";
+  }
+  function hrefFor(id, workspaceId) {
+    if (isHomeId(id)) {
+      const ws2 = workspaceFromHomeId(id) || asWorkspaceId(workspaceId);
+      return ws2 ? `/project/${ws2}` : "/";
+    }
+    const ws = asWorkspaceId(workspaceId);
+    if (!id)
+      return ws ? `/project/${ws}` : "/";
+    if (ws)
+      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
+    return `/c/${encodeURIComponent(id)}`;
+  }
+  function hrefParts(href) {
+    if (!href)
+      return { ws: "", chat: "" };
+    try {
+      const u = new URL(href, location.origin);
+      const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+      const chat = u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
+      return { ws, chat };
+    } catch {
+      return { ws: "", chat: "" };
+    }
+  }
+  function currentVisit() {
+    const urlChat = chatIdFromUrl();
+    if (urlChat)
+      return urlChat;
+    try {
+      const { conversationId, optimisticConversationId } = ChatPageStore.useChatPageStore.getState();
+      if (conversationId)
+        return conversationId;
+      if (optimisticConversationId)
+        return optimisticConversationId;
+    } catch (e) {
+      logger24.debug("ChatPageStore unavailable:", e);
+    }
+    try {
+      const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
+      if (fromRoute != null)
+        return fromRoute;
+    } catch (e) {
+      logger24.debug("RoutingStore unavailable:", e);
+    }
+    const ws = projectIdFromUrl();
+    return ws ? homeId(ws) : null;
+  }
+  function idsFromHistory() {
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      const ids = [];
+      const add = (r) => {
+        const id = routeConvId(r);
+        if (id != null)
+          ids.push(id);
+      };
+      add(route);
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
+        add(historyStack[i]);
+      return unique(ids);
+    } catch (e) {
+      logger24.debug("historyStack unavailable:", e);
+      return [];
+    }
+  }
+  function pageTitle() {
+    const raw = document.title.replace(TITLE_TAIL, "").trim();
+    if (!raw || /^grok$/i.test(raw))
+      return "";
+    return raw;
+  }
+  function lookup(id) {
+    try {
+      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
+    } catch (e) {
+      logger24.debug("Conversation lookup failed:", e);
+      return;
+    }
+  }
+  function titleOf(id) {
+    if (!id || isHomeId(id))
+      return "New chat";
+    const conv = lookup(id);
+    if (conv?.title?.trim())
+      return conv.title.trim();
+    const cached = settings17.plain.titles?.[id];
+    if (cached)
+      return cached;
+    if (id === currentVisit())
+      return pageTitle() || "Untitled";
+    return "Untitled";
+  }
+  function liveWorkspaceId() {
+    try {
+      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
+      if (pid)
+        return pid;
+    } catch {}
+    try {
+      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
+      const id = asWorkspaceId(workspaceId);
+      if (id)
+        return id;
+    } catch {}
+    return asWorkspaceId(projectIdFromUrl());
+  }
+  function workspaceFromHistory(id) {
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      if (routeConvId(route) === id) {
+        const ws = asWorkspaceId(route.workspaceId);
+        if (ws)
+          return ws;
+      }
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
+        const r = historyStack[i];
+        if (routeConvId(r) === id) {
+          const ws = asWorkspaceId(r?.workspaceId);
+          if (ws)
+            return ws;
+        }
+      }
+    } catch {}
+    return "";
+  }
+  function convWorkspaceId(id) {
+    try {
+      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
+      const fromResolver = asWorkspaceId(resolved);
+      if (fromResolver)
+        return fromResolver;
+      const conv = byId[id] ?? byIdWithWorkspaces[id];
+      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+    } catch (e) {
+      logger24.debug("convWorkspaceId failed:", e);
+      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
+    }
+  }
+  function workspaceFromDom(id) {
+    if (!id)
+      return "";
+    try {
+      for (const a of document.querySelectorAll("a[href]")) {
+        const href = a.getAttribute("href");
+        if (!href || !href.includes(id))
+          continue;
+        const { ws, chat } = hrefParts(href);
+        if (chat === id && ws)
+          return ws;
+      }
+    } catch {}
+    return "";
+  }
+  function shortOwnText(el) {
+    const parts = [];
+    for (const n of el.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) {
+        parts.push(n.textContent ?? "");
+        continue;
+      }
+      if (!(n instanceof HTMLElement))
+        continue;
+      if (n.matches("svg, a[href]"))
+        continue;
+      const nestedHref = n.getAttribute("href") ?? "";
+      if (nestedHref.includes("chat=") || nestedHref.includes("/c/"))
+        continue;
+      if (n.querySelector("a[href*='chat='], a[href*='/c/']"))
+        continue;
+      const t = (n.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+      if (t.length > 0 && t.length <= 64)
+        parts.push(t);
+    }
+    const out = parts.join(" ").replaceAll(/\s+/g, " ").trim();
+    return out.length >= 2 && out.length <= 64 ? out : "";
+  }
+  function folderLabel(el) {
+    if (!el.querySelector("svg"))
+      return "";
+    return usableName(shortOwnText(el));
+  }
+  function projectNameFromAncestors(el) {
+    const sidebar = el.closest("[data-sidebar=sidebar]");
+    let cur = el.parentElement;
+    while (cur && cur !== sidebar) {
+      let sib = cur;
+      while (sib) {
+        const name = folderLabel(sib);
+        if (name)
+          return name;
+        sib = sib.previousElementSibling;
+      }
+      cur = cur.parentElement;
+    }
+    return "";
+  }
+  function invalidateSidebar() {
+    sidebarSnap = null;
+  }
+  function sidebarIndex() {
+    const empty = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar)
+      return empty;
+    const key = `${sidebar.childElementCount}:${(sidebar.textContent ?? "").length}`;
+    if (sidebarSnap?.key === key)
+      return sidebarSnap.index;
+    const index = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    let currentName = "";
+    const assignConv = (chat, ws, name) => {
+      if (!chat || !ws)
+        return;
+      index.wsByConv[chat] = ws;
+      const label = usableName(name || currentName || index.nameByWs[ws] || "");
+      if (label) {
+        index.nameByWs[ws] = label;
+        index.nameByConv[chat] = label;
+      }
+    };
+    for (const el of sidebar.querySelectorAll("a[href], button, [role='button']")) {
+      const { ws, chat } = hrefParts(el.getAttribute("href"));
+      if (chat) {
+        assignConv(chat, ws, currentName);
+        if (ws && !index.nameByConv[chat]) {
+          const up = usableName(projectNameFromAncestors(el));
+          if (up) {
+            index.nameByConv[chat] = up;
+            index.nameByWs[ws] ??= up;
+            currentName ||= up;
+          }
+        }
+        continue;
+      }
+      const label = shortOwnText(el) || folderLabel(el);
+      if (isSkipLabel(label) && !ws) {
+        currentName = "";
+        continue;
+      }
+      if (ws) {
+        const n = usableName(label);
+        if (n) {
+          currentName = n;
+          index.nameByWs[ws] = n;
+        } else if (isSkipLabel(label)) {
+          currentName = index.nameByWs[ws] || "";
+        }
+        continue;
+      }
+      const folder = folderLabel(el);
+      if (folder)
+        currentName = folder;
+    }
+    sidebarSnap = { key, index };
+    return index;
+  }
+  function workspaceFetchedEmpty(id) {
+    try {
+      const { byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      return !!byIdWithWorkspaces[id] && !convWorkspaceId(id);
+    } catch {
+      return false;
+    }
+  }
+  function routeWorkspaceFor(id) {
+    if (id === chatIdFromUrl())
+      return asWorkspaceId(projectIdFromUrl());
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      const chat = route.conversationId || (typeof route.chat === "string" ? route.chat : "");
+      if (chat === id)
+        return asWorkspaceId(route.workspaceId);
+    } catch {}
+    return "";
+  }
+  function dropWorkspace(id) {
+    const prev = settings17.plain.workspaceByConv ?? {};
+    if (!prev[id])
+      return;
+    const next = { ...prev };
+    delete next[id];
+    settings17.store.workspaceByConv = next;
+  }
+  function workspaceOf(id) {
+    if (!id)
+      return "";
+    if (isHomeId(id)) {
+      const fromKey = workspaceFromHomeId(id);
+      if (fromKey)
+        return fromKey;
+      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings17.plain.workspaceByConv?.[id]);
+    }
+    const fromConv = convWorkspaceId(id);
+    if (fromConv)
+      return fromConv;
+    if (workspaceFetchedEmpty(id))
+      return "";
+    const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
+    if (fromSidebar)
+      return fromSidebar;
+    const cached = asWorkspaceId(settings17.plain.workspaceByConv?.[id]);
+    if (cached)
+      return cached;
+    const fromHist = workspaceFromHistory(id);
+    if (fromHist)
+      return fromHist;
+    if (id === currentVisit())
+      return routeWorkspaceFor(id);
+    return "";
+  }
+  function readOpenProjectName() {
+    const idx = sidebarIndex();
+    const live = liveWorkspaceId();
+    if (live) {
+      const n = usableName(idx.nameByWs[live]);
+      if (n)
+        return n;
+    }
+    const current = currentVisit();
+    const ws = current ? workspaceOf(current) : "";
+    if (!current || !ws)
+      return "";
+    return usableName(idx.nameByConv[current] || idx.nameByWs[ws]);
+  }
+  function projectNameOf(id) {
+    if (!id)
+      return "";
+    const ws = workspaceOf(id);
+    if (!ws)
+      return "";
+    const idx = sidebarIndex();
+    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings17.plain.projectNames?.[ws] || "");
+    if (!named)
+      return "";
+    const live = liveWorkspaceId();
+    const liveName = readOpenProjectName();
+    if (live && ws !== live && liveName && named === liveName)
+      return "";
+    return named;
+  }
+  function rememberProject(id) {
+    if (!id)
+      return;
+    const ws = workspaceOf(id);
+    if (!ws)
+      return;
+    const prevWs = settings17.plain.workspaceByConv ?? {};
+    if (prevWs[id] !== ws)
+      settings17.store.workspaceByConv = { ...prevWs, [id]: ws };
+    const idx = sidebarIndex();
+    const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
+    const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
+    const name = usableName(sidebarName || wsNames[ws] || liveName || settings17.plain.projectNames?.[ws] || "");
+    if (!name)
+      return;
+    wsNames[ws] = name;
+    const prevNames = settings17.plain.projectNames ?? {};
+    if (prevNames[ws] !== name)
+      settings17.store.projectNames = { ...prevNames, [ws]: name };
+  }
+  function reconcileSidebarCache() {
+    const idx = sidebarIndex();
+    const prevWs = { ...settings17.plain.workspaceByConv };
+    const prevNames = { ...settings17.plain.projectNames };
+    let wsChanged = false;
+    let namesChanged = false;
+    for (const [conv, ws] of Object.entries(idx.wsByConv)) {
+      if (prevWs[conv] !== ws) {
+        prevWs[conv] = ws;
+        wsChanged = true;
+      }
+    }
+    for (const [ws, name] of Object.entries(idx.nameByWs)) {
+      const n = usableName(name);
+      if (!n)
+        continue;
+      wsNames[ws] = n;
+      if (prevNames[ws] !== n) {
+        prevNames[ws] = n;
+        namesChanged = true;
+      }
+    }
+    for (const [ws, name] of Object.entries(prevNames)) {
+      if (usableName(name))
+        continue;
+      delete prevNames[ws];
+      delete wsNames[ws];
+      namesChanged = true;
+    }
+    if (wsChanged)
+      settings17.store.workspaceByConv = prevWs;
+    if (namesChanged)
+      settings17.store.projectNames = prevNames;
+  }
+  function requestWorkspace(id) {
+    if (!id || isHomeId(id) || pendingWs.has(id))
+      return;
+    if (convWorkspaceId(id))
+      return;
+    if (workspaceFetchedEmpty(id)) {
+      dropWorkspace(id);
+      return;
+    }
+    if (sidebarIndex().wsByConv[id])
+      return;
+    pendingWs.add(id);
+    try {
+      const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+      const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+      if (!fetchConv) {
+        pendingWs.delete(id);
+        return;
+      }
+      fetchConv(id).then((conv) => {
+        const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+        if (!ws) {
+          dropWorkspace(id);
+          if (open2)
+            paint();
+          return;
+        }
+        const prev = settings17.plain.workspaceByConv ?? {};
+        if (prev[id] !== ws)
+          settings17.store.workspaceByConv = { ...prev, [id]: ws };
+        const live = liveWorkspaceId();
+        const liveName = usableName(readOpenProjectName());
+        const names = settings17.plain.projectNames ?? {};
+        if (live && ws !== live && liveName && names[ws] === liveName) {
+          const next = { ...names };
+          delete next[ws];
+          settings17.store.projectNames = next;
+          delete wsNames[ws];
+        }
+        if (open2)
+          paint();
+      }).catch((e) => logger24.debug("workspace fetch failed:", e)).finally(() => {
+        pendingWs.delete(id);
+      });
+    } catch {
+      pendingWs.delete(id);
+    }
+  }
+  function chatPane() {
+    const main = document.querySelector("main");
+    if (!main)
+      return null;
+    let best = null;
+    let bestScore = 0;
+    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
+      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
+        continue;
+      const r = n.getBoundingClientRect();
+      if (r.width < 240 || r.height < 120)
+        continue;
+      const score = r.width * r.height;
+      if (score > bestScore) {
+        best = n;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+  function messageList(pane) {
+    let node = pane;
+    for (let i = 0;i < 8; i++) {
+      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
+      if (kids.length === 1 && kids[0].children.length > 1) {
+        node = kids[0];
+        continue;
+      }
+      break;
+    }
+    return node;
+  }
+  function chromeOff(el) {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach((n) => n.remove());
+    return clone;
+  }
+  function userBubble(root) {
+    const tagged = root.querySelector("[data-void-rt-role='user'], .void-rt-user-msg");
+    if (tagged)
+      return tagged;
+    const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
+    if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className))
+      cands.unshift(root);
+    if (!cands.length)
+      return null;
+    const inner = cands.filter((el) => !cands.some((other) => other !== el && el.contains(other)));
+    inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
+    return inner[0] ?? null;
+  }
+  function extractTurn(kid) {
+    const bubble = userBubble(kid);
+    const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
+    const rest = chromeOff(kid);
+    if (bubble && bubble !== kid) {
+      rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach((n) => n.remove());
+    }
+    let asstText = scrubText(rest.innerText ?? "");
+    if (userText && asstText.includes(userText))
+      asstText = scrubText(asstText.replace(userText, " "));
+    const lines = [];
+    if (userText)
+      lines.push({ role: "user", text: userText });
+    if (asstText && asstText !== userText)
+      lines.push({ role: "assistant", text: asstText });
+    return lines;
+  }
+  function extractMarks(root) {
+    const marks = [...root.querySelectorAll(".void-rt-mark")];
+    if (!marks.length)
+      return [];
+    const out = [];
+    for (const m of marks) {
+      const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
+      const text = scrubText(m.textContent ?? "");
+      if (text)
+        out.push({ role, text });
+    }
+    return lastRound(out);
+  }
+  function extractLines(pane) {
+    const fromMarks = extractMarks(pane);
+    if (fromMarks.length)
+      return fromMarks;
+    const source = messageList(pane);
+    const kids = [...source.children].filter((c) => c instanceof HTMLElement);
+    const out = [];
+    for (const kid of kids)
+      out.push(...extractTurn(kid));
+    return lastRound(out);
+  }
+  function scrubText(raw) {
+    let t = raw.replaceAll(/\s+/g, " ").trim();
+    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
+    t = t.replaceAll(/\s+/g, " ").trim();
+    if (!t || SKIP_NOISE.test(t))
+      return "";
+    return t;
+  }
+  function plainText(md) {
+    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
+    return scrubText(t);
+  }
+  function clipLine(text, max) {
+    const t = scrubText(text);
+    if (t.length <= max)
+      return t;
+    return `${t.slice(0, Math.max(1, max - 1))}…`;
+  }
+  function lastRound(lines) {
+    const cleaned = lines.map((line) => ({ role: line.role, text: scrubText(line.text) })).filter((line) => !!line.text);
+    if (!cleaned.length)
+      return [];
+    let asst = -1;
+    let user = -1;
+    for (let i = cleaned.length - 1;i >= 0; i--) {
+      if (asst < 0 && cleaned[i].role === "assistant")
+        asst = i;
+      if (user < 0 && cleaned[i].role === "user")
+        user = i;
+      if (asst >= 0 && user >= 0)
+        break;
+    }
+    const pick = user >= 0 && asst >= 0 && user < asst ? [cleaned[user], cleaned[asst]] : user >= 0 && (asst < 0 || user > asst) ? [cleaned[user]] : asst >= 0 ? [cleaned[asst]] : cleaned.slice(-1);
+    return pick.map((line) => ({
+      role: line.role,
+      text: clipLine(line.text, line.role === "user" ? 72 : 140)
+    }));
+  }
+  function pickUserText(query, message) {
+    const q = plainText(query);
+    const m = plainText(message);
+    if (q && m) {
+      if (m.startsWith(q) && m.length > q.length)
+        return q;
+      return q.length <= m.length ? q : m;
+    }
+    return q || m;
+  }
+  function walkThread(startId) {
+    if (!startId)
+      return [];
+    try {
+      const { byId } = ResponseStore.useResponseStore.getState();
+      const out = [];
+      const seen = new Set;
+      let id = startId;
+      while (id && !seen.has(id) && out.length < 50) {
+        seen.add(id);
+        const r = byId[id];
+        if (!r)
+          break;
+        out.unshift(r);
+        id = r.parentResponseId;
+      }
+      return out;
+    } catch {
+      return [];
+    }
+  }
+  function responsesOf(id) {
+    const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+    const nodes = nodesByConversationId[id] ?? [];
+    if (nodes.length) {
+      const list = nodes.map((n) => byId[n.responseId]).filter((r) => !!r);
+      if (list.length)
+        return list;
+      const walked = walkThread(nodes.at(-1)?.responseId);
+      if (walked.length)
+        return walked;
+    }
+    const cached = byConversationId[id];
+    if (cached?.length)
+      return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      if (chat.conversationId === id) {
+        return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
+      }
+    } catch {}
+    return [];
+  }
+  function responsesToLines(list) {
+    const out = [];
+    for (const r of list) {
+      if (!r || r.isControl)
+        continue;
+      const sender = String(r.sender ?? "").toLowerCase();
+      const human = sender === "human" || sender === "user";
+      if (human) {
+        const text = pickUserText(r.query || "", r.message || "");
+        if (text)
+          out.push({ role: "user", text });
+        continue;
+      }
+      const query = pickUserText(r.query || "", "");
+      let message = plainText(r.message || "");
+      if (query && message.startsWith(query) && message.length > query.length) {
+        message = scrubText(message.slice(query.length));
+      }
+      if (query && out.at(-1)?.text !== query)
+        out.push({ role: "user", text: query });
+      if (message && message !== query)
+        out.push({ role: "assistant", text: message });
+    }
+    return lastRound(out);
+  }
+  function linesFromStore(id) {
+    if (!id)
+      return [];
+    try {
+      return responsesToLines(responsesOf(id));
+    } catch (e) {
+      logger24.debug("ResponseStore snapshot failed:", e);
+      return [];
+    }
+  }
+  function betterLines(store3, dom) {
+    const pair = (lines) => lines.some((l) => l.role === "user") && lines.some((l) => l.role === "assistant");
+    if (pair(store3))
+      return store3;
+    if (pair(dom))
+      return dom;
+    return store3.length ? store3 : dom;
+  }
+  function parseSnap(raw) {
+    if (!raw)
+      return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
+        return null;
+      return {
+        title: typeof parsed.title === "string" ? parsed.title : "",
+        theme: parsed.theme === "light" ? "light" : "dark",
+        lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"))
+      };
+    } catch {
+      return null;
+    }
+  }
+  function snapOf(id) {
+    return thumbs.get(id) ?? parseSnap(settings17.plain.pages?.[id]);
+  }
+  function rememberPage(id, snap) {
+    const json = JSON.stringify(snap);
+    const prev = settings17.plain.pages ?? {};
+    if (prev[id] === json)
+      return;
+    settings17.store.pages = { ...prev, [id]: json };
+  }
+  function applyLineStyle(el, role, theme) {
+    el.style.display = "-webkit-box";
+    el.style.webkitBoxOrient = "vertical";
+    el.style.overflow = "hidden";
+    el.style.width = "fit-content";
+    el.style.overflowWrap = "anywhere";
+    el.style.fontSize = "11px";
+    el.style.lineHeight = "1.35";
+    if (role === "user") {
+      el.style.alignSelf = "flex-end";
+      el.style.maxWidth = "78%";
+      el.style.padding = "6px 9px";
+      el.style.borderRadius = "14px 14px 4px 14px";
+      el.style.background = theme === "light" ? "#e8e6e0" : "#2f2f2f";
+      el.style.color = theme === "light" ? "#171717" : "#fff";
+      el.style.webkitLineClamp = "2";
+    } else {
+      el.style.alignSelf = "flex-start";
+      el.style.maxWidth = "94%";
+      el.style.padding = "0";
+      el.style.background = "transparent";
+      el.style.color = theme === "light" ? "#3f3f3f" : "#c4c4c4";
+      el.style.webkitLineClamp = "4";
+    }
+  }
+  function buildPageShot(snap) {
+    const page = node("span", cl22("page"));
+    page.dataset.theme = snap.theme;
+    for (const line of lastRound(snap.lines)) {
+      const el = node("span", cl22("page-line", line.role === "user" && "page-line-user"), line.text);
+      el.dataset.role = line.role;
+      applyLineStyle(el, line.role, snap.theme);
+      page.append(el);
+    }
+    return page;
+  }
+  function captureId(id) {
+    if (!id)
+      return;
+    const fromStore = linesFromStore(id);
+    let fromDom = [];
+    if (id === currentVisit()) {
+      const pane = chatPane();
+      if (pane)
+        fromDom = extractLines(pane);
+    }
+    const lines = betterLines(fromStore, fromDom);
+    if (!lines.length)
+      return;
+    const snap = {
+      title: titleOf(id),
+      theme: detectTheme(),
+      lines: lastRound(lines)
+    };
+    thumbs.set(id, snap);
+    rememberPage(id, snap);
+  }
+  var capturing = false;
+  function captureCurrent() {
+    if (capturing || open2)
+      return;
+    capturing = true;
+    try {
+      const current = currentVisit();
+      if (current)
+        captureId(current);
+      for (const id of capVisits(readVisits())) {
+        if (id && id !== current)
+          captureId(id);
+      }
+    } catch (e) {
+      logger24.debug("snapshot failed:", e);
+    } finally {
+      capturing = false;
+    }
+  }
+  function scheduleCapture() {
+    if (open2)
+      return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!open2)
+          captureCurrent();
+      });
+    });
+  }
+  function bump(id) {
+    if (!id)
+      return;
+    if (isHomeId(id) && !settings17.store.includeHome)
+      return;
+    writeVisits(capVisits([id, ...readVisits()]));
+    if (isHomeId(id)) {
+      if (shouldRememberProject(id))
+        rememberProject(id);
+      return;
+    }
+    const conv = lookup(id);
+    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    if (shouldRememberProject(id))
+      rememberProject(id);
+  }
+  function shouldRememberProject(id) {
+    if (!id || workspaceFetchedEmpty(id))
+      return false;
+    return !!workspaceOf(id);
+  }
+  function hydrate() {
+    invalidateSidebar();
+    const current = currentVisit();
+    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
+    writeVisits(capVisits(merged));
+    reconcileSidebarCache();
+    if (current) {
+      rememberTitle(current, lookup(current)?.title || pageTitle());
+      if (shouldRememberProject(current))
+        rememberProject(current);
+    }
+    for (const id of capVisits(readVisits())) {
+      if (id)
+        requestWorkspace(id);
+    }
+  }
+  function topics() {
+    return capVisits(readVisits()).map((id) => ({
+      id,
+      title: titleOf(id),
+      project: projectNameOf(id)
+    }));
+  }
+  function parseHref(href) {
+    try {
+      const u = new URL(href, location.origin);
+      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
+      if (parsed?.page && parsed.page !== "unknown")
+        return parsed;
+    } catch (e) {
+      logger24.debug("urlToRoute failed:", e);
+    }
+    return null;
+  }
+  function applyChatPage(id, workspaceId) {
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      chat.setConversationId(id || undefined);
+      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
+    } catch (e) {
+      logger24.debug("ChatPageStore update failed:", e);
+    }
+  }
+  function navigateTo(id) {
+    try {
+      const routing = RoutingStore.useRoutingStore.getState();
+      const { route } = routing;
+      const teamId = route.teamId ?? null;
+      if (isHomeId(id) || !id) {
+        const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceOf(id));
+        const hereWs = asWorkspaceId(route.workspaceId) || projectIdFromUrl();
+        const hereChat = route.conversationId || chatIdFromUrl();
+        if (!ws) {
+          if (!hereChat && (route.page === "main" || !hereWs))
+            return;
+          routing.push({ page: "main", teamId });
+          applyChatPage("");
+          return;
+        }
+        if (!hereChat && hereWs === ws)
+          return;
+        routing.push({ page: "workspace", workspaceId: ws, tab: "conversations", teamId });
+        applyChatPage("", ws);
+        return;
+      }
+      const workspaceId = workspaceOf(id);
+      const href = hrefFor(id, workspaceId);
+      const parsed = parseHref(href);
+      const dest = workspaceId ? {
+        page: "workspace",
+        workspaceId,
+        tab: "conversations",
+        conversationId: id,
+        teamId
+      } : {
+        page: "chat",
+        conversationId: id,
+        temporary: lookup(id)?.temporary ?? false,
+        teamId
+      };
+      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
+        dest.page = "workspace";
+        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
+        dest.conversationId = parsed.conversationId || id;
+        dest.tab = parsed.tab || "conversations";
+        if (parsed.filePath)
+          dest.filePath = parsed.filePath;
+      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
+        dest.page = "chat";
+        dest.conversationId = parsed.conversationId;
+        dest.temporary = parsed.temporary ?? dest.temporary;
+      }
+      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
+        dest.page = "chat";
+        dest.conversationId = id;
+        delete dest.workspaceId;
+        delete dest.tab;
+      }
+      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
+        return;
+      routing.push(dest);
+      applyChatPage(id, asWorkspaceId(dest.workspaceId));
+      if (dest.page !== "workspace") {
+        try {
+          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+          fetchConv?.(id).then((conv) => {
+            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
+            if (!ws)
+              return;
+            const now = RoutingStore.useRoutingStore.getState();
+            if (routeConvId(now.route) !== id)
+              return;
+            now.replace({
+              page: "workspace",
+              workspaceId: ws,
+              tab: "conversations",
+              conversationId: id,
+              teamId
+            });
+            applyChatPage(id, ws);
+            rememberProject(id);
+          }).catch((e) => logger24.debug("workspace resolve failed:", e));
+        } catch (e) {
+          logger24.debug("workspace fetch skipped:", e);
+        }
+      }
+    } catch (e) {
+      logger24.error("Failed to navigate:", e);
+      try {
+        location.assign(hrefFor(id, workspaceOf(id) || undefined));
+      } catch (navErr) {
+        logger24.error("Fallback navigation failed:", navErr);
+      }
+    }
+  }
+  function isTrigger(e) {
+    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
+      return true;
+    return TRIGGER_KEYS.has(e.key);
+  }
+  function isCtrlKey(e) {
+    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
+  }
+  function begin(reverse, fromHold) {
+    held = fromHold;
+    open2 = false;
+    captureCurrent();
+    open2 = true;
+    selected = 0;
+    try {
+      hydrate();
+      const current = currentVisit();
+      if (current != null)
+        bump(current);
+      if (topics().length > 1)
+        selected = reverse ? topics().length - 1 : 1;
+    } catch (e) {
+      logger24.error("Failed to open switcher:", e);
+    }
+    paint();
+  }
+  function cycle2(reverse) {
+    const { length } = topics();
+    if (!length)
+      return;
+    selected = (selected + (reverse ? -1 : 1) + length) % length;
+    paint();
+  }
+  function commit() {
+    if (!open2)
+      return;
+    const target = topics()[selected];
+    open2 = false;
+    held = false;
+    paint();
+    if (target)
+      navigateTo(target.id);
+  }
+  function cancel() {
+    if (!open2)
+      return;
+    open2 = false;
+    held = false;
+    paint();
+  }
+  function onKeyDown3(e) {
+    if (isCtrlKey(e)) {
+      ctrlHeld = true;
+      return;
+    }
+    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
+    if (combo) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      try {
+        if (open2)
+          cycle2(e.shiftKey);
+        else
+          begin(e.shiftKey, true);
+      } catch (err) {
+        logger24.error("Hotkey failed:", err);
+      }
+      return;
+    }
+    if (!open2)
+      return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancel();
+      return;
+    }
+    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
+      e.preventDefault();
+      cycle2(e.shiftKey);
+    }
+  }
+  function onKeyUp(e) {
+    if (!isCtrlKey(e))
+      return;
+    ctrlHeld = false;
+    if (open2 && held)
+      commit();
+  }
+  function onBeforeInput(e) {
+    if (!ctrlHeld && !open2)
+      return;
+    const { data } = e;
+    if (data && TRIGGER_KEYS.has(data))
+      e.preventDefault();
+  }
+  function onWindowBlur() {
+    ctrlHeld = false;
+  }
+  function onVisibility2() {
+    if (document.hidden) {
+      ctrlHeld = false;
+      cancel();
+    }
+  }
+  function pick(index) {
+    selected = index;
+    commit();
+  }
+  function node(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className)
+      el.className = className;
+    if (text)
+      el.textContent = text;
+    return el;
+  }
+  function fillShot(box, id) {
+    const snap = snapOf(id);
+    if (!snap) {
+      const fallback = node("span", cl22("fallback"));
+      fallback.append(faviconImg(cl22("favicon")));
+      box.append(fallback);
+      return;
+    }
+    const shot = node("span", cl22("shot"));
+    shot.append(buildPageShot(snap));
+    box.append(shot);
+  }
+  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH}" fill="#050505"/><path d="${GROK_MARK_P1}" fill="#FCFCFC"/><path d="${GROK_MARK_P2}" fill="#FCFCFC"/></svg>`)}`;
+  var ACCENTS = [
+    "rgb(37, 99, 235)",
+    "rgb(14, 165, 233)",
+    "rgb(20, 184, 166)",
+    "rgb(249, 115, 22)",
+    "rgb(100, 116, 139)"
+  ];
+  function accentOf(id) {
+    if (!id)
+      return ACCENTS[4];
+    let hash = 0;
+    for (let i = 0;i < id.length; i++)
+      hash = hash * 31 + id.charCodeAt(i) >>> 0;
+    return ACCENTS[hash % ACCENTS.length];
+  }
+  function detectTheme() {
+    const html = document.documentElement;
+    const { body } = document;
+    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
+    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
+      return "dark";
+    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
+      return "light";
+    try {
+      const bg = getComputedStyle(body || html).backgroundColor;
+      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+      if (m) {
+        const r = Number(m[1]) / 255;
+        const g = Number(m[2]) / 255;
+        const b = Number(m[3]) / 255;
+        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+        return lum < 0.42 ? "dark" : "light";
+      }
+    } catch {}
+    const scheme = getComputedStyle(html).colorScheme;
+    if (scheme.includes("light") && !scheme.includes("dark"))
+      return "light";
+    return "dark";
+  }
+  function grokFaviconSrc() {
+    try {
+      if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
+        const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
+        const href = link?.href;
+        if (href && !href.startsWith("data:"))
+          return href;
+        return `${location.origin}/images/favicon.svg`;
+      }
+    } catch {}
+    return GROK_ICON_DATA;
+  }
+  function faviconImg(className) {
+    const img = document.createElement("img");
+    img.className = className;
+    img.alt = "";
+    img.draggable = false;
+    img.src = grokFaviconSrc();
+    img.addEventListener("error", () => {
+      if (img.src === GROK_ICON_DATA) {
+        img.dataset.broken = "true";
+        return;
+      }
+      img.src = GROK_ICON_DATA;
+    });
+    return img;
+  }
+  function folderIcon() {
+    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg2.setAttribute("class", cl22("folder"));
+    svg2.setAttribute("viewBox", "0 0 24 24");
+    svg2.setAttribute("fill", "none");
+    svg2.setAttribute("stroke", "currentColor");
+    svg2.setAttribute("stroke-width", "2");
+    svg2.setAttribute("stroke-linecap", "round");
+    svg2.setAttribute("stroke-linejoin", "round");
+    svg2.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
+    svg2.append(path);
+    return svg2;
+  }
+  function applyTheme(panel) {
+    const theme = detectTheme();
+    panel.setAttribute("data-theme", theme);
+    panel.style.colorScheme = theme;
+  }
+  function buildHost() {
+    const root = node("div", cl22("root"));
+    root.id = "void-rt-host";
+    root.setAttribute("role", "presentation");
+    root.addEventListener("click", cancel);
+    const panel = node("div", cl22("panel"));
+    panel.setAttribute("role", "listbox");
+    panel.setAttribute("aria-label", "Recent conversations");
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    panel.append(node("div", cl22("list")));
+    root.append(panel);
+    return root;
+  }
+  function renderList(items) {
+    if (!host)
+      return;
+    const panel = host.querySelector(`.${cl22("panel")}`);
+    if (!panel)
+      return;
+    let list = panel.querySelector(`.${cl22("list")}`);
+    if (!list) {
+      panel.replaceChildren();
+      list = node("div", cl22("list"));
+      panel.append(list);
+    }
+    list.replaceChildren();
+    items.forEach((topic, i) => {
+      const btn = node("button", cl22("card"));
+      btn.type = "button";
+      btn.tabIndex = -1;
+      btn.setAttribute("role", "option");
+      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+      btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
+      btn.addEventListener("pointerenter", () => {
+        if (selected === i)
+          return;
+        selected = i;
+        syncActive();
+      });
+      btn.addEventListener("focus", () => {
+        if (selected === i)
+          return;
+        selected = i;
+        syncActive();
+      });
+      btn.addEventListener("click", () => pick(i));
+      const shot = node("span", cl22("thumb"));
+      shot.setAttribute("aria-hidden", "true");
+      fillShot(shot, topic.id);
+      const meta = node("span", cl22("meta"));
+      meta.append(node("span", cl22("name"), topic.title));
+      if (topic.project) {
+        const proj = node("span", cl22("host"));
+        proj.append(folderIcon(), node("span", cl22("host-name"), topic.project));
+        meta.append(proj);
+      }
+      btn.append(shot, meta);
+      list.append(btn);
+    });
+  }
+  function syncActive() {
+    if (!host)
+      return;
+    const cards = host.querySelectorAll(`.${cl22("card")}`);
+    cards.forEach((card, i) => {
+      const on = i === selected;
+      card.setAttribute("data-active", on ? "true" : "false");
+      card.setAttribute("aria-selected", on ? "true" : "false");
+      card.tabIndex = on ? 0 : -1;
+      if (on)
+        card.setAttribute("aria-current", "true");
+      else
+        card.removeAttribute("aria-current");
+    });
+    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
+  }
+  function paint() {
+    document.documentElement.classList.toggle("void-rt-open", open2);
+    if (!open2) {
+      detachHost();
+      return;
+    }
+    const items = topics();
+    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
+    if (!host) {
+      host = buildHost();
+      mountOverlay(host);
+    }
+    const panel = host.querySelector(`.${cl22("panel")}`);
+    if (!panel)
+      return;
+    applyTheme(panel);
+    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
+    if (!items.length) {
+      if (paintedKey !== "__empty__") {
+        panel.replaceChildren(node("div", cl22("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+        paintedKey = "__empty__";
+      }
+      requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+      return;
+    }
+    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl22("list")}`)) {
+      panel.replaceChildren(node("div", cl22("list")));
+      paintedKey = "";
+    }
+    if (paintedKey !== key) {
+      renderList(items);
+      paintedKey = key;
+    }
+    syncActive();
+    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+  }
+  function detachHost() {
+    document.documentElement.classList.remove("void-rt-open");
+    paintedKey = "";
+    if (host) {
+      try {
+        host.hidePopover();
+      } catch {}
+      host.remove();
+      host = null;
+    }
+    document.getElementById("void-rt-host")?.remove();
+    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
+      const p = el;
+      try {
+        p.hidePopover?.();
+      } catch {}
+      try {
+        p.close?.();
+      } catch {}
+      el.remove();
+    });
+  }
+  function mountOverlay(root) {
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
+    document.documentElement.append(root);
+    document.documentElement.classList.add("void-rt-open");
+    if (typeof root.showPopover !== "function")
+      return;
+    root.setAttribute("popover", "manual");
+    try {
+      root.showPopover();
+    } catch {
+      root.removeAttribute("popover");
+    }
+  }
+  var recentTopics_default = definePlugin({
+    name: "RecentTopics",
+    icon: LayoutGridIcon,
+    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings17,
+    managedStyle: "recentTopics",
+    _mark({ response }) {
+      try {
+        if (!response || response.isControl)
+          return null;
+        const sender = String(response.sender ?? "").toLowerCase();
+        const human = sender === "human" || sender === "user";
+        const text = human ? pickUserText(response.query || "", response.message || "") : plainText(response.message || "");
+        if (!text)
+          return null;
+        return React.createElement("span", {
+          className: "void-rt-mark",
+          "data-role": human ? "user" : "assistant",
+          hidden: true
+        }, text);
+      } catch {
+        return null;
+      }
+    },
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._mark({response:$1}),$&"
+        }
+      }
+    ],
+    start() {
+      detachHost();
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      try {
+        hydrate();
+        const current = currentVisit();
+        if (current != null)
+          bump(current);
+        scheduleCapture();
+      } catch (e) {
+        logger24.error("Hydrate failed:", e);
+      }
+      if (!keys2) {
+        keys2 = new AbortController;
+        const { signal } = keys2;
+        window.addEventListener("keydown", onKeyDown3, { capture: true, signal });
+        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+        window.addEventListener("blur", onWindowBlur, { signal });
+        document.addEventListener("visibilitychange", onVisibility2, { signal });
+        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+      }
+    },
+    stop() {
+      keys2?.abort();
+      keys2 = null;
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      thumbs.clear();
+      detachHost();
+    },
+    onSettingsChange() {
+      try {
+        writeVisits(capVisits(readVisits()));
+      } catch (e) {
+        logger24.error("Settings update failed:", e);
+      }
+    },
+    zustand: {
+      RoutingStore: {
+        selector: (s) => routeConvId(s.route),
+        handler(id) {
+          if (open2)
+            return;
+          const current = currentVisit();
+          if (current == null)
+            return;
+          if (id && isHomeId(current) && !isHomeId(id))
+            return;
+          bump(current);
+          scheduleCapture();
+        }
+      },
+      ChatPageStore: {
+        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
+        handler() {
+          if (open2)
+            return;
+          const id = currentVisit();
+          if (id == null)
+            return;
+          bump(id);
+          scheduleCapture();
+        }
+      },
+      ResponseStore: {
+        selector: (s) => {
+          const id = currentVisit();
+          if (!id || isHomeId(id))
+            return "";
+          const list = s.byConversationId[id];
+          const last = list?.[list.length - 1];
+          return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
+        },
+        handler() {
+          if (open2)
+            return;
+          scheduleCapture();
+        }
+      }
+    }
+  });
+
+  // src/plugins/chatStateFavicons/detect.ts
+  var EDITOR_SEL2 = '.tiptap.ProseMirror[contenteditable="true"]';
+  var STOP_SELECTORS = [
+    'button[aria-label="Stop model response"]',
+    'button[aria-label*="Stop"]',
+    'button[aria-label*="stop"]',
+    'button[aria-label*="停止"]'
+  ];
+  var SEND_SELECTORS = [
+    'button[aria-label*="Send"]',
+    'button[aria-label*="Submit"]',
+    'button[type="submit"]'
+  ];
+  function isVisible(el) {
+    if (!(el instanceof HTMLElement) || !el.isConnected)
+      return false;
+    if (!el.getClientRects().length)
+      return false;
+    const style = getComputedStyle(el);
+    return style.visibility !== "hidden" && style.display !== "none";
+  }
+  function isStopControl(el) {
+    const label = el.getAttribute("aria-label") ?? "";
+    const text = el.textContent ?? "";
+    return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
+  }
+  function getActiveEditor() {
+    const list = Array.from(document.querySelectorAll(EDITOR_SEL2));
+    return list.find(isVisible) ?? list[0] ?? null;
+  }
+  function getComposerRoot() {
+    const editor = getActiveEditor();
+    return editor?.closest("form") ?? editor?.closest("div.relative") ?? editor?.parentElement ?? document.body;
+  }
+  function collectStopButtons(root) {
+    const candidates = [];
+    for (const sel of STOP_SELECTORS) {
+      for (const node2 of root.querySelectorAll(sel)) {
+        if (node2 instanceof HTMLElement)
+          candidates.push(node2);
+      }
+    }
+    if (candidates.length === 0) {
+      for (const btn of root.querySelectorAll("button")) {
+        if (btn instanceof HTMLElement && isStopControl(btn))
+          candidates.push(btn);
+      }
+    }
+    return candidates;
+  }
+  function getStopButton() {
+    const candidates = collectStopButtons(document);
+    return candidates.find(isVisible) ?? candidates[0] ?? null;
+  }
+  function isDisabledControl(el) {
+    if (el instanceof HTMLButtonElement && el.disabled)
+      return true;
+    if (el.hasAttribute("disabled"))
+      return true;
+    if (el.getAttribute("aria-disabled") === "true")
+      return true;
+    if (el.getAttribute("data-disabled") === "true")
+      return true;
+    return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
+  }
+  function getSubmitButton() {
+    for (const root of [getComposerRoot(), document]) {
+      for (const sel of SEND_SELECTORS) {
+        for (const node2 of root.querySelectorAll(sel)) {
+          if (!(node2 instanceof HTMLElement) || isStopControl(node2))
+            continue;
+          if (isVisible(node2) || isDisabledControl(node2))
+            return node2;
+        }
+      }
+    }
+    return null;
+  }
+  function submitIsGray() {
+    const btn = getSubmitButton();
+    return !!btn && isDisabledControl(btn);
+  }
+  function isInputEmpty() {
+    const editor = getActiveEditor();
+    if (!editor)
+      return true;
+    if (editor.querySelector("p.is-empty.is-editor-empty"))
+      return true;
+    return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
+  }
+  function conversationToken() {
+    const params = new URLSearchParams(location.search);
+    const paramId = params.get("conversationId") ?? params.get("conversation_id") ?? params.get("chatId") ?? params.get("chat_id") ?? params.get("cid") ?? params.get("id") ?? "";
+    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
+    const pathId = /^[a-z0-9_-]{8,}$/i.test(lastSeg) ? lastSeg : "";
+    const dataId = document.querySelector("[data-conversation-id]")?.getAttribute("data-conversation-id") ?? "";
+    return [dataId, paramId, pathId].filter(Boolean).join("|");
+  }
+  function contextKeyFromUrl(token) {
+    const base = `${location.origin}${location.pathname}`;
+    return token ? `${base}|${token}` : `${base}|draft`;
+  }
+
+  // src/plugins/chatStateFavicons/icons.ts
+  var ICON_STYLES = ["original", "badge", "dot", "hole", "bg"];
+  var STYLE_OPTIONS = [
+    { label: "only emoji", value: "original" },
+    { label: "Badge + glyph", value: "badge", default: true },
+    { label: "Color dot", value: "dot" },
+    { label: "Mark tint", value: "hole" },
+    { label: "Background tint", value: "bg" }
+  ];
+  var KIND_COLOR = {
+    rotate: "#3B82F6",
+    done: "#22C55E",
+    ready: "#F59E0B",
+    error: "#EF4444"
+  };
+  var HOLE_IDLE = "#050505";
+  var MARK_FILL = "#FCFCFC";
+  var GROK_MARK_PATH = "M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815";
+  var GROK_BG_PATH2 = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P12 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P22 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var ORIGINAL_EMOJI = {
+    rotate: "\uD83D\uDD04",
+    done: "✔️",
+    ready: "\uD83D\uDC4D",
+    error: "\uD83D\uDEAB"
+  };
+  function isIconStyle(value) {
+    return typeof value === "string" && ICON_STYLES.includes(value);
+  }
+  function svgEmoji(emoji) {
+    return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`)}`;
+  }
+  function toSvgData(inner, viewBox = "0 0 64 64") {
+    const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg2)}`;
+  }
+  function grokMarkSvg() {
+    return [
+      `<rect width="64" height="64" rx="14" fill="${HOLE_IDLE}"/>`,
+      `<g transform="translate(8 8) scale(2)" fill="${MARK_FILL}" fill-rule="evenodd">`,
+      `<path d="${GROK_MARK_PATH}"/>`,
+      "</g>"
+    ].join("");
+  }
+  function officialGrokSvg(markColor, bgColor) {
+    return [
+      `<path d="${GROK_BG_PATH2}" fill="${bgColor}"/>`,
+      `<path d="${GROK_MARK_P12}" fill="${markColor}"/>`,
+      `<path d="${GROK_MARK_P22}" fill="${markColor}"/>`
+    ].join("");
+  }
+  function badgeGlyph(kind) {
+    if (kind === "rotate") {
+      return [
+        '<g transform="translate(51.5 51.5)"><g>',
+        '<path d="M0-6.1 A6.1 6.1 0 1 1 -5.3 3.05" fill="none" stroke="#fff" stroke-width="2.15" stroke-linecap="round"/>',
+        '<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.85s" repeatCount="indefinite"/>',
+        "</g></g>"
+      ].join("");
+    }
+    if (kind === "done") {
+      return '<path d="M46.6 51.7 L50.1 55.3 L56.8 47.4" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    if (kind === "ready") {
+      return [
+        '<path d="M51.5 56.4 V46.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+        '<path d="M46.6 51.2 L51.5 46.2 L56.4 51.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+      ].join("");
+    }
+    return [
+      '<path d="M47.2 47.2 L55.8 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+      '<path d="M55.8 47.2 L47.2 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
+    ].join("");
+  }
+  function composeIcon(style, kind, officialHref) {
+    if (style === "original") {
+      if (kind === "wait")
+        return officialHref;
+      return svgEmoji(ORIGINAL_EMOJI[kind]);
+    }
+    const color = kind === "wait" ? undefined : KIND_COLOR[kind];
+    if (style === "hole") {
+      return toSvgData(officialGrokSvg(color ?? MARK_FILL, HOLE_IDLE), "0 0 512 512");
+    }
+    if (style === "bg") {
+      return toSvgData(officialGrokSvg(MARK_FILL, color ?? HOLE_IDLE), "0 0 512 512");
+    }
+    if (!color || kind === "wait")
+      return toSvgData(grokMarkSvg());
+    const badge = style === "dot" ? [
+      '<circle cx="52.2" cy="52.2" r="10.4" fill="#050505"/>',
+      `<circle cx="52.2" cy="52.2" r="7.7" fill="${color}"/>`
+    ].join("") : [
+      '<circle cx="51.5" cy="51.5" r="12.15" fill="#050505"/>',
+      `<circle cx="51.5" cy="51.5" r="9.55" fill="${color}"/>`,
+      badgeGlyph(kind)
+    ].join("");
+    return toSvgData(grokMarkSvg() + badge);
+  }
+  function buildIcons(style, officialHref) {
+    return {
+      wait: composeIcon(style, "wait", officialHref),
+      rotate: composeIcon(style, "rotate", officialHref),
+      done: composeIcon(style, "done", officialHref),
+      ready: composeIcon(style, "ready", officialHref),
+      error: composeIcon(style, "error", officialHref)
+    };
+  }
+
+  // src/plugins/chatStateFavicons/index.ts
+  var logger25 = new Logger("ChatStateFavicons");
+  var ICON_ID = "void-chat-state-favicon";
+  var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
+  var settings18 = definePluginSettings({
+    style: {
+      type: 4 /* SELECT */,
+      description: "How the Grok mark is overlaid with chat state.",
+      options: STYLE_OPTIONS
+    }
+  });
+  var officialHref = "/images/favicon.svg";
+  var icons = buildIcons("badge", officialHref);
+  var kind = "wait";
+  var wasStreaming = false;
+  var justFinished = false;
+  var streamContext = null;
+  var lockedToken = "";
+  var lastWasError = false;
+  var lastConvId = "";
+  var primedReady = true;
+  var faviconObs = null;
+  var globalObs = null;
+  var composerObs = null;
+  var buttonObs = null;
+  var inputCtrl = null;
+  var unsubRoute = null;
+  var unsubPage = null;
+  var raf = 0;
+  var started2 = false;
+  function currentStyle() {
+    const value = settings18.store.style;
+    return isIconStyle(value) ? value : "badge";
+  }
+  function captureOfficial() {
+    const existing = document.querySelector(`link[rel~="icon"]:not(#${ICON_ID})`);
+    const href = existing?.href;
+    if (href && !href.startsWith("data:"))
+      return href;
+    return `${location.origin}/images/favicon.svg`;
+  }
+  function isIconLink(node2) {
+    return node2 instanceof HTMLLinkElement && (node2.relList.contains("icon") || /\bicon\b/i.test(node2.rel));
+  }
+  function stripCompetitors() {
+    const { head } = document;
+    if (!head)
+      return;
+    for (const node2 of head.querySelectorAll("link")) {
+      if (node2.id !== ICON_ID && isIconLink(node2))
+        node2.remove();
+    }
+  }
+  function applyHref(href) {
+    const { head } = document;
+    if (!head)
+      return;
+    stripCompetitors();
+    let link = document.getElementById(ICON_ID);
+    if (!link) {
+      link = document.createElement("link");
+      link.id = ICON_ID;
+      link.rel = "icon shortcut icon";
+      link.type = "image/svg+xml";
+      link.setAttribute("sizes", "any");
+      head.prepend(link);
+    } else if (head.firstChild !== link) {
+      head.prepend(link);
+    }
+    if (link.getAttribute("href") !== href)
+      link.setAttribute("href", href);
+  }
+  function setKind(next) {
+    kind = next;
+    applyHref(icons[next]);
+  }
+  function rebuildIcons() {
+    icons = buildIcons(currentStyle(), officialHref);
+    applyHref(icons[kind]);
+  }
+  function liveResponse(id, byId) {
+    if (!id)
+      return false;
+    const response = byId[id];
+    if (!response)
+      return false;
+    if (response.partial)
+      return true;
+    return LIVE_RESPONSE.has(response.state ?? "");
+  }
+  function storeStreaming() {
+    try {
+      const page = ChatPageStore.useChatPageStore.getState();
+      if (page.streamedMessageId || page.showStreamingIndicator)
+        return true;
+      const { byId } = ResponseStore.useResponseStore.getState();
+      return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
+    } catch (e) {
+      logger25.debug("stream stores unavailable:", e);
+      return false;
+    }
+  }
+  function isStreaming() {
+    if (storeStreaming())
+      return true;
+    return getStopButton() != null;
+  }
+  function currentConversationId() {
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      if (route.conversationId)
+        return String(route.conversationId);
+    } catch (e) {
+      logger25.debug("RoutingStore unavailable:", e);
+    }
+    try {
+      const id = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (id)
+        return id;
+    } catch (e) {
+      logger25.debug("ChatPageStore unavailable:", e);
+    }
+    return conversationToken();
+  }
+  function getContextKey() {
+    const id = currentConversationId();
+    const key = id || contextKeyFromUrl("");
+    if (isStreaming()) {
+      if (!lockedToken && key)
+        lockedToken = key;
+      return lockedToken;
+    }
+    lockedToken = "";
+    return key;
+  }
+  function sameStreamContext(key) {
+    return !!streamContext && !!key && streamContext === key;
+  }
+  function resetStreamFlags() {
+    wasStreaming = false;
+    justFinished = false;
+    streamContext = null;
+    lockedToken = "";
+    lastWasError = false;
+  }
+  function onConversationSwitch(id) {
+    lastConvId = id;
+    resetStreamFlags();
+    primedReady = false;
+    composerObs?.disconnect();
+    composerObs = null;
+    buttonObs?.disconnect();
+    buttonObs = null;
+    setKind("wait");
+  }
+  function hasError() {
+    if (lastWasError)
+      return true;
+    try {
+      const { byId } = ResponseStore.useResponseStore.getState();
+      const page = ChatPageStore.useChatPageStore.getState();
+      const id = page.streamedMessageId ?? page.lastMessageId;
+      if (!id)
+        return false;
+      const response = byId[id];
+      return response?.state === "error" || response?.error != null;
+    } catch (e) {
+      logger25.debug("ResponseStore unavailable:", e);
+      return false;
+    }
+  }
+  function evaluateState() {
+    if (!started2)
+      return;
+    const conv = currentConversationId();
+    if (lastConvId && conv && lastConvId !== conv) {
+      onConversationSwitch(conv);
+      return;
+    }
+    if (conv)
+      lastConvId = conv;
+    const contextKey = getContextKey();
+    const streaming = isStreaming();
+    const empty = isInputEmpty();
+    const gray = submitIsGray();
+    if (hasError() && !streaming) {
+      setKind("error");
+      wasStreaming = false;
+      justFinished = false;
+      streamContext = null;
+      lastWasError = false;
+      return;
+    }
+    if (streaming && empty) {
+      wasStreaming = true;
+      justFinished = false;
+      lastWasError = false;
+      streamContext = contextKey;
+      setKind("rotate");
+      return;
+    }
+    if (wasStreaming) {
+      const sameContext = sameStreamContext(contextKey);
+      wasStreaming = false;
+      if (sameContext && gray) {
+        justFinished = true;
+        streamContext = contextKey;
+        setKind("done");
+        return;
+      }
+      justFinished = false;
+      streamContext = null;
+    }
+    if (justFinished) {
+      const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);
+      if (contextChanged) {
+        justFinished = false;
+        streamContext = null;
+      } else if (empty) {
+        setKind("done");
+        return;
+      } else if (primedReady) {
+        justFinished = false;
+        setKind("ready");
+        return;
+      } else {
+        justFinished = false;
+        setKind("wait");
+        return;
+      }
+    }
+    streamContext = null;
+    lastWasError = false;
+    if (empty)
+      setKind("wait");
+    else if (primedReady)
+      setKind("ready");
+    else
+      setKind("wait");
+  }
+  function nodeTouchesStop(node2) {
+    if (!(node2 instanceof Element))
+      return false;
+    if (node2 instanceof HTMLElement && node2.tagName === "BUTTON" && isStopControl(node2))
+      return true;
+    for (const btn of node2.querySelectorAll("button")) {
+      if (isStopControl(btn))
+        return true;
+    }
+    return false;
+  }
+  function stopButtonMutation(list) {
+    for (const m of list) {
+      if (nodeTouchesStop(m.target))
+        return true;
+      for (const n of m.addedNodes) {
+        if (nodeTouchesStop(n))
+          return true;
+      }
+      for (const n of m.removedNodes) {
+        if (nodeTouchesStop(n))
+          return true;
+      }
+      if (m.type === "attributes" && m.attributeName === "aria-label" && m.target instanceof HTMLElement) {
+        if (isStopControl(m.target) || /stop|停止/i.test(String(m.oldValue ?? "")))
+          return true;
+      }
+    }
+    return false;
+  }
+  function nodeInEditor(node2) {
+    const el = node2 instanceof Element ? node2 : node2?.parentElement;
+    return !!el?.closest(EDITOR_SEL2);
+  }
+  function mutationsAreEditorOnly(list) {
+    if (!list.length)
+      return false;
+    for (const m of list) {
+      if (!nodeInEditor(m.target))
+        return false;
+      for (const n of m.addedNodes) {
+        if (n instanceof Text)
+          continue;
+        if (!nodeInEditor(n))
+          return false;
+      }
+      for (const n of m.removedNodes) {
+        if (n instanceof Text)
+          continue;
+        if (!nodeInEditor(n))
+          return false;
+      }
+    }
+    return true;
+  }
+  function onDomMutate(list) {
+    if (kind === "rotate" || wasStreaming) {
+      if (mutationsAreEditorOnly(list))
+        return;
+      if (!stopButtonMutation(list))
+        return;
+    }
+    scheduleEvaluate();
+  }
+  function onEditorInput() {
+    primedReady = true;
+    scheduleEvaluate();
+  }
+  function scheduleEvaluate() {
+    if (!started2 || raf)
+      return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      if (!started2)
+        return;
+      bindEditorInput();
+      const root = getComposerRoot();
+      if (!composerObs || !root.isConnected) {
+        observeComposer();
+        observeButtons();
+      }
+      evaluateState();
+    });
+  }
+  function onStreamEnd4({ responseId }) {
+    try {
+      const response = ResponseStore.useResponseStore.getState().byId[responseId];
+      lastWasError = response?.state === "error" || response?.error != null;
+    } catch (e) {
+      logger25.debug("ResponseStore unavailable:", e);
+    }
+  }
+  function startFaviconGuard() {
+    faviconObs?.disconnect();
+    const { head } = document;
+    if (!head)
+      return;
+    faviconObs = new MutationObserver((list) => {
+      for (const m of list) {
+        if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
+          applyHref(icons[kind]);
+          return;
+        }
+        for (const node2 of m.addedNodes) {
+          if (isIconLink(node2) && node2.id !== ICON_ID) {
+            applyHref(icons[kind]);
+            return;
+          }
+        }
+      }
+    });
+    faviconObs.observe(head, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href", "rel"]
+    });
+  }
+  function bindEditorInput() {
+    const editor = getActiveEditor();
+    if (!editor || editor.dataset.voidCsfBound === "1")
+      return;
+    editor.dataset.voidCsfBound = "1";
+    editor.addEventListener("input", onEditorInput, { passive: true });
+    editor.addEventListener("compositionend", onEditorInput, { passive: true });
+  }
+  function observeComposer() {
+    composerObs?.disconnect();
+    const root = getComposerRoot();
+    composerObs = new MutationObserver(onDomMutate);
+    composerObs.observe(root, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["aria-label", "aria-disabled", "disabled", "data-testid", "class"],
+      attributeOldValue: true
+    });
+  }
+  function observeButtons() {
+    buttonObs?.disconnect();
+    const target = getComposerRoot();
+    buttonObs = new MutationObserver(onDomMutate);
+    buttonObs.observe(target, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-label", "type"],
+      attributeOldValue: true
+    });
+  }
+  function attachStores() {
+    unsubRoute?.();
+    unsubPage?.();
+    try {
+      const routeStore = RoutingStore.useRoutingStore;
+      if (typeof routeStore?.subscribe === "function") {
+        unsubRoute = routeStore.subscribe((s) => s.route.conversationId, (id, prev) => {
+          if (!id || id === prev)
+            return;
+          onConversationSwitch(String(id));
+        });
+      }
+    } catch (e) {
+      logger25.debug("RoutingStore subscribe failed:", e);
+      try {
+        unsubRoute = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
+      } catch (err) {
+        logger25.debug("RoutingStore full subscribe failed:", err);
+      }
+    }
+    try {
+      const pageStore = ChatPageStore.useChatPageStore;
+      if (typeof pageStore?.subscribe === "function") {
+        unsubPage = pageStore.subscribe((s) => s.conversationId, (id, prev) => {
+          if (!id || id === prev)
+            return;
+          onConversationSwitch(id);
+        });
+      }
+    } catch (e) {
+      logger25.debug("ChatPageStore subscribe failed:", e);
+    }
+  }
+  function restoreOfficial() {
+    faviconObs?.disconnect();
+    faviconObs = null;
+    document.getElementById(ICON_ID)?.remove();
+    const { head } = document;
+    if (!head)
+      return;
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.type = "image/svg+xml";
+    link.href = officialHref;
+    head.prepend(link);
+  }
+  var chatStateFavicons_default = definePlugin({
+    name: "ChatStateFavicons",
+    icon: AppWindowIcon,
+    description: "Show streaming, done, ready, and error states on the tab favicon.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings18,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    cleanupSelectors: [`#${ICON_ID}`],
+    start() {
+      started2 = true;
+      officialHref = captureOfficial();
+      rebuildIcons();
+      startFaviconGuard();
+      inputCtrl?.abort();
+      inputCtrl = new AbortController;
+      window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
+      globalObs?.disconnect();
+      globalObs = new MutationObserver(onDomMutate);
+      globalObs.observe(document.body, { childList: true, subtree: true });
+      bindEditorInput();
+      observeComposer();
+      observeButtons();
+      attachStores();
+      evaluateState();
+    },
+    stop() {
+      started2 = false;
+      if (raf)
+        cancelAnimationFrame(raf);
+      raf = 0;
+      inputCtrl?.abort();
+      inputCtrl = null;
+      unsubRoute?.();
+      unsubRoute = null;
+      unsubPage?.();
+      unsubPage = null;
+      globalObs?.disconnect();
+      globalObs = null;
+      composerObs?.disconnect();
+      composerObs = null;
+      buttonObs?.disconnect();
+      buttonObs = null;
+      wasStreaming = false;
+      justFinished = false;
+      streamContext = null;
+      lockedToken = "";
+      lastConvId = "";
+      primedReady = true;
+      lastWasError = false;
+      restoreOfficial();
+    },
+    onSettingsChange: rebuildIcons,
+    events: {
+      streamEnd: onStreamEnd4
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/exportChat/styles.css
+  registerStyle("exportChat", `.void-export-icon {
+    margin-inline-end: 0.5rem;
+}
+`);
+
+  // src/plugins/exportChat/index.tsx
+  var logger26 = new Logger("ExportChat");
+  function buildExportMessage(r) {
+    return {
+      id: r.responseId,
+      sender: r.sender,
+      message: r.message,
+      query: r.query,
+      createTime: r.createTime,
+      model: r.requestMetadata?.model ?? r.model,
+      ...r.thinkingTrace && { thinkingTrace: r.thinkingTrace },
+      ...r.webSearchResults?.length && { webSearchResults: r.webSearchResults },
+      ...r.generatedImageUrls?.length && { generatedImageUrls: r.generatedImageUrls },
+      ...r.fileAttachments?.length && { fileAttachments: r.fileAttachments },
+      ...r.steps?.length && { steps: r.steps }
+    };
+  }
+  function formatTs(ts) {
+    return ts ? new Date(ts).toLocaleString() : "";
+  }
+  function sender(s) {
+    return s.toLowerCase() === "human" ? "You" : "Grok";
+  }
+  function toMarkdown(title, messages) {
+    const lines = [`# ${title}`, ""];
+    for (const m of messages) {
+      const ts = formatTs(m.createTime);
+      lines.push(`## ${sender(m.sender)}${ts ? ` — ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
+      if (m.thinkingTrace)
+        lines.push("<details><summary>Thinking</summary>", "", m.thinkingTrace, "", "</details>", "");
+      const mdText = m.query || m.message;
+      if (mdText)
+        lines.push(mdText, "");
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls)
+          lines.push(`![image](${url})`);
+        lines.push("");
+      }
+      if (m.webSearchResults?.length) {
+        lines.push("**Web search results:**", "");
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (url)
+            lines.push(`- [${t ?? url}](${url})`);
+        }
+        lines.push("");
+      }
+      lines.push("---", "");
+    }
+    return lines.join(`
+`);
+  }
+  function toPlainText(title, messages) {
+    const lines = [title, "=".repeat(title.length), ""];
+    for (const m of messages) {
+      const ts = formatTs(m.createTime);
+      lines.push(`[${sender(m.sender)}]${ts ? ` ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
+      if (m.thinkingTrace)
+        lines.push("[Thinking]", m.thinkingTrace, "");
+      const txtText = m.query || m.message;
+      if (txtText)
+        lines.push(txtText, "");
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls)
+          lines.push(`  ${url}`);
+        lines.push("");
+      }
+      if (m.webSearchResults?.length) {
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (url)
+            lines.push(`  ${t ?? ""} - ${url}`);
+        }
+        lines.push("");
+      }
+      lines.push("-".repeat(40), "");
+    }
+    return lines.join(`
+`);
+  }
+  var HTML_HEAD = [
+    '<!DOCTYPE html><html><head><meta charset="utf-8">',
+    "<style>",
+    "body{font-family:system-ui,sans-serif;max-width:50rem;margin:2rem auto;padding:0 1rem;background:#0d0d0d;color:#e0e0e0}",
+    ".m{margin:1.5rem 0;padding:1rem;border-radius:.5rem;border:1px solid #222}",
+    ".h{background:#1a1a2e}.g{background:#111}",
+    ".s{font-weight:600;margin-bottom:.5rem;color:#aaa}.t{font-size:.8rem;color:#666}",
+    ".th{margin:.5rem 0;padding:.5rem;background:#1a1a1a;border-left:3px solid #444;font-size:.9rem;color:#999}",
+    "a{color:#6ea8fe}",
+    "</style></head><body>"
+  ].join(`
+`);
+  function toHtml(title, messages) {
+    const p = [HTML_HEAD, `<h1>${escapeHtml(title)}</h1>`];
+    for (const m of messages) {
+      const cls = m.sender.toLowerCase() === "human" ? "h" : "g";
+      const ts = formatTs(m.createTime);
+      p.push(`<div class="m ${cls}"><div class="s">${sender(m.sender)} <span class="t">${ts ? escapeHtml(ts) : ""}${m.model ? ` · ${escapeHtml(m.model)}` : ""}</span></div>`);
+      if (m.thinkingTrace)
+        p.push(`<details><summary>Thinking</summary><div class="th">${escapeHtml(m.thinkingTrace)}</div></details>`);
+      const text = m.query || m.message;
+      if (text)
+        p.push(`<div>${escapeHtml(text).replaceAll(`
+`, "<br>")}</div>`);
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls) {
+          const safe = safeUrl(url);
+          if (safe)
+            p.push(`<img src="${escapeHtml(safe, true)}" style="max-width:100%;margin:.5rem 0">`);
+        }
+      }
+      if (m.webSearchResults?.length) {
+        p.push("<ul>");
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (!url)
+            continue;
+          const safe = safeUrl(url);
+          if (safe)
+            p.push(`<li><a href="${escapeHtml(safe, true)}" rel="noopener noreferrer">${escapeHtml(t ?? safe)}</a></li>`);
+          else
+            p.push(`<li>${escapeHtml(t ?? url)}</li>`);
+        }
+        p.push("</ul>");
+      }
+      p.push("</div>");
+    }
+    p.push("</body></html>");
+    return p.join(`
+`);
+  }
+  var FORMATS = [
+    { fmt: "json", label: "JSON" },
+    { fmt: "md", label: "Markdown" },
+    { fmt: "txt", label: "Plain Text" },
+    { fmt: "html", label: "HTML" }
+  ];
+  async function exportChat(conversationId, format) {
+    const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
+    if (!responses?.length)
+      return;
+    const conversation = ConversationStore.useConversationStore.getState().byId[conversationId];
+    const title = conversation?.title ?? "Untitled Chat";
+    const messages = responses.map(buildExportMessage);
+    const filename = sanitizeFilename(title, "chat");
+    let content;
+    let mime;
+    switch (format) {
+      case "json":
+        content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
+        mime = "application/json";
+        break;
+      case "md":
+        content = toMarkdown(title, messages);
+        mime = "text/markdown";
+        break;
+      case "txt":
+        content = toPlainText(title, messages);
+        mime = "text/plain";
+        break;
+      case "html":
+        content = toHtml(title, messages);
+        mime = "text/html";
+        break;
+    }
+    await FileUtils.downloadBlob(new Blob([content], { type: mime }), `${filename}.${format}`);
+  }
+  function ExportMenu({ conversationId }) {
+    const streaming = useIsStreaming(conversationId);
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
+      disabled: streaming
+    }, /* @__PURE__ */ React.createElement(DownloadIcon, {
+      size: 16,
+      className: "void-export-icon"
+    }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
+      key: fmt,
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger26.error("Failed to export chat", e))
+    }, label))));
+  }
+  var exportChat_default = definePlugin({
+    name: "ExportChat",
+    icon: FileDownIcon,
+    description: "Export conversations in multiple formats from the right-click menu.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    contextMenuItems: {
+      conversation: {
+        label: "Export",
+        render: ErrorBoundary.wrap(ExportMenu)
+      }
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/placeholder/styles.css
+  registerStyle("placeholder", `.void-ph-root {
+    contain: content;
+}
+
+.void-ph-textarea-wrap {
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.75rem;
+}
+
+.void-ph-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ph-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: hsl(var(--fg-primary));
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.void-ph-textarea:focus {
+    outline: none;
+}
+`);
+
+  // src/plugins/placeholder/index.tsx
+  var cl23 = classNameFactory("void-ph-");
+  var DEFAULT_PHRASES = [
+    "What do you want to know?",
+    "How can I help you today?",
+    "What's on your mind?"
+  ].join(`
+`);
+  function parsePhrases(raw) {
+    return String(raw ?? "").split(`
+`).map((s) => s.trim()).filter(Boolean);
+  }
+  var settings19 = definePluginSettings({
+    phrases: {
+      type: 6 /* COMPONENT */,
+      default: DEFAULT_PHRASES,
+      component: PhrasesEditor
+    }
+  }).withPrivateSettings();
+  function PhrasesEditor() {
+    const { phrases } = settings19.use(["phrases"]);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem",
+      className: cl23("root")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium"
+    }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
+      className: cl23("textarea-wrap")
+    }, /* @__PURE__ */ React.createElement(Textarea, {
+      className: cl23("textarea"),
+      value: phrases ?? DEFAULT_PHRASES,
+      onChange: (e) => {
+        settings19.store.phrases = e.target.value;
+      },
+      placeholder: DEFAULT_PHRASES
+    })));
+  }
+  var placeholder_default = definePlugin({
+    name: "Placeholder",
+    icon: TextCursorInputIcon,
+    description: "Replace the rotating chat input placeholder.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    settings: settings19,
+    _phrases() {
+      const lines = parsePhrases(settings19.store.phrases ?? DEFAULT_PHRASES);
+      return lines.length ? lines : null;
+    },
+    patches: [
+      {
+        find: `query-bar-placeholder.whats-on-your-mind","What's on your mind?"`,
+        replacement: {
+          match: /("query-bar-placeholder\.whats-on-your-mind","What's on your mind\?"\)\],\[\i,\i,\i,\i\]\),)(\i)=(\i\(\)),(\i)=(\i)\.map\(\2\)/,
+          replace: "$1$2=$3,$4=($self._phrases()??$5).map($2)"
+        }
+      }
+    ]
+  });
+
+  // void-css:/tmp/Void/src/plugins/messageTimestamps/styles.css
+  registerStyle("messageTimestamps", `.void-timestamp {
+    margin-bottom: 0.125rem;
+}
+
+@media print {
+    .void-timestamp {
+        display: none;
+    }
+}
+`);
+
+  // src/plugins/messageTimestamps/index.tsx
+  var settings20 = definePluginSettings({
+    showDate: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the full date for messages older than today.",
+      default: true
+    },
+    hideOwnMessages: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide timestamps on your own messages.",
+      default: false
+    }
+  });
+  function formatTimestamp(iso, showDate) {
+    const date = new Date(iso);
+    const now = new Date;
+    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (!showDate || today)
+      return time;
+    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
+  }
+  var messageTimestamps_default = definePlugin({
+    name: "MessageTimestamps",
+    icon: ClockIcon,
+    description: "Shows timestamps on chat messages.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings20,
+    _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
+      if (!response?.createTime)
+        return null;
+      if (settings20.store.hideOwnMessages && response.sender === "human")
+        return null;
+      return /* @__PURE__ */ React.createElement(Text2, {
+        as: "span",
+        size: "xs",
+        color: "muted",
+        className: "void-timestamp"
+      }, formatTimestamp(response.createTime, settings20.store.showDate));
+    }),
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._renderTimestamp({response:$1}),$&"
+        }
+      }
+    ]
+  });
+
+  // void-css:/tmp/Void/src/plugins/chatListStatus/styles.css
+  registerStyle("chatListStatus", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+[data-sidebar="menu-button"]:has(> .void-cls) {
+    position: relative;
+}
+
+.void-cls {
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-top: -0.375rem;
+    pointer-events: none;
+    z-index: 1;
+    contain: content;
+    color: #3b82f6;
+}
+
+.void-cls[data-kind="done"],
+.void-cls[data-kind="error"] {
+    width: 0.375rem;
+    height: 0.375rem;
+    margin-top: -0.1875rem;
+    left: 0.625rem;
+    border-radius: 999px;
+    background: #3b82f6;
+}
+
+.void-cls[data-kind="error"] {
+    background: #ef4444;
+}
+
+.void-cls[data-kind="streaming"] svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    animation: void-cls-spin 0.8s linear infinite;
+}
+
+@keyframes void-cls-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-cls[data-kind="streaming"] svg {
+        animation: none;
+    }
+}
+`);
+
+  // src/plugins/chatListStatus/index.ts
+  var logger27 = new Logger("ChatListStatus");
+  var MARK = "void-cls";
+  var LIVE = new Set(["streaming", "optimistic", "reconnecting"]);
+  var SIDEBAR = '[data-sidebar="sidebar"]';
+  var BUTTON = '[data-sidebar="menu-button"]';
+  var SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
+  var marks = new Map;
+  var rowById = new Map;
+  var raf2 = 0;
+  var started3 = false;
+  var obs = null;
+  function isLiveResponse(r) {
+    if (!r)
+      return false;
+    if (r.partial)
+      return true;
+    return LIVE.has(r.state ?? "");
+  }
+  function isErrorResponse(r) {
+    return !!r && (r.state === "error" || r.error != null);
+  }
+  function isConvId(value) {
+    return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value);
+  }
+  function liveIds() {
+    const ids = new Set;
+    try {
+      const page = ChatPageStore.useChatPageStore.getState();
+      const current = page.conversationId || page.optimisticConversationId || "";
+      if (current && (page.streamedMessageId || page.showStreamingIndicator))
+        ids.add(current);
+      const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
+      if (current && (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]))) {
+        ids.add(current);
+      }
+      for (const id of Object.keys(inflightPromisesByConversationId ?? {}))
+        ids.add(id);
+      for (const [id, list] of Object.entries(byConversationId ?? {})) {
+        if (list?.some(isLiveResponse))
+          ids.add(id);
+      }
+    } catch (e) {
+      logger27.debug("stream stores unavailable:", e);
+    }
+    return ids;
+  }
+  function errorOf(id) {
+    try {
+      const { byConversationId, byId } = ResponseStore.useResponseStore.getState();
+      const list = byConversationId[id];
+      if (list?.length) {
+        for (let i = list.length - 1;i >= 0; i--) {
+          const r = list[i];
+          if (String(r.sender ?? "").toLowerCase() === "human")
+            continue;
+          return isErrorResponse(r);
+        }
+      }
+      const page = ChatPageStore.useChatPageStore.getState();
+      if ((page.conversationId === id || page.optimisticConversationId === id) && page.lastMessageId) {
+        return isErrorResponse(byId[page.lastMessageId]);
+      }
+    } catch (e) {
+      logger27.debug("error lookup failed:", e);
+    }
+    return false;
+  }
+  function refreshMarks() {
+    const live = liveIds();
+    for (const id of live)
+      marks.set(id, "streaming");
+    for (const [id, kind2] of marks) {
+      if (kind2 !== "streaming" || live.has(id))
+        continue;
+      marks.set(id, errorOf(id) ? "error" : "done");
+    }
+  }
+  function convOfResponse(responseId) {
+    try {
+      const { byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [id, list] of Object.entries(byConversationId ?? {})) {
+        if (list?.some((r) => r.responseId === responseId))
+          return id;
+      }
+      const page = ChatPageStore.useChatPageStore.getState();
+      return page.conversationId || page.optimisticConversationId || "";
+    } catch (e) {
+      logger27.debug("conv lookup failed:", e);
+      return "";
+    }
+  }
+  function onStreamEnd5({ responseId }) {
+    const cid = convOfResponse(responseId);
+    if (!cid)
+      return;
+    try {
+      const response = ResponseStore.useResponseStore.getState().byId[responseId];
+      marks.set(cid, isErrorResponse(response) ? "error" : "done");
+    } catch (e) {
+      logger27.debug("streamEnd failed:", e);
+      marks.set(cid, "done");
+    }
+    schedule();
+  }
+  function hrefId(el) {
+    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
+    const href = a?.getAttribute("href") ?? el.getAttribute("href") ?? "";
+    if (!href)
+      return "";
+    try {
+      const u = new URL(href, location.origin);
+      return u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
+    } catch {
+      return "";
+    }
+  }
+  function idFromProps(props) {
+    if (!props)
+      return "";
+    const { route } = props;
+    if (route && typeof route === "object") {
+      const r = route;
+      if (isConvId(r.conversationId))
+        return r.conversationId;
+      if (isConvId(r.chat))
+        return r.chat;
+      if (r.page === "workspace")
+        return "";
+      if (r.page === "chat" && isConvId(props.id))
+        return props.id;
+    }
+    if (isConvId(props.conversationId))
+      return props.conversationId;
+    return "";
+  }
+  function idFromRow(el) {
+    const fromHref = hrefId(el);
+    if (fromHref)
+      return fromHref;
+    try {
+      const fiber = getFiber(el);
+      const hit = walkFiberUp(fiber, 18, (f) => !!idFromProps(f.memoizedProps));
+      return idFromProps(hit?.memoizedProps);
+    } catch (e) {
+      logger27.debug("fiber id failed:", e);
+      return "";
+    }
+  }
+  function spinSvg() {
+    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg2.setAttribute("viewBox", "0 0 24 24");
+    svg2.setAttribute("fill", "none");
+    svg2.setAttribute("stroke", "currentColor");
+    svg2.setAttribute("stroke-width", "2.5");
+    svg2.setAttribute("stroke-linecap", "round");
+    svg2.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", SPIN_PATH);
+    svg2.append(path);
+    return svg2;
+  }
+  function ensureMark(btn, kind2) {
+    let mark = btn.querySelector(`:scope > .${MARK}`);
+    if (!mark) {
+      mark = document.createElement("span");
+      mark.className = MARK;
+      mark.setAttribute("aria-hidden", "true");
+      btn.prepend(mark);
+    }
+    if (mark.dataset.kind === kind2 && (kind2 !== "streaming" || mark.querySelector("svg")))
+      return;
+    mark.dataset.kind = kind2;
+    mark.replaceChildren();
+    if (kind2 === "streaming")
+      mark.append(spinSvg());
+  }
+  function clearMark(btn) {
+    btn.querySelector(`:scope > .${MARK}`)?.remove();
+  }
+  function activeButton(sidebar) {
+    return sidebar.querySelector(`${BUTTON}[data-active="true"], ${BUTTON}[aria-current="page"], ${BUTTON}[data-state="active"]`);
+  }
+  function paint2() {
+    if (!started3)
+      return;
+    refreshMarks();
+    const sidebar = document.querySelector(SIDEBAR);
+    if (!sidebar)
+      return;
+    const usedIds = new Set;
+    for (const btn of sidebar.querySelectorAll(BUTTON)) {
+      const id = idFromRow(btn);
+      if (!id) {
+        clearMark(btn);
+        continue;
+      }
+      usedIds.add(id);
+      rowById.set(id, btn);
+      const kind2 = marks.get(id);
+      if (kind2)
+        ensureMark(btn, kind2);
+      else
+        clearMark(btn);
+    }
+    for (const [id, el] of rowById) {
+      if (!el.isConnected || !usedIds.has(id))
+        rowById.delete(id);
+    }
+    try {
+      const page = ChatPageStore.useChatPageStore.getState();
+      const activeId = [page.conversationId, page.optimisticConversationId].find((id) => id && marks.has(id)) ?? "";
+      if (!activeId || rowById.has(activeId))
+        return;
+      const active = activeButton(sidebar);
+      const kind2 = marks.get(activeId);
+      if (active && kind2) {
+        rowById.set(activeId, active);
+        ensureMark(active, kind2);
+      }
+    } catch (e) {
+      logger27.debug("active row fallback failed:", e);
+    }
+  }
+  function schedule() {
+    if (!started3 || raf2)
+      return;
+    raf2 = requestAnimationFrame(() => {
+      raf2 = 0;
+      if (started3)
+        paint2();
+    });
+  }
+  function ownMutation(list) {
+    if (!list.length)
+      return false;
+    for (const m of list) {
+      const { target } = m;
+      if (target instanceof Element && (target.classList.contains(MARK) || target.closest(`.${MARK}`)))
+        continue;
+      for (const n of m.addedNodes) {
+        if (n instanceof Element && (n.classList.contains(MARK) || n.querySelector(`.${MARK}`)))
+          continue;
+        return false;
+      }
+      for (const n of m.removedNodes) {
+        if (n instanceof Element && n.classList.contains(MARK))
+          continue;
+        return false;
+      }
+      if (m.type === "attributes")
+        return false;
+    }
+    return true;
+  }
+  function observe() {
+    obs?.disconnect();
+    const root = document.querySelector(SIDEBAR) ?? document.body;
+    obs = new MutationObserver((list) => {
+      if (ownMutation(list))
+        return;
+      schedule();
+    });
+    obs.observe(root, { childList: true, subtree: true });
+  }
+  function pageKey(s) {
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
+  }
+  function responseKey(s) {
+    const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
+    const live = [];
+    for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
+      if (list?.some(isLiveResponse))
+        live.push(id);
+    }
+    return `${inflight}|${live.join(",")}`;
+  }
+  var chatListStatus_default = definePlugin({
+    name: "ChatListStatus",
+    icon: LoaderCircleIcon,
+    description: "Show Grok reply status on sidebar chats: spinner, blue dot, or error.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    managedStyle: "chatListStatus",
+    cleanupSelectors: [`.${MARK}`],
+    start() {
+      started3 = true;
+      observe();
+      schedule();
+    },
+    stop() {
+      started3 = false;
+      if (raf2)
+        cancelAnimationFrame(raf2);
+      raf2 = 0;
+      obs?.disconnect();
+      obs = null;
+      for (const el of document.querySelectorAll(`.${MARK}`))
+        el.remove();
+      marks.clear();
+      rowById.clear();
+    },
+    events: {
+      streamEnd: onStreamEnd5
+    },
+    zustand: {
+      ChatPageStore: {
+        selector: pageKey,
+        handler: schedule
+      },
+      ResponseStore: {
+        selector: responseKey,
+        handler: schedule
+      }
+    }
+  });
+
+  // src/plugins/starry/index.tsx
+  var DEFAULT_COLOR = "#ffffff";
+  var StarsBackground = findExportedComponentLazy("StarsBackground");
+  function hexToRgb(hex) {
+    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
+    if (!m)
+      return [255, 255, 255];
+    const n = parseInt(m[1], 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  function ColorRow2() {
+    const { starColor } = settings21.use(["starColor"]);
+    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
+      value: starColor,
+      onChange: (v) => {
+        settings21.store.starColor = v;
+      },
+      title: "Star color",
+      description: "Color of the twinkling stars."
+    });
+  }
+  function StarryBackground() {
+    const { starColor } = settings21.use(["starColor"]);
+    return /* @__PURE__ */ React.createElement("div", {
+      "aria-hidden": true,
+      className: "fixed inset-0 -z-10 pointer-events-none"
+    }, /* @__PURE__ */ React.createElement(StarsBackground, {
+      starColor: hexToRgb(starColor)
+    }));
+  }
+  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
+  var settings21 = definePluginSettings({
+    starColor: {
+      type: 6 /* COMPONENT */,
+      default: DEFAULT_COLOR,
+      component: ColorRow2
+    }
+  }).withPrivateSettings();
+  var starry_default = definePlugin({
+    name: "Starry",
+    icon: SparklesIcon,
+    description: "Adds Grok's native twinkling starry background to the main page.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings21,
+    _StarryBg() {
+      return /* @__PURE__ */ React.createElement(WrappedStarry, {
+        key: "void-starry-bg"
+      });
+    },
+    patches: [
+      {
+        find: '"chat-page")',
+        replacement: {
+          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
+          replace: "$1$self._StarryBg(),$2"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/noGrokBot/index.ts
+  var STYLE_NAME6 = "noGrokBot";
+  var CSS2 = `
+#grok-bot-nav-button,
+div:has(> #grok-bot-nav-button) {
+    display: none !important;
+}
+#promo-portal [aria-label*="Grok Bot"] {
+    display: none !important;
+}
+`;
+  var noGrokBot_default = definePlugin({
+    name: "NoGrokBot",
+    icon: BotOffIcon,
+    description: "Hide the top-right Grok Bot promo button.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    start() {
+      registerStyle(STYLE_NAME6, CSS2);
+    },
+    stop() {
+      unregisterStyle(STYLE_NAME6);
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/downloadTTS/styles.css
+  registerStyle("downloadTTS", `.void-download-tts-spinner {
+    pointer-events: none;
+}
+`);
+
+  // src/plugins/downloadTTS/index.tsx
+  var cl24 = classNameFactory("void-download-tts-");
+  var logger28 = new Logger("DownloadTTS");
+  async function fetchAndDownload() {
+    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
+    if (!currentStreamId)
+      return;
+    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
+    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
+    if (voiceId)
+      url += `?voiceId=${encodeURIComponent(voiceId)}`;
+    const res = await fetch(url);
+    if (!res.ok)
+      throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
+  }
+  function DownloadButton() {
+    const [loading, onClick2] = useAsyncAction(async () => {
+      try {
+        await fetchAndDownload();
+      } catch (e) {
+        logger28.error("Failed to download TTS audio:", e);
+      }
+    });
+    return /* @__PURE__ */ React.createElement(Button, {
+      "aria-label": "Download audio",
+      onClick: onClick2,
+      disabled: loading,
+      size: "md",
+      shape: "square",
+      variant: "tertiary"
+    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
+      size: "sm",
+      className: cl24("spinner")
+    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
+      size: 16
+    }));
+  }
+  var downloadTTS_default = definePlugin({
+    name: "DownloadTTS",
+    icon: Volume2Icon,
+    description: "Add a download button to the TTS playback controls.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    patches: [{
+      find: 'tts-controls.stop.label","Stop"',
+      all: true,
+      replacement: {
+        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
+        replace: "$1,$self._renderDownloadButton()]"
+      }
+    }],
+    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
+  });
+
+  // src/plugins/noDictation/index.ts
+  var STYLE_NAME7 = "noDictation";
+  var REFINEMENT_MARK = "void-no-dictation-refinement";
+  var BUTTON_CSS = `
+button[aria-label="Dictation"]:not([role="dialog"] *),
+button[aria-label^="Dictation ("]:not([role="dialog"] *),
+div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
+div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
+    display: none !important;
+}
+`;
+  var REFINEMENT_CSS = `.${REFINEMENT_MARK}{display:none!important}`;
+  var settings22 = definePluginSettings({
+    hideDictationRefinement: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
+      default: true
+    }
+  });
+  function apply4() {
+    const rules = [BUTTON_CSS];
+    if (settings22.store.hideDictationRefinement)
+      rules.push(REFINEMENT_CSS);
+    registerStyle(STYLE_NAME7, rules.join(`
+`));
+  }
+  var noDictation_default = definePlugin({
+    name: "NoDictation",
+    icon: MicOffIcon,
+    description: "Hide the Dictation (voice input) button from the chat input bar, and optionally Dictation Refinement in Settings.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings22,
+    patches: [
+      {
+        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
+        replacement: {
+          match: /DISABLE_VOICE_MODE&&\(0,(\i)\.jsxs\)\(\i\.Fragment,\{/,
+          replace: `DISABLE_VOICE_MODE&&(0,$1.jsxs)("div",{className:"${REFINEMENT_MARK}",style:{display:"contents"},`
+        }
+      }
+    ],
+    start: apply4,
+    onSettingsChange: apply4,
+    stop() {
+      unregisterStyle(STYLE_NAME7);
+    }
+  });
+
+  // src/plugins/consoleJanitor/index.ts
+  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
+  var consoleJanitor_default = definePlugin({
+    name: "ConsoleJanitor",
+    icon: TerminalIcon,
+    description: "Silences noisy warnings and info logs in the browser console.",
+    authors: [Devs.Prism],
+    patches: [
+      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
+      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
+      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
+      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
+      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
+    ]
+  });
+
+  // src/plugins/oneko/index.ts
+  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
+  var ONEKO_SCRIPT = '(function oneko(){const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
+  var oneko_default = definePlugin({
+    name: "Oneko",
+    icon: CatIcon,
+    description: "Cat follows your mouse cursor.",
+    authors: [Devs.adryd],
+    tags: ["ui"],
+    cleanupSelectors: ["#oneko"],
+    start() {
+      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
+      const el = document.createElement("script");
+      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
+      document.head.appendChild(el);
+      el.addEventListener("load", () => {
+        el.remove();
+        URL.revokeObjectURL(el.src);
+      }, { once: true });
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/streamerMode/styles.css
+  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
+
+/* Sidebar avatar */
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
+html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
+    filter: none;
+}
+
+/* Sidebar username */
+html.void-streamer-sidebar-name .void-sidebar-info {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
+    filter: none;
+}
+
+/* Account tab avatar (inside settings dialog) */
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
+    filter: none;
+}
+
+/* Account tab username */
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
+    filter: none;
+}
+
+/* Account tab email */
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
+    filter: none;
+}
+
+/* Account tab birth year */
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
+    filter: none;
+}
+
+/* Conversation titles in sidebar (pinned + recent buckets) */
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
+    filter: none;
+}
+
+/* Project names in sidebar */
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
+    filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
+    html.void-streamer-sidebar-name .void-sidebar-info,
+    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
+    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
+    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
+    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
+    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
+    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
+}
+`);
+
+  // src/plugins/streamerMode/index.ts
+  var CSS_CLASSES = {
+    sidebarAvatar: "void-streamer-sidebar-avatar",
+    sidebarName: "void-streamer-sidebar-name",
+    accountAvatar: "void-streamer-account-avatar",
+    accountName: "void-streamer-account-name",
+    accountEmail: "void-streamer-account-email",
+    accountAge: "void-streamer-account-age",
+    projects: "void-streamer-projects",
+    conversations: "void-streamer-conversations"
+  };
+  var settings23 = definePluginSettings({
+    sidebarAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the sidebar.",
+      default: true
+    },
+    sidebarName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your username in the sidebar.",
+      default: true
+    },
+    accountAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the account settings tab.",
+      default: true
+    },
+    accountName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your name in the account settings tab.",
+      default: true
+    },
+    accountEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your email in the account settings tab.",
+      default: true
+    },
+    accountAge: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your birth year in the account settings tab.",
+      default: true
+    },
+    projects: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur project names in the sidebar.",
+      default: true
+    },
+    conversations: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur conversation titles in the sidebar.",
+      default: true
+    }
+  });
+  function syncClasses() {
+    const { classList } = document.documentElement;
+    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
+      classList.toggle(cls, !!settings23.store[key]);
+    }
+  }
+  var streamerMode_default = definePlugin({
+    name: "StreamerMode",
+    icon: EyeOffIcon,
+    description: "Blurs personal information for privacy while streaming.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    settings: settings23,
+    start: syncClasses,
+    onSettingsChange: syncClasses,
+    stop() {
+      const { classList } = document.documentElement;
+      for (const cls of Object.values(CSS_CLASSES)) {
+        classList.remove(cls);
+      }
+    }
+  });
+
+  // src/plugins/incognito/index.ts
+  var store3 = () => SettingsStore.useSettingsStore.getState();
+  var unsubscribe = null;
+  function enforce() {
+    if (!store3().isIncognito)
+      store3().setIsIncognito(true);
+  }
+  var incognito_default = definePlugin({
+    name: "Incognito",
+    icon: GhostFilledIcon,
+    description: "Force private chat mode for new conversations.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      enforce();
+      unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce);
+    },
+    stop() {
+      unsubscribe?.();
+      unsubscribe = null;
+      store3().setIsIncognito(false);
+    }
+  });
+
+  // void-css:/tmp/Void/src/plugins/customInstructions/styles.css
+  registerStyle("customInstructions", `.void-ci-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.void-ci-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.void-ci-card {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: 1rem;
+    padding: 0.625rem 0.75rem;
+    height: 3.25rem;
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l1));
+    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
+    cursor: pointer;
+}
+
+.void-ci-card:hover {
+    background: var(--button-ghost-hover, rgb(255 255 255 / 8%));
+}
+
+.void-ci-card-add {
+    justify-content: center;
+    box-shadow: none;
+    border: 1px dashed hsl(var(--border-l1));
+}
+
+.void-ci-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.void-ci-card-name {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    flex: 1;
+    gap: 0.125rem;
+}
+
+.void-ci-card-name>* {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.void-ci-card-actions {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.void-ci-card:hover .void-ci-card-actions {
+    opacity: 1;
+}
+
+.void-ci-card:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ci-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.void-ci-label {
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--fg-primary));
+}
+
+.void-ci-input {
+    width: 100%;
+}
+
+.void-ci-textarea-wrap {
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.75rem;
+}
+
+.void-ci-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ci-textarea-wrap-error {
+    border-color: hsl(var(--fg-danger));
+}
+
+.void-ci-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: hsl(var(--fg-primary));
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.void-ci-textarea:focus {
+    outline: none;
+}
+
+.void-ci-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 0.25rem;
+}
+
+.void-ci-error-text {
+    color: hsl(var(--fg-danger));
+}
+
+.void-ci-trigger {
+    gap: 0.5rem;
+}
+
+.void-ci-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-ci-card-actions {
+        transition: none;
+    }
+}
+`);
+
+  // src/plugins/customInstructions/index.tsx
+  var cl25 = classNameFactory("void-ci-");
+  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
+  var CheckIcon = findExportedComponentLazy("CheckIcon");
+  var BookIcon = findExportedComponentLazy("BookIcon");
+  var PenIcon = findExportedComponentLazy("PenIcon");
+  var TrashIcon2 = findExportedComponentLazy("TrashIcon");
+  var PlusIcon = findExportedComponentLazy("PlusIcon");
+  var MAX_LENGTH = 4000;
+  var settings24 = definePluginSettings({
+    editor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
+    }
+  }).withPrivateSettings();
+  function getPresets() {
+    return settings24.plain.presets ?? [];
+  }
+  function setPresets(presets) {
+    settings24.store.presets = presets;
+  }
+  function getAssignments() {
+    return settings24.plain.assignments ?? {};
+  }
+  function PresetCard({ preset, onEdit, onDelete }) {
+    return /* @__PURE__ */ React.createElement("div", {
+      role: "button",
+      className: cl25("card"),
+      onClick: onEdit
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl25("avatar")
+    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
+      seed: preset.id,
+      size: 32
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl25("card-name")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium"
+    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
+      className: cl25("card-actions")
+    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Edit",
+      onClick: (e) => {
+        e.stopPropagation();
+        onEdit();
+      }
+    }, /* @__PURE__ */ React.createElement(PenIcon, {
+      className: "size-3.5 text-secondary"
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Delete",
+      onClick: (e) => {
+        e.stopPropagation();
+        onDelete();
+      }
+    }, /* @__PURE__ */ React.createElement(TrashIcon2, {
+      className: "size-3.5 text-secondary"
+    }))));
+  }
+  function PresetEditor({ preset, onUpdate, onClose }) {
+    const overLimit = preset.prompt.length > MAX_LENGTH;
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl25("editor")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      className: cl25("label")
+    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      className: cl25("input"),
+      placeholder: "Preset name",
+      value: preset.name,
+      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
+      autoComplete: "off"
+    }), /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      className: cl25("label")
+    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
+      className: cl25("textarea-wrap", { "textarea-wrap-error": overLimit })
+    }, /* @__PURE__ */ React.createElement(Textarea, {
+      className: cl25("textarea"),
+      placeholder: "How should Grok behave?",
+      value: preset.prompt,
+      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl25("editor-footer")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: overLimit ? undefined : "muted",
+      className: overLimit ? cl25("error-text") : undefined
+    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      onClick: onClose
+    }, "Done")));
+  }
+  function PresetsEditor() {
+    const presets = settings24.use(["presets"]).presets ?? [];
+    const [editingId, setEditingId] = useState(null);
+    const updatePreset = useCallback((updated) => {
+      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
+    }, []);
+    const deletePreset = useCallback((id) => {
+      setPresets(getPresets().filter((p) => p.id !== id));
+      const a = { ...getAssignments() };
+      for (const [k, v] of Object.entries(a)) {
+        if (v === id)
+          delete a[k];
+      }
+      settings24.store.assignments = a;
+      setEditingId((prev) => prev === id ? null : prev);
+    }, []);
+    const addPreset = useCallback(() => {
+      const id = randomId();
+      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
+      setEditingId(id);
+    }, []);
+    const editing = presets.find((p) => p.id === editingId);
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl25("root")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl25("grid")
+    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
+      key: p.id,
+      preset: p,
+      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
+      onDelete: () => deletePreset(p.id)
+    })), /* @__PURE__ */ React.createElement("div", {
+      role: "button",
+      className: cl25("card", "card-add"),
+      onClick: addPreset
+    }, /* @__PURE__ */ React.createElement(PlusIcon, {
+      className: "size-4 text-secondary"
+    }), /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      color: "muted"
+    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
+      preset: editing,
+      onUpdate: updatePreset,
+      onClose: () => setEditingId(null)
+    }));
+  }
+  function InstructionsMenu({ conversationId }) {
+    const presets = settings24.use(["presets"]).presets ?? [];
+    const assignments = settings24.use(["assignments"]).assignments ?? {};
+    const activePresetId = assignments[conversationId];
+    const assign = useCallback((presetId) => {
+      const a = { ...getAssignments() };
+      if (presetId)
+        a[conversationId] = presetId;
+      else
+        delete a[conversationId];
+      settings24.store.assignments = a;
+    }, [conversationId]);
+    if (!presets.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
+      className: cl25("trigger")
+    }, /* @__PURE__ */ React.createElement(BookIcon, {
+      size: 16
+    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
+      onSelect: () => assign(),
+      className: cl25("menu-item")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm"
+    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
+      key: p.id,
+      onSelect: () => assign(p.id),
+      className: cl25("menu-item")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm"
+    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })))));
+  }
+  var customInstructions_default = definePlugin({
+    name: "CustomInstructions",
+    icon: ScrollTextIcon,
+    description: "Create instruction presets and assign them to conversations.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings24,
+    contextMenuItems: {
+      conversation: {
+        label: "Instructions",
+        render: ErrorBoundary.wrap(InstructionsMenu)
+      }
+    },
+    _getPrompt() {
+      const { conversationId } = ChatPageStore.useChatPageStore.getState();
+      if (!conversationId)
+        return;
+      const presetId = getAssignments()[conversationId];
+      if (!presetId)
+        return;
+      const preset = getPresets().find((p) => p.id === presetId);
+      return preset?.prompt?.trim() || undefined;
+    },
+    patches: [
+      {
+        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
+        all: true,
+        replacement: {
+          match: /customInstructions:(\i)\.customInstructions/g,
+          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/widerChat/index.ts
+  var STYLE_NAME8 = "widerChat";
+  var settings25 = definePluginSettings({
+    width: {
+      type: 1 /* NUMBER */,
+      description: "Maximum chat width in rem.",
+      default: 64
+    }
+  });
+  function applyWidth() {
+    const w = settings25.store.width;
+    registerStyle(STYLE_NAME8, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
+  }
+  var widerChat_default = definePlugin({
+    name: "WiderChat",
+    icon: UnfoldHorizontalIcon,
+    description: "Adjustable chat width for big monitors.",
+    authors: [Devs.Prism],
+    tags: ["chat", "ui"],
+    settings: settings25,
+    start: applyWidth,
+    onSettingsChange: applyWidth,
+    stop() {
+      unregisterStyle(STYLE_NAME8);
     }
   });
 
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [noTelemetry_default.name]: noTelemetry_default, [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoRetry_default.name]: autoRetry_default, [oneko_default.name]: oneko_default, [downloadTTS_default.name]: downloadTTS_default, [noShareLink_default.name]: noShareLink_default, [cloneChats_default.name]: cloneChats_default, [placeholder_default.name]: placeholder_default, [exportChat_default.name]: exportChat_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [experiments_default.name]: experiments_default, [composerOpacity_default.name]: composerOpacity_default, [recentTopics_default.name]: recentTopics_default, [betterSidebar_default.name]: betterSidebar_default, [cleaner_default.name]: cleaner_default, [incognito_default.name]: incognito_default, [noDictation_default.name]: noDictation_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [messageTimestamps_default.name]: messageTimestamps_default, [chatListStatus_default.name]: chatListStatus_default, [streamerMode_default.name]: streamerMode_default, [autoCollapse_default.name]: autoCollapse_default, [betterFiles_default.name]: betterFiles_default, [inputHistory_default.name]: inputHistory_default, [settingsFlyout_default.name]: settingsFlyout_default, [starry_default.name]: starry_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [customInstructions_default.name]: customInstructions_default, [consoleJanitor_default.name]: consoleJanitor_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default, [responseNotification_default.name]: responseNotification_default, [betterImagine_default.name]: betterImagine_default, [noGrokBot_default.name]: noGrokBot_default, [betterLinks_default.name]: betterLinks_default, [themedScrollbar_default.name]: themedScrollbar_default };
-  // void-css:/tmp/void-build/src/api/Notices.css
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [settings_default.name]: settings_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [inputHistory_default.name]: inputHistory_default, [autoCollapse_default.name]: autoCollapse_default, [responseNotification_default.name]: responseNotification_default, [betterImagine_default.name]: betterImagine_default, [noShareLink_default.name]: noShareLink_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterFiles_default.name]: betterFiles_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [betterSidebar_default.name]: betterSidebar_default, [settingsFlyout_default.name]: settingsFlyout_default, [composerOpacity_default.name]: composerOpacity_default, [usageDisplay_default.name]: usageDisplay_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [betterLinks_default.name]: betterLinks_default, [autoRetry_default.name]: autoRetry_default, [recentTopics_default.name]: recentTopics_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [exportChat_default.name]: exportChat_default, [placeholder_default.name]: placeholder_default, [experiments_default.name]: experiments_default, [messageTimestamps_default.name]: messageTimestamps_default, [chatListStatus_default.name]: chatListStatus_default, [starry_default.name]: starry_default, [noGrokBot_default.name]: noGrokBot_default, [downloadTTS_default.name]: downloadTTS_default, [noDictation_default.name]: noDictation_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [streamerMode_default.name]: streamerMode_default, [incognito_default.name]: incognito_default, [customInstructions_default.name]: customInstructions_default, [widerChat_default.name]: widerChat_default };
+  // void-css:/tmp/Void/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
@@ -15488,7 +15531,7 @@ div:has(> #grok-bot-nav-button) {
     return /* @__PURE__ */ React.createElement("div", {
       className: cl26("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl26("icon", `icon-${type ?? "info" /* INFO */}`)
+      className: cl26("icon")
     }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
       className: cl26("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {

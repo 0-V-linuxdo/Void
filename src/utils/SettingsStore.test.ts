@@ -19,6 +19,11 @@ describe("parseStoredSettings", () => {
         expect(parseStoredSettings(JSON.stringify(raw))).toEqual(raw);
     });
 
+    test("parses a double-encoded JSON string", () => {
+        const raw = { plugins: { Settings: { enabled: true } } };
+        expect(parseStoredSettings(JSON.stringify(JSON.stringify(raw)))).toEqual(raw);
+    });
+
     test("returns null for empty, invalid, or non-object values", () => {
         expect(parseStoredSettings(null)).toBe(null);
         expect(parseStoredSettings(undefined)).toBe(null);

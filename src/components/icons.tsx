@@ -232,6 +232,11 @@ export const CircleGaugeIcon = (props: IconProps = {}) =>
         <path d="M13.4 10.6 19 5" />,
     );
 
+export const LoaderCircleIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />,
+    );
+
 export const ChevronsDownUpIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="m7 20 5-5 5 5" />,

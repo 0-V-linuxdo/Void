@@ -72,6 +72,8 @@ export async function initSettings(): Promise<void> {
     const parsed = await readStoredSettings();
     if (parsed) Object.assign(settings, parsed);
     mergeDefaults(settings, DefaultSettings);
+    const meta = settings.plugins.Settings;
+    if (meta && meta.enabled === false) meta.enabled = true;
 }
 
 export function migratePluginSettings(name: string, ...oldNames: string[]) {

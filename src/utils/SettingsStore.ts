@@ -21,7 +21,12 @@ export function parseStoredSettings(raw: unknown): Record<string, unknown> | nul
     if (typeof raw !== "string" || !raw) return null;
     try {
         const parsed = JSON.parse(raw);
-        return isObject(parsed) ? parsed : null;
+        if (isObject(parsed)) return parsed;
+        if (typeof parsed === "string") {
+            const nested = JSON.parse(parsed);
+            return isObject(nested) ? nested : null;
+        }
+        return null;
     } catch {
         return null;
     }
@@ -132,7 +137,11 @@ export class SettingsStore<T extends object> {
         try {
             const json = JSON.stringify(this.plain);
             if (typeof GM_setValue === "function") {
-                try { GM_setValue(STORAGE_KEY, json); } catch (e) { logger.warn("Failed to save settings to GM:", e); }
+                try { GM_setValue(STORAGE_KEY, this.plain); }
+                catch {
+                    try { GM_setValue(STORAGE_KEY, json); }
+                    catch (e2) { logger.warn("Failed to save settings to GM:", e2); }
+                }
             } else {
                 try { localStorage.setItem(STORAGE_KEY, json); } catch {}
             }
