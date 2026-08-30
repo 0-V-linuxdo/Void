@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.4] v1.0.0
+// @version      [20260830.5] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.4] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.5] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6917,7 +6917,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.4] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260830.5] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -13343,17 +13343,16 @@ html.void-rt-open [data-sidebar="gap"] {
     });
     const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidTabs.length === 0;
     const openTab = (tab, event) => {
+      const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
+      if (tab) {
+        store3.setTab(tab);
+        store3.setOpen(true);
+        return;
+      }
       try {
         onOpen?.(event);
       } catch {}
-      const apply5 = () => {
-        const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
-        if (tab)
-          store3.setTab(tab);
-        store3.setOpen(true);
-      };
-      apply5();
-      queueMicrotask(apply5);
+      store3.setOpen(true);
     };
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl24("menu-icon")

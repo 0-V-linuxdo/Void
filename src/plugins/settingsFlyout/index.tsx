@@ -146,16 +146,16 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
     const showOpen = cfg.showOpenSettings || (grokTabs.length === 0 && voidTabs.length === 0);
 
     const openTab = (tab: string | undefined, event: Event) => {
+        const store = SettingsDialogStore.useSettingsDialogStore.getState();
+        if (tab) {
+            store.setTab(tab);
+            store.setOpen(true);
+            return;
+        }
         try {
             onOpen?.(event);
         } catch {}
-        const apply = () => {
-            const store = SettingsDialogStore.useSettingsDialogStore.getState();
-            if (tab) store.setTab(tab);
-            store.setOpen(true);
-        };
-        apply();
-        queueMicrotask(apply);
+        store.setOpen(true);
     };
 
     return (
