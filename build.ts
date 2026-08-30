@@ -9,13 +9,12 @@ const isWatch = process.argv.includes("--watch");
 const logger = new Logger("Build", "#89b4fa");
 const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
 const repoUrl: string = pkg.repository.url.replace(/^git\+/, "").replace(/\.git$/, "");
-const repoRawUrl = repoUrl.replace("github.com", "raw.githubusercontent.com");
 
 const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/Void";
-const FORK_RAW_URL = "https://raw.githubusercontent.com/0-V-linuxdo/Void/Void%2B%2B";
-const VERSION_DATE = "20260830.30";
+const SCRIPT_CDN = "https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@voidpp";
+const VERSION_DATE = "20260830.31";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
@@ -33,7 +32,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @author       ${pkg.author} & Void Contributors
 // @environment  ${environment}
 // @homepageURL  ${FORK_URL}
-// @icon         ${FORK_RAW_URL}/assets/logos/app-icon/void-icon.svg
+// @icon         ${SCRIPT_CDN}/assets/logos/app-icon/void-icon.svg
 // @match        *://grok.com/*
 // @match        *://*.grok-sandbox.com/*
 // @run-at       document-start
@@ -43,6 +42,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @grant        GM_setValue
 // @grant        GM_setClipboard
 // @connect      raw.githubusercontent.com
+// @connect      cdn.jsdelivr.net
 // @connect      *
 // @compatible   chrome
 // @compatible   firefox
@@ -50,8 +50,8 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @compatible   opera
 // @license      GPL-3.0-or-later
 // @supportURL   ${FORK_URL}
-// @downloadURL  ${FORK_RAW_URL}/userscript/Void.user.js
-// @updateURL    ${FORK_RAW_URL}/userscript/Void.user.js
+// @downloadURL  ${SCRIPT_CDN}/userscript/Void.user.js
+// @updateURL    ${SCRIPT_CDN}/userscript/Void.user.js
 // ==/UserScript==
 `;
 
