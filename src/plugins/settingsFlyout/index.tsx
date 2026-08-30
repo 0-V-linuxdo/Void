@@ -6,11 +6,13 @@
 
 import "./styles.css";
 
+import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary } from "@components";
-import { Settings2Icon } from "@components/icons";
+import { BracesIcon, PaletteIcon, Settings2Icon, TestTubeIcon, UnplugIcon } from "@components/icons";
 import {
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
@@ -67,11 +69,39 @@ const settings = definePluginSettings({
         description: "Data Controls",
         default: true,
     },
+    plugins: {
+        type: OptionType.BOOLEAN,
+        description: "Plugins",
+        default: true,
+    },
+    themes: {
+        type: OptionType.BOOLEAN,
+        description: "Themes",
+        default: true,
+    },
+    css: {
+        type: OptionType.BOOLEAN,
+        description: "Quick CSS",
+        default: true,
+    },
+    experiments: {
+        type: OptionType.BOOLEAN,
+        description: "Experiments",
+        default: true,
+    },
 });
 
-type GrokTabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data";
+type TabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data" | "plugins" | "themes" | "css" | "experiments";
 
-const GROK_TABS: { id: string; name: string; setting: GrokTabSetting; icon: ComponentType<{ className?: string }> }[] = [
+interface FlyoutTab {
+    id: string;
+    name: string;
+    setting: TabSetting;
+    icon: ComponentType<{ className?: string }>;
+    plugin?: string;
+}
+
+const GROK_TABS: FlyoutTab[] = [
     { id: "account", name: "Account", setting: "account", icon: PersonIcon },
     { id: "appearance", name: "Appearance", setting: "appearance", icon: PaintIcon },
     { id: "behavior", name: "Behavior", setting: "behavior", icon: VisitIcon },
@@ -79,6 +109,13 @@ const GROK_TABS: { id: string; name: string; setting: GrokTabSetting; icon: Comp
     { id: "billing", name: "Billing", setting: "billing", icon: PaymentsIcon },
     { id: "usage", name: "Usage", setting: "usage", icon: LightningIcon },
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon },
+];
+
+const VOID_TABS: FlyoutTab[] = [
+    { id: "void_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
+    { id: "void_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
+    { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon },
+    { id: "void_experiments_tab", name: "Experiments", setting: "experiments", icon: TestTubeIcon, plugin: "Experiments" },
 ];
 
 function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
@@ -91,10 +128,15 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
         "billing",
         "usage",
         "data",
+        "plugins",
+        "themes",
+        "css",
+        "experiments",
     ]);
 
     const grokTabs = GROK_TABS.filter(t => cfg[t.setting]);
-    const showOpen = cfg.showOpenSettings || grokTabs.length === 0;
+    const voidTabs = VOID_TABS.filter(t => cfg[t.setting] && (!t.plugin || isPluginEnabled(t.plugin)));
+    const showOpen = cfg.showOpenSettings || (grokTabs.length === 0 && voidTabs.length === 0);
 
     const openTab = (tab: string | undefined, event: Event) => {
         try {
@@ -129,6 +171,16 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
                         </DropdownMenuItem>
                     );
                 })}
+                {voidTabs.length > 0 && (showOpen || grokTabs.length > 0) && <DropdownMenuSeparator />}
+                {voidTabs.map(t => {
+                    const Icon = t.icon;
+                    return (
+                        <DropdownMenuItem key={t.id} onSelect={e => openTab(t.id, e)}>
+                            <Icon className={cl("menu-icon")} />
+                            {t.name}
+                        </DropdownMenuItem>
+                    );
+                })}
             </DropdownMenuSubContent>
         </DropdownMenuSub>
     );
@@ -139,7 +191,7 @@ const WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
 export default definePlugin({
     name: "SettingsFlyout",
     icon: Settings2Icon,
-    description: "Replace the avatar Settings item with a flyout of shortcuts to settings tabs.",
+    description: "Replace the avatar Settings item with a flyout of shortcuts to Grok and Void settings tabs.",
     authors: [Devs.p],
     tags: ["ui", "settings"],
     enabledByDefault: true,
