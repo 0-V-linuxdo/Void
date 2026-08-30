@@ -18,6 +18,8 @@ export const RETAIN_DEFAULT = 90;
 export const DELAY_MIN = 0;
 export const DELAY_MAX = 5;
 export const DELAY_DEFAULT = 1;
+export const CHART_WINDOW = 7;
+export const CHART_SCALE_MIN = 20;
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const DAY_MS = 86_400_000;
@@ -195,6 +197,46 @@ export function formatDayLabel(date: string): string {
     const d = parts[2];
     if (!y || !m || !d) return date;
     return new Date(y, m - 1, d).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+}
+
+export function formatDayNumber(date: string): string {
+    const day = date.split("-")[2];
+    return day ? String(Number(day)) : date;
+}
+
+export function shiftDateKey(date: string, days: number): string {
+    const parts = date.split("-").map(Number);
+    const y = parts[0];
+    const m = parts[1];
+    const d = parts[2];
+    if (!y || !m || !d) return date;
+    return localDateKey(new Date(y, m - 1, d + days).getTime());
+}
+
+export function fillChartDays(records: DailyUsageRecord[], now = Date.now()): DailyUsageRecord[] {
+    const today = localDateKey(now);
+    const byDate = new Map<string, DailyUsageRecord>();
+    let oldest = today;
+    for (const rec of records) {
+        byDate.set(rec.date, rec);
+        if (rec.date < oldest) oldest = rec.date;
+    }
+    const weekStart = shiftDateKey(today, 1 - CHART_WINDOW);
+    const start = oldest < weekStart ? oldest : weekStart;
+    const out: DailyUsageRecord[] = [];
+    for (let key = start; key <= today; key = shiftDateKey(key, 1)) {
+        out.push(byDate.get(key) ?? emptyDay(key, now));
+    }
+    return out;
+}
+
+export function chartScale(records: DailyUsageRecord[]): number {
+    let max = 0;
+    for (const rec of records) {
+        const delta = dayDelta(rec);
+        if (delta != null && delta > max) max = delta;
+    }
+    return Math.max(CHART_SCALE_MIN, Math.ceil(max / 10) * 10);
 }
 
 export function pruneDays(

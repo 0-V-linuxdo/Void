@@ -7,16 +7,22 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+    CHART_SCALE_MIN,
+    CHART_WINDOW,
+    RETAIN_DEFAULT,
+    RESET_DROP_PERCENT,
     applySnapshot,
+    chartScale,
     clearStats,
     dayDelta,
     emptyDay,
+    fillChartDays,
+    formatDayNumber,
     formatDelta,
     localDateKey,
     pruneDays,
     recordSnapshot,
-    RETAIN_DEFAULT,
-    RESET_DROP_PERCENT,
+    shiftDateKey,
 } from "./stats";
 
 const noon = (y: number, m: number, d: number) => new Date(y, m - 1, d, 12, 0, 0).getTime();
@@ -115,5 +121,55 @@ describe("recordSnapshot", () => {
         clearStats(userId);
         expect(recordSnapshot(userId, 8, 100, RETAIN_DEFAULT, now)?.startPercent).toBe(8);
         clearStats(userId);
+    });
+});
+
+describe("shiftDateKey", () => {
+    test("steps across month ends", () => {
+        expect(shiftDateKey("2026-08-31", 1)).toBe("2026-09-01");
+        expect(shiftDateKey("2026-08-29", 1 - CHART_WINDOW)).toBe("2026-08-23");
+    });
+});
+
+describe("formatDayNumber", () => {
+    test("strips the leading zero", () => {
+        expect(formatDayNumber("2026-08-09")).toBe("9");
+        expect(formatDayNumber("2026-08-29")).toBe("29");
+    });
+});
+
+describe("fillChartDays", () => {
+    test("pads at least a week ending today", () => {
+        const now = noon(2026, 8, 29);
+        const rec = applySnapshot(applySnapshot(emptyDay("2026-08-29", 1), 10, 100, 2), 18, 100, 3);
+        const bars = fillChartDays([rec], now);
+        expect(bars).toHaveLength(CHART_WINDOW);
+        expect(bars[0]?.date).toBe("2026-08-23");
+        expect(bars[6]?.date).toBe("2026-08-29");
+        expect(bars[6]?.lastPercent).toBe(18);
+        expect(bars[0]?.startPercent).toBeNull();
+    });
+
+    test("extends left for older records", () => {
+        const now = noon(2026, 8, 29);
+        const bars = fillChartDays([
+            emptyDay("2026-08-20", 1),
+            applySnapshot(emptyDay("2026-08-29", 1), 10, 100, 2),
+        ], now);
+        expect(bars[0]?.date).toBe("2026-08-20");
+        expect(bars.at(-1)?.date).toBe("2026-08-29");
+        expect(bars).toHaveLength(10);
+    });
+});
+
+describe("chartScale", () => {
+    test("uses a 20 percent floor", () => {
+        expect(chartScale([])).toBe(CHART_SCALE_MIN);
+    });
+
+    test("rounds max delta up to tens", () => {
+        const rec = applySnapshot(applySnapshot(emptyDay("2026-08-29", 1), 10, 100, 2), 38, 100, 3);
+        expect(dayDelta(rec)).toBe(28);
+        expect(chartScale([rec])).toBe(30);
     });
 });

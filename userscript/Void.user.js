@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.11] v1.0.0
+// @version      [20260829.12] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.11] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.12] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6792,7 +6792,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.11] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260829.12] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -13540,29 +13540,98 @@ button:has(.void-ud-trigger > .void-ud-label) {
     flex: 1;
 }
 
-.void-ud-days {
+.void-ud-chart {
+    min-height: 0;
+    overflow-x: auto;
+    height: 8.5rem;
+    outline: none;
+}
+
+.void-ud-bar {
+    flex: 1 0 2.5rem;
+    min-width: 2.5rem;
+    height: 100%;
+    padding: 0.25rem 0.15rem 0.2rem;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    overflow: auto;
-    min-height: 0;
-    max-height: 16rem;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.3rem;
+    border-radius: 0.5rem;
+    color: inherit;
+    cursor: pointer;
 }
 
-.void-ud-day {
+.void-ud-bar:hover,
+.void-ud-bar-on {
+    background: hsl(var(--surface-l2));
+}
+
+.void-ud-bar-track {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+    justify-content: center;
     width: 100%;
-    justify-content: space-between;
-    gap: 0.75rem;
+    min-height: 0;
 }
 
-.void-ud-day-meta {
+.void-ud-bar-fill {
+    width: 1.1rem;
+    min-height: 2px;
+    border-radius: 4px 4px 0 0;
+    background: hsl(var(--fg-primary) / 0.45);
+}
+
+.void-ud-bar-on .void-ud-bar-fill {
+    background: hsl(var(--fg-primary));
+}
+
+.void-ud-bar-empty .void-ud-bar-fill {
+    background: hsl(var(--border-l1));
+}
+
+.void-ud-bar-label {
+    font-size: 0.6875rem;
+    line-height: 1;
     font-variant-numeric: tabular-nums;
-    opacity: 0.75;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+.void-ud-bar-on .void-ud-bar-label {
+    opacity: 1;
+    font-weight: 550;
 }
 
 .void-ud-detail {
     padding-top: 0.5rem;
     border-top: 1px solid color-mix(in srgb, currentcolor 16%, transparent);
+}
+
+.void-ud-formula {
+    width: max-content;
+    max-width: 100%;
+    font-variant-numeric: tabular-nums;
+}
+
+.void-ud-formula-label {
+    font-size: 0.875rem;
+    line-height: 1.2;
+    color: hsl(var(--fg-secondary));
+}
+
+.void-ud-formula-value {
+    font-size: 0.875rem;
+    line-height: 1.2;
+    font-weight: 550;
+    letter-spacing: -0.02em;
+}
+
+.void-ud-formula-op {
+    font-size: 0.875rem;
+    line-height: 1.2;
+    color: hsl(var(--fg-secondary));
 }
 
 .void-ud-toggle {
@@ -13942,6 +14011,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var DELAY_MIN = 0;
   var DELAY_MAX = 5;
   var DELAY_DEFAULT = 1;
+  var CHART_WINDOW = 7;
+  var CHART_SCALE_MIN = 20;
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   var DAY_MS2 = 86400000;
   var logger26 = new Logger("UsageDisplay");
@@ -14088,6 +14159,45 @@ button:has(.void-ud-trigger > .void-ud-label) {
     if (!y || !m || !d)
       return date;
     return new Date(y, m - 1, d).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  }
+  function formatDayNumber(date) {
+    const day = date.split("-")[2];
+    return day ? String(Number(day)) : date;
+  }
+  function shiftDateKey(date, days) {
+    const parts = date.split("-").map(Number);
+    const y = parts[0];
+    const m = parts[1];
+    const d = parts[2];
+    if (!y || !m || !d)
+      return date;
+    return localDateKey(new Date(y, m - 1, d + days).getTime());
+  }
+  function fillChartDays(records, now = Date.now()) {
+    const today = localDateKey(now);
+    const byDate = new Map;
+    let oldest = today;
+    for (const rec of records) {
+      byDate.set(rec.date, rec);
+      if (rec.date < oldest)
+        oldest = rec.date;
+    }
+    const weekStart = shiftDateKey(today, 1 - CHART_WINDOW);
+    const start = oldest < weekStart ? oldest : weekStart;
+    const out = [];
+    for (let key = start;key <= today; key = shiftDateKey(key, 1)) {
+      out.push(byDate.get(key) ?? emptyDay(key, now));
+    }
+    return out;
+  }
+  function chartScale(records) {
+    let max = 0;
+    for (const rec of records) {
+      const delta = dayDelta(rec);
+      if (delta != null && delta > max)
+        max = delta;
+    }
+    return Math.max(CHART_SCALE_MIN, Math.ceil(max / 10) * 10);
   }
   function pruneDays(days, retainDays, now) {
     const keep = clamp(Math.floor(retainDays), RETAIN_MIN, RETAIN_MAX);
@@ -14478,9 +14588,20 @@ button:has(.void-ud-trigger > .void-ud-label) {
     useExternalStore(store3);
     const { usageStats } = settings23.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
-    const [selected2, setSelected] = useState(days[0]?.date ?? "");
-    const active = days.find((d) => d.date === selected2) ?? days[0] ?? null;
     const todayKey = localDateKey(Date.now());
+    const bars = days.length ? fillChartDays(days) : [];
+    const scale = chartScale(bars);
+    const [selected2, setSelected] = useState(todayKey);
+    const active = bars.find((d) => d.date === selected2) ?? bars.at(-1) ?? null;
+    const chartRef = useRef(null);
+    useEffect(() => {
+      const node2 = chartRef.current;
+      if (node2)
+        node2.scrollLeft = node2.scrollWidth;
+    }, [bars.length]);
+    useEffect(() => {
+      chartRef.current?.querySelector(`.${cl24("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
+    }, [selected2]);
     return /* @__PURE__ */ React.createElement(VoidDialogShell, {
       title: "Usage by date",
       subtitle: "Stored on this device.",
@@ -14490,31 +14611,81 @@ button:has(.void-ud-trigger > .void-ud-label) {
       flexDirection: "column",
       gap: "0.75rem",
       className: cl24("history")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl24("days")
-    }, days.map((rec) => /* @__PURE__ */ React.createElement(Button, {
-      key: rec.date,
-      variant: rec.date === active?.date ? "secondary" : "tertiary",
-      size: "sm",
-      shape: "rectangle",
-      className: cl24("day"),
-      onClick: () => setSelected(rec.date)
-    }, /* @__PURE__ */ React.createElement("span", null, rec.date === todayKey ? "Today" : formatDayLabel(rec.date)), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("day-meta")
-    }, formatDelta(dayDelta(rec)))))), active != null && /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      ref: chartRef,
+      className: cl24("chart"),
+      alignItems: "stretch",
+      gap: "0.35rem",
+      tabIndex: 0,
+      role: "listbox",
+      "aria-label": "Daily usage",
+      onKeyDown: (e) => {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight")
+          return;
+        e.preventDefault();
+        const i = Math.max(0, bars.findIndex((d) => d.date === active?.date));
+        const next = bars[clamp(i + (e.key === "ArrowRight" ? 1 : -1), 0, bars.length - 1)];
+        if (next)
+          setSelected(next.date);
+      }
+    }, bars.map((rec) => {
+      const delta = dayDelta(rec);
+      const empty = delta == null;
+      const on = rec.date === active?.date;
+      const pct = empty || !scale ? 0 : clamp(delta / scale * 100, 0, 100);
+      return /* @__PURE__ */ React.createElement(Button, {
+        key: rec.date,
+        variant: "none",
+        size: "none",
+        shape: "rectangle",
+        tabIndex: -1,
+        role: "option",
+        "aria-selected": on,
+        "aria-label": `${rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}, ${formatDelta(delta)}`,
+        className: classes(cl24("bar"), on && cl24("bar-on"), empty && cl24("bar-empty")),
+        onClick: () => setSelected(rec.date)
+      }, /* @__PURE__ */ React.createElement("span", {
+        className: cl24("bar-track")
+      }, /* @__PURE__ */ React.createElement("span", {
+        className: cl24("bar-fill"),
+        style: { height: `${pct}%` }
+      })), /* @__PURE__ */ React.createElement("span", {
+        className: cl24("bar-label")
+      }, rec.date === todayKey ? "Today" : formatDayNumber(rec.date)));
+    })), active != null && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
-      gap: "0.25rem",
+      gap: "0.35rem",
       className: cl24("detail")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold"
-    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: "muted"
-    }, "Start ", formatPercent(active.startPercent), " → ", formatPercent(active.lastPercent)), /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: "muted"
-    }, "Today ", formatDelta(dayDelta(active))))));
+    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(Grid, {
+      columns: "max-content auto max-content auto max-content",
+      gap: "0.15rem 0.5rem",
+      alignItems: "baseline",
+      justifyItems: "center",
+      className: cl24("formula")
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-label")
+    }, active.date === todayKey ? "Current" : "Last"), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-op")
+    }, "−"), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-label")
+    }, "Start"), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-op")
+    }, "="), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-label")
+    }, "Used"), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-value")
+    }, formatPercent(active.lastPercent)), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-op")
+    }, "−"), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-value")
+    }, formatPercent(active.startPercent)), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-op")
+    }, "="), /* @__PURE__ */ React.createElement("span", {
+      className: cl24("formula-value")
+    }, formatDelta(dayDelta(active)))))));
   }
   function ClearStats() {
     useExternalStore(store3);

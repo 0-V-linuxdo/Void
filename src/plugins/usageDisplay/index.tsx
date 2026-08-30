@@ -9,13 +9,13 @@ import "./styles.css";
 import type { ChatBarButtonDef } from "@api/ChatBarButtons";
 import { type ModalProps, openModal } from "@api/Modals";
 import { definePluginSettings, PlainSettings, SettingsStore } from "@api/Settings";
-import { Button, ConfirmDialog, Flex, Paragraph, Switch, Text } from "@components";
+import { Button, ConfirmDialog, Flex, Grid, Paragraph, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CircleGaugeIcon } from "@components/icons";
 import { VoidDialogShell } from "@components/settings/tabs/VoidDialogShell";
 import type { GrokSubscription } from "@grok-types";
 import { getPlanName } from "@turbopack/common/plan";
-import { React, useEffect, useState } from "@turbopack/common/react";
+import { React, useEffect, useRef, useState } from "@turbopack/common/react";
 import { SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
@@ -42,9 +42,12 @@ import {
     RETAIN_DEFAULT,
     RETAIN_MAX,
     RETAIN_MIN,
+    chartScale,
     clearStats,
     dayDelta,
+    fillChartDays,
     formatDayLabel,
+    formatDayNumber,
     formatDelta,
     hoverDelayOf,
     listDays,
@@ -392,9 +395,21 @@ function StatsModal({ onClose }: ModalProps) {
     useExternalStore(store);
     const { usageStats } = settings.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
-    const [selected, setSelected] = useState(days[0]?.date ?? "");
-    const active = days.find(d => d.date === selected) ?? days[0] ?? null;
     const todayKey = localDateKey(Date.now());
+    const bars = days.length ? fillChartDays(days) : [];
+    const scale = chartScale(bars);
+    const [selected, setSelected] = useState(todayKey);
+    const active = bars.find(d => d.date === selected) ?? bars.at(-1) ?? null;
+    const chartRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const node = chartRef.current;
+        if (node) node.scrollLeft = node.scrollWidth;
+    }, [bars.length]);
+
+    useEffect(() => {
+        chartRef.current?.querySelector(`.${cl("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
+    }, [selected]);
 
     return (
         <VoidDialogShell title="Usage by date" subtitle="Stored on this device." onClose={onClose} size="sm">
@@ -405,26 +420,69 @@ function StatsModal({ onClose }: ModalProps) {
                 <Paragraph>No days recorded yet. Stats start from the moment you enable tracking.</Paragraph>
             ) : (
                 <Flex flexDirection="column" gap="0.75rem" className={cl("history")}>
-                    <div className={cl("days")}>
-                        {days.map(rec => (
-                            <Button
-                                key={rec.date}
-                                variant={rec.date === active?.date ? "secondary" : "tertiary"}
-                                size="sm"
-                                shape="rectangle"
-                                className={cl("day")}
-                                onClick={() => setSelected(rec.date)}
-                            >
-                                <span>{rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}</span>
-                                <span className={cl("day-meta")}>{formatDelta(dayDelta(rec))}</span>
-                            </Button>
-                        ))}
-                    </div>
+                    <Flex
+                        ref={chartRef}
+                        className={cl("chart")}
+                        alignItems="stretch"
+                        gap="0.35rem"
+                        tabIndex={0}
+                        role="listbox"
+                        aria-label="Daily usage"
+                        onKeyDown={e => {
+                            if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+                            e.preventDefault();
+                            const i = Math.max(0, bars.findIndex(d => d.date === active?.date));
+                            const next = bars[clamp(i + (e.key === "ArrowRight" ? 1 : -1), 0, bars.length - 1)];
+                            if (next) setSelected(next.date);
+                        }}
+                    >
+                        {bars.map(rec => {
+                            const delta = dayDelta(rec);
+                            const empty = delta == null;
+                            const on = rec.date === active?.date;
+                            const pct = empty || !scale ? 0 : clamp((delta / scale) * 100, 0, 100);
+                            return (
+                                <Button
+                                    key={rec.date}
+                                    variant="none"
+                                    size="none"
+                                    shape="rectangle"
+                                    tabIndex={-1}
+                                    role="option"
+                                    aria-selected={on}
+                                    aria-label={`${rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}, ${formatDelta(delta)}`}
+                                    className={classes(cl("bar"), on && cl("bar-on"), empty && cl("bar-empty"))}
+                                    onClick={() => setSelected(rec.date)}
+                                >
+                                    <span className={cl("bar-track")}>
+                                        <span className={cl("bar-fill")} style={{ height: `${pct}%` }} />
+                                    </span>
+                                    <span className={cl("bar-label")}>{rec.date === todayKey ? "Today" : formatDayNumber(rec.date)}</span>
+                                </Button>
+                            );
+                        })}
+                    </Flex>
                     {active != null && (
-                        <Flex flexDirection="column" gap="0.25rem" className={cl("detail")}>
+                        <Flex flexDirection="column" gap="0.35rem" className={cl("detail")}>
                             <Text size="sm" weight="semibold">{active.date === todayKey ? "Today" : formatDayLabel(active.date)}</Text>
-                            <Text size="xs" color="muted">Start {formatPercent(active.startPercent)} → {formatPercent(active.lastPercent)}</Text>
-                            <Text size="xs" color="muted">Today {formatDelta(dayDelta(active))}</Text>
+                            <Grid
+                                columns="max-content auto max-content auto max-content"
+                                gap="0.15rem 0.5rem"
+                                alignItems="baseline"
+                                justifyItems="center"
+                                className={cl("formula")}
+                            >
+                                <span className={cl("formula-label")}>{active.date === todayKey ? "Current" : "Last"}</span>
+                                <span className={cl("formula-op")}>−</span>
+                                <span className={cl("formula-label")}>Start</span>
+                                <span className={cl("formula-op")}>=</span>
+                                <span className={cl("formula-label")}>Used</span>
+                                <span className={cl("formula-value")}>{formatPercent(active.lastPercent)}</span>
+                                <span className={cl("formula-op")}>−</span>
+                                <span className={cl("formula-value")}>{formatPercent(active.startPercent)}</span>
+                                <span className={cl("formula-op")}>=</span>
+                                <span className={cl("formula-value")}>{formatDelta(dayDelta(active))}</span>
+                            </Grid>
                         </Flex>
                     )}
                 </Flex>
