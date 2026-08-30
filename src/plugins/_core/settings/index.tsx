@@ -247,7 +247,7 @@ export default definePlugin({
             find: "avatar_menu_click",
             all: true,
             replacement: {
-                match: /\(0,(i)\.jsxs\)\((i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:i:i,)*children:\[.{0,100}"user-dropdown\.help"/,
+                match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help"/,
                 replace: "$self._renderVoidMenu(),$&",
             },
         },
@@ -255,7 +255,7 @@ export default definePlugin({
             find: "pressed_cmd_settings",
             replacement: [
                 {
-                    match: /i\.filter\(i=>i\.visible\(i\)\)/,
+                    match: /\i\.filter\(\i=>\i\.visible\(\i\)\)/,
                     replace: "[...$&,...$self._tabEntries()]",
                 },
                 {
@@ -263,11 +263,11 @@ export default definePlugin({
                     replace: '$1,"void",$2',
                 },
                 {
-                    match: /(case"other":return i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
+                    match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
                     replace: '$1case"void":return"Void";$2',
                 },
                 {
-                    match: /default:return\(0,i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(i)\.id}`\),\1\.id/,
+                    match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,
                     replace: "default:return $self._tabLabel($1)",
                 },
             ],
@@ -277,19 +277,19 @@ export default definePlugin({
             all: true,
             replacement: [
                 {
-                    match: /("SettingsTitle",0,)(i)/,
+                    match: /("SettingsTitle",0,)(\i)/,
                     replace: '$1$self._setPrimitive("SettingsTitle",$2)',
                 },
                 {
-                    match: /("SettingsDescription",0,)(i)/,
+                    match: /("SettingsDescription",0,)(\i)/,
                     replace: '$1$self._setPrimitive("SettingsDescription",$2)',
                 },
                 {
-                    match: /("SettingsRow",0,)(?!function)(i)/,
+                    match: /("SettingsRow",0,)(?!function)(\i)/,
                     replace: '$1$self._setPrimitive("SettingsRow",$2)',
                 },
                 {
-                    match: /("SettingsRow",0,)(function\(i\)\{[\s\S]*?\})(?=,"Settings)/,
+                    match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(?=,"Settings)/,
                     replace: '$1$self._setPrimitive("SettingsRow",$2)',
                 },
             ],

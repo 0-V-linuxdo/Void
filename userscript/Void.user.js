@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.14] v1.0.0
+// @version      [20260829.15] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.14] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.15] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6825,7 +6825,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.14] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260829.15] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6960,7 +6960,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         find: "avatar_menu_click",
         all: true,
         replacement: {
-          match: /\(0,(i)\.jsxs\)\((i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:i:i,)*children:\[.{0,100}"user-dropdown\.help"/,
+          match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help"/,
           replace: "$self._renderVoidMenu(),$&"
         }
       },
@@ -6968,7 +6968,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         find: "pressed_cmd_settings",
         replacement: [
           {
-            match: /i\.filter\(i=>i\.visible\(i\)\)/,
+            match: /\i\.filter\(\i=>\i\.visible\(\i\)\)/,
             replace: "[...$&,...$self._tabEntries()]"
           },
           {
@@ -6976,11 +6976,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
             replace: '$1,"void",$2'
           },
           {
-            match: /(case"other":return i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
+            match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
             replace: '$1case"void":return"Void";$2'
           },
           {
-            match: /default:return\(0,i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(i)\.id}`\),\1\.id/,
+            match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,
             replace: "default:return $self._tabLabel($1)"
           }
         ]
@@ -6990,19 +6990,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         all: true,
         replacement: [
           {
-            match: /("SettingsTitle",0,)(i)/,
+            match: /("SettingsTitle",0,)(\i)/,
             replace: '$1$self._setPrimitive("SettingsTitle",$2)'
           },
           {
-            match: /("SettingsDescription",0,)(i)/,
+            match: /("SettingsDescription",0,)(\i)/,
             replace: '$1$self._setPrimitive("SettingsDescription",$2)'
           },
           {
-            match: /("SettingsRow",0,)(?!function)(i)/,
+            match: /("SettingsRow",0,)(?!function)(\i)/,
             replace: '$1$self._setPrimitive("SettingsRow",$2)'
           },
           {
-            match: /("SettingsRow",0,)(function\(i\)\{[\s\S]*?\})(?=,"Settings)/,
+            match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(?=,"Settings)/,
             replace: '$1$self._setPrimitive("SettingsRow",$2)'
           }
         ]
