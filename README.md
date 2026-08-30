@@ -27,6 +27,7 @@
 | ComposerOpacity | On | Customizable chat input background opacity and blur. |
 | RecentTopics | On | Switch recently opened chats with Ctrl+` (glass cards, project name, last Q&A preview). |
 | CompactModeSelect | On | Keep the chat input model selector as an icon at every width. |
+| UserQuotes | On | Keep quoted lines in your own bubbles marked with a visible left bar after markdown hides `>`. |
 
 #### Settings UI
 

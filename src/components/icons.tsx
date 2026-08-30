@@ -499,6 +499,14 @@ export const Minimize2Icon = (props: IconProps = {}) =>
         <path d="M4 14h6v6" />,
     );
 
+export const TextQuoteIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M17 6H3" />,
+        <path d="M21 12H8" />,
+        <path d="M21 18H8" />,
+        <path d="M3 12v6" />,
+    );
+
 export const VoidIcon = (props: IconProps = {}) =>
     svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 },
         <path d="M2.2 7.4 L8.4 20.2 L13.03 11.30" />,

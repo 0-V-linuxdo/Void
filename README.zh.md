@@ -27,6 +27,7 @@
 | ComposerOpacity | 开 | 调节输入栏背景透明度和模糊。 |
 | RecentTopics | 开 | Ctrl+` 切换最近会话（玻璃卡片、项目名、上轮问答预览）。 |
 | CompactModeSelect | 开 | 输入栏模型按钮始终只显示图标，宽屏也不展开成文字。 |
+| UserQuotes | 开 | 自己气泡里的引用行画出可见左竖条，避免 `>` 被 markdown 吃掉后看起来像消失。 |
 
 #### 设置 UI
 
