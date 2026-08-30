@@ -6,10 +6,9 @@
 
 import "./styles.css";
 
-import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary } from "@components";
-import { BracesIcon, PaletteIcon, Settings2Icon, TestTubeIcon, UnplugIcon } from "@components/icons";
+import { BracesIcon, PaletteIcon, Settings2Icon, UnplugIcon } from "@components/icons";
 import {
     DropdownMenuItem,
     DropdownMenuSeparator,
@@ -84,21 +83,15 @@ const settings = definePluginSettings({
         description: "Quick CSS",
         default: true,
     },
-    experiments: {
-        type: OptionType.BOOLEAN,
-        description: "Experiments",
-        default: true,
-    },
 });
 
-type TabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data" | "plugins" | "themes" | "css" | "experiments";
+type TabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data" | "plugins" | "themes" | "css";
 
 interface FlyoutTab {
     id: string;
     name: string;
     setting: TabSetting;
     icon: ComponentType<{ className?: string }>;
-    plugin?: string;
 }
 
 const GROK_TABS: FlyoutTab[] = [
@@ -115,7 +108,6 @@ const VOID_TABS: FlyoutTab[] = [
     { id: "void_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
     { id: "void_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
     { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon },
-    { id: "void_experiments_tab", name: "Experiments", setting: "experiments", icon: TestTubeIcon, plugin: "Experiments" },
 ];
 
 function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
@@ -131,11 +123,10 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
         "plugins",
         "themes",
         "css",
-        "experiments",
     ]);
 
     const grokTabs = GROK_TABS.filter(t => cfg[t.setting]);
-    const voidTabs = VOID_TABS.filter(t => cfg[t.setting] && (!t.plugin || isPluginEnabled(t.plugin)));
+    const voidTabs = VOID_TABS.filter(t => cfg[t.setting]);
     const showOpen = cfg.showOpenSettings || (grokTabs.length === 0 && voidTabs.length === 0);
 
     const openTab = (tab: string | undefined, event: Event) => {
