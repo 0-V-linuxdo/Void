@@ -24,9 +24,9 @@ const logger = new Logger("ChatListStatus");
 const MARK = "void-cls";
 const LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
 const DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
-const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started|active|connected|busy)$/i;
+const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started|active|busy)$/i;
 const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|isActive|isBusy|working)$/;
-const WORKING_FOR = /working\s+for|connected to computer|continuing the(?: task)?/i;
+const WORKING_FOR = /working\s+for|continuing the(?: task)?/i;
 const WORKED_FOR = /worked\s+for/i;
 const SKIP_KEY = /^(message|html|query|thinkingTrace)$/i;
 const EXTRA_HINT = /computer|sandbox|agent|taskResult|session|toolCall|toolResponse|\bjobs?\b/i;
@@ -105,6 +105,8 @@ function bagLive(value: unknown, depth = 0): boolean {
 function isLiveResponse(r: GrokResponse | undefined): boolean {
     if (!r) return false;
     if (r.partial) return true;
+    const s = typeof r.state === "string" ? r.state.trim().toLowerCase() : "";
+    if (s === "error" || s === "aborted" || s === "cancelled" || s === "canceled") return false;
     if (isLiveStatus(r.state)) return true;
     return bagLive(r.steps) || bagLive(r.toolResponses) || bagLive(r.fastToolResponse) || bagLive(r.metadata);
 }
@@ -230,30 +232,44 @@ function extraLiveIds(ids: Set<string>) {
         if (!bagLive(state)) continue;
         const found = new Set<string>();
         collectConvIds(state, found);
-        if (found.size) {
-            for (const id of found) ids.add(id);
-            continue;
-        }
-        for (const id of currentIds()) ids.add(id);
+        for (const id of found) ids.add(id);
     }
 }
 
 function liveIds(): Set<string> {
     const ids = new Set<string>();
+    const add = (id: unknown) => {
+        if (isConvId(id)) ids.add(id);
+    };
     try {
         const page = ChatPageStore.useChatPageStore.getState();
-        const currents = currentIds();
         const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-        if (page.showStreamingIndicator || bagLive(page.sidePanelContent) || bagLive(page.metadata)) {
-            for (const id of currents) ids.add(id);
+        const markMsg = (responseId: string | undefined) => {
+            if (!responseId) return;
+            if (!isLiveResponse(byId[responseId])) return;
+            add(convOfResponse(responseId));
+        };
+        markMsg(page.streamedMessageId);
+        markMsg(page.lastMessageId);
+        markMsg(page.sidePanelResponseId);
+        if (bagLive(page.sidePanelContent)) {
+            const found = new Set<string>();
+            collectConvIds(page.sidePanelContent, found);
+            if (found.size) {
+                for (const id of found) add(id);
+            } else {
+                markMsg(page.sidePanelResponseId);
+            }
         }
-        if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
-            for (const id of currents) ids.add(id);
+        if (bagLive(page.metadata)) {
+            const found = new Set<string>();
+            collectConvIds(page.metadata, found);
+            for (const id of found) add(id);
         }
-        for (const id of Object.keys(inflightPromisesByConversationId ?? {})) ids.add(id);
+        for (const id of Object.keys(inflightPromisesByConversationId ?? {})) add(id);
         for (const [id, list] of Object.entries(byConversationId ?? {})) {
             const last = list?.[list.length - 1];
-            if (last && isLiveResponse(last)) ids.add(id);
+            if (last && isLiveResponse(last)) add(id);
         }
     } catch (e) {
         logger.debug("stream stores unavailable:", e);
@@ -310,7 +326,7 @@ function convOfResponse(responseId: string): string {
         for (const [id, list] of Object.entries(byConversationId ?? {})) {
             if (list?.some(r => r.responseId === responseId)) return id;
         }
-        return currentIds()[0] ?? "";
+        return "";
     } catch (e) {
         logger.debug("conv lookup failed:", e);
         return "";
