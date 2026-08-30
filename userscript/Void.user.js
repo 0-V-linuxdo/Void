@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.31] v1.0.0
+// @version      [20260830.32] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
 // @homepageURL  https://github.com/0-V-linuxdo/Void
-// @icon         https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@voidpp/assets/logos/app-icon/void-icon.svg
+// @icon         https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@heads/voidpp/assets/logos/app-icon/void-icon.svg
 // @match        *://grok.com/*
 // @match        *://*.grok-sandbox.com/*
 // @run-at       document-start
@@ -24,12 +24,12 @@
 // @compatible   opera
 // @license      GPL-3.0-or-later
 // @supportURL   https://github.com/0-V-linuxdo/Void
-// @downloadURL  https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@voidpp/userscript/Void.user.js
-// @updateURL    https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@voidpp/userscript/Void.user.js
+// @downloadURL  https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@heads/voidpp/userscript/Void.user.js
+// @updateURL    https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@heads/voidpp/userscript/Void.user.js
 // ==/UserScript==
 
 /**
- * Void++ [20260830.31] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.32] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6903,9 +6903,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.31] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"065f960"}`
-    }, `(${"065f960"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.32] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"d1dc72b"}`
+    }, `(${"d1dc72b"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
