@@ -12,7 +12,10 @@ import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { ConversationStoreState, GrokConversation } from "@grok-types/stores/ConversationStore";
 import type { GrokResponse, ResponseStoreState } from "@grok-types/stores/ResponseStore";
 import type { RoutingStoreState } from "@grok-types/stores/RoutingStore";
+import type { ZustandStore } from "@grok-types/zustand";
 import { ChatPageStore, ConversationStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
+import { getModuleCache, isBlacklisted, onModuleLoad, silenceWarns, syncLazyModules } from "@turbopack/patchTurbopack";
+import { isZustandStore } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { type Fiber, getFiber, walkFiberUp } from "@utils/react";
@@ -20,8 +23,13 @@ import definePlugin, { StartAt } from "@utils/types";
 
 const logger = new Logger("ChatListStatus");
 const MARK = "void-cls";
-const LIVE = new Set(["streaming", "optimistic", "reconnecting"]);
-const DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success"]);
+const LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
+const DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
+const LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
+const LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
+const SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
+const EXTRA_HINT = /computer|sandbox|agent|task|working/i;
+const OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
 const SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
 const HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
 const ROW = `${HOST}, a[href*="/c/"], a[href*="/chat/"], a[href*="chat="], a[href*="/project/"]`;
@@ -31,13 +39,53 @@ type Kind = "streaming" | "done" | "error";
 
 const marks = new Map<string, Kind>();
 const rowById = new Map<string, HTMLElement>();
+const extraStores: ZustandStore<any>[] = [];
+let extraSeen = new WeakSet<object>();
+const extraUnsubs: Array<() => void> = [];
 let raf = 0;
 let started = false;
 let obs: MutationObserver | null = null;
+let extraOff: (() => void) | null = null;
+
+function isConvId(value: unknown): value is string {
+    return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value);
+}
+
+function isLiveStatus(value: unknown): boolean {
+    if (typeof value !== "string") return false;
+    const status = value.trim().toLowerCase();
+    if (!status || DEAD.has(status)) return false;
+    return LIVE.has(status) || LIVE_WORD.test(status);
+}
+
+function isLiveBag(value: unknown, depth = 0): boolean {
+    if (value == null || depth > 5) return false;
+    if (typeof value === "string") return isLiveStatus(value);
+    if (typeof value !== "object") return false;
+    if (Array.isArray(value)) {
+        const start = Math.max(0, value.length - 24);
+        for (let i = value.length - 1; i >= start; i--) {
+            if (isLiveBag(value[i], depth + 1)) return true;
+        }
+        return false;
+    }
+    const rec = value as Record<string, any>;
+    if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus)) return true;
+    if (rec.workingFor || rec.working_for || rec.workingDuration) return true;
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+        if (++n > 48) break;
+        if (SKIP_KEY.test(key)) continue;
+        if (LIVE_FLAG.test(key) && child === true) return true;
+        if (isLiveBag(child, depth + 1)) return true;
+    }
+    return false;
+}
 
 function isLiveResponse(r: GrokResponse | undefined): boolean {
     if (!r) return false;
     if (r.partial) return true;
+    if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata)) return true;
     const state = r.state ?? "";
     if (!state) return false;
     if (LIVE.has(state)) return true;
@@ -48,39 +96,114 @@ function isErrorResponse(r: GrokResponse | undefined): boolean {
     return !!r && (r.state === "error" || r.error != null);
 }
 
-function isLiveTask(task: Record<string, any> | undefined): boolean {
-    if (!task) return false;
-    const status = String(task.status ?? task.state ?? "").toLowerCase();
-    if (!status) return false;
-    return !DEAD.has(status);
-}
-
-function isConvId(value: unknown): value is string {
-    return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value);
+function collectConvIds(value: unknown, out: Set<string>, depth = 0) {
+    if (value == null || typeof value !== "object" || depth > 5) return;
+    if (Array.isArray(value)) {
+        const start = Math.max(0, value.length - 16);
+        for (let i = start; i < value.length; i++) collectConvIds(value[i], out, depth + 1);
+        return;
+    }
+    const rec = value as Record<string, any>;
+    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
+    if (isConvId(id) && isLiveBag(rec)) out.add(id);
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+        if (++n > 48) break;
+        if (SKIP_KEY.test(key)) continue;
+        if (isConvId(key) && isLiveBag(child)) out.add(key);
+        collectConvIds(child, out, depth + 1);
+    }
 }
 
 function currentIds(): string[] {
     const ids: string[] = [];
+    const add = (value: unknown) => {
+        if (isConvId(value) && !ids.includes(value)) ids.push(value);
+    };
     try {
         const page = ChatPageStore.useChatPageStore.getState();
-        if (isConvId(page.conversationId)) ids.push(page.conversationId);
-        if (isConvId(page.optimisticConversationId)) ids.push(page.optimisticConversationId);
+        add(page.conversationId);
+        add(page.optimisticConversationId);
     } catch (e) {
         logger.debug("page ids unavailable:", e);
     }
     try {
         const { route } = RoutingStore.useRoutingStore.getState();
-        if (isConvId(route.conversationId)) ids.push(route.conversationId);
-        if (isConvId(route.chat)) ids.push(route.chat);
+        add(route.conversationId);
+        add(route.chat);
     } catch (e) {
         logger.debug("route ids unavailable:", e);
+    }
+    try {
+        const url = new URL(location.href);
+        add(url.searchParams.get("chat"));
+        add(url.searchParams.get("conversationId"));
+        add(url.pathname.match(/^\/(?:c|chat)\/([^/?#]+)/i)?.[1]);
+    } catch (e) {
+        logger.debug("url ids unavailable:", e);
     }
     return ids;
 }
 
 function considerConversation(ids: Set<string>, conversation: GrokConversation | undefined) {
     if (!conversation?.conversationId) return;
-    if (conversation.state === "open" || isLiveTask(conversation.taskResult)) ids.add(conversation.conversationId);
+    if (conversation.state === "open" || isLiveBag(conversation.taskResult)) ids.add(conversation.conversationId);
+}
+
+function looksExtraStore(name: string, state: object): boolean {
+    if (EXTRA_HINT.test(name)) return true;
+    const keys = Object.keys(state);
+    if (keys.some(key => EXTRA_HINT.test(key))) return true;
+    let n = 0;
+    for (const child of Object.values(state as Record<string, any>)) {
+        if (++n > 8) break;
+        if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some(key => EXTRA_HINT.test(key))) return true;
+    }
+    return false;
+}
+
+function attachExtraStores() {
+    silenceWarns(() => syncLazyModules());
+    for (const [, exports] of getModuleCache()) {
+        if (exports == null || typeof exports !== "object" || isBlacklisted(exports)) continue;
+        const mod = exports as Record<string, unknown>;
+        for (const key of Object.keys(mod)) {
+            if (OWN_HOOKS.has(key)) continue;
+            const val = mod[key];
+            if (!isZustandStore(val) || extraSeen.has(val)) continue;
+            let state: object;
+            try {
+                state = val.getState();
+            } catch {
+                continue;
+            }
+            if (!state || typeof state !== "object") continue;
+            if (!looksExtraStore(key, state)) continue;
+            extraSeen.add(val);
+            extraStores.push(val);
+            extraUnsubs.push(val.subscribe(() => schedule()));
+            logger.info("extra store", key);
+        }
+    }
+}
+
+function extraLiveIds(ids: Set<string>) {
+    for (const store of extraStores) {
+        let state: any;
+        try {
+            state = store.getState();
+        } catch {
+            continue;
+        }
+        if (!isLiveBag(state)) continue;
+        const found = new Set<string>();
+        collectConvIds(state, found);
+        if (found.size) {
+            for (const id of found) ids.add(id);
+            continue;
+        }
+        for (const id of currentIds()) ids.add(id);
+    }
 }
 
 function liveIds(): Set<string> {
@@ -88,7 +211,7 @@ function liveIds(): Set<string> {
     try {
         const page = ChatPageStore.useChatPageStore.getState();
         const currents = currentIds();
-        if (page.streamedMessageId || page.showStreamingIndicator) {
+        if (page.streamedMessageId || page.showStreamingIndicator || isLiveBag(page.sidePanelContent) || isLiveBag(page.metadata)) {
             for (const id of currents) ids.add(id);
         }
         const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
@@ -110,6 +233,7 @@ function liveIds(): Set<string> {
     } catch (e) {
         logger.debug("conversation store unavailable:", e);
     }
+    extraLiveIds(ids);
     return ids;
 }
 
@@ -159,6 +283,10 @@ function convOfResponse(responseId: string): string {
 function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
     const cid = convOfResponse(responseId);
     if (!cid) return;
+    if (liveIds().has(cid)) {
+        schedule();
+        return;
+    }
     try {
         const response = ResponseStore.useResponseStore.getState().byId[responseId];
         marks.set(cid, isErrorResponse(response) ? "error" : "done");
@@ -183,7 +311,7 @@ function idFromHref(href: string): string {
 }
 
 function hrefId(el: Element): string {
-    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
+    const a = el instanceof HTMLAnchorElement ? el : el.closest("a[href]") ?? el.querySelector("a[href]");
     return idFromHref(a?.getAttribute("href") ?? el.getAttribute("href") ?? "");
 }
 
@@ -221,6 +349,7 @@ function idFromRow(el: Element): string {
 
 function rowHost(el: HTMLElement, root: Element): HTMLElement | null {
     if (el.classList.contains(MARK)) return null;
+    if (el.closest('[data-sidebar="menu-action"], [data-sidebar="footer"], [data-sidebar="header"]')) return null;
     const wrapped = el.closest<HTMLElement>(HOST);
     return wrapped && root.contains(wrapped) ? wrapped : el;
 }
@@ -266,6 +395,12 @@ function activeButton(root: Element): HTMLElement | null {
     return root.querySelector<HTMLElement>(`${ROW}[data-active="true"], ${ROW}[aria-current="page"], ${ROW}[data-state="active"]`);
 }
 
+function rowForId(root: Element, id: string): HTMLElement | null {
+    const a = root.querySelector<HTMLElement>(`a[href*="${id}"]`);
+    if (a) return rowHost(a, root) ?? a;
+    return activeButton(root);
+}
+
 function paint() {
     if (!started) return;
     refreshMarks();
@@ -294,21 +429,20 @@ function paint() {
         if (!el.isConnected || !usedIds.has(id)) rowById.delete(id);
     }
 
-    const live = [...marks].filter(([, kind]) => kind === "streaming").map(([id]) => id);
-    if (live.length && !usedIds.size) logger.debug("live ids with no rows", live);
-
-    const activeId = currentIds().find(id => marks.has(id)) ?? "";
-    if (!activeId || rowById.has(activeId)) return;
-    const kind = marks.get(activeId);
-    if (!kind) return;
-    for (const root of roots()) {
-        const active = activeButton(root);
-        if (!active) continue;
-        const host = rowHost(active, root) ?? active;
-        rowById.set(activeId, host);
-        ensureMark(host, kind);
-        return;
+    for (const [id, kind] of marks) {
+        if (rowById.get(id)?.isConnected) continue;
+        for (const root of roots()) {
+            const row = rowForId(root, id);
+            if (!row) continue;
+            const host = rowHost(row, root) ?? row;
+            rowById.set(id, host);
+            ensureMark(host, kind);
+            break;
+        }
     }
+
+    const live = [...marks].filter(([, kind]) => kind === "streaming").map(([id]) => id);
+    if (live.length && !rowById.size) logger.info("live ids with no rows", live);
 }
 
 function schedule() {
@@ -352,7 +486,7 @@ function observe() {
 }
 
 function pageKey(s: ChatPageStoreState): string {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${isLiveBag(s.sidePanelContent) ? 1 : 0}|${isLiveBag(s.metadata) ? 1 : 0}`;
 }
 
 function responseKey(s: ResponseStoreState): string {
@@ -369,7 +503,7 @@ function conversationKey(s: ConversationStoreState): string {
     const seen = new Set<string>();
     const consider = (conversation: GrokConversation | undefined) => {
         if (!conversation?.conversationId || seen.has(conversation.conversationId)) return;
-        if (conversation.state !== "open" && !isLiveTask(conversation.taskResult)) return;
+        if (conversation.state !== "open" && !isLiveBag(conversation.taskResult)) return;
         seen.add(conversation.conversationId);
         live.push(conversation.conversationId);
     };
@@ -397,12 +531,18 @@ export default definePlugin({
 
     start() {
         started = true;
+        attachExtraStores();
+        extraOff = onModuleLoad(() => {
+            attachExtraStores();
+            schedule();
+        });
         const sidebar = document.querySelector('[data-sidebar="sidebar"]');
-        logger.debug(
+        logger.info(
+            "start",
             "sidebar", !!sidebar,
-            "menu", sidebar?.querySelectorAll('[data-sidebar="menu-button"]').length ?? 0,
-            "sub", sidebar?.querySelectorAll('[data-sidebar="menu-sub-button"]').length ?? 0,
-            "links", sidebar?.querySelectorAll('a[href*="/c/"], a[href*="chat="], a[href*="/project/"]').length ?? 0,
+            "rows", sidebar?.querySelectorAll(ROW).length ?? 0,
+            "live", liveIds().size,
+            "current", currentIds()[0] ?? "",
         );
         observe();
         schedule();
@@ -414,6 +554,12 @@ export default definePlugin({
         raf = 0;
         obs?.disconnect();
         obs = null;
+        extraOff?.();
+        extraOff = null;
+        for (const unsub of extraUnsubs) unsub();
+        extraUnsubs.length = 0;
+        extraStores.length = 0;
+        extraSeen = new WeakSet();
         for (const el of document.querySelectorAll(`.${MARK}`)) el.remove();
         marks.clear();
         rowById.clear();

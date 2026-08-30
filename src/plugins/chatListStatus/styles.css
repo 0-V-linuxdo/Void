@@ -4,12 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-[data-sidebar="menu-button"]:has(> .void-cls),
-[data-sidebar="menu-sub-button"]:has(> .void-cls),
-a[href*="/c/"]:has(> .void-cls),
-a[href*="/chat/"]:has(> .void-cls),
-a[href*="chat="]:has(> .void-cls),
-a[href*="/project/"]:has(> .void-cls) {
+[data-sidebar] :is(
+    [data-sidebar="menu-button"],
+    [data-sidebar="menu-sub-button"],
+    a
+):has(> .void-cls) {
     display: flex;
     align-items: center;
     min-width: 0;

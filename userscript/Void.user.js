@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.17] v1.0.0
+// @version      [20260830.18] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.17] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.18] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6893,9 +6893,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.17] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"c0e9e51"}`
-    }, `(${"c0e9e51"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.18] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"50c3bf5"}`
+    }, `(${"50c3bf5"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -14261,12 +14261,11 @@ html.void-rt-open [data-sidebar="gap"] {
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-[data-sidebar="menu-button"]:has(> .void-cls),
-[data-sidebar="menu-sub-button"]:has(> .void-cls),
-a[href*="/c/"]:has(> .void-cls),
-a[href*="/chat/"]:has(> .void-cls),
-a[href*="chat="]:has(> .void-cls),
-a[href*="/project/"]:has(> .void-cls) {
+[data-sidebar] :is(
+    [data-sidebar="menu-button"],
+    [data-sidebar="menu-sub-button"],
+    a
+):has(> .void-cls) {
     display: flex;
     align-items: center;
     min-width: 0;
@@ -14318,21 +14317,76 @@ a[href*="/project/"]:has(> .void-cls) {
   // src/plugins/chatListStatus/index.ts
   var logger27 = new Logger("ChatListStatus");
   var MARK = "void-cls";
-  var LIVE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success"]);
+  var LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
+  var DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
+  var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
+  var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
+  var SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
+  var EXTRA_HINT = /computer|sandbox|agent|task|working/i;
+  var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
   var SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
   var HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
   var ROW = `${HOST}, a[href*="/c/"], a[href*="/chat/"], a[href*="chat="], a[href*="/project/"]`;
   var SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
   var marks = new Map;
   var rowById = new Map;
+  var extraStores = [];
+  var extraSeen = new WeakSet;
+  var extraUnsubs = [];
   var raf2 = 0;
   var started3 = false;
   var obs = null;
+  var extraOff = null;
+  function isConvId(value) {
+    return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value);
+  }
+  function isLiveStatus(value) {
+    if (typeof value !== "string")
+      return false;
+    const status = value.trim().toLowerCase();
+    if (!status || DEAD.has(status))
+      return false;
+    return LIVE.has(status) || LIVE_WORD.test(status);
+  }
+  function isLiveBag(value, depth = 0) {
+    if (value == null || depth > 5)
+      return false;
+    if (typeof value === "string")
+      return isLiveStatus(value);
+    if (typeof value !== "object")
+      return false;
+    if (Array.isArray(value)) {
+      const start = Math.max(0, value.length - 24);
+      for (let i = value.length - 1;i >= start; i--) {
+        if (isLiveBag(value[i], depth + 1))
+          return true;
+      }
+      return false;
+    }
+    const rec = value;
+    if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus))
+      return true;
+    if (rec.workingFor || rec.working_for || rec.workingDuration)
+      return true;
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+      if (++n > 48)
+        break;
+      if (SKIP_KEY.test(key))
+        continue;
+      if (LIVE_FLAG.test(key) && child === true)
+        return true;
+      if (isLiveBag(child, depth + 1))
+        return true;
+    }
+    return false;
+  }
   function isLiveResponse(r) {
     if (!r)
       return false;
     if (r.partial)
+      return true;
+    if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata))
       return true;
     const state2 = r.state ?? "";
     if (!state2)
@@ -14344,51 +14398,137 @@ a[href*="/project/"]:has(> .void-cls) {
   function isErrorResponse(r) {
     return !!r && (r.state === "error" || r.error != null);
   }
-  function isLiveTask(task) {
-    if (!task)
-      return false;
-    const status = String(task.status ?? task.state ?? "").toLowerCase();
-    if (!status)
-      return false;
-    return !DEAD.has(status);
-  }
-  function isConvId(value) {
-    return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value);
+  function collectConvIds(value, out, depth = 0) {
+    if (value == null || typeof value !== "object" || depth > 5)
+      return;
+    if (Array.isArray(value)) {
+      const start = Math.max(0, value.length - 16);
+      for (let i = start;i < value.length; i++)
+        collectConvIds(value[i], out, depth + 1);
+      return;
+    }
+    const rec = value;
+    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id;
+    if (isConvId(id) && isLiveBag(rec))
+      out.add(id);
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+      if (++n > 48)
+        break;
+      if (SKIP_KEY.test(key))
+        continue;
+      if (isConvId(key) && isLiveBag(child))
+        out.add(key);
+      collectConvIds(child, out, depth + 1);
+    }
   }
   function currentIds() {
     const ids = [];
+    const add = (value) => {
+      if (isConvId(value) && !ids.includes(value))
+        ids.push(value);
+    };
     try {
       const page = ChatPageStore.useChatPageStore.getState();
-      if (isConvId(page.conversationId))
-        ids.push(page.conversationId);
-      if (isConvId(page.optimisticConversationId))
-        ids.push(page.optimisticConversationId);
+      add(page.conversationId);
+      add(page.optimisticConversationId);
     } catch (e) {
       logger27.debug("page ids unavailable:", e);
     }
     try {
       const { route } = RoutingStore.useRoutingStore.getState();
-      if (isConvId(route.conversationId))
-        ids.push(route.conversationId);
-      if (isConvId(route.chat))
-        ids.push(route.chat);
+      add(route.conversationId);
+      add(route.chat);
     } catch (e) {
       logger27.debug("route ids unavailable:", e);
+    }
+    try {
+      const url = new URL(location.href);
+      add(url.searchParams.get("chat"));
+      add(url.searchParams.get("conversationId"));
+      add(url.pathname.match(/^\/(?:c|chat)\/([^/?#]+)/i)?.[1]);
+    } catch (e) {
+      logger27.debug("url ids unavailable:", e);
     }
     return ids;
   }
   function considerConversation(ids, conversation) {
     if (!conversation?.conversationId)
       return;
-    if (conversation.state === "open" || isLiveTask(conversation.taskResult))
+    if (conversation.state === "open" || isLiveBag(conversation.taskResult))
       ids.add(conversation.conversationId);
+  }
+  function looksExtraStore(name, state2) {
+    if (EXTRA_HINT.test(name))
+      return true;
+    const keys3 = Object.keys(state2);
+    if (keys3.some((key) => EXTRA_HINT.test(key)))
+      return true;
+    let n = 0;
+    for (const child of Object.values(state2)) {
+      if (++n > 8)
+        break;
+      if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some((key) => EXTRA_HINT.test(key)))
+        return true;
+    }
+    return false;
+  }
+  function attachExtraStores() {
+    silenceWarns(() => syncLazyModules());
+    for (const [, exports] of getModuleCache()) {
+      if (exports == null || typeof exports !== "object" || isBlacklisted(exports))
+        continue;
+      const mod = exports;
+      for (const key of Object.keys(mod)) {
+        if (OWN_HOOKS.has(key))
+          continue;
+        const val = mod[key];
+        if (!isZustandStore(val) || extraSeen.has(val))
+          continue;
+        let state2;
+        try {
+          state2 = val.getState();
+        } catch {
+          continue;
+        }
+        if (!state2 || typeof state2 !== "object")
+          continue;
+        if (!looksExtraStore(key, state2))
+          continue;
+        extraSeen.add(val);
+        extraStores.push(val);
+        extraUnsubs.push(val.subscribe(() => schedule()));
+        logger27.info("extra store", key);
+      }
+    }
+  }
+  function extraLiveIds(ids) {
+    for (const store3 of extraStores) {
+      let state2;
+      try {
+        state2 = store3.getState();
+      } catch {
+        continue;
+      }
+      if (!isLiveBag(state2))
+        continue;
+      const found = new Set;
+      collectConvIds(state2, found);
+      if (found.size) {
+        for (const id of found)
+          ids.add(id);
+        continue;
+      }
+      for (const id of currentIds())
+        ids.add(id);
+    }
   }
   function liveIds() {
     const ids = new Set;
     try {
       const page = ChatPageStore.useChatPageStore.getState();
       const currents = currentIds();
-      if (page.streamedMessageId || page.showStreamingIndicator) {
+      if (page.streamedMessageId || page.showStreamingIndicator || isLiveBag(page.sidePanelContent) || isLiveBag(page.metadata)) {
         for (const id of currents)
           ids.add(id);
       }
@@ -14417,6 +14557,7 @@ a[href*="/project/"]:has(> .void-cls) {
     } catch (e) {
       logger27.debug("conversation store unavailable:", e);
     }
+    extraLiveIds(ids);
     return ids;
   }
   function errorOf(id) {
@@ -14467,6 +14608,10 @@ a[href*="/project/"]:has(> .void-cls) {
     const cid = convOfResponse(responseId);
     if (!cid)
       return;
+    if (liveIds().has(cid)) {
+      schedule();
+      return;
+    }
     try {
       const response = ResponseStore.useResponseStore.getState().byId[responseId];
       marks.set(cid, isErrorResponse(response) ? "error" : "done");
@@ -14487,7 +14632,7 @@ a[href*="/project/"]:has(> .void-cls) {
     }
   }
   function hrefId(el) {
-    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
+    const a = el instanceof HTMLAnchorElement ? el : el.closest("a[href]") ?? el.querySelector("a[href]");
     return idFromHref(a?.getAttribute("href") ?? el.getAttribute("href") ?? "");
   }
   function idFromProps(props) {
@@ -14532,6 +14677,8 @@ a[href*="/project/"]:has(> .void-cls) {
   function rowHost(el, root) {
     if (el.classList.contains(MARK))
       return null;
+    if (el.closest('[data-sidebar="menu-action"], [data-sidebar="footer"], [data-sidebar="header"]'))
+      return null;
     const wrapped = el.closest(HOST);
     return wrapped && root.contains(wrapped) ? wrapped : el;
   }
@@ -14573,6 +14720,12 @@ a[href*="/project/"]:has(> .void-cls) {
   function activeButton(root) {
     return root.querySelector(`${ROW}[data-active="true"], ${ROW}[aria-current="page"], ${ROW}[data-state="active"]`);
   }
+  function rowForId(root, id) {
+    const a = root.querySelector(`a[href*="${id}"]`);
+    if (a)
+      return rowHost(a, root) ?? a;
+    return activeButton(root);
+  }
   function paint2() {
     if (!started3)
       return;
@@ -14592,9 +14745,9 @@ a[href*="/project/"]:has(> .void-cls) {
         }
         usedIds.add(id);
         rowById.set(id, host2);
-        const kind3 = marks.get(id);
-        if (kind3)
-          ensureMark(host2, kind3);
+        const kind2 = marks.get(id);
+        if (kind2)
+          ensureMark(host2, kind2);
         else
           clearMark(host2);
       }
@@ -14603,24 +14756,22 @@ a[href*="/project/"]:has(> .void-cls) {
       if (!el.isConnected || !usedIds.has(id))
         rowById.delete(id);
     }
-    const live = [...marks].filter(([, kind3]) => kind3 === "streaming").map(([id]) => id);
-    if (live.length && !usedIds.size)
-      logger27.debug("live ids with no rows", live);
-    const activeId = currentIds().find((id) => marks.has(id)) ?? "";
-    if (!activeId || rowById.has(activeId))
-      return;
-    const kind2 = marks.get(activeId);
-    if (!kind2)
-      return;
-    for (const root of roots()) {
-      const active = activeButton(root);
-      if (!active)
+    for (const [id, kind2] of marks) {
+      if (rowById.get(id)?.isConnected)
         continue;
-      const host2 = rowHost(active, root) ?? active;
-      rowById.set(activeId, host2);
-      ensureMark(host2, kind2);
-      return;
+      for (const root of roots()) {
+        const row = rowForId(root, id);
+        if (!row)
+          continue;
+        const host2 = rowHost(row, root) ?? row;
+        rowById.set(id, host2);
+        ensureMark(host2, kind2);
+        break;
+      }
     }
+    const live = [...marks].filter(([, kind2]) => kind2 === "streaming").map(([id]) => id);
+    if (live.length && !rowById.size)
+      logger27.info("live ids with no rows", live);
   }
   function schedule() {
     if (!started3 || raf2)
@@ -14668,7 +14819,7 @@ a[href*="/project/"]:has(> .void-cls) {
     });
   }
   function pageKey(s) {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}|${isLiveBag(s.sidePanelContent) ? 1 : 0}|${isLiveBag(s.metadata) ? 1 : 0}`;
   }
   function responseKey(s) {
     const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
@@ -14685,7 +14836,7 @@ a[href*="/project/"]:has(> .void-cls) {
     const consider = (conversation) => {
       if (!conversation?.conversationId || seen.has(conversation.conversationId))
         return;
-      if (conversation.state !== "open" && !isLiveTask(conversation.taskResult))
+      if (conversation.state !== "open" && !isLiveBag(conversation.taskResult))
         return;
       seen.add(conversation.conversationId);
       live.push(conversation.conversationId);
@@ -14714,8 +14865,13 @@ a[href*="/project/"]:has(> .void-cls) {
     cleanupSelectors: [`.${MARK}`],
     start() {
       started3 = true;
+      attachExtraStores();
+      extraOff = onModuleLoad(() => {
+        attachExtraStores();
+        schedule();
+      });
       const sidebar = document.querySelector('[data-sidebar="sidebar"]');
-      logger27.debug("sidebar", !!sidebar, "menu", sidebar?.querySelectorAll('[data-sidebar="menu-button"]').length ?? 0, "sub", sidebar?.querySelectorAll('[data-sidebar="menu-sub-button"]').length ?? 0, "links", sidebar?.querySelectorAll('a[href*="/c/"], a[href*="chat="], a[href*="/project/"]').length ?? 0);
+      logger27.info("start", "sidebar", !!sidebar, "rows", sidebar?.querySelectorAll(ROW).length ?? 0, "live", liveIds().size, "current", currentIds()[0] ?? "");
       observe();
       schedule();
     },
@@ -14726,6 +14882,13 @@ a[href*="/project/"]:has(> .void-cls) {
       raf2 = 0;
       obs?.disconnect();
       obs = null;
+      extraOff?.();
+      extraOff = null;
+      for (const unsub of extraUnsubs)
+        unsub();
+      extraUnsubs.length = 0;
+      extraStores.length = 0;
+      extraSeen = new WeakSet;
       for (const el of document.querySelectorAll(`.${MARK}`))
         el.remove();
       marks.clear();
