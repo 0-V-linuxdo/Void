@@ -6,12 +6,10 @@
 
 import "./styles.css";
 
-import { dispatch } from "@api/Events";
-import { showToast, ToastType } from "@api/Notifications";
-import { isPluginEnabled, plugins, togglePlugin } from "@api/PluginManager";
+import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
-import { ErrorBoundary, Flex, Switch, Text } from "@components";
+import { ErrorBoundary, Flex, SettingsDescription, SettingsRow, SettingsTitle, Switch, Text } from "@components";
 import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { hasVisibleSettings } from "@components/settings/utils";
@@ -28,7 +26,6 @@ import { SettingsDialogStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classNameFactory, registerStyle } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { useEventSubscription, useForceUpdater } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 import type { ComponentType, ReactNode } from "react";
 
@@ -42,7 +39,13 @@ const settings = definePluginSettings({
         description: "Show the Void sub-menu in the avatar dropdown.",
         default: true,
     },
-});
+    menuPlugins: {
+        type: OptionType.COMPONENT,
+        description: "Plugins shown under Void → Plugins.",
+        component: MenuPluginsEditor,
+        default: {},
+    },
+}).withPrivateSettings<{ menuPlugins: Record<string, boolean> }>();
 
 interface SettingsTab {
     id: string;
@@ -111,58 +114,59 @@ function openPluginSettings(name: string) {
     openSettingsTab(PLUGINS_TAB_ID);
 }
 
-function stopSwitchSelect(e: { stopPropagation(): void }) {
-    e.stopPropagation();
+function listedPlugins() {
+    return Object.keys(plugins)
+        .filter(n => !plugins[n].hidden)
+        .toSorted((a, b) => a.localeCompare(b));
 }
 
-function PluginMenuItem({ name }: { name: string }) {
-    const plugin = plugins[name];
-    const enabled = isPluginEnabled(name);
-    const locked = plugin.required || plugin.isDependency;
-    const configurable = hasVisibleSettings(plugin);
-    const Icon = plugin.icon ?? UnplugIcon;
+function menuPluginMap(): Record<string, boolean> {
+    const raw = settings.store.menuPlugins;
+    return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+}
+
+function isShownInPluginMenu(name: string): boolean {
+    const map = menuPluginMap();
+    if (name in map) return !!map[name];
+    return hasVisibleSettings(plugins[name]);
+}
+
+function setShownInPluginMenu(name: string, shown: boolean) {
+    settings.store.menuPlugins = { ...menuPluginMap(), [name]: shown };
+}
+
+function MenuPluginsEditor() {
+    settings.use(["menuPlugins"]);
 
     return (
-        <DropdownMenuItem
-            className={cl({ "plugin-item": true, "plugin-item-off": !enabled })}
-            onSelect={e => {
-                if (!configurable) e.preventDefault();
-                else openPluginSettings(name);
-            }}
-        >
-            <Icon className={cl("menu-icon")} />
-            <span className={cl("plugin-name")}>{name}</span>
-            <Switch
-                size="sm"
-                className={cl("plugin-switch")}
-                checked={enabled}
-                disabled={locked}
-                onPointerDown={stopSwitchSelect}
-                onPointerUp={stopSwitchSelect}
-                onClick={stopSwitchSelect}
-                onKeyDown={stopSwitchSelect}
-                onCheckedChange={() => {
-                    if (!togglePlugin(name)) return;
-                    dispatch("reloadNeeded");
-                    showToast("Reload the page to apply plugin changes.", ToastType.WARNING, {
-                        id: "void-plugin-reload",
-                        action: { label: "Reload", onClick: () => location.reload() },
-                    });
-                }}
-            />
-        </DropdownMenuItem>
+        <Flex flexDirection="column" gap="0.5rem">
+            <Flex flexDirection="column" gap="0">
+                <SettingsTitle>Plugin menu</SettingsTitle>
+                <SettingsDescription>Choose which plugins appear under Void → Plugins.</SettingsDescription>
+            </Flex>
+            {listedPlugins().map(name => {
+                const Icon = plugins[name].icon ?? UnplugIcon;
+                return (
+                    <SettingsRow
+                        key={name}
+                        action={<Switch checked={isShownInPluginMenu(name)} onCheckedChange={v => setShownInPluginMenu(name, v)} />}
+                    >
+                        <Flex alignItems="center" gap="0.5rem">
+                            <Icon className={cl("menu-icon")} />
+                            <SettingsTitle>{name}</SettingsTitle>
+                        </Flex>
+                    </SettingsRow>
+                );
+            })}
+        </Flex>
     );
 }
 
 function VoidMenu() {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
+    const { showVoidMenu } = settings.use(["showVoidMenu", "menuPlugins"]);
+    if (!showVoidMenu) return null;
 
-    if (!settings.store.showVoidMenu) return null;
-
-    const menuPlugins = Object.keys(plugins)
-        .filter(n => !plugins[n].hidden)
-        .toSorted((a, b) => a.localeCompare(b));
+    const menuPlugins = listedPlugins().filter(isShownInPluginMenu);
 
     return (
         <DropdownMenuSub>
@@ -171,15 +175,25 @@ function VoidMenu() {
                 Void
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-                <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                        <UnplugIcon className={cl("menu-icon")} />
-                        Plugins
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                        {menuPlugins.map(name => <PluginMenuItem key={name} name={name} />)}
-                    </DropdownMenuSubContent>
-                </DropdownMenuSub>
+                {menuPlugins.length > 0 && (
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                            <UnplugIcon className={cl("menu-icon")} />
+                            Plugins
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                            {menuPlugins.map(name => {
+                                const Icon = plugins[name].icon ?? UnplugIcon;
+                                return (
+                                    <DropdownMenuItem key={name} onSelect={() => openPluginSettings(name)}>
+                                        <Icon className={cl("menu-icon")} />
+                                        {name}
+                                    </DropdownMenuItem>
+                                );
+                            })}
+                        </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                )}
                 {getVisibleTabs().filter(t => t.id !== PLUGINS_TAB_ID).map(t => {
                     const Icon = t.icon;
                     return (

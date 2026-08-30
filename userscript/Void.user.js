@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.15] v1.0.0
+// @version      [20260829.16] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.15] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.16] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4503,31 +4503,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     flex-shrink: 0;
 }
 
-.void-settings-plugin-item {
-    justify-content: flex-start;
-}
-
-.void-settings-plugin-name {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.void-settings-plugin-item-off {
-    color: hsl(var(--fg-tertiary));
-}
-
-.void-settings-plugin-item-off .void-settings-menu-icon {
-    color: hsl(var(--fg-tertiary));
-}
-
-.void-settings-plugin-switch {
-    margin-inline-start: 0.5rem;
-    flex-shrink: 0;
-}
-
 .void-settings-row {
     display: flex;
     align-items: center;
@@ -4555,40 +4530,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // src/api/Notifications.ts
-  var ToastType;
-  ((ToastType2) => {
-    ToastType2[ToastType2["MESSAGE"] = 0] = "MESSAGE";
-    ToastType2[ToastType2["SUCCESS"] = 1] = "SUCCESS";
-    ToastType2[ToastType2["ERROR"] = 2] = "ERROR";
-    ToastType2[ToastType2["INFO"] = 3] = "INFO";
-    ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
-    ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
-  })(ToastType ||= {});
-  var TOAST_FN = {
-    [0 /* MESSAGE */]: null,
-    [1 /* SUCCESS */]: "success",
-    [2 /* ERROR */]: "error",
-    [3 /* INFO */]: "info",
-    [4 /* WARNING */]: "warning",
-    [5 /* LOADING */]: "loading"
-  };
-  var logger12 = new Logger("Notifications");
-  function showToast(message, type = 0 /* MESSAGE */, options) {
-    if (!Toaster.toast) {
-      logger12.warn("showToast called before Toaster initialized, discarding:", message);
-      return -1;
-    }
-    const { toast } = Toaster;
-    const key = TOAST_FN[type];
-    return key ? toast[key](message, options) : toast(message, options);
-  }
-  function dismissToast(id) {
-    Toaster.toast?.dismiss(id);
-  }
-
   // src/api/Themes.ts
-  var logger13 = new Logger("Themes", "#c6a0f6");
+  var logger12 = new Logger("Themes", "#c6a0f6");
   function themeStyleId(url) {
     let hash = 0;
     for (let i = 0;i < url.length; i++) {
@@ -4678,7 +4621,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     };
     registerDisabledStyle(themeStyleId(url), css);
     setThemes([...getThemes(), theme]);
-    logger13.info(`Added theme "${theme.name}" from ${url}`);
+    logger12.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
   }
   function addLocalTheme(name, css) {
@@ -4699,7 +4642,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     };
     registerDisabledStyle(themeStyleId(id), css);
     setThemes([...getThemes(), theme]);
-    logger13.info(`Added local theme "${theme.name}"`);
+    logger12.info(`Added local theme "${theme.name}"`);
     return theme;
   }
   function updateLocalTheme(url, data) {
@@ -4746,14 +4689,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     try {
       const resp = await fetchExternal(url);
       if (!resp.ok) {
-        logger13.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+        logger12.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
         return;
       }
       if (!isThemeStillActive(url))
         return;
       css = await resp.text();
     } catch (e) {
-      logger13.warn("Failed to fetch theme CSS:", url, e);
+      logger12.warn("Failed to fetch theme CSS:", url, e);
       return;
     }
     if (!isThemeStillActive(url))
@@ -4785,7 +4728,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
     for (const [i, result] of results.entries()) {
       if (result.status === "rejected") {
-        logger13.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
+        logger12.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
       }
     }
   }
@@ -6167,14 +6110,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 `);
 
   // src/components/settings/ThemeCard.tsx
-  var logger14 = new Logger("ThemeCard");
+  var logger13 = new Logger("ThemeCard");
   var cl12 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, onRemove, onToggle, onEdit }) {
     const handleToggle = () => {
       if (theme.enabled)
         disableTheme(theme.url);
       else
-        enableTheme(theme.url).catch((e) => logger14.error("Failed to enable theme:", e));
+        enableTheme(theme.url).catch((e) => logger13.error("Failed to enable theme:", e));
       onToggle();
     };
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
@@ -6193,7 +6136,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         icon: CopyIcon,
         label: "Copy URL",
         onClick: () => {
-          copyToClipboard(theme.url).catch((e) => logger14.error("Failed to copy URL:", e));
+          copyToClipboard(theme.url).catch((e) => logger13.error("Failed to copy URL:", e));
         }
       }), /* @__PURE__ */ React.createElement(IconButton, {
         icon: Trash2Icon,
@@ -6478,6 +6421,38 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     margin-left: 0.375rem;
 }
 `);
+
+  // src/api/Notifications.ts
+  var ToastType;
+  ((ToastType2) => {
+    ToastType2[ToastType2["MESSAGE"] = 0] = "MESSAGE";
+    ToastType2[ToastType2["SUCCESS"] = 1] = "SUCCESS";
+    ToastType2[ToastType2["ERROR"] = 2] = "ERROR";
+    ToastType2[ToastType2["INFO"] = 3] = "INFO";
+    ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
+    ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
+  })(ToastType ||= {});
+  var TOAST_FN = {
+    [0 /* MESSAGE */]: null,
+    [1 /* SUCCESS */]: "success",
+    [2 /* ERROR */]: "error",
+    [3 /* INFO */]: "info",
+    [4 /* WARNING */]: "warning",
+    [5 /* LOADING */]: "loading"
+  };
+  var logger14 = new Logger("Notifications");
+  function showToast(message, type = 0 /* MESSAGE */, options) {
+    if (!Toaster.toast) {
+      logger14.warn("showToast called before Toaster initialized, discarding:", message);
+      return -1;
+    }
+    const { toast } = Toaster;
+    const key = TOAST_FN[type];
+    return key ? toast[key](message, options) : toast(message, options);
+  }
+  function dismissToast(id) {
+    Toaster.toast?.dismiss(id);
+  }
 
   // src/plugins/experiments/index.tsx
   var cl14 = classNameFactory("void-experiments-");
@@ -6785,8 +6760,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       type: 3 /* BOOLEAN */,
       description: "Show the Void sub-menu in the avatar dropdown.",
       default: true
+    },
+    menuPlugins: {
+      type: 6 /* COMPONENT */,
+      description: "Plugins shown under Void → Plugins.",
+      component: MenuPluginsEditor,
+      default: {}
     }
-  });
+  }).withPrivateSettings();
   var PLUGINS_TAB_ID = "void_plugins_tab";
   var allTabs = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2 },
@@ -6825,7 +6806,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.15] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260829.16] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6847,61 +6828,64 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     setPendingPluginDialog(name);
     openSettingsTab(PLUGINS_TAB_ID);
   }
-  function stopSwitchSelect(e) {
-    e.stopPropagation();
+  function listedPlugins() {
+    return Object.keys(plugins).filter((n) => !plugins[n].hidden).toSorted((a, b) => a.localeCompare(b));
   }
-  function PluginMenuItem({ name }) {
-    const plugin = plugins[name];
-    const enabled = isPluginEnabled(name);
-    const locked = plugin.required || plugin.isDependency;
-    const configurable = hasVisibleSettings(plugin);
-    const Icon = plugin.icon ?? UnplugIcon;
-    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      className: cl15({ "plugin-item": true, "plugin-item-off": !enabled }),
-      onSelect: (e) => {
-        if (!configurable)
-          e.preventDefault();
-        else
-          openPluginSettings(name);
-      }
-    }, /* @__PURE__ */ React.createElement(Icon, {
-      className: cl15("menu-icon")
-    }), /* @__PURE__ */ React.createElement("span", {
-      className: cl15("plugin-name")
-    }, name), /* @__PURE__ */ React.createElement(Switch, {
-      size: "sm",
-      className: cl15("plugin-switch"),
-      checked: enabled,
-      disabled: locked,
-      onPointerDown: stopSwitchSelect,
-      onPointerUp: stopSwitchSelect,
-      onClick: stopSwitchSelect,
-      onKeyDown: stopSwitchSelect,
-      onCheckedChange: () => {
-        if (!togglePlugin(name))
-          return;
-        dispatch("reloadNeeded");
-        showToast("Reload the page to apply plugin changes.", 4 /* WARNING */, {
-          id: "void-plugin-reload",
-          action: { label: "Reload", onClick: () => location.reload() }
-        });
-      }
+  function menuPluginMap() {
+    const raw = settings3.store.menuPlugins;
+    return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  }
+  function isShownInPluginMenu(name) {
+    const map = menuPluginMap();
+    if (name in map)
+      return !!map[name];
+    return hasVisibleSettings(plugins[name]);
+  }
+  function setShownInPluginMenu(name, shown) {
+    settings3.store.menuPlugins = { ...menuPluginMap(), [name]: shown };
+  }
+  function MenuPluginsEditor() {
+    settings3.use(["menuPlugins"]);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Choose which plugins appear under Void → Plugins.")), listedPlugins().map((name) => {
+      const Icon = plugins[name].icon ?? UnplugIcon;
+      return /* @__PURE__ */ React.createElement(SettingsRow, {
+        key: name,
+        action: /* @__PURE__ */ React.createElement(Switch, {
+          checked: isShownInPluginMenu(name),
+          onCheckedChange: (v) => setShownInPluginMenu(name, v)
+        })
+      }, /* @__PURE__ */ React.createElement(Flex, {
+        alignItems: "center",
+        gap: "0.5rem"
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl15("menu-icon")
+      }), /* @__PURE__ */ React.createElement(SettingsTitle, null, name)));
     }));
   }
   function VoidMenu() {
-    const forceUpdate = useForceUpdater();
-    useEventSubscription("pluginToggle", forceUpdate);
-    if (!settings3.store.showVoidMenu)
+    const { showVoidMenu } = settings3.use(["showVoidMenu", "menuPlugins"]);
+    if (!showVoidMenu)
       return null;
-    const menuPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden).toSorted((a, b) => a.localeCompare(b));
+    const menuPlugins = listedPlugins().filter(isShownInPluginMenu);
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidIcon, {
       className: cl15("menu-icon")
-    }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
+    }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl15("menu-icon")
-    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.map((name) => /* @__PURE__ */ React.createElement(PluginMenuItem, {
-      key: name,
-      name
-    })))), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
+    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.map((name) => {
+      const Icon = plugins[name].icon ?? UnplugIcon;
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+        key: name,
+        onSelect: () => openPluginSettings(name)
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl15("menu-icon")
+      }), name);
+    }))), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
       const Icon = t.icon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
