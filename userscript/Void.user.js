@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.18] v1.0.0
+// @version      [20260830.1] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.18] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.1] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -3333,7 +3333,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // void-css:/workspace/artifacts/Void-src/src/components/ColorSettingRow.css
+  // void-css:/tmp/void-src/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3372,7 +3372,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/workspace/artifacts/Void-src/src/components/ConfirmDialog.css
+  // void-css:/tmp/void-src/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3621,7 +3621,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // void-css:/workspace/artifacts/Void-src/src/components/ErrorCard.css
+  // void-css:/tmp/void-src/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3734,7 +3734,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/workspace/artifacts/Void-src/src/components/SelectionUI.css
+  // void-css:/tmp/void-src/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4473,7 +4473,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/workspace/artifacts/Void-src/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/void-src/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4746,7 +4746,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/void-src/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4758,7 +4758,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/CssEditor.css
+  // void-css:/tmp/void-src/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -5030,7 +5030,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/shared.css
+  // void-css:/tmp/void-src/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5105,7 +5105,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/void-src/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5146,7 +5146,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/PluginCard.css
+  // void-css:/tmp/void-src/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5197,7 +5197,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/BaseCard.css
+  // void-css:/tmp/void-src/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5470,7 +5470,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/void-src/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5496,7 +5496,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/SettingField.css
+  // void-css:/tmp/void-src/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -6096,7 +6096,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/void-src/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6119,7 +6119,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/workspace/artifacts/Void-src/src/components/settings/ThemeCard.css
+  // void-css:/tmp/void-src/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6397,7 +6397,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/workspace/artifacts/Void-src/src/plugins/experiments/styles.css
+  // void-css:/tmp/void-src/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6775,7 +6775,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/workspace/artifacts/Void-src/src/plugins/pluginsFlyout/styles.css
+  // void-css:/tmp/void-src/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -6917,7 +6917,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.18] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260830.1] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -7208,2088 +7208,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // src/plugins/autoCollapse/index.ts
-  var autoCollapse_default = definePlugin({
-    name: "AutoCollapse",
-    icon: ChevronsDownUpIcon,
-    description: "Automatically collapse code blocks in responses.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    _collapse: () => true,
-    patches: [
-      {
-        find: ["isInitiallyCollapsed", "showRunCode"],
-        all: true,
-        replacement: {
-          match: /isInitiallyCollapsed:(\i)=!1/g,
-          replace: "isInitiallyCollapsed:$1=$self._collapse()"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/autoRetry/index.ts
-  var logger16 = new Logger("AutoRetry");
-  var CONTENT_MODERATED = "grok:content-moderated";
-  var settings5 = definePluginSettings({
-    retryModeration: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry content moderation errors.",
-      default: true
-    },
-    retryNetwork: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry network and stream errors.",
-      default: true
-    },
-    maxRetries: {
-      type: 1 /* NUMBER */,
-      description: "Maximum consecutive retries per conversation.",
-      default: 3
-    },
-    delay: {
-      type: 1 /* NUMBER */,
-      description: "Seconds to wait before retrying.",
-      default: 2
-    }
-  });
-  var retryCounts = new Map;
-  var pendingTimer = null;
-  function clearPending() {
-    if (pendingTimer != null) {
-      clearTimeout(pendingTimer);
-      pendingTimer = null;
-    }
-  }
-  function isModeration(response) {
-    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
-  }
-  function shouldRetry(response) {
-    if (isModeration(response))
-      return settings5.store.retryModeration;
-    return settings5.store.retryNetwork;
-  }
-  function retry(responseId, conversationId, response) {
-    const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings5.store.maxRetries;
-    if (count > max) {
-      showToast("Max retries reached.", 2 /* ERROR */);
-      retryCounts.delete(conversationId);
-      return;
-    }
-    retryCounts.set(conversationId, count);
-    const delaySec = settings5.store.delay;
-    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger16.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
-    clearPending();
-    pendingTimer = setTimeout(() => {
-      pendingTimer = null;
-      const state = ChatPageStore.useChatPageStore.getState();
-      if (state.streamedMessageId)
-        return;
-      state.sendResponse({
-        message: "",
-        parentResponseId: responseId,
-        conversationId,
-        fileAttachmentIds: response.fileAttachments,
-        setOpimisticUserResponse: false,
-        setUserResponse: false,
-        enableRetries: true
-      });
-    }, delaySec * 1000);
-  }
-  function onStreamEnd({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "error") {
-      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (convId)
-        retryCounts.delete(convId);
-      return;
-    }
-    if (!shouldRetry(response))
-      return;
-    const { conversationId } = ChatPageStore.useChatPageStore.getState();
-    if (!conversationId)
-      return;
-    retry(responseId, conversationId, response);
-  }
-  var autoRetry_default = definePlugin({
-    name: "AutoRetry",
-    icon: RotateCcwIcon,
-    description: "Automatically retry failed messages on moderation or network errors.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings5,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      retryCounts.clear();
-      clearPending();
-    },
-    stop() {
-      clearPending();
-      retryCounts.clear();
-    },
-    events: {
-      streamEnd: onStreamEnd
-    }
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/betterFiles/styles.css
-  registerStyle("betterFiles", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.group:hover .void-sel-wrap {
-    display: inline-flex;
-}
-`);
-
-  // src/plugins/betterFiles/index.tsx
-  var logger17 = new Logger("BetterFiles");
-  var selection = createSelectionStore();
-  async function deleteAssets(ids) {
-    const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
-    for (const id of ids) {
-      try {
-        await deleteAsset(id);
-      } catch (e) {
-        logger17.error("Failed to delete asset", id, e);
-      }
-    }
-  }
-  function DeleteAllButton() {
-    const [open2, setOpen] = useState(false);
-    const list = FilesPageStore.useFilesPageStore((s) => s.list);
-    if (!list.length)
-      return null;
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      shape: "square",
-      size: "sm",
-      onClick: () => setOpen(true)
-    }, /* @__PURE__ */ React.createElement(TrashIcon, {
-      size: 18,
-      className: "text-fg-secondary"
-    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
-      onOpenChange: setOpen,
-      title: "Delete all files",
-      description: `Are you sure you want to delete all ${pluralize(list.length, "file")}? This cannot be undone.`,
-      confirmText: "Delete all",
-      danger: true,
-      onConfirm: () => deleteAssets([...list])
-    }));
-  }
-  var betterFiles_default = definePlugin({
-    name: "BetterFiles",
-    icon: FilesIcon,
-    description: "Adds bulk delete to the files page.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    managedStyle: "betterFiles",
-    start() {
-      selection.clear();
-    },
-    stop() {
-      selection.clear();
-    },
-    renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
-    _renderFileCheckbox: ErrorBoundary.wrap(({ id }) => /* @__PURE__ */ React.createElement(SelectionCheckbox, {
-      selection,
-      id
-    }), null),
-    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
-      selection,
-      noun: "file",
-      title: "Delete files",
-      onDelete: deleteAssets
-    }), null),
-    _wrapFileClick(onClick, asset) {
-      return (e) => {
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection.toggle(asset.assetId);
-          return;
-        }
-        onClick();
-      };
-    },
-    patches: [
-      {
-        find: `files.no-results",'No files matching`,
-        all: true,
-        noWarn: true,
-        group: true,
-        replacement: [
-          {
-            match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
-            replace: "$1,$self.renderDeleteAllButton()]"
-          },
-          {
-            match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
-            replace: 'role:"button",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),'
-          },
-          {
-            match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
-            replace: "$1,$self._renderFileActionBar()]"
-          }
-        ]
-      }
-    ]
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/betterImagine/styles.css
-  registerStyle("betterImagine", `/*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-imagine-chip {
-    background: hsl(var(--surface-l1));
-}
-
-.void-imagine-chip:hover {
-    background: hsl(var(--surface-l2));
-}
-
-.void-imagine-search {
-    width: 10rem;
-    flex-shrink: 0;
-    border-radius: 9999px;
-}
-
-.void-imagine-date-select,
-.void-imagine-sort-select {
-    flex-shrink: 0;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    background: hsl(var(--surface-l1));
-    color: hsl(var(--fg-secondary));
-    border: none;
-}
-
-.void-imagine-sort-active {
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l2));
-}
-`);
-
-  // src/plugins/betterImagine/index.tsx
-  var logger18 = new Logger("BetterImagine");
-  var cl17 = classNameFactory("void-imagine-");
-  var settings6 = definePluginSettings({
-    hideDefaultPreviews: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the community image grid and templates on the Imagine home page.",
-      default: true
-    },
-    noAutoplay: {
-      type: 3 /* BOOLEAN */,
-      description: "Stop video thumbnails from autoplaying.",
-      default: true
-    },
-    playOnHover: {
-      type: 3 /* BOOLEAN */,
-      description: "Play video thumbnails when hovered.",
-      default: true
-    },
-    hideModerated: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide moderated images and videos that cannot be interacted with.",
-      default: true
-    },
-    pauseWhenHidden: {
-      type: 3 /* BOOLEAN */,
-      description: "Pause any playing video thumbnails when the tab loses focus.",
-      default: true
-    },
-    persistFilters: {
-      type: 3 /* BOOLEAN */,
-      description: "Remember Favorites filter + sort across reloads.",
-      default: true
-    },
-    smartFilenames: {
-      type: 3 /* BOOLEAN */,
-      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
-      default: true
-    },
-    bypassPaywall: {
-      type: 3 /* BOOLEAN */,
-      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
-      default: false
-    },
-    ctrlClickSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
-      default: true
-    }
-  });
-  function buildFilename(post, isVideo) {
-    if (!settings6.store.smartFilenames || !post)
-      return null;
-    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
-    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
-    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
-    const id = post.id?.slice(0, 8) ?? "";
-    const ext = isVideo ? "mp4" : "png";
-    const parts = [date, slug, id].filter(Boolean);
-    if (!parts.length)
-      return null;
-    return `${parts.join("_")}.${ext}`;
-  }
-  var FILTER_MAP = {
-    image: "MEDIA_POST_TYPE_IMAGE",
-    video: "MEDIA_POST_TYPE_VIDEO"
-  };
-  var DATE_LABELS = {
-    all: "Any time",
-    today: "Today",
-    week: "This week",
-    month: "This month"
-  };
-  var SORT_LABELS = {
-    newest: "Newest first",
-    oldest: "Oldest first",
-    "prompt-az": "Prompt A → Z",
-    "prompt-za": "Prompt Z → A",
-    random: "Shuffle"
-  };
-  var SORT_KEYS = Object.keys(SORT_LABELS);
-  var DAY_MS = 86400000;
-  var DATE_CUTOFFS = {
-    all: 0,
-    today: DAY_MS,
-    week: 7 * DAY_MS,
-    month: 30 * DAY_MS
-  };
-  var STORAGE_KEY2 = "void-imagine-filters";
-  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
-  function loadFilters() {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY2);
-      if (!raw)
-        return DEFAULT_FILTERS;
-      const parsed = JSON.parse(raw);
-      return {
-        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
-        search: typeof parsed.search === "string" ? parsed.search : "",
-        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
-        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
-      };
-    } catch {
-      return DEFAULT_FILTERS;
-    }
-  }
-  var initial = loadFilters();
-  var currentFilter = initial.filter;
-  var currentSearch = initial.search;
-  var currentDate = initial.date;
-  var currentSort = initial.sort;
-  var randomSeed = Date.now();
-  var filterStore = createExternalStore();
-  function persist() {
-    if (!settings6.store.persistFilters)
-      return;
-    try {
-      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
-    } catch {}
-  }
-  function setFilter(f) {
-    currentFilter = f;
-    filterStore.notify();
-    persist();
-  }
-  var setSearch = debounce((s) => {
-    currentSearch = s;
-    filterStore.notify();
-    persist();
-  }, 200);
-  function setDate(d) {
-    currentDate = d;
-    filterStore.notify();
-    persist();
-  }
-  function setSort(s) {
-    if (s === "random" && currentSort === "random")
-      randomSeed = Date.now();
-    currentSort = s;
-    filterStore.notify();
-    persist();
-  }
-  function resetFilters() {
-    currentFilter = "all";
-    currentSearch = "";
-    currentDate = "all";
-    currentSort = "newest";
-    filterStore.notify();
-    persist();
-  }
-  function hasActiveFilters() {
-    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
-  }
-  function isModerated(p) {
-    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
-  }
-  var haystackCache = new WeakMap;
-  var tsCache = new WeakMap;
-  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
-  function getHaystack(p) {
-    let h = haystackCache.get(p);
-    if (h === undefined) {
-      h = `${p.prompt ?? ""}
-${p.originalPrompt ?? ""}`.toLowerCase();
-      haystackCache.set(p, h);
-    }
-    return h;
-  }
-  function getTs(p) {
-    let t = tsCache.get(p);
-    if (t === undefined) {
-      t = new Date(p.createTime).getTime() || 0;
-      tsCache.set(p, t);
-    }
-    return t;
-  }
-  function matchesFilters(p, target, q, cutoff, hideModerated) {
-    if (!p)
-      return false;
-    if (hideModerated && isModerated(p))
-      return false;
-    if (target && p.mediaType !== target)
-      return false;
-    if (cutoff && getTs(p) < cutoff)
-      return false;
-    if (q && !getHaystack(p).includes(q))
-      return false;
-    return true;
-  }
-  var cacheKey = null;
-  var cacheList = null;
-  var cacheResult = [];
-  function filterItems(items) {
-    const { hideModerated } = settings6.store;
-    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
-    if (cacheList === items && cacheKey === key)
-      return cacheResult;
-    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
-    let out = items;
-    if (needsFilter) {
-      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
-      const q = currentSearch.toLowerCase();
-      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
-      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
-    }
-    cacheList = items;
-    cacheKey = key;
-    cacheResult = currentSort === "newest" ? out : sortItems(out);
-    return cacheResult;
-  }
-  function mulberry32(seed) {
-    let a = seed;
-    return () => {
-      a |= 0;
-      a = a + 1831565813 | 0;
-      let t = Math.imul(a ^ a >>> 15, 1 | a);
-      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-  function sortItems(items) {
-    if (items.length < 2)
-      return items;
-    const arr = [...items];
-    switch (currentSort) {
-      case "oldest":
-        return arr.toSorted((a, b) => getTs(a) - getTs(b));
-      case "prompt-az":
-        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
-      case "prompt-za":
-        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
-      case "random": {
-        const rand = mulberry32(randomSeed);
-        for (let i = arr.length - 1;i > 0; i--) {
-          const j = Math.floor(rand() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      }
-      default:
-        return arr;
-    }
-  }
-  var pending = new WeakMap;
-  function pauseVideo(video) {
-    const promise = pending.get(video);
-    pending.delete(video);
-    if (promise) {
-      promise.then(() => {
-        if (pending.has(video))
-          return;
-        video.pause();
-        video.currentTime = 0;
-      }).catch((e) => logger18.warn("Failed to pause video:", e));
-    } else {
-      video.pause();
-      video.currentTime = 0;
-    }
-  }
-  var onMouseEnter = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pending.set(video, video.play().catch((e2) => logger18.error("Failed to play video", e2)));
-  };
-  var onMouseLeave = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pauseVideo(video);
-  };
-  function useFilteredFavorites() {
-    const list = MediaStore.useMediaStore((s) => s.favoritesList);
-    useExternalStore(filterStore);
-    return filterItems(list);
-  }
-  function mediaState() {
-    return MediaStore.useMediaStore.getState();
-  }
-  function selectVisible() {
-    const state = mediaState();
-    const list = state.favoritesList ?? [];
-    const visible = filterItems(list);
-    if (!visible.length)
-      return;
-    state.setMultiSelectItems(visible);
-    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
-  }
-  function deselectAll() {
-    const state = mediaState();
-    state.clearMultiSelect?.();
-  }
-  function selectedPosts() {
-    const state = mediaState();
-    const ids = Object.keys(state.multiSelectIds ?? {});
-    return ids.map((id) => state.byId[id]).filter((p) => !!p);
-  }
-  async function copyLines(lines, label) {
-    if (!lines.length) {
-      Toaster.toast.info(`Selected items have no ${label}s.`);
-      return;
-    }
-    try {
-      await copyToClipboard(lines.join(`
-`));
-      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
-    } catch (e) {
-      logger18.error(`Failed to copy ${label}s`, e);
-      Toaster.toast.error(`Failed to copy ${label}s.`);
-    }
-  }
-  async function copySelectedPrompts() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
-  }
-  async function copySelectedUrls() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    const { videoByMediaId } = mediaState();
-    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
-    await copyLines(urls, "URL");
-  }
-  async function bulkUpscaleSelected() {
-    const state = mediaState();
-    const ids = Object.keys(state.multiSelectIds ?? {});
-    let upscaled = 0;
-    let alreadyHd = 0;
-    let inProgress = 0;
-    for (const id of ids) {
-      const videos = state.videoByMediaId[id];
-      if (!videos?.length)
-        continue;
-      for (const video of videos) {
-        if (video.hdMediaUrl) {
-          alreadyHd++;
-          continue;
-        }
-        if (video.upscalingInProgress) {
-          inProgress++;
-          continue;
-        }
-        try {
-          await state.upscaleVideo(id, video.id);
-          upscaled++;
-        } catch (e) {
-          logger18.error("Failed to upscale video:", id, video.id, e);
-        }
-      }
-    }
-    if (upscaled)
-      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
-    else if (alreadyHd)
-      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
-    else if (inProgress)
-      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
-    else
-      Toaster.toast.info("No videos to upscale.");
-  }
-  function FilterButtons() {
-    useExternalStore(filterStore);
-    const [searchInput, setSearchInput] = useState(currentSearch);
-    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
-    const sortActive = currentSort !== "newest";
-    const lastSync = useRef(currentSearch);
-    if (lastSync.current !== currentSearch) {
-      lastSync.current = currentSearch;
-      setSearchInput(currentSearch);
-    }
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
-      value: currentDate,
-      onValueChange: (v) => setDate(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl17("date-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: d,
-      value: d
-    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
-      value: currentSort,
-      onValueChange: (v) => setSort(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: sortActive ? cl17("sort-select", "sort-active") : cl17("sort-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: s,
-      value: s
-    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      placeholder: "Search...",
-      value: searchInput,
-      onChange: (e) => {
-        setSearchInput(e.target.value);
-        setSearch(e.target.value);
-      },
-      className: cl17("search")
-    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
-      key: f,
-      variant: currentFilter === f ? "primary" : "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: currentFilter !== f ? cl17("chip") : undefined,
-      onClick: () => setFilter(currentFilter === f ? "all" : f)
-    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: cl17("chip"),
-      onClick: resetFilters
-    }, "Clear"));
-  }
-  function UpscaleItem() {
-    const [open2, setOpen] = useState(false);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => setOpen(true)
-    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
-      className: "size-4 me-2"
-    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
-      onOpenChange: setOpen,
-      title: "Upscale selected videos",
-      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
-      confirmText: "Upscale",
-      onConfirm: bulkUpscaleSelected
-    }));
-  }
-  function CopyActions() {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedPrompts
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedUrls
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy URLs"));
-  }
-  function isImaginePage() {
-    const page = RoutingStore.useRoutingStore.getState().route?.page;
-    return page === "imagine" || page === "imagine-favorites";
-  }
-  function isFavoritesPage() {
-    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
-  }
-  function isTypingTarget(t) {
-    if (!(t instanceof HTMLElement))
-      return false;
-    if (t.isContentEditable)
-      return true;
-    const tag = t.tagName;
-    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-  }
-  function onKeyDown(e) {
-    if (!isImaginePage())
-      return;
-    if (e.ctrlKey || e.metaKey || e.altKey)
-      return;
-    if (isTypingTarget(e.target))
-      return;
-    if (e.key === "i" || e.key === "I") {
-      setFilter(currentFilter === "image" ? "all" : "image");
-      e.preventDefault();
-    } else if (e.key === "v" || e.key === "V") {
-      setFilter(currentFilter === "video" ? "all" : "video");
-      e.preventDefault();
-    } else if (e.key === "r" || e.key === "R") {
-      resetFilters();
-      e.preventDefault();
-    } else if (e.key === "A") {
-      if (isFavoritesPage()) {
-        deselectAll();
-        e.preventDefault();
-      }
-    } else if (e.key === "a") {
-      if (isFavoritesPage()) {
-        selectVisible();
-        e.preventDefault();
-      }
-    } else if (e.key === "c" || e.key === "C") {
-      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
-        copySelectedPrompts();
-        e.preventDefault();
-      }
-    }
-  }
-  function onVisibilityChange() {
-    if (!settings6.store.pauseWhenHidden)
-      return;
-    if (document.visibilityState !== "hidden")
-      return;
-    for (const video of document.querySelectorAll("video")) {
-      if (!video.paused)
-        video.pause();
-    }
-  }
-  var abortCtrl = null;
-  var betterImagine_default = definePlugin({
-    name: "BetterImagine",
-    icon: ImagesIcon,
-    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings6,
-    _hideDefault: () => settings6.store.hideDefaultPreviews,
-    _NullGrid: () => null,
-    _autoPlay: () => !settings6.store.noAutoplay,
-    _bypassPaywall: () => settings6.store.bypassPaywall,
-    _ctrlClickSelect: () => settings6.store.ctrlClickSelect,
-    _hoverProps: () => settings6.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
-    _useFilteredFavorites: useFilteredFavorites,
-    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
-    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
-    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
-    _buildFilename: buildFilename,
-    start() {
-      if (abortCtrl)
-        return;
-      abortCtrl = new AbortController;
-      const { signal } = abortCtrl;
-      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
-      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
-    },
-    stop() {
-      abortCtrl?.abort();
-      abortCtrl = null;
-    },
-    patches: [
-      {
-        find: "image_feed_opened",
-        group: true,
-        replacement: [
-          {
-            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
-            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
-          },
-          {
-            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
-            replace: "=$self._useFilteredFavorites()"
-          }
-        ]
-      },
-      {
-        find: "image_feed_image_selected",
-        group: true,
-        replacement: [
-          {
-            match: /autoPlay:!0/g,
-            replace: "autoPlay:$self._autoPlay()"
-          },
-          {
-            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
-            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          }
-        ]
-      },
-      {
-        find: 'imagine-folder.all","All"',
-        replacement: {
-          match: /"imagine-folder\.all","All"\)\}\)/,
-          replace: "$&,$self._renderFilterButtons({})"
-        }
-      },
-      {
-        find: "imagine-templates.section-title",
-        all: true,
-        noWarn: true,
-        replacement: {
-          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
-          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
-        }
-      },
-      {
-        find: '"imagine-set-resolution"',
-        all: true,
-        replacement: {
-          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
-          replace: "if(!$self._bypassPaywall())$&"
-        }
-      },
-      {
-        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
-        group: true,
-        replacement: [
-          {
-            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
-            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
-          },
-          {
-            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
-            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
-          }
-        ]
-      }
-    ]
-  });
-
-  // src/plugins/betterLinks/index.tsx
-  var DEFAULT_LINK = "#FCFCFC";
-  var DEFAULT_VISITED = "#9E9E9E";
-  var TOKEN_LINK = "hsl(var(--fg-primary))";
-  var TOKEN_VISITED = "hsl(var(--fg-tertiary))";
-  var STYLE_NAME2 = "better-links-dynamic";
-  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
-  function isValidHex(c) {
-    return /^#[0-9a-fA-F]{6}$/.test(c);
-  }
-  function getColor(key, fallback) {
-    const val = settings7.store[key];
-    return val && isValidHex(val) ? val : fallback;
-  }
-  function applyColors() {
-    const customLink = settings7.store.linkColor;
-    const link = customLink && isValidHex(customLink) ? customLink : TOKEN_LINK;
-    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings7.store.enableVisitedColor) {
-      const customVisited = settings7.store.visitedColor;
-      const visited = customVisited && isValidHex(customVisited) ? customVisited : TOKEN_VISITED;
-      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
-    }
-    registerStyle(STYLE_NAME2, css);
-  }
-  function ColorRow({ settingKey, title, description, fallback }) {
-    settings7.use([settingKey]);
-    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
-      value: getColor(settingKey, fallback),
-      onChange: (v) => {
-        settings7.store[settingKey] = v;
-        applyColors();
-      },
-      title,
-      description
-    });
-  }
-  var settings7 = definePluginSettings({
-    linkifyDomains: {
-      type: 3 /* BOOLEAN */,
-      description: "Detect bare domains in messages and make them clickable.",
-      default: true
-    },
-    enableVisitedColor: {
-      type: 3 /* BOOLEAN */,
-      description: "Apply a different color to links you already visited.",
-      default: false,
-      onChange: applyColors
-    },
-    linkColor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorRow, {
-        settingKey: "linkColor",
-        title: "Link color",
-        description: "Colorize links in messages.",
-        fallback: DEFAULT_LINK
-      })
-    },
-    visitedColor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorRow, {
-        settingKey: "visitedColor",
-        title: "Visited color",
-        description: "Colorize links you already visited.",
-        fallback: DEFAULT_VISITED
-      })
-    }
-  }).withPrivateSettings();
-  var betterLinks_default = definePlugin({
-    name: "BetterLinks",
-    icon: LinkIcon,
-    description: "Colorize links and detect bare domains in chat messages.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings7,
-    patches: [
-      {
-        find: "chat-markdown:a:link",
-        all: true,
-        replacement: {
-          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
-          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
-        }
-      },
-      {
-        find: "chat-markdown-load-third-party",
-        replacement: {
-          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
-          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
-        }
-      }
-    ],
-    _remarkLinkify() {
-      const { store: store2 } = settings7;
-      return (tree) => {
-        try {
-          if (!store2.linkifyDomains)
-            return;
-          const walk = (node) => {
-            if (!node.children)
-              return;
-            const out = [];
-            let changed = false;
-            for (const child of node.children) {
-              if (child.type !== "text") {
-                walk(child);
-                out.push(child);
-                continue;
-              }
-              DOMAIN_RE.lastIndex = 0;
-              if (!DOMAIN_RE.test(child.value)) {
-                out.push(child);
-                continue;
-              }
-              DOMAIN_RE.lastIndex = 0;
-              let last = 0;
-              let m;
-              while ((m = DOMAIN_RE.exec(child.value)) != null) {
-                if (m.index > last)
-                  out.push({ type: "text", value: child.value.slice(last, m.index) });
-                out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
-                last = m.index + m[0].length;
-              }
-              if (last < child.value.length)
-                out.push({ type: "text", value: child.value.slice(last) });
-              changed = true;
-            }
-            if (changed)
-              node.children = out;
-          };
-          walk(tree);
-        } catch {
-          return tree;
-        }
-      };
-    },
-    start() {
-      applyColors();
-      enableStyle(STYLE_NAME2);
-    },
-    stop() {
-      disableStyle(STYLE_NAME2);
-    }
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/betterSidebar/styles.css
-  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
-.group.peer [data-sidebar="content"] > .grow {
-    cursor: default !important;
-}
-
-.group.peer [data-sidebar="sidebar"] + div::after {
-    background-color: transparent !important;
-}
-
-.void-sidebar-card {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    min-width: 0;
-    flex: 1;
-}
-
-.void-sidebar-card:hover {
-    background-color: hsl(var(--surface-l2));
-}
-
-.void-sidebar-card button[data-state] {
-    pointer-events: none;
-    background-color: transparent !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.void-sidebar-info {
-    min-width: 0;
-    overflow: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-sidebar-card { transition: none; }
-}
-
-.void-sidebar-name,
-.void-sidebar-plan {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    user-select: none;
-}
-
-/* stylelint-disable-next-line selector-class-pattern */
-.group\\/sidebar-menu-item:hover .void-sel-wrap {
-    display: inline-flex;
-}
-`);
-
-  // src/turbopack/common/plan.ts
-  var PLAN_NAMES = {
-    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
-    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
-    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
-    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
-  };
-  var X_SUB_NAMES = {
-    PremiumPlus: "SuperGrok",
-    Premium: "X Premium",
-    Basic: "X Basic"
-  };
-  function getPlanName(bestSubscription, xSubscriptionType) {
-    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
-  }
-
-  // src/plugins/betterSidebar/index.tsx
-  var logger19 = new Logger("BetterSidebar");
-  var cl18 = classNameFactory("void-sidebar-");
-  var settings8 = definePluginSettings({
-    clickToToggle: {
-      type: 3 /* BOOLEAN */,
-      description: "Click anywhere on the sidebar to toggle it.",
-      default: true
-    },
-    defaultCollapsed: {
-      type: 3 /* BOOLEAN */,
-      description: "Start with the sidebar collapsed on page load.",
-      default: false
-    },
-    batchSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Show checkboxes on conversations for bulk selection and deletion.",
-      default: true
-    }
-  });
-  function UserCard({ AvatarMenu }) {
-    const { open: open2 } = SidebarComponents.useSidebar();
-    const { user } = SessionStore.useSession();
-    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
-    const cardRef = useRef(null);
-    if (!open2 || !user)
-      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
-    const forward = (e, type) => {
-      if (!e.isTrusted)
-        return;
-      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
-    };
-    return /* @__PURE__ */ React.createElement("div", {
-      ref: cardRef,
-      className: cl18("card"),
-      onPointerDown: (e) => forward(e, "pointerdown"),
-      onPointerUp: (e) => forward(e, "pointerup")
-    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      justifyContent: "center",
-      gap: "0",
-      className: cl18("info")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      size: "sm",
-      weight: "medium",
-      className: cl18("name")
-    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      size: "xs",
-      color: "secondary",
-      className: cl18("plan")
-    }, getPlanName(bestSubscription, user.xSubscriptionType))));
-  }
-  var selection2 = createSelectionStore();
-  var CONVERSATION_PAGE = "chat";
-  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
-  async function deleteConversations(ids) {
-    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
-    if (currentConvId && ids.includes(currentConvId)) {
-      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
-    }
-    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger19.error("Failed to delete", id, e))));
-  }
-  function SelectCheckbox({ id, route }) {
-    const enabled = settings8.use(["batchSelect"]).batchSelect;
-    if (!enabled || !id || !isConversationRoute(route))
-      return null;
-    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
-      selection: selection2,
-      id
-    });
-  }
-  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
-  var betterSidebar_default = definePlugin({
-    name: "BetterSidebar",
-    icon: PanelLeftIcon,
-    description: "Various sidebar improvements.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings8,
-    managedStyle: "betterSidebar",
-    _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
-      selection: selection2,
-      noun: "conversation",
-      title: "Delete conversations",
-      onDelete: deleteConversations
-    }), null),
-    _wrapCheckbox(item, id, route) {
-      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
-    },
-    _wrapSidebarClick(onClick, id, route) {
-      return (e) => {
-        if (id && settings8.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection2.toggle(id);
-          return;
-        }
-        onClick?.(e);
-      };
-    },
-    _defaultOpen() {
-      return !settings8.store.defaultCollapsed;
-    },
-    _onSidebarClick() {
-      if (!settings8.store.clickToToggle)
-        return;
-      return (e) => {
-        const target = e.target;
-        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
-          return;
-        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
-      };
-    },
-    start() {
-      selection2.clear();
-    },
-    stop() {
-      selection2.clear();
-    },
-    patches: [
-      {
-        find: "AvatarDropdownMenu,{expanded:",
-        replacement: {
-          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
-          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
-        }
-      },
-      {
-        find: "useSidebar must be used within a SidebarProvider",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /\{defaultOpen:(\i),open:/,
-            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
-          },
-          {
-            match: /data-sidebar":"sidebar",className:/,
-            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
-          }
-        ]
-      },
-      {
-        find: '"Editing actions","Editing actions"',
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
-            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
-          },
-          {
-            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
-            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
-          }
-        ]
-      },
-      {
-        find: '"sidebar-expand","Expand"',
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
-          replace: "$self._renderActionBar(),$&"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/chatStateFavicons/detect.ts
-  var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
-  var STOP_SELECTORS = [
-    'button[aria-label="Stop model response"]',
-    'button[aria-label*="Stop"]',
-    'button[aria-label*="stop"]',
-    'button[aria-label*="停止"]'
-  ];
-  var SEND_SELECTORS = [
-    'button[aria-label*="Send"]',
-    'button[aria-label*="Submit"]',
-    'button[type="submit"]'
-  ];
-  function isVisible(el) {
-    if (!(el instanceof HTMLElement) || !el.isConnected)
-      return false;
-    if (!el.getClientRects().length)
-      return false;
-    const style = getComputedStyle(el);
-    return style.visibility !== "hidden" && style.display !== "none";
-  }
-  function isStopControl(el) {
-    const label = el.getAttribute("aria-label") ?? "";
-    const text = el.textContent ?? "";
-    return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
-  }
-  function getActiveEditor() {
-    const list = Array.from(document.querySelectorAll(EDITOR_SEL));
-    return list.find(isVisible) ?? list[0] ?? null;
-  }
-  function getComposerRoot() {
-    const editor = getActiveEditor();
-    return editor?.closest("form") ?? editor?.closest("div.relative") ?? editor?.parentElement ?? document.body;
-  }
-  function collectStopButtons(root) {
-    const candidates = [];
-    for (const sel of STOP_SELECTORS) {
-      for (const node of root.querySelectorAll(sel)) {
-        if (node instanceof HTMLElement)
-          candidates.push(node);
-      }
-    }
-    if (candidates.length === 0) {
-      for (const btn of root.querySelectorAll("button")) {
-        if (btn instanceof HTMLElement && isStopControl(btn))
-          candidates.push(btn);
-      }
-    }
-    return candidates;
-  }
-  function getStopButton() {
-    const candidates = collectStopButtons(document);
-    return candidates.find(isVisible) ?? candidates[0] ?? null;
-  }
-  function isDisabledControl(el) {
-    if (el instanceof HTMLButtonElement && el.disabled)
-      return true;
-    if (el.hasAttribute("disabled"))
-      return true;
-    if (el.getAttribute("aria-disabled") === "true")
-      return true;
-    if (el.getAttribute("data-disabled") === "true")
-      return true;
-    return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
-  }
-  function getSubmitButton() {
-    for (const root of [getComposerRoot(), document]) {
-      for (const sel of SEND_SELECTORS) {
-        for (const node of root.querySelectorAll(sel)) {
-          if (!(node instanceof HTMLElement) || isStopControl(node))
-            continue;
-          if (isVisible(node) || isDisabledControl(node))
-            return node;
-        }
-      }
-    }
-    return null;
-  }
-  function submitIsGray() {
-    const btn = getSubmitButton();
-    return !!btn && isDisabledControl(btn);
-  }
-  function isInputEmpty() {
-    const editor = getActiveEditor();
-    if (!editor)
-      return true;
-    if (editor.querySelector("p.is-empty.is-editor-empty"))
-      return true;
-    return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
-  }
-  function conversationToken() {
-    const params = new URLSearchParams(location.search);
-    const paramId = params.get("conversationId") ?? params.get("conversation_id") ?? params.get("chatId") ?? params.get("chat_id") ?? params.get("cid") ?? params.get("id") ?? "";
-    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
-    const pathId = /^[a-z0-9_-]{8,}$/i.test(lastSeg) ? lastSeg : "";
-    const dataId = document.querySelector("[data-conversation-id]")?.getAttribute("data-conversation-id") ?? "";
-    return [dataId, paramId, pathId].filter(Boolean).join("|");
-  }
-  function contextKeyFromUrl(token) {
-    const base = `${location.origin}${location.pathname}`;
-    return token ? `${base}|${token}` : `${base}|draft`;
-  }
-
-  // src/plugins/chatStateFavicons/icons.ts
-  var ICON_STYLES = ["original", "badge", "dot", "hole", "bg"];
-  var STYLE_OPTIONS = [
-    { label: "only emoji", value: "original" },
-    { label: "Badge + glyph", value: "badge", default: true },
-    { label: "Color dot", value: "dot" },
-    { label: "Mark tint", value: "hole" },
-    { label: "Background tint", value: "bg" }
-  ];
-  var KIND_COLOR = {
-    rotate: "#3B82F6",
-    done: "#22C55E",
-    ready: "#F59E0B",
-    error: "#EF4444"
-  };
-  var HOLE_IDLE = "#050505";
-  var MARK_FILL = "#FCFCFC";
-  var GROK_MARK_PATH = "M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815";
-  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
-  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
-  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
-  var ORIGINAL_EMOJI = {
-    rotate: "\uD83D\uDD04",
-    done: "✔️",
-    ready: "\uD83D\uDC4D",
-    error: "\uD83D\uDEAB"
-  };
-  function isIconStyle(value) {
-    return typeof value === "string" && ICON_STYLES.includes(value);
-  }
-  function svgEmoji(emoji) {
-    return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`)}`;
-  }
-  function toSvgData(inner, viewBox = "0 0 64 64") {
-    const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg2)}`;
-  }
-  function grokMarkSvg() {
-    return [
-      `<rect width="64" height="64" rx="14" fill="${HOLE_IDLE}"/>`,
-      `<g transform="translate(8 8) scale(2)" fill="${MARK_FILL}" fill-rule="evenodd">`,
-      `<path d="${GROK_MARK_PATH}"/>`,
-      "</g>"
-    ].join("");
-  }
-  function officialGrokSvg(markColor, bgColor) {
-    return [
-      `<path d="${GROK_BG_PATH}" fill="${bgColor}"/>`,
-      `<path d="${GROK_MARK_P1}" fill="${markColor}"/>`,
-      `<path d="${GROK_MARK_P2}" fill="${markColor}"/>`
-    ].join("");
-  }
-  function badgeGlyph(kind) {
-    if (kind === "rotate") {
-      return [
-        '<g transform="translate(51.5 51.5)"><g>',
-        '<path d="M0-6.1 A6.1 6.1 0 1 1 -5.3 3.05" fill="none" stroke="#fff" stroke-width="2.15" stroke-linecap="round"/>',
-        '<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.85s" repeatCount="indefinite"/>',
-        "</g></g>"
-      ].join("");
-    }
-    if (kind === "done") {
-      return '<path d="M46.6 51.7 L50.1 55.3 L56.8 47.4" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>';
-    }
-    if (kind === "ready") {
-      return [
-        '<path d="M51.5 56.4 V46.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
-        '<path d="M46.6 51.2 L51.5 46.2 L56.4 51.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
-      ].join("");
-    }
-    return [
-      '<path d="M47.2 47.2 L55.8 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
-      '<path d="M55.8 47.2 L47.2 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
-    ].join("");
-  }
-  function composeIcon(style, kind, officialHref) {
-    if (style === "original") {
-      if (kind === "wait")
-        return officialHref;
-      return svgEmoji(ORIGINAL_EMOJI[kind]);
-    }
-    const color = kind === "wait" ? undefined : KIND_COLOR[kind];
-    if (style === "hole") {
-      return toSvgData(officialGrokSvg(color ?? MARK_FILL, HOLE_IDLE), "0 0 512 512");
-    }
-    if (style === "bg") {
-      return toSvgData(officialGrokSvg(MARK_FILL, color ?? HOLE_IDLE), "0 0 512 512");
-    }
-    if (!color || kind === "wait")
-      return toSvgData(grokMarkSvg());
-    const badge = style === "dot" ? [
-      '<circle cx="52.2" cy="52.2" r="10.4" fill="#050505"/>',
-      `<circle cx="52.2" cy="52.2" r="7.7" fill="${color}"/>`
-    ].join("") : [
-      '<circle cx="51.5" cy="51.5" r="12.15" fill="#050505"/>',
-      `<circle cx="51.5" cy="51.5" r="9.55" fill="${color}"/>`,
-      badgeGlyph(kind)
-    ].join("");
-    return toSvgData(grokMarkSvg() + badge);
-  }
-  function buildIcons(style, officialHref) {
-    return {
-      wait: composeIcon(style, "wait", officialHref),
-      rotate: composeIcon(style, "rotate", officialHref),
-      done: composeIcon(style, "done", officialHref),
-      ready: composeIcon(style, "ready", officialHref),
-      error: composeIcon(style, "error", officialHref)
-    };
-  }
-
-  // src/plugins/chatStateFavicons/index.ts
-  var logger20 = new Logger("ChatStateFavicons");
-  var ICON_ID = "void-chat-state-favicon";
-  var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var settings9 = definePluginSettings({
-    style: {
-      type: 4 /* SELECT */,
-      description: "How the Grok mark is overlaid with chat state.",
-      options: STYLE_OPTIONS
-    }
-  });
-  var officialHref = "/images/favicon.svg";
-  var icons = buildIcons("badge", officialHref);
-  var kind = "wait";
-  var wasStreaming = false;
-  var justFinished = false;
-  var streamContext = null;
-  var lockedToken = "";
-  var lastWasError = false;
-  var lastConvId = "";
-  var primedReady = true;
-  var faviconObs = null;
-  var globalObs = null;
-  var composerObs = null;
-  var buttonObs = null;
-  var inputCtrl = null;
-  var unsubRoute = null;
-  var unsubPage = null;
-  var raf = 0;
-  var started2 = false;
-  function currentStyle() {
-    const value = settings9.store.style;
-    return isIconStyle(value) ? value : "badge";
-  }
-  function captureOfficial() {
-    const existing = document.querySelector(`link[rel~="icon"]:not(#${ICON_ID})`);
-    const href = existing?.href;
-    if (href && !href.startsWith("data:"))
-      return href;
-    return `${location.origin}/images/favicon.svg`;
-  }
-  function isIconLink(node) {
-    return node instanceof HTMLLinkElement && (node.relList.contains("icon") || /\bicon\b/i.test(node.rel));
-  }
-  function stripCompetitors() {
-    const { head } = document;
-    if (!head)
-      return;
-    for (const node of head.querySelectorAll("link")) {
-      if (node.id !== ICON_ID && isIconLink(node))
-        node.remove();
-    }
-  }
-  function applyHref(href) {
-    const { head } = document;
-    if (!head)
-      return;
-    stripCompetitors();
-    let link = document.getElementById(ICON_ID);
-    if (!link) {
-      link = document.createElement("link");
-      link.id = ICON_ID;
-      link.rel = "icon shortcut icon";
-      link.type = "image/svg+xml";
-      link.setAttribute("sizes", "any");
-      head.prepend(link);
-    } else if (head.firstChild !== link) {
-      head.prepend(link);
-    }
-    if (link.getAttribute("href") !== href)
-      link.setAttribute("href", href);
-  }
-  function setKind(next) {
-    kind = next;
-    applyHref(icons[next]);
-  }
-  function rebuildIcons() {
-    icons = buildIcons(currentStyle(), officialHref);
-    applyHref(icons[kind]);
-  }
-  function liveResponse(id, byId) {
-    if (!id)
-      return false;
-    const response = byId[id];
-    if (!response)
-      return false;
-    if (response.partial)
-      return true;
-    return LIVE_RESPONSE.has(response.state ?? "");
-  }
-  function storeStreaming() {
-    try {
-      const page = ChatPageStore.useChatPageStore.getState();
-      if (page.streamedMessageId || page.showStreamingIndicator)
-        return true;
-      const { byId } = ResponseStore.useResponseStore.getState();
-      return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
-    } catch (e) {
-      logger20.debug("stream stores unavailable:", e);
-      return false;
-    }
-  }
-  function isStreaming() {
-    if (storeStreaming())
-      return true;
-    return getStopButton() != null;
-  }
-  function currentConversationId() {
-    try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      if (route.conversationId)
-        return String(route.conversationId);
-    } catch (e) {
-      logger20.debug("RoutingStore unavailable:", e);
-    }
-    try {
-      const id = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (id)
-        return id;
-    } catch (e) {
-      logger20.debug("ChatPageStore unavailable:", e);
-    }
-    return conversationToken();
-  }
-  function getContextKey() {
-    const id = currentConversationId();
-    const key = id || contextKeyFromUrl("");
-    if (isStreaming()) {
-      if (!lockedToken && key)
-        lockedToken = key;
-      return lockedToken;
-    }
-    lockedToken = "";
-    return key;
-  }
-  function sameStreamContext(key) {
-    return !!streamContext && !!key && streamContext === key;
-  }
-  function resetStreamFlags() {
-    wasStreaming = false;
-    justFinished = false;
-    streamContext = null;
-    lockedToken = "";
-    lastWasError = false;
-  }
-  function onConversationSwitch(id) {
-    lastConvId = id;
-    resetStreamFlags();
-    primedReady = false;
-    composerObs?.disconnect();
-    composerObs = null;
-    buttonObs?.disconnect();
-    buttonObs = null;
-    setKind("wait");
-  }
-  function hasError() {
-    if (lastWasError)
-      return true;
-    try {
-      const { byId } = ResponseStore.useResponseStore.getState();
-      const page = ChatPageStore.useChatPageStore.getState();
-      const id = page.streamedMessageId ?? page.lastMessageId;
-      if (!id)
-        return false;
-      const response = byId[id];
-      return response?.state === "error" || response?.error != null;
-    } catch (e) {
-      logger20.debug("ResponseStore unavailable:", e);
-      return false;
-    }
-  }
-  function evaluateState() {
-    if (!started2)
-      return;
-    const conv = currentConversationId();
-    if (lastConvId && conv && lastConvId !== conv) {
-      onConversationSwitch(conv);
-      return;
-    }
-    if (conv)
-      lastConvId = conv;
-    const contextKey = getContextKey();
-    const streaming = isStreaming();
-    const empty = isInputEmpty();
-    const gray = submitIsGray();
-    if (hasError() && !streaming) {
-      setKind("error");
-      wasStreaming = false;
-      justFinished = false;
-      streamContext = null;
-      lastWasError = false;
-      return;
-    }
-    if (streaming && empty) {
-      wasStreaming = true;
-      justFinished = false;
-      lastWasError = false;
-      streamContext = contextKey;
-      setKind("rotate");
-      return;
-    }
-    if (wasStreaming) {
-      const sameContext = sameStreamContext(contextKey);
-      wasStreaming = false;
-      if (sameContext && gray) {
-        justFinished = true;
-        streamContext = contextKey;
-        setKind("done");
-        return;
-      }
-      justFinished = false;
-      streamContext = null;
-    }
-    if (justFinished) {
-      const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);
-      if (contextChanged) {
-        justFinished = false;
-        streamContext = null;
-      } else if (empty) {
-        setKind("done");
-        return;
-      } else if (primedReady) {
-        justFinished = false;
-        setKind("ready");
-        return;
-      } else {
-        justFinished = false;
-        setKind("wait");
-        return;
-      }
-    }
-    streamContext = null;
-    lastWasError = false;
-    if (empty)
-      setKind("wait");
-    else if (primedReady)
-      setKind("ready");
-    else
-      setKind("wait");
-  }
-  function nodeTouchesStop(node) {
-    if (!(node instanceof Element))
-      return false;
-    if (node instanceof HTMLElement && node.tagName === "BUTTON" && isStopControl(node))
-      return true;
-    for (const btn of node.querySelectorAll("button")) {
-      if (isStopControl(btn))
-        return true;
-    }
-    return false;
-  }
-  function stopButtonMutation(list) {
-    for (const m of list) {
-      if (nodeTouchesStop(m.target))
-        return true;
-      for (const n of m.addedNodes) {
-        if (nodeTouchesStop(n))
-          return true;
-      }
-      for (const n of m.removedNodes) {
-        if (nodeTouchesStop(n))
-          return true;
-      }
-      if (m.type === "attributes" && m.attributeName === "aria-label" && m.target instanceof HTMLElement) {
-        if (isStopControl(m.target) || /stop|停止/i.test(String(m.oldValue ?? "")))
-          return true;
-      }
-    }
-    return false;
-  }
-  function nodeInEditor(node) {
-    const el = node instanceof Element ? node : node?.parentElement;
-    return !!el?.closest(EDITOR_SEL);
-  }
-  function mutationsAreEditorOnly(list) {
-    if (!list.length)
-      return false;
-    for (const m of list) {
-      if (!nodeInEditor(m.target))
-        return false;
-      for (const n of m.addedNodes) {
-        if (n instanceof Text)
-          continue;
-        if (!nodeInEditor(n))
-          return false;
-      }
-      for (const n of m.removedNodes) {
-        if (n instanceof Text)
-          continue;
-        if (!nodeInEditor(n))
-          return false;
-      }
-    }
-    return true;
-  }
-  function onDomMutate(list) {
-    if (kind === "rotate" || wasStreaming) {
-      if (mutationsAreEditorOnly(list))
-        return;
-      if (!stopButtonMutation(list))
-        return;
-    }
-    scheduleEvaluate();
-  }
-  function onEditorInput() {
-    primedReady = true;
-    scheduleEvaluate();
-  }
-  function scheduleEvaluate() {
-    if (!started2 || raf)
-      return;
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      if (!started2)
-        return;
-      bindEditorInput();
-      const root = getComposerRoot();
-      if (!composerObs || !root.isConnected) {
-        observeComposer();
-        observeButtons();
-      }
-      evaluateState();
-    });
-  }
-  function onStreamEnd2({ responseId }) {
-    try {
-      const response = ResponseStore.useResponseStore.getState().byId[responseId];
-      lastWasError = response?.state === "error" || response?.error != null;
-    } catch (e) {
-      logger20.debug("ResponseStore unavailable:", e);
-    }
-  }
-  function startFaviconGuard() {
-    faviconObs?.disconnect();
-    const { head } = document;
-    if (!head)
-      return;
-    faviconObs = new MutationObserver((list) => {
-      for (const m of list) {
-        if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
-          applyHref(icons[kind]);
-          return;
-        }
-        for (const node of m.addedNodes) {
-          if (isIconLink(node) && node.id !== ICON_ID) {
-            applyHref(icons[kind]);
-            return;
-          }
-        }
-      }
-    });
-    faviconObs.observe(head, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["href", "rel"]
-    });
-  }
-  function bindEditorInput() {
-    const editor = getActiveEditor();
-    if (!editor || editor.dataset.voidCsfBound === "1")
-      return;
-    editor.dataset.voidCsfBound = "1";
-    editor.addEventListener("input", onEditorInput, { passive: true });
-    editor.addEventListener("compositionend", onEditorInput, { passive: true });
-  }
-  function observeComposer() {
-    composerObs?.disconnect();
-    const root = getComposerRoot();
-    composerObs = new MutationObserver(onDomMutate);
-    composerObs.observe(root, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ["aria-label", "aria-disabled", "disabled", "data-testid", "class"],
-      attributeOldValue: true
-    });
-  }
-  function observeButtons() {
-    buttonObs?.disconnect();
-    const target = getComposerRoot();
-    buttonObs = new MutationObserver(onDomMutate);
-    buttonObs.observe(target, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["aria-label", "type"],
-      attributeOldValue: true
-    });
-  }
-  function attachStores() {
-    unsubRoute?.();
-    unsubPage?.();
-    try {
-      const routeStore = RoutingStore.useRoutingStore;
-      if (typeof routeStore?.subscribe === "function") {
-        unsubRoute = routeStore.subscribe((s) => s.route.conversationId, (id, prev) => {
-          if (!id || id === prev)
-            return;
-          onConversationSwitch(String(id));
-        });
-      }
-    } catch (e) {
-      logger20.debug("RoutingStore subscribe failed:", e);
-      try {
-        unsubRoute = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
-      } catch (err) {
-        logger20.debug("RoutingStore full subscribe failed:", err);
-      }
-    }
-    try {
-      const pageStore = ChatPageStore.useChatPageStore;
-      if (typeof pageStore?.subscribe === "function") {
-        unsubPage = pageStore.subscribe((s) => s.conversationId, (id, prev) => {
-          if (!id || id === prev)
-            return;
-          onConversationSwitch(id);
-        });
-      }
-    } catch (e) {
-      logger20.debug("ChatPageStore subscribe failed:", e);
-    }
-  }
-  function restoreOfficial() {
-    faviconObs?.disconnect();
-    faviconObs = null;
-    document.getElementById(ICON_ID)?.remove();
-    const { head } = document;
-    if (!head)
-      return;
-    const link = document.createElement("link");
-    link.rel = "icon";
-    link.type = "image/svg+xml";
-    link.href = officialHref;
-    head.prepend(link);
-  }
-  var chatStateFavicons_default = definePlugin({
-    name: "ChatStateFavicons",
-    icon: AppWindowIcon,
-    description: "Show streaming, done, ready, and error states on the tab favicon.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings9,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    cleanupSelectors: [`#${ICON_ID}`],
-    start() {
-      started2 = true;
-      officialHref = captureOfficial();
-      rebuildIcons();
-      startFaviconGuard();
-      inputCtrl?.abort();
-      inputCtrl = new AbortController;
-      window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
-      globalObs?.disconnect();
-      globalObs = new MutationObserver(onDomMutate);
-      globalObs.observe(document.body, { childList: true, subtree: true });
-      bindEditorInput();
-      observeComposer();
-      observeButtons();
-      attachStores();
-      evaluateState();
-    },
-    stop() {
-      started2 = false;
-      if (raf)
-        cancelAnimationFrame(raf);
-      raf = 0;
-      inputCtrl?.abort();
-      inputCtrl = null;
-      unsubRoute?.();
-      unsubRoute = null;
-      unsubPage?.();
-      unsubPage = null;
-      globalObs?.disconnect();
-      globalObs = null;
-      composerObs?.disconnect();
-      composerObs = null;
-      buttonObs?.disconnect();
-      buttonObs = null;
-      wasStreaming = false;
-      justFinished = false;
-      streamContext = null;
-      lockedToken = "";
-      lastConvId = "";
-      primedReady = true;
-      lastWasError = false;
-      restoreOfficial();
-    },
-    onSettingsChange: rebuildIcons,
-    events: {
-      streamEnd: onStreamEnd2
-    }
-  });
-
-  // src/plugins/cleaner/index.ts
-  var settings10 = definePluginSettings({
-    hideUpgradePlan: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade plan button in the user menu.",
-      default: true
-    },
-    hideUpsellCard: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upsell card banner.",
-      default: true
-    },
-    hideUpsellSmall: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the small SuperGrok upsell banner.",
-      default: true
-    },
-    hideModelUpsell: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade prompt in the model selector.",
-      default: true
-    },
-    hideInaccessibleModels: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide locked/inaccessible models in the model selector.",
-      default: true
-    },
-    hideNotificationBanner: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Get notified when Grok finishes answering" banner.',
-      default: true
-    },
-    hideConnectX: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
-      default: true
-    }
-  });
-  var hideComponentPatch = (name, setting, all = true) => ({
-    find: `"${name}",0,`,
-    all,
-    replacement: {
-      match: new RegExp(`"${name}",0,`),
-      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
-    }
-  });
-  var cleaner_default = definePlugin({
-    name: "Cleaner",
-    icon: BrushCleaningIcon,
-    description: "Hides upgrade nags and upsell banners.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    enabledByDefault: true,
-    settings: settings10,
-    patches: [
-      {
-        find: '"user-dropdown.upgrade","Upgrade plan"',
-        all: true,
-        replacement: {
-          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
-          replace: ",$self.settings.store.hideUpgradePlan||$1"
-        }
-      },
-      {
-        find: "UPSELL_CARD_PRIORITY)",
-        all: true,
-        replacement: {
-          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
-          replace: "$1&&!$self.settings.store.hideUpsellCard"
-        }
-      },
-      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
-      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
-      {
-        find: "connect-x-upsell-dismissed",
-        replacement: {
-          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
-          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
-        }
-      },
-      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
-      {
-        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
-            replace: "$&$self.settings.store.hideModelUpsell||"
-          },
-          {
-            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
-            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
-          }
-        ]
-      }
-    ]
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/void-src/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
 `);
 
   // src/plugins/cloneChats/index.tsx
-  var logger21 = new Logger("CloneChats");
+  var logger16 = new Logger("CloneChats");
   async function cloneChat(conversationId) {
     const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
     if (!lastResponseId)
@@ -9312,7 +7238,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
     return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger21.error("Failed to clone chat:", e)),
+      onSelect: () => cloneChat(conversationId).catch((e) => logger16.error("Failed to clone chat:", e)),
       disabled: streaming
     }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
@@ -9333,513 +7259,14 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // src/plugins/composerOpacity/index.ts
-  var STYLE_NAME3 = "composerOpacity";
-  var SHELL = ".query-bar";
-  var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
-  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
-  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
-  var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
-  var settings11 = definePluginSettings({
-    opacity: {
-      type: 5 /* SLIDER */,
-      description: "Background opacity of the chat input. 100 is fully opaque.",
-      min: 0,
-      max: 100,
-      default: 100
-    },
-    blur: {
-      type: 5 /* SLIDER */,
-      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
-      min: 0,
-      max: 40,
-      default: 16
-    }
-  });
-  function apply() {
-    const pct = clamp(settings11.store.opacity, 0, 100);
-    const blur = clamp(settings11.store.blur, 0, 40);
-    const alpha = pct / 100;
-    const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
-    registerStyle(STYLE_NAME3, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
-  }
-  var composerOpacity_default = definePlugin({
-    name: "ComposerOpacity",
-    icon: BlendIcon,
-    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
-    authors: [Devs.p],
-    tags: ["ui", "chat"],
-    enabledByDefault: true,
-    settings: settings11,
-    start: apply,
-    onSettingsChange: apply,
-    stop() {
-      unregisterStyle(STYLE_NAME3);
-    }
-  });
-
-  // src/plugins/consoleJanitor/index.ts
-  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
-  var consoleJanitor_default = definePlugin({
-    name: "ConsoleJanitor",
-    icon: TerminalIcon,
-    description: "Silences noisy warnings and info logs in the browser console.",
-    authors: [Devs.Prism],
-    patches: [
-      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
-      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
-      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
-      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
-      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
-    ]
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/customInstructions/styles.css
-  registerStyle("customInstructions", `.void-ci-root {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.void-ci-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-}
-
-.void-ci-card {
-    position: relative;
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 0.625rem;
-    border-radius: 1rem;
-    padding: 0.625rem 0.75rem;
-    height: 3.25rem;
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l1));
-    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
-    cursor: pointer;
-}
-
-.void-ci-card:hover {
-    background: hsl(var(--surface-l2));
-}
-
-.void-ci-card-add {
-    justify-content: center;
-    box-shadow: none;
-    border: 1px dashed hsl(var(--border-l1));
-}
-
-.void-ci-avatar {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.void-ci-card-name {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-    flex: 1;
-    gap: 0.125rem;
-}
-
-.void-ci-card-name>* {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-}
-
-.void-ci-card-actions {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-end: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.125rem;
-    opacity: 0;
-    transition: opacity 0.15s;
-}
-
-.void-ci-card:hover .void-ci-card-actions {
-    opacity: 1;
-}
-
-.void-ci-card:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ci-editor {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.void-ci-label {
-    padding-inline: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: hsl(var(--fg-primary));
-}
-
-.void-ci-input {
-    width: 100%;
-}
-
-.void-ci-textarea-wrap {
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.75rem;
-}
-
-.void-ci-textarea-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ci-textarea-wrap-error {
-    border-color: hsl(var(--fg-danger));
-}
-
-.void-ci-textarea {
-    width: 100%;
-    min-height: 7.5rem;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    color: hsl(var(--fg-primary));
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.void-ci-textarea:focus {
-    outline: none;
-}
-
-.void-ci-editor-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-inline: 0.25rem;
-}
-
-.void-ci-error-text {
-    color: hsl(var(--fg-danger));
-}
-
-.void-ci-trigger {
-    gap: 0.5rem;
-}
-
-.void-ci-menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-ci-card-actions {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/customInstructions/index.tsx
-  var cl19 = classNameFactory("void-ci-");
-  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
-  var CheckIcon = findExportedComponentLazy("CheckIcon");
-  var BookIcon = findExportedComponentLazy("BookIcon");
-  var PenIcon = findExportedComponentLazy("PenIcon");
-  var TrashIcon2 = findExportedComponentLazy("TrashIcon");
-  var PlusIcon = findExportedComponentLazy("PlusIcon");
-  var MAX_LENGTH = 4000;
-  var settings12 = definePluginSettings({
-    editor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
-    }
-  }).withPrivateSettings();
-  function getPresets() {
-    return settings12.plain.presets ?? [];
-  }
-  function setPresets(presets) {
-    settings12.store.presets = presets;
-  }
-  function getAssignments() {
-    return settings12.plain.assignments ?? {};
-  }
-  function PresetCard({ preset, onEdit, onDelete }) {
-    return /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl19("card"),
-      onClick: onEdit
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl19("avatar")
-    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
-      seed: preset.id,
-      size: 32
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl19("card-name")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium"
-    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl19("card-actions")
-    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Edit",
-      onClick: (e) => {
-        e.stopPropagation();
-        onEdit();
-      }
-    }, /* @__PURE__ */ React.createElement(PenIcon, {
-      className: "size-3.5 text-secondary"
-    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Delete",
-      onClick: (e) => {
-        e.stopPropagation();
-        onDelete();
-      }
-    }, /* @__PURE__ */ React.createElement(TrashIcon2, {
-      className: "size-3.5 text-secondary"
-    }))));
-  }
-  function PresetEditor({ preset, onUpdate, onClose }) {
-    const overLimit = preset.prompt.length > MAX_LENGTH;
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl19("editor")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      className: cl19("label")
-    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      className: cl19("input"),
-      placeholder: "Preset name",
-      value: preset.name,
-      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
-      autoComplete: "off"
-    }), /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      className: cl19("label")
-    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl19("textarea-wrap", { "textarea-wrap-error": overLimit })
-    }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl19("textarea"),
-      placeholder: "How should Grok behave?",
-      value: preset.prompt,
-      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl19("editor-footer")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: overLimit ? undefined : "muted",
-      className: overLimit ? cl19("error-text") : undefined
-    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      onClick: onClose
-    }, "Done")));
-  }
-  function PresetsEditor() {
-    const presets = settings12.use(["presets"]).presets ?? [];
-    const [editingId, setEditingId] = useState(null);
-    const updatePreset = useCallback((updated) => {
-      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
-    }, []);
-    const deletePreset = useCallback((id) => {
-      setPresets(getPresets().filter((p) => p.id !== id));
-      const a = { ...getAssignments() };
-      for (const [k, v] of Object.entries(a)) {
-        if (v === id)
-          delete a[k];
-      }
-      settings12.store.assignments = a;
-      setEditingId((prev) => prev === id ? null : prev);
-    }, []);
-    const addPreset = useCallback(() => {
-      const id = randomId();
-      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
-      setEditingId(id);
-    }, []);
-    const editing = presets.find((p) => p.id === editingId);
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl19("root")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl19("grid")
-    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
-      key: p.id,
-      preset: p,
-      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
-      onDelete: () => deletePreset(p.id)
-    })), /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl19("card", "card-add"),
-      onClick: addPreset
-    }, /* @__PURE__ */ React.createElement(PlusIcon, {
-      className: "size-4 text-secondary"
-    }), /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      color: "muted"
-    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
-      preset: editing,
-      onUpdate: updatePreset,
-      onClose: () => setEditingId(null)
-    }));
-  }
-  function InstructionsMenu({ conversationId }) {
-    const presets = settings12.use(["presets"]).presets ?? [];
-    const assignments = settings12.use(["assignments"]).assignments ?? {};
-    const activePresetId = assignments[conversationId];
-    const assign = useCallback((presetId) => {
-      const a = { ...getAssignments() };
-      if (presetId)
-        a[conversationId] = presetId;
-      else
-        delete a[conversationId];
-      settings12.store.assignments = a;
-    }, [conversationId]);
-    if (!presets.length)
-      return null;
-    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl19("trigger")
-    }, /* @__PURE__ */ React.createElement(BookIcon, {
-      size: 16
-    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => assign(),
-      className: cl19("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
-      key: p.id,
-      onSelect: () => assign(p.id),
-      className: cl19("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })))));
-  }
-  var customInstructions_default = definePlugin({
-    name: "CustomInstructions",
-    icon: ScrollTextIcon,
-    description: "Create instruction presets and assign them to conversations.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings12,
-    contextMenuItems: {
-      conversation: {
-        label: "Instructions",
-        render: ErrorBoundary.wrap(InstructionsMenu)
-      }
-    },
-    _getPrompt() {
-      const { conversationId } = ChatPageStore.useChatPageStore.getState();
-      if (!conversationId)
-        return;
-      const presetId = getAssignments()[conversationId];
-      if (!presetId)
-        return;
-      const preset = getPresets().find((p) => p.id === presetId);
-      return preset?.prompt?.trim() || undefined;
-    },
-    patches: [
-      {
-        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
-        all: true,
-        replacement: {
-          match: /customInstructions:(\i)\.customInstructions/g,
-          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
-        }
-      }
-    ]
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/downloadTTS/styles.css
-  registerStyle("downloadTTS", `.void-download-tts-spinner {
-    pointer-events: none;
-}
-`);
-
-  // src/plugins/downloadTTS/index.tsx
-  var cl20 = classNameFactory("void-download-tts-");
-  var logger22 = new Logger("DownloadTTS");
-  async function fetchAndDownload() {
-    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
-    if (!currentStreamId)
-      return;
-    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
-    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
-    if (voiceId)
-      url += `?voiceId=${encodeURIComponent(voiceId)}`;
-    const res = await fetch(url);
-    if (!res.ok)
-      throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
-    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
-  }
-  function DownloadButton() {
-    const [loading, onClick] = useAsyncAction(async () => {
-      try {
-        await fetchAndDownload();
-      } catch (e) {
-        logger22.error("Failed to download TTS audio:", e);
-      }
-    });
-    return /* @__PURE__ */ React.createElement(Button, {
-      "aria-label": "Download audio",
-      onClick,
-      disabled: loading,
-      size: "md",
-      shape: "square",
-      variant: "tertiary"
-    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
-      size: "sm",
-      className: cl20("spinner")
-    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 16
-    }));
-  }
-  var downloadTTS_default = definePlugin({
-    name: "DownloadTTS",
-    icon: Volume2Icon,
-    description: "Add a download button to the TTS playback controls.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    patches: [{
-      find: 'tts-controls.stop.label","Stop"',
-      all: true,
-      replacement: {
-        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
-        replace: "$1,$self._renderDownloadButton()]"
-      }
-    }],
-    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/exportChat/styles.css
+  // void-css:/tmp/void-src/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
 `);
 
   // src/plugins/exportChat/index.tsx
-  var logger23 = new Logger("ExportChat");
+  var logger17 = new Logger("ExportChat");
   function buildExportMessage(r) {
     return {
       id: r.responseId,
@@ -10014,7 +7441,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       className: "void-export-icon"
     }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger23.error("Failed to export chat", e))
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger17.error("Failed to export chat", e))
     }, label))));
   }
   var exportChat_default = definePlugin({
@@ -10029,6 +7456,357 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         render: ErrorBoundary.wrap(ExportMenu)
       }
     }
+  });
+
+  // void-css:/tmp/void-src/src/plugins/betterFiles/styles.css
+  registerStyle("betterFiles", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.group:hover .void-sel-wrap {
+    display: inline-flex;
+}
+`);
+
+  // src/plugins/betterFiles/index.tsx
+  var logger18 = new Logger("BetterFiles");
+  var selection = createSelectionStore();
+  async function deleteAssets(ids) {
+    const { deleteAsset } = FilesPageStore.useFilesPageStore.getState();
+    for (const id of ids) {
+      try {
+        await deleteAsset(id);
+      } catch (e) {
+        logger18.error("Failed to delete asset", id, e);
+      }
+    }
+  }
+  function DeleteAllButton() {
+    const [open2, setOpen] = useState(false);
+    const list = FilesPageStore.useFilesPageStore((s) => s.list);
+    if (!list.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      shape: "square",
+      size: "sm",
+      onClick: () => setOpen(true)
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
+      size: 18,
+      className: "text-fg-secondary"
+    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title: "Delete all files",
+      description: `Are you sure you want to delete all ${pluralize(list.length, "file")}? This cannot be undone.`,
+      confirmText: "Delete all",
+      danger: true,
+      onConfirm: () => deleteAssets([...list])
+    }));
+  }
+  var betterFiles_default = definePlugin({
+    name: "BetterFiles",
+    icon: FilesIcon,
+    description: "Adds bulk delete to the files page.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    managedStyle: "betterFiles",
+    start() {
+      selection.clear();
+    },
+    stop() {
+      selection.clear();
+    },
+    renderDeleteAllButton: ErrorBoundary.wrap(DeleteAllButton),
+    _renderFileCheckbox: ErrorBoundary.wrap(({ id }) => /* @__PURE__ */ React.createElement(SelectionCheckbox, {
+      selection,
+      id
+    }), null),
+    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
+      selection,
+      noun: "file",
+      title: "Delete files",
+      onDelete: deleteAssets
+    }), null),
+    _wrapFileClick(onClick, asset) {
+      return (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          selection.toggle(asset.assetId);
+          return;
+        }
+        onClick();
+      };
+    },
+    patches: [
+      {
+        find: `files.no-results",'No files matching`,
+        all: true,
+        noWarn: true,
+        group: true,
+        replacement: [
+          {
+            match: /("files\.search","Search files"\).{0,600}?children:\[\i,\i)\]/,
+            replace: "$1,$self.renderDeleteAllButton()]"
+          },
+          {
+            match: /role:"button",(tabIndex:\i,"aria-disabled":\i,)onClick:(\i),(.{0,120}?children:\[)/,
+            replace: 'role:"button",$1onClick:$self._wrapFileClick($2,arguments[0].asset),$3$self._renderFileCheckbox({id:arguments[0].asset.assetId}),'
+          },
+          {
+            match: /("files\.show-less","Show less"\)(?:.{0,400}?children:\[\i,\i\]){2}.{0,400}?children:\[\i,\i)\]/,
+            replace: "$1,$self._renderFileActionBar()]"
+          }
+        ]
+      }
+    ]
+  });
+
+  // void-css:/tmp/void-src/src/plugins/settingsFlyout/styles.css
+  registerStyle("settingsFlyout", `/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-sf-menu-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-inline-end: 0.5rem;
+    color: hsl(var(--fg-secondary));
+    flex-shrink: 0;
+}
+`);
+
+  // src/plugins/settingsFlyout/icons.tsx
+  function grokSvg(props, ...children) {
+    return /* @__PURE__ */ React.createElement("svg", {
+      width: props.width ?? props.size ?? 16,
+      height: props.height ?? props.size ?? 16,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg",
+      className: props.className,
+      "aria-hidden": "true"
+    }, children);
+  }
+  var CogIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "m13.456 1.75.296.445c.832 1.247 1.198 1.654 1.558 1.818.321.146.82.172 2.242-.157l.54-.124 2.171 2.171-.124.54c-.328 1.423-.302 1.921-.156 2.243.164.36.57.726 1.817 1.557l.446.297v2.92l-.446.297c-1.247.831-1.653 1.198-1.817 1.558-.146.32-.172.82.156 2.242l.124.54-2.17 2.17-.54-.123c-1.423-.329-1.922-.303-2.243-.157-.36.164-.726.57-1.558 1.818l-.296.445h-2.92l-.297-.445c-.832-1.247-1.198-1.654-1.558-1.818-.321-.146-.82-.172-2.242.157l-.54.124-2.171-2.171.124-.54c.328-1.423.303-1.921.156-2.242-.164-.36-.57-.727-1.817-1.558l-.445-.297v-2.92l.445-.297c1.247-.831 1.653-1.198 1.817-1.557.147-.322.172-.82-.156-2.243l-.124-.54 2.17-2.17.541.123c1.422.329 1.92.303 2.242.157.36-.164.727-.57 1.558-1.818l.297-.445zm-1.853 2c-.637.93-1.249 1.699-2.092 2.083-.875.4-1.845.324-2.977.092l-.614.613c.232 1.132.308 2.102-.091 2.978-.385.842-1.153 1.454-2.083 2.09v.787c.93.636 1.698 1.248 2.083 2.091.399.876.323 1.845.091 2.977l.614.613c1.132-.232 2.102-.306 2.977.093.843.384 1.455 1.153 2.092 2.083h.785c.637-.93 1.249-1.699 2.092-2.083.875-.399 1.845-.325 2.976-.093l.614-.613c-.232-1.132-.306-2.101.093-2.977.384-.843 1.152-1.455 2.083-2.091v-.787c-.93-.636-1.7-1.248-2.083-2.09-.4-.876-.325-1.846-.093-2.978l-.614-.613c-1.131.232-2.1.307-2.976-.092-.843-.384-1.455-1.153-2.092-2.083zM14.001 12A2 2 0 1 0 10 12a2 2 0 0 0 4 0m2 0A4 4 0 1 1 8 12a4 4 0 0 1 8 0"
+  }));
+  var PersonIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 12.25C16.4183 12.25 20 15.8317 20 20.25V22H4V20.25C4 15.8317 7.58172 12.25 12 12.25ZM12 14.25C8.77005 14.25 6.13694 16.8022 6.00586 20H17.9941C17.8631 16.8022 15.23 14.25 12 14.25Z",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 2C14.4853 2 16.5 4.01472 16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2ZM12 4C10.6193 4 9.5 5.11929 9.5 6.5C9.5 7.88071 10.6193 9 12 9C13.3807 9 14.5 7.88071 14.5 6.5C14.5 5.11929 13.3807 4 12 4Z",
+    fill: "currentColor"
+  }));
+  var PaintIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M16.2637 3.19188C17.5328 2.03183 19.4908 2.07547 20.707 3.29149C21.9244 4.50883 21.967 6.46969 20.8037 7.73876L20.8027 7.73778L12.4814 16.9038C12.2753 19.4758 10.1251 21.4985 7.5 21.4985H2.5V16.4985C2.50025 13.8741 4.52251 11.7229 7.09375 11.5161L16.2637 3.19188ZM19.293 4.70653C18.8329 4.24643 18.0921 4.2299 17.6123 4.66942L17.6084 4.67333L9.58594 11.9546C10.67 12.453 11.5441 13.3277 12.043 14.4116L19.3262 6.39012L19.3291 6.3872C19.7688 5.90754 19.7529 5.16673 19.293 4.70653ZM4.5 19.4985H7.5C9.15685 19.4985 10.5 18.1554 10.5 16.4985C10.4997 14.8419 9.15669 13.4985 7.5 13.4985C5.84331 13.4985 4.50026 14.8419 4.5 16.4985V19.4985Z"
+  }));
+  var VisitIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M21.5 14.5L19.2402 16.1201L22.0596 18.9404L19.9404 21.0596L17.1201 18.2402L15.5 20.5L13 12L21.5 14.5Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M18.5 2C20.433 2 22 3.567 22 5.5V11H20V5.5C20 4.67157 19.3284 4 18.5 4H5.5C4.67157 4 4 4.67157 4 5.5V16.5C4 17.3284 4.67157 18 5.5 18H12V20H5.5C3.567 20 2 18.433 2 16.5V5.5C2 3.567 3.567 2 5.5 2H18.5Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M10.4941 5.52441C10.7365 5.57269 10.9591 5.69148 11.1338 5.86621C11.3085 6.04094 11.4273 6.26352 11.4756 6.50586C11.5238 6.74833 11.4999 7.00011 11.4053 7.22852C11.3107 7.45691 11.1499 7.65171 10.9443 7.78906C10.7388 7.92641 10.4972 8 10.25 8C9.91848 8 9.60063 7.86821 9.36621 7.63379C9.13179 7.39937 9 7.08152 9 6.75C9 6.50277 9.07359 6.26123 9.21094 6.05566C9.34829 5.85012 9.54309 5.68933 9.77148 5.59473C9.99989 5.50012 10.2517 5.47618 10.4941 5.52441Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M6.75 5.5C7.08152 5.5 7.39937 5.63179 7.63379 5.86621C7.86821 6.10063 8 6.41848 8 6.75C8 6.99723 7.92641 7.23877 7.78906 7.44434C7.65171 7.64988 7.45691 7.81067 7.22852 7.90527C7.00011 7.99988 6.74833 8.02382 6.50586 7.97559C6.26352 7.92731 6.04094 7.80852 5.86621 7.63379C5.69148 7.45906 5.57269 7.23648 5.52441 6.99414C5.47618 6.75167 5.50012 6.49989 5.59473 6.27148C5.68933 6.04309 5.85012 5.84829 6.05566 5.71094C6.26123 5.57359 6.50277 5.5 6.75 5.5Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M13.75 5.5C14.0815 5.5 14.3994 5.63179 14.6338 5.86621C14.8682 6.10063 15 6.41848 15 6.75C15 6.99723 14.9264 7.23877 14.7891 7.44434C14.6517 7.64988 14.4569 7.81067 14.2285 7.90527C14.0001 7.99988 13.7483 8.02382 13.5059 7.97559C13.2635 7.92731 13.0409 7.80852 12.8662 7.63379C12.6915 7.45906 12.5727 7.23648 12.5244 6.99414C12.4762 6.75167 12.5001 6.49989 12.5947 6.27148C12.6893 6.04309 12.8501 5.84829 13.0557 5.71094C13.2612 5.57359 13.5028 5.5 13.75 5.5Z"
+  }));
+  var SlidersIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M21 7H10M14 17H3M20.25 17C20.25 18.6569 18.9069 20 17.25 20C15.5931 20 14.25 18.6569 14.25 17C14.25 15.3431 15.5931 14 17.25 14C18.9069 14 20.25 15.3431 20.25 17ZM9.75 7C9.75 8.65685 8.40685 10 6.75 10C5.09315 10 3.75 8.65685 3.75 7C3.75 5.34315 5.09315 4 6.75 4C8.40685 4 9.75 5.34315 9.75 7Z",
+    stroke: "currentColor",
+    strokeLinejoin: "round",
+    strokeWidth: "2"
+  }));
+  var PaymentsIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
+    fill: "currentColor",
+    d: "M12.9004 7.83984C13.0629 7.87413 13.2225 7.91676 13.376 7.96777C13.9053 8.14378 14.4688 8.45248 14.8301 8.95215L13.3711 10.0068C13.3148 9.92902 13.1447 9.78764 12.8086 9.67578C12.4889 9.56951 12.1071 9.52104 11.75 9.5459C11.3842 9.57147 11.1204 9.6686 10.9727 9.77734C10.6672 10.0025 10.7901 10.4692 11.0615 10.6533C11.3259 10.8325 11.7135 10.964 12.2734 11.1426C12.7633 11.2988 13.4271 11.5024 13.9502 11.8574C14.5404 12.2581 15.0008 12.8825 15.001 13.8027C15.001 14.6074 14.6157 15.2292 14.0645 15.6318C13.716 15.8862 13.3104 16.0473 12.9004 16.1426V17.5H11.1006V16.1924C10.8876 16.158 10.6783 16.1108 10.4785 16.0488C9.92674 15.8775 9.3358 15.5675 8.95996 15.0479L10.4189 13.9932C10.4778 14.0743 10.6555 14.2195 11.0117 14.3301C11.3503 14.4351 11.7577 14.4787 12.1426 14.4453C12.5359 14.411 12.8313 14.303 13.0029 14.1777C13.3128 13.9513 13.2321 13.5454 12.9395 13.3467C12.6751 13.1673 12.2868 13.0361 11.7266 12.8574C11.2368 12.7012 10.5739 12.4974 10.0508 12.1426C9.46027 11.7419 9.00013 11.1178 9 10.1973V10.1328C9 9.34586 9.36032 8.72911 9.9043 8.32812C10.2629 8.06395 10.6821 7.90612 11.1006 7.82129V6.5H12.9004V7.83984Z"
+  }), /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z",
+    fill: "currentColor"
+  }));
+  var LightningIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M5 14.25L14 4L13 9.75H19L10 20L11 14.25H5Z",
+    stroke: "currentColor",
+    strokeWidth: "2"
+  }));
+  var DatabaseIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M20.5 18C20.5 18.7778 20.1017 19.4178 19.5977 19.8945C19.0957 20.3692 18.423 20.7505 17.6748 21.0498C16.1726 21.6507 14.1657 22 12 22C9.83428 22 7.82743 21.6507 6.3252 21.0498C5.57697 20.7505 4.90428 20.3692 4.40234 19.8945C3.89825 19.4178 3.5 18.7778 3.5 18V5.5C3.5 4.71709 3.97721 4.13013 4.4707 3.74121C4.97543 3.34352 5.64416 3.02877 6.38086 2.7832C7.86497 2.28858 9.85158 2 12 2C14.1484 2 16.135 2.28858 17.6191 2.7832C18.3558 3.02877 19.0246 3.34352 19.5293 3.74121C20.0228 4.13013 20.5 4.71709 20.5 5.5V18ZM18.5 14.166C18.2396 14.3063 17.963 14.4345 17.6748 14.5498C16.1726 15.1507 14.1657 15.5 12 15.5C9.83428 15.5 7.82743 15.1507 6.3252 14.5498C6.03697 14.4345 5.76036 14.3063 5.5 14.166V18C5.5 18.0506 5.52142 18.2003 5.77637 18.4414C6.03343 18.6845 6.4595 18.9488 7.06836 19.1924C8.28059 19.6773 10.0236 20 12 20C13.9764 20 15.7194 19.6773 16.9316 19.1924C17.5405 18.9488 17.9666 18.6845 18.2236 18.4414C18.4786 18.2003 18.5 18.0506 18.5 18V14.166ZM5.5 11.5C5.5 11.5506 5.52142 11.7003 5.77637 11.9414C6.03343 12.1845 6.4595 12.4488 7.06836 12.6924C8.28059 13.1773 10.0236 13.5 12 13.5C13.9764 13.5 15.7194 13.1773 16.9316 12.6924C17.5405 12.4488 17.9666 12.1845 18.2236 11.9414C18.4786 11.7003 18.5 11.5506 18.5 11.5V7.86914C18.2226 7.99709 17.9273 8.11407 17.6191 8.2168C16.135 8.71142 14.1484 9 12 9C9.85158 9 7.86497 8.71142 6.38086 8.2168C6.07267 8.11407 5.77737 7.99709 5.5 7.86914V11.5ZM12 4C10.0065 4 8.24301 4.27056 7.0127 4.68066C6.39238 4.88745 5.96226 5.11212 5.70801 5.3125C5.59875 5.39864 5.5459 5.46254 5.51953 5.5C5.5459 5.53746 5.59875 5.60136 5.70801 5.6875C5.96226 5.88788 6.39238 6.11255 7.0127 6.31934C8.24301 6.72944 10.0065 7 12 7C13.9935 7 15.757 6.72944 16.9873 6.31934C17.6076 6.11255 18.0377 5.88788 18.292 5.6875C18.4008 5.60171 18.453 5.53752 18.4795 5.5C18.453 5.46248 18.4008 5.39829 18.292 5.3125C18.0377 5.11212 17.6076 4.88745 16.9873 4.68066C15.757 4.27056 13.9935 4 12 4Z",
+    fill: "currentColor"
+  }));
+
+  // src/plugins/settingsFlyout/index.tsx
+  var cl17 = classNameFactory("void-sf-");
+  var settings5 = definePluginSettings({
+    showOpenSettings: {
+      type: 3 /* BOOLEAN */,
+      description: 'Show "Open Settings" (last used tab).',
+      default: true
+    },
+    account: {
+      type: 3 /* BOOLEAN */,
+      description: "Account",
+      default: true
+    },
+    appearance: {
+      type: 3 /* BOOLEAN */,
+      description: "Appearance",
+      default: true
+    },
+    behavior: {
+      type: 3 /* BOOLEAN */,
+      description: "Behavior",
+      default: true
+    },
+    customize: {
+      type: 3 /* BOOLEAN */,
+      description: "Customize",
+      default: true
+    },
+    billing: {
+      type: 3 /* BOOLEAN */,
+      description: "Billing",
+      default: true
+    },
+    usage: {
+      type: 3 /* BOOLEAN */,
+      description: "Usage",
+      default: true
+    },
+    data: {
+      type: 3 /* BOOLEAN */,
+      description: "Data Controls",
+      default: true
+    },
+    plugins: {
+      type: 3 /* BOOLEAN */,
+      description: "Plugins",
+      default: true
+    },
+    themes: {
+      type: 3 /* BOOLEAN */,
+      description: "Themes",
+      default: true
+    },
+    css: {
+      type: 3 /* BOOLEAN */,
+      description: "Quick CSS",
+      default: true
+    },
+    experiments: {
+      type: 3 /* BOOLEAN */,
+      description: "Experiments",
+      default: true
+    }
+  });
+  var GROK_TABS = [
+    { id: "account", name: "Account", setting: "account", icon: PersonIcon },
+    { id: "appearance", name: "Appearance", setting: "appearance", icon: PaintIcon },
+    { id: "behavior", name: "Behavior", setting: "behavior", icon: VisitIcon },
+    { id: "personality", name: "Customize", setting: "customize", icon: SlidersIcon },
+    { id: "billing", name: "Billing", setting: "billing", icon: PaymentsIcon },
+    { id: "usage", name: "Usage", setting: "usage", icon: LightningIcon },
+    { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
+  ];
+  var VOID_TABS = [
+    { id: "void_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
+    { id: "void_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
+    { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon },
+    { id: "void_experiments_tab", name: "Experiments", setting: "experiments", icon: TestTubeIcon, plugin: "Experiments" }
+  ];
+  function SettingsMenu({ onOpen }) {
+    const cfg = settings5.use([
+      "showOpenSettings",
+      "account",
+      "appearance",
+      "behavior",
+      "customize",
+      "billing",
+      "usage",
+      "data",
+      "plugins",
+      "themes",
+      "css",
+      "experiments"
+    ]);
+    const grokTabs = GROK_TABS.filter((t) => cfg[t.setting]);
+    const voidTabs = VOID_TABS.filter((t) => cfg[t.setting] && (!t.plugin || isPluginEnabled(t.plugin)));
+    const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidTabs.length === 0;
+    const openTab = (tab, event) => {
+      try {
+        onOpen?.(event);
+      } catch {}
+      queueMicrotask(() => {
+        const store2 = SettingsDialogStore.useSettingsDialogStore.getState();
+        if (tab)
+          store2.setTab(tab);
+        store2.setOpen(true);
+      });
+    };
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
+      className: cl17("menu-icon")
+    }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, showOpen && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: (e) => openTab(undefined, e)
+    }, /* @__PURE__ */ React.createElement(CogIcon, {
+      className: cl17("menu-icon")
+    }), "Open Settings"), grokTabs.map((t) => {
+      const Icon = t.icon;
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+        key: t.id,
+        onSelect: (e) => openTab(t.id, e)
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl17("menu-icon")
+      }), t.name);
+    }), voidTabs.length > 0 && (showOpen || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidTabs.map((t) => {
+      const Icon = t.icon;
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+        key: t.id,
+        onSelect: (e) => openTab(t.id, e)
+      }, /* @__PURE__ */ React.createElement(Icon, {
+        className: cl17("menu-icon")
+      }), t.name);
+    })));
+  }
+  var WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
+  var settingsFlyout_default = definePlugin({
+    name: "SettingsFlyout",
+    icon: Settings2Icon,
+    description: "Replace the avatar Settings item with a flyout of shortcuts to Grok and Void settings tabs.",
+    authors: [Devs.p],
+    tags: ["ui", "settings"],
+    enabledByDefault: true,
+    requiresRestart: true,
+    settings: settings5,
+    _renderSettingsMenu: (onOpen) => createElement(WrappedSettingsMenu, { onOpen }),
+    patches: [
+      {
+        find: '"user-dropdown.settings","Settings"',
+        replacement: {
+          match: /\jsx{\i\.DropdownMenuItem}\{onSelect:(\i),children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
+          replace: "$self._renderSettingsMenu($1)"
+        }
+      }
+    ]
   });
 
   // src/plugins/incognito/index.ts
@@ -10056,1036 +7834,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/workspace/artifacts/Void-src/src/plugins/inputHistory/styles.css
-  registerStyle("inputHistory", `.void-ih-hud {
-    contain: content;
-    position: fixed;
-    z-index: 2147483646;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.5rem;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-secondary));
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.2;
-    pointer-events: none;
-    opacity: 0;
-    transform: translate(-50%, -100%);
-    transition: opacity 0.12s ease;
-}
-
-.void-ih-hud-on {
-    opacity: 1;
-}
-
-.void-ih-panel {
-    min-width: 0;
-}
-
-.void-ih-head {
-    min-width: 0;
-}
-
-.void-ih-search {
-    width: 100%;
-}
-
-.void-ih-empty {
-    margin: 0;
-    color: hsl(var(--fg-tertiary));
-}
-
-.void-ih-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    overflow: auto;
-    max-height: min(22rem, 45vh);
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border-l2) / 80%) transparent;
-}
-
-.void-ih-item {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid transparent;
-    border-radius: 0.75rem;
-    background: hsl(var(--surface-l1) / 72%);
-}
-
-.void-ih-item:hover {
-    background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 45%);
-}
-
-.void-ih-item-on {
-    align-items: start;
-    background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 60%);
-}
-
-.void-ih-item:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ih-main {
-    min-width: 0;
-    cursor: pointer;
-}
-
-.void-ih-body {
-    display: block;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    color: hsl(var(--fg-primary));
-    font-size: 0.8125rem;
-    line-height: 1.45;
-}
-
-.void-ih-clamp {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-}
-
-.void-ih-item-on .void-ih-body {
-    max-height: 12rem;
-    overflow: auto;
-    scrollbar-width: thin;
-}
-
-.void-ih-side {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.void-ih-item-on .void-ih-side {
-    align-items: flex-start;
-    padding-top: 0.125rem;
-}
-
-.void-ih-lines {
-    min-width: 1.5rem;
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-tertiary));
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.3;
-    text-align: center;
-}
-
-.void-ih-actions {
-    display: flex;
-    gap: 0.125rem;
-    padding: 0.125rem;
-    border-radius: 0.5rem;
-    background: hsl(var(--surface-l2) / 90%);
-}
-
-.void-ih-actions :is(button) {
-    width: 2.25rem;
-    height: 2.25rem;
-    min-width: 2.25rem;
-    min-height: 2.25rem;
-}
-
-.void-ih-item-on .void-ih-actions,
-.void-ih-item:hover .void-ih-actions {
-    background: hsl(var(--surface-l1));
-}
-
-.void-ih-pager {
-    min-width: 0;
-}
-
-.void-ih-page {
-    min-width: 3.5rem;
-    color: hsl(var(--fg-secondary));
-    font-size: 0.8125rem;
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-ih-hud {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/inputHistory/index.tsx
-  var logger24 = new Logger("InputHistory");
-  var cl21 = classNameFactory("void-ih-");
-  var EDITOR_SEL2 = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
-  var ZWSP = /\u200B/g;
-  var MAX_MIN = 10;
-  var MAX_MAX = 500;
-  var MAX_DEFAULT = 100;
-  var HUD_GAP_PX = 8;
-  var APPLY_QUIET_MS = 120;
-  var CAPTURE_DEDUPE_MS = 2000;
-  var PAGE_SIZE = 10;
-  var settings13 = definePluginSettings({
-    maxEntries: {
-      type: 5 /* SLIDER */,
-      description: "Maximum stored prompts.",
-      min: MAX_MIN,
-      max: MAX_MAX,
-      default: MAX_DEFAULT
-    },
-    history: {
-      type: 6 /* COMPONENT */,
-      component: HistoryPanel
-    }
-  }).withPrivateSettings();
-  var recentAt = new Map;
-  var cursor = 0;
-  var draft = "";
-  var recalling = false;
-  var applying = false;
-  var applyGen = 0;
-  var keys = null;
-  var applyTimer;
-  var applyEl = null;
-  var applyAtStart = true;
-  function getEntries() {
-    const raw = settings13.plain.entries;
-    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
-  }
-  function cap(entries) {
-    const max = clamp(settings13.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
-    return entries.length > max ? entries.slice(entries.length - max) : entries;
-  }
-  function setEntries(entries) {
-    settings13.store.entries = entries;
-  }
-  function normalize(text) {
-    return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
-  }
-  function resetBrowse(length) {
-    cursor = length;
-    draft = "";
-    recalling = false;
-    hideHud();
-  }
-  function chatEditor(t) {
-    if (t instanceof Text)
-      return t.parentElement?.closest(EDITOR_SEL2) ?? null;
-    if (t instanceof Element)
-      return t.closest(EDITOR_SEL2) ?? null;
-    return null;
-  }
-  function editorText(el) {
-    const blocks = el.querySelectorAll(":scope > *");
-    const raw = blocks.length ? Array.from(blocks, (b) => b.textContent ?? "").join(`
-`) : el.innerText ?? el.textContent ?? "";
-    return normalize(raw);
-  }
-  function spanHeight(range) {
-    const rects = range.getClientRects();
-    let top = Infinity;
-    let bottom = -Infinity;
-    for (const r of rects) {
-      if (r.height === 0 && r.width === 0)
-        continue;
-      if (r.top < top)
-        top = r.top;
-      if (r.bottom > bottom)
-        bottom = r.bottom;
-    }
-    if (top === Infinity)
-      return range.getBoundingClientRect().height;
-    return bottom - top;
-  }
-  function caretOnEdge(el) {
-    const sel = window.getSelection();
-    if (!sel?.rangeCount || !sel.isCollapsed)
-      return { first: false, last: false };
-    const caret = sel.getRangeAt(0);
-    if (!el.contains(caret.startContainer))
-      return { first: false, last: false };
-    if (!el.innerText?.trim())
-      return { first: true, last: true };
-    const before = document.createRange();
-    before.selectNodeContents(el);
-    before.setEnd(caret.startContainer, caret.startOffset);
-    const after = document.createRange();
-    after.selectNodeContents(el);
-    after.setStart(caret.startContainer, caret.startOffset);
-    const { lineHeight, fontSize } = getComputedStyle(el);
-    const lh = parseFloat(lineHeight);
-    const fs = parseFloat(fontSize) || 16;
-    const budget = (lh > 0 ? lh : fs * 1.5) * 1.5;
-    return {
-      first: spanHeight(before) <= budget,
-      last: spanHeight(after) <= budget
-    };
-  }
-  function matchesRecall(el) {
-    if (!recalling)
-      return false;
-    const list = getEntries();
-    const expected = cursor < list.length ? list[cursor] : draft;
-    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
-  }
-  function dropRecall(el) {
-    cursor = getEntries().length;
-    draft = editorText(el);
-    recalling = false;
-    hideHud();
-  }
-  function placeCaret(el, atStart) {
-    try {
-      const view = el.pmViewDesc?.view;
-      if (view) {
-        const Sel = view.state.selection.constructor;
-        const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
-        view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
-        return;
-      }
-    } catch (err) {
-      logger24.debug("placeCaret pm failed:", err);
-    }
-    const native = window.getSelection();
-    if (!native)
-      return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(atStart);
-    native.removeAllRanges();
-    native.addRange(range);
-  }
-  function scheduleApplyEnd(gen) {
-    clearTimeout(applyTimer);
-    applyTimer = setTimeout(() => {
-      if (gen !== applyGen)
-        return;
-      applying = false;
-      const el = applyEl;
-      if (!el)
-        return;
-      if (recalling && !matchesRecall(el))
-        dropRecall(el);
-      else
-        placeCaret(el, applyAtStart);
-    }, APPLY_QUIET_MS);
-  }
-  function setEditorText(el, text, atStart) {
-    el.focus();
-    const sel = window.getSelection();
-    if (!sel)
-      return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    sel.removeAllRanges();
-    sel.addRange(range);
-    applying = true;
-    applyEl = el;
-    applyAtStart = atStart;
-    const gen = ++applyGen;
-    try {
-      if (!text)
-        document.execCommand("delete");
-      else
-        document.execCommand("insertText", false, text);
-    } catch (err) {
-      logger24.debug("insertText failed:", err);
-    }
-    placeCaret(el, atStart);
-    scheduleApplyEnd(gen);
-  }
-  function hudEl() {
-    let el = document.querySelector(`.${cl21("hud")}`);
-    if (el)
-      return el;
-    el = document.createElement("div");
-    el.className = cl21("hud");
-    el.setAttribute("aria-live", "polite");
-    document.body.appendChild(el);
-    return el;
-  }
-  function hideHud() {
-    document.querySelector(`.${cl21("hud")}`)?.classList.remove(cl21("hud-on"));
-  }
-  function showHud(label, editor) {
-    const bar = editor.closest(".query-bar");
-    if (!bar)
-      return;
-    const el = hudEl();
-    el.textContent = label;
-    requestAnimationFrame(() => {
-      const r = bar.getBoundingClientRect();
-      el.style.left = `${r.left + r.width / 2}px`;
-      el.style.top = `${r.top - HUD_GAP_PX}px`;
-      el.classList.add(cl21("hud-on"));
-    });
-  }
-  function pushEntry(text) {
-    const value = normalize(text);
-    if (!value)
-      return;
-    const now = Date.now();
-    const prev = recentAt.get(value);
-    if (prev != null && now - prev < CAPTURE_DEDUPE_MS)
-      return;
-    recentAt.set(value, now);
-    const list = getEntries();
-    if (list[list.length - 1] === value) {
-      resetBrowse(list.length);
-      return;
-    }
-    const next = cap([...list, value]);
-    setEntries(next);
-    resetBrowse(next.length);
-  }
-  function cycle(older, el) {
-    const list = getEntries();
-    if (!list.length && older)
-      return;
-    if (cursor >= list.length) {
-      draft = editorText(el);
-      cursor = list.length;
-    }
-    const next = older ? cursor - 1 : cursor + 1;
-    if (next < 0 || next > list.length)
-      return;
-    cursor = next;
-    recalling = true;
-    setEditorText(el, next === list.length ? draft : list[next], older);
-    if (next < list.length)
-      showHud(`${next + 1} / ${list.length}`, el);
-    else
-      hideHud();
-  }
-  function onKeyDown2(e) {
-    if (e.isComposing || e.keyCode === 229)
-      return;
-    if (e.ctrlKey || e.metaKey)
-      return;
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
-      dropRecall(el);
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return;
-    }
-    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
-      pushEntry(editorText(el));
-      return;
-    }
-    if (e.key !== "ArrowUp" && e.key !== "ArrowDown")
-      return;
-    if (e.shiftKey)
-      return;
-    const older = e.key === "ArrowUp";
-    const force = e.altKey;
-    const list = getEntries();
-    if (!force) {
-      const edge = caretOnEdge(el);
-      if (older && !edge.first || !older && !edge.last)
-        return;
-    }
-    if (older && (!list.length || cursor <= 0))
-      return;
-    if (!older && cursor >= list.length)
-      return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    cycle(older, el);
-  }
-  function onPointerDown(e) {
-    if (!recalling || applying)
-      return;
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    dropRecall(el);
-  }
-  function onInput(e) {
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    if (applying) {
-      scheduleApplyEnd(applyGen);
-      return;
-    }
-    if (matchesRecall(el))
-      return;
-    dropRecall(el);
-  }
-  function onSubmit(e) {
-    const form = e.target;
-    if (!(form instanceof HTMLFormElement))
-      return;
-    const editor = form.querySelector(EDITOR_SEL2);
-    if (editor instanceof HTMLElement)
-      pushEntry(editorText(editor));
-  }
-  function onClick(e) {
-    const t = e.target;
-    if (!(t instanceof Element))
-      return;
-    const ctrl = t.closest("button, [role='button']");
-    if (!ctrl)
-      return;
-    const bar = ctrl.closest(".query-bar");
-    if (!bar || ctrl.closest("[data-query-bar-mode-select]"))
-      return;
-    const label = (ctrl.getAttribute("aria-label") ?? "").toLowerCase();
-    const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
-    if (!submit && !label.includes("send") && !label.includes("submit"))
-      return;
-    const editor = bar.querySelector(EDITOR_SEL2);
-    if (editor instanceof HTMLElement)
-      pushEntry(editorText(editor));
-  }
-  function removeEntry(index) {
-    const list = getEntries();
-    if (index < 0 || index >= list.length)
-      return;
-    const next = list.filter((_, i) => i !== index);
-    setEntries(next);
-    resetBrowse(next.length);
-  }
-  function HistoryPanel() {
-    const { entries } = settings13.use(["entries"]);
-    const list = entries ?? [];
-    const [query, setQuery] = useState("");
-    const [page, setPage] = useState(0);
-    const [openId, setOpenId] = useState(null);
-    const [confirm, setConfirm] = useState(false);
-    const needle = query.trim().toLowerCase();
-    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).reverse();
-    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
-    const current = Math.min(page, pageCount - 1);
-    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.65rem",
-      className: cl21("panel")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      className: cl21("head"),
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      disabled: !list.length,
-      onClick: () => setConfirm(true)
-    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      placeholder: "Search prompts",
-      value: query,
-      onChange: (e) => {
-        setQuery(e.target.value);
-        setPage(0);
-      },
-      className: cl21("search")
-    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl21("empty")
-    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl21("empty")
-    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
-      className: cl21("list")
-    }, slice.map((row) => {
-      const lines = row.text.split(`
-`).length;
-      const expanded = openId === row.index;
-      return /* @__PURE__ */ React.createElement("div", {
-        key: row.index,
-        className: cl21("item", expanded && "item-on")
-      }, /* @__PURE__ */ React.createElement("div", {
-        className: cl21("main"),
-        role: "button",
-        tabIndex: 0,
-        onClick: () => setOpenId(expanded ? null : row.index),
-        onKeyDown: (e) => {
-          if (e.key !== "Enter" && e.key !== " ")
-            return;
-          e.preventDefault();
-          setOpenId(expanded ? null : row.index);
-        }
-      }, /* @__PURE__ */ React.createElement("span", {
-        className: cl21("body", !expanded && "clamp")
-      }, row.text)), /* @__PURE__ */ React.createElement("div", {
-        className: cl21("side")
-      }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
-        className: cl21("lines")
-      }, lines), /* @__PURE__ */ React.createElement("div", {
-        className: cl21("actions")
-      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "sm",
-        shape: "square",
-        tooltipContent: "Copy",
-        "aria-label": "Copy",
-        onClick: () => {
-          copyToClipboard(row.text).catch((err) => logger24.error("copy failed:", err));
-        }
-      }, /* @__PURE__ */ React.createElement(CopyIcon, {
-        size: 18
-      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "sm",
-        shape: "square",
-        tooltipContent: "Delete",
-        "aria-label": "Delete",
-        onClick: () => {
-          if (openId === row.index)
-            setOpenId(null);
-          removeEntry(row.index);
-        }
-      }, /* @__PURE__ */ React.createElement(Trash2Icon, {
-        size: 18
-      })))));
-    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
-      className: cl21("pager"),
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "square",
-      "aria-label": "Previous page",
-      disabled: current <= 0,
-      onClick: () => setPage(current - 1)
-    }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
-      size: 18
-    })), /* @__PURE__ */ React.createElement("span", {
-      className: cl21("page")
-    }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "square",
-      "aria-label": "Next page",
-      disabled: current >= pageCount - 1,
-      onClick: () => setPage(current + 1)
-    }, /* @__PURE__ */ React.createElement(ChevronRightIcon, {
-      size: 18
-    }))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: confirm,
-      onOpenChange: setConfirm,
-      title: "Clear input history",
-      description: "Delete all stored prompts? This cannot be undone.",
-      confirmText: "Clear",
-      danger: true,
-      onConfirm: () => {
-        setEntries([]);
-        resetBrowse(0);
-        setOpenId(null);
-        setQuery("");
-        setPage(0);
-      }
-    }));
-  }
-  var inputHistory_default = definePlugin({
-    name: "InputHistory",
-    icon: HistoryIcon,
-    description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
-    authors: [Devs.p],
-    tags: ["chat"],
-    enabledByDefault: true,
-    settings: settings13,
-    managedStyle: "inputHistory",
-    cleanupSelectors: [".void-ih-hud"],
-    start() {
-      if (keys)
-        return;
-      cursor = getEntries().length;
-      recalling = false;
-      keys = new AbortController;
-      const { signal } = keys;
-      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
-      document.addEventListener("input", onInput, { capture: true, signal });
-      document.addEventListener("submit", onSubmit, { capture: true, signal });
-      document.addEventListener("click", onClick, { capture: true, signal });
-      document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
-    },
-    stop() {
-      keys?.abort();
-      keys = null;
-      hideHud();
-      recentAt.clear();
-      clearTimeout(applyTimer);
-      applying = false;
-      applyEl = null;
-      recalling = false;
-    },
-    onSettingsChange() {
-      const current = getEntries();
-      const next = cap(current);
-      if (next.length !== current.length)
-        setEntries(next);
-      if (cursor > next.length)
-        cursor = next.length;
-    }
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/messageTimestamps/styles.css
-  registerStyle("messageTimestamps", `.void-timestamp {
-    margin-bottom: 0.125rem;
-}
-
-@media print {
-    .void-timestamp {
-        display: none;
-    }
-}
-`);
-
-  // src/plugins/messageTimestamps/index.tsx
-  var settings14 = definePluginSettings({
-    showDate: {
-      type: 3 /* BOOLEAN */,
-      description: "Show the full date for messages older than today.",
-      default: true
-    },
-    hideOwnMessages: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide timestamps on your own messages.",
-      default: false
-    }
-  });
-  function formatTimestamp(iso, showDate) {
-    const date = new Date(iso);
-    const now = new Date;
-    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
-    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (!showDate || today)
-      return time;
-    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
-  }
-  var messageTimestamps_default = definePlugin({
-    name: "MessageTimestamps",
-    icon: ClockIcon,
-    description: "Shows timestamps on chat messages.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings14,
-    _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
-      if (!response?.createTime)
-        return null;
-      if (settings14.store.hideOwnMessages && response.sender === "human")
-        return null;
-      return /* @__PURE__ */ React.createElement(Text2, {
-        as: "span",
-        size: "xs",
-        color: "muted",
-        className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings14.store.showDate));
-    }),
-    patches: [
-      {
-        find: "response-family:handleEditSave",
-        all: true,
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._renderTimestamp({response:$1}),$&"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/noDictation/index.ts
-  var STYLE_NAME4 = "noDictation";
-  var REFINEMENT_MARK = "void-no-dictation-refinement";
-  var REFINEMENT_ROW = `div:has(> .${REFINEMENT_MARK})`;
-  var BUTTON_CSS = `
-button[aria-label="Dictation"]:not([role="dialog"] *),
-button[aria-label^="Dictation ("]:not([role="dialog"] *),
-div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
-div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
-    display: none !important;
-}
-`;
-  var REFINEMENT_CSS = `${REFINEMENT_ROW},.h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
-  var settings15 = definePluginSettings({
-    hideDictationRefinement: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
-      default: true
-    }
-  });
-  function apply2() {
-    const rules = [BUTTON_CSS];
-    if (settings15.store.hideDictationRefinement)
-      rules.push(REFINEMENT_CSS);
-    registerStyle(STYLE_NAME4, rules.join(`
-`));
-  }
-  var noDictation_default = definePlugin({
-    name: "NoDictation",
-    icon: MicOffIcon,
-    description: "Hide the Dictation (voice input) button from the chat input bar, and optionally Dictation Refinement in Settings.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings15,
-    patches: [
-      {
-        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
-        replacement: {
-          match: /("How much Grok refines your speech-to-text transcriptions".{0,200}?\(0,\i\.jsxs\)\(\i,\{action:\i)(?=,children:\[)/,
-          replace: `$1,className:"${REFINEMENT_MARK}"`
-        }
-      }
-    ],
-    start: apply2,
-    onSettingsChange: apply2,
-    stop() {
-      unregisterStyle(STYLE_NAME4);
-    }
-  });
-
-  // src/plugins/noGrokBot/index.ts
-  var STYLE_NAME5 = "noGrokBot";
-  var CSS2 = `
-#grok-bot-nav-button,
-div:has(> #grok-bot-nav-button) {
-    display: none !important;
-}
-#promo-portal [aria-label*="Grok Bot"] {
-    display: none !important;
-}
-`;
-  var noGrokBot_default = definePlugin({
-    name: "NoGrokBot",
-    icon: BotOffIcon,
-    description: "Hide the top-right Grok Bot promo button.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    start() {
-      registerStyle(STYLE_NAME5, CSS2);
-    },
-    stop() {
-      unregisterStyle(STYLE_NAME5);
-    }
-  });
-
-  // src/plugins/noShareLink/index.ts
-  var STYLE_NAME6 = "noShareLink";
-  var settings16 = definePluginSettings({
-    hideShareProject: {
-      type: 3 /* BOOLEAN */,
-      description: "Inside a project: hide the top-right Share Project button.",
-      default: true
-    },
-    hideCreateShareLink: {
-      type: 3 /* BOOLEAN */,
-      description: "Not in a project: hide the top-right Create share link button on chats.",
-      default: true
-    }
-  });
-  function apply3() {
-    const rules = [];
-    if (settings16.store.hideShareProject) {
-      rules.push('button[aria-label="Share Project"]{display:none!important}');
-    }
-    if (settings16.store.hideCreateShareLink) {
-      rules.push('button[aria-label="Create share link"]{display:none!important}');
-    }
-    registerStyle(STYLE_NAME6, rules.join(`
-`));
-  }
-  var noShareLink_default = definePlugin({
-    name: "NoShareLink",
-    icon: Link2OffIcon,
-    description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
-    authors: [Devs.p],
-    tags: ["ui", "privacy"],
-    enabledByDefault: true,
-    settings: settings16,
-    start: apply3,
-    onSettingsChange: apply3,
-    stop() {
-      unregisterStyle(STYLE_NAME6);
-    }
-  });
-
-  // src/plugins/noSidebarIdentity/index.ts
-  var STYLE_NAME7 = "noSidebarIdentity";
-  var FOOTER = '[data-sidebar="footer"]';
-  var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
-  var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
-  var settings17 = definePluginSettings({
-    hideUsername: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the username next to the sidebar avatar.",
-      default: true
-    },
-    hideEmail: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the email next to the sidebar avatar.",
-      default: true
-    }
-  });
-  function apply4() {
-    const rules = [];
-    if (settings17.store.hideUsername) {
-      rules.push(`${STACK}>:first-child{display:none!important}`);
-      rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
-    }
-    if (settings17.store.hideEmail) {
-      rules.push(`${STACK}>:nth-child(2){display:none!important}`);
-    }
-    if (settings17.store.hideUsername && settings17.store.hideEmail) {
-      rules.push(`${TEXT_WRAP}{display:none!important}`);
-      rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
-    }
-    registerStyle(STYLE_NAME7, rules.join(`
-`));
-  }
-  var noSidebarIdentity_default = definePlugin({
-    name: "NoSidebarIdentity",
-    icon: UserRoundXIcon,
-    description: "Hide username and/or email in the Grok sidebar. Avatar stays clickable.",
-    authors: [Devs.p],
-    tags: ["ui", "privacy"],
-    enabledByDefault: true,
-    settings: settings17,
-    start: apply4,
-    onSettingsChange: apply4,
-    stop() {
-      unregisterStyle(STYLE_NAME7);
-    }
-  });
-
-  // src/plugins/oneko/index.ts
-  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
-  var ONEKO_SCRIPT = '(function oneko(){const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
-  var oneko_default = definePlugin({
-    name: "Oneko",
-    icon: CatIcon,
-    description: "Cat follows your mouse cursor.",
-    authors: [Devs.adryd],
-    tags: ["ui"],
-    cleanupSelectors: ["#oneko"],
-    start() {
-      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
-      const el = document.createElement("script");
-      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
-      document.head.appendChild(el);
-      el.addEventListener("load", () => {
-        el.remove();
-        URL.revokeObjectURL(el.src);
-      }, { once: true });
-    }
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/placeholder/styles.css
-  registerStyle("placeholder", `.void-ph-root {
-    contain: content;
-}
-
-.void-ph-textarea-wrap {
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.75rem;
-}
-
-.void-ph-textarea-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ph-textarea {
-    width: 100%;
-    min-height: 7.5rem;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    color: hsl(var(--fg-primary));
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.void-ph-textarea:focus {
-    outline: none;
-}
-`);
-
-  // src/plugins/placeholder/index.tsx
-  var cl22 = classNameFactory("void-ph-");
-  var DEFAULT_PHRASES = [
-    "What do you want to know?",
-    "How can I help you today?",
-    "What's on your mind?"
-  ].join(`
-`);
-  function parsePhrases(raw) {
-    return String(raw ?? "").split(`
-`).map((s) => s.trim()).filter(Boolean);
-  }
-  var settings18 = definePluginSettings({
-    phrases: {
-      type: 6 /* COMPONENT */,
-      default: DEFAULT_PHRASES,
-      component: PhrasesEditor
-    }
-  }).withPrivateSettings();
-  function PhrasesEditor() {
-    const { phrases } = settings18.use(["phrases"]);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem",
-      className: cl22("root")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium"
-    }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl22("textarea-wrap")
-    }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl22("textarea"),
-      value: phrases ?? DEFAULT_PHRASES,
-      onChange: (e) => {
-        settings18.store.phrases = e.target.value;
-      },
-      placeholder: DEFAULT_PHRASES
-    })));
-  }
-  var placeholder_default = definePlugin({
-    name: "Placeholder",
-    icon: TextCursorInputIcon,
-    description: "Replace the rotating chat input placeholder.",
-    authors: [Devs.p],
-    tags: ["chat"],
-    settings: settings18,
-    _phrases() {
-      const lines = parsePhrases(settings18.store.phrases ?? DEFAULT_PHRASES);
-      return lines.length ? lines : null;
-    },
-    patches: [
-      {
-        find: `query-bar-placeholder.whats-on-your-mind","What's on your mind?"`,
-        replacement: {
-          match: /("query-bar-placeholder\.whats-on-your-mind","What's on your mind\?"\)\],\[\i,\i,\i,\i\]\),)(\i)=(\i\(\)),(\i)=(\i)\.map\(\2\)/,
-          replace: "$1$2=$3,$4=($self._phrases()??$5).map($2)"
-        }
-      }
-    ]
-  });
-
-  // void-css:/workspace/artifacts/Void-src/src/plugins/recentTopics/styles.css
+  // void-css:/tmp/void-src/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -11429,8 +8178,8 @@ html.void-rt-open [data-sidebar="gap"] {
 `);
 
   // src/plugins/recentTopics/index.tsx
-  var logger25 = new Logger("RecentTopics");
-  var cl23 = classNameFactory("void-rt-");
+  var logger19 = new Logger("RecentTopics");
+  var cl18 = classNameFactory("void-rt-");
   var HOME_KEY = "home";
   var HOME_SEP = "home:";
   var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
@@ -11441,7 +8190,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
   var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
   var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
-  var settings19 = definePluginSettings({
+  var settings6 = definePluginSettings({
     maxRecent: {
       type: 4 /* SELECT */,
       description: "How many recently opened conversations to show.",
@@ -11459,7 +8208,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var selected = 0;
   var held = false;
   var ctrlHeld = false;
-  var keys2 = null;
+  var keys = null;
   var host = null;
   var paintedKey = "";
   var sidebarSnap = null;
@@ -11487,14 +8236,14 @@ html.void-rt-open [data-sidebar="gap"] {
     return out;
   }
   function readVisits() {
-    return settings19.plain.visits ?? [];
+    return settings6.plain.visits ?? [];
   }
   function maxCount() {
-    const n = Number(settings19.store.maxRecent);
+    const n = Number(settings6.store.maxRecent);
     return Number.isFinite(n) && n > 0 ? n : 5;
   }
   function capVisits(ids) {
-    const allowHome = settings19.store.includeHome;
+    const allowHome = settings6.store.includeHome;
     return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
   }
   function pruneRecord(source, ids) {
@@ -11512,15 +8261,15 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function sameRecord(a, b) {
     const src = a ?? {};
-    const keys3 = Object.keys(b);
-    if (Object.keys(src).length !== keys3.length)
+    const keys2 = Object.keys(b);
+    if (Object.keys(src).length !== keys2.length)
       return false;
-    return keys3.every((k) => src[k] === b[k]);
+    return keys2.every((k) => src[k] === b[k]);
   }
   function assignRecord(key, next) {
-    if (sameRecord(settings19.plain[key], next))
+    if (sameRecord(settings6.plain[key], next))
       return false;
-    settings19.store[key] = next;
+    settings6.store[key] = next;
     return true;
   }
   var writing = false;
@@ -11530,14 +8279,14 @@ html.void-rt-open [data-sidebar="gap"] {
     writing = true;
     try {
       const visits = capVisits(next);
-      const rawWs = pruneRecord(settings19.plain.workspaceByConv, visits);
+      const rawWs = pruneRecord(settings6.plain.workspaceByConv, visits);
       const workspaceByConv = {};
       for (const [id, value] of Object.entries(rawWs)) {
         const ws = asWorkspaceId(value);
         if (ws)
           workspaceByConv[id] = ws;
       }
-      const pages = pruneRecord(settings19.plain.pages, visits);
+      const pages = pruneRecord(settings6.plain.pages, visits);
       const usedWs = new Set(Object.values(workspaceByConv));
       for (const id of visits) {
         const ws = workspaceFromHomeId(id);
@@ -11547,17 +8296,17 @@ html.void-rt-open [data-sidebar="gap"] {
         workspaceByConv[id] = ws;
       }
       const keepProjects = {};
-      for (const [id, name] of Object.entries(settings19.plain.projectNames ?? {})) {
+      for (const [id, name] of Object.entries(settings6.plain.projectNames ?? {})) {
         const n = usableName(name);
         if (usedWs.has(id) && n)
           keepProjects[id] = n;
       }
       let changed = false;
       if (!sameList(readVisits(), visits)) {
-        settings19.store.visits = visits;
+        settings6.store.visits = visits;
         changed = true;
       }
-      if (assignRecord("titles", pruneRecord(settings19.plain.titles, visits)))
+      if (assignRecord("titles", pruneRecord(settings6.plain.titles, visits)))
         changed = true;
       if (assignRecord("workspaceByConv", workspaceByConv))
         changed = true;
@@ -11575,10 +8324,10 @@ html.void-rt-open [data-sidebar="gap"] {
     const t = title?.trim();
     if (!id || isHomeId(id) || !t)
       return;
-    const prev = settings19.plain.titles ?? {};
+    const prev = settings6.plain.titles ?? {};
     if (prev[id] === t)
       return;
-    settings19.store.titles = { ...prev, [id]: t };
+    settings6.store.titles = { ...prev, [id]: t };
   }
   function isHomeId(id) {
     return id === HOME_KEY || id.startsWith(HOME_SEP);
@@ -11673,14 +8422,14 @@ html.void-rt-open [data-sidebar="gap"] {
       if (optimisticConversationId)
         return optimisticConversationId;
     } catch (e) {
-      logger25.debug("ChatPageStore unavailable:", e);
+      logger19.debug("ChatPageStore unavailable:", e);
     }
     try {
       const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
       if (fromRoute != null)
         return fromRoute;
     } catch (e) {
-      logger25.debug("RoutingStore unavailable:", e);
+      logger19.debug("RoutingStore unavailable:", e);
     }
     const ws = projectIdFromUrl();
     return ws ? homeId(ws) : null;
@@ -11699,7 +8448,7 @@ html.void-rt-open [data-sidebar="gap"] {
         add(historyStack[i]);
       return unique(ids);
     } catch (e) {
-      logger25.debug("historyStack unavailable:", e);
+      logger19.debug("historyStack unavailable:", e);
       return [];
     }
   }
@@ -11714,7 +8463,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
       return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
     } catch (e) {
-      logger25.debug("Conversation lookup failed:", e);
+      logger19.debug("Conversation lookup failed:", e);
       return;
     }
   }
@@ -11724,7 +8473,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const conv = lookup(id);
     if (conv?.title?.trim())
       return conv.title.trim();
-    const cached = settings19.plain.titles?.[id];
+    const cached = settings6.plain.titles?.[id];
     if (cached)
       return cached;
     if (id === currentVisit())
@@ -11774,7 +8523,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const conv = byId[id] ?? byIdWithWorkspaces[id];
       return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
     } catch (e) {
-      logger25.debug("convWorkspaceId failed:", e);
+      logger19.debug("convWorkspaceId failed:", e);
       return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
     }
   }
@@ -11915,12 +8664,12 @@ html.void-rt-open [data-sidebar="gap"] {
     return "";
   }
   function dropWorkspace(id) {
-    const prev = settings19.plain.workspaceByConv ?? {};
+    const prev = settings6.plain.workspaceByConv ?? {};
     if (!prev[id])
       return;
     const next = { ...prev };
     delete next[id];
-    settings19.store.workspaceByConv = next;
+    settings6.store.workspaceByConv = next;
   }
   function workspaceOf(id) {
     if (!id)
@@ -11929,7 +8678,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const fromKey = workspaceFromHomeId(id);
       if (fromKey)
         return fromKey;
-      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings19.plain.workspaceByConv?.[id]);
+      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings6.plain.workspaceByConv?.[id]);
     }
     const fromConv = convWorkspaceId(id);
     if (fromConv)
@@ -11939,7 +8688,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
     if (fromSidebar)
       return fromSidebar;
-    const cached = asWorkspaceId(settings19.plain.workspaceByConv?.[id]);
+    const cached = asWorkspaceId(settings6.plain.workspaceByConv?.[id]);
     if (cached)
       return cached;
     const fromHist = workspaceFromHistory(id);
@@ -11970,7 +8719,7 @@ html.void-rt-open [data-sidebar="gap"] {
     if (!ws)
       return "";
     const idx = sidebarIndex();
-    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings19.plain.projectNames?.[ws] || "");
+    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings6.plain.projectNames?.[ws] || "");
     if (!named)
       return "";
     const live = liveWorkspaceId();
@@ -11985,24 +8734,24 @@ html.void-rt-open [data-sidebar="gap"] {
     const ws = workspaceOf(id);
     if (!ws)
       return;
-    const prevWs = settings19.plain.workspaceByConv ?? {};
+    const prevWs = settings6.plain.workspaceByConv ?? {};
     if (prevWs[id] !== ws)
-      settings19.store.workspaceByConv = { ...prevWs, [id]: ws };
+      settings6.store.workspaceByConv = { ...prevWs, [id]: ws };
     const idx = sidebarIndex();
     const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
     const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
-    const name = usableName(sidebarName || wsNames[ws] || liveName || settings19.plain.projectNames?.[ws] || "");
+    const name = usableName(sidebarName || wsNames[ws] || liveName || settings6.plain.projectNames?.[ws] || "");
     if (!name)
       return;
     wsNames[ws] = name;
-    const prevNames = settings19.plain.projectNames ?? {};
+    const prevNames = settings6.plain.projectNames ?? {};
     if (prevNames[ws] !== name)
-      settings19.store.projectNames = { ...prevNames, [ws]: name };
+      settings6.store.projectNames = { ...prevNames, [ws]: name };
   }
   function reconcileSidebarCache() {
     const idx = sidebarIndex();
-    const prevWs = { ...settings19.plain.workspaceByConv };
-    const prevNames = { ...settings19.plain.projectNames };
+    const prevWs = { ...settings6.plain.workspaceByConv };
+    const prevNames = { ...settings6.plain.projectNames };
     let wsChanged = false;
     let namesChanged = false;
     for (const [conv, ws] of Object.entries(idx.wsByConv)) {
@@ -12029,9 +8778,9 @@ html.void-rt-open [data-sidebar="gap"] {
       namesChanged = true;
     }
     if (wsChanged)
-      settings19.store.workspaceByConv = prevWs;
+      settings6.store.workspaceByConv = prevWs;
     if (namesChanged)
-      settings19.store.projectNames = prevNames;
+      settings6.store.projectNames = prevNames;
   }
   function requestWorkspace(id) {
     if (!id || isHomeId(id) || pendingWs.has(id))
@@ -12060,21 +8809,21 @@ html.void-rt-open [data-sidebar="gap"] {
             paint();
           return;
         }
-        const prev = settings19.plain.workspaceByConv ?? {};
+        const prev = settings6.plain.workspaceByConv ?? {};
         if (prev[id] !== ws)
-          settings19.store.workspaceByConv = { ...prev, [id]: ws };
+          settings6.store.workspaceByConv = { ...prev, [id]: ws };
         const live = liveWorkspaceId();
         const liveName = usableName(readOpenProjectName());
-        const names = settings19.plain.projectNames ?? {};
+        const names = settings6.plain.projectNames ?? {};
         if (live && ws !== live && liveName && names[ws] === liveName) {
           const next = { ...names };
           delete next[ws];
-          settings19.store.projectNames = next;
+          settings6.store.projectNames = next;
           delete wsNames[ws];
         }
         if (open2)
           paint();
-      }).catch((e) => logger25.debug("workspace fetch failed:", e)).finally(() => {
+      }).catch((e) => logger19.debug("workspace fetch failed:", e)).finally(() => {
         pendingWs.delete(id);
       });
     } catch {
@@ -12181,7 +8930,7 @@ html.void-rt-open [data-sidebar="gap"] {
     return t;
   }
   function plainText(md) {
-    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
+    const t = md.replaceAll(/```[\s\S]*?```/g, " ").replaceAll(/`([^`]+)`/g, "$1").replaceAll(/!\[[^\]]*\]\([^)]*\)/g, " ").replaceAll(/\[([^\]]+)\]\([^)]*\)/g, "$1").replaceAll(/^#{1,6}\s+/gm, "").replaceAll(/[*_~]{1,3}/g, "").replaceAll(/^>\s+/gm, "");
     return scrubText(t);
   }
   function clipLine(text, max) {
@@ -12254,7 +9003,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
     const cached = byConversationId[id];
     if (cached?.length)
-      return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+      return [...cached].toSorted((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
     try {
       const chat = ChatPageStore.useChatPageStore.getState();
       if (chat.conversationId === id) {
@@ -12294,7 +9043,7 @@ html.void-rt-open [data-sidebar="gap"] {
     try {
       return responsesToLines(responsesOf(id));
     } catch (e) {
-      logger25.debug("ResponseStore snapshot failed:", e);
+      logger19.debug("ResponseStore snapshot failed:", e);
       return [];
     }
   }
@@ -12323,14 +9072,14 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   }
   function snapOf(id) {
-    return thumbs.get(id) ?? parseSnap(settings19.plain.pages?.[id]);
+    return thumbs.get(id) ?? parseSnap(settings6.plain.pages?.[id]);
   }
   function rememberPage(id, snap) {
     const json = JSON.stringify(snap);
-    const prev = settings19.plain.pages ?? {};
+    const prev = settings6.plain.pages ?? {};
     if (prev[id] === json)
       return;
-    settings19.store.pages = { ...prev, [id]: json };
+    settings6.store.pages = { ...prev, [id]: json };
   }
   function applyLineStyle(el, role) {
     el.style.display = "-webkit-box";
@@ -12354,10 +9103,10 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   }
   function buildPageShot(snap) {
-    const page = node("span", cl23("page"));
+    const page = node("span", cl18("page"));
     page.dataset.theme = snap.theme;
     for (const line of lastRound(snap.lines)) {
-      const el = node("span", cl23("page-line", line.role === "user" && "page-line-user"), line.text);
+      const el = node("span", cl18("page-line", line.role === "user" && "page-line-user"), line.text);
       el.dataset.role = line.role;
       applyLineStyle(el, line.role);
       page.append(el);
@@ -12399,7 +9148,7 @@ html.void-rt-open [data-sidebar="gap"] {
           captureId(id);
       }
     } catch (e) {
-      logger25.debug("snapshot failed:", e);
+      logger19.debug("snapshot failed:", e);
     } finally {
       capturing = false;
     }
@@ -12417,7 +9166,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function bump(id) {
     if (!id)
       return;
-    if (isHomeId(id) && !settings19.store.includeHome)
+    if (isHomeId(id) && !settings6.store.includeHome)
       return;
     writeVisits(capVisits([id, ...readVisits()]));
     if (isHomeId(id)) {
@@ -12465,7 +9214,7 @@ html.void-rt-open [data-sidebar="gap"] {
       if (parsed?.page && parsed.page !== "unknown")
         return parsed;
     } catch (e) {
-      logger25.debug("urlToRoute failed:", e);
+      logger19.debug("urlToRoute failed:", e);
     }
     return null;
   }
@@ -12475,7 +9224,7 @@ html.void-rt-open [data-sidebar="gap"] {
       chat.setConversationId(id || undefined);
       chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
     } catch (e) {
-      logger25.debug("ChatPageStore update failed:", e);
+      logger19.debug("ChatPageStore update failed:", e);
     }
   }
   function navigateTo(id) {
@@ -12557,17 +9306,17 @@ html.void-rt-open [data-sidebar="gap"] {
             });
             applyChatPage(id, ws);
             rememberProject(id);
-          }).catch((e) => logger25.debug("workspace resolve failed:", e));
+          }).catch((e) => logger19.debug("workspace resolve failed:", e));
         } catch (e) {
-          logger25.debug("workspace fetch skipped:", e);
+          logger19.debug("workspace fetch skipped:", e);
         }
       }
     } catch (e) {
-      logger25.error("Failed to navigate:", e);
+      logger19.error("Failed to navigate:", e);
       try {
         location.assign(hrefFor(id, workspaceOf(id) || undefined));
       } catch (navErr) {
-        logger25.error("Fallback navigation failed:", navErr);
+        logger19.error("Fallback navigation failed:", navErr);
       }
     }
   }
@@ -12593,11 +9342,11 @@ html.void-rt-open [data-sidebar="gap"] {
       if (topics().length > 1)
         selected = reverse ? topics().length - 1 : 1;
     } catch (e) {
-      logger25.error("Failed to open switcher:", e);
+      logger19.error("Failed to open switcher:", e);
     }
     paint();
   }
-  function cycle2(reverse) {
+  function cycle(reverse) {
     const { length } = topics();
     if (!length)
       return;
@@ -12621,7 +9370,7 @@ html.void-rt-open [data-sidebar="gap"] {
     held = false;
     paint();
   }
-  function onKeyDown3(e) {
+  function onKeyDown(e) {
     if (isCtrlKey(e)) {
       ctrlHeld = true;
       return;
@@ -12632,11 +9381,11 @@ html.void-rt-open [data-sidebar="gap"] {
       e.stopImmediatePropagation();
       try {
         if (open2)
-          cycle2(e.shiftKey);
+          cycle(e.shiftKey);
         else
           begin(e.shiftKey, true);
       } catch (err) {
-        logger25.error("Hotkey failed:", err);
+        logger19.error("Hotkey failed:", err);
       }
       return;
     }
@@ -12649,7 +9398,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
     if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
       e.preventDefault();
-      cycle2(e.shiftKey);
+      cycle(e.shiftKey);
     }
   }
   function onKeyUp(e) {
@@ -12690,19 +9439,19 @@ html.void-rt-open [data-sidebar="gap"] {
   function fillShot(box, id) {
     const snap = snapOf(id);
     if (!snap) {
-      const fallback = node("span", cl23("fallback"));
-      fallback.append(faviconImg(cl23("favicon")));
+      const fallback = node("span", cl18("fallback"));
+      fallback.append(faviconImg(cl18("favicon")));
       box.append(fallback);
       return;
     }
-    const shot = node("span", cl23("shot"));
+    const shot = node("span", cl18("shot"));
     shot.append(buildPageShot(snap));
     box.append(shot);
   }
-  var GROK_BG_PATH2 = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
-  var GROK_MARK_P12 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
-  var GROK_MARK_P22 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
-  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH2}" fill="#050505"/><path d="${GROK_MARK_P12}" fill="#FCFCFC"/><path d="${GROK_MARK_P22}" fill="#FCFCFC"/></svg>`)}`;
+  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH}" fill="#050505"/><path d="${GROK_MARK_P1}" fill="#FCFCFC"/><path d="${GROK_MARK_P2}" fill="#FCFCFC"/></svg>`)}`;
   function accentOf() {
     return "hsl(var(--fg-primary))";
   }
@@ -12760,7 +9509,7 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function folderIcon() {
     const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg2.setAttribute("class", cl23("folder"));
+    svg2.setAttribute("class", cl18("folder"));
     svg2.setAttribute("viewBox", "0 0 24 24");
     svg2.setAttribute("fill", "none");
     svg2.setAttribute("stroke", "currentColor");
@@ -12779,33 +9528,33 @@ html.void-rt-open [data-sidebar="gap"] {
     panel.style.colorScheme = theme;
   }
   function buildHost() {
-    const root = node("div", cl23("root"));
+    const root = node("div", cl18("root"));
     root.id = "void-rt-host";
     root.setAttribute("role", "presentation");
     root.addEventListener("click", cancel);
-    const panel = node("div", cl23("panel"));
+    const panel = node("div", cl18("panel"));
     panel.setAttribute("role", "listbox");
     panel.setAttribute("aria-label", "Recent conversations");
     panel.addEventListener("click", (e) => e.stopPropagation());
-    panel.append(node("div", cl23("list")));
+    panel.append(node("div", cl18("list")));
     root.append(panel);
     return root;
   }
   function renderList(items) {
     if (!host)
       return;
-    const panel = host.querySelector(`.${cl23("panel")}`);
+    const panel = host.querySelector(`.${cl18("panel")}`);
     if (!panel)
       return;
-    let list = panel.querySelector(`.${cl23("list")}`);
+    let list = panel.querySelector(`.${cl18("list")}`);
     if (!list) {
       panel.replaceChildren();
-      list = node("div", cl23("list"));
+      list = node("div", cl18("list"));
       panel.append(list);
     }
     list.replaceChildren();
     items.forEach((topic, i) => {
-      const btn = node("button", cl23("card"));
+      const btn = node("button", cl18("card"));
       btn.type = "button";
       btn.tabIndex = -1;
       btn.setAttribute("role", "option");
@@ -12824,14 +9573,14 @@ html.void-rt-open [data-sidebar="gap"] {
         syncActive();
       });
       btn.addEventListener("click", () => pick(i));
-      const shot = node("span", cl23("thumb"));
+      const shot = node("span", cl18("thumb"));
       shot.setAttribute("aria-hidden", "true");
       fillShot(shot, topic.id);
-      const meta = node("span", cl23("meta"));
-      meta.append(node("span", cl23("name"), topic.title));
+      const meta = node("span", cl18("meta"));
+      meta.append(node("span", cl18("name"), topic.title));
       if (topic.project) {
-        const proj = node("span", cl23("host"));
-        proj.append(folderIcon(), node("span", cl23("host-name"), topic.project));
+        const proj = node("span", cl18("host"));
+        proj.append(folderIcon(), node("span", cl18("host-name"), topic.project));
         meta.append(proj);
       }
       btn.append(shot, meta);
@@ -12841,7 +9590,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function syncActive() {
     if (!host)
       return;
-    const cards = host.querySelectorAll(`.${cl23("card")}`);
+    const cards = host.querySelectorAll(`.${cl18("card")}`);
     cards.forEach((card, i) => {
       const on = i === selected;
       card.setAttribute("data-active", on ? "true" : "false");
@@ -12866,21 +9615,21 @@ html.void-rt-open [data-sidebar="gap"] {
       host = buildHost();
       mountOverlay(host);
     }
-    const panel = host.querySelector(`.${cl23("panel")}`);
+    const panel = host.querySelector(`.${cl18("panel")}`);
     if (!panel)
       return;
     applyTheme(panel);
     panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
     if (!items.length) {
       if (paintedKey !== "__empty__") {
-        panel.replaceChildren(node("div", cl23("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+        panel.replaceChildren(node("div", cl18("empty"), "Open a few chats, then hold Ctrl+` to switch."));
         paintedKey = "__empty__";
       }
       requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
       return;
     }
-    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl23("list")}`)) {
-      panel.replaceChildren(node("div", cl23("list")));
+    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl18("list")}`)) {
+      panel.replaceChildren(node("div", cl18("list")));
       paintedKey = "";
     }
     if (paintedKey !== key) {
@@ -12932,7 +9681,7 @@ html.void-rt-open [data-sidebar="gap"] {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings19,
+    settings: settings6,
     managedStyle: "recentTopics",
     _mark({ response }) {
       try {
@@ -12974,12 +9723,12 @@ html.void-rt-open [data-sidebar="gap"] {
           bump(current);
         scheduleCapture();
       } catch (e) {
-        logger25.error("Hydrate failed:", e);
+        logger19.error("Hydrate failed:", e);
       }
-      if (!keys2) {
-        keys2 = new AbortController;
-        const { signal } = keys2;
-        window.addEventListener("keydown", onKeyDown3, { capture: true, signal });
+      if (!keys) {
+        keys = new AbortController;
+        const { signal } = keys;
+        window.addEventListener("keydown", onKeyDown, { capture: true, signal });
         window.addEventListener("keyup", onKeyUp, { capture: true, signal });
         window.addEventListener("blur", onWindowBlur, { signal });
         document.addEventListener("visibilitychange", onVisibility, { signal });
@@ -12987,8 +9736,8 @@ html.void-rt-open [data-sidebar="gap"] {
       }
     },
     stop() {
-      keys2?.abort();
-      keys2 = null;
+      keys?.abort();
+      keys = null;
       open2 = false;
       held = false;
       ctrlHeld = false;
@@ -12999,7 +9748,7 @@ html.void-rt-open [data-sidebar="gap"] {
       try {
         writeVisits(capVisits(readVisits()));
       } catch (e) {
-        logger25.error("Settings update failed:", e);
+        logger19.error("Settings update failed:", e);
       }
     },
     zustand: {
@@ -13047,306 +9796,1486 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // src/plugins/responseNotification/index.ts
-  var settings20 = definePluginSettings({
-    sound: {
+  // src/plugins/noDictation/index.ts
+  var STYLE_NAME2 = "noDictation";
+  var REFINEMENT_MARK = "void-no-dictation-refinement";
+  var REFINEMENT_ROW = `div:has(> .${REFINEMENT_MARK})`;
+  var BUTTON_CSS = `
+button[aria-label="Dictation"]:not([role="dialog"] *),
+button[aria-label^="Dictation ("]:not([role="dialog"] *),
+div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
+div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
+    display: none !important;
+}
+`;
+  var REFINEMENT_CSS = `${REFINEMENT_ROW},.h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
+  var settings7 = definePluginSettings({
+    hideDictationRefinement: {
       type: 3 /* BOOLEAN */,
-      description: "Play a notification sound.",
-      default: true
-    },
-    soundUrl: {
-      type: 0 /* STRING */,
-      description: "Custom sound URL (leave empty for default beep).",
-      default: "",
-      placeholder: "https://example.com/sound.mp3"
-    },
-    browserNotification: {
-      type: 3 /* BOOLEAN */,
-      description: "Show a browser notification.",
-      default: true
-    },
-    onlyWhenHidden: {
-      type: 3 /* BOOLEAN */,
-      description: "Only notify when the tab is not focused.",
+      description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
       default: true
     }
   });
-  var userGestured = false;
-  var gestureCtrl = null;
-  function playBeep() {
-    const ctx = new AudioContext;
-    const start = () => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 800;
-      gain.gain.value = 0.15;
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-      osc.onended = () => ctx.close();
-    };
-    if (ctx.state === "suspended")
-      ctx.resume().then(start, () => ctx.close());
-    else
-      start();
+  function apply() {
+    const rules = [BUTTON_CSS];
+    if (settings7.store.hideDictationRefinement)
+      rules.push(REFINEMENT_CSS);
+    registerStyle(STYLE_NAME2, rules.join(`
+`));
   }
-  function playSound() {
-    if (!userGestured)
-      return;
-    const url = settings20.store.soundUrl?.trim();
-    if (url) {
-      const audio = new Audio(url);
-      audio.volume = 0.3;
-      audio.play().catch(() => playBeep());
-    } else {
-      playBeep();
-    }
-  }
-  function onStreamEnd3({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "closed")
-      return;
-    if (settings20.store.onlyWhenHidden && document.visibilityState === "visible")
-      return;
-    if (settings20.store.sound)
-      playSound();
-    if (settings20.store.browserNotification)
-      sendBrowserNotification("Grok", "Response complete.");
-  }
-  var responseNotification_default = definePlugin({
-    name: "ResponseNotification",
-    icon: BellIcon,
-    description: "Notify when Grok finishes responding.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings20,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      if (gestureCtrl)
-        return;
-      gestureCtrl = new AbortController;
-      const markGestured = () => {
-        userGestured = true;
-        gestureCtrl?.abort();
-        gestureCtrl = null;
-      };
-      for (const evt of ["pointerdown", "keydown", "touchstart"]) {
-        addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
+  var noDictation_default = definePlugin({
+    name: "NoDictation",
+    icon: MicOffIcon,
+    description: "Hide the Dictation (voice input) button from the chat input bar, and optionally Dictation Refinement in Settings.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings7,
+    patches: [
+      {
+        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
+        replacement: {
+          match: /("How much Grok refines your speech-to-text transcriptions".{0,200}?\(0,\i\.jsxs\)\(\i,\{action:\i)(?=,children:\[)/,
+          replace: `$1,className:"${REFINEMENT_MARK}"`
+        }
       }
-    },
+    ],
+    start: apply,
+    onSettingsChange: apply,
     stop() {
-      gestureCtrl?.abort();
-      gestureCtrl = null;
-    },
-    events: {
-      streamEnd: onStreamEnd3
+      unregisterStyle(STYLE_NAME2);
     }
   });
 
-  // void-css:/workspace/artifacts/Void-src/src/plugins/settingsFlyout/styles.css
-  registerStyle("settingsFlyout", `/*
+  // void-css:/tmp/void-src/src/plugins/messageTimestamps/styles.css
+  registerStyle("messageTimestamps", `.void-timestamp {
+    margin-bottom: 0.125rem;
+}
+
+@media print {
+    .void-timestamp {
+        display: none;
+    }
+}
+`);
+
+  // src/plugins/messageTimestamps/index.tsx
+  var settings8 = definePluginSettings({
+    showDate: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the full date for messages older than today.",
+      default: true
+    },
+    hideOwnMessages: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide timestamps on your own messages.",
+      default: false
+    }
+  });
+  function formatTimestamp(iso, showDate) {
+    const date = new Date(iso);
+    const now = new Date;
+    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (!showDate || today)
+      return time;
+    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
+  }
+  var messageTimestamps_default = definePlugin({
+    name: "MessageTimestamps",
+    icon: ClockIcon,
+    description: "Shows timestamps on chat messages.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings8,
+    _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
+      if (!response?.createTime)
+        return null;
+      if (settings8.store.hideOwnMessages && response.sender === "human")
+        return null;
+      return /* @__PURE__ */ React.createElement(Text2, {
+        as: "span",
+        size: "xs",
+        color: "muted",
+        className: "void-timestamp"
+      }, formatTimestamp(response.createTime, settings8.store.showDate));
+    }),
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._renderTimestamp({response:$1}),$&"
+        }
+      }
+    ]
+  });
+
+  // void-css:/tmp/void-src/src/plugins/downloadTTS/styles.css
+  registerStyle("downloadTTS", `.void-download-tts-spinner {
+    pointer-events: none;
+}
+`);
+
+  // src/plugins/downloadTTS/index.tsx
+  var cl19 = classNameFactory("void-download-tts-");
+  var logger20 = new Logger("DownloadTTS");
+  async function fetchAndDownload() {
+    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
+    if (!currentStreamId)
+      return;
+    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
+    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
+    if (voiceId)
+      url += `?voiceId=${encodeURIComponent(voiceId)}`;
+    const res = await fetch(url);
+    if (!res.ok)
+      throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
+  }
+  function DownloadButton() {
+    const [loading, onClick] = useAsyncAction(async () => {
+      try {
+        await fetchAndDownload();
+      } catch (e) {
+        logger20.error("Failed to download TTS audio:", e);
+      }
+    });
+    return /* @__PURE__ */ React.createElement(Button, {
+      "aria-label": "Download audio",
+      onClick,
+      disabled: loading,
+      size: "md",
+      shape: "square",
+      variant: "tertiary"
+    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
+      size: "sm",
+      className: cl19("spinner")
+    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
+      size: 16
+    }));
+  }
+  var downloadTTS_default = definePlugin({
+    name: "DownloadTTS",
+    icon: Volume2Icon,
+    description: "Add a download button to the TTS playback controls.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    patches: [{
+      find: 'tts-controls.stop.label","Stop"',
+      all: true,
+      replacement: {
+        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
+        replace: "$1,$self._renderDownloadButton()]"
+      }
+    }],
+    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
+  });
+
+  // src/plugins/autoCollapse/index.ts
+  var autoCollapse_default = definePlugin({
+    name: "AutoCollapse",
+    icon: ChevronsDownUpIcon,
+    description: "Automatically collapse code blocks in responses.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    _collapse: () => true,
+    patches: [
+      {
+        find: ["isInitiallyCollapsed", "showRunCode"],
+        all: true,
+        replacement: {
+          match: /isInitiallyCollapsed:(\i)=!1/g,
+          replace: "isInitiallyCollapsed:$1=$self._collapse()"
+        }
+      }
+    ]
+  });
+
+  // void-css:/tmp/void-src/src/plugins/betterImagine/styles.css
+  registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-.void-sf-menu-icon {
-    width: 1rem;
-    height: 1rem;
-    margin-inline-end: 0.5rem;
-    color: hsl(var(--fg-secondary));
+.void-imagine-chip {
+    background: hsl(var(--surface-l1));
+}
+
+.void-imagine-chip:hover {
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-search {
+    width: 10rem;
     flex-shrink: 0;
+    border-radius: 9999px;
+}
+
+.void-imagine-date-select,
+.void-imagine-sort-select {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+    border: none;
+}
+
+.void-imagine-sort-active {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
 }
 `);
 
-  // src/plugins/settingsFlyout/icons.tsx
-  function grokSvg(props, ...children) {
-    return /* @__PURE__ */ React.createElement("svg", {
-      width: props.width ?? props.size ?? 16,
-      height: props.height ?? props.size ?? 16,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      xmlns: "http://www.w3.org/2000/svg",
-      className: props.className,
-      "aria-hidden": "true"
-    }, children);
-  }
-  var CogIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "m13.456 1.75.296.445c.832 1.247 1.198 1.654 1.558 1.818.321.146.82.172 2.242-.157l.54-.124 2.171 2.171-.124.54c-.328 1.423-.302 1.921-.156 2.243.164.36.57.726 1.817 1.557l.446.297v2.92l-.446.297c-1.247.831-1.653 1.198-1.817 1.558-.146.32-.172.82.156 2.242l.124.54-2.17 2.17-.54-.123c-1.423-.329-1.922-.303-2.243-.157-.36.164-.726.57-1.558 1.818l-.296.445h-2.92l-.297-.445c-.832-1.247-1.198-1.654-1.558-1.818-.321-.146-.82-.172-2.242.157l-.54.124-2.171-2.171.124-.54c.328-1.423.303-1.921.156-2.242-.164-.36-.57-.727-1.817-1.558l-.445-.297v-2.92l.445-.297c1.247-.831 1.653-1.198 1.817-1.557.147-.322.172-.82-.156-2.243l-.124-.54 2.17-2.17.541.123c1.422.329 1.92.303 2.242.157.36-.164.727-.57 1.558-1.818l.297-.445zm-1.853 2c-.637.93-1.249 1.699-2.092 2.083-.875.4-1.845.324-2.977.092l-.614.613c.232 1.132.308 2.102-.091 2.978-.385.842-1.153 1.454-2.083 2.09v.787c.93.636 1.698 1.248 2.083 2.091.399.876.323 1.845.091 2.977l.614.613c1.132-.232 2.102-.306 2.977.093.843.384 1.455 1.153 2.092 2.083h.785c.637-.93 1.249-1.699 2.092-2.083.875-.399 1.845-.325 2.976-.093l.614-.613c-.232-1.132-.306-2.101.093-2.977.384-.843 1.152-1.455 2.083-2.091v-.787c-.93-.636-1.7-1.248-2.083-2.09-.4-.876-.325-1.846-.093-2.978l-.614-.613c-1.131.232-2.1.307-2.976-.092-.843-.384-1.455-1.153-2.092-2.083zM14.001 12A2 2 0 1 0 10 12a2 2 0 0 0 4 0m2 0A4 4 0 1 1 8 12a4 4 0 0 1 8 0"
-  }));
-  var PersonIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 12.25C16.4183 12.25 20 15.8317 20 20.25V22H4V20.25C4 15.8317 7.58172 12.25 12 12.25ZM12 14.25C8.77005 14.25 6.13694 16.8022 6.00586 20H17.9941C17.8631 16.8022 15.23 14.25 12 14.25Z",
-    fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 2C14.4853 2 16.5 4.01472 16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2ZM12 4C10.6193 4 9.5 5.11929 9.5 6.5C9.5 7.88071 10.6193 9 12 9C13.3807 9 14.5 7.88071 14.5 6.5C14.5 5.11929 13.3807 4 12 4Z",
-    fill: "currentColor"
-  }));
-  var PaintIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M16.2637 3.19188C17.5328 2.03183 19.4908 2.07547 20.707 3.29149C21.9244 4.50883 21.967 6.46969 20.8037 7.73876L20.8027 7.73778L12.4814 16.9038C12.2753 19.4758 10.1251 21.4985 7.5 21.4985H2.5V16.4985C2.50025 13.8741 4.52251 11.7229 7.09375 11.5161L16.2637 3.19188ZM19.293 4.70653C18.8329 4.24643 18.0921 4.2299 17.6123 4.66942L17.6084 4.67333L9.58594 11.9546C10.67 12.453 11.5441 13.3277 12.043 14.4116L19.3262 6.39012L19.3291 6.3872C19.7688 5.90754 19.7529 5.16673 19.293 4.70653ZM4.5 19.4985H7.5C9.15685 19.4985 10.5 18.1554 10.5 16.4985C10.4997 14.8419 9.15669 13.4985 7.5 13.4985C5.84331 13.4985 4.50026 14.8419 4.5 16.4985V19.4985Z"
-  }));
-  var VisitIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M21.5 14.5L19.2402 16.1201L22.0596 18.9404L19.9404 21.0596L17.1201 18.2402L15.5 20.5L13 12L21.5 14.5Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M18.5 2C20.433 2 22 3.567 22 5.5V11H20V5.5C20 4.67157 19.3284 4 18.5 4H5.5C4.67157 4 4 4.67157 4 5.5V16.5C4 17.3284 4.67157 18 5.5 18H12V20H5.5C3.567 20 2 18.433 2 16.5V5.5C2 3.567 3.567 2 5.5 2H18.5Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M10.4941 5.52441C10.7365 5.57269 10.9591 5.69148 11.1338 5.86621C11.3085 6.04094 11.4273 6.26352 11.4756 6.50586C11.5238 6.74833 11.4999 7.00011 11.4053 7.22852C11.3107 7.45691 11.1499 7.65171 10.9443 7.78906C10.7388 7.92641 10.4972 8 10.25 8C9.91848 8 9.60063 7.86821 9.36621 7.63379C9.13179 7.39937 9 7.08152 9 6.75C9 6.50277 9.07359 6.26123 9.21094 6.05566C9.34829 5.85012 9.54309 5.68933 9.77148 5.59473C9.99989 5.50012 10.2517 5.47618 10.4941 5.52441Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M6.75 5.5C7.08152 5.5 7.39937 5.63179 7.63379 5.86621C7.86821 6.10063 8 6.41848 8 6.75C8 6.99723 7.92641 7.23877 7.78906 7.44434C7.65171 7.64988 7.45691 7.81067 7.22852 7.90527C7.00011 7.99988 6.74833 8.02382 6.50586 7.97559C6.26352 7.92731 6.04094 7.80852 5.86621 7.63379C5.69148 7.45906 5.57269 7.23648 5.52441 6.99414C5.47618 6.75167 5.50012 6.49989 5.59473 6.27148C5.68933 6.04309 5.85012 5.84829 6.05566 5.71094C6.26123 5.57359 6.50277 5.5 6.75 5.5Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M13.75 5.5C14.0815 5.5 14.3994 5.63179 14.6338 5.86621C14.8682 6.10063 15 6.41848 15 6.75C15 6.99723 14.9264 7.23877 14.7891 7.44434C14.6517 7.64988 14.4569 7.81067 14.2285 7.90527C14.0001 7.99988 13.7483 8.02382 13.5059 7.97559C13.2635 7.92731 13.0409 7.80852 12.8662 7.63379C12.6915 7.45906 12.5727 7.23648 12.5244 6.99414C12.4762 6.75167 12.5001 6.49989 12.5947 6.27148C12.6893 6.04309 12.8501 5.84829 13.0557 5.71094C13.2612 5.57359 13.5028 5.5 13.75 5.5Z"
-  }));
-  var SlidersIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21 7H10M14 17H3M20.25 17C20.25 18.6569 18.9069 20 17.25 20C15.5931 20 14.25 18.6569 14.25 17C14.25 15.3431 15.5931 14 17.25 14C18.9069 14 20.25 15.3431 20.25 17ZM9.75 7C9.75 8.65685 8.40685 10 6.75 10C5.09315 10 3.75 8.65685 3.75 7C3.75 5.34315 5.09315 4 6.75 4C8.40685 4 9.75 5.34315 9.75 7Z",
-    stroke: "currentColor",
-    strokeLinejoin: "round",
-    strokeWidth: "2"
-  }));
-  var PaymentsIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M12.9004 7.83984C13.0629 7.87413 13.2225 7.91676 13.376 7.96777C13.9053 8.14378 14.4688 8.45248 14.8301 8.95215L13.3711 10.0068C13.3148 9.92902 13.1447 9.78764 12.8086 9.67578C12.4889 9.56951 12.1071 9.52104 11.75 9.5459C11.3842 9.57147 11.1204 9.6686 10.9727 9.77734C10.6672 10.0025 10.7901 10.4692 11.0615 10.6533C11.3259 10.8325 11.7135 10.964 12.2734 11.1426C12.7633 11.2988 13.4271 11.5024 13.9502 11.8574C14.5404 12.2581 15.0008 12.8825 15.001 13.8027C15.001 14.6074 14.6157 15.2292 14.0645 15.6318C13.716 15.8862 13.3104 16.0473 12.9004 16.1426V17.5H11.1006V16.1924C10.8876 16.158 10.6783 16.1108 10.4785 16.0488C9.92674 15.8775 9.3358 15.5675 8.95996 15.0479L10.4189 13.9932C10.4778 14.0743 10.6555 14.2195 11.0117 14.3301C11.3503 14.4351 11.7577 14.4787 12.1426 14.4453C12.5359 14.411 12.8313 14.303 13.0029 14.1777C13.3128 13.9513 13.2321 13.5454 12.9395 13.3467C12.6751 13.1673 12.2868 13.0361 11.7266 12.8574C11.2368 12.7012 10.5739 12.4974 10.0508 12.1426C9.46027 11.7419 9.00013 11.1178 9 10.1973V10.1328C9 9.34586 9.36032 8.72911 9.9043 8.32812C10.2629 8.06395 10.6821 7.90612 11.1006 7.82129V6.5H12.9004V7.83984Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z",
-    fill: "currentColor"
-  }));
-  var LightningIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M5 14.25L14 4L13 9.75H19L10 20L11 14.25H5Z",
-    stroke: "currentColor",
-    strokeWidth: "2"
-  }));
-  var DatabaseIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M20.5 18C20.5 18.7778 20.1017 19.4178 19.5977 19.8945C19.0957 20.3692 18.423 20.7505 17.6748 21.0498C16.1726 21.6507 14.1657 22 12 22C9.83428 22 7.82743 21.6507 6.3252 21.0498C5.57697 20.7505 4.90428 20.3692 4.40234 19.8945C3.89825 19.4178 3.5 18.7778 3.5 18V5.5C3.5 4.71709 3.97721 4.13013 4.4707 3.74121C4.97543 3.34352 5.64416 3.02877 6.38086 2.7832C7.86497 2.28858 9.85158 2 12 2C14.1484 2 16.135 2.28858 17.6191 2.7832C18.3558 3.02877 19.0246 3.34352 19.5293 3.74121C20.0228 4.13013 20.5 4.71709 20.5 5.5V18ZM18.5 14.166C18.2396 14.3063 17.963 14.4345 17.6748 14.5498C16.1726 15.1507 14.1657 15.5 12 15.5C9.83428 15.5 7.82743 15.1507 6.3252 14.5498C6.03697 14.4345 5.76036 14.3063 5.5 14.166V18C5.5 18.0506 5.52142 18.2003 5.77637 18.4414C6.03343 18.6845 6.4595 18.9488 7.06836 19.1924C8.28059 19.6773 10.0236 20 12 20C13.9764 20 15.7194 19.6773 16.9316 19.1924C17.5405 18.9488 17.9666 18.6845 18.2236 18.4414C18.4786 18.2003 18.5 18.0506 18.5 18V14.166ZM5.5 11.5C5.5 11.5506 5.52142 11.7003 5.77637 11.9414C6.03343 12.1845 6.4595 12.4488 7.06836 12.6924C8.28059 13.1773 10.0236 13.5 12 13.5C13.9764 13.5 15.7194 13.1773 16.9316 12.6924C17.5405 12.4488 17.9666 12.1845 18.2236 11.9414C18.4786 11.7003 18.5 11.5506 18.5 11.5V7.86914C18.2226 7.99709 17.9273 8.11407 17.6191 8.2168C16.135 8.71142 14.1484 9 12 9C9.85158 9 7.86497 8.71142 6.38086 8.2168C6.07267 8.11407 5.77737 7.99709 5.5 7.86914V11.5ZM12 4C10.0065 4 8.24301 4.27056 7.0127 4.68066C6.39238 4.88745 5.96226 5.11212 5.70801 5.3125C5.59875 5.39864 5.5459 5.46254 5.51953 5.5C5.5459 5.53746 5.59875 5.60136 5.70801 5.6875C5.96226 5.88788 6.39238 6.11255 7.0127 6.31934C8.24301 6.72944 10.0065 7 12 7C13.9935 7 15.757 6.72944 16.9873 6.31934C17.6076 6.11255 18.0377 5.88788 18.292 5.6875C18.4008 5.60171 18.453 5.53752 18.4795 5.5C18.453 5.46248 18.4008 5.39829 18.292 5.3125C18.0377 5.11212 17.6076 4.88745 16.9873 4.68066C15.757 4.27056 13.9935 4 12 4Z",
-    fill: "currentColor"
-  }));
-
-  // src/plugins/settingsFlyout/index.tsx
-  var cl24 = classNameFactory("void-sf-");
-  var settings21 = definePluginSettings({
-    showOpenSettings: {
+  // src/plugins/betterImagine/index.tsx
+  var logger21 = new Logger("BetterImagine");
+  var cl20 = classNameFactory("void-imagine-");
+  var settings9 = definePluginSettings({
+    hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
-      description: 'Show "Open Settings" (last used tab).',
+      description: "Hide the community image grid and templates on the Imagine home page.",
       default: true
     },
-    account: {
+    noAutoplay: {
       type: 3 /* BOOLEAN */,
-      description: "Account",
+      description: "Stop video thumbnails from autoplaying.",
       default: true
     },
-    appearance: {
+    playOnHover: {
       type: 3 /* BOOLEAN */,
-      description: "Appearance",
+      description: "Play video thumbnails when hovered.",
       default: true
     },
-    behavior: {
+    hideModerated: {
       type: 3 /* BOOLEAN */,
-      description: "Behavior",
+      description: "Hide moderated images and videos that cannot be interacted with.",
       default: true
     },
-    customize: {
+    pauseWhenHidden: {
       type: 3 /* BOOLEAN */,
-      description: "Customize",
+      description: "Pause any playing video thumbnails when the tab loses focus.",
       default: true
     },
-    billing: {
+    persistFilters: {
       type: 3 /* BOOLEAN */,
-      description: "Billing",
+      description: "Remember Favorites filter + sort across reloads.",
       default: true
     },
-    usage: {
+    smartFilenames: {
       type: 3 /* BOOLEAN */,
-      description: "Usage",
+      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
       default: true
     },
-    data: {
+    bypassPaywall: {
       type: 3 /* BOOLEAN */,
-      description: "Data Controls",
+      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
+      default: false
+    },
+    ctrlClickSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
       default: true
     }
   });
-  var GROK_TABS = [
-    { id: "account", name: "Account", setting: "account", icon: PersonIcon },
-    { id: "appearance", name: "Appearance", setting: "appearance", icon: PaintIcon },
-    { id: "behavior", name: "Behavior", setting: "behavior", icon: VisitIcon },
-    { id: "personality", name: "Customize", setting: "customize", icon: SlidersIcon },
-    { id: "billing", name: "Billing", setting: "billing", icon: PaymentsIcon },
-    { id: "usage", name: "Usage", setting: "usage", icon: LightningIcon },
-    { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
-  ];
-  function SettingsMenu({ onOpen }) {
-    const cfg = settings21.use([
-      "showOpenSettings",
-      "account",
-      "appearance",
-      "behavior",
-      "customize",
-      "billing",
-      "usage",
-      "data"
-    ]);
-    const grokTabs = GROK_TABS.filter((t) => cfg[t.setting]);
-    const showOpen = cfg.showOpenSettings || grokTabs.length === 0;
-    const openTab = (tab, event) => {
-      try {
-        onOpen?.(event);
-      } catch {}
-      queueMicrotask(() => {
-        const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
-        if (tab)
-          store3.setTab(tab);
-        store3.setOpen(true);
-      });
-    };
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl24("menu-icon")
-    }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, showOpen && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: (e) => openTab(undefined, e)
-    }, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl24("menu-icon")
-    }), "Open Settings"), grokTabs.map((t) => {
-      const Icon = t.icon;
-      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-        key: t.id,
-        onSelect: (e) => openTab(t.id, e)
-      }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl24("menu-icon")
-      }), t.name);
-    })));
+  function buildFilename(post, isVideo) {
+    if (!settings9.store.smartFilenames || !post)
+      return null;
+    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
+    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
+    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
+    const id = post.id?.slice(0, 8) ?? "";
+    const ext = isVideo ? "mp4" : "png";
+    const parts = [date, slug, id].filter(Boolean);
+    if (!parts.length)
+      return null;
+    return `${parts.join("_")}.${ext}`;
   }
-  var WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
-  var settingsFlyout_default = definePlugin({
-    name: "SettingsFlyout",
-    icon: Settings2Icon,
-    description: "Replace the avatar Settings item with a flyout of shortcuts to settings tabs.",
-    authors: [Devs.p],
-    tags: ["ui", "settings"],
-    enabledByDefault: true,
-    requiresRestart: true,
-    settings: settings21,
-    _renderSettingsMenu: (onOpen) => createElement(WrappedSettingsMenu, { onOpen }),
-    patches: [
-      {
-        find: '"user-dropdown.settings","Settings"',
-        replacement: {
-          match: /\jsx{\i\.DropdownMenuItem}\{onSelect:(\i),children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
-          replace: "$self._renderSettingsMenu($1)"
+  var FILTER_MAP = {
+    image: "MEDIA_POST_TYPE_IMAGE",
+    video: "MEDIA_POST_TYPE_VIDEO"
+  };
+  var DATE_LABELS = {
+    all: "Any time",
+    today: "Today",
+    week: "This week",
+    month: "This month"
+  };
+  var SORT_LABELS = {
+    newest: "Newest first",
+    oldest: "Oldest first",
+    "prompt-az": "Prompt A → Z",
+    "prompt-za": "Prompt Z → A",
+    random: "Shuffle"
+  };
+  var SORT_KEYS = Object.keys(SORT_LABELS);
+  var DAY_MS = 86400000;
+  var DATE_CUTOFFS = {
+    all: 0,
+    today: DAY_MS,
+    week: 7 * DAY_MS,
+    month: 30 * DAY_MS
+  };
+  var STORAGE_KEY2 = "void-imagine-filters";
+  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
+  function loadFilters() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY2);
+      if (!raw)
+        return DEFAULT_FILTERS;
+      const parsed = JSON.parse(raw);
+      return {
+        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
+        search: typeof parsed.search === "string" ? parsed.search : "",
+        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
+        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
+      };
+    } catch {
+      return DEFAULT_FILTERS;
+    }
+  }
+  var initial = loadFilters();
+  var currentFilter = initial.filter;
+  var currentSearch = initial.search;
+  var currentDate = initial.date;
+  var currentSort = initial.sort;
+  var randomSeed = Date.now();
+  var filterStore = createExternalStore();
+  function persist() {
+    if (!settings9.store.persistFilters)
+      return;
+    try {
+      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
+    } catch {}
+  }
+  function setFilter(f) {
+    currentFilter = f;
+    filterStore.notify();
+    persist();
+  }
+  var setSearch = debounce((s) => {
+    currentSearch = s;
+    filterStore.notify();
+    persist();
+  }, 200);
+  function setDate(d) {
+    currentDate = d;
+    filterStore.notify();
+    persist();
+  }
+  function setSort(s) {
+    if (s === "random" && currentSort === "random")
+      randomSeed = Date.now();
+    currentSort = s;
+    filterStore.notify();
+    persist();
+  }
+  function resetFilters() {
+    currentFilter = "all";
+    currentSearch = "";
+    currentDate = "all";
+    currentSort = "newest";
+    filterStore.notify();
+    persist();
+  }
+  function hasActiveFilters() {
+    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
+  }
+  function isModerated(p) {
+    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
+  }
+  var haystackCache = new WeakMap;
+  var tsCache = new WeakMap;
+  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+  function getHaystack(p) {
+    let h = haystackCache.get(p);
+    if (h === undefined) {
+      h = `${p.prompt ?? ""}
+${p.originalPrompt ?? ""}`.toLowerCase();
+      haystackCache.set(p, h);
+    }
+    return h;
+  }
+  function getTs(p) {
+    let t = tsCache.get(p);
+    if (t === undefined) {
+      t = new Date(p.createTime).getTime() || 0;
+      tsCache.set(p, t);
+    }
+    return t;
+  }
+  function matchesFilters(p, target, q, cutoff, hideModerated) {
+    if (!p)
+      return false;
+    if (hideModerated && isModerated(p))
+      return false;
+    if (target && p.mediaType !== target)
+      return false;
+    if (cutoff && getTs(p) < cutoff)
+      return false;
+    if (q && !getHaystack(p).includes(q))
+      return false;
+    return true;
+  }
+  var cacheKey = null;
+  var cacheList = null;
+  var cacheResult = [];
+  function filterItems(items) {
+    const { hideModerated } = settings9.store;
+    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
+    if (cacheList === items && cacheKey === key)
+      return cacheResult;
+    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
+    let out = items;
+    if (needsFilter) {
+      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
+      const q = currentSearch.toLowerCase();
+      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
+      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
+    }
+    cacheList = items;
+    cacheKey = key;
+    cacheResult = currentSort === "newest" ? out : sortItems(out);
+    return cacheResult;
+  }
+  function mulberry32(seed) {
+    let a = seed;
+    return () => {
+      a |= 0;
+      a = a + 1831565813 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function sortItems(items) {
+    if (items.length < 2)
+      return items;
+    const arr = [...items];
+    switch (currentSort) {
+      case "oldest":
+        return arr.toSorted((a, b) => getTs(a) - getTs(b));
+      case "prompt-az":
+        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
+      case "prompt-za":
+        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
+      case "random": {
+        const rand = mulberry32(randomSeed);
+        for (let i = arr.length - 1;i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+      default:
+        return arr;
+    }
+  }
+  var pending = new WeakMap;
+  function pauseVideo(video) {
+    const promise = pending.get(video);
+    pending.delete(video);
+    if (promise) {
+      promise.then(() => {
+        if (pending.has(video))
+          return;
+        video.pause();
+        video.currentTime = 0;
+      }).catch((e) => logger21.warn("Failed to pause video:", e));
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }
+  var onMouseEnter = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pending.set(video, video.play().catch((e2) => logger21.error("Failed to play video", e2)));
+  };
+  var onMouseLeave = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pauseVideo(video);
+  };
+  function useFilteredFavorites() {
+    const list = MediaStore.useMediaStore((s) => s.favoritesList);
+    useExternalStore(filterStore);
+    return filterItems(list);
+  }
+  function mediaState() {
+    return MediaStore.useMediaStore.getState();
+  }
+  function selectVisible() {
+    const state = mediaState();
+    const list = state.favoritesList ?? [];
+    const visible = filterItems(list);
+    if (!visible.length)
+      return;
+    state.setMultiSelectItems(visible);
+    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
+  }
+  function deselectAll() {
+    const state = mediaState();
+    state.clearMultiSelect?.();
+  }
+  function selectedPosts() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    return ids.map((id) => state.byId[id]).filter((p) => !!p);
+  }
+  async function copyLines(lines, label) {
+    if (!lines.length) {
+      Toaster.toast.info(`Selected items have no ${label}s.`);
+      return;
+    }
+    try {
+      await copyToClipboard(lines.join(`
+`));
+      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
+    } catch (e) {
+      logger21.error(`Failed to copy ${label}s`, e);
+      Toaster.toast.error(`Failed to copy ${label}s.`);
+    }
+  }
+  async function copySelectedPrompts() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
+  }
+  async function copySelectedUrls() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    const { videoByMediaId } = mediaState();
+    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
+    await copyLines(urls, "URL");
+  }
+  async function bulkUpscaleSelected() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    let upscaled = 0;
+    let alreadyHd = 0;
+    let inProgress = 0;
+    for (const id of ids) {
+      const videos = state.videoByMediaId[id];
+      if (!videos?.length)
+        continue;
+      for (const video of videos) {
+        if (video.hdMediaUrl) {
+          alreadyHd++;
+          continue;
+        }
+        if (video.upscalingInProgress) {
+          inProgress++;
+          continue;
+        }
+        try {
+          await state.upscaleVideo(id, video.id);
+          upscaled++;
+        } catch (e) {
+          logger21.error("Failed to upscale video:", id, video.id, e);
         }
       }
+    }
+    if (upscaled)
+      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
+    else if (alreadyHd)
+      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
+    else if (inProgress)
+      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
+    else
+      Toaster.toast.info("No videos to upscale.");
+  }
+  function FilterButtons() {
+    useExternalStore(filterStore);
+    const [searchInput, setSearchInput] = useState(currentSearch);
+    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
+    const sortActive = currentSort !== "newest";
+    const lastSync = useRef(currentSearch);
+    if (lastSync.current !== currentSearch) {
+      lastSync.current = currentSearch;
+      setSearchInput(currentSearch);
+    }
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
+      value: currentDate,
+      onValueChange: (v) => setDate(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: cl20("date-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: d,
+      value: d
+    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
+      value: currentSort,
+      onValueChange: (v) => setSort(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: sortActive ? cl20("sort-select", "sort-active") : cl20("sort-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: s,
+      value: s
+    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "Search...",
+      value: searchInput,
+      onChange: (e) => {
+        setSearchInput(e.target.value);
+        setSearch(e.target.value);
+      },
+      className: cl20("search")
+    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
+      key: f,
+      variant: currentFilter === f ? "primary" : "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: currentFilter !== f ? cl20("chip") : undefined,
+      onClick: () => setFilter(currentFilter === f ? "all" : f)
+    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: cl20("chip"),
+      onClick: resetFilters
+    }, "Clear"));
+  }
+  function UpscaleItem() {
+    const [open3, setOpen] = useState(false);
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: () => setOpen(true)
+    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
+      className: "size-4 me-2"
+    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open3,
+      onOpenChange: setOpen,
+      title: "Upscale selected videos",
+      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
+      confirmText: "Upscale",
+      onConfirm: bulkUpscaleSelected
+    }));
+  }
+  function CopyActions() {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: copySelectedPrompts
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: copySelectedUrls
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy URLs"));
+  }
+  function isImaginePage() {
+    const page = RoutingStore.useRoutingStore.getState().route?.page;
+    return page === "imagine" || page === "imagine-favorites";
+  }
+  function isFavoritesPage() {
+    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
+  }
+  function isTypingTarget(t) {
+    if (!(t instanceof HTMLElement))
+      return false;
+    if (t.isContentEditable)
+      return true;
+    const tag = t.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+  }
+  function onKeyDown2(e) {
+    if (!isImaginePage())
+      return;
+    if (e.ctrlKey || e.metaKey || e.altKey)
+      return;
+    if (isTypingTarget(e.target))
+      return;
+    if (e.key === "i" || e.key === "I") {
+      setFilter(currentFilter === "image" ? "all" : "image");
+      e.preventDefault();
+    } else if (e.key === "v" || e.key === "V") {
+      setFilter(currentFilter === "video" ? "all" : "video");
+      e.preventDefault();
+    } else if (e.key === "r" || e.key === "R") {
+      resetFilters();
+      e.preventDefault();
+    } else if (e.key === "A") {
+      if (isFavoritesPage()) {
+        deselectAll();
+        e.preventDefault();
+      }
+    } else if (e.key === "a") {
+      if (isFavoritesPage()) {
+        selectVisible();
+        e.preventDefault();
+      }
+    } else if (e.key === "c" || e.key === "C") {
+      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
+        copySelectedPrompts();
+        e.preventDefault();
+      }
+    }
+  }
+  function onVisibilityChange() {
+    if (!settings9.store.pauseWhenHidden)
+      return;
+    if (document.visibilityState !== "hidden")
+      return;
+    for (const video of document.querySelectorAll("video")) {
+      if (!video.paused)
+        video.pause();
+    }
+  }
+  var abortCtrl = null;
+  var betterImagine_default = definePlugin({
+    name: "BetterImagine",
+    icon: ImagesIcon,
+    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings9,
+    _hideDefault: () => settings9.store.hideDefaultPreviews,
+    _NullGrid: () => null,
+    _autoPlay: () => !settings9.store.noAutoplay,
+    _bypassPaywall: () => settings9.store.bypassPaywall,
+    _ctrlClickSelect: () => settings9.store.ctrlClickSelect,
+    _hoverProps: () => settings9.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _useFilteredFavorites: useFilteredFavorites,
+    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
+    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
+    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
+    _buildFilename: buildFilename,
+    start() {
+      if (abortCtrl)
+        return;
+      abortCtrl = new AbortController;
+      const { signal } = abortCtrl;
+      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
+      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
+    },
+    stop() {
+      abortCtrl?.abort();
+      abortCtrl = null;
+    },
+    patches: [
+      {
+        find: "image_feed_opened",
+        group: true,
+        replacement: [
+          {
+            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
+            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
+          },
+          {
+            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
+            replace: "=$self._useFilteredFavorites()"
+          }
+        ]
+      },
+      {
+        find: "image_feed_image_selected",
+        group: true,
+        replacement: [
+          {
+            match: /autoPlay:!0/g,
+            replace: "autoPlay:$self._autoPlay()"
+          },
+          {
+            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
+            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          }
+        ]
+      },
+      {
+        find: 'imagine-folder.all","All"',
+        replacement: {
+          match: /"imagine-folder\.all","All"\)\}\)/,
+          replace: "$&,$self._renderFilterButtons({})"
+        }
+      },
+      {
+        find: "imagine-templates.section-title",
+        all: true,
+        noWarn: true,
+        replacement: {
+          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
+          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
+        }
+      },
+      {
+        find: '"imagine-set-resolution"',
+        all: true,
+        replacement: {
+          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
+          replace: "if(!$self._bypassPaywall())$&"
+        }
+      },
+      {
+        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
+        group: true,
+        replacement: [
+          {
+            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
+            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
+          },
+          {
+            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
+            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
+          }
+        ]
+      }
+    ]
+  });
+
+  // void-css:/tmp/void-src/src/plugins/customInstructions/styles.css
+  registerStyle("customInstructions", `.void-ci-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.void-ci-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.void-ci-card {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: 1rem;
+    padding: 0.625rem 0.75rem;
+    height: 3.25rem;
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l1));
+    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
+    cursor: pointer;
+}
+
+.void-ci-card:hover {
+    background: hsl(var(--surface-l2));
+}
+
+.void-ci-card-add {
+    justify-content: center;
+    box-shadow: none;
+    border: 1px dashed hsl(var(--border-l1));
+}
+
+.void-ci-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.void-ci-card-name {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    flex: 1;
+    gap: 0.125rem;
+}
+
+.void-ci-card-name>* {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.void-ci-card-actions {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.void-ci-card:hover .void-ci-card-actions {
+    opacity: 1;
+}
+
+.void-ci-card:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ci-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.void-ci-label {
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--fg-primary));
+}
+
+.void-ci-input {
+    width: 100%;
+}
+
+.void-ci-textarea-wrap {
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.75rem;
+}
+
+.void-ci-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ci-textarea-wrap-error {
+    border-color: hsl(var(--fg-danger));
+}
+
+.void-ci-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: hsl(var(--fg-primary));
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.void-ci-textarea:focus {
+    outline: none;
+}
+
+.void-ci-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 0.25rem;
+}
+
+.void-ci-error-text {
+    color: hsl(var(--fg-danger));
+}
+
+.void-ci-trigger {
+    gap: 0.5rem;
+}
+
+.void-ci-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-ci-card-actions {
+        transition: none;
+    }
+}
+`);
+
+  // src/plugins/customInstructions/index.tsx
+  var cl21 = classNameFactory("void-ci-");
+  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
+  var CheckIcon = findExportedComponentLazy("CheckIcon");
+  var BookIcon = findExportedComponentLazy("BookIcon");
+  var PenIcon = findExportedComponentLazy("PenIcon");
+  var TrashIcon2 = findExportedComponentLazy("TrashIcon");
+  var PlusIcon = findExportedComponentLazy("PlusIcon");
+  var MAX_LENGTH = 4000;
+  var settings10 = definePluginSettings({
+    editor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
+    }
+  }).withPrivateSettings();
+  function getPresets() {
+    return settings10.plain.presets ?? [];
+  }
+  function setPresets(presets) {
+    settings10.store.presets = presets;
+  }
+  function getAssignments() {
+    return settings10.plain.assignments ?? {};
+  }
+  function PresetCard({ preset, onEdit, onDelete }) {
+    return /* @__PURE__ */ React.createElement("div", {
+      role: "button",
+      className: cl21("card"),
+      onClick: onEdit
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl21("avatar")
+    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
+      seed: preset.id,
+      size: 32
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl21("card-name")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium"
+    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
+      className: cl21("card-actions")
+    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Edit",
+      onClick: (e) => {
+        e.stopPropagation();
+        onEdit();
+      }
+    }, /* @__PURE__ */ React.createElement(PenIcon, {
+      className: "size-3.5 text-secondary"
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Delete",
+      onClick: (e) => {
+        e.stopPropagation();
+        onDelete();
+      }
+    }, /* @__PURE__ */ React.createElement(TrashIcon2, {
+      className: "size-3.5 text-secondary"
+    }))));
+  }
+  function PresetEditor({ preset, onUpdate, onClose }) {
+    const overLimit = preset.prompt.length > MAX_LENGTH;
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl21("editor")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      className: cl21("label")
+    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      className: cl21("input"),
+      placeholder: "Preset name",
+      value: preset.name,
+      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
+      autoComplete: "off"
+    }), /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      className: cl21("label")
+    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
+      className: cl21("textarea-wrap", { "textarea-wrap-error": overLimit })
+    }, /* @__PURE__ */ React.createElement(Textarea, {
+      className: cl21("textarea"),
+      placeholder: "How should Grok behave?",
+      value: preset.prompt,
+      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl21("editor-footer")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: overLimit ? undefined : "muted",
+      className: overLimit ? cl21("error-text") : undefined
+    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      onClick: onClose
+    }, "Done")));
+  }
+  function PresetsEditor() {
+    const presets = settings10.use(["presets"]).presets ?? [];
+    const [editingId, setEditingId] = useState(null);
+    const updatePreset = useCallback((updated) => {
+      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
+    }, []);
+    const deletePreset = useCallback((id) => {
+      setPresets(getPresets().filter((p) => p.id !== id));
+      const a = { ...getAssignments() };
+      for (const [k, v] of Object.entries(a)) {
+        if (v === id)
+          delete a[k];
+      }
+      settings10.store.assignments = a;
+      setEditingId((prev) => prev === id ? null : prev);
+    }, []);
+    const addPreset = useCallback(() => {
+      const id = randomId();
+      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
+      setEditingId(id);
+    }, []);
+    const editing = presets.find((p) => p.id === editingId);
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl21("root")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl21("grid")
+    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
+      key: p.id,
+      preset: p,
+      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
+      onDelete: () => deletePreset(p.id)
+    })), /* @__PURE__ */ React.createElement("div", {
+      role: "button",
+      className: cl21("card", "card-add"),
+      onClick: addPreset
+    }, /* @__PURE__ */ React.createElement(PlusIcon, {
+      className: "size-4 text-secondary"
+    }), /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      color: "muted"
+    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
+      preset: editing,
+      onUpdate: updatePreset,
+      onClose: () => setEditingId(null)
+    }));
+  }
+  function InstructionsMenu({ conversationId }) {
+    const presets = settings10.use(["presets"]).presets ?? [];
+    const assignments = settings10.use(["assignments"]).assignments ?? {};
+    const activePresetId = assignments[conversationId];
+    const assign = useCallback((presetId) => {
+      const a = { ...getAssignments() };
+      if (presetId)
+        a[conversationId] = presetId;
+      else
+        delete a[conversationId];
+      settings10.store.assignments = a;
+    }, [conversationId]);
+    if (!presets.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
+      className: cl21("trigger")
+    }, /* @__PURE__ */ React.createElement(BookIcon, {
+      size: 16
+    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
+      onSelect: () => assign(),
+      className: cl21("menu-item")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm"
+    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
+      key: p.id,
+      onSelect: () => assign(p.id),
+      className: cl21("menu-item")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm"
+    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })))));
+  }
+  var customInstructions_default = definePlugin({
+    name: "CustomInstructions",
+    icon: ScrollTextIcon,
+    description: "Create instruction presets and assign them to conversations.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings10,
+    contextMenuItems: {
+      conversation: {
+        label: "Instructions",
+        render: ErrorBoundary.wrap(InstructionsMenu)
+      }
+    },
+    _getPrompt() {
+      const { conversationId } = ChatPageStore.useChatPageStore.getState();
+      if (!conversationId)
+        return;
+      const presetId = getAssignments()[conversationId];
+      if (!presetId)
+        return;
+      const preset = getPresets().find((p) => p.id === presetId);
+      return preset?.prompt?.trim() || undefined;
+    },
+    patches: [
+      {
+        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
+        all: true,
+        replacement: {
+          match: /customInstructions:(\i)\.customInstructions/g,
+          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
+        }
+      }
+    ]
+  });
+
+  // void-css:/tmp/void-src/src/plugins/placeholder/styles.css
+  registerStyle("placeholder", `.void-ph-root {
+    contain: content;
+}
+
+.void-ph-textarea-wrap {
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.75rem;
+}
+
+.void-ph-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ph-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: hsl(var(--fg-primary));
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.void-ph-textarea:focus {
+    outline: none;
+}
+`);
+
+  // src/plugins/placeholder/index.tsx
+  var cl22 = classNameFactory("void-ph-");
+  var DEFAULT_PHRASES = [
+    "What do you want to know?",
+    "How can I help you today?",
+    "What's on your mind?"
+  ].join(`
+`);
+  function parsePhrases(raw) {
+    return String(raw ?? "").split(`
+`).map((s) => s.trim()).filter(Boolean);
+  }
+  var settings11 = definePluginSettings({
+    phrases: {
+      type: 6 /* COMPONENT */,
+      default: DEFAULT_PHRASES,
+      component: PhrasesEditor
+    }
+  }).withPrivateSettings();
+  function PhrasesEditor() {
+    const { phrases } = settings11.use(["phrases"]);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem",
+      className: cl22("root")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium"
+    }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
+      className: cl22("textarea-wrap")
+    }, /* @__PURE__ */ React.createElement(Textarea, {
+      className: cl22("textarea"),
+      value: phrases ?? DEFAULT_PHRASES,
+      onChange: (e) => {
+        settings11.store.phrases = e.target.value;
+      },
+      placeholder: DEFAULT_PHRASES
+    })));
+  }
+  var placeholder_default = definePlugin({
+    name: "Placeholder",
+    icon: TextCursorInputIcon,
+    description: "Replace the rotating chat input placeholder.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    settings: settings11,
+    _phrases() {
+      const lines = parsePhrases(settings11.store.phrases ?? DEFAULT_PHRASES);
+      return lines.length ? lines : null;
+    },
+    patches: [
+      {
+        find: `query-bar-placeholder.whats-on-your-mind","What's on your mind?"`,
+        replacement: {
+          match: /("query-bar-placeholder\.whats-on-your-mind","What's on your mind\?"\)\],\[\i,\i,\i,\i\]\),)(\i)=(\i\(\)),(\i)=(\i)\.map\(\2\)/,
+          replace: "$1$2=$3,$4=($self._phrases()??$5).map($2)"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/autoRetry/index.ts
+  var logger22 = new Logger("AutoRetry");
+  var CONTENT_MODERATED = "grok:content-moderated";
+  var settings12 = definePluginSettings({
+    retryModeration: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry content moderation errors.",
+      default: true
+    },
+    retryNetwork: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry network and stream errors.",
+      default: true
+    },
+    maxRetries: {
+      type: 1 /* NUMBER */,
+      description: "Maximum consecutive retries per conversation.",
+      default: 3
+    },
+    delay: {
+      type: 1 /* NUMBER */,
+      description: "Seconds to wait before retrying.",
+      default: 2
+    }
+  });
+  var retryCounts = new Map;
+  var pendingTimer = null;
+  function clearPending() {
+    if (pendingTimer != null) {
+      clearTimeout(pendingTimer);
+      pendingTimer = null;
+    }
+  }
+  function isModeration(response) {
+    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
+  }
+  function shouldRetry(response) {
+    if (isModeration(response))
+      return settings12.store.retryModeration;
+    return settings12.store.retryNetwork;
+  }
+  function retry(responseId, conversationId, response) {
+    const count = (retryCounts.get(conversationId) ?? 0) + 1;
+    const max = settings12.store.maxRetries;
+    if (count > max) {
+      showToast("Max retries reached.", 2 /* ERROR */);
+      retryCounts.delete(conversationId);
+      return;
+    }
+    retryCounts.set(conversationId, count);
+    const delaySec = settings12.store.delay;
+    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
+    logger22.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    clearPending();
+    pendingTimer = setTimeout(() => {
+      pendingTimer = null;
+      const state = ChatPageStore.useChatPageStore.getState();
+      if (state.streamedMessageId)
+        return;
+      state.sendResponse({
+        message: "",
+        parentResponseId: responseId,
+        conversationId,
+        fileAttachmentIds: response.fileAttachments,
+        setOpimisticUserResponse: false,
+        setUserResponse: false,
+        enableRetries: true
+      });
+    }, delaySec * 1000);
+  }
+  function onStreamEnd({ responseId }) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (!response || response.state !== "error") {
+      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (convId)
+        retryCounts.delete(convId);
+      return;
+    }
+    if (!shouldRetry(response))
+      return;
+    const { conversationId } = ChatPageStore.useChatPageStore.getState();
+    if (!conversationId)
+      return;
+    retry(responseId, conversationId, response);
+  }
+  var autoRetry_default = definePlugin({
+    name: "AutoRetry",
+    icon: RotateCcwIcon,
+    description: "Automatically retry failed messages on moderation or network errors.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings12,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      retryCounts.clear();
+      clearPending();
+    },
+    stop() {
+      clearPending();
+      retryCounts.clear();
+    },
+    events: {
+      streamEnd: onStreamEnd
+    }
+  });
+
+  // src/plugins/noSidebarIdentity/index.ts
+  var STYLE_NAME3 = "noSidebarIdentity";
+  var FOOTER = '[data-sidebar="footer"]';
+  var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
+  var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
+  var settings13 = definePluginSettings({
+    hideUsername: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the username next to the sidebar avatar.",
+      default: true
+    },
+    hideEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the email next to the sidebar avatar.",
+      default: true
+    }
+  });
+  function apply2() {
+    const rules = [];
+    if (settings13.store.hideUsername) {
+      rules.push(`${STACK}>:first-child{display:none!important}`);
+      rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
+    }
+    if (settings13.store.hideEmail) {
+      rules.push(`${STACK}>:nth-child(2){display:none!important}`);
+    }
+    if (settings13.store.hideUsername && settings13.store.hideEmail) {
+      rules.push(`${TEXT_WRAP}{display:none!important}`);
+      rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
+    }
+    registerStyle(STYLE_NAME3, rules.join(`
+`));
+  }
+  var noSidebarIdentity_default = definePlugin({
+    name: "NoSidebarIdentity",
+    icon: UserRoundXIcon,
+    description: "Hide username and/or email in the Grok sidebar. Avatar stays clickable.",
+    authors: [Devs.p],
+    tags: ["ui", "privacy"],
+    enabledByDefault: true,
+    settings: settings13,
+    start: apply2,
+    onSettingsChange: apply2,
+    stop() {
+      unregisterStyle(STYLE_NAME3);
+    }
+  });
+
+  // src/plugins/consoleJanitor/index.ts
+  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
+  var consoleJanitor_default = definePlugin({
+    name: "ConsoleJanitor",
+    icon: TerminalIcon,
+    description: "Silences noisy warnings and info logs in the browser console.",
+    authors: [Devs.Prism],
+    patches: [
+      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
+      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
+      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
+      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
+      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
     ]
   });
 
@@ -13360,19 +11289,19 @@ html.void-rt-open [data-sidebar="gap"] {
     const n = parseInt(m[1], 16);
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
-  function ColorRow2() {
-    const { starColor } = settings22.use(["starColor"]);
+  function ColorRow() {
+    const { starColor } = settings14.use(["starColor"]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
-        settings22.store.starColor = v;
+        settings14.store.starColor = v;
       },
       title: "Star color",
       description: "Color of the twinkling stars."
     });
   }
   function StarryBackground() {
-    const { starColor } = settings22.use(["starColor"]);
+    const { starColor } = settings14.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -13381,11 +11310,11 @@ html.void-rt-open [data-sidebar="gap"] {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings22 = definePluginSettings({
+  var settings14 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_COLOR,
-      component: ColorRow2
+      component: ColorRow
     }
   }).withPrivateSettings();
   var starry_default = definePlugin({
@@ -13394,7 +11323,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings22,
+    settings: settings14,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -13411,179 +11340,933 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // void-css:/workspace/artifacts/Void-src/src/plugins/streamerMode/styles.css
-  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
-
-/* Sidebar avatar */
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
+  // void-css:/tmp/void-src/src/plugins/inputHistory/styles.css
+  registerStyle("inputHistory", `.void-ih-hud {
+    contain: content;
+    position: fixed;
+    z-index: 2147483646;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.5rem;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-secondary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.12s ease;
 }
 
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
-html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
-    filter: none;
+.void-ih-hud-on {
+    opacity: 1;
 }
 
-/* Sidebar username */
-html.void-streamer-sidebar-name .void-sidebar-info {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
+.void-ih-panel {
+    min-width: 0;
 }
 
-html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
-    filter: none;
+.void-ih-head {
+    min-width: 0;
 }
 
-/* Account tab avatar (inside settings dialog) */
-html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
+.void-ih-search {
+    width: 100%;
 }
 
-html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
-    filter: none;
+.void-ih-empty {
+    margin: 0;
+    color: hsl(var(--fg-tertiary));
 }
 
-/* Account tab username */
-html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
+.void-ih-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow: auto;
+    max-height: min(22rem, 45vh);
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-l2) / 80%) transparent;
 }
 
-html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
-    filter: none;
+.void-ih-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    background: hsl(var(--surface-l1) / 72%);
 }
 
-/* Account tab email */
-html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
+.void-ih-item:hover {
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 45%);
 }
 
-html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
-    filter: none;
+.void-ih-item-on {
+    align-items: start;
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 60%);
 }
 
-/* Account tab birth year */
-html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
+.void-ih-item:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
 }
 
-html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
-    filter: none;
+.void-ih-main {
+    min-width: 0;
+    cursor: pointer;
 }
 
-/* Conversation titles in sidebar (pinned + recent buckets) */
-html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
+.void-ih-body {
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: hsl(var(--fg-primary));
+    font-size: 0.8125rem;
+    line-height: 1.45;
 }
 
-html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
-    filter: none;
+.void-ih-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
-/* Project names in sidebar */
-html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
+.void-ih-item-on .void-ih-body {
+    max-height: 12rem;
+    overflow: auto;
+    scrollbar-width: thin;
 }
 
-html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
-    filter: none;
+.void-ih-side {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.void-ih-item-on .void-ih-side {
+    align-items: flex-start;
+    padding-top: 0.125rem;
+}
+
+.void-ih-lines {
+    min-width: 1.5rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-tertiary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.void-ih-actions {
+    display: flex;
+    gap: 0.125rem;
+    padding: 0.125rem;
+    border-radius: 0.5rem;
+    background: hsl(var(--surface-l2) / 90%);
+}
+
+.void-ih-actions :is(button) {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+}
+
+.void-ih-item-on .void-ih-actions,
+.void-ih-item:hover .void-ih-actions {
+    background: hsl(var(--surface-l1));
+}
+
+.void-ih-pager {
+    min-width: 0;
+}
+
+.void-ih-page {
+    min-width: 3.5rem;
+    color: hsl(var(--fg-secondary));
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
-    html.void-streamer-sidebar-name .void-sidebar-info,
-    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
-    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
-    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
-    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
-    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
-    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
+    .void-ih-hud {
+        transition: none;
+    }
 }
 `);
 
-  // src/plugins/streamerMode/index.ts
-  var CSS_CLASSES = {
-    sidebarAvatar: "void-streamer-sidebar-avatar",
-    sidebarName: "void-streamer-sidebar-name",
-    accountAvatar: "void-streamer-account-avatar",
-    accountName: "void-streamer-account-name",
-    accountEmail: "void-streamer-account-email",
-    accountAge: "void-streamer-account-age",
-    projects: "void-streamer-projects",
-    conversations: "void-streamer-conversations"
-  };
-  var settings23 = definePluginSettings({
-    sidebarAvatar: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your avatar in the sidebar.",
-      default: true
+  // src/plugins/inputHistory/index.tsx
+  var logger23 = new Logger("InputHistory");
+  var cl23 = classNameFactory("void-ih-");
+  var EDITOR_SEL = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
+  var ZWSP = /\u200B/g;
+  var MAX_MIN = 10;
+  var MAX_MAX = 500;
+  var MAX_DEFAULT = 100;
+  var HUD_GAP_PX = 8;
+  var APPLY_QUIET_MS = 120;
+  var CAPTURE_DEDUPE_MS = 2000;
+  var PAGE_SIZE = 10;
+  var settings15 = definePluginSettings({
+    maxEntries: {
+      type: 5 /* SLIDER */,
+      description: "Maximum stored prompts.",
+      min: MAX_MIN,
+      max: MAX_MAX,
+      default: MAX_DEFAULT
     },
-    sidebarName: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your username in the sidebar.",
-      default: true
-    },
-    accountAvatar: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your avatar in the account settings tab.",
-      default: true
-    },
-    accountName: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your name in the account settings tab.",
-      default: true
-    },
-    accountEmail: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your email in the account settings tab.",
-      default: true
-    },
-    accountAge: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your birth year in the account settings tab.",
-      default: true
-    },
-    projects: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur project names in the sidebar.",
-      default: true
-    },
-    conversations: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur conversation titles in the sidebar.",
-      default: true
+    history: {
+      type: 6 /* COMPONENT */,
+      component: HistoryPanel
     }
-  });
-  function syncClasses() {
-    const { classList } = document.documentElement;
-    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings23.store[key]);
-    }
+  }).withPrivateSettings();
+  var recentAt = new Map;
+  var cursor = 0;
+  var draft = "";
+  var recalling = false;
+  var applying = false;
+  var applyGen = 0;
+  var keys2 = null;
+  var applyTimer;
+  var applyEl = null;
+  var applyAtStart = true;
+  function getEntries() {
+    const raw = settings15.plain.entries;
+    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
   }
-  var streamerMode_default = definePlugin({
-    name: "StreamerMode",
-    icon: EyeOffIcon,
-    description: "Blurs personal information for privacy while streaming.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    settings: settings23,
-    start: syncClasses,
-    onSettingsChange: syncClasses,
-    stop() {
-      const { classList } = document.documentElement;
-      for (const cls of Object.values(CSS_CLASSES)) {
-        classList.remove(cls);
+  function cap(entries) {
+    const max = clamp(settings15.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
+    return entries.length > max ? entries.slice(entries.length - max) : entries;
+  }
+  function setEntries(entries) {
+    settings15.store.entries = entries;
+  }
+  function normalize(text) {
+    return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
+  }
+  function resetBrowse(length) {
+    cursor = length;
+    draft = "";
+    recalling = false;
+    hideHud();
+  }
+  function chatEditor(t) {
+    if (t instanceof Text)
+      return t.parentElement?.closest(EDITOR_SEL) ?? null;
+    if (t instanceof Element)
+      return t.closest(EDITOR_SEL) ?? null;
+    return null;
+  }
+  function editorText(el) {
+    const blocks = el.querySelectorAll(":scope > *");
+    const raw = blocks.length ? Array.from(blocks, (b) => b.textContent ?? "").join(`
+`) : el.innerText ?? el.textContent ?? "";
+    return normalize(raw);
+  }
+  function spanHeight(range) {
+    const rects = range.getClientRects();
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (const r of rects) {
+      if (r.height === 0 && r.width === 0)
+        continue;
+      if (r.top < top)
+        top = r.top;
+      if (r.bottom > bottom)
+        bottom = r.bottom;
+    }
+    if (top === Infinity)
+      return range.getBoundingClientRect().height;
+    return bottom - top;
+  }
+  function caretOnEdge(el) {
+    const sel = window.getSelection();
+    if (!sel?.rangeCount || !sel.isCollapsed)
+      return { first: false, last: false };
+    const caret = sel.getRangeAt(0);
+    if (!el.contains(caret.startContainer))
+      return { first: false, last: false };
+    if (!el.innerText?.trim())
+      return { first: true, last: true };
+    const before = document.createRange();
+    before.selectNodeContents(el);
+    before.setEnd(caret.startContainer, caret.startOffset);
+    const after = document.createRange();
+    after.selectNodeContents(el);
+    after.setStart(caret.startContainer, caret.startOffset);
+    const { lineHeight, fontSize } = getComputedStyle(el);
+    const lh = parseFloat(lineHeight);
+    const fs = parseFloat(fontSize) || 16;
+    const budget = (lh > 0 ? lh : fs * 1.5) * 1.5;
+    return {
+      first: spanHeight(before) <= budget,
+      last: spanHeight(after) <= budget
+    };
+  }
+  function matchesRecall(el) {
+    if (!recalling)
+      return false;
+    const list = getEntries();
+    const expected = cursor < list.length ? list[cursor] : draft;
+    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
+  }
+  function dropRecall(el) {
+    cursor = getEntries().length;
+    draft = editorText(el);
+    recalling = false;
+    hideHud();
+  }
+  function placeCaret(el, atStart) {
+    try {
+      const view = el.pmViewDesc?.view;
+      if (view) {
+        const Sel = view.state.selection.constructor;
+        const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
+        view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
+        return;
       }
+    } catch (err) {
+      logger23.debug("placeCaret pm failed:", err);
+    }
+    const native = window.getSelection();
+    if (!native)
+      return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(atStart);
+    native.removeAllRanges();
+    native.addRange(range);
+  }
+  function scheduleApplyEnd(gen) {
+    clearTimeout(applyTimer);
+    applyTimer = setTimeout(() => {
+      if (gen !== applyGen)
+        return;
+      applying = false;
+      const el = applyEl;
+      if (!el)
+        return;
+      if (recalling && !matchesRecall(el))
+        dropRecall(el);
+      else
+        placeCaret(el, applyAtStart);
+    }, APPLY_QUIET_MS);
+  }
+  function setEditorText(el, text, atStart) {
+    el.focus();
+    const sel = window.getSelection();
+    if (!sel)
+      return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    applying = true;
+    applyEl = el;
+    applyAtStart = atStart;
+    const gen = ++applyGen;
+    try {
+      if (!text)
+        document.execCommand("delete");
+      else
+        document.execCommand("insertText", false, text);
+    } catch (err) {
+      logger23.debug("insertText failed:", err);
+    }
+    placeCaret(el, atStart);
+    scheduleApplyEnd(gen);
+  }
+  function hudEl() {
+    let el = document.querySelector(`.${cl23("hud")}`);
+    if (el)
+      return el;
+    el = document.createElement("div");
+    el.className = cl23("hud");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+    return el;
+  }
+  function hideHud() {
+    document.querySelector(`.${cl23("hud")}`)?.classList.remove(cl23("hud-on"));
+  }
+  function showHud(label, editor) {
+    const bar = editor.closest(".query-bar");
+    if (!bar)
+      return;
+    const el = hudEl();
+    el.textContent = label;
+    requestAnimationFrame(() => {
+      const r = bar.getBoundingClientRect();
+      el.style.left = `${r.left + r.width / 2}px`;
+      el.style.top = `${r.top - HUD_GAP_PX}px`;
+      el.classList.add(cl23("hud-on"));
+    });
+  }
+  function pushEntry(text) {
+    const value = normalize(text);
+    if (!value)
+      return;
+    const now = Date.now();
+    const prev = recentAt.get(value);
+    if (prev != null && now - prev < CAPTURE_DEDUPE_MS)
+      return;
+    recentAt.set(value, now);
+    const list = getEntries();
+    if (list[list.length - 1] === value) {
+      resetBrowse(list.length);
+      return;
+    }
+    const next = cap([...list, value]);
+    setEntries(next);
+    resetBrowse(next.length);
+  }
+  function cycle2(older, el) {
+    const list = getEntries();
+    if (!list.length && older)
+      return;
+    if (cursor >= list.length) {
+      draft = editorText(el);
+      cursor = list.length;
+    }
+    const next = older ? cursor - 1 : cursor + 1;
+    if (next < 0 || next > list.length)
+      return;
+    cursor = next;
+    recalling = true;
+    setEditorText(el, next === list.length ? draft : list[next], older);
+    if (next < list.length)
+      showHud(`${next + 1} / ${list.length}`, el);
+    else
+      hideHud();
+  }
+  function onKeyDown3(e) {
+    if (e.isComposing || e.keyCode === 229)
+      return;
+    if (e.ctrlKey || e.metaKey)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
+      dropRecall(el);
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
+      pushEntry(editorText(el));
+      return;
+    }
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown")
+      return;
+    if (e.shiftKey)
+      return;
+    const older = e.key === "ArrowUp";
+    const force = e.altKey;
+    const list = getEntries();
+    if (!force) {
+      const edge = caretOnEdge(el);
+      if (older && !edge.first || !older && !edge.last)
+        return;
+    }
+    if (older && (!list.length || cursor <= 0))
+      return;
+    if (!older && cursor >= list.length)
+      return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    cycle2(older, el);
+  }
+  function onPointerDown(e) {
+    if (!recalling || applying)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    dropRecall(el);
+  }
+  function onInput(e) {
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    if (applying) {
+      scheduleApplyEnd(applyGen);
+      return;
+    }
+    if (matchesRecall(el))
+      return;
+    dropRecall(el);
+  }
+  function onSubmit(e) {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement))
+      return;
+    const editor = form.querySelector(EDITOR_SEL);
+    if (editor instanceof HTMLElement)
+      pushEntry(editorText(editor));
+  }
+  function onClick(e) {
+    const t = e.target;
+    if (!(t instanceof Element))
+      return;
+    const ctrl = t.closest("button, [role='button']");
+    if (!ctrl)
+      return;
+    const bar = ctrl.closest(".query-bar");
+    if (!bar || ctrl.closest("[data-query-bar-mode-select]"))
+      return;
+    const label = (ctrl.getAttribute("aria-label") ?? "").toLowerCase();
+    const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
+    if (!submit && !label.includes("send") && !label.includes("submit"))
+      return;
+    const editor = bar.querySelector(EDITOR_SEL);
+    if (editor instanceof HTMLElement)
+      pushEntry(editorText(editor));
+  }
+  function removeEntry(index) {
+    const list = getEntries();
+    if (index < 0 || index >= list.length)
+      return;
+    const next = list.filter((_, i) => i !== index);
+    setEntries(next);
+    resetBrowse(next.length);
+  }
+  function HistoryPanel() {
+    const { entries } = settings15.use(["entries"]);
+    const list = entries ?? [];
+    const [query, setQuery] = useState("");
+    const [page, setPage] = useState(0);
+    const [openId, setOpenId] = useState(null);
+    const [confirm, setConfirm] = useState(false);
+    const needle = query.trim().toLowerCase();
+    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).toReversed();
+    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+    const current = Math.min(page, pageCount - 1);
+    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.65rem",
+      className: cl23("panel")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      className: cl23("head"),
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      disabled: !list.length,
+      onClick: () => setConfirm(true)
+    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "Search prompts",
+      value: query,
+      onChange: (e) => {
+        setQuery(e.target.value);
+        setPage(0);
+      },
+      className: cl23("search")
+    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
+      className: cl23("empty")
+    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
+      className: cl23("empty")
+    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
+      className: cl23("list")
+    }, slice.map((row) => {
+      const lines = row.text.split(`
+`).length;
+      const expanded = openId === row.index;
+      return /* @__PURE__ */ React.createElement("div", {
+        key: row.index,
+        className: cl23("item", expanded && "item-on")
+      }, /* @__PURE__ */ React.createElement("div", {
+        className: cl23("main"),
+        role: "button",
+        tabIndex: 0,
+        onClick: () => setOpenId(expanded ? null : row.index),
+        onKeyDown: (e) => {
+          if (e.key !== "Enter" && e.key !== " ")
+            return;
+          e.preventDefault();
+          setOpenId(expanded ? null : row.index);
+        }
+      }, /* @__PURE__ */ React.createElement("span", {
+        className: cl23("body", !expanded && "clamp")
+      }, row.text)), /* @__PURE__ */ React.createElement("div", {
+        className: cl23("side")
+      }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
+        className: cl23("lines")
+      }, lines), /* @__PURE__ */ React.createElement("div", {
+        className: cl23("actions")
+      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "sm",
+        shape: "square",
+        tooltipContent: "Copy",
+        "aria-label": "Copy",
+        onClick: () => {
+          copyToClipboard(row.text).catch((err) => logger23.error("copy failed:", err));
+        }
+      }, /* @__PURE__ */ React.createElement(CopyIcon, {
+        size: 18
+      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "sm",
+        shape: "square",
+        tooltipContent: "Delete",
+        "aria-label": "Delete",
+        onClick: () => {
+          if (openId === row.index)
+            setOpenId(null);
+          removeEntry(row.index);
+        }
+      }, /* @__PURE__ */ React.createElement(Trash2Icon, {
+        size: 18
+      })))));
+    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
+      className: cl23("pager"),
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Previous page",
+      disabled: current <= 0,
+      onClick: () => setPage(current - 1)
+    }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
+      size: 18
+    })), /* @__PURE__ */ React.createElement("span", {
+      className: cl23("page")
+    }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Next page",
+      disabled: current >= pageCount - 1,
+      onClick: () => setPage(current + 1)
+    }, /* @__PURE__ */ React.createElement(ChevronRightIcon, {
+      size: 18
+    }))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: confirm,
+      onOpenChange: setConfirm,
+      title: "Clear input history",
+      description: "Delete all stored prompts? This cannot be undone.",
+      confirmText: "Clear",
+      danger: true,
+      onConfirm: () => {
+        setEntries([]);
+        resetBrowse(0);
+        setOpenId(null);
+        setQuery("");
+        setPage(0);
+      }
+    }));
+  }
+  var inputHistory_default = definePlugin({
+    name: "InputHistory",
+    icon: HistoryIcon,
+    description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    enabledByDefault: true,
+    settings: settings15,
+    managedStyle: "inputHistory",
+    cleanupSelectors: [".void-ih-hud"],
+    start() {
+      if (keys2)
+        return;
+      cursor = getEntries().length;
+      recalling = false;
+      keys2 = new AbortController;
+      const { signal } = keys2;
+      document.addEventListener("keydown", onKeyDown3, { capture: true, signal });
+      document.addEventListener("input", onInput, { capture: true, signal });
+      document.addEventListener("submit", onSubmit, { capture: true, signal });
+      document.addEventListener("click", onClick, { capture: true, signal });
+      document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
+    },
+    stop() {
+      keys2?.abort();
+      keys2 = null;
+      hideHud();
+      recentAt.clear();
+      clearTimeout(applyTimer);
+      applying = false;
+      applyEl = null;
+      recalling = false;
+    },
+    onSettingsChange() {
+      const current = getEntries();
+      const next = cap(current);
+      if (next.length !== current.length)
+        setEntries(next);
+      if (cursor > next.length)
+        cursor = next.length;
     }
   });
 
-  // void-css:/workspace/artifacts/Void-src/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/void-src/src/plugins/betterSidebar/styles.css
+  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
+.group.peer [data-sidebar="content"] > .grow {
+    cursor: default !important;
+}
+
+.group.peer [data-sidebar="sidebar"] + div::after {
+    background-color: transparent !important;
+}
+
+.void-sidebar-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    min-width: 0;
+    flex: 1;
+}
+
+.void-sidebar-card:hover {
+    background-color: hsl(var(--surface-l2));
+}
+
+.void-sidebar-card button[data-state] {
+    pointer-events: none;
+    background-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.void-sidebar-info {
+    min-width: 0;
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-sidebar-card { transition: none; }
+}
+
+.void-sidebar-name,
+.void-sidebar-plan {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.group\\/sidebar-menu-item:hover .void-sel-wrap {
+    display: inline-flex;
+}
+`);
+
+  // src/turbopack/common/plan.ts
+  var PLAN_NAMES = {
+    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
+    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
+    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
+    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
+  };
+  var X_SUB_NAMES = {
+    PremiumPlus: "SuperGrok",
+    Premium: "X Premium",
+    Basic: "X Basic"
+  };
+  function getPlanName(bestSubscription, xSubscriptionType) {
+    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
+  }
+
+  // src/plugins/betterSidebar/index.tsx
+  var logger24 = new Logger("BetterSidebar");
+  var cl24 = classNameFactory("void-sidebar-");
+  var settings16 = definePluginSettings({
+    clickToToggle: {
+      type: 3 /* BOOLEAN */,
+      description: "Click anywhere on the sidebar to toggle it.",
+      default: true
+    },
+    defaultCollapsed: {
+      type: 3 /* BOOLEAN */,
+      description: "Start with the sidebar collapsed on page load.",
+      default: false
+    },
+    batchSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Show checkboxes on conversations for bulk selection and deletion.",
+      default: true
+    }
+  });
+  function UserCard({ AvatarMenu }) {
+    const { open: open3 } = SidebarComponents.useSidebar();
+    const { user } = SessionStore.useSession();
+    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
+    const cardRef = useRef(null);
+    if (!open3 || !user)
+      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
+    const forward = (e, type) => {
+      if (!e.isTrusted)
+        return;
+      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
+    };
+    return /* @__PURE__ */ React.createElement("div", {
+      ref: cardRef,
+      className: cl24("card"),
+      onPointerDown: (e) => forward(e, "pointerdown"),
+      onPointerUp: (e) => forward(e, "pointerup")
+    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      justifyContent: "center",
+      gap: "0",
+      className: cl24("info")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      size: "sm",
+      weight: "medium",
+      className: cl24("name")
+    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      size: "xs",
+      color: "secondary",
+      className: cl24("plan")
+    }, getPlanName(bestSubscription, user.xSubscriptionType))));
+  }
+  var selection2 = createSelectionStore();
+  var CONVERSATION_PAGE = "chat";
+  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
+  async function deleteConversations(ids) {
+    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
+    if (currentConvId && ids.includes(currentConvId)) {
+      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
+    }
+    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger24.error("Failed to delete", id, e))));
+  }
+  function SelectCheckbox({ id, route }) {
+    const enabled = settings16.use(["batchSelect"]).batchSelect;
+    if (!enabled || !id || !isConversationRoute(route))
+      return null;
+    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
+      selection: selection2,
+      id
+    });
+  }
+  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
+  var betterSidebar_default = definePlugin({
+    name: "BetterSidebar",
+    icon: PanelLeftIcon,
+    description: "Various sidebar improvements.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings16,
+    managedStyle: "betterSidebar",
+    _UserCard: ErrorBoundary.wrap(UserCard),
+    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
+      selection: selection2,
+      noun: "conversation",
+      title: "Delete conversations",
+      onDelete: deleteConversations
+    }), null),
+    _wrapCheckbox(item, id, route) {
+      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
+    },
+    _wrapSidebarClick(onClick2, id, route) {
+      return (e) => {
+        if (id && settings16.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          e.stopPropagation();
+          selection2.toggle(id);
+          return;
+        }
+        onClick2?.(e);
+      };
+    },
+    _defaultOpen() {
+      return !settings16.store.defaultCollapsed;
+    },
+    _onSidebarClick() {
+      if (!settings16.store.clickToToggle)
+        return;
+      return (e) => {
+        const target = e.target;
+        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
+          return;
+        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
+      };
+    },
+    start() {
+      selection2.clear();
+    },
+    stop() {
+      selection2.clear();
+    },
+    patches: [
+      {
+        find: "AvatarDropdownMenu,{expanded:",
+        replacement: {
+          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
+          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
+        }
+      },
+      {
+        find: "useSidebar must be used within a SidebarProvider",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /\{defaultOpen:(\i),open:/,
+            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
+          },
+          {
+            match: /data-sidebar":"sidebar",className:/,
+            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
+          }
+        ]
+      },
+      {
+        find: '"Editing actions","Editing actions"',
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
+            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
+          },
+          {
+            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
+            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
+          }
+        ]
+      },
+      {
+        find: '"sidebar-expand","Expand"',
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
+          replace: "$self._renderActionBar(),$&"
+        }
+      }
+    ]
+  });
+
+  // void-css:/tmp/void-src/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -14166,7 +12849,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var CHART_SCALE_MIN = 20;
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   var DAY_MS2 = 86400000;
-  var logger26 = new Logger("UsageDisplay");
+  var logger25 = new Logger("UsageDisplay");
   function isRecord2(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
   }
@@ -14216,7 +12899,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      logger26.debug("Failed to read usage stats", error);
+      logger25.debug("Failed to read usage stats", error);
       return memory.get(key) ?? null;
     }
   }
@@ -14228,7 +12911,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       localStorage.setItem(key, value);
     } catch (error) {
-      logger26.debug("Failed to persist usage stats", error);
+      logger25.debug("Failed to persist usage stats", error);
       memory.set(key, value);
     }
   }
@@ -14240,7 +12923,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      logger26.debug("Failed to clear usage stats", error);
+      logger25.debug("Failed to clear usage stats", error);
       memory.delete(key);
     }
   }
@@ -14260,7 +12943,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }
       return { version: STATS_VERSION, userId, days };
     } catch (error) {
-      logger26.debug("Failed to read usage stats", error);
+      logger25.debug("Failed to read usage stats", error);
       return emptyStore(userId);
     }
   }
@@ -14404,9 +13087,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
 
   // src/plugins/usageDisplay/index.tsx
-  var logger27 = new Logger("UsageDisplay");
+  var logger26 = new Logger("UsageDisplay");
   var cl25 = classNameFactory("void-ud-");
-  var settings24 = definePluginSettings({
+  var settings17 = definePluginSettings({
     usageStats: {
       type: 3 /* BOOLEAN */,
       description: "Record daily usage. Hover shows today after a delay; click opens history.",
@@ -14495,12 +13178,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     SettingsStore3.markAsChanged();
   }
   function snapshotToday() {
-    if (!settings24.store.usageStats)
+    if (!settings17.store.usageStats)
       return;
     syncAccount();
     if (!state.userId)
       return;
-    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings24.store.retainDays));
+    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings17.store.retainDays));
   }
   async function refresh(reason = "manual") {
     if (refreshPromise)
@@ -14515,7 +13198,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       try {
         const pageUsage = readNativeUsage();
         const remote = await fetchOfficialUsage().then((usage) => ({ ok: true, usage })).catch((error) => {
-          logger27.warn("Failed to fetch official usage", error);
+          logger26.warn("Failed to fetch official usage", error);
           return { ok: false };
         });
         const merged = mergeNativeUsage(state.usage, remote.ok ? remote.usage : null, pageUsage);
@@ -14539,7 +13222,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS)
       refresh("visible");
   }
-  function onStreamEnd4() {
+  function onStreamEnd2() {
     refresh("stream");
   }
   function readPlan() {
@@ -14598,7 +13281,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function ButtonIcon() {
     useExternalStore(store3);
-    const { showPercent } = settings24.use(["showPercent"]);
+    const { showPercent } = settings17.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -14668,7 +13351,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function UsagePanel() {
     useExternalStore(store3);
-    const { usageStats, hoverStatsDelay } = settings24.use(["usageStats", "hoverStatsDelay"]);
+    const { usageStats, hoverStatsDelay } = settings17.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
     const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
@@ -14710,7 +13393,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function StatsToggle() {
-    const { usageStats } = settings24.use(["usageStats"]);
+    const { usageStats } = settings17.use(["usageStats"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
@@ -14728,7 +13411,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: !!usageStats,
       onCheckedChange: (value) => {
-        settings24.store.usageStats = value;
+        settings17.store.usageStats = value;
         store3.notify();
         if (value)
           refresh("manual");
@@ -14737,7 +13420,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function StatsModal({ onClose }) {
     useExternalStore(store3);
-    const { usageStats } = settings24.use(["usageStats"]);
+    const { usageStats } = settings17.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
     const todayKey = localDateKey(Date.now());
     const bars = days.length ? fillChartDays(days) : [];
@@ -14910,23 +13593,400 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings24,
+    settings: settings17,
     start() {
       migrateUsageStats();
     },
     chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
     events: {
-      streamEnd: onStreamEnd4
+      streamEnd: onStreamEnd2
     },
     onSettingsChange() {
-      if (settings24.store.usageStats)
+      if (settings17.store.usageStats)
         refresh("manual");
+    }
+  });
+
+  // src/plugins/noShareLink/index.ts
+  var STYLE_NAME4 = "noShareLink";
+  var settings18 = definePluginSettings({
+    hideShareProject: {
+      type: 3 /* BOOLEAN */,
+      description: "Inside a project: hide the top-right Share Project button.",
+      default: true
+    },
+    hideCreateShareLink: {
+      type: 3 /* BOOLEAN */,
+      description: "Not in a project: hide the top-right Create share link button on chats.",
+      default: true
+    }
+  });
+  function apply3() {
+    const rules = [];
+    if (settings18.store.hideShareProject) {
+      rules.push('button[aria-label="Share Project"]{display:none!important}');
+    }
+    if (settings18.store.hideCreateShareLink) {
+      rules.push('button[aria-label="Create share link"]{display:none!important}');
+    }
+    registerStyle(STYLE_NAME4, rules.join(`
+`));
+  }
+  var noShareLink_default = definePlugin({
+    name: "NoShareLink",
+    icon: Link2OffIcon,
+    description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
+    authors: [Devs.p],
+    tags: ["ui", "privacy"],
+    enabledByDefault: true,
+    settings: settings18,
+    start: apply3,
+    onSettingsChange: apply3,
+    stop() {
+      unregisterStyle(STYLE_NAME4);
+    }
+  });
+
+  // src/plugins/composerOpacity/index.ts
+  var STYLE_NAME5 = "composerOpacity";
+  var SHELL = ".query-bar";
+  var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
+  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
+  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
+  var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
+  var settings19 = definePluginSettings({
+    opacity: {
+      type: 5 /* SLIDER */,
+      description: "Background opacity of the chat input. 100 is fully opaque.",
+      min: 0,
+      max: 100,
+      default: 100
+    },
+    blur: {
+      type: 5 /* SLIDER */,
+      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
+      min: 0,
+      max: 40,
+      default: 16
+    }
+  });
+  function apply4() {
+    const pct = clamp(settings19.store.opacity, 0, 100);
+    const blur = clamp(settings19.store.blur, 0, 40);
+    const alpha = pct / 100;
+    const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
+    registerStyle(STYLE_NAME5, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
+  }
+  var composerOpacity_default = definePlugin({
+    name: "ComposerOpacity",
+    icon: BlendIcon,
+    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
+    authors: [Devs.p],
+    tags: ["ui", "chat"],
+    enabledByDefault: true,
+    settings: settings19,
+    start: apply4,
+    onSettingsChange: apply4,
+    stop() {
+      unregisterStyle(STYLE_NAME5);
+    }
+  });
+
+  // src/plugins/noGrokBot/index.ts
+  var STYLE_NAME6 = "noGrokBot";
+  var CSS2 = `
+#grok-bot-nav-button,
+div:has(> #grok-bot-nav-button) {
+    display: none !important;
+}
+#promo-portal [aria-label*="Grok Bot"] {
+    display: none !important;
+}
+`;
+  var noGrokBot_default = definePlugin({
+    name: "NoGrokBot",
+    icon: BotOffIcon,
+    description: "Hide the top-right Grok Bot promo button.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    start() {
+      registerStyle(STYLE_NAME6, CSS2);
+    },
+    stop() {
+      unregisterStyle(STYLE_NAME6);
+    }
+  });
+
+  // src/plugins/cleaner/index.ts
+  var settings20 = definePluginSettings({
+    hideUpgradePlan: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade plan button in the user menu.",
+      default: true
+    },
+    hideUpsellCard: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upsell card banner.",
+      default: true
+    },
+    hideUpsellSmall: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the small SuperGrok upsell banner.",
+      default: true
+    },
+    hideModelUpsell: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade prompt in the model selector.",
+      default: true
+    },
+    hideInaccessibleModels: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide locked/inaccessible models in the model selector.",
+      default: true
+    },
+    hideNotificationBanner: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Get notified when Grok finishes answering" banner.',
+      default: true
+    },
+    hideConnectX: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
+      default: true
+    }
+  });
+  var hideComponentPatch = (name, setting, all = true) => ({
+    find: `"${name}",0,`,
+    all,
+    replacement: {
+      match: new RegExp(`"${name}",0,`),
+      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
+    }
+  });
+  var cleaner_default = definePlugin({
+    name: "Cleaner",
+    icon: BrushCleaningIcon,
+    description: "Hides upgrade nags and upsell banners.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    enabledByDefault: true,
+    settings: settings20,
+    patches: [
+      {
+        find: '"user-dropdown.upgrade","Upgrade plan"',
+        all: true,
+        replacement: {
+          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          replace: ",$self.settings.store.hideUpgradePlan||$1"
+        }
+      },
+      {
+        find: "UPSELL_CARD_PRIORITY)",
+        all: true,
+        replacement: {
+          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
+          replace: "$1&&!$self.settings.store.hideUpsellCard"
+        }
+      },
+      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
+      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
+      {
+        find: "connect-x-upsell-dismissed",
+        replacement: {
+          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
+          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
+        }
+      },
+      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
+      {
+        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
+            replace: "$&$self.settings.store.hideModelUpsell||"
+          },
+          {
+            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
+            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/oneko/index.ts
+  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
+  var ONEKO_SCRIPT = '(function oneko(){const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
+  var oneko_default = definePlugin({
+    name: "Oneko",
+    icon: CatIcon,
+    description: "Cat follows your mouse cursor.",
+    authors: [Devs.adryd],
+    tags: ["ui"],
+    cleanupSelectors: ["#oneko"],
+    start() {
+      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
+      const el = document.createElement("script");
+      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
+      document.head.appendChild(el);
+      el.addEventListener("load", () => {
+        el.remove();
+        URL.revokeObjectURL(el.src);
+      }, { once: true });
+    }
+  });
+
+  // src/plugins/betterLinks/index.tsx
+  var DEFAULT_LINK = "#FCFCFC";
+  var DEFAULT_VISITED = "#9E9E9E";
+  var TOKEN_LINK = "hsl(var(--fg-primary))";
+  var TOKEN_VISITED = "hsl(var(--fg-tertiary))";
+  var STYLE_NAME7 = "better-links-dynamic";
+  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
+  function isValidHex(c) {
+    return /^#[0-9a-fA-F]{6}$/.test(c);
+  }
+  function getColor(key, fallback) {
+    const val = settings21.store[key];
+    return val && isValidHex(val) ? val : fallback;
+  }
+  function applyColors() {
+    const customLink = settings21.store.linkColor;
+    const link = customLink && isValidHex(customLink) ? customLink : TOKEN_LINK;
+    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
+    if (settings21.store.enableVisitedColor) {
+      const customVisited = settings21.store.visitedColor;
+      const visited = customVisited && isValidHex(customVisited) ? customVisited : TOKEN_VISITED;
+      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
+    }
+    registerStyle(STYLE_NAME7, css);
+  }
+  function ColorRow2({ settingKey, title, description, fallback }) {
+    settings21.use([settingKey]);
+    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
+      value: getColor(settingKey, fallback),
+      onChange: (v) => {
+        settings21.store[settingKey] = v;
+        applyColors();
+      },
+      title,
+      description
+    });
+  }
+  var settings21 = definePluginSettings({
+    linkifyDomains: {
+      type: 3 /* BOOLEAN */,
+      description: "Detect bare domains in messages and make them clickable.",
+      default: true
+    },
+    enableVisitedColor: {
+      type: 3 /* BOOLEAN */,
+      description: "Apply a different color to links you already visited.",
+      default: false,
+      onChange: applyColors
+    },
+    linkColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
+        settingKey: "linkColor",
+        title: "Link color",
+        description: "Colorize links in messages.",
+        fallback: DEFAULT_LINK
+      })
+    },
+    visitedColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
+        settingKey: "visitedColor",
+        title: "Visited color",
+        description: "Colorize links you already visited.",
+        fallback: DEFAULT_VISITED
+      })
+    }
+  }).withPrivateSettings();
+  var betterLinks_default = definePlugin({
+    name: "BetterLinks",
+    icon: LinkIcon,
+    description: "Colorize links and detect bare domains in chat messages.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings21,
+    patches: [
+      {
+        find: "chat-markdown:a:link",
+        all: true,
+        replacement: {
+          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
+          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
+        }
+      },
+      {
+        find: "chat-markdown-load-third-party",
+        replacement: {
+          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
+          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
+        }
+      }
+    ],
+    _remarkLinkify() {
+      const { store: store4 } = settings21;
+      return (tree) => {
+        try {
+          if (!store4.linkifyDomains)
+            return;
+          const walk = (node2) => {
+            if (!node2.children)
+              return;
+            const out = [];
+            let changed = false;
+            for (const child of node2.children) {
+              if (child.type !== "text") {
+                walk(child);
+                out.push(child);
+                continue;
+              }
+              DOMAIN_RE.lastIndex = 0;
+              if (!DOMAIN_RE.test(child.value)) {
+                out.push(child);
+                continue;
+              }
+              DOMAIN_RE.lastIndex = 0;
+              let last = 0;
+              let m;
+              while ((m = DOMAIN_RE.exec(child.value)) != null) {
+                if (m.index > last)
+                  out.push({ type: "text", value: child.value.slice(last, m.index) });
+                out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
+                last = m.index + m[0].length;
+              }
+              if (last < child.value.length)
+                out.push({ type: "text", value: child.value.slice(last) });
+              changed = true;
+            }
+            if (changed)
+              node2.children = out;
+          };
+          walk(tree);
+        } catch {
+          return tree;
+        }
+      };
+    },
+    start() {
+      applyColors();
+      enableStyle(STYLE_NAME7);
+    },
+    stop() {
+      disableStyle(STYLE_NAME7);
     }
   });
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME8 = "widerChat";
-  var settings25 = definePluginSettings({
+  var settings22 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem.",
@@ -14934,7 +13994,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
   function applyWidth() {
-    const w = settings25.store.width;
+    const w = settings22.store.width;
     registerStyle(STYLE_NAME8, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
@@ -14943,7 +14003,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
     tags: ["chat", "ui"],
-    settings: settings25,
+    settings: settings22,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
@@ -14951,11 +14011,990 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
+  // src/plugins/chatStateFavicons/detect.ts
+  var EDITOR_SEL2 = '.tiptap.ProseMirror[contenteditable="true"]';
+  var STOP_SELECTORS = [
+    'button[aria-label="Stop model response"]',
+    'button[aria-label*="Stop"]',
+    'button[aria-label*="stop"]',
+    'button[aria-label*="停止"]'
+  ];
+  var SEND_SELECTORS = [
+    'button[aria-label*="Send"]',
+    'button[aria-label*="Submit"]',
+    'button[type="submit"]'
+  ];
+  function isVisible(el) {
+    if (!(el instanceof HTMLElement) || !el.isConnected)
+      return false;
+    if (!el.getClientRects().length)
+      return false;
+    const style = getComputedStyle(el);
+    return style.visibility !== "hidden" && style.display !== "none";
+  }
+  function isStopControl(el) {
+    const label = el.getAttribute("aria-label") ?? "";
+    const text = el.textContent ?? "";
+    return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
+  }
+  function getActiveEditor() {
+    const list = Array.from(document.querySelectorAll(EDITOR_SEL2));
+    return list.find(isVisible) ?? list[0] ?? null;
+  }
+  function getComposerRoot() {
+    const editor = getActiveEditor();
+    return editor?.closest("form") ?? editor?.closest("div.relative") ?? editor?.parentElement ?? document.body;
+  }
+  function collectStopButtons(root) {
+    const candidates = [];
+    for (const sel of STOP_SELECTORS) {
+      for (const node2 of root.querySelectorAll(sel)) {
+        if (node2 instanceof HTMLElement)
+          candidates.push(node2);
+      }
+    }
+    if (candidates.length === 0) {
+      for (const btn of root.querySelectorAll("button")) {
+        if (btn instanceof HTMLElement && isStopControl(btn))
+          candidates.push(btn);
+      }
+    }
+    return candidates;
+  }
+  function getStopButton() {
+    const candidates = collectStopButtons(document);
+    return candidates.find(isVisible) ?? candidates[0] ?? null;
+  }
+  function isDisabledControl(el) {
+    if (el instanceof HTMLButtonElement && el.disabled)
+      return true;
+    if (el.hasAttribute("disabled"))
+      return true;
+    if (el.getAttribute("aria-disabled") === "true")
+      return true;
+    if (el.getAttribute("data-disabled") === "true")
+      return true;
+    return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
+  }
+  function getSubmitButton() {
+    for (const root of [getComposerRoot(), document]) {
+      for (const sel of SEND_SELECTORS) {
+        for (const node2 of root.querySelectorAll(sel)) {
+          if (!(node2 instanceof HTMLElement) || isStopControl(node2))
+            continue;
+          if (isVisible(node2) || isDisabledControl(node2))
+            return node2;
+        }
+      }
+    }
+    return null;
+  }
+  function submitIsGray() {
+    const btn = getSubmitButton();
+    return !!btn && isDisabledControl(btn);
+  }
+  function isInputEmpty() {
+    const editor = getActiveEditor();
+    if (!editor)
+      return true;
+    if (editor.querySelector("p.is-empty.is-editor-empty"))
+      return true;
+    return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
+  }
+  function conversationToken() {
+    const params = new URLSearchParams(location.search);
+    const paramId = params.get("conversationId") ?? params.get("conversation_id") ?? params.get("chatId") ?? params.get("chat_id") ?? params.get("cid") ?? params.get("id") ?? "";
+    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
+    const pathId = /^[a-z0-9_-]{8,}$/i.test(lastSeg) ? lastSeg : "";
+    const dataId = document.querySelector("[data-conversation-id]")?.getAttribute("data-conversation-id") ?? "";
+    return [dataId, paramId, pathId].filter(Boolean).join("|");
+  }
+  function contextKeyFromUrl(token) {
+    const base = `${location.origin}${location.pathname}`;
+    return token ? `${base}|${token}` : `${base}|draft`;
+  }
+
+  // src/plugins/chatStateFavicons/icons.ts
+  var ICON_STYLES = ["original", "badge", "dot", "hole", "bg"];
+  var STYLE_OPTIONS = [
+    { label: "only emoji", value: "original" },
+    { label: "Badge + glyph", value: "badge", default: true },
+    { label: "Color dot", value: "dot" },
+    { label: "Mark tint", value: "hole" },
+    { label: "Background tint", value: "bg" }
+  ];
+  var KIND_COLOR = {
+    rotate: "#3B82F6",
+    done: "#22C55E",
+    ready: "#F59E0B",
+    error: "#EF4444"
+  };
+  var HOLE_IDLE = "#050505";
+  var MARK_FILL = "#FCFCFC";
+  var GROK_MARK_PATH = "M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815";
+  var GROK_BG_PATH2 = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P12 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P22 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var ORIGINAL_EMOJI = {
+    rotate: "\uD83D\uDD04",
+    done: "✔️",
+    ready: "\uD83D\uDC4D",
+    error: "\uD83D\uDEAB"
+  };
+  function isIconStyle(value) {
+    return typeof value === "string" && ICON_STYLES.includes(value);
+  }
+  function svgEmoji(emoji) {
+    return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`)}`;
+  }
+  function toSvgData(inner, viewBox = "0 0 64 64") {
+    const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg2)}`;
+  }
+  function grokMarkSvg() {
+    return [
+      `<rect width="64" height="64" rx="14" fill="${HOLE_IDLE}"/>`,
+      `<g transform="translate(8 8) scale(2)" fill="${MARK_FILL}" fill-rule="evenodd">`,
+      `<path d="${GROK_MARK_PATH}"/>`,
+      "</g>"
+    ].join("");
+  }
+  function officialGrokSvg(markColor, bgColor) {
+    return [
+      `<path d="${GROK_BG_PATH2}" fill="${bgColor}"/>`,
+      `<path d="${GROK_MARK_P12}" fill="${markColor}"/>`,
+      `<path d="${GROK_MARK_P22}" fill="${markColor}"/>`
+    ].join("");
+  }
+  function badgeGlyph(kind) {
+    if (kind === "rotate") {
+      return [
+        '<g transform="translate(51.5 51.5)"><g>',
+        '<path d="M0-6.1 A6.1 6.1 0 1 1 -5.3 3.05" fill="none" stroke="#fff" stroke-width="2.15" stroke-linecap="round"/>',
+        '<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.85s" repeatCount="indefinite"/>',
+        "</g></g>"
+      ].join("");
+    }
+    if (kind === "done") {
+      return '<path d="M46.6 51.7 L50.1 55.3 L56.8 47.4" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    if (kind === "ready") {
+      return [
+        '<path d="M51.5 56.4 V46.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+        '<path d="M46.6 51.2 L51.5 46.2 L56.4 51.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+      ].join("");
+    }
+    return [
+      '<path d="M47.2 47.2 L55.8 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+      '<path d="M55.8 47.2 L47.2 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
+    ].join("");
+  }
+  function composeIcon(style, kind, officialHref) {
+    if (style === "original") {
+      if (kind === "wait")
+        return officialHref;
+      return svgEmoji(ORIGINAL_EMOJI[kind]);
+    }
+    const color = kind === "wait" ? undefined : KIND_COLOR[kind];
+    if (style === "hole") {
+      return toSvgData(officialGrokSvg(color ?? MARK_FILL, HOLE_IDLE), "0 0 512 512");
+    }
+    if (style === "bg") {
+      return toSvgData(officialGrokSvg(MARK_FILL, color ?? HOLE_IDLE), "0 0 512 512");
+    }
+    if (!color || kind === "wait")
+      return toSvgData(grokMarkSvg());
+    const badge = style === "dot" ? [
+      '<circle cx="52.2" cy="52.2" r="10.4" fill="#050505"/>',
+      `<circle cx="52.2" cy="52.2" r="7.7" fill="${color}"/>`
+    ].join("") : [
+      '<circle cx="51.5" cy="51.5" r="12.15" fill="#050505"/>',
+      `<circle cx="51.5" cy="51.5" r="9.55" fill="${color}"/>`,
+      badgeGlyph(kind)
+    ].join("");
+    return toSvgData(grokMarkSvg() + badge);
+  }
+  function buildIcons(style, officialHref) {
+    return {
+      wait: composeIcon(style, "wait", officialHref),
+      rotate: composeIcon(style, "rotate", officialHref),
+      done: composeIcon(style, "done", officialHref),
+      ready: composeIcon(style, "ready", officialHref),
+      error: composeIcon(style, "error", officialHref)
+    };
+  }
+
+  // src/plugins/chatStateFavicons/index.ts
+  var logger27 = new Logger("ChatStateFavicons");
+  var ICON_ID = "void-chat-state-favicon";
+  var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
+  var settings23 = definePluginSettings({
+    style: {
+      type: 4 /* SELECT */,
+      description: "How the Grok mark is overlaid with chat state.",
+      options: STYLE_OPTIONS
+    }
+  });
+  var officialHref = "/images/favicon.svg";
+  var icons = buildIcons("badge", officialHref);
+  var kind = "wait";
+  var wasStreaming = false;
+  var justFinished = false;
+  var streamContext = null;
+  var lockedToken = "";
+  var lastWasError = false;
+  var lastConvId = "";
+  var primedReady = true;
+  var faviconObs = null;
+  var globalObs = null;
+  var composerObs = null;
+  var buttonObs = null;
+  var inputCtrl = null;
+  var unsubRoute = null;
+  var unsubPage = null;
+  var raf = 0;
+  var started2 = false;
+  function currentStyle() {
+    const value = settings23.store.style;
+    return isIconStyle(value) ? value : "badge";
+  }
+  function captureOfficial() {
+    const existing = document.querySelector(`link[rel~="icon"]:not(#${ICON_ID})`);
+    const href = existing?.href;
+    if (href && !href.startsWith("data:"))
+      return href;
+    return `${location.origin}/images/favicon.svg`;
+  }
+  function isIconLink(node2) {
+    return node2 instanceof HTMLLinkElement && (node2.relList.contains("icon") || /\bicon\b/i.test(node2.rel));
+  }
+  function stripCompetitors() {
+    const { head } = document;
+    if (!head)
+      return;
+    for (const node2 of head.querySelectorAll("link")) {
+      if (node2.id !== ICON_ID && isIconLink(node2))
+        node2.remove();
+    }
+  }
+  function applyHref(href) {
+    const { head } = document;
+    if (!head)
+      return;
+    stripCompetitors();
+    let link = document.getElementById(ICON_ID);
+    if (!link) {
+      link = document.createElement("link");
+      link.id = ICON_ID;
+      link.rel = "icon shortcut icon";
+      link.type = "image/svg+xml";
+      link.setAttribute("sizes", "any");
+      head.prepend(link);
+    } else if (head.firstChild !== link) {
+      head.prepend(link);
+    }
+    if (link.getAttribute("href") !== href)
+      link.setAttribute("href", href);
+  }
+  function setKind(next) {
+    kind = next;
+    applyHref(icons[next]);
+  }
+  function rebuildIcons() {
+    icons = buildIcons(currentStyle(), officialHref);
+    applyHref(icons[kind]);
+  }
+  function liveResponse(id, byId) {
+    if (!id)
+      return false;
+    const response = byId[id];
+    if (!response)
+      return false;
+    if (response.partial)
+      return true;
+    return LIVE_RESPONSE.has(response.state ?? "");
+  }
+  function storeStreaming() {
+    try {
+      const page = ChatPageStore.useChatPageStore.getState();
+      if (page.streamedMessageId || page.showStreamingIndicator)
+        return true;
+      const { byId } = ResponseStore.useResponseStore.getState();
+      return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
+    } catch (e) {
+      logger27.debug("stream stores unavailable:", e);
+      return false;
+    }
+  }
+  function isStreaming() {
+    if (storeStreaming())
+      return true;
+    return getStopButton() != null;
+  }
+  function currentConversationId() {
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      if (route.conversationId)
+        return String(route.conversationId);
+    } catch (e) {
+      logger27.debug("RoutingStore unavailable:", e);
+    }
+    try {
+      const id = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (id)
+        return id;
+    } catch (e) {
+      logger27.debug("ChatPageStore unavailable:", e);
+    }
+    return conversationToken();
+  }
+  function getContextKey() {
+    const id = currentConversationId();
+    const key = id || contextKeyFromUrl("");
+    if (isStreaming()) {
+      if (!lockedToken && key)
+        lockedToken = key;
+      return lockedToken;
+    }
+    lockedToken = "";
+    return key;
+  }
+  function sameStreamContext(key) {
+    return !!streamContext && !!key && streamContext === key;
+  }
+  function resetStreamFlags() {
+    wasStreaming = false;
+    justFinished = false;
+    streamContext = null;
+    lockedToken = "";
+    lastWasError = false;
+  }
+  function onConversationSwitch(id) {
+    lastConvId = id;
+    resetStreamFlags();
+    primedReady = false;
+    composerObs?.disconnect();
+    composerObs = null;
+    buttonObs?.disconnect();
+    buttonObs = null;
+    setKind("wait");
+  }
+  function hasError() {
+    if (lastWasError)
+      return true;
+    try {
+      const { byId } = ResponseStore.useResponseStore.getState();
+      const page = ChatPageStore.useChatPageStore.getState();
+      const id = page.streamedMessageId ?? page.lastMessageId;
+      if (!id)
+        return false;
+      const response = byId[id];
+      return response?.state === "error" || response?.error != null;
+    } catch (e) {
+      logger27.debug("ResponseStore unavailable:", e);
+      return false;
+    }
+  }
+  function evaluateState() {
+    if (!started2)
+      return;
+    const conv = currentConversationId();
+    if (lastConvId && conv && lastConvId !== conv) {
+      onConversationSwitch(conv);
+      return;
+    }
+    if (conv)
+      lastConvId = conv;
+    const contextKey = getContextKey();
+    const streaming = isStreaming();
+    const empty = isInputEmpty();
+    const gray = submitIsGray();
+    if (hasError() && !streaming) {
+      setKind("error");
+      wasStreaming = false;
+      justFinished = false;
+      streamContext = null;
+      lastWasError = false;
+      return;
+    }
+    if (streaming && empty) {
+      wasStreaming = true;
+      justFinished = false;
+      lastWasError = false;
+      streamContext = contextKey;
+      setKind("rotate");
+      return;
+    }
+    if (wasStreaming) {
+      const sameContext = sameStreamContext(contextKey);
+      wasStreaming = false;
+      if (sameContext && gray) {
+        justFinished = true;
+        streamContext = contextKey;
+        setKind("done");
+        return;
+      }
+      justFinished = false;
+      streamContext = null;
+    }
+    if (justFinished) {
+      const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);
+      if (contextChanged) {
+        justFinished = false;
+        streamContext = null;
+      } else if (empty) {
+        setKind("done");
+        return;
+      } else if (primedReady) {
+        justFinished = false;
+        setKind("ready");
+        return;
+      } else {
+        justFinished = false;
+        setKind("wait");
+        return;
+      }
+    }
+    streamContext = null;
+    lastWasError = false;
+    if (empty)
+      setKind("wait");
+    else if (primedReady)
+      setKind("ready");
+    else
+      setKind("wait");
+  }
+  function nodeTouchesStop(node2) {
+    if (!(node2 instanceof Element))
+      return false;
+    if (node2 instanceof HTMLElement && node2.tagName === "BUTTON" && isStopControl(node2))
+      return true;
+    for (const btn of node2.querySelectorAll("button")) {
+      if (isStopControl(btn))
+        return true;
+    }
+    return false;
+  }
+  function stopButtonMutation(list) {
+    for (const m of list) {
+      if (nodeTouchesStop(m.target))
+        return true;
+      for (const n of m.addedNodes) {
+        if (nodeTouchesStop(n))
+          return true;
+      }
+      for (const n of m.removedNodes) {
+        if (nodeTouchesStop(n))
+          return true;
+      }
+      if (m.type === "attributes" && m.attributeName === "aria-label" && m.target instanceof HTMLElement) {
+        if (isStopControl(m.target) || /stop|停止/i.test(String(m.oldValue ?? "")))
+          return true;
+      }
+    }
+    return false;
+  }
+  function nodeInEditor(node2) {
+    const el = node2 instanceof Element ? node2 : node2?.parentElement;
+    return !!el?.closest(EDITOR_SEL2);
+  }
+  function mutationsAreEditorOnly(list) {
+    if (!list.length)
+      return false;
+    for (const m of list) {
+      if (!nodeInEditor(m.target))
+        return false;
+      for (const n of m.addedNodes) {
+        if (n instanceof Text)
+          continue;
+        if (!nodeInEditor(n))
+          return false;
+      }
+      for (const n of m.removedNodes) {
+        if (n instanceof Text)
+          continue;
+        if (!nodeInEditor(n))
+          return false;
+      }
+    }
+    return true;
+  }
+  function onDomMutate(list) {
+    if (kind === "rotate" || wasStreaming) {
+      if (mutationsAreEditorOnly(list))
+        return;
+      if (!stopButtonMutation(list))
+        return;
+    }
+    scheduleEvaluate();
+  }
+  function onEditorInput() {
+    primedReady = true;
+    scheduleEvaluate();
+  }
+  function scheduleEvaluate() {
+    if (!started2 || raf)
+      return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      if (!started2)
+        return;
+      bindEditorInput();
+      const root = getComposerRoot();
+      if (!composerObs || !root.isConnected) {
+        observeComposer();
+        observeButtons();
+      }
+      evaluateState();
+    });
+  }
+  function onStreamEnd3({ responseId }) {
+    try {
+      const response = ResponseStore.useResponseStore.getState().byId[responseId];
+      lastWasError = response?.state === "error" || response?.error != null;
+    } catch (e) {
+      logger27.debug("ResponseStore unavailable:", e);
+    }
+  }
+  function startFaviconGuard() {
+    faviconObs?.disconnect();
+    const { head } = document;
+    if (!head)
+      return;
+    faviconObs = new MutationObserver((list) => {
+      for (const m of list) {
+        if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
+          applyHref(icons[kind]);
+          return;
+        }
+        for (const node2 of m.addedNodes) {
+          if (isIconLink(node2) && node2.id !== ICON_ID) {
+            applyHref(icons[kind]);
+            return;
+          }
+        }
+      }
+    });
+    faviconObs.observe(head, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href", "rel"]
+    });
+  }
+  function bindEditorInput() {
+    const editor = getActiveEditor();
+    if (!editor || editor.dataset.voidCsfBound === "1")
+      return;
+    editor.dataset.voidCsfBound = "1";
+    editor.addEventListener("input", onEditorInput, { passive: true });
+    editor.addEventListener("compositionend", onEditorInput, { passive: true });
+  }
+  function observeComposer() {
+    composerObs?.disconnect();
+    const root = getComposerRoot();
+    composerObs = new MutationObserver(onDomMutate);
+    composerObs.observe(root, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["aria-label", "aria-disabled", "disabled", "data-testid", "class"],
+      attributeOldValue: true
+    });
+  }
+  function observeButtons() {
+    buttonObs?.disconnect();
+    const target = getComposerRoot();
+    buttonObs = new MutationObserver(onDomMutate);
+    buttonObs.observe(target, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-label", "type"],
+      attributeOldValue: true
+    });
+  }
+  function attachStores() {
+    unsubRoute?.();
+    unsubPage?.();
+    try {
+      const routeStore = RoutingStore.useRoutingStore;
+      if (typeof routeStore?.subscribe === "function") {
+        unsubRoute = routeStore.subscribe((s) => s.route.conversationId, (id, prev) => {
+          if (!id || id === prev)
+            return;
+          onConversationSwitch(String(id));
+        });
+      }
+    } catch (e) {
+      logger27.debug("RoutingStore subscribe failed:", e);
+      try {
+        unsubRoute = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
+      } catch (err) {
+        logger27.debug("RoutingStore full subscribe failed:", err);
+      }
+    }
+    try {
+      const pageStore = ChatPageStore.useChatPageStore;
+      if (typeof pageStore?.subscribe === "function") {
+        unsubPage = pageStore.subscribe((s) => s.conversationId, (id, prev) => {
+          if (!id || id === prev)
+            return;
+          onConversationSwitch(id);
+        });
+      }
+    } catch (e) {
+      logger27.debug("ChatPageStore subscribe failed:", e);
+    }
+  }
+  function restoreOfficial() {
+    faviconObs?.disconnect();
+    faviconObs = null;
+    document.getElementById(ICON_ID)?.remove();
+    const { head } = document;
+    if (!head)
+      return;
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.type = "image/svg+xml";
+    link.href = officialHref;
+    head.prepend(link);
+  }
+  var chatStateFavicons_default = definePlugin({
+    name: "ChatStateFavicons",
+    icon: AppWindowIcon,
+    description: "Show streaming, done, ready, and error states on the tab favicon.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings23,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    cleanupSelectors: [`#${ICON_ID}`],
+    start() {
+      started2 = true;
+      officialHref = captureOfficial();
+      rebuildIcons();
+      startFaviconGuard();
+      inputCtrl?.abort();
+      inputCtrl = new AbortController;
+      window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
+      globalObs?.disconnect();
+      globalObs = new MutationObserver(onDomMutate);
+      globalObs.observe(document.body, { childList: true, subtree: true });
+      bindEditorInput();
+      observeComposer();
+      observeButtons();
+      attachStores();
+      evaluateState();
+    },
+    stop() {
+      started2 = false;
+      if (raf)
+        cancelAnimationFrame(raf);
+      raf = 0;
+      inputCtrl?.abort();
+      inputCtrl = null;
+      unsubRoute?.();
+      unsubRoute = null;
+      unsubPage?.();
+      unsubPage = null;
+      globalObs?.disconnect();
+      globalObs = null;
+      composerObs?.disconnect();
+      composerObs = null;
+      buttonObs?.disconnect();
+      buttonObs = null;
+      wasStreaming = false;
+      justFinished = false;
+      streamContext = null;
+      lockedToken = "";
+      lastConvId = "";
+      primedReady = true;
+      lastWasError = false;
+      restoreOfficial();
+    },
+    onSettingsChange: rebuildIcons,
+    events: {
+      streamEnd: onStreamEnd3
+    }
+  });
+
+  // void-css:/tmp/void-src/src/plugins/streamerMode/styles.css
+  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
+
+/* Sidebar avatar */
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
+html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
+    filter: none;
+}
+
+/* Sidebar username */
+html.void-streamer-sidebar-name .void-sidebar-info {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
+    filter: none;
+}
+
+/* Account tab avatar (inside settings dialog) */
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
+    filter: none;
+}
+
+/* Account tab username */
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
+    filter: none;
+}
+
+/* Account tab email */
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
+    filter: none;
+}
+
+/* Account tab birth year */
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
+    filter: none;
+}
+
+/* Conversation titles in sidebar (pinned + recent buckets) */
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
+    filter: none;
+}
+
+/* Project names in sidebar */
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
+    filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
+    html.void-streamer-sidebar-name .void-sidebar-info,
+    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
+    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
+    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
+    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
+    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
+    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
+}
+`);
+
+  // src/plugins/streamerMode/index.ts
+  var CSS_CLASSES = {
+    sidebarAvatar: "void-streamer-sidebar-avatar",
+    sidebarName: "void-streamer-sidebar-name",
+    accountAvatar: "void-streamer-account-avatar",
+    accountName: "void-streamer-account-name",
+    accountEmail: "void-streamer-account-email",
+    accountAge: "void-streamer-account-age",
+    projects: "void-streamer-projects",
+    conversations: "void-streamer-conversations"
+  };
+  var settings24 = definePluginSettings({
+    sidebarAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the sidebar.",
+      default: true
+    },
+    sidebarName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your username in the sidebar.",
+      default: true
+    },
+    accountAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the account settings tab.",
+      default: true
+    },
+    accountName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your name in the account settings tab.",
+      default: true
+    },
+    accountEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your email in the account settings tab.",
+      default: true
+    },
+    accountAge: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your birth year in the account settings tab.",
+      default: true
+    },
+    projects: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur project names in the sidebar.",
+      default: true
+    },
+    conversations: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur conversation titles in the sidebar.",
+      default: true
+    }
+  });
+  function syncClasses() {
+    const { classList } = document.documentElement;
+    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
+      classList.toggle(cls, !!settings24.store[key]);
+    }
+  }
+  var streamerMode_default = definePlugin({
+    name: "StreamerMode",
+    icon: EyeOffIcon,
+    description: "Blurs personal information for privacy while streaming.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    settings: settings24,
+    start: syncClasses,
+    onSettingsChange: syncClasses,
+    stop() {
+      const { classList } = document.documentElement;
+      for (const cls of Object.values(CSS_CLASSES)) {
+        classList.remove(cls);
+      }
+    }
+  });
+
+  // src/plugins/responseNotification/index.ts
+  var settings25 = definePluginSettings({
+    sound: {
+      type: 3 /* BOOLEAN */,
+      description: "Play a notification sound.",
+      default: true
+    },
+    soundUrl: {
+      type: 0 /* STRING */,
+      description: "Custom sound URL (leave empty for default beep).",
+      default: "",
+      placeholder: "https://example.com/sound.mp3"
+    },
+    browserNotification: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a browser notification.",
+      default: true
+    },
+    onlyWhenHidden: {
+      type: 3 /* BOOLEAN */,
+      description: "Only notify when the tab is not focused.",
+      default: true
+    }
+  });
+  var userGestured = false;
+  var gestureCtrl = null;
+  function playBeep() {
+    const ctx = new AudioContext;
+    const start = () => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.value = 0.15;
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+      osc.onended = () => ctx.close();
+    };
+    if (ctx.state === "suspended")
+      ctx.resume().then(start, () => ctx.close());
+    else
+      start();
+  }
+  function playSound() {
+    if (!userGestured)
+      return;
+    const url = settings25.store.soundUrl?.trim();
+    if (url) {
+      const audio = new Audio(url);
+      audio.volume = 0.3;
+      audio.play().catch(() => playBeep());
+    } else {
+      playBeep();
+    }
+  }
+  function onStreamEnd4({ responseId }) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (!response || response.state !== "closed")
+      return;
+    if (settings25.store.onlyWhenHidden && document.visibilityState === "visible")
+      return;
+    if (settings25.store.sound)
+      playSound();
+    if (settings25.store.browserNotification)
+      sendBrowserNotification("Grok", "Response complete.");
+  }
+  var responseNotification_default = definePlugin({
+    name: "ResponseNotification",
+    icon: BellIcon,
+    description: "Notify when Grok finishes responding.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings25,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      if (gestureCtrl)
+        return;
+      gestureCtrl = new AbortController;
+      const markGestured = () => {
+        userGestured = true;
+        gestureCtrl?.abort();
+        gestureCtrl = null;
+      };
+      for (const evt of ["pointerdown", "keydown", "touchstart"]) {
+        addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
+      }
+    },
+    stop() {
+      gestureCtrl?.abort();
+      gestureCtrl = null;
+    },
+    events: {
+      streamEnd: onStreamEnd4
+    }
+  });
+
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [composerOpacity_default.name]: composerOpacity_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [inputHistory_default.name]: inputHistory_default, [messageTimestamps_default.name]: messageTimestamps_default, [noDictation_default.name]: noDictation_default, [noGrokBot_default.name]: noGrokBot_default, [noShareLink_default.name]: noShareLink_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [placeholder_default.name]: placeholder_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [recentTopics_default.name]: recentTopics_default, [responseNotification_default.name]: responseNotification_default, [settingsFlyout_default.name]: settingsFlyout_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [themedScrollbar_default.name]: themedScrollbar_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default };
-  // void-css:/workspace/artifacts/Void-src/src/api/Notices.css
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [cloneChats_default.name]: cloneChats_default, [exportChat_default.name]: exportChat_default, [betterFiles_default.name]: betterFiles_default, [settingsFlyout_default.name]: settingsFlyout_default, [incognito_default.name]: incognito_default, [recentTopics_default.name]: recentTopics_default, [noDictation_default.name]: noDictation_default, [messageTimestamps_default.name]: messageTimestamps_default, [downloadTTS_default.name]: downloadTTS_default, [autoCollapse_default.name]: autoCollapse_default, [betterImagine_default.name]: betterImagine_default, [customInstructions_default.name]: customInstructions_default, [placeholder_default.name]: placeholder_default, [autoRetry_default.name]: autoRetry_default, [experiments_default.name]: experiments_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [consoleJanitor_default.name]: consoleJanitor_default, [starry_default.name]: starry_default, [inputHistory_default.name]: inputHistory_default, [betterSidebar_default.name]: betterSidebar_default, [usageDisplay_default.name]: usageDisplay_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [noShareLink_default.name]: noShareLink_default, [composerOpacity_default.name]: composerOpacity_default, [noGrokBot_default.name]: noGrokBot_default, [themedScrollbar_default.name]: themedScrollbar_default, [cleaner_default.name]: cleaner_default, [oneko_default.name]: oneko_default, [betterLinks_default.name]: betterLinks_default, [widerChat_default.name]: widerChat_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [streamerMode_default.name]: streamerMode_default, [responseNotification_default.name]: responseNotification_default };
+  // void-css:/tmp/void-src/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
