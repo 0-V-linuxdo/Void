@@ -9,7 +9,7 @@ import "./styles.css";
 import type { ChatBarButtonDef } from "@api/ChatBarButtons";
 import { type ModalProps, openModal } from "@api/Modals";
 import { definePluginSettings, PlainSettings, SettingsStore } from "@api/Settings";
-import { Button, ConfirmDialog, Flex, Paragraph, Switch, Text } from "@components";
+import { Button, ConfirmDialog, Flex, Input, Paragraph, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CircleGaugeIcon } from "@components/icons";
 import { VoidDialogShell } from "@components/settings/tabs/VoidDialogShell";
@@ -27,6 +27,7 @@ import definePlugin, { OptionType } from "@utils/types";
 
 import {
     fetchOfficialUsage,
+    finiteNumber,
     formatPercent,
     mergeNativeUsage,
     type NativeUsage,
@@ -48,14 +49,18 @@ import {
     formatDayNumber,
     formatDelta,
     hoverDelayOf,
+    isWipedReset,
     listDays,
     localDateKey,
     readToday,
     recordSnapshot,
+    repairWipedReset,
     RETAIN_DEFAULT,
     RETAIN_MAX,
     RETAIN_MIN,
     retainDaysOf,
+    shiftDateKey,
+    writeDay,
 } from "./stats";
 
 const logger = new Logger("UsageDisplay");
@@ -461,6 +466,57 @@ function DayFormula({ rec, today }: { rec: DailyUsageRecord; today: boolean }) {
     );
 }
 
+function RepairReset({ rec, prev, userId }: { rec: DailyUsageRecord; prev: DailyUsageRecord | null; userId: string }) {
+    const hint = prev?.lastPercent ?? null;
+    const [draft, setDraft] = useState(hint == null ? "" : String(hint));
+
+    useEffect(() => {
+        setDraft(hint == null ? "" : String(hint));
+    }, [rec.date, hint]);
+
+    if (!isWipedReset(rec, prev)) return null;
+
+    const pre = finiteNumber(draft);
+    const dayStart = hint ?? 0;
+
+    return (
+        <Flex flexDirection="column" gap="0.35rem" className={cl("repair")}>
+            <Text size="xs" color="muted">
+                Week reset overwrote this day with 0%. Enter weekly usage just before the reset.
+            </Text>
+            <Flex alignItems="center" gap="0.5rem">
+                <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    value={draft}
+                    onChange={(e: { target: { value: string } }) => setDraft(e.target.value)}
+                    className={cl("repair-input")}
+                    aria-label="Weekly percent before reset"
+                />
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    shape="rectangle"
+                    disabled={pre == null}
+                    onClick={() => {
+                        if (pre == null) return;
+                        writeDay(
+                            userId,
+                            repairWipedReset(rec, dayStart, pre, Date.now()),
+                            retainDaysOf(settings.store.retainDays),
+                        );
+                        store.notify();
+                    }}
+                >
+                    Repair
+                </Button>
+            </Flex>
+        </Flex>
+    );
+}
+
 function StatsModal({ onClose }: ModalProps) {
     useExternalStore(store);
     const { usageStats } = settings.use(["usageStats"]);
@@ -537,6 +593,13 @@ function StatsModal({ onClose }: ModalProps) {
                         <Flex flexDirection="column" gap="0.35rem" className={cl("detail")}>
                             <Text size="sm" weight="semibold">{active.date === todayKey ? "Today" : formatDayLabel(active.date)}</Text>
                             <DayFormula rec={active} today={active.date === todayKey} />
+                            {state.userId && (
+                                <RepairReset
+                                    rec={active}
+                                    prev={bars.find(d => d.date === shiftDateKey(active.date, -1)) ?? null}
+                                    userId={state.userId}
+                                />
+                            )}
                         </Flex>
                     )}
                 </Flex>

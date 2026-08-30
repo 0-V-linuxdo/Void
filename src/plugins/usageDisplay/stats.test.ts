@@ -12,22 +12,34 @@ import {
     CHART_WINDOW,
     chartScale,
     clearStats,
+    type DailyUsageRecord,
     dayDelta,
     emptyDay,
     fillChartDays,
     formatDayLabel,
     formatDayNumber,
     formatDelta,
+    isWipedReset,
     localDateKey,
     pruneDays,
     recordSnapshot,
+    repairWipedReset,
     RESET_AT_TOLERANCE_MS,
     RESET_DROP_PERCENT,
     RETAIN_DEFAULT,
     shiftDateKey,
+    writeDay,
 } from "./stats";
 
 const noon = (y: number, m: number, d: number) => new Date(y, m - 1, d, 12, 0, 0).getTime();
+
+function wipedDay(): DailyUsageRecord {
+    return {
+        ...emptyDay("2026-08-31", 4),
+        startPercent: 0,
+        lastPercent: 1,
+    };
+}
 
 describe("localDateKey", () => {
     test("uses the local calendar day", () => {
@@ -123,6 +135,36 @@ describe("dayDelta", () => {
         const rec = applySnapshot(grown, 1, 200_000, 4);
         expect(dayDelta(rec)).toBe(34);
         expect(dayDelta(applySnapshot(rec, 3, 200_000, 5))).toBe(36);
+    });
+});
+
+describe("repairWipedReset", () => {
+    test("detects a 0% overwrite after a high previous day", () => {
+        const prev = applySnapshot(applySnapshot(emptyDay("2026-08-30", 1), 55, 100, 2), 88, 100, 3);
+        expect(isWipedReset(wipedDay(), prev)).toBe(true);
+        expect(isWipedReset(wipedDay(), null)).toBe(false);
+        expect(isWipedReset(prev, null)).toBe(false);
+    });
+
+    test("restores pre-reset usage onto the 0% day", () => {
+        const rec = repairWipedReset(wipedDay(), 55, 89, 5);
+        expect(rec.accruedPercent).toBe(34);
+        expect(rec.priorStartPercent).toBe(55);
+        expect(rec.priorLastPercent).toBe(89);
+        expect(rec.startPercent).toBe(0);
+        expect(rec.lastPercent).toBe(1);
+        expect(dayDelta(rec)).toBe(35);
+        expect(isWipedReset(rec, applySnapshot(emptyDay("2026-08-30", 1), 55, 100, 2))).toBe(false);
+    });
+
+    test("writes the repaired day", () => {
+        const userId = "repair-test-user";
+        clearStats(userId);
+        const now = noon(2026, 8, 31);
+        const rec = writeDay(userId, repairWipedReset(wipedDay(), 88, 89, now), RETAIN_DEFAULT, now);
+        expect(rec?.accruedPercent).toBe(1);
+        expect(dayDelta(rec!)).toBe(2);
+        clearStats(userId);
     });
 });
 

@@ -210,6 +210,31 @@ export function dayDelta(record: DailyUsageRecord): number | null {
     return accrued + Math.max(0, record.lastPercent - record.startPercent);
 }
 
+export function isWipedReset(record: DailyUsageRecord, prev: DailyUsageRecord | null): boolean {
+    if ((record.accruedPercent ?? 0) > 0 || record.priorLastPercent != null) return false;
+    if (record.startPercent == null || record.lastPercent == null) return false;
+    if (record.startPercent > RESET_DROP_PERCENT) return false;
+    const prevLast = prev?.lastPercent;
+    return prevLast != null && prevLast > record.startPercent + RESET_DROP_PERCENT;
+}
+
+export function repairWipedReset(
+    record: DailyUsageRecord,
+    dayStartPercent: number,
+    preResetPercent: number,
+    now = Date.now(),
+): DailyUsageRecord {
+    const dayStart = clamp(dayStartPercent, 0, 100);
+    const preReset = clamp(preResetPercent, 0, 100);
+    return {
+        ...record,
+        accruedPercent: Math.max(0, preReset - dayStart),
+        priorStartPercent: dayStart,
+        priorLastPercent: preReset,
+        updatedAt: now,
+    };
+}
+
 export function formatDelta(value: number | null): string {
     if (value == null) return "—";
     const label = formatPercent(value);
@@ -285,6 +310,16 @@ function persistDay(userId: string, date: string, record: DailyUsageRecord, reta
     file.days = pruneDays(file.days, retainDays, now);
     saveStore(file);
     return file.days[date] ?? record;
+}
+
+export function writeDay(
+    userId: string,
+    record: DailyUsageRecord,
+    retainDays: number,
+    now = Date.now(),
+): DailyUsageRecord | null {
+    if (!userId || !DATE_RE.test(record.date)) return null;
+    return persistDay(userId, record.date, { ...record, updatedAt: now }, retainDays, now);
 }
 
 export function recordSnapshot(

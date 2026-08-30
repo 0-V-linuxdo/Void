@@ -204,6 +204,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
     letter-spacing: -0.02em;
 }
 
+.void-ud-repair {
+    width: 100%;
+}
+
+.void-ud-repair-input {
+    width: 5.5rem;
+}
+
 .void-ud-toggle {
     width: 100%;
 }
