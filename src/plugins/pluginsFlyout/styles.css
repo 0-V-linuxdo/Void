@@ -1,0 +1,6 @@
+.void-pf-icon {
+    width: 1rem;
+    height: 1rem;
+    color: hsl(var(--fg-secondary));
+    flex-shrink: 0;
+}

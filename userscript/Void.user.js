@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.16] v1.0.0
+// @version      [20260829.17] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.16] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.17] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6752,15 +6752,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // src/plugins/_core/settings/index.tsx
-  var logger15 = new Logger("Settings");
-  var cl15 = classNameFactory("void-settings-");
+  // void-css:/workspace/artifacts/Void-src/src/plugins/pluginsFlyout/styles.css
+  registerStyle("pluginsFlyout", `.void-pf-icon {
+    width: 1rem;
+    height: 1rem;
+    color: hsl(var(--fg-secondary));
+    flex-shrink: 0;
+}
+`);
+
+  // src/plugins/pluginsFlyout/index.tsx
+  var PLUGIN_NAME = "PluginsFlyout";
+  var cl15 = classNameFactory("void-pf-");
   var settings3 = definePluginSettings({
-    showVoidMenu: {
-      type: 3 /* BOOLEAN */,
-      description: "Show the Void sub-menu in the avatar dropdown.",
-      default: true
-    },
     menuPlugins: {
       type: 6 /* COMPONENT */,
       description: "Plugins shown under Void → Plugins.",
@@ -6768,66 +6772,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       default: {}
     }
   }).withPrivateSettings();
-  var PLUGINS_TAB_ID = "void_plugins_tab";
-  var allTabs = [
-    { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2 },
-    { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
-    { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
-    { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
-  ];
-  function getVisibleTabs() {
-    return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
-  }
-  var Dot = () => /* @__PURE__ */ React.createElement(Text2, {
-    as: "span",
-    color: "secondary"
-  }, "•");
-  function VersionLink({ href, children }) {
-    return /* @__PURE__ */ React.createElement("a", {
-      href,
-      target: "_blank",
-      rel: "noreferrer",
-      className: cl15("version-link")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      color: "secondary"
-    }, children));
-  }
-  function VersionInfo() {
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0",
-      className: cl15("version")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      alignItems: "center",
-      gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(VersionLink, {
-      href: "https://github.com/imjustprism/Void"
-    }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      color: "secondary"
-    }, "[20260829.16] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
-    }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
-      alignItems: "center",
-      gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      color: "secondary"
-    }, "Production"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      color: "secondary"
-    }, "Userscript")));
-  }
-  function openSettingsTab(tab) {
-    const store = SettingsDialogStore.useSettingsDialogStore.getState();
-    store.setTab(tab);
-    store.setOpen(true);
-  }
-  function openPluginSettings(name) {
-    setPendingPluginDialog(name);
-    openSettingsTab(PLUGINS_TAB_ID);
-  }
   function listedPlugins() {
     return Object.keys(plugins).filter((n) => !plugins[n].hidden).toSorted((a, b) => a.localeCompare(b));
   }
@@ -6843,6 +6787,16 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function setShownInPluginMenu(name, shown) {
     settings3.store.menuPlugins = { ...menuPluginMap(), [name]: shown };
+  }
+  function getVisibleMenuPlugins() {
+    const names = listedPlugins();
+    if (!isPluginEnabled(PLUGIN_NAME))
+      return names.filter((n) => hasVisibleSettings(plugins[n]));
+    return names.filter(isShownInPluginMenu);
+  }
+  function usePluginMenu() {
+    settings3.use(["menuPlugins"]);
+    return getVisibleMenuPlugins();
   }
   function MenuPluginsEditor() {
     settings3.use(["menuPlugins"]);
@@ -6864,26 +6818,108 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         alignItems: "center",
         gap: "0.5rem"
       }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl15("menu-icon")
+        className: cl15("icon")
       }), /* @__PURE__ */ React.createElement(SettingsTitle, null, name)));
     }));
   }
+  var pluginsFlyout_default = definePlugin({
+    name: PLUGIN_NAME,
+    icon: LayoutGridIcon,
+    description: "Choose which plugins appear in the avatar Void → Plugins menu.",
+    authors: [Devs.p],
+    tags: ["ui", "settings"],
+    enabledByDefault: true,
+    settings: settings3
+  });
+
+  // src/plugins/_core/settings/index.tsx
+  var logger15 = new Logger("Settings");
+  var cl16 = classNameFactory("void-settings-");
+  var settings4 = definePluginSettings({
+    showVoidMenu: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the Void sub-menu in the avatar dropdown.",
+      default: true
+    }
+  });
+  var PLUGINS_TAB_ID = "void_plugins_tab";
+  var allTabs = [
+    { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2 },
+    { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
+    { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
+    { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
+  ];
+  function getVisibleTabs() {
+    return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
+  }
+  var Dot = () => /* @__PURE__ */ React.createElement(Text2, {
+    as: "span",
+    color: "secondary"
+  }, "•");
+  function VersionLink({ href, children }) {
+    return /* @__PURE__ */ React.createElement("a", {
+      href,
+      target: "_blank",
+      rel: "noreferrer",
+      className: cl16("version-link")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      color: "secondary"
+    }, children));
+  }
+  function VersionInfo() {
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0",
+      className: cl16("version")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.25rem"
+    }, /* @__PURE__ */ React.createElement(VersionLink, {
+      href: "https://github.com/imjustprism/Void"
+    }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      color: "secondary"
+    }, "[20260829.17] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
+    }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      gap: "0.25rem"
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      color: "secondary"
+    }, "Production"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      color: "secondary"
+    }, "Userscript")));
+  }
+  function openSettingsTab(tab) {
+    const store = SettingsDialogStore.useSettingsDialogStore.getState();
+    store.setTab(tab);
+    store.setOpen(true);
+  }
+  function openPluginSettings(name) {
+    setPendingPluginDialog(name);
+    openSettingsTab(PLUGINS_TAB_ID);
+  }
   function VoidMenu() {
-    const { showVoidMenu } = settings3.use(["showVoidMenu", "menuPlugins"]);
+    const forceUpdate = useForceUpdater();
+    useEventSubscription("pluginToggle", forceUpdate);
+    const { showVoidMenu } = settings4.use(["showVoidMenu"]);
+    const menuPlugins = usePluginMenu();
     if (!showVoidMenu)
       return null;
-    const menuPlugins = listedPlugins().filter(isShownInPluginMenu);
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidIcon, {
-      className: cl15("menu-icon")
+      className: cl16("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
-      className: cl15("menu-icon")
+      className: cl16("menu-icon")
     }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.map((name) => {
       const Icon = plugins[name].icon ?? UnplugIcon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: name,
         onSelect: () => openPluginSettings(name)
       }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl15("menu-icon")
+        className: cl16("menu-icon")
       }), name);
     }))), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
       const Icon = t.icon;
@@ -6891,7 +6927,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         key: t.id,
         onSelect: () => openSettingsTab(t.id)
       }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl15("menu-icon")
+        className: cl16("menu-icon")
       }), t.name);
     })));
   }
@@ -6902,7 +6938,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     description: "Adds Void settings UI.",
     authors: [Devs.Prism],
     required: true,
-    settings: settings3,
+    settings: settings4,
     _renderVoidMenu: () => createElement(WrappedVoidMenu),
     _setPrimitive(name, component) {
       setSettingsPrimitive(name, component);
@@ -7156,7 +7192,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/plugins/autoRetry/index.ts
   var logger16 = new Logger("AutoRetry");
   var CONTENT_MODERATED = "grok:content-moderated";
-  var settings4 = definePluginSettings({
+  var settings5 = definePluginSettings({
     retryModeration: {
       type: 3 /* BOOLEAN */,
       description: "Retry content moderation errors.",
@@ -7191,19 +7227,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function shouldRetry(response) {
     if (isModeration(response))
-      return settings4.store.retryModeration;
-    return settings4.store.retryNetwork;
+      return settings5.store.retryModeration;
+    return settings5.store.retryNetwork;
   }
   function retry(responseId, conversationId, response) {
     const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings4.store.maxRetries;
+    const max = settings5.store.maxRetries;
     if (count > max) {
       showToast("Max retries reached.", 2 /* ERROR */);
       retryCounts.delete(conversationId);
       return;
     }
     retryCounts.set(conversationId, count);
-    const delaySec = settings4.store.delay;
+    const delaySec = settings5.store.delay;
     showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
     logger16.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
     clearPending();
@@ -7244,7 +7280,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     description: "Automatically retry failed messages on moderation or network errors.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings4,
+    settings: settings5,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       retryCounts.clear();
@@ -7405,8 +7441,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/plugins/betterImagine/index.tsx
   var logger18 = new Logger("BetterImagine");
-  var cl16 = classNameFactory("void-imagine-");
-  var settings5 = definePluginSettings({
+  var cl17 = classNameFactory("void-imagine-");
+  var settings6 = definePluginSettings({
     hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
       description: "Hide the community image grid and templates on the Imagine home page.",
@@ -7454,7 +7490,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   });
   function buildFilename(post, isVideo) {
-    if (!settings5.store.smartFilenames || !post)
+    if (!settings6.store.smartFilenames || !post)
       return null;
     const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
     const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
@@ -7517,7 +7553,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var randomSeed = Date.now();
   var filterStore = createExternalStore();
   function persist() {
-    if (!settings5.store.persistFilters)
+    if (!settings6.store.persistFilters)
       return;
     try {
       sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
@@ -7596,7 +7632,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var cacheList = null;
   var cacheResult = [];
   function filterItems(items) {
-    const { hideModerated } = settings5.store;
+    const { hideModerated } = settings6.store;
     const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
     if (cacheList === items && cacheKey === key)
       return cacheResult;
@@ -7780,7 +7816,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       value: currentDate,
       onValueChange: (v) => setDate(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl16("date-select")
+      className: cl17("date-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: d,
       value: d
@@ -7788,7 +7824,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       value: currentSort,
       onValueChange: (v) => setSort(v)
     }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: sortActive ? cl16("sort-select", "sort-active") : cl16("sort-select")
+      className: sortActive ? cl17("sort-select", "sort-active") : cl17("sort-select")
     }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: s,
       value: s
@@ -7800,19 +7836,19 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         setSearchInput(e.target.value);
         setSearch(e.target.value);
       },
-      className: cl16("search")
+      className: cl17("search")
     }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
       key: f,
       variant: currentFilter === f ? "primary" : "tertiary",
       size: "sm",
       shape: "pill",
-      className: currentFilter !== f ? cl16("chip") : undefined,
+      className: currentFilter !== f ? cl17("chip") : undefined,
       onClick: () => setFilter(currentFilter === f ? "all" : f)
     }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "pill",
-      className: cl16("chip"),
+      className: cl17("chip"),
       onClick: resetFilters
     }, "Clear"));
   }
@@ -7891,7 +7927,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   }
   function onVisibilityChange() {
-    if (!settings5.store.pauseWhenHidden)
+    if (!settings6.store.pauseWhenHidden)
       return;
     if (document.visibilityState !== "hidden")
       return;
@@ -7907,13 +7943,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings5,
-    _hideDefault: () => settings5.store.hideDefaultPreviews,
+    settings: settings6,
+    _hideDefault: () => settings6.store.hideDefaultPreviews,
     _NullGrid: () => null,
-    _autoPlay: () => !settings5.store.noAutoplay,
-    _bypassPaywall: () => settings5.store.bypassPaywall,
-    _ctrlClickSelect: () => settings5.store.ctrlClickSelect,
-    _hoverProps: () => settings5.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _autoPlay: () => !settings6.store.noAutoplay,
+    _bypassPaywall: () => settings6.store.bypassPaywall,
+    _ctrlClickSelect: () => settings6.store.ctrlClickSelect,
+    _hoverProps: () => settings6.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
     _useFilteredFavorites: useFilteredFavorites,
     _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
     _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
@@ -8020,33 +8056,33 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings6.store[key];
+    const val = settings7.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
-    const customLink = settings6.store.linkColor;
+    const customLink = settings7.store.linkColor;
     const link = customLink && isValidHex(customLink) ? customLink : TOKEN_LINK;
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings6.store.enableVisitedColor) {
-      const customVisited = settings6.store.visitedColor;
+    if (settings7.store.enableVisitedColor) {
+      const customVisited = settings7.store.visitedColor;
       const visited = customVisited && isValidHex(customVisited) ? customVisited : TOKEN_VISITED;
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
     registerStyle(STYLE_NAME2, css);
   }
   function ColorRow({ settingKey, title, description, fallback }) {
-    settings6.use([settingKey]);
+    settings7.use([settingKey]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
-        settings6.store[settingKey] = v;
+        settings7.store[settingKey] = v;
         applyColors();
       },
       title,
       description
     });
   }
-  var settings6 = definePluginSettings({
+  var settings7 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -8083,7 +8119,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings6,
+    settings: settings7,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -8102,7 +8138,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       }
     ],
     _remarkLinkify() {
-      const { store: store2 } = settings6;
+      const { store: store2 } = settings7;
       return (tree) => {
         try {
           if (!store2.linkifyDomains)
@@ -8230,8 +8266,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 
   // src/plugins/betterSidebar/index.tsx
   var logger19 = new Logger("BetterSidebar");
-  var cl17 = classNameFactory("void-sidebar-");
-  var settings7 = definePluginSettings({
+  var cl18 = classNameFactory("void-sidebar-");
+  var settings8 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -8262,24 +8298,24 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     };
     return /* @__PURE__ */ React.createElement("div", {
       ref: cardRef,
-      className: cl17("card"),
+      className: cl18("card"),
       onPointerDown: (e) => forward(e, "pointerdown"),
       onPointerUp: (e) => forward(e, "pointerup")
     }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       justifyContent: "center",
       gap: "0",
-      className: cl17("info")
+      className: cl18("info")
     }, /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       size: "sm",
       weight: "medium",
-      className: cl17("name")
+      className: cl18("name")
     }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       size: "xs",
       color: "secondary",
-      className: cl17("plan")
+      className: cl18("plan")
     }, getPlanName(bestSubscription, user.xSubscriptionType))));
   }
   var selection2 = createSelectionStore();
@@ -8294,7 +8330,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger19.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings7.use(["batchSelect"]).batchSelect;
+    const enabled = settings8.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
@@ -8309,7 +8345,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Various sidebar improvements.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings7,
+    settings: settings8,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
@@ -8323,7 +8359,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings7.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings8.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -8333,10 +8369,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       };
     },
     _defaultOpen() {
-      return !settings7.store.defaultCollapsed;
+      return !settings8.store.defaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings7.store.clickToToggle)
+      if (!settings8.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -8616,7 +8652,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var logger20 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var settings8 = definePluginSettings({
+  var settings9 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
       description: "How the Grok mark is overlaid with chat state.",
@@ -8643,7 +8679,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var raf = 0;
   var started2 = false;
   function currentStyle() {
-    const value = settings8.store.style;
+    const value = settings9.store.style;
     return isIconStyle(value) ? value : "badge";
   }
   function captureOfficial() {
@@ -9056,7 +9092,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings8,
+    settings: settings9,
     startAt: "TurbopackReady" /* TurbopackReady */,
     cleanupSelectors: [`#${ICON_ID}`],
     start() {
@@ -9109,7 +9145,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   });
 
   // src/plugins/cleaner/index.ts
-  var settings9 = definePluginSettings({
+  var settings10 = definePluginSettings({
     hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
       description: "Hide the upgrade plan button in the user menu.",
@@ -9161,7 +9197,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     authors: [Devs.Prism],
     tags: ["ui"],
     enabledByDefault: true,
-    settings: settings9,
+    settings: settings10,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
@@ -9265,7 +9301,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
   var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
   var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
-  var settings10 = definePluginSettings({
+  var settings11 = definePluginSettings({
     opacity: {
       type: 5 /* SLIDER */,
       description: "Background opacity of the chat input. 100 is fully opaque.",
@@ -9282,8 +9318,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
   function apply() {
-    const pct = clamp(settings10.store.opacity, 0, 100);
-    const blur = clamp(settings10.store.blur, 0, 40);
+    const pct = clamp(settings11.store.opacity, 0, 100);
+    const blur = clamp(settings11.store.blur, 0, 40);
     const alpha = pct / 100;
     const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
     registerStyle(STYLE_NAME3, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
@@ -9295,7 +9331,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     authors: [Devs.p],
     tags: ["ui", "chat"],
     enabledByDefault: true,
-    settings: settings10,
+    settings: settings11,
     start: apply,
     onSettingsChange: apply,
     stop() {
@@ -9475,7 +9511,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/customInstructions/index.tsx
-  var cl18 = classNameFactory("void-ci-");
+  var cl19 = classNameFactory("void-ci-");
   var PixelAvatarModule = findByPropsLazy("PixelAvatar");
   var CheckIcon = findExportedComponentLazy("CheckIcon");
   var BookIcon = findExportedComponentLazy("BookIcon");
@@ -9483,38 +9519,38 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var TrashIcon2 = findExportedComponentLazy("TrashIcon");
   var PlusIcon = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings11 = definePluginSettings({
+  var settings12 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings11.plain.presets ?? [];
+    return settings12.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings11.store.presets = presets;
+    settings12.store.presets = presets;
   }
   function getAssignments() {
-    return settings11.plain.assignments ?? {};
+    return settings12.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
       role: "button",
-      className: cl18("card"),
+      className: cl19("card"),
       onClick: onEdit
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl18("avatar")
+      className: cl19("avatar")
     }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
       seed: preset.id,
       size: 32
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("card-name")
+      className: cl19("card-name")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
     }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("card-actions")
+      className: cl19("card-actions")
     }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "tertiary",
       size: "xs",
@@ -9542,14 +9578,14 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   function PresetEditor({ preset, onUpdate, onClose }) {
     const overLimit = preset.prompt.length > MAX_LENGTH;
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl18("editor")
+      className: cl19("editor")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
-      className: cl18("label")
+      className: cl19("label")
     }, "Name"), /* @__PURE__ */ React.createElement(Input, {
       type: "text",
-      className: cl18("input"),
+      className: cl19("input"),
       placeholder: "Preset name",
       value: preset.name,
       onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
@@ -9557,20 +9593,20 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
-      className: cl18("label")
+      className: cl19("label")
     }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("textarea-wrap", { "textarea-wrap-error": overLimit })
+      className: cl19("textarea-wrap", { "textarea-wrap-error": overLimit })
     }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl18("textarea"),
+      className: cl19("textarea"),
       placeholder: "How should Grok behave?",
       value: preset.prompt,
       onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
     })), /* @__PURE__ */ React.createElement("div", {
-      className: cl18("editor-footer")
+      className: cl19("editor-footer")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: overLimit ? undefined : "muted",
-      className: overLimit ? cl18("error-text") : undefined
+      className: overLimit ? cl19("error-text") : undefined
     }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
@@ -9579,7 +9615,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings11.use(["presets"]).presets ?? [];
+    const presets = settings12.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -9591,7 +9627,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         if (v === id)
           delete a[k];
       }
-      settings11.store.assignments = a;
+      settings12.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -9601,9 +9637,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }, []);
     const editing = presets.find((p) => p.id === editingId);
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl18("root")
+      className: cl19("root")
     }, /* @__PURE__ */ React.createElement("div", {
-      className: cl18("grid")
+      className: cl19("grid")
     }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
       key: p.id,
       preset: p,
@@ -9611,7 +9647,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       onDelete: () => deletePreset(p.id)
     })), /* @__PURE__ */ React.createElement("div", {
       role: "button",
-      className: cl18("card", "card-add"),
+      className: cl19("card", "card-add"),
       onClick: addPreset
     }, /* @__PURE__ */ React.createElement(PlusIcon, {
       className: "size-4 text-secondary"
@@ -9626,8 +9662,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings11.use(["presets"]).presets ?? [];
-    const assignments = settings11.use(["assignments"]).assignments ?? {};
+    const presets = settings12.use(["presets"]).presets ?? [];
+    const assignments = settings12.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -9635,17 +9671,17 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings11.store.assignments = a;
+      settings12.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
     return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl18("trigger")
+      className: cl19("trigger")
     }, /* @__PURE__ */ React.createElement(BookIcon, {
       size: 16
     }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => assign(),
-      className: cl18("menu-item")
+      className: cl19("menu-item")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
     }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
@@ -9653,7 +9689,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: p.id,
       onSelect: () => assign(p.id),
-      className: cl18("menu-item")
+      className: cl19("menu-item")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
     }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
@@ -9666,7 +9702,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings11,
+    settings: settings12,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -9702,7 +9738,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/downloadTTS/index.tsx
-  var cl19 = classNameFactory("void-download-tts-");
+  var cl20 = classNameFactory("void-download-tts-");
   var logger22 = new Logger("DownloadTTS");
   async function fetchAndDownload() {
     const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
@@ -9735,7 +9771,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       variant: "tertiary"
     }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
       size: "sm",
-      className: cl19("spinner")
+      className: cl20("spinner")
     }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16
     }));
@@ -10151,7 +10187,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 
   // src/plugins/inputHistory/index.tsx
   var logger24 = new Logger("InputHistory");
-  var cl20 = classNameFactory("void-ih-");
+  var cl21 = classNameFactory("void-ih-");
   var EDITOR_SEL2 = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
   var ZWSP = /\u200B/g;
   var MAX_MIN = 10;
@@ -10161,7 +10197,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var APPLY_QUIET_MS = 120;
   var CAPTURE_DEDUPE_MS = 2000;
   var PAGE_SIZE = 10;
-  var settings12 = definePluginSettings({
+  var settings13 = definePluginSettings({
     maxEntries: {
       type: 5 /* SLIDER */,
       description: "Maximum stored prompts.",
@@ -10185,15 +10221,15 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var applyEl = null;
   var applyAtStart = true;
   function getEntries() {
-    const raw = settings12.plain.entries;
+    const raw = settings13.plain.entries;
     return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
   }
   function cap(entries) {
-    const max = clamp(settings12.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
+    const max = clamp(settings13.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
     return entries.length > max ? entries.slice(entries.length - max) : entries;
   }
   function setEntries(entries) {
-    settings12.store.entries = entries;
+    settings13.store.entries = entries;
   }
   function normalize(text) {
     return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
@@ -10331,17 +10367,17 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     scheduleApplyEnd(gen);
   }
   function hudEl() {
-    let el = document.querySelector(`.${cl20("hud")}`);
+    let el = document.querySelector(`.${cl21("hud")}`);
     if (el)
       return el;
     el = document.createElement("div");
-    el.className = cl20("hud");
+    el.className = cl21("hud");
     el.setAttribute("aria-live", "polite");
     document.body.appendChild(el);
     return el;
   }
   function hideHud() {
-    document.querySelector(`.${cl20("hud")}`)?.classList.remove(cl20("hud-on"));
+    document.querySelector(`.${cl21("hud")}`)?.classList.remove(cl21("hud-on"));
   }
   function showHud(label, editor) {
     const bar = editor.closest(".query-bar");
@@ -10353,7 +10389,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       const r = bar.getBoundingClientRect();
       el.style.left = `${r.left + r.width / 2}px`;
       el.style.top = `${r.top - HUD_GAP_PX}px`;
-      el.classList.add(cl20("hud-on"));
+      el.classList.add(cl21("hud-on"));
     });
   }
   function pushEntry(text) {
@@ -10486,7 +10522,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     resetBrowse(next.length);
   }
   function HistoryPanel() {
-    const { entries } = settings12.use(["entries"]);
+    const { entries } = settings13.use(["entries"]);
     const list = entries ?? [];
     const [query, setQuery] = useState("");
     const [page, setPage] = useState(0);
@@ -10500,9 +10536,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.65rem",
-      className: cl20("panel")
+      className: cl21("panel")
     }, /* @__PURE__ */ React.createElement(Flex, {
-      className: cl20("head"),
+      className: cl21("head"),
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
@@ -10520,22 +10556,22 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         setQuery(e.target.value);
         setPage(0);
       },
-      className: cl20("search")
+      className: cl21("search")
     }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl20("empty")
+      className: cl21("empty")
     }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl20("empty")
+      className: cl21("empty")
     }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
-      className: cl20("list")
+      className: cl21("list")
     }, slice.map((row) => {
       const lines = row.text.split(`
 `).length;
       const expanded = openId === row.index;
       return /* @__PURE__ */ React.createElement("div", {
         key: row.index,
-        className: cl20("item", expanded && "item-on")
+        className: cl21("item", expanded && "item-on")
       }, /* @__PURE__ */ React.createElement("div", {
-        className: cl20("main"),
+        className: cl21("main"),
         role: "button",
         tabIndex: 0,
         onClick: () => setOpenId(expanded ? null : row.index),
@@ -10546,13 +10582,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
           setOpenId(expanded ? null : row.index);
         }
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl20("body", !expanded && "clamp")
+        className: cl21("body", !expanded && "clamp")
       }, row.text)), /* @__PURE__ */ React.createElement("div", {
-        className: cl20("side")
+        className: cl21("side")
       }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
-        className: cl20("lines")
+        className: cl21("lines")
       }, lines), /* @__PURE__ */ React.createElement("div", {
-        className: cl20("actions")
+        className: cl21("actions")
       }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
         size: "sm",
@@ -10579,7 +10615,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         size: 18
       })))));
     })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
-      className: cl20("pager"),
+      className: cl21("pager"),
       alignItems: "center",
       justifyContent: "center",
       gap: "0.5rem"
@@ -10593,7 +10629,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
       size: 18
     })), /* @__PURE__ */ React.createElement("span", {
-      className: cl20("page")
+      className: cl21("page")
     }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
@@ -10626,7 +10662,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings12,
+    settings: settings13,
     managedStyle: "inputHistory",
     cleanupSelectors: [".void-ih-hud"],
     start() {
@@ -10675,7 +10711,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
 `);
 
   // src/plugins/messageTimestamps/index.tsx
-  var settings13 = definePluginSettings({
+  var settings14 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -10702,18 +10738,18 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings13,
+    settings: settings14,
     _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
       if (!response?.createTime)
         return null;
-      if (settings13.store.hideOwnMessages && response.sender === "human")
+      if (settings14.store.hideOwnMessages && response.sender === "human")
         return null;
       return /* @__PURE__ */ React.createElement(Text2, {
         as: "span",
         size: "xs",
         color: "muted",
         className: "void-timestamp"
-      }, formatTimestamp(response.createTime, settings13.store.showDate));
+      }, formatTimestamp(response.createTime, settings14.store.showDate));
     }),
     patches: [
       {
@@ -10740,7 +10776,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 }
 `;
   var REFINEMENT_CSS = `${REFINEMENT_ROW},.h-px.bg-border:has(+ ${REFINEMENT_ROW}){display:none!important}`;
-  var settings14 = definePluginSettings({
+  var settings15 = definePluginSettings({
     hideDictationRefinement: {
       type: 3 /* BOOLEAN */,
       description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
@@ -10749,7 +10785,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
   });
   function apply2() {
     const rules = [BUTTON_CSS];
-    if (settings14.store.hideDictationRefinement)
+    if (settings15.store.hideDictationRefinement)
       rules.push(REFINEMENT_CSS);
     registerStyle(STYLE_NAME4, rules.join(`
 `));
@@ -10761,7 +10797,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings14,
+    settings: settings15,
     patches: [
       {
         find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
@@ -10806,7 +10842,7 @@ div:has(> #grok-bot-nav-button) {
 
   // src/plugins/noShareLink/index.ts
   var STYLE_NAME6 = "noShareLink";
-  var settings15 = definePluginSettings({
+  var settings16 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
       description: "Inside a project: hide the top-right Share Project button.",
@@ -10820,10 +10856,10 @@ div:has(> #grok-bot-nav-button) {
   });
   function apply3() {
     const rules = [];
-    if (settings15.store.hideShareProject) {
+    if (settings16.store.hideShareProject) {
       rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
-    if (settings15.store.hideCreateShareLink) {
+    if (settings16.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
     registerStyle(STYLE_NAME6, rules.join(`
@@ -10836,7 +10872,7 @@ div:has(> #grok-bot-nav-button) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings15,
+    settings: settings16,
     start: apply3,
     onSettingsChange: apply3,
     stop() {
@@ -10849,7 +10885,7 @@ div:has(> #grok-bot-nav-button) {
   var FOOTER = '[data-sidebar="footer"]';
   var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
   var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
-  var settings16 = definePluginSettings({
+  var settings17 = definePluginSettings({
     hideUsername: {
       type: 3 /* BOOLEAN */,
       description: "Hide the username next to the sidebar avatar.",
@@ -10863,14 +10899,14 @@ div:has(> #grok-bot-nav-button) {
   });
   function apply4() {
     const rules = [];
-    if (settings16.store.hideUsername) {
+    if (settings17.store.hideUsername) {
       rules.push(`${STACK}>:first-child{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
     }
-    if (settings16.store.hideEmail) {
+    if (settings17.store.hideEmail) {
       rules.push(`${STACK}>:nth-child(2){display:none!important}`);
     }
-    if (settings16.store.hideUsername && settings16.store.hideEmail) {
+    if (settings17.store.hideUsername && settings17.store.hideEmail) {
       rules.push(`${TEXT_WRAP}{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
     }
@@ -10884,7 +10920,7 @@ div:has(> #grok-bot-nav-button) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings16,
+    settings: settings17,
     start: apply4,
     onSettingsChange: apply4,
     stop() {
@@ -10947,7 +10983,7 @@ div:has(> #grok-bot-nav-button) {
 `);
 
   // src/plugins/placeholder/index.tsx
-  var cl21 = classNameFactory("void-ph-");
+  var cl22 = classNameFactory("void-ph-");
   var DEFAULT_PHRASES = [
     "What do you want to know?",
     "How can I help you today?",
@@ -10958,7 +10994,7 @@ div:has(> #grok-bot-nav-button) {
     return String(raw ?? "").split(`
 `).map((s) => s.trim()).filter(Boolean);
   }
-  var settings17 = definePluginSettings({
+  var settings18 = definePluginSettings({
     phrases: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_PHRASES,
@@ -10966,11 +11002,11 @@ div:has(> #grok-bot-nav-button) {
     }
   }).withPrivateSettings();
   function PhrasesEditor() {
-    const { phrases } = settings17.use(["phrases"]);
+    const { phrases } = settings18.use(["phrases"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
-      className: cl21("root")
+      className: cl22("root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -10978,12 +11014,12 @@ div:has(> #grok-bot-nav-button) {
       size: "sm",
       weight: "medium"
     }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl21("textarea-wrap")
+      className: cl22("textarea-wrap")
     }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl21("textarea"),
+      className: cl22("textarea"),
       value: phrases ?? DEFAULT_PHRASES,
       onChange: (e) => {
-        settings17.store.phrases = e.target.value;
+        settings18.store.phrases = e.target.value;
       },
       placeholder: DEFAULT_PHRASES
     })));
@@ -10994,9 +11030,9 @@ div:has(> #grok-bot-nav-button) {
     description: "Replace the rotating chat input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],
-    settings: settings17,
+    settings: settings18,
     _phrases() {
-      const lines = parsePhrases(settings17.store.phrases ?? DEFAULT_PHRASES);
+      const lines = parsePhrases(settings18.store.phrases ?? DEFAULT_PHRASES);
       return lines.length ? lines : null;
     },
     patches: [
@@ -11355,7 +11391,7 @@ html.void-rt-open [data-sidebar="gap"] {
 
   // src/plugins/recentTopics/index.tsx
   var logger25 = new Logger("RecentTopics");
-  var cl22 = classNameFactory("void-rt-");
+  var cl23 = classNameFactory("void-rt-");
   var HOME_KEY = "home";
   var HOME_SEP = "home:";
   var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
@@ -11366,7 +11402,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
   var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
   var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
-  var settings18 = definePluginSettings({
+  var settings19 = definePluginSettings({
     maxRecent: {
       type: 4 /* SELECT */,
       description: "How many recently opened conversations to show.",
@@ -11412,14 +11448,14 @@ html.void-rt-open [data-sidebar="gap"] {
     return out;
   }
   function readVisits() {
-    return settings18.plain.visits ?? [];
+    return settings19.plain.visits ?? [];
   }
   function maxCount() {
-    const n = Number(settings18.store.maxRecent);
+    const n = Number(settings19.store.maxRecent);
     return Number.isFinite(n) && n > 0 ? n : 5;
   }
   function capVisits(ids) {
-    const allowHome = settings18.store.includeHome;
+    const allowHome = settings19.store.includeHome;
     return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
   }
   function pruneRecord(source, ids) {
@@ -11443,9 +11479,9 @@ html.void-rt-open [data-sidebar="gap"] {
     return keys3.every((k) => src[k] === b[k]);
   }
   function assignRecord(key, next) {
-    if (sameRecord(settings18.plain[key], next))
+    if (sameRecord(settings19.plain[key], next))
       return false;
-    settings18.store[key] = next;
+    settings19.store[key] = next;
     return true;
   }
   var writing = false;
@@ -11455,14 +11491,14 @@ html.void-rt-open [data-sidebar="gap"] {
     writing = true;
     try {
       const visits = capVisits(next);
-      const rawWs = pruneRecord(settings18.plain.workspaceByConv, visits);
+      const rawWs = pruneRecord(settings19.plain.workspaceByConv, visits);
       const workspaceByConv = {};
       for (const [id, value] of Object.entries(rawWs)) {
         const ws = asWorkspaceId(value);
         if (ws)
           workspaceByConv[id] = ws;
       }
-      const pages = pruneRecord(settings18.plain.pages, visits);
+      const pages = pruneRecord(settings19.plain.pages, visits);
       const usedWs = new Set(Object.values(workspaceByConv));
       for (const id of visits) {
         const ws = workspaceFromHomeId(id);
@@ -11472,17 +11508,17 @@ html.void-rt-open [data-sidebar="gap"] {
         workspaceByConv[id] = ws;
       }
       const keepProjects = {};
-      for (const [id, name] of Object.entries(settings18.plain.projectNames ?? {})) {
+      for (const [id, name] of Object.entries(settings19.plain.projectNames ?? {})) {
         const n = usableName(name);
         if (usedWs.has(id) && n)
           keepProjects[id] = n;
       }
       let changed = false;
       if (!sameList(readVisits(), visits)) {
-        settings18.store.visits = visits;
+        settings19.store.visits = visits;
         changed = true;
       }
-      if (assignRecord("titles", pruneRecord(settings18.plain.titles, visits)))
+      if (assignRecord("titles", pruneRecord(settings19.plain.titles, visits)))
         changed = true;
       if (assignRecord("workspaceByConv", workspaceByConv))
         changed = true;
@@ -11500,10 +11536,10 @@ html.void-rt-open [data-sidebar="gap"] {
     const t = title?.trim();
     if (!id || isHomeId(id) || !t)
       return;
-    const prev = settings18.plain.titles ?? {};
+    const prev = settings19.plain.titles ?? {};
     if (prev[id] === t)
       return;
-    settings18.store.titles = { ...prev, [id]: t };
+    settings19.store.titles = { ...prev, [id]: t };
   }
   function isHomeId(id) {
     return id === HOME_KEY || id.startsWith(HOME_SEP);
@@ -11649,7 +11685,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const conv = lookup(id);
     if (conv?.title?.trim())
       return conv.title.trim();
-    const cached = settings18.plain.titles?.[id];
+    const cached = settings19.plain.titles?.[id];
     if (cached)
       return cached;
     if (id === currentVisit())
@@ -11840,12 +11876,12 @@ html.void-rt-open [data-sidebar="gap"] {
     return "";
   }
   function dropWorkspace(id) {
-    const prev = settings18.plain.workspaceByConv ?? {};
+    const prev = settings19.plain.workspaceByConv ?? {};
     if (!prev[id])
       return;
     const next = { ...prev };
     delete next[id];
-    settings18.store.workspaceByConv = next;
+    settings19.store.workspaceByConv = next;
   }
   function workspaceOf(id) {
     if (!id)
@@ -11854,7 +11890,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const fromKey = workspaceFromHomeId(id);
       if (fromKey)
         return fromKey;
-      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings18.plain.workspaceByConv?.[id]);
+      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings19.plain.workspaceByConv?.[id]);
     }
     const fromConv = convWorkspaceId(id);
     if (fromConv)
@@ -11864,7 +11900,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
     if (fromSidebar)
       return fromSidebar;
-    const cached = asWorkspaceId(settings18.plain.workspaceByConv?.[id]);
+    const cached = asWorkspaceId(settings19.plain.workspaceByConv?.[id]);
     if (cached)
       return cached;
     const fromHist = workspaceFromHistory(id);
@@ -11895,7 +11931,7 @@ html.void-rt-open [data-sidebar="gap"] {
     if (!ws)
       return "";
     const idx = sidebarIndex();
-    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings18.plain.projectNames?.[ws] || "");
+    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings19.plain.projectNames?.[ws] || "");
     if (!named)
       return "";
     const live = liveWorkspaceId();
@@ -11910,24 +11946,24 @@ html.void-rt-open [data-sidebar="gap"] {
     const ws = workspaceOf(id);
     if (!ws)
       return;
-    const prevWs = settings18.plain.workspaceByConv ?? {};
+    const prevWs = settings19.plain.workspaceByConv ?? {};
     if (prevWs[id] !== ws)
-      settings18.store.workspaceByConv = { ...prevWs, [id]: ws };
+      settings19.store.workspaceByConv = { ...prevWs, [id]: ws };
     const idx = sidebarIndex();
     const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
     const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
-    const name = usableName(sidebarName || wsNames[ws] || liveName || settings18.plain.projectNames?.[ws] || "");
+    const name = usableName(sidebarName || wsNames[ws] || liveName || settings19.plain.projectNames?.[ws] || "");
     if (!name)
       return;
     wsNames[ws] = name;
-    const prevNames = settings18.plain.projectNames ?? {};
+    const prevNames = settings19.plain.projectNames ?? {};
     if (prevNames[ws] !== name)
-      settings18.store.projectNames = { ...prevNames, [ws]: name };
+      settings19.store.projectNames = { ...prevNames, [ws]: name };
   }
   function reconcileSidebarCache() {
     const idx = sidebarIndex();
-    const prevWs = { ...settings18.plain.workspaceByConv };
-    const prevNames = { ...settings18.plain.projectNames };
+    const prevWs = { ...settings19.plain.workspaceByConv };
+    const prevNames = { ...settings19.plain.projectNames };
     let wsChanged = false;
     let namesChanged = false;
     for (const [conv, ws] of Object.entries(idx.wsByConv)) {
@@ -11954,9 +11990,9 @@ html.void-rt-open [data-sidebar="gap"] {
       namesChanged = true;
     }
     if (wsChanged)
-      settings18.store.workspaceByConv = prevWs;
+      settings19.store.workspaceByConv = prevWs;
     if (namesChanged)
-      settings18.store.projectNames = prevNames;
+      settings19.store.projectNames = prevNames;
   }
   function requestWorkspace(id) {
     if (!id || isHomeId(id) || pendingWs.has(id))
@@ -11985,16 +12021,16 @@ html.void-rt-open [data-sidebar="gap"] {
             paint();
           return;
         }
-        const prev = settings18.plain.workspaceByConv ?? {};
+        const prev = settings19.plain.workspaceByConv ?? {};
         if (prev[id] !== ws)
-          settings18.store.workspaceByConv = { ...prev, [id]: ws };
+          settings19.store.workspaceByConv = { ...prev, [id]: ws };
         const live = liveWorkspaceId();
         const liveName = usableName(readOpenProjectName());
-        const names = settings18.plain.projectNames ?? {};
+        const names = settings19.plain.projectNames ?? {};
         if (live && ws !== live && liveName && names[ws] === liveName) {
           const next = { ...names };
           delete next[ws];
-          settings18.store.projectNames = next;
+          settings19.store.projectNames = next;
           delete wsNames[ws];
         }
         if (open2)
@@ -12248,14 +12284,14 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   }
   function snapOf(id) {
-    return thumbs.get(id) ?? parseSnap(settings18.plain.pages?.[id]);
+    return thumbs.get(id) ?? parseSnap(settings19.plain.pages?.[id]);
   }
   function rememberPage(id, snap) {
     const json = JSON.stringify(snap);
-    const prev = settings18.plain.pages ?? {};
+    const prev = settings19.plain.pages ?? {};
     if (prev[id] === json)
       return;
-    settings18.store.pages = { ...prev, [id]: json };
+    settings19.store.pages = { ...prev, [id]: json };
   }
   function applyLineStyle(el, role) {
     el.style.display = "-webkit-box";
@@ -12279,10 +12315,10 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   }
   function buildPageShot(snap) {
-    const page = node("span", cl22("page"));
+    const page = node("span", cl23("page"));
     page.dataset.theme = snap.theme;
     for (const line of lastRound(snap.lines)) {
-      const el = node("span", cl22("page-line", line.role === "user" && "page-line-user"), line.text);
+      const el = node("span", cl23("page-line", line.role === "user" && "page-line-user"), line.text);
       el.dataset.role = line.role;
       applyLineStyle(el, line.role);
       page.append(el);
@@ -12342,7 +12378,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function bump(id) {
     if (!id)
       return;
-    if (isHomeId(id) && !settings18.store.includeHome)
+    if (isHomeId(id) && !settings19.store.includeHome)
       return;
     writeVisits(capVisits([id, ...readVisits()]));
     if (isHomeId(id)) {
@@ -12615,12 +12651,12 @@ html.void-rt-open [data-sidebar="gap"] {
   function fillShot(box, id) {
     const snap = snapOf(id);
     if (!snap) {
-      const fallback = node("span", cl22("fallback"));
-      fallback.append(faviconImg(cl22("favicon")));
+      const fallback = node("span", cl23("fallback"));
+      fallback.append(faviconImg(cl23("favicon")));
       box.append(fallback);
       return;
     }
-    const shot = node("span", cl22("shot"));
+    const shot = node("span", cl23("shot"));
     shot.append(buildPageShot(snap));
     box.append(shot);
   }
@@ -12685,7 +12721,7 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function folderIcon() {
     const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg2.setAttribute("class", cl22("folder"));
+    svg2.setAttribute("class", cl23("folder"));
     svg2.setAttribute("viewBox", "0 0 24 24");
     svg2.setAttribute("fill", "none");
     svg2.setAttribute("stroke", "currentColor");
@@ -12704,33 +12740,33 @@ html.void-rt-open [data-sidebar="gap"] {
     panel.style.colorScheme = theme;
   }
   function buildHost() {
-    const root = node("div", cl22("root"));
+    const root = node("div", cl23("root"));
     root.id = "void-rt-host";
     root.setAttribute("role", "presentation");
     root.addEventListener("click", cancel);
-    const panel = node("div", cl22("panel"));
+    const panel = node("div", cl23("panel"));
     panel.setAttribute("role", "listbox");
     panel.setAttribute("aria-label", "Recent conversations");
     panel.addEventListener("click", (e) => e.stopPropagation());
-    panel.append(node("div", cl22("list")));
+    panel.append(node("div", cl23("list")));
     root.append(panel);
     return root;
   }
   function renderList(items) {
     if (!host)
       return;
-    const panel = host.querySelector(`.${cl22("panel")}`);
+    const panel = host.querySelector(`.${cl23("panel")}`);
     if (!panel)
       return;
-    let list = panel.querySelector(`.${cl22("list")}`);
+    let list = panel.querySelector(`.${cl23("list")}`);
     if (!list) {
       panel.replaceChildren();
-      list = node("div", cl22("list"));
+      list = node("div", cl23("list"));
       panel.append(list);
     }
     list.replaceChildren();
     items.forEach((topic, i) => {
-      const btn = node("button", cl22("card"));
+      const btn = node("button", cl23("card"));
       btn.type = "button";
       btn.tabIndex = -1;
       btn.setAttribute("role", "option");
@@ -12749,14 +12785,14 @@ html.void-rt-open [data-sidebar="gap"] {
         syncActive();
       });
       btn.addEventListener("click", () => pick(i));
-      const shot = node("span", cl22("thumb"));
+      const shot = node("span", cl23("thumb"));
       shot.setAttribute("aria-hidden", "true");
       fillShot(shot, topic.id);
-      const meta = node("span", cl22("meta"));
-      meta.append(node("span", cl22("name"), topic.title));
+      const meta = node("span", cl23("meta"));
+      meta.append(node("span", cl23("name"), topic.title));
       if (topic.project) {
-        const proj = node("span", cl22("host"));
-        proj.append(folderIcon(), node("span", cl22("host-name"), topic.project));
+        const proj = node("span", cl23("host"));
+        proj.append(folderIcon(), node("span", cl23("host-name"), topic.project));
         meta.append(proj);
       }
       btn.append(shot, meta);
@@ -12766,7 +12802,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function syncActive() {
     if (!host)
       return;
-    const cards = host.querySelectorAll(`.${cl22("card")}`);
+    const cards = host.querySelectorAll(`.${cl23("card")}`);
     cards.forEach((card, i) => {
       const on = i === selected;
       card.setAttribute("data-active", on ? "true" : "false");
@@ -12791,21 +12827,21 @@ html.void-rt-open [data-sidebar="gap"] {
       host = buildHost();
       mountOverlay(host);
     }
-    const panel = host.querySelector(`.${cl22("panel")}`);
+    const panel = host.querySelector(`.${cl23("panel")}`);
     if (!panel)
       return;
     applyTheme(panel);
     panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
     if (!items.length) {
       if (paintedKey !== "__empty__") {
-        panel.replaceChildren(node("div", cl22("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+        panel.replaceChildren(node("div", cl23("empty"), "Open a few chats, then hold Ctrl+` to switch."));
         paintedKey = "__empty__";
       }
       requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
       return;
     }
-    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl22("list")}`)) {
-      panel.replaceChildren(node("div", cl22("list")));
+    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl23("list")}`)) {
+      panel.replaceChildren(node("div", cl23("list")));
       paintedKey = "";
     }
     if (paintedKey !== key) {
@@ -12857,7 +12893,7 @@ html.void-rt-open [data-sidebar="gap"] {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings18,
+    settings: settings19,
     managedStyle: "recentTopics",
     _mark({ response }) {
       try {
@@ -12973,7 +13009,7 @@ html.void-rt-open [data-sidebar="gap"] {
   });
 
   // src/plugins/responseNotification/index.ts
-  var settings19 = definePluginSettings({
+  var settings20 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -13020,7 +13056,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function playSound() {
     if (!userGestured)
       return;
-    const url = settings19.store.soundUrl?.trim();
+    const url = settings20.store.soundUrl?.trim();
     if (url) {
       const audio = new Audio(url);
       audio.volume = 0.3;
@@ -13033,11 +13069,11 @@ html.void-rt-open [data-sidebar="gap"] {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed")
       return;
-    if (settings19.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings20.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings19.store.sound)
+    if (settings20.store.sound)
       playSound();
-    if (settings19.store.browserNotification)
+    if (settings20.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   var responseNotification_default = definePlugin({
@@ -13046,7 +13082,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings19,
+    settings: settings20,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -13161,8 +13197,8 @@ html.void-rt-open [data-sidebar="gap"] {
   }));
 
   // src/plugins/settingsFlyout/index.tsx
-  var cl23 = classNameFactory("void-sf-");
-  var settings20 = definePluginSettings({
+  var cl24 = classNameFactory("void-sf-");
+  var settings21 = definePluginSettings({
     showOpenSettings: {
       type: 3 /* BOOLEAN */,
       description: 'Show "Open Settings" (last used tab).',
@@ -13214,7 +13250,7 @@ html.void-rt-open [data-sidebar="gap"] {
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
   ];
   function SettingsMenu({ onOpen }) {
-    const cfg = settings20.use([
+    const cfg = settings21.use([
       "showOpenSettings",
       "account",
       "appearance",
@@ -13238,18 +13274,18 @@ html.void-rt-open [data-sidebar="gap"] {
       });
     };
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl23("menu-icon")
+      className: cl24("menu-icon")
     }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, showOpen && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: (e) => openTab(undefined, e)
     }, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl23("menu-icon")
+      className: cl24("menu-icon")
     }), "Open Settings"), grokTabs.map((t) => {
       const Icon = t.icon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
         onSelect: (e) => openTab(t.id, e)
       }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl23("menu-icon")
+        className: cl24("menu-icon")
       }), t.name);
     })));
   }
@@ -13262,7 +13298,7 @@ html.void-rt-open [data-sidebar="gap"] {
     tags: ["ui", "settings"],
     enabledByDefault: true,
     requiresRestart: true,
-    settings: settings20,
+    settings: settings21,
     _renderSettingsMenu: (onOpen) => createElement(WrappedSettingsMenu, { onOpen }),
     patches: [
       {
@@ -13286,18 +13322,18 @@ html.void-rt-open [data-sidebar="gap"] {
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorRow2() {
-    const { starColor } = settings21.use(["starColor"]);
+    const { starColor } = settings22.use(["starColor"]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
-        settings21.store.starColor = v;
+        settings22.store.starColor = v;
       },
       title: "Star color",
       description: "Color of the twinkling stars."
     });
   }
   function StarryBackground() {
-    const { starColor } = settings21.use(["starColor"]);
+    const { starColor } = settings22.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -13306,7 +13342,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings21 = definePluginSettings({
+  var settings22 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_COLOR,
@@ -13319,7 +13355,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings21,
+    settings: settings22,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -13443,7 +13479,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings22 = definePluginSettings({
+  var settings23 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -13488,7 +13524,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings22.store[key]);
+      classList.toggle(cls, !!settings23.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
@@ -13497,7 +13533,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
     tags: ["privacy"],
-    settings: settings22,
+    settings: settings23,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -14330,8 +14366,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
   // src/plugins/usageDisplay/index.tsx
   var logger27 = new Logger("UsageDisplay");
-  var cl24 = classNameFactory("void-ud-");
-  var settings23 = definePluginSettings({
+  var cl25 = classNameFactory("void-ud-");
+  var settings24 = definePluginSettings({
     usageStats: {
       type: 3 /* BOOLEAN */,
       description: "Record daily usage. Hover shows today after a delay; click opens history.",
@@ -14420,12 +14456,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     SettingsStore3.markAsChanged();
   }
   function snapshotToday() {
-    if (!settings23.store.usageStats)
+    if (!settings24.store.usageStats)
       return;
     syncAccount();
     if (!state.userId)
       return;
-    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings23.store.retainDays));
+    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings24.store.retainDays));
   }
   async function refresh(reason = "manual") {
     if (refreshPromise)
@@ -14505,17 +14541,17 @@ button:has(.void-ud-trigger > .void-ud-label) {
       width: RING_SIZE,
       height: RING_SIZE,
       viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
-      className: classes(cl24("ring"), cl24(`ring-${tone}`))
+      className: classes(cl25("ring"), cl25(`ring-${tone}`))
     }, /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl24("ring-track")
+      className: cl25("ring-track")
     }), /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl24("ring-fill"),
+      className: cl25("ring-fill"),
       strokeDasharray: RING_CIRCUMFERENCE,
       strokeDashoffset: RING_CIRCUMFERENCE * (1 - fraction),
       transform: `rotate(-90 ${RING_CENTER} ${RING_CENTER})`
@@ -14523,7 +14559,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function ButtonIcon() {
     useExternalStore(store3);
-    const { showPercent } = settings23.use(["showPercent"]);
+    const { showPercent } = settings24.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -14542,12 +14578,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
       };
     }, []);
     return /* @__PURE__ */ React.createElement("span", {
-      className: classes(cl24("trigger"), label == null && cl24("icon-only"))
+      className: classes(cl25("trigger"), label == null && cl25("icon-only"))
     }, /* @__PURE__ */ React.createElement(ProgressRing, {
       percent: isFree ? null : percent,
       tone: isFree ? "waiting" : tone
     }), label != null && /* @__PURE__ */ React.createElement("span", {
-      className: cl24("label")
+      className: cl25("label")
     }, label));
   }
   function WeekBlock({ isFree, percent, resetAt, loading, labeled }) {
@@ -14562,14 +14598,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl24("week")
+      className: cl25("week")
     }, labeled && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Week"), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl24("used")
+      className: cl25("used")
     }, usedLabel(isFree, percent, loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
@@ -14581,19 +14617,19 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl24("today")
+      className: cl25("today")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Today"), !isFree && /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl24("used")
+      className: cl25("used")
     }, formatDelta(delta ?? (percent != null ? 0 : null)), " of weekly quota"));
   }
   function UsagePanel() {
     useExternalStore(store3);
-    const { usageStats, hoverStatsDelay } = settings23.use(["usageStats", "hoverStatsDelay"]);
+    const { usageStats, hoverStatsDelay } = settings24.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
     const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
@@ -14622,7 +14658,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 8,
-      className: cl24("panel")
+      className: cl25("panel")
     }, showToday && /* @__PURE__ */ React.createElement(TodayBlock, {
       isFree,
       percent
@@ -14635,12 +14671,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function StatsToggle() {
-    const { usageStats } = settings23.use(["usageStats"]);
+    const { usageStats } = settings24.use(["usageStats"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem",
-      className: cl24("toggle")
+      className: cl25("toggle")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -14653,7 +14689,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: !!usageStats,
       onCheckedChange: (value) => {
-        settings23.store.usageStats = value;
+        settings24.store.usageStats = value;
         store3.notify();
         if (value)
           refresh("manual");
@@ -14662,7 +14698,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function StatsModal({ onClose }) {
     useExternalStore(store3);
-    const { usageStats } = settings23.use(["usageStats"]);
+    const { usageStats } = settings24.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
     const todayKey = localDateKey(Date.now());
     const bars = days.length ? fillChartDays(days) : [];
@@ -14676,7 +14712,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         node2.scrollLeft = node2.scrollWidth;
     }, [bars.length]);
     useEffect(() => {
-      chartRef.current?.querySelector(`.${cl24("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
+      chartRef.current?.querySelector(`.${cl25("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
     }, [selected2]);
     return /* @__PURE__ */ React.createElement(VoidDialogShell, {
       title: "Usage by date",
@@ -14686,10 +14722,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, /* @__PURE__ */ React.createElement(StatsToggle, null), !usageStats ? /* @__PURE__ */ React.createElement(Paragraph, null, "Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.") : days.length === 0 ? /* @__PURE__ */ React.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl24("history")
+      className: cl25("history")
     }, /* @__PURE__ */ React.createElement(Flex, {
       ref: chartRef,
-      className: cl24("chart"),
+      className: cl25("chart"),
       alignItems: "stretch",
       gap: "0.35rem",
       tabIndex: 0,
@@ -14718,69 +14754,69 @@ button:has(.void-ud-trigger > .void-ud-label) {
         role: "option",
         "aria-selected": on,
         "aria-label": `${rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}, ${formatDelta(delta)}`,
-        className: classes(cl24("bar"), on && cl24("bar-on"), empty && cl24("bar-empty")),
+        className: classes(cl25("bar"), on && cl25("bar-on"), empty && cl25("bar-empty")),
         onClick: () => setSelected(rec.date)
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl24("bar-value")
+        className: cl25("bar-value")
       }, empty ? " " : formatPercent(delta)), /* @__PURE__ */ React.createElement("span", {
-        className: cl24("bar-track")
+        className: cl25("bar-track")
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl24("bar-fill"),
+        className: cl25("bar-fill"),
         style: { height: `${pct}%` }
       })), /* @__PURE__ */ React.createElement("span", {
-        className: cl24("bar-label")
+        className: cl25("bar-label")
       }, rec.date === todayKey ? "Today" : formatDayNumber(rec.date)));
     })), active != null && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.35rem",
-      className: cl24("detail")
+      className: cl25("detail")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold"
     }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "flex-start",
       gap: "0.5rem",
-      className: cl24("formula")
+      className: cl25("formula")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-term")
+      className: cl25("formula-term")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-label")
+      className: cl25("formula-label")
     }, active.date === todayKey ? "Current" : "Last"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-value")
+      className: cl25("formula-value")
     }, formatPercent(active.lastPercent))), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-op-col")
+      className: cl25("formula-op-col")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
+      className: cl25("formula-op")
     }, "−"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
+      className: cl25("formula-op")
     }, "−")), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-term")
+      className: cl25("formula-term")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-label")
+      className: cl25("formula-label")
     }, "Start"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-value")
+      className: cl25("formula-value")
     }, formatPercent(active.startPercent))), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-op-col")
+      className: cl25("formula-op-col")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
+      className: cl25("formula-op")
     }, "="), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-op")
+      className: cl25("formula-op")
     }, "=")), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl24("formula-term")
+      className: cl25("formula-term")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-label")
+      className: cl25("formula-label")
     }, "Used"), /* @__PURE__ */ React.createElement("span", {
-      className: cl24("formula-value")
+      className: cl25("formula-value")
     }, formatPercent(dayDelta(active))))))));
   }
   function ClearStats() {
@@ -14835,7 +14871,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings23,
+    settings: settings24,
     start() {
       migrateUsageStats();
     },
@@ -14844,14 +14880,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
       streamEnd: onStreamEnd4
     },
     onSettingsChange() {
-      if (settings23.store.usageStats)
+      if (settings24.store.usageStats)
         refresh("manual");
     }
   });
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME8 = "widerChat";
-  var settings24 = definePluginSettings({
+  var settings25 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem.",
@@ -14859,7 +14895,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
   function applyWidth() {
-    const w = settings24.store.width;
+    const w = settings25.store.width;
     registerStyle(STYLE_NAME8, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
@@ -14868,7 +14904,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
     tags: ["chat", "ui"],
-    settings: settings24,
+    settings: settings25,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
@@ -14879,7 +14915,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [composerOpacity_default.name]: composerOpacity_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [inputHistory_default.name]: inputHistory_default, [messageTimestamps_default.name]: messageTimestamps_default, [noDictation_default.name]: noDictation_default, [noGrokBot_default.name]: noGrokBot_default, [noShareLink_default.name]: noShareLink_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [placeholder_default.name]: placeholder_default, [recentTopics_default.name]: recentTopics_default, [responseNotification_default.name]: responseNotification_default, [settingsFlyout_default.name]: settingsFlyout_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [themedScrollbar_default.name]: themedScrollbar_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default };
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [composerOpacity_default.name]: composerOpacity_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [inputHistory_default.name]: inputHistory_default, [messageTimestamps_default.name]: messageTimestamps_default, [noDictation_default.name]: noDictation_default, [noGrokBot_default.name]: noGrokBot_default, [noShareLink_default.name]: noShareLink_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [oneko_default.name]: oneko_default, [placeholder_default.name]: placeholder_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [recentTopics_default.name]: recentTopics_default, [responseNotification_default.name]: responseNotification_default, [settingsFlyout_default.name]: settingsFlyout_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [themedScrollbar_default.name]: themedScrollbar_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default };
   // void-css:/workspace/artifacts/Void-src/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
@@ -14950,7 +14986,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     NoticeType2["ERROR"] = "error";
     NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
-  var cl25 = classNameFactory("void-notice-");
+  var cl26 = classNameFactory("void-notice-");
   var ICONS = {
     ["info" /* INFO */]: () => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
       size: 18
@@ -14968,11 +15004,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
     return /* @__PURE__ */ React.createElement("div", {
-      className: cl25("root")
+      className: cl26("root")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl25("icon", `icon-${type ?? "info" /* INFO */}`)
+      className: cl26("icon", `icon-${type ?? "info" /* INFO */}`)
     }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
-      className: cl25("message")
+      className: cl26("message")
     }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
@@ -14982,7 +15018,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       variant: "tertiary",
       size: "sm",
       shape: "square",
-      className: cl25("close"),
+      className: cl26("close"),
       onClick: onClose
     }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
