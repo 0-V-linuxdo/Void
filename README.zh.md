@@ -26,6 +26,7 @@
 | ThemedScrollbar | 开 | 工程栏滚动条跟随 Grok 亮色 / 暗色主题。 |
 | ComposerOpacity | 开 | 调节输入栏背景透明度和模糊。 |
 | RecentTopics | 开 | Ctrl+` 切换最近会话（玻璃卡片、项目名、上轮问答预览）。 |
+| CompactModeSelect | 开 | 输入栏模型按钮始终只显示图标，宽屏也不展开成文字。 |
 
 #### 设置 UI
 

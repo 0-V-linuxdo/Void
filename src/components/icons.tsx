@@ -491,6 +491,14 @@ export const ListFilterIcon = (props: IconProps = {}) =>
         <path d="M10 18h4" />,
     );
 
+export const Minimize2Icon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="m14 10 7-7" />,
+        <path d="M20 10h-6V4" />,
+        <path d="m3 21 7-7" />,
+        <path d="M4 14h6v6" />,
+    );
+
 export const VoidIcon = (props: IconProps = {}) =>
     svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 },
         <path d="M2.2 7.4 L8.4 20.2 L13.03 11.30" />,

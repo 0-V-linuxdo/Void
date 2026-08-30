@@ -26,6 +26,7 @@
 | ThemedScrollbar | On | Project pane scrollbar follows Grok’s light and dark theme. |
 | ComposerOpacity | On | Customizable chat input background opacity and blur. |
 | RecentTopics | On | Switch recently opened chats with Ctrl+` (glass cards, project name, last Q&A preview). |
+| CompactModeSelect | On | Keep the chat input model selector as an icon at every width. |
 
 #### Settings UI
 
