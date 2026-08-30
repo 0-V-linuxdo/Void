@@ -7,8 +7,8 @@
 import "./PluginCard.css";
 
 import { dispatch } from "@api/Events";
-import { isNewPlugin, isPluginEnabled, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
-import { isPluginPinned, isPluginStarred, mergePluginSettings, togglePluginPinned, togglePluginStarred } from "@api/Settings";
+import { isNewPlugin, isPluginEnabled, plugins, togglePlugin } from "@api/PluginManager";
+import { isPluginPinned, isPluginStarred, togglePluginPinned, togglePluginStarred } from "@api/Settings";
 import { Badge, Switch, Tooltip, TooltipContent, TooltipTrigger } from "@components";
 import { CircleAlertIcon, PinFilledIcon, PinIcon, Settings2Icon, StarFilledIcon, StarIcon, TriangleAlert, UnplugIcon } from "@components/icons";
 import { React } from "@turbopack/common/react";
@@ -36,15 +36,11 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
     const pinned = isPluginPinned(name);
     const starred = isPluginStarred(name);
     const crashed = enabled && !plugin.started && !plugin.required;
-    const hasPatches = !!plugin.patches?.length;
 
     const handleToggle = () => {
-        mergePluginSettings(name, { enabled: !enabled });
-        if (!enabled) startPlugin(plugin, true);
-        else stopPlugin(plugin);
+        const needsReload = togglePlugin(name);
         forceUpdate();
-        dispatch("pluginToggle");
-        if (hasPatches) onReload(name);
+        if (needsReload) onReload(name);
     };
 
     const handlePin = () => {

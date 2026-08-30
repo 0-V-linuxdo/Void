@@ -31,6 +31,32 @@
     height: 1rem;
     margin-inline-end: 0.5rem;
     color: hsl(var(--fg-secondary));
+    flex-shrink: 0;
+}
+
+.void-settings-plugin-item {
+    justify-content: flex-start;
+}
+
+.void-settings-plugin-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-settings-plugin-item-off {
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-settings-plugin-item-off .void-settings-menu-icon {
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-settings-plugin-switch {
+    margin-inline-start: 0.5rem;
+    flex-shrink: 0;
 }
 
 .void-settings-row {

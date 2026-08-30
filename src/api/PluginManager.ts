@@ -15,7 +15,7 @@ import { type Patch, type Plugin, StartAt } from "@utils/types";
 
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
 import { addContextMenuItem, type ContextMenuItemDef, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
-import { subscribe as subscribeEvent, type VoidEvent } from "./Events";
+import { dispatch, subscribe as subscribeEvent, type VoidEvent } from "./Events";
 import { getSettingsPluginData, mergePluginSettings, PlainSettings, pluginPath, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
 
 const logger = new Logger("PluginManager", "#b4befe");
@@ -53,6 +53,18 @@ export function isPluginEnabled(pluginName: string): boolean {
     if (plugin.chrome && !(window as { chrome?: unknown }).chrome) return false;
     if (plugin.required || plugin.isDependency) return true;
     return Settings.plugins[pluginName]?.enabled ?? plugin.enabledByDefault ?? false;
+}
+
+export function togglePlugin(name: string): boolean {
+    const plugin = plugins[name];
+    if (!plugin || plugin.required || plugin.isDependency) return false;
+
+    const enabled = isPluginEnabled(name);
+    mergePluginSettings(name, { enabled: !enabled });
+    if (!enabled) startPlugin(plugin, true);
+    else stopPlugin(plugin);
+    dispatch("pluginToggle");
+    return !!(plugin.patches?.length || plugin.requiresRestart);
 }
 
 export function addPatch(newPatch: Omit<Patch, "plugin">, pluginName: string) {

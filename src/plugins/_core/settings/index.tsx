@@ -6,10 +6,12 @@
 
 import "./styles.css";
 
-import { isPluginEnabled, plugins } from "@api/PluginManager";
+import { dispatch } from "@api/Events";
+import { showToast, ToastType } from "@api/Notifications";
+import { isPluginEnabled, plugins, togglePlugin } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
-import { ErrorBoundary, Flex, Text } from "@components";
+import { ErrorBoundary, Flex, Switch, Text } from "@components";
 import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { hasVisibleSettings } from "@components/settings/utils";
@@ -109,14 +111,57 @@ function openPluginSettings(name: string) {
     openSettingsTab(PLUGINS_TAB_ID);
 }
 
+function stopSwitchSelect(e: { stopPropagation(): void }) {
+    e.stopPropagation();
+}
+
+function PluginMenuItem({ name }: { name: string }) {
+    const plugin = plugins[name];
+    const enabled = isPluginEnabled(name);
+    const locked = plugin.required || plugin.isDependency;
+    const configurable = hasVisibleSettings(plugin);
+    const Icon = plugin.icon ?? UnplugIcon;
+
+    return (
+        <DropdownMenuItem
+            className={cl({ "plugin-item": true, "plugin-item-off": !enabled })}
+            onSelect={e => {
+                if (!configurable) e.preventDefault();
+                else openPluginSettings(name);
+            }}
+        >
+            <Icon className={cl("menu-icon")} />
+            <span className={cl("plugin-name")}>{name}</span>
+            <Switch
+                size="sm"
+                className={cl("plugin-switch")}
+                checked={enabled}
+                disabled={locked}
+                onPointerDown={stopSwitchSelect}
+                onPointerUp={stopSwitchSelect}
+                onClick={stopSwitchSelect}
+                onKeyDown={stopSwitchSelect}
+                onCheckedChange={() => {
+                    if (!togglePlugin(name)) return;
+                    dispatch("reloadNeeded");
+                    showToast("Reload the page to apply plugin changes.", ToastType.WARNING, {
+                        id: "void-plugin-reload",
+                        action: { label: "Reload", onClick: () => location.reload() },
+                    });
+                }}
+            />
+        </DropdownMenuItem>
+    );
+}
+
 function VoidMenu() {
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
 
     if (!settings.store.showVoidMenu) return null;
 
-    const settingsPlugins = Object.keys(plugins)
-        .filter(n => !plugins[n].hidden && hasVisibleSettings(plugins[n]))
+    const menuPlugins = Object.keys(plugins)
+        .filter(n => !plugins[n].hidden)
         .toSorted((a, b) => a.localeCompare(b));
 
     return (
@@ -132,16 +177,9 @@ function VoidMenu() {
                         Plugins
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
-                        {settingsPlugins.map(name => {
-                            const Icon = plugins[name].icon ?? UnplugIcon;
-                            return (
-                                <DropdownMenuItem key={name} onSelect={() => openPluginSettings(name)}>
-                                    <Icon className={cl("menu-icon")} />
-                                    {name}
-                                </DropdownMenuItem>
-                            );
-                        })}
-                    </DropdownMenuSubContent>                </DropdownMenuSub>
+                        {menuPlugins.map(name => <PluginMenuItem key={name} name={name} />)}
+                    </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 {getVisibleTabs().filter(t => t.id !== PLUGINS_TAB_ID).map(t => {
                     const Icon = t.icon;
                     return (
@@ -209,7 +247,7 @@ export default definePlugin({
             find: "avatar_menu_click",
             all: true,
             replacement: {
-                match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help"/,
+                match: /\(0,(i)\.jsxs\)\((i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:i:i,)*children:\[.{0,100}"user-dropdown\.help"/,
                 replace: "$self._renderVoidMenu(),$&",
             },
         },
@@ -217,7 +255,7 @@ export default definePlugin({
             find: "pressed_cmd_settings",
             replacement: [
                 {
-                    match: /\i\.filter\(\i=>\i\.visible\(\i\)\)/,
+                    match: /i\.filter\(i=>i\.visible\(i\)\)/,
                     replace: "[...$&,...$self._tabEntries()]",
                 },
                 {
@@ -225,11 +263,11 @@ export default definePlugin({
                     replace: '$1,"void",$2',
                 },
                 {
-                    match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
+                    match: /(case"other":return i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
                     replace: '$1case"void":return"Void";$2',
                 },
                 {
-                    match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,
+                    match: /default:return\(0,i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(i)\.id}`\),\1\.id/,
                     replace: "default:return $self._tabLabel($1)",
                 },
             ],
@@ -239,19 +277,19 @@ export default definePlugin({
             all: true,
             replacement: [
                 {
-                    match: /("SettingsTitle",0,)(\i)/,
+                    match: /("SettingsTitle",0,)(i)/,
                     replace: '$1$self._setPrimitive("SettingsTitle",$2)',
                 },
                 {
-                    match: /("SettingsDescription",0,)(\i)/,
+                    match: /("SettingsDescription",0,)(i)/,
                     replace: '$1$self._setPrimitive("SettingsDescription",$2)',
                 },
                 {
-                    match: /("SettingsRow",0,)(?!function)(\i)/,
+                    match: /("SettingsRow",0,)(?!function)(i)/,
                     replace: '$1$self._setPrimitive("SettingsRow",$2)',
                 },
                 {
-                    match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(?=,"Settings)/,
+                    match: /("SettingsRow",0,)(function\(i\)\{[\s\S]*?\})(?=,"Settings)/,
                     replace: '$1$self._setPrimitive("SettingsRow",$2)',
                 },
             ],

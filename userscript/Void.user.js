@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260829.13] v1.0.0
+// @version      [20260829.14] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260829.13] v1.0.0 — A modification for grok.com
+ * Void++ [20260829.14] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -4027,6 +4027,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return true;
     return Settings.plugins[pluginName]?.enabled ?? plugin.enabledByDefault ?? false;
   }
+  function togglePlugin(name) {
+    const plugin = plugins[name];
+    if (!plugin || plugin.required || plugin.isDependency)
+      return false;
+    const enabled = isPluginEnabled(name);
+    mergePluginSettings(name, { enabled: !enabled });
+    if (!enabled)
+      startPlugin(plugin, true);
+    else
+      stopPlugin(plugin);
+    dispatch("pluginToggle");
+    return !!(plugin.patches?.length || plugin.requiresRestart);
+  }
   function addPatch(newPatch, pluginName) {
     const patch = newPatch;
     patch.plugin = pluginName;
@@ -4487,6 +4500,32 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     height: 1rem;
     margin-inline-end: 0.5rem;
     color: hsl(var(--fg-secondary));
+    flex-shrink: 0;
+}
+
+.void-settings-plugin-item {
+    justify-content: flex-start;
+}
+
+.void-settings-plugin-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-settings-plugin-item-off {
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-settings-plugin-item-off .void-settings-menu-icon {
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-settings-plugin-switch {
+    margin-inline-start: 0.5rem;
+    flex-shrink: 0;
 }
 
 .void-settings-row {
@@ -4516,8 +4555,40 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
+  // src/api/Notifications.ts
+  var ToastType;
+  ((ToastType2) => {
+    ToastType2[ToastType2["MESSAGE"] = 0] = "MESSAGE";
+    ToastType2[ToastType2["SUCCESS"] = 1] = "SUCCESS";
+    ToastType2[ToastType2["ERROR"] = 2] = "ERROR";
+    ToastType2[ToastType2["INFO"] = 3] = "INFO";
+    ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
+    ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
+  })(ToastType ||= {});
+  var TOAST_FN = {
+    [0 /* MESSAGE */]: null,
+    [1 /* SUCCESS */]: "success",
+    [2 /* ERROR */]: "error",
+    [3 /* INFO */]: "info",
+    [4 /* WARNING */]: "warning",
+    [5 /* LOADING */]: "loading"
+  };
+  var logger12 = new Logger("Notifications");
+  function showToast(message, type = 0 /* MESSAGE */, options) {
+    if (!Toaster.toast) {
+      logger12.warn("showToast called before Toaster initialized, discarding:", message);
+      return -1;
+    }
+    const { toast } = Toaster;
+    const key = TOAST_FN[type];
+    return key ? toast[key](message, options) : toast(message, options);
+  }
+  function dismissToast(id) {
+    Toaster.toast?.dismiss(id);
+  }
+
   // src/api/Themes.ts
-  var logger12 = new Logger("Themes", "#c6a0f6");
+  var logger13 = new Logger("Themes", "#c6a0f6");
   function themeStyleId(url) {
     let hash = 0;
     for (let i = 0;i < url.length; i++) {
@@ -4607,7 +4678,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     };
     registerDisabledStyle(themeStyleId(url), css);
     setThemes([...getThemes(), theme]);
-    logger12.info(`Added theme "${theme.name}" from ${url}`);
+    logger13.info(`Added theme "${theme.name}" from ${url}`);
     return theme;
   }
   function addLocalTheme(name, css) {
@@ -4628,7 +4699,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     };
     registerDisabledStyle(themeStyleId(id), css);
     setThemes([...getThemes(), theme]);
-    logger12.info(`Added local theme "${theme.name}"`);
+    logger13.info(`Added local theme "${theme.name}"`);
     return theme;
   }
   function updateLocalTheme(url, data) {
@@ -4675,14 +4746,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     try {
       const resp = await fetchExternal(url);
       if (!resp.ok) {
-        logger12.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
+        logger13.warn(`Failed to fetch theme CSS (${resp.status}):`, url);
         return;
       }
       if (!isThemeStillActive(url))
         return;
       css = await resp.text();
     } catch (e) {
-      logger12.warn("Failed to fetch theme CSS:", url, e);
+      logger13.warn("Failed to fetch theme CSS:", url, e);
       return;
     }
     if (!isThemeStillActive(url))
@@ -4714,7 +4785,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
     for (const [i, result] of results.entries()) {
       if (result.status === "rejected") {
-        logger12.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
+        logger13.warn(`Failed to load theme "${remote[i].name}":`, result.reason);
       }
     }
   }
@@ -5375,16 +5446,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const pinned = isPluginPinned(name);
     const starred = isPluginStarred(name);
     const crashed = enabled && !plugin.started && !plugin.required;
-    const hasPatches = !!plugin.patches?.length;
     const handleToggle = () => {
-      mergePluginSettings(name, { enabled: !enabled });
-      if (!enabled)
-        startPlugin(plugin, true);
-      else
-        stopPlugin(plugin);
+      const needsReload = togglePlugin(name);
       forceUpdate();
-      dispatch("pluginToggle");
-      if (hasPatches)
+      if (needsReload)
         onReload(name);
     };
     const handlePin = () => {
@@ -6102,14 +6167,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 `);
 
   // src/components/settings/ThemeCard.tsx
-  var logger13 = new Logger("ThemeCard");
+  var logger14 = new Logger("ThemeCard");
   var cl12 = classNameFactory("void-theme-card-");
   function ThemeCard({ theme, onRemove, onToggle, onEdit }) {
     const handleToggle = () => {
       if (theme.enabled)
         disableTheme(theme.url);
       else
-        enableTheme(theme.url).catch((e) => logger13.error("Failed to enable theme:", e));
+        enableTheme(theme.url).catch((e) => logger14.error("Failed to enable theme:", e));
       onToggle();
     };
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
@@ -6128,7 +6193,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         icon: CopyIcon,
         label: "Copy URL",
         onClick: () => {
-          copyToClipboard(theme.url).catch((e) => logger13.error("Failed to copy URL:", e));
+          copyToClipboard(theme.url).catch((e) => logger14.error("Failed to copy URL:", e));
         }
       }), /* @__PURE__ */ React.createElement(IconButton, {
         icon: Trash2Icon,
@@ -6413,38 +6478,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     margin-left: 0.375rem;
 }
 `);
-
-  // src/api/Notifications.ts
-  var ToastType;
-  ((ToastType2) => {
-    ToastType2[ToastType2["MESSAGE"] = 0] = "MESSAGE";
-    ToastType2[ToastType2["SUCCESS"] = 1] = "SUCCESS";
-    ToastType2[ToastType2["ERROR"] = 2] = "ERROR";
-    ToastType2[ToastType2["INFO"] = 3] = "INFO";
-    ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
-    ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
-  })(ToastType ||= {});
-  var TOAST_FN = {
-    [0 /* MESSAGE */]: null,
-    [1 /* SUCCESS */]: "success",
-    [2 /* ERROR */]: "error",
-    [3 /* INFO */]: "info",
-    [4 /* WARNING */]: "warning",
-    [5 /* LOADING */]: "loading"
-  };
-  var logger14 = new Logger("Notifications");
-  function showToast(message, type = 0 /* MESSAGE */, options) {
-    if (!Toaster.toast) {
-      logger14.warn("showToast called before Toaster initialized, discarding:", message);
-      return -1;
-    }
-    const { toast } = Toaster;
-    const key = TOAST_FN[type];
-    return key ? toast[key](message, options) : toast(message, options);
-  }
-  function dismissToast(id) {
-    Toaster.toast?.dismiss(id);
-  }
 
   // src/plugins/experiments/index.tsx
   var cl14 = classNameFactory("void-experiments-");
@@ -6792,7 +6825,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260829.13] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260829.14] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/imjustprism/Void"}/commit/${"unknown"}`
     }, `(${"unknown"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
@@ -6814,25 +6847,61 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     setPendingPluginDialog(name);
     openSettingsTab(PLUGINS_TAB_ID);
   }
+  function stopSwitchSelect(e) {
+    e.stopPropagation();
+  }
+  function PluginMenuItem({ name }) {
+    const plugin = plugins[name];
+    const enabled = isPluginEnabled(name);
+    const locked = plugin.required || plugin.isDependency;
+    const configurable = hasVisibleSettings(plugin);
+    const Icon = plugin.icon ?? UnplugIcon;
+    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      className: cl15({ "plugin-item": true, "plugin-item-off": !enabled }),
+      onSelect: (e) => {
+        if (!configurable)
+          e.preventDefault();
+        else
+          openPluginSettings(name);
+      }
+    }, /* @__PURE__ */ React.createElement(Icon, {
+      className: cl15("menu-icon")
+    }), /* @__PURE__ */ React.createElement("span", {
+      className: cl15("plugin-name")
+    }, name), /* @__PURE__ */ React.createElement(Switch, {
+      size: "sm",
+      className: cl15("plugin-switch"),
+      checked: enabled,
+      disabled: locked,
+      onPointerDown: stopSwitchSelect,
+      onPointerUp: stopSwitchSelect,
+      onClick: stopSwitchSelect,
+      onKeyDown: stopSwitchSelect,
+      onCheckedChange: () => {
+        if (!togglePlugin(name))
+          return;
+        dispatch("reloadNeeded");
+        showToast("Reload the page to apply plugin changes.", 4 /* WARNING */, {
+          id: "void-plugin-reload",
+          action: { label: "Reload", onClick: () => location.reload() }
+        });
+      }
+    }));
+  }
   function VoidMenu() {
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
     if (!settings3.store.showVoidMenu)
       return null;
-    const settingsPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden && hasVisibleSettings(plugins[n])).toSorted((a, b) => a.localeCompare(b));
+    const menuPlugins = Object.keys(plugins).filter((n) => !plugins[n].hidden).toSorted((a, b) => a.localeCompare(b));
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidIcon, {
       className: cl15("menu-icon")
     }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl15("menu-icon")
-    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, settingsPlugins.map((name) => {
-      const Icon = plugins[name].icon ?? UnplugIcon;
-      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-        key: name,
-        onSelect: () => openPluginSettings(name)
-      }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl15("menu-icon")
-      }), name);
-    })), "                "), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
+    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.map((name) => /* @__PURE__ */ React.createElement(PluginMenuItem, {
+      key: name,
+      name
+    })))), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
       const Icon = t.icon;
       return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
@@ -6891,7 +6960,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         find: "avatar_menu_click",
         all: true,
         replacement: {
-          match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help"/,
+          match: /\(0,(i)\.jsxs\)\((i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:i:i,)*children:\[.{0,100}"user-dropdown\.help"/,
           replace: "$self._renderVoidMenu(),$&"
         }
       },
@@ -6899,7 +6968,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         find: "pressed_cmd_settings",
         replacement: [
           {
-            match: /\i\.filter\(\i=>\i\.visible\(\i\)\)/,
+            match: /i\.filter\(i=>i\.visible\(i\)\)/,
             replace: "[...$&,...$self._tabEntries()]"
           },
           {
@@ -6907,11 +6976,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
             replace: '$1,"void",$2'
           },
           {
-            match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
+            match: /(case"other":return i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
             replace: '$1case"void":return"Void";$2'
           },
           {
-            match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,
+            match: /default:return\(0,i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(i)\.id}`\),\1\.id/,
             replace: "default:return $self._tabLabel($1)"
           }
         ]
@@ -6921,19 +6990,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         all: true,
         replacement: [
           {
-            match: /("SettingsTitle",0,)(\i)/,
+            match: /("SettingsTitle",0,)(i)/,
             replace: '$1$self._setPrimitive("SettingsTitle",$2)'
           },
           {
-            match: /("SettingsDescription",0,)(\i)/,
+            match: /("SettingsDescription",0,)(i)/,
             replace: '$1$self._setPrimitive("SettingsDescription",$2)'
           },
           {
-            match: /("SettingsRow",0,)(?!function)(\i)/,
+            match: /("SettingsRow",0,)(?!function)(i)/,
             replace: '$1$self._setPrimitive("SettingsRow",$2)'
           },
           {
-            match: /("SettingsRow",0,)(function\(\i\)\{[\s\S]*?\})(?=,"Settings)/,
+            match: /("SettingsRow",0,)(function\(i\)\{[\s\S]*?\})(?=,"Settings)/,
             replace: '$1$self._setPrimitive("SettingsRow",$2)'
           }
         ]
