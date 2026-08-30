@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.18] v1.0.0
+// @version      [20260830.19] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -28,7 +28,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.18] v1.0.0 — A modification for grok.com
+ * Void++ [20260830.19] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6893,9 +6893,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.18] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"50c3bf5"}`
-    }, `(${"50c3bf5"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260830.19] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/imjustprism/Void"}/commit/${"a59b8ea"}`
+    }, `(${"a59b8ea"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -14276,8 +14276,8 @@ html.void-rt-open [data-sidebar="gap"] {
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 0.75rem;
+    height: 0.75rem;
     margin-right: 0.3rem;
     pointer-events: none;
     color: #3b82f6;
@@ -14285,8 +14285,8 @@ html.void-rt-open [data-sidebar="gap"] {
 
 .void-cls[data-kind="done"],
 .void-cls[data-kind="error"] {
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.45rem;
+    height: 0.45rem;
     margin-right: 0.4rem;
     border-radius: 999px;
     background: #3b82f6;
@@ -14294,6 +14294,19 @@ html.void-rt-open [data-sidebar="gap"] {
 
 .void-cls[data-kind="error"] {
     background: #ef4444;
+}
+
+[data-void-cls-nest]:has(> .void-cls) {
+    position: relative;
+}
+
+[data-void-cls-nest] > .void-cls {
+    position: absolute;
+    left: 0.35rem;
+    top: 50%;
+    z-index: 1;
+    margin-right: 0;
+    transform: translateY(-50%);
 }
 
 .void-cls[data-kind="streaming"] svg {
@@ -14326,7 +14339,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
   var SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
   var HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
-  var ROW = `${HOST}, a[href*="/c/"], a[href*="/chat/"], a[href*="chat="], a[href*="/project/"]`;
+  var ROW = 'a[href*="/c/"], a[href*="/chat/"], a[href*="chat="]';
   var SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
   var marks = new Map;
   var rowById = new Map;
@@ -14583,12 +14596,17 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function refreshMarks() {
     const live = liveIds();
+    const opened = new Set(currentIds());
     for (const id of live)
       marks.set(id, "streaming");
     for (const [id, kind2] of marks) {
-      if (kind2 !== "streaming" || live.has(id))
-        continue;
-      marks.set(id, errorOf(id) ? "error" : "done");
+      let next = kind2;
+      if (kind2 === "streaming" && !live.has(id)) {
+        next = errorOf(id) ? "error" : "done";
+        marks.set(id, next);
+      }
+      if (next !== "streaming" && opened.has(id))
+        marks.delete(id);
     }
   }
   function convOfResponse(responseId) {
@@ -14612,6 +14630,11 @@ html.void-rt-open [data-sidebar="gap"] {
       schedule();
       return;
     }
+    if (currentIds().includes(cid)) {
+      marks.delete(cid);
+      schedule();
+      return;
+    }
     try {
       const response = ResponseStore.useResponseStore.getState().byId[responseId];
       marks.set(cid, isErrorResponse(response) ? "error" : "done");
@@ -14626,7 +14649,8 @@ html.void-rt-open [data-sidebar="gap"] {
       return "";
     try {
       const u = new URL(href, location.origin);
-      return u.searchParams.get("chat") || u.searchParams.get("conversationId") || u.pathname.match(/^\/(?:c|chat)\/([^/?#]+)/i)?.[1] || "";
+      const id = u.searchParams.get("chat") || u.searchParams.get("conversationId") || u.pathname.match(/^\/(?:c|chat)\/([^/?#]+)/i)?.[1] || "";
+      return isConvId(id) ? id : "";
     } catch {
       return "";
     }
@@ -14635,52 +14659,22 @@ html.void-rt-open [data-sidebar="gap"] {
     const a = el instanceof HTMLAnchorElement ? el : el.closest("a[href]") ?? el.querySelector("a[href]");
     return idFromHref(a?.getAttribute("href") ?? el.getAttribute("href") ?? "");
   }
-  function idFromProps(props) {
-    if (!props)
-      return "";
-    const { route } = props;
-    if (route && typeof route === "object") {
-      const r = route;
-      if (isConvId(r.conversationId))
-        return r.conversationId;
-      if (isConvId(r.chat))
-        return r.chat;
-      if (r.page === "workspace")
-        return "";
-      if (r.page === "chat" && isConvId(props.id))
-        return props.id;
-    }
-    if (isConvId(props.conversationId))
-      return props.conversationId;
-    if (isConvId(props.chat))
-      return props.chat;
-    if (typeof props.href === "string") {
-      const fromHref = idFromHref(props.href);
-      if (fromHref)
-        return fromHref;
-    }
-    return "";
-  }
-  function idFromRow(el) {
-    const fromHref = hrefId(el);
-    if (fromHref)
-      return fromHref;
-    try {
-      const fiber = getFiber(el);
-      const hit = walkFiberUp(fiber, 24, (f) => !!idFromProps(f.memoizedProps));
-      return idFromProps(hit?.memoizedProps);
-    } catch (e) {
-      logger27.debug("fiber id failed:", e);
-      return "";
-    }
-  }
   function rowHost(el, root) {
     if (el.classList.contains(MARK))
       return null;
     if (el.closest('[data-sidebar="menu-action"], [data-sidebar="footer"], [data-sidebar="header"]'))
       return null;
+    if (!hrefId(el))
+      return null;
     const wrapped = el.closest(HOST);
     return wrapped && root.contains(wrapped) ? wrapped : el;
+  }
+  function isNestedHost(el) {
+    if (el.matches('[data-sidebar="menu-sub-button"]'))
+      return true;
+    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
+    const href = a?.getAttribute("href") ?? el.getAttribute("href") ?? "";
+    return href.includes("chat=") || href.includes("/project/");
   }
   function spinSvg() {
     const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -14696,6 +14690,7 @@ html.void-rt-open [data-sidebar="gap"] {
     return svg2;
   }
   function ensureMark(btn, kind2) {
+    btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
     let mark = btn.querySelector(`:scope > .${MARK}`);
     if (!mark) {
       mark = document.createElement("span");
@@ -14712,19 +14707,23 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function clearMark(btn) {
     btn.querySelector(`:scope > .${MARK}`)?.remove();
+    btn.removeAttribute("data-void-cls-nest");
   }
   function roots() {
     const found = [...document.querySelectorAll(SIDEBAR)];
     return found.length ? found : [document.body];
   }
-  function activeButton(root) {
-    return root.querySelector(`${ROW}[data-active="true"], ${ROW}[aria-current="page"], ${ROW}[data-state="active"]`);
-  }
   function rowForId(root, id) {
-    const a = root.querySelector(`a[href*="${id}"]`);
-    if (a)
-      return rowHost(a, root) ?? a;
-    return activeButton(root);
+    if (!isConvId(id))
+      return null;
+    for (const a of root.querySelectorAll(`a[href*="${id}"]`)) {
+      if (hrefId(a) !== id)
+        continue;
+      const host2 = rowHost(a, root);
+      if (host2)
+        return host2;
+    }
+    return null;
   }
   function paint2() {
     if (!started3)
@@ -14738,7 +14737,7 @@ html.void-rt-open [data-sidebar="gap"] {
         if (!host2 || seen.has(host2))
           continue;
         seen.add(host2);
-        const id = idFromRow(host2);
+        const id = hrefId(host2);
         if (!id) {
           clearMark(host2);
           continue;
@@ -14760,10 +14759,9 @@ html.void-rt-open [data-sidebar="gap"] {
       if (rowById.get(id)?.isConnected)
         continue;
       for (const root of roots()) {
-        const row = rowForId(root, id);
-        if (!row)
+        const host2 = rowForId(root, id);
+        if (!host2)
           continue;
-        const host2 = rowHost(row, root) ?? row;
         rowById.set(id, host2);
         ensureMark(host2, kind2);
         break;
@@ -14889,8 +14887,10 @@ html.void-rt-open [data-sidebar="gap"] {
       extraUnsubs.length = 0;
       extraStores.length = 0;
       extraSeen = new WeakSet;
-      for (const el of document.querySelectorAll(`.${MARK}`))
+      for (const el of document.querySelectorAll(`.${MARK}`)) {
+        el.parentElement?.removeAttribute("data-void-cls-nest");
         el.remove();
+      }
       marks.clear();
       rowById.clear();
     },

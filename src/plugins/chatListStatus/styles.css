@@ -19,8 +19,8 @@
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 0.75rem;
+    height: 0.75rem;
     margin-right: 0.3rem;
     pointer-events: none;
     color: #3b82f6;
@@ -28,8 +28,8 @@
 
 .void-cls[data-kind="done"],
 .void-cls[data-kind="error"] {
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.45rem;
+    height: 0.45rem;
     margin-right: 0.4rem;
     border-radius: 999px;
     background: #3b82f6;
@@ -37,6 +37,19 @@
 
 .void-cls[data-kind="error"] {
     background: #ef4444;
+}
+
+[data-void-cls-nest]:has(> .void-cls) {
+    position: relative;
+}
+
+[data-void-cls-nest] > .void-cls {
+    position: absolute;
+    left: 0.35rem;
+    top: 50%;
+    z-index: 1;
+    margin-right: 0;
+    transform: translateY(-50%);
 }
 
 .void-cls[data-kind="streaming"] svg {

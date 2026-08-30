@@ -18,7 +18,6 @@ import { getModuleCache, isBlacklisted, onModuleLoad, silenceWarns, syncLazyModu
 import { isZustandStore } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
-import { type Fiber, getFiber, walkFiberUp } from "@utils/react";
 import definePlugin, { StartAt } from "@utils/types";
 
 const logger = new Logger("ChatListStatus");
@@ -32,7 +31,7 @@ const EXTRA_HINT = /computer|sandbox|agent|task|working/i;
 const OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore"]);
 const SIDEBAR = '[data-sidebar="sidebar"], [data-sidebar="content"]';
 const HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
-const ROW = `${HOST}, a[href*="/c/"], a[href*="/chat/"], a[href*="chat="], a[href*="/project/"]`;
+const ROW = 'a[href*="/c/"], a[href*="/chat/"], a[href*="chat="]';
 const SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
 
 type Kind = "streaming" | "done" | "error";
@@ -260,10 +259,15 @@ function errorOf(id: string): boolean {
 
 function refreshMarks() {
     const live = liveIds();
+    const opened = new Set(currentIds());
     for (const id of live) marks.set(id, "streaming");
     for (const [id, kind] of marks) {
-        if (kind !== "streaming" || live.has(id)) continue;
-        marks.set(id, errorOf(id) ? "error" : "done");
+        let next = kind;
+        if (kind === "streaming" && !live.has(id)) {
+            next = errorOf(id) ? "error" : "done";
+            marks.set(id, next);
+        }
+        if (next !== "streaming" && opened.has(id)) marks.delete(id);
     }
 }
 
@@ -287,6 +291,11 @@ function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
         schedule();
         return;
     }
+    if (currentIds().includes(cid)) {
+        marks.delete(cid);
+        schedule();
+        return;
+    }
     try {
         const response = ResponseStore.useResponseStore.getState().byId[responseId];
         marks.set(cid, isErrorResponse(response) ? "error" : "done");
@@ -301,10 +310,11 @@ function idFromHref(href: string): string {
     if (!href) return "";
     try {
         const u = new URL(href, location.origin);
-        return u.searchParams.get("chat")
+        const id = u.searchParams.get("chat")
             || u.searchParams.get("conversationId")
             || u.pathname.match(/^\/(?:c|chat)\/([^/?#]+)/i)?.[1]
             || "";
+        return isConvId(id) ? id : "";
     } catch {
         return "";
     }
@@ -315,43 +325,19 @@ function hrefId(el: Element): string {
     return idFromHref(a?.getAttribute("href") ?? el.getAttribute("href") ?? "");
 }
 
-function idFromProps(props: Record<string, unknown> | null | undefined): string {
-    if (!props) return "";
-    const { route } = props;
-    if (route && typeof route === "object") {
-        const r = route as Record<string, unknown>;
-        if (isConvId(r.conversationId)) return r.conversationId;
-        if (isConvId(r.chat)) return r.chat;
-        if (r.page === "workspace") return "";
-        if (r.page === "chat" && isConvId(props.id)) return props.id;
-    }
-    if (isConvId(props.conversationId)) return props.conversationId;
-    if (isConvId(props.chat)) return props.chat;
-    if (typeof props.href === "string") {
-        const fromHref = idFromHref(props.href);
-        if (fromHref) return fromHref;
-    }
-    return "";
-}
-
-function idFromRow(el: Element): string {
-    const fromHref = hrefId(el);
-    if (fromHref) return fromHref;
-    try {
-        const fiber = getFiber(el);
-        const hit = walkFiberUp(fiber, 24, (f: Fiber) => !!idFromProps(f.memoizedProps));
-        return idFromProps(hit?.memoizedProps);
-    } catch (e) {
-        logger.debug("fiber id failed:", e);
-        return "";
-    }
-}
-
 function rowHost(el: HTMLElement, root: Element): HTMLElement | null {
     if (el.classList.contains(MARK)) return null;
     if (el.closest('[data-sidebar="menu-action"], [data-sidebar="footer"], [data-sidebar="header"]')) return null;
+    if (!hrefId(el)) return null;
     const wrapped = el.closest<HTMLElement>(HOST);
     return wrapped && root.contains(wrapped) ? wrapped : el;
+}
+
+function isNestedHost(el: HTMLElement): boolean {
+    if (el.matches('[data-sidebar="menu-sub-button"]')) return true;
+    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
+    const href = a?.getAttribute("href") ?? el.getAttribute("href") ?? "";
+    return href.includes("chat=") || href.includes("/project/");
 }
 
 function spinSvg(): SVGSVGElement {
@@ -369,6 +355,7 @@ function spinSvg(): SVGSVGElement {
 }
 
 function ensureMark(btn: HTMLElement, kind: Kind) {
+    btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
     let mark = btn.querySelector<HTMLElement>(`:scope > .${MARK}`);
     if (!mark) {
         mark = document.createElement("span");
@@ -384,6 +371,7 @@ function ensureMark(btn: HTMLElement, kind: Kind) {
 
 function clearMark(btn: HTMLElement) {
     btn.querySelector(`:scope > .${MARK}`)?.remove();
+    btn.removeAttribute("data-void-cls-nest");
 }
 
 function roots(): Element[] {
@@ -391,14 +379,14 @@ function roots(): Element[] {
     return found.length ? found : [document.body];
 }
 
-function activeButton(root: Element): HTMLElement | null {
-    return root.querySelector<HTMLElement>(`${ROW}[data-active="true"], ${ROW}[aria-current="page"], ${ROW}[data-state="active"]`);
-}
-
 function rowForId(root: Element, id: string): HTMLElement | null {
-    const a = root.querySelector<HTMLElement>(`a[href*="${id}"]`);
-    if (a) return rowHost(a, root) ?? a;
-    return activeButton(root);
+    if (!isConvId(id)) return null;
+    for (const a of root.querySelectorAll<HTMLElement>(`a[href*="${id}"]`)) {
+        if (hrefId(a) !== id) continue;
+        const host = rowHost(a, root);
+        if (host) return host;
+    }
+    return null;
 }
 
 function paint() {
@@ -412,7 +400,7 @@ function paint() {
             const host = rowHost(el, root);
             if (!host || seen.has(host)) continue;
             seen.add(host);
-            const id = idFromRow(host);
+            const id = hrefId(host);
             if (!id) {
                 clearMark(host);
                 continue;
@@ -432,9 +420,8 @@ function paint() {
     for (const [id, kind] of marks) {
         if (rowById.get(id)?.isConnected) continue;
         for (const root of roots()) {
-            const row = rowForId(root, id);
-            if (!row) continue;
-            const host = rowHost(row, root) ?? row;
+            const host = rowForId(root, id);
+            if (!host) continue;
             rowById.set(id, host);
             ensureMark(host, kind);
             break;
@@ -560,7 +547,10 @@ export default definePlugin({
         extraUnsubs.length = 0;
         extraStores.length = 0;
         extraSeen = new WeakSet();
-        for (const el of document.querySelectorAll(`.${MARK}`)) el.remove();
+        for (const el of document.querySelectorAll(`.${MARK}`)) {
+            el.parentElement?.removeAttribute("data-void-cls-nest");
+            el.remove();
+        }
         marks.clear();
         rowById.clear();
     },
