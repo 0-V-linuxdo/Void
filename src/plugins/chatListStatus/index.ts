@@ -107,7 +107,7 @@ function isLiveResponse(r: GrokResponse | undefined): boolean {
     if (r.partial) return true;
     const s = typeof r.state === "string" ? r.state.trim().toLowerCase() : "";
     if (s === "error" || s === "aborted" || s === "cancelled" || s === "canceled") return false;
-    if (isLiveStatus(r.state)) return true;
+    if (LIVE.has(s) || isLiveStatus(r.state)) return true;
     return bagLive(r.steps) || bagLive(r.toolResponses) || bagLive(r.fastToolResponse) || bagLive(r.metadata);
 }
 
@@ -283,21 +283,46 @@ function liveIds(): Set<string> {
     };
     try {
         const page = ChatPageStore.useChatPageStore.getState();
+        const currents = currentIds();
         const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-        const markMsg = (responseId: string | undefined) => {
-            if (!responseId) return;
-            if (!isLiveResponse(byId[responseId])) return;
-            add(convOfResponse(responseId));
+        const markRid = (rid: string | undefined, allowCurrent: boolean) => {
+            if (!rid) return;
+            const r = byId[rid];
+            if (r) {
+                if (!isLiveResponse(r)) return;
+                const owner = convOfResponse(rid);
+                if (owner) {
+                    add(owner);
+                    return;
+                }
+                if (allowCurrent) {
+                    for (const id of currents) add(id);
+                }
+                return;
+            }
+            if (allowCurrent && rid === page.streamedMessageId) {
+                for (const id of currents) add(id);
+            }
         };
-        markMsg(page.streamedMessageId);
-        markMsg(page.lastMessageId);
-        markMsg(page.sidePanelResponseId);
+        markRid(page.streamedMessageId, true);
+        markRid(page.lastMessageId, true);
+        markRid(page.sidePanelResponseId, false);
+        if (page.showStreamingIndicator) {
+            const streamed = page.streamedMessageId ?? "";
+            const streamedRes = byId[streamed];
+            const streamedLive = !!streamed && (!streamedRes || isLiveResponse(streamedRes));
+            const lastLive = isLiveResponse(byId[page.lastMessageId ?? ""]);
+            if (streamedLive || lastLive) {
+                const owner = convOfResponse(streamed) || convOfResponse(page.lastMessageId ?? "");
+                if (owner && !currents.includes(owner)) add(owner);
+                else for (const id of currents) add(id);
+            }
+        }
         collectLiveIds(page.sidePanelContent, ids);
         collectLiveIds(page.metadata, ids);
         for (const id of Object.keys(inflightPromisesByConversationId ?? {})) add(id);
         for (const [id, list] of Object.entries(byConversationId ?? {})) {
-            const last = list?.[list.length - 1];
-            if (last && isLiveResponse(last)) add(id);
+            if (list?.some(isLiveResponse)) add(id);
         }
     } catch (e) {
         logger.debug("stream stores unavailable:", e);
