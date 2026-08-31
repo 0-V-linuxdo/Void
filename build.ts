@@ -14,7 +14,7 @@ const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/Void";
 const SCRIPT_CDN = "https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@heads/voidpp";
-const VERSION_DATE = "20260831.1";
+const VERSION_DATE = "20260831.2";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
