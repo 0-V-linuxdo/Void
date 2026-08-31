@@ -18,7 +18,7 @@ const ALLOWED_HOSTS = [".grok.com", ".x.ai"] as const;
 const BRIDGE_TIMEOUT_MS = 5000;
 const DOMAIN_DOT_PREFIX = /^\./;
 const ALLOWED_BARE_HOSTS = ALLOWED_HOSTS.map(h => h.replace(DOMAIN_DOT_PREFIX, ""));
-const NO_BRIDGE_MSG = "AccountSwitcher needs the Void browser extension. Install or reload it after the cookies permission was added.";
+const NO_BRIDGE_MSG = "AccountSwitcher needs the Void++ browser extension. Install or reload it after the cookies permission was added.";
 
 interface CookiePartitionKey {
     readonly topLevelSite?: string;

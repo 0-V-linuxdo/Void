@@ -35,7 +35,7 @@ const settings = definePluginSettings({
     },
     voidPosition: {
         type: OptionType.SELECT,
-        description: "Place Void tabs above or below Grok tabs.",
+        description: "Place Void++ tabs above or below Grok tabs.",
         options: [
             { label: "Above Grok tabs", value: "above", default: true },
             { label: "Below Grok tabs", value: "below" },
@@ -155,7 +155,7 @@ function VoidSection({ tabs }: { tabs: FlyoutTab[] }) {
     if (tabs.length === 0) return null;
     return (
         <>
-            <Text size="xs" color="secondary" className={cl("group")}>Void</Text>
+            <Text size="xs" color="secondary" className={cl("group")}>Void++</Text>
             {tabItems(tabs)}
         </>
     );
@@ -212,7 +212,7 @@ const WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
 export default definePlugin({
     name: "SettingsFlyout",
     icon: Settings2Icon,
-    description: "Replace the avatar Settings item with a flyout of shortcuts to Void and Grok settings tabs.",
+    description: "Replace the avatar Settings item with a flyout of shortcuts to Void++ and Grok settings tabs.",
     authors: [Devs.p],
     tags: ["ui", "settings"],
     enabledByDefault: true,

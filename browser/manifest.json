@@ -1,10 +1,10 @@
 {
     "manifest_version": 3,
     "minimum_chrome_version": "111",
-    "name": "Void",
+    "name": "Void++",
     "description": "The cutest mod for grok",
-    "author": "Void Contributors",
-    "homepage_url": "https://github.com/imjustprism/Void",
+    "author": "Void++ Contributors",
+    "homepage_url": "https://github.com/0-V-linuxdo/Void",
     "icons": {
         "16": "icons/icon16.png",
         "32": "icons/icon32.png",

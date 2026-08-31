@@ -48,8 +48,8 @@
 
 | 功能 | 默认 | 说明 |
 | --- | --- | --- |
-| 设置 / 图标 | — | Grok 设置侧栏中的 Void 标签。头像菜单 Void 行使用 16px V++ 字形；脚本 `@icon` 与应用磁贴为同一标记。插件浮层显示各插件图标。 |
-| 聊天栏按钮 | — | Grok 去掉 `ButtonWithTooltipOptimized` 后，聊天栏 Void 按钮已恢复。 |
+| 设置 / 图标 | — | Grok 设置侧栏中的 Void++ 标签。头像菜单 Void++ 行使用 16px V++ 字形；脚本 `@icon` 与应用磁贴为同一标记。插件浮层显示各插件图标。 |
+| 聊天栏按钮 | — | Grok 去掉 `ButtonWithTooltipOptimized` 后，聊天栏 Void++ 按钮已恢复。 |
 
 ### 删除
 

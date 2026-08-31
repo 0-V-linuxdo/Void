@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260830.32] v1.0.0
+// @version      [20260831.1] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260830.32] v1.0.0 — A modification for grok.com
+ * Void++ [20260831.1] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -79,7 +79,7 @@
     _log(level, args) {
       if (isBrowser) {
         const sink = level === "debug" ? console.debug : console.log;
-        sink(`%cVoid%c${this.name}%c`, `${CAP}background:${CAP_GRADIENT[level]};`, `${BODY}color:${this.color};`, "", ...args);
+        sink(`%cVoid++%c${this.name}%c`, `${CAP}background:${CAP_GRADIENT[level]};`, `${BODY}color:${this.color};`, "", ...args);
         return;
       }
       console[level](`${LEVEL_ANSI[level]}\x1B[1m${this.name}\x1B[0m`, ...args);
@@ -5419,7 +5419,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         className: cl8("crashed-icon")
       }), plugin.required && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: CircleAlertIcon,
-        tooltip: "This plugin is required for Void to work",
+        tooltip: "This plugin is required for Void++ to work",
         className: cl8("required-icon")
       }), /* @__PURE__ */ React.createElement(PluginBadges, {
         plugin,
@@ -6787,7 +6787,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var settings3 = definePluginSettings({
     menuPlugins: {
       type: 6 /* COMPONENT */,
-      description: "Plugins shown under Void → Plugins.",
+      description: "Plugins shown under Void++ → Plugins.",
       component: MenuPluginsEditor,
       default: {}
     }
@@ -6827,7 +6827,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Choose which plugins appear under Void → Plugins.")), /* @__PURE__ */ React.createElement("div", {
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Choose which plugins appear under Void++ → Plugins.")), /* @__PURE__ */ React.createElement("div", {
       className: cl15("list")
     }, listedPlugins().map((name) => {
       const Icon = plugins[name].icon ?? UnplugIcon;
@@ -6848,7 +6848,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var pluginsFlyout_default = definePlugin({
     name: PLUGIN_NAME,
     icon: ListFilterIcon,
-    description: "Choose which plugins appear in the avatar Void → Plugins menu.",
+    description: "Choose which plugins appear in the avatar Void++ → Plugins menu.",
     authors: [Devs.p],
     tags: ["ui", "settings"],
     enabledByDefault: true,
@@ -6861,7 +6861,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var settings4 = definePluginSettings({
     showVoidMenu: {
       type: 3 /* BOOLEAN */,
-      description: "Show the Void sub-menu in the avatar dropdown.",
+      description: "Show the Void++ sub-menu in the avatar dropdown.",
       default: true
     }
   });
@@ -6899,13 +6899,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(VersionLink, {
-      href: "https://github.com/imjustprism/Void"
-    }, "Void"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
+      href: "https://github.com/0-V-linuxdo/Void"
+    }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260830.32] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/imjustprism/Void"}/commit/${"d1dc72b"}`
-    }, `(${"d1dc72b"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260831.1] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"8387b02"}`
+    }, `(${"8387b02"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -6934,7 +6934,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return null;
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidIcon, {
       className: cl16("menu-icon")
-    }), "Void"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
+    }), "Void++"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl16("menu-icon")
     }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
       className: cl16("plugin-menu")
@@ -6960,7 +6960,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var settings_default = definePlugin({
     name: "Settings",
     icon: SettingsIcon,
-    description: "Adds Void settings UI.",
+    description: "Adds Void++ settings UI.",
     authors: [Devs.Prism],
     required: true,
     settings: settings4,
@@ -7022,7 +7022,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
           },
           {
             match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
-            replace: '$1case"void":return"Void";$2'
+            replace: '$1case"void":return"Void++";$2'
           },
           {
             match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,
@@ -9253,7 +9253,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     },
     voidPosition: {
       type: 4 /* SELECT */,
-      description: "Place Void tabs above or below Grok tabs.",
+      description: "Place Void++ tabs above or below Grok tabs.",
       options: [
         { label: "Above Grok tabs", value: "above", default: true },
         { label: "Below Grok tabs", value: "below" }
@@ -9354,7 +9354,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       size: "xs",
       color: "secondary",
       className: cl20("group")
-    }, "Void"), tabItems(tabs));
+    }, "Void++"), tabItems(tabs));
   }
   function SettingsMenu({ onOpen }) {
     const cfg = settings11.use([
@@ -9394,7 +9394,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var settingsFlyout_default = definePlugin({
     name: "SettingsFlyout",
     icon: Settings2Icon,
-    description: "Replace the avatar Settings item with a flyout of shortcuts to Void and Grok settings tabs.",
+    description: "Replace the avatar Settings item with a flyout of shortcuts to Void++ and Grok settings tabs.",
     authors: [Devs.p],
     tags: ["ui", "settings"],
     enabledByDefault: true,
@@ -16270,6 +16270,6 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       writable: false,
       configurable: true
     });
-    initSettings().then(() => init()).catch((e) => console.error("[Void] Fatal init error:", e));
+    initSettings().then(() => init()).catch((e) => console.error("[Void++] Fatal init error:", e));
   }
 })();

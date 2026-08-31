@@ -18,5 +18,5 @@ if (isGrokPreviewFrame()) {
         configurable: true,
     });
 
-    Void.initSettings().then(() => Void.init()).catch(e => console.error("[Void] Fatal init error:", e));
+    Void.initSettings().then(() => Void.init()).catch(e => console.error("[Void++] Fatal init error:", e));
 }

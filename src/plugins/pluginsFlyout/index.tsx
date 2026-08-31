@@ -22,7 +22,7 @@ const cl = classNameFactory("void-pf-");
 const settings = definePluginSettings({
     menuPlugins: {
         type: OptionType.COMPONENT,
-        description: "Plugins shown under Void → Plugins.",
+        description: "Plugins shown under Void++ → Plugins.",
         component: MenuPluginsEditor,
         default: {},
     },
@@ -67,7 +67,7 @@ function MenuPluginsEditor() {
         <Flex flexDirection="column" gap="0.5rem" className={cl("root")}>
             <Flex flexDirection="column" gap="0">
                 <SettingsTitle>Plugin menu</SettingsTitle>
-                <SettingsDescription>Choose which plugins appear under Void → Plugins.</SettingsDescription>
+                <SettingsDescription>Choose which plugins appear under Void++ → Plugins.</SettingsDescription>
             </Flex>
             <div className={cl("list")}>
                 {listedPlugins().map(name => {
@@ -92,7 +92,7 @@ function MenuPluginsEditor() {
 export default definePlugin({
     name: PLUGIN_NAME,
     icon: ListFilterIcon,
-    description: "Choose which plugins appear in the avatar Void → Plugins menu.",
+    description: "Choose which plugins appear in the avatar Void++ → Plugins menu.",
     authors: [Devs.p],
     tags: ["ui", "settings"],
     enabledByDefault: true,

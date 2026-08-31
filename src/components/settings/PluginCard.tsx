@@ -63,7 +63,7 @@ export default function PluginCard({ name, onSettings, onReload }: PluginCardPro
             badges={
                 <>
                     {crashed && <TooltipIcon icon={TriangleAlert} tooltip="This plugin failed to start" className={cl("crashed-icon")} />}
-                    {plugin.required && <TooltipIcon icon={CircleAlertIcon} tooltip="This plugin is required for Void to work" className={cl("required-icon")} />}
+                    {plugin.required && <TooltipIcon icon={CircleAlertIcon} tooltip="This plugin is required for Void++ to work" className={cl("required-icon")} />}
                     <PluginBadges plugin={plugin} className={cl("badge")} />
                     {isNewPlugin(name) && <Badge variant="accent">New</Badge>}
                 </>

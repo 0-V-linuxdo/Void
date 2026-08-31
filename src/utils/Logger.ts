@@ -37,7 +37,7 @@ export class Logger {
         if (isBrowser) {
             const sink = level === "debug" ? console.debug : console.log;
             sink(
-                `%cVoid%c${this.name}%c`,
+                `%cVoid++%c${this.name}%c`,
                 `${CAP}background:${CAP_GRADIENT[level]};`,
                 `${BODY}color:${this.color};`,
                 "",

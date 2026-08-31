@@ -37,7 +37,7 @@ const cl = classNameFactory("void-settings-");
 const settings = definePluginSettings({
     showVoidMenu: {
         type: OptionType.BOOLEAN,
-        description: "Show the Void sub-menu in the avatar dropdown.",
+        description: "Show the Void++ sub-menu in the avatar dropdown.",
         default: true,
     },
 });
@@ -79,7 +79,7 @@ function VersionInfo() {
     return (
         <Flex flexDirection="column" gap="0" className={cl("version")}>
             <Flex alignItems="center" gap="0.25rem">
-                <VersionLink href={REPO_URL}>Void</VersionLink>
+                <VersionLink href={REPO_URL}>Void++</VersionLink>
                 <Dot />
                 <Text as="span" color="secondary">{VERSION}</Text>
                 <Dot />
@@ -121,7 +121,7 @@ function VoidMenu() {
         <DropdownMenuSub>
             <DropdownMenuSubTrigger>
                 <VoidIcon className={cl("menu-icon")} />
-                Void
+                Void++
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
                 {menuPlugins.length > 0 && (
@@ -162,7 +162,7 @@ const WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
 export default definePlugin({
     name: "Settings",
     icon: SettingsIcon,
-    description: "Adds Void settings UI.",
+    description: "Adds Void++ settings UI.",
     authors: [Devs.Prism],
     required: true,
     settings,
@@ -227,7 +227,7 @@ export default definePlugin({
                 },
                 {
                     match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
-                    replace: '$1case"void":return"Void";$2',
+                    replace: '$1case"void":return"Void++";$2',
                 },
                 {
                     match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,
