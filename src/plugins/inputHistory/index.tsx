@@ -54,6 +54,7 @@ let cursor = 0;
 let draft = "";
 let recalling = false;
 let applying = false;
+let composing = false;
 let applyGen = 0;
 let keys: AbortController | null = null;
 let applyTimer: ReturnType<typeof setTimeout> | undefined;
@@ -78,7 +79,23 @@ function normalize(text: string): string {
     return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
 }
 
+function imeEvent(e: Event): boolean {
+    if (composing) return true;
+    if (e instanceof InputEvent && e.isComposing) return true;
+    if (e instanceof KeyboardEvent && (e.isComposing || e.keyCode === 229)) return true;
+    return false;
+}
+
+function invalidateApply() {
+    applyGen++;
+    applying = false;
+    applyEl = null;
+    clearTimeout(applyTimer);
+    applyTimer = undefined;
+}
+
 function resetBrowse(length: number) {
+    invalidateApply();
     cursor = length;
     draft = "";
     recalling = false;
@@ -145,6 +162,7 @@ function matchesRecall(el: HTMLElement): boolean {
 }
 
 function dropRecall(el: HTMLElement) {
+    invalidateApply();
     cursor = getEntries().length;
     draft = editorText(el);
     recalling = false;
@@ -152,8 +170,10 @@ function dropRecall(el: HTMLElement) {
 }
 
 function placeCaret(el: HTMLElement, atStart: boolean) {
+    if (composing) return;
     try {
         const view = (el as unknown as { pmViewDesc?: { view?: {
+            composing?: boolean;
             state: {
                 doc: unknown;
                 selection: { constructor: { atStart(doc: unknown): unknown; atEnd(doc: unknown): unknown } };
@@ -162,6 +182,7 @@ function placeCaret(el: HTMLElement, atStart: boolean) {
             dispatch(tr: unknown): void;
         } } }).pmViewDesc?.view;
         if (view) {
+            if (view.composing) return;
             const Sel = view.state.selection.constructor;
             const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
             view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
@@ -185,8 +206,10 @@ function scheduleApplyEnd(gen: number) {
         if (gen !== applyGen) return;
         applying = false;
         const el = applyEl;
-        if (!el) return;
-        if (recalling && !matchesRecall(el)) dropRecall(el);
+        applyEl = null;
+        if (!el || composing) return;
+        if (!recalling) return;
+        if (!matchesRecall(el)) dropRecall(el);
         else placeCaret(el, applyAtStart);
     }, APPLY_QUIET_MS);
 }
@@ -276,11 +299,13 @@ function cycle(older: boolean, el: HTMLElement) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-    if (e.isComposing || e.keyCode === 229) return;
+    if (imeEvent(e)) return;
     if (e.ctrlKey || e.metaKey) return;
 
     const el = chatEditor(e.target);
     if (!el) return;
+
+    if (applying && e.key !== "ArrowUp" && e.key !== "ArrowDown") invalidateApply();
 
     if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
         dropRecall(el);
@@ -314,23 +339,35 @@ function onKeyDown(e: KeyboardEvent) {
 }
 
 function onPointerDown(e: PointerEvent) {
-    if (!recalling || applying) return;
+    if (!recalling) return;
     const el = chatEditor(e.target);
     if (!el) return;
     dropRecall(el);
 }
 
+function onCompositionStart(e: Event) {
+    if (!chatEditor(e.target)) return;
+    composing = true;
+    invalidateApply();
+}
+
+function onCompositionEnd(e: Event) {
+    const el = chatEditor(e.target);
+    if (!el) return;
+    composing = false;
+    if (recalling && !matchesRecall(el)) dropRecall(el);
+}
+
 function onInput(e: Event) {
     const el = chatEditor(e.target);
     if (!el) return;
-
-    if (applying) {
-        scheduleApplyEnd(applyGen);
+    if (imeEvent(e)) {
+        if (applying) invalidateApply();
         return;
     }
-
-    if (matchesRecall(el)) return;
-    dropRecall(el);
+    const recalled = matchesRecall(el);
+    if (applying && recalled) return;
+    if (recalling && !recalled) dropRecall(el);
 }
 
 function onSubmit(e: Event) {
@@ -516,10 +553,14 @@ export default definePlugin({
         if (keys) return;
         cursor = getEntries().length;
         recalling = false;
+        composing = false;
+        invalidateApply();
         keys = new AbortController();
         const { signal } = keys;
         document.addEventListener("keydown", onKeyDown, { capture: true, signal });
         document.addEventListener("input", onInput, { capture: true, signal });
+        document.addEventListener("compositionstart", onCompositionStart, { capture: true, signal });
+        document.addEventListener("compositionend", onCompositionEnd, { capture: true, signal });
         document.addEventListener("submit", onSubmit, { capture: true, signal });
         document.addEventListener("click", onClick, { capture: true, signal });
         document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
@@ -530,10 +571,9 @@ export default definePlugin({
         keys = null;
         hideHud();
         recentAt.clear();
-        clearTimeout(applyTimer);
-        applying = false;
-        applyEl = null;
+        composing = false;
         recalling = false;
+        invalidateApply();
     },
 
     onSettingsChange() {
