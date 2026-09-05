@@ -17,7 +17,7 @@
 | Cleaner 默认开启 | 开 | 上游已有该插件；Void++ 改为默认打开。隐藏升级提示、首页横幅、输入栏 SuperGrok 标记，以及锁定模型。 |
 | InputHistory | 开 | 在输入框用 ↑ / ↓ 翻看历史提示词，类似终端。 |
 | NoGrokBot | 开 | 隐藏右上角 Grok Bot 推广按钮。 |
-| NoSidebarIdentity | 开 | 分开开关，隐藏侧栏用户名 / 邮箱。头像保留，账号菜单仍可打开。 |
+| NoSidebarIdentity | 开 | 分开开关，隐藏侧栏和账号菜单里的用户名 / 邮箱。头像保留，账号菜单仍可打开。 |
 | ChatStateFavicons | 开 | 标签页图标反映会话状态（streaming / done / ready / error），五种叠层样式。 |
 | NoShareLink | 开 | 分开开关，隐藏「分享项目」和「创建分享链接」。 |
 | NoDictation | 开 | 隐藏输入栏语音按钮。可选隐藏设置弹窗 Behavior 里的 Dictation Refinement。 |

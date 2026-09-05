@@ -17,7 +17,7 @@
 | Cleaner default-on | On | Upstream plugin; Void++ turns it on by default. Hides upgrade nags, the home banner, the composer SuperGrok chip, and locked models. |
 | InputHistory | On | Recall previous chat prompts with Arrow Up and Arrow Down, like a shell. |
 | NoGrokBot | On | Hide the top-right Grok Bot promo button. |
-| NoSidebarIdentity | On | Hide username and/or email in the Grok sidebar (separate toggles). Avatar stays so the account menu still opens. |
+| NoSidebarIdentity | On | Hide username and/or email in the Grok sidebar and account menu (separate toggles). Avatar stays so the account menu still opens. |
 | ChatStateFavicons | On | Tab favicon reflects chat state (streaming, done, ready, error) with five overlay styles. |
 | NoShareLink | On | Hide Share Project (in a project) and Create share link (top-right of chats); separate toggles. |
 | NoDictation | On | Hide the Dictation (voice input) button from the chat input bar. Optional toggle hides Dictation Refinement in Settings → Behavior. |
