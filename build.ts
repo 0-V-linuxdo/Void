@@ -13,8 +13,8 @@ const repoUrl: string = pkg.repository.url.replace(/^git\+/, "").replace(/\.git$
 const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/Void";
-const SCRIPT_CDN = "https://cdn.jsdelivr.net/gh/0-V-linuxdo/Void@heads/voidpp";
-const VERSION_DATE = "20260909.15";
+const SCRIPT_CDN = "https://raw.githubusercontent.com/0-V-linuxdo/Void/voidpp";
+const VERSION_DATE = "20260909.16";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
