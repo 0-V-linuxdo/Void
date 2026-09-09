@@ -20,8 +20,12 @@
     box-shadow: none;
 }
 
-.query-bar .void-cms-on {
-    color: #ff7a17;
+.query-bar .void-cms-on,
+.query-bar .void-cms-on svg {
+    color: #ff6b35;
+    color: hsl(var(--fg-accent));
+    fill: currentcolor;
+    stroke: currentcolor;
     background: transparent !important;
     box-shadow: none !important;
 }
@@ -33,7 +37,8 @@
     line-height: 1;
 }
 
-.query-bar:has(.void-cms-all-covered) [data-query-bar-mode-select] {
+.query-bar:has(.void-cms-all-covered) [data-query-bar-mode-select],
+.query-bar:has(.void-cms-hide-overflow) [data-query-bar-mode-select] {
     position: absolute;
     width: 0;
     height: 0;
@@ -44,7 +49,7 @@
     pointer-events: none;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered), :has(.void-cms-hide-overflow)) [data-query-bar-mode-select] button {
     width: 2.25rem;
     height: 2.25rem;
     min-width: 2.25rem;
@@ -54,11 +59,11 @@
     position: relative;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button > * {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered), :has(.void-cms-hide-overflow)) [data-query-bar-mode-select] button > * {
     display: none !important;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button::after {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered), :has(.void-cms-hide-overflow)) [data-query-bar-mode-select] button::after {
     content: "⋮";
     font-size: 1.25rem;
     font-weight: 700;
@@ -74,6 +79,8 @@ html.void-cms-picking [role="menu"],
 html.void-cms-picking [role="listbox"],
 html.void-cms-picking [data-radix-popper-content-wrapper] {
     opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 @media (width >= 48rem) {
