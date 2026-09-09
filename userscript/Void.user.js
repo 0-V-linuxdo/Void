@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.2] v1.0.0
+// @version      [20260909.3] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.2] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.3] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -3411,7 +3411,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // void-css:/tmp/Void/src/components/ColorSettingRow.css
+  // void-css:/tmp/Void-land/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -3450,7 +3450,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // void-css:/tmp/Void/src/components/ConfirmDialog.css
+  // void-css:/tmp/Void-land/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3699,7 +3699,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // void-css:/tmp/Void/src/components/ErrorCard.css
+  // void-css:/tmp/Void-land/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3812,7 +3812,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // void-css:/tmp/Void/src/components/SelectionUI.css
+  // void-css:/tmp/Void-land/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -4532,7 +4532,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/_core/settings/styles.css
+  // void-css:/tmp/Void-land/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4805,7 +4805,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // void-css:/tmp/Void/src/components/settings/tabs/CustomCSSTab.css
+  // void-css:/tmp/Void-land/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4817,7 +4817,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/CssEditor.css
+  // void-css:/tmp/Void-land/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -5089,7 +5089,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/Void/src/components/settings/shared.css
+  // void-css:/tmp/Void-land/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5164,7 +5164,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/tabs/PluginsTab.css
+  // void-css:/tmp/Void-land/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5205,7 +5205,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/PluginCard.css
+  // void-css:/tmp/Void-land/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5256,7 +5256,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/BaseCard.css
+  // void-css:/tmp/Void-land/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -5529,7 +5529,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // void-css:/tmp/Void/src/components/settings/tabs/PluginDialog.css
+  // void-css:/tmp/Void-land/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5555,7 +5555,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/SettingField.css
+  // void-css:/tmp/Void-land/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -6155,7 +6155,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // void-css:/tmp/Void/src/components/settings/tabs/ThemesTab.css
+  // void-css:/tmp/Void-land/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6178,7 +6178,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // void-css:/tmp/Void/src/components/settings/ThemeCard.css
+  // void-css:/tmp/Void-land/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6456,7 +6456,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // void-css:/tmp/Void/src/plugins/experiments/styles.css
+  // void-css:/tmp/Void-land/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6834,7 +6834,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/pluginsFlyout/styles.css
+  // void-css:/tmp/Void-land/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -6976,9 +6976,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.2] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"a35e4ae"}`
-    }, `(${"a35e4ae"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.3] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"780d3be"}`
+    }, `(${"780d3be"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7445,7 +7445,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/betterSidebar/styles.css
+  // void-css:/tmp/Void-land/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -7690,7 +7690,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/betterImagine/styles.css
+  // void-css:/tmp/Void-land/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -8333,7 +8333,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/messageTimestamps/styles.css
+  // void-css:/tmp/Void-land/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -8529,7 +8529,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/cloneChats/styles.css
+  // void-css:/tmp/Void-land/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -8580,7 +8580,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/streamerMode/styles.css
+  // void-css:/tmp/Void-land/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -8752,7 +8752,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/inputHistory/styles.css
+  // void-css:/tmp/Void-land/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -9481,7 +9481,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/downloadTTS/styles.css
+  // void-css:/tmp/Void-land/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -9543,7 +9543,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
   });
 
-  // void-css:/tmp/Void/src/plugins/recentTopics/styles.css
+  // void-css:/tmp/Void-land/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -11662,7 +11662,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/customInstructions/styles.css
+  // void-css:/tmp/Void-land/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -12206,7 +12206,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/exportChat/styles.css
+  // void-css:/tmp/Void-land/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -12425,7 +12425,7 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // void-css:/tmp/Void/src/plugins/usageDisplay/styles.css
+  // void-css:/tmp/Void-land/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -13923,7 +13923,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/settingsFlyout/styles.css
+  // void-css:/tmp/Void-land/src/plugins/settingsFlyout/styles.css
   registerStyle("settingsFlyout", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -14952,7 +14952,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/betterFiles/styles.css
+  // void-css:/tmp/Void-land/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -15099,7 +15099,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/chatListStatus/styles.css
+  // void-css:/tmp/Void-land/src/plugins/chatListStatus/styles.css
   registerStyle("chatListStatus", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -15772,7 +15772,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/compactModeSelect/styles.css
+  // void-css:/tmp/Void-land/src/plugins/compactModeSelect/styles.css
   registerStyle("compactModeSelect", `/*
  * Void, a modification for grok.com
  * Copyright (c) 2026 Void contributors
@@ -15780,41 +15780,78 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
  */
 
 .void-cms-pins {
-    contain: content;
+    display: contents;
 }
 
-.query-bar:has(.void-cms-all-pinned) [data-query-bar-mode-select] {
-    display: none !important;
+.void-cms-pin {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    max-height: 2.25rem;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.void-cms-chip {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
+.void-cms-on {
+    color: hsl(var(--fg-primary));
+    box-shadow: inset 0 0 0 1.5px currentcolor;
+    background: transparent;
 }
 
 .void-cms-label {
     display: none;
     font-size: 0.875rem;
     font-weight: 500;
+    line-height: 1;
+}
+
+.query-bar:has(.void-cms-all-covered) [data-query-bar-mode-select] {
+    display: none !important;
+}
+
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    max-height: 2.25rem;
+    padding: 0;
+    position: relative;
+}
+
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button > * {
+    display: none !important;
+}
+
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button::after {
+    content: "⋯";
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.05em;
 }
 
 @media (width >= 48rem) {
-    .void-cms-labeled .void-cms-label {
-        display: inline;
-    }
-
-    button:has(.void-cms-labeled) {
+    .void-cms-labeled {
         width: auto;
+        min-width: 2.25rem;
+        max-height: 2.25rem;
         border-radius: 999px;
         padding-inline: 0.5rem;
+        gap: 0.25rem;
+    }
+
+    .void-cms-labeled .void-cms-label {
+        display: inline;
     }
 }
 `);
 
   // src/plugins/compactModeSelect/index.tsx
+  var logger29 = new Logger("CompactModeSelect");
   var cl25 = classNameFactory("void-cms-");
+  var SELECTED_KEY = "modes-selected-id";
   var MODES = [
     { id: "auto", pin: "pinAuto", label: "Auto", Icon: RocketIcon },
     { id: "fast", pin: "pinFast", label: "Fast", Icon: ZapIcon },
@@ -15822,7 +15859,9 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: LayoutGridIcon },
     { id: "build", pin: "pinBuild", label: "Build", Icon: HammerIcon }
   ];
-  var PIN_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"];
+  var KNOWN_IDS = new Set(MODES.map((m) => m.id));
+  var PIN_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m.pin]));
+  var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"];
   var settings24 = definePluginSettings({
     pinAuto: {
       type: 3 /* BOOLEAN */,
@@ -15855,31 +15894,43 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       default: false
     }
   });
-  function setMode(id) {
-    ChatPageStore.useChatPageStore.getState().setModelMode(id);
+  function applyMode(id) {
+    ModesStore.useModesStore.getState().setSelectedModeId(id);
+    try {
+      localStorage.setItem(SELECTED_KEY, id);
+    } catch (e) {
+      logger29.warn("Failed to persist mode:", e);
+    }
+    if (id !== "build")
+      ChatPageStore.useChatPageStore.getState().setModelMode(id);
   }
   function PinnedModes() {
-    const cfg = settings24.use([...PIN_KEYS]);
+    const cfg = settings24.use([...SETTING_KEYS]);
+    const selectedModeId = ModesStore.useModesStore((s) => s.selectedModeId);
+    const catalog = ModesStore.useModesStore((s) => s.modes);
     const modelMode = ChatPageStore.useChatPageStore((s) => s.modelMode);
-    const items = MODES.filter((m) => cfg[m.pin]);
+    const current = selectedModeId || modelMode;
+    const knownCatalog = catalog.filter((c) => KNOWN_IDS.has(c.id));
+    const items = MODES.filter((m) => cfg[m.pin] && (!knownCatalog.length || knownCatalog.some((c) => c.id === m.id)));
     if (!items.length)
       return null;
     const { showLabels } = cfg;
-    const allPinned = MODES.every((m) => cfg[m.pin]);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      alignItems: "center",
-      gap: "0.125rem",
-      className: classes(cl25("pins"), allPinned && cl25("all-pinned"))
+    const allCovered = knownCatalog.length > 0 && knownCatalog.every((c) => cfg[PIN_BY_ID[c.id]]);
+    return /* @__PURE__ */ React.createElement("div", {
+      className: classes(cl25("pins"), allCovered && cl25("all-covered"))
     }, items.map((m) => /* @__PURE__ */ React.createElement(ChatBarButton, {
       key: m.id,
-      icon: /* @__PURE__ */ React.createElement("span", {
-        className: classes(cl25("chip"), showLabels && cl25("labeled"))
-      }, /* @__PURE__ */ React.createElement(m.Icon, null), showLabels && /* @__PURE__ */ React.createElement("span", {
+      size: "sm",
+      icon: showLabels ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(m.Icon, {
+        size: 18
+      }), /* @__PURE__ */ React.createElement("span", {
         className: cl25("label")
-      }, m.label)),
+      }, m.label)) : /* @__PURE__ */ React.createElement(m.Icon, {
+        size: 18
+      }),
       tooltip: m.label,
-      onClick: () => setMode(m.id),
-      active: modelMode === m.id,
+      onClick: () => applyMode(m.id),
+      className: classes(cl25("pin"), current === m.id && cl25("on"), showLabels && cl25("labeled")),
       "aria-label": m.label
     })));
   }
@@ -15892,6 +15943,10 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     enabledByDefault: true,
     settings: settings24,
     managedStyle: "compactModeSelect",
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      ModesStore.useModesStore.getState().ensureLoaded();
+    },
     renderPinned: ErrorBoundary.wrap(PinnedModes),
     patches: [
       {
@@ -16037,7 +16092,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // void-css:/tmp/Void/src/plugins/placeholder/styles.css
+  // void-css:/tmp/Void-land/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -16137,7 +16192,7 @@ div:has(> #grok-bot-nav-button) {
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
   var __plugins_default = { [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [cleaner_default.name]: cleaner_default, [betterSidebar_default.name]: betterSidebar_default, [betterImagine_default.name]: betterImagine_default, [messageTimestamps_default.name]: messageTimestamps_default, [autoRetry_default.name]: autoRetry_default, [userQuotes_default.name]: userQuotes_default, [cloneChats_default.name]: cloneChats_default, [streamerMode_default.name]: streamerMode_default, [inputHistory_default.name]: inputHistory_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterLinks_default.name]: betterLinks_default, [experiments_default.name]: experiments_default, [customInstructions_default.name]: customInstructions_default, [responseNotification_default.name]: responseNotification_default, [incognito_default.name]: incognito_default, [composerOpacity_default.name]: composerOpacity_default, [exportChat_default.name]: exportChat_default, [autoCollapse_default.name]: autoCollapse_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default, [settingsFlyout_default.name]: settingsFlyout_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [noDictation_default.name]: noDictation_default, [betterFiles_default.name]: betterFiles_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [compactModeSelect_default.name]: compactModeSelect_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [noGrokBot_default.name]: noGrokBot_default, [placeholder_default.name]: placeholder_default };
-  // void-css:/tmp/Void/src/api/Notices.css
+  // void-css:/tmp/Void-land/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
@@ -16409,14 +16464,14 @@ div:has(> #grok-bot-nav-button) {
   });
 
   // src/Void.ts
-  var logger29 = new Logger("TurbopackPatcher", "#e78284");
+  var logger30 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger29.error(`${name} failed:`, e);
+      logger30.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -16437,7 +16492,7 @@ div:has(> #grok-bot-nav-button) {
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger29.info(`${getModuleCache().size} modules loaded, ready`);
+      logger30.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
       safely("checkBuildFingerprint", checkBuildFingerprint);

@@ -7,17 +7,21 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { ChatBarButton, Flex } from "@components";
+import { ChatBarButton } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { HammerIcon, LayoutGridIcon, LightbulbIcon, Minimize2Icon, RocketIcon, ZapIcon } from "@components/icons";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
+import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React } from "@turbopack/common/react";
-import { ChatPageStore } from "@turbopack/common/stores";
+import { ChatPageStore, ModesStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
-import definePlugin, { OptionType } from "@utils/types";
+import { Logger } from "@utils/Logger";
+import definePlugin, { OptionType, StartAt } from "@utils/types";
 
+const logger = new Logger("CompactModeSelect");
 const cl = classNameFactory("void-cms-");
+const SELECTED_KEY = "modes-selected-id";
 
 const MODES = [
     { id: "auto", pin: "pinAuto", label: "Auto", Icon: RocketIcon },
@@ -27,7 +31,9 @@ const MODES = [
     { id: "build", pin: "pinBuild", label: "Build", Icon: HammerIcon },
 ] as const;
 
-const PIN_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"] as const;
+const KNOWN_IDS = new Set<string>(MODES.map(m => m.id));
+const PIN_BY_ID: Record<string, (typeof MODES)[number]["pin"]> = Object.fromEntries(MODES.map(m => [m.id, m.pin]));
+const SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"] as const;
 
 const settings = definePluginSettings({
     pinAuto: {
@@ -62,37 +68,50 @@ const settings = definePluginSettings({
     },
 });
 
-function setMode(id: string) {
-    ChatPageStore.useChatPageStore.getState().setModelMode(id);
+function applyMode(id: string) {
+    ModesStore.useModesStore.getState().setSelectedModeId(id);
+    try {
+        localStorage.setItem(SELECTED_KEY, id);
+    } catch (e) {
+        logger.warn("Failed to persist mode:", e);
+    }
+    if (id !== "build") ChatPageStore.useChatPageStore.getState().setModelMode(id);
 }
 
 function PinnedModes() {
-    const cfg = settings.use([...PIN_KEYS]);
+    const cfg = settings.use([...SETTING_KEYS]);
+    const selectedModeId = ModesStore.useModesStore((s: ModesStoreState) => s.selectedModeId);
+    const catalog = ModesStore.useModesStore((s: ModesStoreState) => s.modes);
     const modelMode = ChatPageStore.useChatPageStore((s: ChatPageStoreState) => s.modelMode);
-    const items = MODES.filter(m => cfg[m.pin]);
+    const current = selectedModeId || modelMode;
+    const knownCatalog = catalog.filter(c => KNOWN_IDS.has(c.id));
+    const items = MODES.filter(m => cfg[m.pin] && (!knownCatalog.length || knownCatalog.some(c => c.id === m.id)));
     if (!items.length) return null;
 
     const { showLabels } = cfg;
-    const allPinned = MODES.every(m => cfg[m.pin]);
+    const allCovered = knownCatalog.length > 0 && knownCatalog.every(c => cfg[PIN_BY_ID[c.id]]);
 
     return (
-        <Flex alignItems="center" gap="0.125rem" className={classes(cl("pins"), allPinned && cl("all-pinned"))}>
+        <div className={classes(cl("pins"), allCovered && cl("all-covered"))}>
             {items.map(m => (
                 <ChatBarButton
                     key={m.id}
-                    icon={(
-                        <span className={classes(cl("chip"), showLabels && cl("labeled"))}>
-                            <m.Icon />
-                            {showLabels && <span className={cl("label")}>{m.label}</span>}
-                        </span>
-                    )}
+                    size="sm"
+                    icon={showLabels
+                        ? (
+                            <>
+                                <m.Icon size={18} />
+                                <span className={cl("label")}>{m.label}</span>
+                            </>
+                        )
+                        : <m.Icon size={18} />}
                     tooltip={m.label}
-                    onClick={() => setMode(m.id)}
-                    active={modelMode === m.id}
+                    onClick={() => applyMode(m.id)}
+                    className={classes(cl("pin"), current === m.id && cl("on"), showLabels && cl("labeled"))}
                     aria-label={m.label}
                 />
             ))}
-        </Flex>
+        </div>
     );
 }
 
@@ -105,6 +124,11 @@ export default definePlugin({
     enabledByDefault: true,
     settings,
     managedStyle: "compactModeSelect",
+    startAt: StartAt.TurbopackReady,
+
+    start() {
+        void ModesStore.useModesStore.getState().ensureLoaded();
+    },
 
     renderPinned: ErrorBoundary.wrap(PinnedModes),
 
