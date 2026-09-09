@@ -7,7 +7,7 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { Button, ButtonWithTooltip, ChatBarButton, Flex, SettingsDescription, SettingsTitle, Switch } from "@components";
+import { ButtonWithTooltip, ChatBarButton, Flex, SettingsDescription, SettingsTitle, Switch } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { AutoModeIcon, BuildModeIcon, ChevronDownIcon, ChevronUpIcon, ConnectedAppsIcon, FastModeIcon, GripVerticalIcon, LightbulbIcon, Minimize2Icon } from "@components/icons";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
@@ -51,7 +51,7 @@ const MENU_ROOT_SEL = [
 ].join(", ");
 const TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
 const PICK_MS = 900;
-const POINTER: PointerEventInit = { bubbles: true, cancelable: true, pointerId: 99, pointerType: "mouse", button: 0 };
+const POINTER: PointerEventInit = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
 const GHOST_STYLE = { opacity: "0", visibility: "hidden" } as const;
 
 const settings = definePluginSettings({
@@ -131,21 +131,18 @@ function notifyTips() {
     for (const fn of tipListeners) fn();
 }
 
-function onDocPointerOut(e: PointerEvent) {
-    if (!tipLock || picking || !e.isTrusted) return;
-    const from = e.target;
-    if (!(from instanceof Element) || !from.closest(".query-bar .void-cms-pin")) return;
-    const to = e.relatedTarget;
-    if (to instanceof Element && to.closest(".query-bar .void-cms-pin")) return;
+function onDocPointerOver(e: PointerEvent) {
+    if (!tipLock || picking) return;
+    const el = e.target;
+    if (el instanceof Element && el.closest(".query-bar .void-cms-pin")) return;
     setTipLock(false);
 }
 
 function setTipLock(on: boolean) {
     if (tipLock === on) return;
     tipLock = on;
-    document.documentElement.classList.toggle("void-cms-tiplock", on);
-    if (on) document.addEventListener("pointerout", onDocPointerOut, true);
-    else document.removeEventListener("pointerout", onDocPointerOut, true);
+    if (on) document.addEventListener("pointerover", onDocPointerOver);
+    else document.removeEventListener("pointerover", onDocPointerOver);
     notifyTips();
 }
 
@@ -168,6 +165,7 @@ function setPicking(on: boolean) {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
     if (on) {
+        setTipLock(true);
         cloakWatch ??= new MutationObserver(onCloakMutations);
         cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
         return;
@@ -176,6 +174,7 @@ function setPicking(on: boolean) {
     cloakWatch = null;
     document.documentElement.classList.remove("void-cms-picked");
     uncloak();
+    if (!document.querySelector(".query-bar .void-cms-pin:hover")) setTipLock(false);
 }
 
 function notifyHarvest() {
@@ -316,7 +315,6 @@ function clickEl(el: HTMLElement) {
     el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
     el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
-    el.blur();
 }
 
 function paintCurrent(el: Element) {
@@ -565,36 +563,17 @@ function PinnedModes() {
 
     return (
         <div className={classes(cl("pins"), hideNative && cl("hide-native"))}>
-            {items.map(m => {
-                const cls = classes(cl("pin"), selectedModeId === m.id && cl("on"), showLabels && cl("labeled"));
-                const icon = <PinGlyph id={m.id} Icon={m.Icon} label={m.label} showLabels={showLabels} />;
-                if (hideTip) {
-                    return (
-                        <Button
-                            key={m.id}
-                            variant="tertiary"
-                            size="sm"
-                            shape="circle"
-                            className={cls}
-                            onClick={onPin(m.id)}
-                            aria-label={m.label}
-                        >
-                            {icon}
-                        </Button>
-                    );
-                }
-                return (
-                    <ChatBarButton
-                        key={m.id}
-                        size="sm"
-                        icon={icon}
-                        tooltip={m.label}
-                        onClick={onPin(m.id)}
-                        className={cls}
-                        aria-label={m.label}
-                    />
-                );
-            })}
+            {items.map(m => (
+                <ChatBarButton
+                    key={m.id}
+                    size="sm"
+                    icon={<PinGlyph id={m.id} Icon={m.Icon} label={m.label} showLabels={showLabels} />}
+                    tooltip={hideTip ? undefined : m.label}
+                    onClick={onPin(m.id)}
+                    className={classes(cl("pin"), selectedModeId === m.id && cl("on"), showLabels && cl("labeled"))}
+                    aria-label={m.label}
+                />
+            ))}
         </div>
     );
 }
