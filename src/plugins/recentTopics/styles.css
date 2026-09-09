@@ -77,12 +77,10 @@ html.void-rt-open [data-sidebar="gap"] {
     overflow: auto hidden;
     scrollbar-width: none;
     color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l1) / 92%);
+    background: hsl(var(--surface-l2));
     border: 1px solid hsl(var(--border-l1));
     border-radius: var(--void-rt-radius-panel);
     box-shadow: 0 4px 16px hsl(var(--black) / 12%);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     padding: var(--void-rt-padding-panel);
     pointer-events: auto;
     opacity: 0;
