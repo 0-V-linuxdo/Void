@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.16] v1.0.0
+// @version      [20260909.17] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.16] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.17] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -7019,9 +7019,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.16] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"dbcd4aa"}`
-    }, `(${"dbcd4aa"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.17] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"a6fca1a"}`
+    }, `(${"a6fca1a"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15903,6 +15903,10 @@ html.void-cms-picking .query-bar [data-query-bar-mode-select] {
     pointer-events: auto !important;
 }
 
+html.void-cms-tiplock [role="tooltip"],
+html.void-cms-tiplock [data-radix-tooltip-content],
+html.void-cms-tiplock [data-radix-popper-content-wrapper]:has([role="tooltip"]),
+html.void-cms-tiplock [data-radix-popper-content-wrapper]:has([data-radix-tooltip-content]),
 html.void-cms-picking [role="tooltip"],
 html.void-cms-picking [data-radix-tooltip-content] {
     display: none !important;
@@ -16008,7 +16012,7 @@ html.void-cms-picked .void-cms-ghost {
   ].join(", ");
   var TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
   var PICK_MS = 900;
-  var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
+  var POINTER = { bubbles: true, cancelable: true, pointerId: 99, pointerType: "mouse", button: 0 };
   var GHOST_STYLE = { opacity: "0", visibility: "hidden" };
   var settings24 = definePluginSettings({
     pinList: {
@@ -16084,11 +16088,14 @@ html.void-cms-picked .void-cms-ghost {
     for (const fn of tipListeners)
       fn();
   }
-  function onDocPointerOver(e) {
-    if (!tipLock || picking)
+  function onDocPointerOut(e) {
+    if (!tipLock || picking || !e.isTrusted)
       return;
-    const el = e.target;
-    if (el instanceof Element && el.closest(".query-bar .void-cms-pin"))
+    const from = e.target;
+    if (!(from instanceof Element) || !from.closest(".query-bar .void-cms-pin"))
+      return;
+    const to = e.relatedTarget;
+    if (to instanceof Element && to.closest(".query-bar .void-cms-pin"))
       return;
     setTipLock(false);
   }
@@ -16096,10 +16103,11 @@ html.void-cms-picked .void-cms-ghost {
     if (tipLock === on)
       return;
     tipLock = on;
+    document.documentElement.classList.toggle("void-cms-tiplock", on);
     if (on)
-      document.addEventListener("pointerover", onDocPointerOver);
+      document.addEventListener("pointerout", onDocPointerOut, true);
     else
-      document.removeEventListener("pointerover", onDocPointerOver);
+      document.removeEventListener("pointerout", onDocPointerOut, true);
     notifyTips();
   }
   function subscribeTips(fn) {
@@ -16118,7 +16126,6 @@ html.void-cms-picked .void-cms-ghost {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
     if (on) {
-      setTipLock(true);
       cloakWatch ??= new MutationObserver(onCloakMutations);
       cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
       return;
@@ -16127,8 +16134,6 @@ html.void-cms-picked .void-cms-ghost {
     cloakWatch = null;
     document.documentElement.classList.remove("void-cms-picked");
     uncloak();
-    if (!document.querySelector(".query-bar .void-cms-pin:hover"))
-      setTipLock(false);
   }
   function notifyHarvest() {
     for (const fn of harvestListeners)
@@ -16264,6 +16269,7 @@ html.void-cms-picked .void-cms-ghost {
     el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
     el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
+    el.blur();
   }
   function paintCurrent(el) {
     for (const attr of ["fill", "stroke"]) {
@@ -16500,20 +16506,35 @@ html.void-cms-picked .void-cms-ghost {
     };
     return /* @__PURE__ */ React.createElement("div", {
       className: classes(cl25("pins"), hideNative && cl25("hide-native"))
-    }, items.map((m) => /* @__PURE__ */ React.createElement(ChatBarButton, {
-      key: m.id,
-      size: "sm",
-      icon: /* @__PURE__ */ React.createElement(PinGlyph, {
+    }, items.map((m) => {
+      const cls = classes(cl25("pin"), selectedModeId === m.id && cl25("on"), showLabels && cl25("labeled"));
+      const icon = /* @__PURE__ */ React.createElement(PinGlyph, {
         id: m.id,
         Icon: m.Icon,
         label: m.label,
         showLabels
-      }),
-      tooltip: hideTip ? undefined : m.label,
-      onClick: onPin(m.id),
-      className: classes(cl25("pin"), selectedModeId === m.id && cl25("on"), showLabels && cl25("labeled")),
-      "aria-label": m.label
-    })));
+      });
+      if (hideTip) {
+        return /* @__PURE__ */ React.createElement(Button, {
+          key: m.id,
+          variant: "tertiary",
+          size: "sm",
+          shape: "circle",
+          className: cls,
+          onClick: onPin(m.id),
+          "aria-label": m.label
+        }, icon);
+      }
+      return /* @__PURE__ */ React.createElement(ChatBarButton, {
+        key: m.id,
+        size: "sm",
+        icon,
+        tooltip: m.label,
+        onClick: onPin(m.id),
+        className: cls,
+        "aria-label": m.label
+      });
+    }));
   }
   var compactModeSelect_default = definePlugin({
     name: "CompactModeSelect",
