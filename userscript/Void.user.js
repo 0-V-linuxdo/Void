@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.13] v1.0.0
+// @version      [20260909.14] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.13] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.14] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -7019,9 +7019,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.13] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"2087319"}`
-    }, `(${"2087319"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.14] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"7d65602"}`
+    }, `(${"7d65602"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15903,30 +15903,12 @@ html.void-cms-picking .query-bar [data-query-bar-mode-select] {
     pointer-events: auto !important;
 }
 
-html.void-cms-picking [data-radix-popper-content-wrapper],
-html.void-cms-picking [data-radix-menu-content],
-html.void-cms-picking [data-radix-dropdown-menu-content],
-html.void-cms-picking [data-radix-select-content],
-html.void-cms-picking [data-radix-popover-content],
-html.void-cms-picking [role="menu"],
-html.void-cms-picking [role="listbox"] {
-    opacity: 0 !important;
-    visibility: hidden !important;
-}
-
 .void-cms-ghost {
     opacity: 0 !important;
     visibility: hidden !important;
 }
 
-html.void-cms-picked .void-cms-ghost,
-html.void-cms-picked [data-radix-popper-content-wrapper],
-html.void-cms-picked [data-radix-menu-content],
-html.void-cms-picked [data-radix-dropdown-menu-content],
-html.void-cms-picked [data-radix-select-content],
-html.void-cms-picked [data-radix-popover-content],
-html.void-cms-picked [role="menu"],
-html.void-cms-picked [role="listbox"] {
+html.void-cms-picked .void-cms-ghost {
     pointer-events: none !important;
 }
 
@@ -16095,6 +16077,7 @@ html.void-cms-picked [role="listbox"] {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
     if (on) {
+      dismissPinTips();
       cloakWatch ??= new MutationObserver(onCloakMutations);
       cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
       return;
@@ -16238,6 +16221,14 @@ html.void-cms-picked [role="listbox"] {
     el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
     el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
+  }
+  function dismissPinTips(el) {
+    const pins = el instanceof HTMLElement ? [el] : [...document.querySelectorAll(".query-bar .void-cms-pin")];
+    for (const pin of pins) {
+      pin.blur();
+      pin.dispatchEvent(new PointerEvent("pointerout", POINTER));
+      pin.dispatchEvent(new PointerEvent("pointerleave", POINTER));
+    }
   }
   function paintCurrent(el) {
     for (const attr of ["fill", "stroke"]) {
@@ -16468,6 +16459,7 @@ html.void-cms-picked [role="listbox"] {
     const onPin = (id) => (e) => {
       e.preventDefault();
       e.stopPropagation();
+      dismissPinTips(e.currentTarget);
       selectMode(id);
     };
     return /* @__PURE__ */ React.createElement("div", {

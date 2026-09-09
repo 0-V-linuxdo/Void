@@ -129,6 +129,7 @@ function setPicking(on: boolean) {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
     if (on) {
+        dismissPinTips();
         cloakWatch ??= new MutationObserver(onCloakMutations);
         cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
         return;
@@ -277,6 +278,17 @@ function clickEl(el: HTMLElement) {
     el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
     el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
+}
+
+function dismissPinTips(el?: EventTarget | null) {
+    const pins = el instanceof HTMLElement
+        ? [el]
+        : [...document.querySelectorAll<HTMLElement>(".query-bar .void-cms-pin")];
+    for (const pin of pins) {
+        pin.blur();
+        pin.dispatchEvent(new PointerEvent("pointerout", POINTER));
+        pin.dispatchEvent(new PointerEvent("pointerleave", POINTER));
+    }
 }
 
 function paintCurrent(el: Element) {
@@ -518,6 +530,7 @@ function PinnedModes() {
     const onPin = (id: string) => (e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        dismissPinTips(e.currentTarget);
         void selectMode(id);
     };
 
