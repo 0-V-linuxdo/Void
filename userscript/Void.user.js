@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.5] v1.0.0
+// @version      [20260909.6] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.5] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.6] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6976,9 +6976,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.5] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"0b4ef3c"}`
-    }, `(${"0b4ef3c"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.6] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"07825a9"}`
+    }, `(${"07825a9"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15841,6 +15841,10 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     letter-spacing: 0;
 }
 
+html.void-cms-picking .query-bar [data-query-bar-mode-select] {
+    pointer-events: auto !important;
+}
+
 html.void-cms-picking [role="menu"],
 html.void-cms-picking [role="listbox"],
 html.void-cms-picking [data-radix-popper-content-wrapper] {
@@ -15877,8 +15881,10 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
   var PIN_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m.pin]));
   var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"];
   var ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
+  var MENU_ROOT_SEL = "[data-radix-popper-content-wrapper], [data-radix-menu-content], [role='menu'], [role='listbox']";
   var TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
   var PICK_MS = 900;
+  var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
   var settings24 = definePluginSettings({
     pinAuto: {
       type: 3 /* BOOLEAN */,
@@ -15911,7 +15917,6 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
       default: false
     }
   });
-  var nativeHandlers = new Map;
   var picking = false;
   function setPicking(on) {
     picking = on;
@@ -15929,41 +15934,18 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     const hay = itemText(el);
     if (!hay)
       return false;
-    return titlesFor(id).some((t) => hay === t || hay.startsWith(`${t} `) || hay.includes(t));
+    return titlesFor(id).some((t) => hay === t || hay.startsWith(`${t} `));
   }
-  function fiberHandler(node) {
-    const propsKey = Object.keys(node).find((k) => k.startsWith("__reactProps$"));
-    if (propsKey) {
-      const props = node[propsKey];
-      if (typeof props?.onClick === "function")
-        return props.onClick;
-      if (typeof props?.onSelect === "function")
-        return props.onSelect;
-    }
-    const fiberKey = Object.keys(node).find((k) => k.startsWith("__reactFiber$"));
-    let fiber = fiberKey ? node[fiberKey] : undefined;
-    for (let i = 0;i < 8 && fiber; i++) {
-      const props = fiber.memoizedProps ?? fiber.pendingProps;
-      if (typeof props?.onClick === "function")
-        return props.onClick;
-      if (typeof props?.onSelect === "function")
-        return props.onSelect;
-      fiber = fiber.return;
-    }
-    return;
-  }
-  function harvest(items) {
-    for (const el of items) {
-      const mode = MODES.find((m) => matchItem(el, m.id));
-      if (!mode)
-        continue;
-      const fn = fiberHandler(el);
-      if (fn)
-        nativeHandlers.set(mode.id, fn);
-    }
+  function isModeMenu(items) {
+    return items.filter((el) => MODES.some((m) => matchItem(el, m.id))).length >= 2;
   }
   function menuItems() {
-    return [...document.querySelectorAll(ITEM_SEL)];
+    for (const root of document.querySelectorAll(MENU_ROOT_SEL)) {
+      const items = [...root.querySelectorAll(ITEM_SEL)];
+      if (isModeMenu(items))
+        return items;
+    }
+    return [];
   }
   function waitForItems() {
     const start = performance.now();
@@ -15987,59 +15969,41 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     return document.querySelector(TRIGGER_SEL);
   }
   function clickEl(el) {
-    const opts = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
-    el.dispatchEvent(new PointerEvent("pointerdown", opts));
-    el.dispatchEvent(new PointerEvent("pointerup", opts));
+    el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
+    el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
-  }
-  async function clickNativeItem(id) {
-    const trigger = nativeTrigger();
-    if (!trigger) {
-      logger29.warn("Native mode selector not found");
-      return;
-    }
-    setPicking(true);
-    try {
-      let items = menuItems();
-      if (!items.length) {
-        clickEl(trigger);
-        items = await waitForItems();
-      }
-      harvest(items);
-      const item = items.find((el) => matchItem(el, id));
-      if (!item) {
-        logger29.warn("Native mode item not found:", id);
-        if (menuItems().length)
-          clickEl(trigger);
-        return;
-      }
-      clickEl(item);
-    } finally {
-      setPicking(false);
-    }
   }
   async function selectMode(id) {
     if (picking)
       return;
-    await ModesStore.useModesStore.getState().ensureLoaded();
-    const cached = nativeHandlers.get(id);
-    if (cached) {
-      try {
-        cached();
-        return;
-      } catch (e) {
-        logger29.warn("Native handler failed, opening menu:", e);
-        nativeHandlers.delete(id);
+    setPicking(true);
+    try {
+      await ModesStore.useModesStore.getState().ensureLoaded();
+      let items = menuItems();
+      if (!items.length) {
+        const trigger = nativeTrigger();
+        if (!trigger) {
+          logger29.warn("Native mode selector not found");
+          return;
+        }
+        clickEl(trigger);
+        items = await waitForItems();
       }
+      const item = items.find((el) => matchItem(el, id));
+      if (!item) {
+        logger29.warn("Native mode item not found:", id);
+        const open = menuItems();
+        const trigger = nativeTrigger();
+        if (open.length && trigger)
+          clickEl(trigger);
+        return;
+      }
+      clickEl(item);
+    } catch (e) {
+      logger29.warn("Failed to select mode:", e);
+    } finally {
+      setPicking(false);
     }
-    await clickNativeItem(id);
-  }
-  function wrapModeSelect(ModeSelect) {
-    function VoidModeSelect(props) {
-      return React.createElement(ModeSelect, props);
-    }
-    VoidModeSelect.displayName = "VoidModeSelect";
-    return VoidModeSelect;
   }
   function PinnedModes() {
     const cfg = settings24.use([...SETTING_KEYS]);
@@ -16088,10 +16052,8 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
       ModesStore.useModesStore.getState().ensureLoaded();
     },
     stop() {
-      nativeHandlers.clear();
       setPicking(false);
     },
-    wrapModeSelect,
     renderPinned: ErrorBoundary.wrap(PinnedModes),
     patches: [
       {
@@ -16101,7 +16063,7 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
         replacement: [
           {
             match: /ModeSelect,\{compact:\i\|\|\i,/,
-            replace: "$self.wrapModeSelect(ModeSelect),{compact:!0,"
+            replace: "ModeSelect,{compact:!0,"
           },
           {
             match: /\},"mode-select"\),/,

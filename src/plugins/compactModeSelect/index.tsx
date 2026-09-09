@@ -17,7 +17,7 @@ import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
-import type { ComponentType, MouseEvent } from "react";
+import type { MouseEvent } from "react";
 
 const logger = new Logger("CompactModeSelect");
 const cl = classNameFactory("void-cms-");
@@ -35,8 +35,10 @@ const PIN_BY_ID: Record<string, (typeof MODES)[number]["pin"]> = Object.fromEntr
 const SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"] as const;
 
 const ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
+const MENU_ROOT_SEL = "[data-radix-popper-content-wrapper], [data-radix-menu-content], [role='menu'], [role='listbox']";
 const TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
 const PICK_MS = 900;
+const POINTER: PointerEventInit = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
 
 const settings = definePluginSettings({
     pinAuto: {
@@ -71,7 +73,6 @@ const settings = definePluginSettings({
     },
 });
 
-const nativeHandlers = new Map<string, () => void>();
 let picking = false;
 
 function setPicking(on: boolean) {
@@ -92,47 +93,19 @@ function titlesFor(id: string) {
 function matchItem(el: Element, id: string) {
     const hay = itemText(el);
     if (!hay) return false;
-    return titlesFor(id).some(t => hay === t || hay.startsWith(`${t} `) || hay.includes(t));
+    return titlesFor(id).some(t => hay === t || hay.startsWith(`${t} `));
 }
 
-type FiberNode = {
-    memoizedProps?: { onClick?: unknown; onSelect?: unknown; };
-    pendingProps?: { onClick?: unknown; onSelect?: unknown; };
-    return?: FiberNode;
-};
-
-function fiberHandler(node: Element): (() => void) | undefined {
-    const propsKey = Object.keys(node).find(k => k.startsWith("__reactProps$"));
-    if (propsKey) {
-        const props = (node as unknown as Record<string, FiberNode["memoizedProps"]>)[propsKey];
-        if (typeof props?.onClick === "function") return props.onClick as () => void;
-        if (typeof props?.onSelect === "function") return props.onSelect as () => void;
-    }
-
-    const fiberKey = Object.keys(node).find(k => k.startsWith("__reactFiber$"));
-    let fiber = fiberKey ? (node as unknown as Record<string, FiberNode>)[fiberKey] : undefined;
-
-    for (let i = 0; i < 8 && fiber; i++) {
-        const props = fiber.memoizedProps ?? fiber.pendingProps;
-        if (typeof props?.onClick === "function") return props.onClick as () => void;
-        if (typeof props?.onSelect === "function") return props.onSelect as () => void;
-        fiber = fiber.return;
-    }
-
-    return;
+function isModeMenu(items: HTMLElement[]) {
+    return items.filter(el => MODES.some(m => matchItem(el, m.id))).length >= 2;
 }
 
-function harvest(items: HTMLElement[]) {
-    for (const el of items) {
-        const mode = MODES.find(m => matchItem(el, m.id));
-        if (!mode) continue;
-        const fn = fiberHandler(el);
-        if (fn) nativeHandlers.set(mode.id, fn);
+function menuItems(): HTMLElement[] {
+    for (const root of document.querySelectorAll(MENU_ROOT_SEL)) {
+        const items = [...root.querySelectorAll<HTMLElement>(ITEM_SEL)];
+        if (isModeMenu(items)) return items;
     }
-}
-
-function menuItems() {
-    return [...document.querySelectorAll<HTMLElement>(ITEM_SEL)];
+    return [];
 }
 
 function waitForItems() {
@@ -159,64 +132,42 @@ function nativeTrigger() {
 }
 
 function clickEl(el: HTMLElement) {
-    const opts: PointerEventInit = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
-    el.dispatchEvent(new PointerEvent("pointerdown", opts));
-    el.dispatchEvent(new PointerEvent("pointerup", opts));
+    el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
+    el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
-}
-
-async function clickNativeItem(id: string) {
-    const trigger = nativeTrigger();
-    if (!trigger) {
-        logger.warn("Native mode selector not found");
-        return;
-    }
-
-    setPicking(true);
-    try {
-        let items = menuItems();
-        if (!items.length) {
-            clickEl(trigger);
-            items = await waitForItems();
-        }
-        harvest(items);
-
-        const item = items.find(el => matchItem(el, id));
-        if (!item) {
-            logger.warn("Native mode item not found:", id);
-            if (menuItems().length) clickEl(trigger);
-            return;
-        }
-        clickEl(item);
-    } finally {
-        setPicking(false);
-    }
 }
 
 async function selectMode(id: string) {
     if (picking) return;
-    await ModesStore.useModesStore.getState().ensureLoaded();
+    setPicking(true);
+    try {
+        await ModesStore.useModesStore.getState().ensureLoaded();
 
-    const cached = nativeHandlers.get(id);
-    if (cached) {
-        try {
-            cached();
-            return;
-        } catch (e) {
-            logger.warn("Native handler failed, opening menu:", e);
-            nativeHandlers.delete(id);
+        let items = menuItems();
+        if (!items.length) {
+            const trigger = nativeTrigger();
+            if (!trigger) {
+                logger.warn("Native mode selector not found");
+                return;
+            }
+            clickEl(trigger);
+            items = await waitForItems();
         }
-    }
 
-    await clickNativeItem(id);
-}
-
-function wrapModeSelect(ModeSelect: ComponentType<Record<string, unknown>>) {
-    function VoidModeSelect(props: Record<string, unknown>) {
-        return React.createElement(ModeSelect, props);
+        const item = items.find(el => matchItem(el, id));
+        if (!item) {
+            logger.warn("Native mode item not found:", id);
+            const open = menuItems();
+            const trigger = nativeTrigger();
+            if (open.length && trigger) clickEl(trigger);
+            return;
+        }
+        clickEl(item);
+    } catch (e) {
+        logger.warn("Failed to select mode:", e);
+    } finally {
+        setPicking(false);
     }
-    VoidModeSelect.displayName = "VoidModeSelect";
-    return VoidModeSelect;
 }
 
 function PinnedModes() {
@@ -276,11 +227,9 @@ export default definePlugin({
     },
 
     stop() {
-        nativeHandlers.clear();
         setPicking(false);
     },
 
-    wrapModeSelect,
     renderPinned: ErrorBoundary.wrap(PinnedModes),
 
     patches: [
@@ -291,7 +240,7 @@ export default definePlugin({
             replacement: [
                 {
                     match: /ModeSelect,\{compact:\i\|\|\i,/,
-                    replace: "$self.wrapModeSelect(ModeSelect),{compact:!0,",
+                    replace: "ModeSelect,{compact:!0,",
                 },
                 {
                     match: /\},"mode-select"\),/,
