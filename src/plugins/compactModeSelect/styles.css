@@ -21,7 +21,6 @@
 }
 
 .query-bar .void-cms-on {
-    color: hsl(var(--fg-primary));
     background: transparent !important;
     box-shadow: none !important;
 }
