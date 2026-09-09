@@ -10,18 +10,20 @@ import { definePluginSettings } from "@api/Settings";
 import { ChatBarButton } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { HammerIcon, LayoutGridIcon, LightbulbIcon, Minimize2Icon, RocketIcon, ZapIcon } from "@components/icons";
-import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React } from "@turbopack/common/react";
 import { ChatPageStore, ModesStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
+import { createExternalStore } from "@utils/misc";
+import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 
 const logger = new Logger("CompactModeSelect");
 const cl = classNameFactory("void-cms-");
-const SELECTED_KEY = "modes-selected-id";
+const CHAT_POST = /\/rest\/app-chat\/conversations\/(?:new|[^/?#]+\/responses)(?:[/?#]|$)/;
+const MODEL_MODES = new Set(["auto", "fast", "expert", "heavy"]);
 
 const MODES = [
     { id: "auto", pin: "pinAuto", label: "Auto", Icon: RocketIcon },
@@ -68,24 +70,101 @@ const settings = definePluginSettings({
     },
 });
 
-function applyMode(id: string) {
-    ModesStore.useModesStore.getState().setSelectedModeId(id);
+const pendingStore = createExternalStore();
+let pendingModeId: string | undefined;
+let origFetch: typeof fetch | undefined;
+let fetchHost: { fetch: typeof fetch } | undefined;
+let unsubModes: (() => void) | undefined;
+
+function setPending(id: string) {
+    if (pendingModeId === id) return;
+    pendingModeId = id;
+    pendingStore.notify();
+}
+
+function syncUrl(id: string) {
     try {
-        localStorage.setItem(SELECTED_KEY, id);
+        const url = new URL(location.href);
+        if (url.searchParams.get("mode") === id) return;
+        url.searchParams.set("mode", id);
+        history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
     } catch (e) {
-        logger.warn("Failed to persist mode:", e);
+        logger.warn("Failed to sync mode URL:", e);
     }
-    if (id !== "build") ChatPageStore.useChatPageStore.getState().setModelMode(id);
+}
+
+function applyNativeMode(id: string) {
+    setPending(id);
+    ModesStore.useModesStore.getState().setSelectedModeId(id);
+    if (MODEL_MODES.has(id)) ChatPageStore.useChatPageStore.getState().setModelMode(id);
+    syncUrl(id);
+}
+
+function rewriteBody(body: string, id: string): string | undefined {
+    try {
+        const payload = JSON.parse(body);
+        if (payload == null || typeof payload !== "object" || Array.isArray(payload)) return;
+        if (payload.modeId === id) return;
+        payload.modeId = id;
+        return JSON.stringify(payload);
+    } catch (e) {
+        logger.warn("Failed to rewrite chat payload:", e);
+    }
+}
+
+function requestUrl(input: RequestInfo | URL): string {
+    if (typeof input === "string") return input;
+    if (input instanceof URL) return input.href;
+    return input.url;
+}
+
+function patchedFetch(this: unknown, input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+    const fetchFn = origFetch;
+    const id = pendingModeId;
+    if (!id || !fetchFn) return (fetchFn ?? fetch).call(this, input, init);
+
+    const url = requestUrl(input);
+    const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
+    if (method !== "POST" || !CHAT_POST.test(url)) return fetchFn.call(this, input, init);
+
+    const raw = init?.body;
+    if (typeof raw === "string") {
+        const next = rewriteBody(raw, id);
+        return next == null ? fetchFn.call(this, input, init) : fetchFn.call(this, input, { ...init, body: next });
+    }
+
+    if (input instanceof Request && init?.body == null) {
+        return input.clone().text().then(text => {
+            const next = rewriteBody(text, id);
+            if (next == null) return fetchFn.call(this, input, init);
+            return fetchFn.call(this, new Request(input, { body: next, method: "POST" }), init);
+        });
+    }
+
+    return fetchFn.call(this, input, init);
+}
+
+function hookFetch() {
+    const page = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+    origFetch = page.fetch;
+    fetchHost = page;
+    page.fetch = patchedFetch as typeof fetch;
+}
+
+function unhookFetch() {
+    if (origFetch && fetchHost) fetchHost.fetch = origFetch;
+    origFetch = undefined;
+    fetchHost = undefined;
 }
 
 function PinnedModes() {
+    useExternalStore(pendingStore);
     const cfg = settings.use([...SETTING_KEYS]);
     const selectedModeId = ModesStore.useModesStore((s: ModesStoreState) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s: ModesStoreState) => s.modes);
-    const modelMode = ChatPageStore.useChatPageStore((s: ChatPageStoreState) => s.modelMode);
-    const current = selectedModeId || modelMode;
+    const current = pendingModeId ?? selectedModeId;
     const knownCatalog = catalog.filter(c => KNOWN_IDS.has(c.id));
-    const items = MODES.filter(m => cfg[m.pin] && (!knownCatalog.length || knownCatalog.some(c => c.id === m.id)));
+    const items = MODES.filter(m => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some(c => c.id === m.id)));
     if (!items.length) return null;
 
     const { showLabels } = cfg;
@@ -106,7 +185,7 @@ function PinnedModes() {
                         )
                         : <m.Icon size={18} />}
                     tooltip={m.label}
-                    onClick={() => applyMode(m.id)}
+                    onClick={() => applyNativeMode(m.id)}
                     className={classes(cl("pin"), current === m.id && cl("on"), showLabels && cl("labeled"))}
                     aria-label={m.label}
                 />
@@ -127,7 +206,19 @@ export default definePlugin({
     startAt: StartAt.TurbopackReady,
 
     start() {
-        void ModesStore.useModesStore.getState().ensureLoaded();
+        const modes = ModesStore.useModesStore.getState();
+        void modes.ensureLoaded();
+        if (modes.selectedModeId) setPending(modes.selectedModeId);
+        unsubModes = ModesStore.useModesStore.subscribe((s: ModesStoreState) => {
+            if (s.selectedModeId) setPending(s.selectedModeId);
+        });
+        hookFetch();
+    },
+
+    stop() {
+        unsubModes?.();
+        unsubModes = undefined;
+        unhookFetch();
     },
 
     renderPinned: ErrorBoundary.wrap(PinnedModes),
