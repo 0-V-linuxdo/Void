@@ -110,8 +110,10 @@ const settings = definePluginSettings({
 
 let picking = false;
 let harvesting = false;
+let tipLock = false;
 const harvested = new Map<string, string>();
 const harvestListeners = new Set<() => void>();
+const tipListeners = new Set<() => void>();
 const ghosts = new Set<HTMLElement>();
 let cloakWatch: MutationObserver | null = null;
 
@@ -125,11 +127,45 @@ function uncloak() {
     ghosts.clear();
 }
 
+function notifyTips() {
+    for (const fn of tipListeners) fn();
+}
+
+function onDocPointerOver(e: PointerEvent) {
+    if (!tipLock || picking) return;
+    const el = e.target;
+    if (el instanceof Element && el.closest(".query-bar .void-cms-pin")) return;
+    setTipLock(false);
+}
+
+function setTipLock(on: boolean) {
+    if (tipLock === on) return;
+    tipLock = on;
+    if (on) document.addEventListener("pointerover", onDocPointerOver);
+    else document.removeEventListener("pointerover", onDocPointerOver);
+    notifyTips();
+}
+
+function subscribeTips(fn: () => void) {
+    tipListeners.add(fn);
+    return () => {
+        tipListeners.delete(fn);
+    };
+}
+
+function getTipLock() {
+    return tipLock;
+}
+
+function useTipLock() {
+    return React.useSyncExternalStore(subscribeTips, getTipLock, getTipLock);
+}
+
 function setPicking(on: boolean) {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
     if (on) {
-        dismissPinTips();
+        setTipLock(true);
         cloakWatch ??= new MutationObserver(onCloakMutations);
         cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
         return;
@@ -138,6 +174,7 @@ function setPicking(on: boolean) {
     cloakWatch = null;
     document.documentElement.classList.remove("void-cms-picked");
     uncloak();
+    if (!document.querySelector(".query-bar .void-cms-pin:hover")) setTipLock(false);
 }
 
 function notifyHarvest() {
@@ -278,17 +315,6 @@ function clickEl(el: HTMLElement) {
     el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
     el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
-}
-
-function dismissPinTips(el?: EventTarget | null) {
-    const pins = el instanceof HTMLElement
-        ? [el]
-        : [...document.querySelectorAll<HTMLElement>(".query-bar .void-cms-pin")];
-    for (const pin of pins) {
-        pin.blur();
-        pin.dispatchEvent(new PointerEvent("pointerout", POINTER));
-        pin.dispatchEvent(new PointerEvent("pointerleave", POINTER));
-    }
 }
 
 function paintCurrent(el: Element) {
@@ -517,6 +543,7 @@ function PinnedModes() {
     const cfg = settings.use([...SETTING_KEYS]);
     const selectedModeId = ModesStore.useModesStore((s: ModesStoreState) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s: ModesStoreState) => s.modes);
+    const hideTip = useTipLock();
     const knownCatalog = catalog.filter(c => KNOWN_IDS.has(c.id));
     const items = parseOrder(cfg.pinOrder)
         .map(id => MODE_BY_ID[id])
@@ -530,7 +557,7 @@ function PinnedModes() {
     const onPin = (id: string) => (e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        dismissPinTips(e.currentTarget);
+        setTipLock(true);
         void selectMode(id);
     };
 
@@ -541,7 +568,7 @@ function PinnedModes() {
                     key={m.id}
                     size="sm"
                     icon={<PinGlyph id={m.id} Icon={m.Icon} label={m.label} showLabels={showLabels} />}
-                    tooltip={m.label}
+                    tooltip={hideTip ? undefined : m.label}
                     onClick={onPin(m.id)}
                     className={classes(cl("pin"), selectedModeId === m.id && cl("on"), showLabels && cl("labeled"))}
                     aria-label={m.label}
@@ -568,8 +595,10 @@ export default definePlugin({
 
     stop() {
         setPicking(false);
+        setTipLock(false);
         harvested.clear();
         harvestListeners.clear();
+        tipListeners.clear();
     },
 
     renderPinned: ErrorBoundary.wrap(PinnedModes),

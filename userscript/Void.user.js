@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.14] v1.0.0
+// @version      [20260909.15] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.14] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.15] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -7019,9 +7019,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.14] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"7d65602"}`
-    }, `(${"7d65602"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.15] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"5edc765"}`
+    }, `(${"5edc765"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15903,6 +15903,11 @@ html.void-cms-picking .query-bar [data-query-bar-mode-select] {
     pointer-events: auto !important;
 }
 
+html.void-cms-picking [role="tooltip"],
+html.void-cms-picking [data-radix-tooltip-content] {
+    display: none !important;
+}
+
 .void-cms-ghost {
     opacity: 0 !important;
     visibility: hidden !important;
@@ -16060,8 +16065,10 @@ html.void-cms-picked .void-cms-ghost {
   });
   var picking = false;
   var harvesting = false;
+  var tipLock = false;
   var harvested = new Map;
   var harvestListeners = new Set;
+  var tipListeners = new Set;
   var ghosts = new Set;
   var cloakWatch = null;
   function uncloak() {
@@ -16073,11 +16080,45 @@ html.void-cms-picked .void-cms-ghost {
     }
     ghosts.clear();
   }
+  function notifyTips() {
+    for (const fn of tipListeners)
+      fn();
+  }
+  function onDocPointerOver(e) {
+    if (!tipLock || picking)
+      return;
+    const el = e.target;
+    if (el instanceof Element && el.closest(".query-bar .void-cms-pin"))
+      return;
+    setTipLock(false);
+  }
+  function setTipLock(on) {
+    if (tipLock === on)
+      return;
+    tipLock = on;
+    if (on)
+      document.addEventListener("pointerover", onDocPointerOver);
+    else
+      document.removeEventListener("pointerover", onDocPointerOver);
+    notifyTips();
+  }
+  function subscribeTips(fn) {
+    tipListeners.add(fn);
+    return () => {
+      tipListeners.delete(fn);
+    };
+  }
+  function getTipLock() {
+    return tipLock;
+  }
+  function useTipLock() {
+    return React.useSyncExternalStore(subscribeTips, getTipLock, getTipLock);
+  }
   function setPicking(on) {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
     if (on) {
-      dismissPinTips();
+      setTipLock(true);
       cloakWatch ??= new MutationObserver(onCloakMutations);
       cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
       return;
@@ -16086,6 +16127,8 @@ html.void-cms-picked .void-cms-ghost {
     cloakWatch = null;
     document.documentElement.classList.remove("void-cms-picked");
     uncloak();
+    if (!document.querySelector(".query-bar .void-cms-pin:hover"))
+      setTipLock(false);
   }
   function notifyHarvest() {
     for (const fn of harvestListeners)
@@ -16221,14 +16264,6 @@ html.void-cms-picked .void-cms-ghost {
     el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
     el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
-  }
-  function dismissPinTips(el) {
-    const pins = el instanceof HTMLElement ? [el] : [...document.querySelectorAll(".query-bar .void-cms-pin")];
-    for (const pin of pins) {
-      pin.blur();
-      pin.dispatchEvent(new PointerEvent("pointerout", POINTER));
-      pin.dispatchEvent(new PointerEvent("pointerleave", POINTER));
-    }
   }
   function paintCurrent(el) {
     for (const attr of ["fill", "stroke"]) {
@@ -16449,6 +16484,7 @@ html.void-cms-picked .void-cms-ghost {
     const cfg = settings24.use([...SETTING_KEYS]);
     const selectedModeId = ModesStore.useModesStore((s) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s) => s.modes);
+    const hideTip = useTipLock();
     const knownCatalog = catalog.filter((c) => KNOWN_IDS.has(c.id));
     const items = parseOrder(cfg.pinOrder).map((id) => MODE_BY_ID[id]).filter((m) => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some((c) => c.id === m.id)));
     if (!items.length)
@@ -16459,7 +16495,7 @@ html.void-cms-picked .void-cms-ghost {
     const onPin = (id) => (e) => {
       e.preventDefault();
       e.stopPropagation();
-      dismissPinTips(e.currentTarget);
+      setTipLock(true);
       selectMode(id);
     };
     return /* @__PURE__ */ React.createElement("div", {
@@ -16473,7 +16509,7 @@ html.void-cms-picked .void-cms-ghost {
         label: m.label,
         showLabels
       }),
-      tooltip: m.label,
+      tooltip: hideTip ? undefined : m.label,
       onClick: onPin(m.id),
       className: classes(cl25("pin"), selectedModeId === m.id && cl25("on"), showLabels && cl25("labeled")),
       "aria-label": m.label
@@ -16494,8 +16530,10 @@ html.void-cms-picked .void-cms-ghost {
     },
     stop() {
       setPicking(false);
+      setTipLock(false);
       harvested.clear();
       harvestListeners.clear();
+      tipListeners.clear();
     },
     renderPinned: ErrorBoundary.wrap(PinnedModes),
     patches: [
