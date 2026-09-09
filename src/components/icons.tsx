@@ -151,6 +151,16 @@ export const EllipsisHorizontal = (props: IconProps = {}) =>
         <circle cx="19" cy="12" r="1" />,
     );
 
+export const GripVerticalIcon = (props: IconProps = {}) =>
+    svg(props,
+        <circle cx="9" cy="12" r="1" />,
+        <circle cx="9" cy="5" r="1" />,
+        <circle cx="9" cy="19" r="1" />,
+        <circle cx="15" cy="12" r="1" />,
+        <circle cx="15" cy="5" r="1" />,
+        <circle cx="15" cy="19" r="1" />,
+    );
+
 export const PinIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M12 17v5" />,
@@ -429,6 +439,16 @@ export const ChevronLeftIcon = (props: IconProps = {}) =>
 export const ChevronRightIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="m9 18 6-6-6-6" />,
+    );
+
+export const ChevronUpIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="m18 15-6-6-6 6" />,
+    );
+
+export const ChevronDownIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="m6 9 6 6 6-6" />,
     );
 
 export const HistoryIcon = (props: IconProps = {}) =>

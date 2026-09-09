@@ -7,9 +7,9 @@
 import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { ChatBarButton } from "@components";
+import { ButtonWithTooltip, ChatBarButton, Flex, SettingsDescription, SettingsTitle, Switch } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { AutoModeIcon, BuildModeIcon, ConnectedAppsIcon, FastModeIcon, LightbulbIcon, Minimize2Icon } from "@components/icons";
+import { AutoModeIcon, BuildModeIcon, ChevronDownIcon, ChevronUpIcon, ConnectedAppsIcon, FastModeIcon, GripVerticalIcon, LightbulbIcon, Minimize2Icon } from "@components/icons";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React } from "@turbopack/common/react";
 import { ModesStore } from "@turbopack/common/stores";
@@ -17,7 +17,7 @@ import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
-import type { MouseEvent } from "react";
+import type { DragEvent, MouseEvent } from "react";
 
 const logger = new Logger("CompactModeSelect");
 const cl = classNameFactory("void-cms-");
@@ -30,9 +30,14 @@ const MODES = [
     { id: "build", pin: "pinBuild", label: "Build", Icon: BuildModeIcon },
 ] as const;
 
+type ModeId = (typeof MODES)[number]["id"];
+type PinKey = (typeof MODES)[number]["pin"];
+
 const KNOWN_IDS = new Set<string>(MODES.map(m => m.id));
-const PIN_BY_ID: Record<string, (typeof MODES)[number]["pin"]> = Object.fromEntries(MODES.map(m => [m.id, m.pin]));
-const SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"] as const;
+const PIN_BY_ID: Record<string, PinKey> = Object.fromEntries(MODES.map(m => [m.id, m.pin]));
+const MODE_BY_ID = Object.fromEntries(MODES.map(m => [m.id, m])) as Record<ModeId, (typeof MODES)[number]>;
+const DEFAULT_PIN_ORDER = "heavy,build";
+const SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels", "hideNativeTrigger", "pinOrder"] as const;
 
 const ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
 const MENU_ROOT_SEL = "[data-radix-popper-content-wrapper], [data-radix-menu-content], [role='menu'], [role='listbox']";
@@ -41,35 +46,56 @@ const PICK_MS = 900;
 const POINTER: PointerEventInit = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
 
 const settings = definePluginSettings({
-    pinAuto: {
-        type: OptionType.BOOLEAN,
-        description: "Pin Auto next to the compact selector.",
-        default: false,
+    pinList: {
+        type: OptionType.COMPONENT,
+        description: "Toggle pins and drag to set chip order.",
+        component: PinOrderEditor,
     },
-    pinFast: {
+    hideNativeTrigger: {
         type: OptionType.BOOLEAN,
-        description: "Pin Fast next to the compact selector.",
-        default: false,
-    },
-    pinExpert: {
-        type: OptionType.BOOLEAN,
-        description: "Pin Expert next to the compact selector.",
-        default: false,
-    },
-    pinHeavy: {
-        type: OptionType.BOOLEAN,
-        description: "Pin Heavy next to the compact selector.",
-        default: true,
-    },
-    pinBuild: {
-        type: OptionType.BOOLEAN,
-        description: "Pin Build next to the compact selector.",
+        description: "Hide the native mode menu button and keep its popup invisible.",
         default: true,
     },
     showLabels: {
         type: OptionType.BOOLEAN,
         description: "Show mode names on pinned chips.",
         default: false,
+    },
+    pinAuto: {
+        type: OptionType.BOOLEAN,
+        description: "Pin Auto next to the compact selector.",
+        default: false,
+        hidden: true,
+    },
+    pinFast: {
+        type: OptionType.BOOLEAN,
+        description: "Pin Fast next to the compact selector.",
+        default: false,
+        hidden: true,
+    },
+    pinExpert: {
+        type: OptionType.BOOLEAN,
+        description: "Pin Expert next to the compact selector.",
+        default: false,
+        hidden: true,
+    },
+    pinHeavy: {
+        type: OptionType.BOOLEAN,
+        description: "Pin Heavy next to the compact selector.",
+        default: true,
+        hidden: true,
+    },
+    pinBuild: {
+        type: OptionType.BOOLEAN,
+        description: "Pin Build next to the compact selector.",
+        default: true,
+        hidden: true,
+    },
+    pinOrder: {
+        type: OptionType.STRING,
+        description: "Order of pinned chips.",
+        default: DEFAULT_PIN_ORDER,
+        hidden: true,
     },
 });
 
@@ -85,6 +111,38 @@ function setPicking(on: boolean) {
 
 function notifyHarvest() {
     for (const fn of harvestListeners) fn();
+}
+
+function parseOrder(raw: unknown): ModeId[] {
+    const seen = new Set<string>();
+    const ordered: ModeId[] = [];
+    for (const token of String(raw ?? "").split(/[,\s]+/)) {
+        const id = token.toLowerCase();
+        if (!KNOWN_IDS.has(id) || seen.has(id)) continue;
+        seen.add(id);
+        ordered.push(id as ModeId);
+    }
+    for (const m of MODES) {
+        if (seen.has(m.id)) continue;
+        ordered.push(m.id);
+    }
+    return ordered;
+}
+
+function reorder(ids: ModeId[], from: number, to: number) {
+    if (from === to || from < 0 || to < 0 || to >= ids.length) return ids;
+    const next = ids.slice();
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    return next;
+}
+
+function setOrder(ids: ModeId[]) {
+    settings.store.pinOrder = ids.join(",");
+}
+
+function setPinned(pin: PinKey, on: boolean) {
+    settings.store[pin] = on;
 }
 
 function itemText(el: Element) {
@@ -268,16 +326,105 @@ function PinGlyph({ id, Icon, label, showLabels }: {
     );
 }
 
+function preventDragOver(e: DragEvent<HTMLElement>) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+}
+
+function PinOrderEditor() {
+    const cfg = settings.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
+    const ids = parseOrder(cfg.pinOrder);
+    const [dragId, setDragId] = React.useState<string | null>(null);
+
+    const onDragStart = (id: ModeId) => (e: DragEvent<HTMLElement>) => {
+        e.dataTransfer.setData("text/plain", id);
+        e.dataTransfer.effectAllowed = "move";
+        setDragId(id);
+    };
+
+    const onDrop = (toId: ModeId) => (e: DragEvent<HTMLElement>) => {
+        e.preventDefault();
+        const fromId = e.dataTransfer.getData("text/plain") as ModeId;
+        setOrder(reorder(ids, ids.indexOf(fromId), ids.indexOf(toId)));
+        setDragId(null);
+    };
+
+    return (
+        <Flex flexDirection="column" gap="0.5rem" className={cl("order")}>
+            <Flex flexDirection="column" gap="0">
+                <SettingsTitle>Pinned modes</SettingsTitle>
+                <SettingsDescription>Toggle pins and drag to set chip order.</SettingsDescription>
+            </Flex>
+            <div className={cl("order-list")} role="list">
+                {ids.map((id, i) => {
+                    const m = MODE_BY_ID[id];
+                    return (
+                        <div
+                            key={m.id}
+                            role="listitem"
+                            className={classes(cl("order-row"), dragId === m.id && cl("dragging"))}
+                            onDragOver={preventDragOver}
+                            onDrop={onDrop(m.id)}
+                        >
+                            <Flex alignItems="center" gap="0.5rem" className={cl("order-main")}>
+                                <span
+                                    className={cl("grip")}
+                                    draggable
+                                    onDragStart={onDragStart(m.id)}
+                                    onDragEnd={() => setDragId(null)}
+                                    aria-label={`Reorder ${m.label}`}
+                                >
+                                    <GripVerticalIcon size={16} />
+                                </span>
+                                <m.Icon size={16} className={cl("order-icon")} />
+                                <SettingsTitle>{m.label}</SettingsTitle>
+                            </Flex>
+                            <Flex alignItems="center" gap="0.25rem">
+                                <ButtonWithTooltip
+                                    variant="tertiary"
+                                    size="xs"
+                                    shape="square"
+                                    tooltipContent="Move up"
+                                    aria-label={`Move ${m.label} up`}
+                                    disabled={i === 0}
+                                    onClick={() => setOrder(reorder(ids, i, i - 1))}
+                                >
+                                    <ChevronUpIcon size={14} />
+                                </ButtonWithTooltip>
+                                <ButtonWithTooltip
+                                    variant="tertiary"
+                                    size="xs"
+                                    shape="square"
+                                    tooltipContent="Move down"
+                                    aria-label={`Move ${m.label} down`}
+                                    disabled={i === ids.length - 1}
+                                    onClick={() => setOrder(reorder(ids, i, i + 1))}
+                                >
+                                    <ChevronDownIcon size={14} />
+                                </ButtonWithTooltip>
+                                <Switch checked={!!cfg[m.pin]} onCheckedChange={on => setPinned(m.pin, on)} />
+                            </Flex>
+                        </div>
+                    );
+                })}
+            </div>
+        </Flex>
+    );
+}
+
 function PinnedModes() {
     const cfg = settings.use([...SETTING_KEYS]);
     const selectedModeId = ModesStore.useModesStore((s: ModesStoreState) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s: ModesStoreState) => s.modes);
     const knownCatalog = catalog.filter(c => KNOWN_IDS.has(c.id));
-    const items = MODES.filter(m => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some(c => c.id === m.id)));
+    const items = parseOrder(cfg.pinOrder)
+        .map(id => MODE_BY_ID[id])
+        .filter(m => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some(c => c.id === m.id)));
     if (!items.length) return null;
 
     const { showLabels } = cfg;
     const allCovered = knownCatalog.length > 0 && knownCatalog.every(c => cfg[PIN_BY_ID[c.id]]);
+    const hideNative = cfg.hideNativeTrigger || allCovered;
 
     const onPin = (id: string) => (e: MouseEvent) => {
         e.preventDefault();
@@ -286,7 +433,7 @@ function PinnedModes() {
     };
 
     return (
-        <div className={classes(cl("pins"), allCovered && cl("all-covered"))}>
+        <div className={classes(cl("pins"), hideNative && cl("hide-native"))}>
             {items.map(m => (
                 <ChatBarButton
                     key={m.id}

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.11] v1.0.0
+// @version      [20260909.12] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.11] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.12] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -1711,6 +1711,31 @@ ${sourceUrl}`;
     fillRule: "evenodd",
     clipRule: "evenodd"
   }));
+  var GripVerticalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "9",
+    cy: "12",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "9",
+    cy: "5",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "9",
+    cy: "19",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "15",
+    cy: "12",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "15",
+    cy: "5",
+    r: "1"
+  }), /* @__PURE__ */ React.createElement("circle", {
+    cx: "15",
+    cy: "19",
+    r: "1"
+  }));
   var PinIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 17v5"
   }), /* @__PURE__ */ React.createElement("path", {
@@ -2010,6 +2035,12 @@ ${sourceUrl}`;
   }));
   var ChevronRightIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m9 18 6-6-6-6"
+  }));
+  var ChevronUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m18 15-6-6-6 6"
+  }));
+  var ChevronDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "m6 9 6 6 6-6"
   }));
   var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
@@ -6988,9 +7019,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.11] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"9a248c8"}`
-    }, `(${"9a248c8"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.12] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"19af820"}`
+    }, `(${"19af820"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15833,7 +15864,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     height: 18px;
 }
 
-.query-bar:has(.void-cms-all-covered) [data-query-bar-mode-select] {
+.query-bar:has(.void-cms-hide-native) [data-query-bar-mode-select] {
     position: absolute;
     width: 0;
     height: 0;
@@ -15844,7 +15875,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     pointer-events: none;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button {
     width: 2.25rem;
     height: 2.25rem;
     min-width: 2.25rem;
@@ -15856,11 +15887,11 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     place-items: center;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button > * {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button > * {
     display: none !important;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button::after {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button::after {
     content: "";
     width: 18px;
     height: 18px;
@@ -15876,6 +15907,56 @@ html.void-cms-picking [role="menu"],
 html.void-cms-picking [role="listbox"],
 html.void-cms-picking [data-radix-popper-content-wrapper] {
     opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.void-cms-order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.void-cms-order-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.25rem 0.25rem 0;
+    border-radius: 0.5rem;
+    user-select: none;
+}
+
+.void-cms-order-row:hover {
+    background: hsl(var(--fg-primary) / 6%);
+}
+
+.void-cms-order-row.void-cms-dragging {
+    opacity: 0.45;
+}
+
+.void-cms-order-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.void-cms-grip {
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: hsl(var(--fg-secondary));
+    cursor: grab;
+}
+
+.void-cms-grip:active {
+    cursor: grabbing;
+}
+
+.void-cms-order-icon {
+    flex-shrink: 0;
+    color: hsl(var(--fg-secondary));
 }
 
 @media (width >= 48rem) {
@@ -15906,42 +15987,65 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
   ];
   var KNOWN_IDS = new Set(MODES.map((m) => m.id));
   var PIN_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m.pin]));
-  var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"];
+  var MODE_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m]));
+  var DEFAULT_PIN_ORDER = "heavy,build";
+  var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels", "hideNativeTrigger", "pinOrder"];
   var ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
   var MENU_ROOT_SEL = "[data-radix-popper-content-wrapper], [data-radix-menu-content], [role='menu'], [role='listbox']";
   var TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
   var PICK_MS = 900;
   var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
   var settings24 = definePluginSettings({
-    pinAuto: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Auto next to the compact selector.",
-      default: false
+    pinList: {
+      type: 6 /* COMPONENT */,
+      description: "Toggle pins and drag to set chip order.",
+      component: PinOrderEditor
     },
-    pinFast: {
+    hideNativeTrigger: {
       type: 3 /* BOOLEAN */,
-      description: "Pin Fast next to the compact selector.",
-      default: false
-    },
-    pinExpert: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Expert next to the compact selector.",
-      default: false
-    },
-    pinHeavy: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Heavy next to the compact selector.",
-      default: true
-    },
-    pinBuild: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Build next to the compact selector.",
+      description: "Hide the native mode menu button and keep its popup invisible.",
       default: true
     },
     showLabels: {
       type: 3 /* BOOLEAN */,
       description: "Show mode names on pinned chips.",
       default: false
+    },
+    pinAuto: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Auto next to the compact selector.",
+      default: false,
+      hidden: true
+    },
+    pinFast: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Fast next to the compact selector.",
+      default: false,
+      hidden: true
+    },
+    pinExpert: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Expert next to the compact selector.",
+      default: false,
+      hidden: true
+    },
+    pinHeavy: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Heavy next to the compact selector.",
+      default: true,
+      hidden: true
+    },
+    pinBuild: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Build next to the compact selector.",
+      default: true,
+      hidden: true
+    },
+    pinOrder: {
+      type: 0 /* STRING */,
+      description: "Order of pinned chips.",
+      default: DEFAULT_PIN_ORDER,
+      hidden: true
     }
   });
   var picking = false;
@@ -15955,6 +16059,37 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
   function notifyHarvest() {
     for (const fn of harvestListeners)
       fn();
+  }
+  function parseOrder(raw) {
+    const seen = new Set;
+    const ordered = [];
+    for (const token of String(raw ?? "").split(/[,\s]+/)) {
+      const id = token.toLowerCase();
+      if (!KNOWN_IDS.has(id) || seen.has(id))
+        continue;
+      seen.add(id);
+      ordered.push(id);
+    }
+    for (const m of MODES) {
+      if (seen.has(m.id))
+        continue;
+      ordered.push(m.id);
+    }
+    return ordered;
+  }
+  function reorder(ids, from, to) {
+    if (from === to || from < 0 || to < 0 || to >= ids.length)
+      return ids;
+    const next = ids.slice();
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    return next;
+  }
+  function setOrder(ids) {
+    settings24.store.pinOrder = ids.join(",");
+  }
+  function setPinned(pin, on) {
+    settings24.store[pin] = on;
   }
   function itemText(el) {
     return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
@@ -16128,23 +16263,105 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
       className: cl25("label")
     }, label));
   }
+  function preventDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }
+  function PinOrderEditor() {
+    const cfg = settings24.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
+    const ids = parseOrder(cfg.pinOrder);
+    const [dragId, setDragId] = React.useState(null);
+    const onDragStart = (id) => (e) => {
+      e.dataTransfer.setData("text/plain", id);
+      e.dataTransfer.effectAllowed = "move";
+      setDragId(id);
+    };
+    const onDrop = (toId) => (e) => {
+      e.preventDefault();
+      const fromId = e.dataTransfer.getData("text/plain");
+      setOrder(reorder(ids, ids.indexOf(fromId), ids.indexOf(toId)));
+      setDragId(null);
+    };
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem",
+      className: cl25("order")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Pinned modes"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Toggle pins and drag to set chip order.")), /* @__PURE__ */ React.createElement("div", {
+      className: cl25("order-list"),
+      role: "list"
+    }, ids.map((id, i) => {
+      const m = MODE_BY_ID[id];
+      return /* @__PURE__ */ React.createElement("div", {
+        key: m.id,
+        role: "listitem",
+        className: classes(cl25("order-row"), dragId === m.id && cl25("dragging")),
+        onDragOver: preventDragOver,
+        onDrop: onDrop(m.id)
+      }, /* @__PURE__ */ React.createElement(Flex, {
+        alignItems: "center",
+        gap: "0.5rem",
+        className: cl25("order-main")
+      }, /* @__PURE__ */ React.createElement("span", {
+        className: cl25("grip"),
+        draggable: true,
+        onDragStart: onDragStart(m.id),
+        onDragEnd: () => setDragId(null),
+        "aria-label": `Reorder ${m.label}`
+      }, /* @__PURE__ */ React.createElement(GripVerticalIcon, {
+        size: 16
+      })), /* @__PURE__ */ React.createElement(m.Icon, {
+        size: 16,
+        className: cl25("order-icon")
+      }), /* @__PURE__ */ React.createElement(SettingsTitle, null, m.label)), /* @__PURE__ */ React.createElement(Flex, {
+        alignItems: "center",
+        gap: "0.25rem"
+      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "xs",
+        shape: "square",
+        tooltipContent: "Move up",
+        "aria-label": `Move ${m.label} up`,
+        disabled: i === 0,
+        onClick: () => setOrder(reorder(ids, i, i - 1))
+      }, /* @__PURE__ */ React.createElement(ChevronUpIcon, {
+        size: 14
+      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "xs",
+        shape: "square",
+        tooltipContent: "Move down",
+        "aria-label": `Move ${m.label} down`,
+        disabled: i === ids.length - 1,
+        onClick: () => setOrder(reorder(ids, i, i + 1))
+      }, /* @__PURE__ */ React.createElement(ChevronDownIcon, {
+        size: 14
+      })), /* @__PURE__ */ React.createElement(Switch, {
+        checked: !!cfg[m.pin],
+        onCheckedChange: (on) => setPinned(m.pin, on)
+      })));
+    })));
+  }
   function PinnedModes() {
     const cfg = settings24.use([...SETTING_KEYS]);
     const selectedModeId = ModesStore.useModesStore((s) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s) => s.modes);
     const knownCatalog = catalog.filter((c) => KNOWN_IDS.has(c.id));
-    const items = MODES.filter((m) => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some((c) => c.id === m.id)));
+    const items = parseOrder(cfg.pinOrder).map((id) => MODE_BY_ID[id]).filter((m) => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some((c) => c.id === m.id)));
     if (!items.length)
       return null;
     const { showLabels } = cfg;
     const allCovered = knownCatalog.length > 0 && knownCatalog.every((c) => cfg[PIN_BY_ID[c.id]]);
+    const hideNative = cfg.hideNativeTrigger || allCovered;
     const onPin = (id) => (e) => {
       e.preventDefault();
       e.stopPropagation();
       selectMode(id);
     };
     return /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl25("pins"), allCovered && cl25("all-covered"))
+      className: classes(cl25("pins"), hideNative && cl25("hide-native"))
     }, items.map((m) => /* @__PURE__ */ React.createElement(ChatBarButton, {
       key: m.id,
       size: "sm",
