@@ -32,13 +32,12 @@ const MODES = [
 
 const KNOWN_IDS = new Set<string>(MODES.map(m => m.id));
 const PIN_BY_ID: Record<string, (typeof MODES)[number]["pin"]> = Object.fromEntries(MODES.map(m => [m.id, m.pin]));
-const SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels", "hideOverflow"] as const;
+const SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"] as const;
 
 const ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
 const MENU_ROOT_SEL = "[data-radix-popper-content-wrapper], [data-radix-menu-content], [role='menu'], [role='listbox']";
 const TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
 const PICK_MS = 900;
-const PICK_HOLD_MS = 80;
 const POINTER: PointerEventInit = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
 
 const settings = definePluginSettings({
@@ -72,28 +71,13 @@ const settings = definePluginSettings({
         description: "Show mode names on pinned chips.",
         default: false,
     },
-    hideOverflow: {
-        type: OptionType.BOOLEAN,
-        description: "Hide the native overflow button when pins are shown.",
-        default: true,
-    },
 });
 
 let picking = false;
-let pickTimer = 0;
 
 function setPicking(on: boolean) {
-    if (on) {
-        clearTimeout(pickTimer);
-        picking = true;
-        document.documentElement.classList.add("void-cms-picking");
-        return;
-    }
-    picking = false;
-    clearTimeout(pickTimer);
-    pickTimer = window.setTimeout(() => {
-        document.documentElement.classList.remove("void-cms-picking");
-    }, PICK_HOLD_MS);
+    picking = on;
+    document.documentElement.classList.toggle("void-cms-picking", on);
 }
 
 function itemText(el: Element) {
@@ -194,7 +178,7 @@ function PinnedModes() {
     const items = MODES.filter(m => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some(c => c.id === m.id)));
     if (!items.length) return null;
 
-    const { showLabels, hideOverflow } = cfg;
+    const { showLabels } = cfg;
     const allCovered = knownCatalog.length > 0 && knownCatalog.every(c => cfg[PIN_BY_ID[c.id]]);
 
     const onPin = (id: string) => (e: MouseEvent) => {
@@ -204,7 +188,7 @@ function PinnedModes() {
     };
 
     return (
-        <div className={classes(cl("pins"), allCovered && cl("all-covered"), hideOverflow && cl("hide-overflow"))}>
+        <div className={classes(cl("pins"), allCovered && cl("all-covered"))}>
             {items.map(m => (
                 <ChatBarButton
                     key={m.id}
@@ -243,9 +227,7 @@ export default definePlugin({
     },
 
     stop() {
-        clearTimeout(pickTimer);
-        picking = false;
-        document.documentElement.classList.remove("void-cms-picking");
+        setPicking(false);
     },
 
     renderPinned: ErrorBoundary.wrap(PinnedModes),

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.7] v1.0.0
+// @version      [20260909.8] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.7] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.8] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -6976,9 +6976,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"5a5ca6d"}`
-    }, `(${"5a5ca6d"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.8] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"3373455"}`
+    }, `(${"3373455"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15795,12 +15795,8 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     box-shadow: none;
 }
 
-.query-bar .void-cms-on,
-.query-bar .void-cms-on svg {
-    color: #ff6b35;
-    color: hsl(var(--fg-accent));
-    fill: currentcolor;
-    stroke: currentcolor;
+.query-bar .void-cms-on {
+    color: hsl(var(--fg-primary));
     background: transparent !important;
     box-shadow: none !important;
 }
@@ -15812,8 +15808,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     line-height: 1;
 }
 
-.query-bar:has(.void-cms-all-covered) [data-query-bar-mode-select],
-.query-bar:has(.void-cms-hide-overflow) [data-query-bar-mode-select] {
+.query-bar:has(.void-cms-all-covered) [data-query-bar-mode-select] {
     position: absolute;
     width: 0;
     height: 0;
@@ -15824,7 +15819,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     pointer-events: none;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered), :has(.void-cms-hide-overflow)) [data-query-bar-mode-select] button {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button {
     width: 2.25rem;
     height: 2.25rem;
     min-width: 2.25rem;
@@ -15834,11 +15829,11 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     position: relative;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered), :has(.void-cms-hide-overflow)) [data-query-bar-mode-select] button > * {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button > * {
     display: none !important;
 }
 
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered), :has(.void-cms-hide-overflow)) [data-query-bar-mode-select] button::after {
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button::after {
     content: "⋮";
     font-size: 1.25rem;
     font-weight: 700;
@@ -15854,8 +15849,6 @@ html.void-cms-picking [role="menu"],
 html.void-cms-picking [role="listbox"],
 html.void-cms-picking [data-radix-popper-content-wrapper] {
     opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
 }
 
 @media (width >= 48rem) {
@@ -15886,12 +15879,11 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
   ];
   var KNOWN_IDS = new Set(MODES.map((m) => m.id));
   var PIN_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m.pin]));
-  var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels", "hideOverflow"];
+  var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"];
   var ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
   var MENU_ROOT_SEL = "[data-radix-popper-content-wrapper], [data-radix-menu-content], [role='menu'], [role='listbox']";
   var TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
   var PICK_MS = 900;
-  var PICK_HOLD_MS = 80;
   var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
   var settings24 = definePluginSettings({
     pinAuto: {
@@ -15923,27 +15915,12 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
       type: 3 /* BOOLEAN */,
       description: "Show mode names on pinned chips.",
       default: false
-    },
-    hideOverflow: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the native overflow button when pins are shown.",
-      default: true
     }
   });
   var picking = false;
-  var pickTimer = 0;
   function setPicking(on) {
-    if (on) {
-      clearTimeout(pickTimer);
-      picking = true;
-      document.documentElement.classList.add("void-cms-picking");
-      return;
-    }
-    picking = false;
-    clearTimeout(pickTimer);
-    pickTimer = window.setTimeout(() => {
-      document.documentElement.classList.remove("void-cms-picking");
-    }, PICK_HOLD_MS);
+    picking = on;
+    document.documentElement.classList.toggle("void-cms-picking", on);
   }
   function itemText(el) {
     return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
@@ -16036,7 +16013,7 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     const items = MODES.filter((m) => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some((c) => c.id === m.id)));
     if (!items.length)
       return null;
-    const { showLabels, hideOverflow } = cfg;
+    const { showLabels } = cfg;
     const allCovered = knownCatalog.length > 0 && knownCatalog.every((c) => cfg[PIN_BY_ID[c.id]]);
     const onPin = (id) => (e) => {
       e.preventDefault();
@@ -16044,7 +16021,7 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
       selectMode(id);
     };
     return /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl25("pins"), allCovered && cl25("all-covered"), hideOverflow && cl25("hide-overflow"))
+      className: classes(cl25("pins"), allCovered && cl25("all-covered"))
     }, items.map((m) => /* @__PURE__ */ React.createElement(ChatBarButton, {
       key: m.id,
       size: "sm",
@@ -16075,9 +16052,7 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
       ModesStore.useModesStore.getState().ensureLoaded();
     },
     stop() {
-      clearTimeout(pickTimer);
-      picking = false;
-      document.documentElement.classList.remove("void-cms-picking");
+      setPicking(false);
     },
     renderPinned: ErrorBoundary.wrap(PinnedModes),
     patches: [
