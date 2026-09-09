@@ -12,18 +12,15 @@ import { ErrorBoundary } from "@components/ErrorBoundary";
 import { HammerIcon, LayoutGridIcon, LightbulbIcon, Minimize2Icon, RocketIcon, ZapIcon } from "@components/icons";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React } from "@turbopack/common/react";
-import { ChatPageStore, ModesStore } from "@turbopack/common/stores";
+import { ModesStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
-import { createExternalStore } from "@utils/misc";
-import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
+import type { ComponentType, MouseEvent } from "react";
 
 const logger = new Logger("CompactModeSelect");
 const cl = classNameFactory("void-cms-");
-const CHAT_POST = /\/rest\/app-chat\/conversations\/(?:new|[^/?#]+\/responses)(?:[/?#]|$)/;
-const MODEL_MODES = new Set(["auto", "fast", "expert", "heavy"]);
 
 const MODES = [
     { id: "auto", pin: "pinAuto", label: "Auto", Icon: RocketIcon },
@@ -36,6 +33,10 @@ const MODES = [
 const KNOWN_IDS = new Set<string>(MODES.map(m => m.id));
 const PIN_BY_ID: Record<string, (typeof MODES)[number]["pin"]> = Object.fromEntries(MODES.map(m => [m.id, m.pin]));
 const SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels"] as const;
+
+const ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
+const TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
+const PICK_MS = 900;
 
 const settings = definePluginSettings({
     pinAuto: {
@@ -70,105 +71,170 @@ const settings = definePluginSettings({
     },
 });
 
-const pendingStore = createExternalStore();
-let pendingModeId: string | undefined;
-let origFetch: typeof fetch | undefined;
-let fetchHost: { fetch: typeof fetch } | undefined;
-let unsubModes: (() => void) | undefined;
+const nativeHandlers = new Map<string, () => void>();
+let picking = false;
 
-function setPending(id: string) {
-    if (pendingModeId === id) return;
-    pendingModeId = id;
-    pendingStore.notify();
+function setPicking(on: boolean) {
+    picking = on;
+    document.documentElement.classList.toggle("void-cms-picking", on);
 }
 
-function syncUrl(id: string) {
+function itemText(el: Element) {
+    return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
+}
+
+function titlesFor(id: string) {
+    const mode = MODES.find(m => m.id === id);
+    const catalogTitle = ModesStore.useModesStore.getState().modes.find(m => m.id === id)?.title;
+    return [catalogTitle, mode?.label, id].filter((t): t is string => !!t).map(t => t.toLowerCase());
+}
+
+function matchItem(el: Element, id: string) {
+    const hay = itemText(el);
+    if (!hay) return false;
+    return titlesFor(id).some(t => hay === t || hay.startsWith(`${t} `) || hay.includes(t));
+}
+
+type FiberNode = {
+    memoizedProps?: { onClick?: unknown; onSelect?: unknown; };
+    pendingProps?: { onClick?: unknown; onSelect?: unknown; };
+    return?: FiberNode;
+};
+
+function fiberHandler(node: Element): (() => void) | undefined {
+    const propsKey = Object.keys(node).find(k => k.startsWith("__reactProps$"));
+    if (propsKey) {
+        const props = (node as unknown as Record<string, FiberNode["memoizedProps"]>)[propsKey];
+        if (typeof props?.onClick === "function") return props.onClick as () => void;
+        if (typeof props?.onSelect === "function") return props.onSelect as () => void;
+    }
+
+    const fiberKey = Object.keys(node).find(k => k.startsWith("__reactFiber$"));
+    let fiber = fiberKey ? (node as unknown as Record<string, FiberNode>)[fiberKey] : undefined;
+
+    for (let i = 0; i < 8 && fiber; i++) {
+        const props = fiber.memoizedProps ?? fiber.pendingProps;
+        if (typeof props?.onClick === "function") return props.onClick as () => void;
+        if (typeof props?.onSelect === "function") return props.onSelect as () => void;
+        fiber = fiber.return;
+    }
+
+    return;
+}
+
+function harvest(items: HTMLElement[]) {
+    for (const el of items) {
+        const mode = MODES.find(m => matchItem(el, m.id));
+        if (!mode) continue;
+        const fn = fiberHandler(el);
+        if (fn) nativeHandlers.set(mode.id, fn);
+    }
+}
+
+function menuItems() {
+    return [...document.querySelectorAll<HTMLElement>(ITEM_SEL)];
+}
+
+function waitForItems() {
+    const start = performance.now();
+    return new Promise<HTMLElement[]>(resolve => {
+        const tick = () => {
+            const items = menuItems();
+            if (items.length) {
+                resolve(items);
+                return;
+            }
+            if (performance.now() - start > PICK_MS) {
+                resolve([]);
+                return;
+            }
+            requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    });
+}
+
+function nativeTrigger() {
+    return document.querySelector<HTMLButtonElement>(TRIGGER_SEL);
+}
+
+function clickEl(el: HTMLElement) {
+    const opts: PointerEventInit = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
+    el.dispatchEvent(new PointerEvent("pointerdown", opts));
+    el.dispatchEvent(new PointerEvent("pointerup", opts));
+    el.click();
+}
+
+async function clickNativeItem(id: string) {
+    const trigger = nativeTrigger();
+    if (!trigger) {
+        logger.warn("Native mode selector not found");
+        return;
+    }
+
+    setPicking(true);
     try {
-        const url = new URL(location.href);
-        if (url.searchParams.get("mode") === id) return;
-        url.searchParams.set("mode", id);
-        history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
-    } catch (e) {
-        logger.warn("Failed to sync mode URL:", e);
+        let items = menuItems();
+        if (!items.length) {
+            clickEl(trigger);
+            items = await waitForItems();
+        }
+        harvest(items);
+
+        const item = items.find(el => matchItem(el, id));
+        if (!item) {
+            logger.warn("Native mode item not found:", id);
+            if (menuItems().length) clickEl(trigger);
+            return;
+        }
+        clickEl(item);
+    } finally {
+        setPicking(false);
     }
 }
 
-function applyNativeMode(id: string) {
-    setPending(id);
-    ModesStore.useModesStore.getState().setSelectedModeId(id);
-    if (MODEL_MODES.has(id)) ChatPageStore.useChatPageStore.getState().setModelMode(id);
-    syncUrl(id);
-}
+async function selectMode(id: string) {
+    if (picking) return;
+    await ModesStore.useModesStore.getState().ensureLoaded();
 
-function rewriteBody(body: string, id: string): string | undefined {
-    try {
-        const payload = JSON.parse(body);
-        if (payload == null || typeof payload !== "object" || Array.isArray(payload)) return;
-        if (payload.modeId === id) return;
-        payload.modeId = id;
-        return JSON.stringify(payload);
-    } catch (e) {
-        logger.warn("Failed to rewrite chat payload:", e);
-    }
-}
-
-function requestUrl(input: RequestInfo | URL): string {
-    if (typeof input === "string") return input;
-    if (input instanceof URL) return input.href;
-    return input.url;
-}
-
-function patchedFetch(this: unknown, input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-    const fetchFn = origFetch;
-    const id = pendingModeId;
-    if (!id || !fetchFn) return (fetchFn ?? fetch).call(this, input, init);
-
-    const url = requestUrl(input);
-    const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
-    if (method !== "POST" || !CHAT_POST.test(url)) return fetchFn.call(this, input, init);
-
-    const raw = init?.body;
-    if (typeof raw === "string") {
-        const next = rewriteBody(raw, id);
-        return next == null ? fetchFn.call(this, input, init) : fetchFn.call(this, input, { ...init, body: next });
+    const cached = nativeHandlers.get(id);
+    if (cached) {
+        try {
+            cached();
+            return;
+        } catch (e) {
+            logger.warn("Native handler failed, opening menu:", e);
+            nativeHandlers.delete(id);
+        }
     }
 
-    if (input instanceof Request && init?.body == null) {
-        return input.clone().text().then(text => {
-            const next = rewriteBody(text, id);
-            if (next == null) return fetchFn.call(this, input, init);
-            return fetchFn.call(this, new Request(input, { body: next, method: "POST" }), init);
-        });
+    await clickNativeItem(id);
+}
+
+function wrapModeSelect(ModeSelect: ComponentType<Record<string, unknown>>) {
+    function VoidModeSelect(props: Record<string, unknown>) {
+        return React.createElement(ModeSelect, props);
     }
-
-    return fetchFn.call(this, input, init);
-}
-
-function hookFetch() {
-    const page = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-    origFetch = page.fetch;
-    fetchHost = page;
-    page.fetch = patchedFetch as typeof fetch;
-}
-
-function unhookFetch() {
-    if (origFetch && fetchHost) fetchHost.fetch = origFetch;
-    origFetch = undefined;
-    fetchHost = undefined;
+    VoidModeSelect.displayName = "VoidModeSelect";
+    return VoidModeSelect;
 }
 
 function PinnedModes() {
-    useExternalStore(pendingStore);
     const cfg = settings.use([...SETTING_KEYS]);
     const selectedModeId = ModesStore.useModesStore((s: ModesStoreState) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s: ModesStoreState) => s.modes);
-    const current = pendingModeId ?? selectedModeId;
     const knownCatalog = catalog.filter(c => KNOWN_IDS.has(c.id));
     const items = MODES.filter(m => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some(c => c.id === m.id)));
     if (!items.length) return null;
 
     const { showLabels } = cfg;
     const allCovered = knownCatalog.length > 0 && knownCatalog.every(c => cfg[PIN_BY_ID[c.id]]);
+
+    const onPin = (id: string) => (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        void selectMode(id);
+    };
 
     return (
         <div className={classes(cl("pins"), allCovered && cl("all-covered"))}>
@@ -185,8 +251,8 @@ function PinnedModes() {
                         )
                         : <m.Icon size={18} />}
                     tooltip={m.label}
-                    onClick={() => applyNativeMode(m.id)}
-                    className={classes(cl("pin"), current === m.id && cl("on"), showLabels && cl("labeled"))}
+                    onClick={onPin(m.id)}
+                    className={classes(cl("pin"), selectedModeId === m.id && cl("on"), showLabels && cl("labeled"))}
                     aria-label={m.label}
                 />
             ))}
@@ -206,21 +272,15 @@ export default definePlugin({
     startAt: StartAt.TurbopackReady,
 
     start() {
-        const modes = ModesStore.useModesStore.getState();
-        void modes.ensureLoaded();
-        if (modes.selectedModeId) setPending(modes.selectedModeId);
-        unsubModes = ModesStore.useModesStore.subscribe((s: ModesStoreState) => {
-            if (s.selectedModeId) setPending(s.selectedModeId);
-        });
-        hookFetch();
+        void ModesStore.useModesStore.getState().ensureLoaded();
     },
 
     stop() {
-        unsubModes?.();
-        unsubModes = undefined;
-        unhookFetch();
+        nativeHandlers.clear();
+        setPicking(false);
     },
 
+    wrapModeSelect,
     renderPinned: ErrorBoundary.wrap(PinnedModes),
 
     patches: [
@@ -231,7 +291,7 @@ export default definePlugin({
             replacement: [
                 {
                     match: /ModeSelect,\{compact:\i\|\|\i,/,
-                    replace: "ModeSelect,{compact:!0,",
+                    replace: "$self.wrapModeSelect(ModeSelect),{compact:!0,",
                 },
                 {
                     match: /\},"mode-select"\),/,
