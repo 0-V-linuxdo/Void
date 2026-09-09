@@ -21,6 +21,7 @@
 }
 
 .query-bar .void-cms-on {
+    color: #ff7a17;
     background: transparent !important;
     box-shadow: none !important;
 }
@@ -30,6 +31,19 @@
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1;
+}
+
+.void-cms-glyph {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+}
+
+.void-cms-glyph svg {
+    display: block;
+    width: 18px;
+    height: 18px;
 }
 
 .query-bar:has(.void-cms-all-covered) [data-query-bar-mode-select] {

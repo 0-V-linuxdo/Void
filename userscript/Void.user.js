@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.9] v1.0.0
+// @version      [20260909.10] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.9] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.10] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -2060,6 +2060,24 @@ ${sourceUrl}`;
     x: "3",
     y: "14",
     rx: "1"
+  }));
+  var ConnectedAppsIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+    x: "4",
+    y: "4",
+    width: "5",
+    height: "5"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "15",
+    y: "4",
+    width: "5",
+    height: "5"
+  }), /* @__PURE__ */ React.createElement("rect", {
+    x: "15",
+    y: "15",
+    width: "5",
+    height: "5"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M11 18H10C7.79086 18 6 16.2091 6 14V13"
   }));
   var RocketIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"
@@ -6976,9 +6994,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.9] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"7ad0a35"}`
-    }, `(${"7ad0a35"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.10] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"41ba40b"}`
+    }, `(${"41ba40b"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15796,6 +15814,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 }
 
 .query-bar .void-cms-on {
+    color: #ff7a17;
     background: transparent !important;
     box-shadow: none !important;
 }
@@ -15805,6 +15824,19 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1;
+}
+
+.void-cms-glyph {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+}
+
+.void-cms-glyph svg {
+    display: block;
+    width: 18px;
+    height: 18px;
 }
 
 .query-bar:has(.void-cms-all-covered) [data-query-bar-mode-select] {
@@ -15873,7 +15905,7 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     { id: "auto", pin: "pinAuto", label: "Auto", Icon: RocketIcon },
     { id: "fast", pin: "pinFast", label: "Fast", Icon: ZapIcon },
     { id: "expert", pin: "pinExpert", label: "Expert", Icon: LightbulbIcon },
-    { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: LayoutGridIcon },
+    { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: ConnectedAppsIcon },
     { id: "build", pin: "pinBuild", label: "Build", Icon: HammerIcon }
   ];
   var KNOWN_IDS = new Set(MODES.map((m) => m.id));
@@ -15917,9 +15949,16 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     }
   });
   var picking = false;
+  var harvesting = false;
+  var harvested = new Map;
+  var harvestListeners = new Set;
   function setPicking(on) {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
+  }
+  function notifyHarvest() {
+    for (const fn of harvestListeners)
+      fn();
   }
   function itemText(el) {
     return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
@@ -15972,6 +16011,68 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     el.dispatchEvent(new PointerEvent("pointerup", POINTER));
     el.click();
   }
+  function paintCurrent(el) {
+    for (const attr of ["fill", "stroke"]) {
+      const v = el.getAttribute(attr);
+      if (!v || v === "none" || v === "currentColor")
+        continue;
+      el.setAttribute(attr, "currentColor");
+    }
+    for (const name of el.getAttributeNames()) {
+      if (name.startsWith("on"))
+        el.removeAttribute(name);
+    }
+    el.removeAttribute("class");
+  }
+  function normalizeSvg(src) {
+    const svg = src.cloneNode(true);
+    svg.setAttribute("width", "18");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("aria-hidden", "true");
+    svg.querySelectorAll("script").forEach((n) => n.remove());
+    paintCurrent(svg);
+    svg.querySelectorAll("*").forEach(paintCurrent);
+    return svg.outerHTML;
+  }
+  function stashGlyphs(items) {
+    let added = false;
+    for (const item of items) {
+      const mode = MODES.find((m) => matchItem(item, m.id));
+      if (!mode || harvested.has(mode.id))
+        continue;
+      const svg = item.querySelector("svg");
+      if (!(svg instanceof SVGSVGElement))
+        continue;
+      harvested.set(mode.id, normalizeSvg(svg));
+      added = true;
+    }
+    if (added)
+      notifyHarvest();
+  }
+  async function harvestIcons() {
+    if (harvesting || picking || harvested.size > 0)
+      return;
+    const trigger = nativeTrigger();
+    if (!trigger)
+      return;
+    harvesting = true;
+    setPicking(true);
+    try {
+      let items = menuItems();
+      if (!items.length) {
+        clickEl(trigger);
+        items = await waitForItems();
+      }
+      stashGlyphs(items);
+      if (menuItems().length)
+        clickEl(trigger);
+    } catch (e) {
+      logger29.warn("Failed to harvest mode icons:", e);
+    } finally {
+      setPicking(false);
+      harvesting = false;
+    }
+  }
   async function selectMode(id) {
     if (picking)
       return;
@@ -15988,6 +16089,7 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
         clickEl(trigger);
         items = await waitForItems();
       }
+      stashGlyphs(items);
       const item = items.find((el) => matchItem(el, id));
       if (!item) {
         logger29.warn("Native mode item not found:", id);
@@ -16003,6 +16105,32 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     } finally {
       setPicking(false);
     }
+  }
+  function useNativeGlyph(id) {
+    const [, bump] = React.useState(0);
+    React.useEffect(() => {
+      const onHarvest = () => bump((n) => n + 1);
+      harvestListeners.add(onHarvest);
+      harvestIcons();
+      return () => {
+        harvestListeners.delete(onHarvest);
+      };
+    }, [id]);
+    return harvested.get(id);
+  }
+  function PinGlyph({ id, Icon, label, showLabels }) {
+    const html = useNativeGlyph(id);
+    const glyph = html ? /* @__PURE__ */ React.createElement("span", {
+      className: cl25("glyph"),
+      dangerouslySetInnerHTML: { __html: html }
+    }) : /* @__PURE__ */ React.createElement(Icon, {
+      size: 18
+    });
+    if (!showLabels)
+      return glyph;
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, glyph, /* @__PURE__ */ React.createElement("span", {
+      className: cl25("label")
+    }, label));
   }
   function PinnedModes() {
     const cfg = settings24.use([...SETTING_KEYS]);
@@ -16024,12 +16152,11 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     }, items.map((m) => /* @__PURE__ */ React.createElement(ChatBarButton, {
       key: m.id,
       size: "sm",
-      icon: showLabels ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(m.Icon, {
-        size: 18
-      }), /* @__PURE__ */ React.createElement("span", {
-        className: cl25("label")
-      }, m.label)) : /* @__PURE__ */ React.createElement(m.Icon, {
-        size: 18
+      icon: /* @__PURE__ */ React.createElement(PinGlyph, {
+        id: m.id,
+        Icon: m.Icon,
+        label: m.label,
+        showLabels
       }),
       tooltip: m.label,
       onClick: onPin(m.id),
@@ -16052,6 +16179,8 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     },
     stop() {
       setPicking(false);
+      harvested.clear();
+      harvestListeners.clear();
     },
     renderPinned: ErrorBoundary.wrap(PinnedModes),
     patches: [

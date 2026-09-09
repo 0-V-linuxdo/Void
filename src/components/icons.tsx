@@ -454,6 +454,14 @@ export const LayoutGridIcon = (props: IconProps = {}) =>
         <rect width="7" height="7" x="3" y="14" rx="1" />,
     );
 
+export const ConnectedAppsIcon = (props: IconProps = {}) =>
+    svg(props,
+        <rect x="4" y="4" width="5" height="5" />,
+        <rect x="15" y="4" width="5" height="5" />,
+        <rect x="15" y="15" width="5" height="5" />,
+        <path d="M11 18H10C7.79086 18 6 16.2091 6 14V13" />,
+    );
+
 export const RocketIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />,

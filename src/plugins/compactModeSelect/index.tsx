@@ -9,7 +9,7 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import { ChatBarButton } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { HammerIcon, LayoutGridIcon, LightbulbIcon, Minimize2Icon, RocketIcon, ZapIcon } from "@components/icons";
+import { ConnectedAppsIcon, HammerIcon, LightbulbIcon, Minimize2Icon, RocketIcon, ZapIcon } from "@components/icons";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React } from "@turbopack/common/react";
 import { ModesStore } from "@turbopack/common/stores";
@@ -26,7 +26,7 @@ const MODES = [
     { id: "auto", pin: "pinAuto", label: "Auto", Icon: RocketIcon },
     { id: "fast", pin: "pinFast", label: "Fast", Icon: ZapIcon },
     { id: "expert", pin: "pinExpert", label: "Expert", Icon: LightbulbIcon },
-    { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: LayoutGridIcon },
+    { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: ConnectedAppsIcon },
     { id: "build", pin: "pinBuild", label: "Build", Icon: HammerIcon },
 ] as const;
 
@@ -74,10 +74,17 @@ const settings = definePluginSettings({
 });
 
 let picking = false;
+let harvesting = false;
+const harvested = new Map<string, string>();
+const harvestListeners = new Set<() => void>();
 
 function setPicking(on: boolean) {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
+}
+
+function notifyHarvest() {
+    for (const fn of harvestListeners) fn();
 }
 
 function itemText(el: Element) {
@@ -137,6 +144,64 @@ function clickEl(el: HTMLElement) {
     el.click();
 }
 
+function paintCurrent(el: Element) {
+    for (const attr of ["fill", "stroke"]) {
+        const v = el.getAttribute(attr);
+        if (!v || v === "none" || v === "currentColor") continue;
+        el.setAttribute(attr, "currentColor");
+    }
+    for (const name of el.getAttributeNames()) {
+        if (name.startsWith("on")) el.removeAttribute(name);
+    }
+    el.removeAttribute("class");
+}
+
+function normalizeSvg(src: SVGSVGElement) {
+    const svg = src.cloneNode(true) as SVGSVGElement;
+    svg.setAttribute("width", "18");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("aria-hidden", "true");
+    svg.querySelectorAll("script").forEach(n => n.remove());
+    paintCurrent(svg);
+    svg.querySelectorAll("*").forEach(paintCurrent);
+    return svg.outerHTML;
+}
+
+function stashGlyphs(items: HTMLElement[]) {
+    let added = false;
+    for (const item of items) {
+        const mode = MODES.find(m => matchItem(item, m.id));
+        if (!mode || harvested.has(mode.id)) continue;
+        const svg = item.querySelector("svg");
+        if (!(svg instanceof SVGSVGElement)) continue;
+        harvested.set(mode.id, normalizeSvg(svg));
+        added = true;
+    }
+    if (added) notifyHarvest();
+}
+
+async function harvestIcons() {
+    if (harvesting || picking || harvested.size > 0) return;
+    const trigger = nativeTrigger();
+    if (!trigger) return;
+    harvesting = true;
+    setPicking(true);
+    try {
+        let items = menuItems();
+        if (!items.length) {
+            clickEl(trigger);
+            items = await waitForItems();
+        }
+        stashGlyphs(items);
+        if (menuItems().length) clickEl(trigger);
+    } catch (e) {
+        logger.warn("Failed to harvest mode icons:", e);
+    } finally {
+        setPicking(false);
+        harvesting = false;
+    }
+}
+
 async function selectMode(id: string) {
     if (picking) return;
     setPicking(true);
@@ -154,6 +219,7 @@ async function selectMode(id: string) {
             items = await waitForItems();
         }
 
+        stashGlyphs(items);
         const item = items.find(el => matchItem(el, id));
         if (!item) {
             logger.warn("Native mode item not found:", id);
@@ -168,6 +234,38 @@ async function selectMode(id: string) {
     } finally {
         setPicking(false);
     }
+}
+
+function useNativeGlyph(id: string) {
+    const [, bump] = React.useState(0);
+    React.useEffect(() => {
+        const onHarvest = () => bump(n => n + 1);
+        harvestListeners.add(onHarvest);
+        void harvestIcons();
+        return () => {
+            harvestListeners.delete(onHarvest);
+        };
+    }, [id]);
+    return harvested.get(id);
+}
+
+function PinGlyph({ id, Icon, label, showLabels }: {
+    id: string;
+    Icon: (typeof MODES)[number]["Icon"];
+    label: string;
+    showLabels: boolean;
+}) {
+    const html = useNativeGlyph(id);
+    const glyph = html
+        ? <span className={cl("glyph")} dangerouslySetInnerHTML={{ __html: html }} />
+        : <Icon size={18} />;
+    if (!showLabels) return glyph;
+    return (
+        <>
+            {glyph}
+            <span className={cl("label")}>{label}</span>
+        </>
+    );
 }
 
 function PinnedModes() {
@@ -193,14 +291,7 @@ function PinnedModes() {
                 <ChatBarButton
                     key={m.id}
                     size="sm"
-                    icon={showLabels
-                        ? (
-                            <>
-                                <m.Icon size={18} />
-                                <span className={cl("label")}>{m.label}</span>
-                            </>
-                        )
-                        : <m.Icon size={18} />}
+                    icon={<PinGlyph id={m.id} Icon={m.Icon} label={m.label} showLabels={showLabels} />}
                     tooltip={m.label}
                     onClick={onPin(m.id)}
                     className={classes(cl("pin"), selectedModeId === m.id && cl("on"), showLabels && cl("labeled"))}
@@ -228,6 +319,8 @@ export default definePlugin({
 
     stop() {
         setPicking(false);
+        harvested.clear();
+        harvestListeners.clear();
     },
 
     renderPinned: ErrorBoundary.wrap(PinnedModes),
