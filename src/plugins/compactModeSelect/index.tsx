@@ -9,7 +9,7 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import { ChatBarButton } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { ConnectedAppsIcon, HammerIcon, LightbulbIcon, Minimize2Icon, RocketIcon, ZapIcon } from "@components/icons";
+import { AutoModeIcon, BuildModeIcon, ConnectedAppsIcon, FastModeIcon, LightbulbIcon, Minimize2Icon } from "@components/icons";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
 import { React } from "@turbopack/common/react";
 import { ModesStore } from "@turbopack/common/stores";
@@ -23,11 +23,11 @@ const logger = new Logger("CompactModeSelect");
 const cl = classNameFactory("void-cms-");
 
 const MODES = [
-    { id: "auto", pin: "pinAuto", label: "Auto", Icon: RocketIcon },
-    { id: "fast", pin: "pinFast", label: "Fast", Icon: ZapIcon },
+    { id: "auto", pin: "pinAuto", label: "Auto", Icon: AutoModeIcon },
+    { id: "fast", pin: "pinFast", label: "Fast", Icon: FastModeIcon },
     { id: "expert", pin: "pinExpert", label: "Expert", Icon: LightbulbIcon },
     { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: ConnectedAppsIcon },
-    { id: "build", pin: "pinBuild", label: "Build", Icon: HammerIcon },
+    { id: "build", pin: "pinBuild", label: "Build", Icon: BuildModeIcon },
 ] as const;
 
 const KNOWN_IDS = new Set<string>(MODES.map(m => m.id));

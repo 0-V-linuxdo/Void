@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.10] v1.0.0
+// @version      [20260909.11] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.10] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.11] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -2079,17 +2079,18 @@ ${sourceUrl}`;
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M11 18H10C7.79086 18 6 16.2091 6 14V13"
   }));
-  var RocketIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"
+  var AutoModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    strokeLinecap: "square",
+    d: "M6.5 12.5L11.5 17.5M6.5 12.5L11.8349 6.83172C13.5356 5.02464 15.9071 4 18.3887 4H20V5.61135C20 8.09292 18.9754 10.4644 17.1683 12.1651L11.5 17.5M6.5 12.5L2 11L5.12132 7.87868C5.68393 7.31607 6.44699 7 7.24264 7H11M11.5 17.5L13 22L16.1213 18.8787C16.6839 18.3161 17 17.553 17 16.7574V13"
   }), /* @__PURE__ */ React.createElement("path", {
-    d: "m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"
+    d: "M4.5 16.5C4.5 16.5 4 18 4 20C6 20 7.5 19.5 7.5 19.5"
   }));
-  var ZapIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
+  var FastModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+    d: "M5 14.25L14 4L13 9.75H19L10 20L11 14.25H5Z"
+  }));
+  var BuildModeIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
+    fillRule: "evenodd",
+    d: "M6.55273 4.60517C9.30778 1.96643 12.7289 1.47144 16.748 2.49872L19.1709 3.11787L16.9883 4.34052C16.0286 4.87786 15.0421 5.85039 14.5645 6.87763C14.3308 7.38043 14.2396 7.85117 14.2852 8.26728C14.3289 8.6664 14.5051 9.08437 14.9307 9.50068L20.5068 14.9548C22.0873 16.3103 22.1844 18.7292 20.707 20.2067C19.2281 21.6857 16.8059 21.5867 15.4512 20.0017C15.4468 19.9971 15.4413 19.9919 15.4355 19.986C15.4119 19.9617 15.3773 19.9252 15.332 19.8786C15.2412 19.7851 15.1086 19.6485 14.9424 19.4772C14.6098 19.1346 14.1405 18.653 13.5977 18.0944C12.5116 16.9769 11.1275 15.5535 9.93457 14.3317C9.65277 14.0434 9.32401 13.9826 9.07031 14.0456C8.82894 14.1056 8.57482 14.2967 8.46875 14.7136L8.40137 14.9802L6.5 16.8815L1.08594 11.4675L3.08594 9.46747H3.5C3.84716 9.46747 3.9785 9.37185 4.0752 9.26728C4.22615 9.1039 4.36795 8.82197 4.55371 8.30732C4.8865 7.38517 5.29734 5.80772 6.55273 4.60517ZM11.668 13.2448C12.789 14.3937 14.0363 15.6752 15.0322 16.6999C15.5754 17.2588 16.0441 17.7419 16.377 18.0847C16.5432 18.2559 16.6757 18.3924 16.7666 18.486C16.812 18.5328 16.8474 18.569 16.8711 18.5935C16.8826 18.6053 16.8914 18.6146 16.8975 18.6208C16.9004 18.6238 16.9028 18.627 16.9043 18.6286L16.9062 18.6296L16.9072 18.6306L16.9336 18.6579L16.957 18.6862C17.5529 19.4013 18.6348 19.4509 19.293 18.7927C19.951 18.1345 19.9016 17.0526 19.1865 16.4567L19.1562 16.4313L19.1279 16.404L13.7598 11.153L11.668 13.2448ZM14.1406 4.05244C11.6131 3.80062 9.61076 4.44487 7.93555 6.04951C7.10476 6.84532 6.84901 7.83879 6.43457 8.98701C6.24676 9.5073 5.99495 10.1367 5.54395 10.6247C5.12935 11.0732 4.597 11.349 3.94531 11.4352L3.91406 11.4675L6.5 14.0534L6.61914 13.9333C6.95792 12.978 7.6995 12.326 8.58789 12.1052C9.04163 11.9924 9.51491 11.9981 9.96875 12.1159L12.5625 9.52216C12.4239 9.18685 12.3357 8.83958 12.2969 8.48505C12.2019 7.6178 12.4054 6.77723 12.751 6.03388C13.0875 5.31006 13.578 4.63529 14.1406 4.05244Z"
   }));
   var LightbulbIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"
@@ -2097,13 +2098,6 @@ ${sourceUrl}`;
     d: "M9 18h6"
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M10 22h4"
-  }));
-  var HammerIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m18 15 4-4"
-  }), /* @__PURE__ */ React.createElement("path", {
-    d: "m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"
   }));
   var SparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
@@ -6994,9 +6988,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.10] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"41ba40b"}`
-    }, `(${"41ba40b"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.11] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"9a248c8"}`
+    }, `(${"9a248c8"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15858,6 +15852,8 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     max-height: 2.25rem;
     padding: 0;
     position: relative;
+    display: grid;
+    place-items: center;
 }
 
 .query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button > * {
@@ -15865,11 +15861,11 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 }
 
 .query-bar:has(.void-cms-pins):not(:has(.void-cms-all-covered)) [data-query-bar-mode-select] button::after {
-    content: "⋮";
-    font-size: 1.25rem;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0;
+    content: "";
+    width: 18px;
+    height: 18px;
+    background-color: currentcolor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='5' cy='12' r='1'/%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3Ccircle cx='19' cy='12' r='1'/%3E%3C/svg%3E") center / 18px 18px no-repeat;
 }
 
 html.void-cms-picking .query-bar [data-query-bar-mode-select] {
@@ -15902,11 +15898,11 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
   var logger29 = new Logger("CompactModeSelect");
   var cl25 = classNameFactory("void-cms-");
   var MODES = [
-    { id: "auto", pin: "pinAuto", label: "Auto", Icon: RocketIcon },
-    { id: "fast", pin: "pinFast", label: "Fast", Icon: ZapIcon },
+    { id: "auto", pin: "pinAuto", label: "Auto", Icon: AutoModeIcon },
+    { id: "fast", pin: "pinFast", label: "Fast", Icon: FastModeIcon },
     { id: "expert", pin: "pinExpert", label: "Expert", Icon: LightbulbIcon },
     { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: ConnectedAppsIcon },
-    { id: "build", pin: "pinBuild", label: "Build", Icon: HammerIcon }
+    { id: "build", pin: "pinBuild", label: "Build", Icon: BuildModeIcon }
   ];
   var KNOWN_IDS = new Set(MODES.map((m) => m.id));
   var PIN_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m.pin]));
