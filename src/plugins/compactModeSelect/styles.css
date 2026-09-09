@@ -1,0 +1,38 @@
+/*
+ * Void, a modification for grok.com
+ * Copyright (c) 2026 Void contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-cms-pins {
+    contain: content;
+}
+
+.query-bar:has(.void-cms-all-pinned) [data-query-bar-mode-select] {
+    display: none !important;
+}
+
+.void-cms-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.void-cms-label {
+    display: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+@media (width >= 48rem) {
+    .void-cms-labeled .void-cms-label {
+        display: inline;
+    }
+
+    button:has(.void-cms-labeled) {
+        width: auto;
+        border-radius: 999px;
+        padding-inline: 0.5rem;
+    }
+}
