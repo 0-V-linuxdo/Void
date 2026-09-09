@@ -85,11 +85,30 @@ html.void-cms-picking .query-bar [data-query-bar-mode-select] {
     pointer-events: auto !important;
 }
 
+html.void-cms-picking [data-radix-popper-content-wrapper],
+html.void-cms-picking [data-radix-menu-content],
+html.void-cms-picking [data-radix-dropdown-menu-content],
+html.void-cms-picking [data-radix-select-content],
+html.void-cms-picking [data-radix-popover-content],
 html.void-cms-picking [role="menu"],
-html.void-cms-picking [role="listbox"],
-html.void-cms-picking [data-radix-popper-content-wrapper] {
+html.void-cms-picking [role="listbox"] {
     opacity: 0 !important;
     visibility: hidden !important;
+}
+
+.void-cms-ghost {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+html.void-cms-picked .void-cms-ghost,
+html.void-cms-picked [data-radix-popper-content-wrapper],
+html.void-cms-picked [data-radix-menu-content],
+html.void-cms-picked [data-radix-dropdown-menu-content],
+html.void-cms-picked [data-radix-select-content],
+html.void-cms-picked [data-radix-popover-content],
+html.void-cms-picked [role="menu"],
+html.void-cms-picked [role="listbox"] {
     pointer-events: none !important;
 }
 

@@ -40,10 +40,19 @@ const DEFAULT_PIN_ORDER = "heavy,build";
 const SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels", "hideNativeTrigger", "pinOrder"] as const;
 
 const ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
-const MENU_ROOT_SEL = "[data-radix-popper-content-wrapper], [data-radix-menu-content], [role='menu'], [role='listbox']";
+const MENU_ROOT_SEL = [
+    "[data-radix-popper-content-wrapper]",
+    "[data-radix-menu-content]",
+    "[data-radix-dropdown-menu-content]",
+    "[data-radix-select-content]",
+    "[data-radix-popover-content]",
+    "[role='menu']",
+    "[role='listbox']",
+].join(", ");
 const TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
 const PICK_MS = 900;
 const POINTER: PointerEventInit = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
+const GHOST_STYLE = { opacity: "0", visibility: "hidden" } as const;
 
 const settings = definePluginSettings({
     pinList: {
@@ -103,10 +112,31 @@ let picking = false;
 let harvesting = false;
 const harvested = new Map<string, string>();
 const harvestListeners = new Set<() => void>();
+const ghosts = new Set<HTMLElement>();
+let cloakWatch: MutationObserver | null = null;
+
+function uncloak() {
+    for (const host of ghosts) {
+        host.classList.remove(cl("ghost"));
+        host.style.removeProperty("opacity");
+        host.style.removeProperty("visibility");
+        host.style.removeProperty("pointer-events");
+    }
+    ghosts.clear();
+}
 
 function setPicking(on: boolean) {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
+    if (on) {
+        cloakWatch ??= new MutationObserver(onCloakMutations);
+        cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
+        return;
+    }
+    cloakWatch?.disconnect();
+    cloakWatch = null;
+    document.documentElement.classList.remove("void-cms-picked");
+    uncloak();
 }
 
 function notifyHarvest() {
@@ -165,31 +195,78 @@ function isModeMenu(items: HTMLElement[]) {
     return items.filter(el => MODES.some(m => matchItem(el, m.id))).length >= 2;
 }
 
-function menuItems(): HTMLElement[] {
-    for (const root of document.querySelectorAll(MENU_ROOT_SEL)) {
-        const items = [...root.querySelectorAll<HTMLElement>(ITEM_SEL)];
-        if (isModeMenu(items)) return items;
+function ghostHost(el: HTMLElement): HTMLElement {
+    const wrap = el.closest("[data-radix-popper-content-wrapper]");
+    if (wrap instanceof HTMLElement) return wrap;
+    let host = el;
+    for (let n: HTMLElement | null = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+        const pos = getComputedStyle(n).position;
+        if (pos === "fixed" || pos === "absolute") host = n;
     }
-    return [];
+    return host;
 }
 
-function waitForItems() {
+function cloak(menu: { root: HTMLElement; items: HTMLElement[] }) {
+    const host = ghostHost(menu.root);
+    if (ghosts.has(host)) return;
+    host.classList.add(cl("ghost"));
+    host.style.setProperty("opacity", GHOST_STYLE.opacity, "important");
+    host.style.setProperty("visibility", GHOST_STYLE.visibility, "important");
+    ghosts.add(host);
+}
+
+function lockGhosts() {
+    document.documentElement.classList.add("void-cms-picked");
+    for (const host of ghosts) host.style.setProperty("pointer-events", "none", "important");
+}
+
+function modeMenu(): { root: HTMLElement; items: HTMLElement[] } | null {
+    for (const root of document.querySelectorAll(MENU_ROOT_SEL)) {
+        if (!(root instanceof HTMLElement)) continue;
+        const items = [...root.querySelectorAll<HTMLElement>(ITEM_SEL)];
+        if (isModeMenu(items)) return { root, items };
+    }
+    const loose = [...document.querySelectorAll<HTMLElement>(ITEM_SEL)].filter(el => MODES.some(m => matchItem(el, m.id)));
+    if (loose.length < 2) return null;
+    const nested = loose[0].closest(MENU_ROOT_SEL);
+    const root = nested instanceof HTMLElement ? nested : ghostHost(loose[0]);
+    return { root, items: loose };
+}
+
+function onCloakMutations() {
+    const menu = modeMenu();
+    if (menu) cloak(menu);
+}
+
+function waitUntil(ok: () => boolean) {
     const start = performance.now();
-    return new Promise<HTMLElement[]>(resolve => {
+    return new Promise<boolean>(resolve => {
         const tick = () => {
-            const items = menuItems();
-            if (items.length) {
-                resolve(items);
+            if (ok()) {
+                resolve(true);
                 return;
             }
             if (performance.now() - start > PICK_MS) {
-                resolve([]);
+                resolve(false);
                 return;
             }
             requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
     });
+}
+
+async function waitForMenu() {
+    await waitUntil(() => {
+        const menu = modeMenu();
+        if (menu) cloak(menu);
+        return !!menu;
+    });
+    return modeMenu();
+}
+
+function waitForGone() {
+    return waitUntil(() => !modeMenu());
 }
 
 function nativeTrigger() {
@@ -245,13 +322,17 @@ async function harvestIcons() {
     harvesting = true;
     setPicking(true);
     try {
-        let items = menuItems();
-        if (!items.length) {
+        let menu = modeMenu();
+        if (!menu) {
             clickEl(trigger);
-            items = await waitForItems();
+            menu = await waitForMenu();
         }
-        stashGlyphs(items);
-        if (menuItems().length) clickEl(trigger);
+        if (!menu) return;
+        cloak(menu);
+        stashGlyphs(menu.items);
+        if (modeMenu()) clickEl(trigger);
+        lockGhosts();
+        await waitForGone();
     } catch (e) {
         logger.warn("Failed to harvest mode icons:", e);
     } finally {
@@ -266,27 +347,35 @@ async function selectMode(id: string) {
     try {
         await ModesStore.useModesStore.getState().ensureLoaded();
 
-        let items = menuItems();
-        if (!items.length) {
+        let menu = modeMenu();
+        if (!menu) {
             const trigger = nativeTrigger();
             if (!trigger) {
                 logger.warn("Native mode selector not found");
                 return;
             }
             clickEl(trigger);
-            items = await waitForItems();
+            menu = await waitForMenu();
+        }
+        if (!menu) {
+            logger.warn("Native mode item not found:", id);
+            return;
         }
 
-        stashGlyphs(items);
-        const item = items.find(el => matchItem(el, id));
+        cloak(menu);
+        stashGlyphs(menu.items);
+        const item = menu.items.find(el => matchItem(el, id));
         if (!item) {
             logger.warn("Native mode item not found:", id);
-            const open = menuItems();
             const trigger = nativeTrigger();
-            if (open.length && trigger) clickEl(trigger);
+            if (modeMenu() && trigger) clickEl(trigger);
+            lockGhosts();
+            await waitForGone();
             return;
         }
         clickEl(item);
+        lockGhosts();
+        await waitForGone();
     } catch (e) {
         logger.warn("Failed to select mode:", e);
     } finally {

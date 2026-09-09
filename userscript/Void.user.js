@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/Void
-// @version      [20260909.12] v1.0.0
+// @version      [20260909.13] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260909.12] v1.0.0 — A modification for grok.com
+ * Void++ [20260909.13] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/Void
@@ -7019,9 +7019,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260909.12] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"19af820"}`
-    }, `(${"19af820"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260909.13] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/Void"}/commit/${"2087319"}`
+    }, `(${"2087319"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15903,11 +15903,30 @@ html.void-cms-picking .query-bar [data-query-bar-mode-select] {
     pointer-events: auto !important;
 }
 
+html.void-cms-picking [data-radix-popper-content-wrapper],
+html.void-cms-picking [data-radix-menu-content],
+html.void-cms-picking [data-radix-dropdown-menu-content],
+html.void-cms-picking [data-radix-select-content],
+html.void-cms-picking [data-radix-popover-content],
 html.void-cms-picking [role="menu"],
-html.void-cms-picking [role="listbox"],
-html.void-cms-picking [data-radix-popper-content-wrapper] {
+html.void-cms-picking [role="listbox"] {
     opacity: 0 !important;
     visibility: hidden !important;
+}
+
+.void-cms-ghost {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+html.void-cms-picked .void-cms-ghost,
+html.void-cms-picked [data-radix-popper-content-wrapper],
+html.void-cms-picked [data-radix-menu-content],
+html.void-cms-picked [data-radix-dropdown-menu-content],
+html.void-cms-picked [data-radix-select-content],
+html.void-cms-picked [data-radix-popover-content],
+html.void-cms-picked [role="menu"],
+html.void-cms-picked [role="listbox"] {
     pointer-events: none !important;
 }
 
@@ -15991,10 +16010,19 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
   var DEFAULT_PIN_ORDER = "heavy,build";
   var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels", "hideNativeTrigger", "pinOrder"];
   var ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
-  var MENU_ROOT_SEL = "[data-radix-popper-content-wrapper], [data-radix-menu-content], [role='menu'], [role='listbox']";
+  var MENU_ROOT_SEL = [
+    "[data-radix-popper-content-wrapper]",
+    "[data-radix-menu-content]",
+    "[data-radix-dropdown-menu-content]",
+    "[data-radix-select-content]",
+    "[data-radix-popover-content]",
+    "[role='menu']",
+    "[role='listbox']"
+  ].join(", ");
   var TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
   var PICK_MS = 900;
   var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
+  var GHOST_STYLE = { opacity: "0", visibility: "hidden" };
   var settings24 = definePluginSettings({
     pinList: {
       type: 6 /* COMPONENT */,
@@ -16052,9 +16080,29 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
   var harvesting = false;
   var harvested = new Map;
   var harvestListeners = new Set;
+  var ghosts = new Set;
+  var cloakWatch = null;
+  function uncloak() {
+    for (const host of ghosts) {
+      host.classList.remove(cl25("ghost"));
+      host.style.removeProperty("opacity");
+      host.style.removeProperty("visibility");
+      host.style.removeProperty("pointer-events");
+    }
+    ghosts.clear();
+  }
   function setPicking(on) {
     picking = on;
     document.documentElement.classList.toggle("void-cms-picking", on);
+    if (on) {
+      cloakWatch ??= new MutationObserver(onCloakMutations);
+      cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
+      return;
+    }
+    cloakWatch?.disconnect();
+    cloakWatch = null;
+    document.documentElement.classList.remove("void-cms-picked");
+    uncloak();
   }
   function notifyHarvest() {
     for (const fn of harvestListeners)
@@ -16108,31 +16156,80 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
   function isModeMenu(items) {
     return items.filter((el) => MODES.some((m) => matchItem(el, m.id))).length >= 2;
   }
-  function menuItems() {
+  function ghostHost(el) {
+    const wrap = el.closest("[data-radix-popper-content-wrapper]");
+    if (wrap instanceof HTMLElement)
+      return wrap;
+    let host = el;
+    for (let n = el;n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+      const pos = getComputedStyle(n).position;
+      if (pos === "fixed" || pos === "absolute")
+        host = n;
+    }
+    return host;
+  }
+  function cloak(menu) {
+    const host = ghostHost(menu.root);
+    if (ghosts.has(host))
+      return;
+    host.classList.add(cl25("ghost"));
+    host.style.setProperty("opacity", GHOST_STYLE.opacity, "important");
+    host.style.setProperty("visibility", GHOST_STYLE.visibility, "important");
+    ghosts.add(host);
+  }
+  function lockGhosts() {
+    document.documentElement.classList.add("void-cms-picked");
+    for (const host of ghosts)
+      host.style.setProperty("pointer-events", "none", "important");
+  }
+  function modeMenu() {
     for (const root of document.querySelectorAll(MENU_ROOT_SEL)) {
+      if (!(root instanceof HTMLElement))
+        continue;
       const items = [...root.querySelectorAll(ITEM_SEL)];
       if (isModeMenu(items))
-        return items;
+        return { root, items };
     }
-    return [];
+    const loose = [...document.querySelectorAll(ITEM_SEL)].filter((el) => MODES.some((m) => matchItem(el, m.id)));
+    if (loose.length < 2)
+      return null;
+    const nested = loose[0].closest(MENU_ROOT_SEL);
+    const root = nested instanceof HTMLElement ? nested : ghostHost(loose[0]);
+    return { root, items: loose };
   }
-  function waitForItems() {
+  function onCloakMutations() {
+    const menu = modeMenu();
+    if (menu)
+      cloak(menu);
+  }
+  function waitUntil(ok) {
     const start = performance.now();
     return new Promise((resolve) => {
       const tick = () => {
-        const items = menuItems();
-        if (items.length) {
-          resolve(items);
+        if (ok()) {
+          resolve(true);
           return;
         }
         if (performance.now() - start > PICK_MS) {
-          resolve([]);
+          resolve(false);
           return;
         }
         requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
     });
+  }
+  async function waitForMenu() {
+    await waitUntil(() => {
+      const menu = modeMenu();
+      if (menu)
+        cloak(menu);
+      return !!menu;
+    });
+    return modeMenu();
+  }
+  function waitForGone() {
+    return waitUntil(() => !modeMenu());
   }
   function nativeTrigger() {
     return document.querySelector(TRIGGER_SEL);
@@ -16189,14 +16286,19 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     harvesting = true;
     setPicking(true);
     try {
-      let items = menuItems();
-      if (!items.length) {
+      let menu = modeMenu();
+      if (!menu) {
         clickEl(trigger);
-        items = await waitForItems();
+        menu = await waitForMenu();
       }
-      stashGlyphs(items);
-      if (menuItems().length)
+      if (!menu)
+        return;
+      cloak(menu);
+      stashGlyphs(menu.items);
+      if (modeMenu())
         clickEl(trigger);
+      lockGhosts();
+      await waitForGone();
     } catch (e) {
       logger29.warn("Failed to harvest mode icons:", e);
     } finally {
@@ -16210,27 +16312,35 @@ html.void-cms-picking [data-radix-popper-content-wrapper] {
     setPicking(true);
     try {
       await ModesStore.useModesStore.getState().ensureLoaded();
-      let items = menuItems();
-      if (!items.length) {
+      let menu = modeMenu();
+      if (!menu) {
         const trigger = nativeTrigger();
         if (!trigger) {
           logger29.warn("Native mode selector not found");
           return;
         }
         clickEl(trigger);
-        items = await waitForItems();
+        menu = await waitForMenu();
       }
-      stashGlyphs(items);
-      const item = items.find((el) => matchItem(el, id));
+      if (!menu) {
+        logger29.warn("Native mode item not found:", id);
+        return;
+      }
+      cloak(menu);
+      stashGlyphs(menu.items);
+      const item = menu.items.find((el) => matchItem(el, id));
       if (!item) {
         logger29.warn("Native mode item not found:", id);
-        const open = menuItems();
         const trigger = nativeTrigger();
-        if (open.length && trigger)
+        if (modeMenu() && trigger)
           clickEl(trigger);
+        lockGhosts();
+        await waitForGone();
         return;
       }
       clickEl(item);
+      lockGhosts();
+      await waitForGone();
     } catch (e) {
       logger29.warn("Failed to select mode:", e);
     } finally {
