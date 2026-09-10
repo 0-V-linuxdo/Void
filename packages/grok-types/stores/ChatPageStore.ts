@@ -153,6 +153,7 @@ export interface ChatPageStoreState {
     setQuotePopupData: (data: any) => void;
     setSidePanelContent: (content: any) => void;
     closeSidePanel: () => void;
+    closeSidePanelExplicitly: () => void;
     getSidePanelResponseId: () => string | undefined;
     /** Extract the response ID from a side panel content object, if present. */
     _extractResponseIdFromContent: (content: any) => string | undefined;

@@ -28,6 +28,8 @@
 | RecentTopics | On | Switch recently opened chats with Ctrl+` (glass cards, project name, last Q&A preview). |
 | CompactModeSelect | On | Keep the chat input model selector as an icon at every width. |
 | UserQuotes | On | Keep quoted lines in your own bubbles marked with a visible left bar after markdown hides `>`. |
+| NoRightPanel | On | Keep Grok's right panel closed, including auto-open and restore when switching chats. |
+| NoSidebarPlugins | On | Move the sidebar Plugins button into the avatar menu (next to Void++ / Help). |
 
 #### Settings UI
 
