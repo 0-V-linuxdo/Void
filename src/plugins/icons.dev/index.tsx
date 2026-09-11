@@ -125,7 +125,7 @@ export default definePlugin({
 
     start() {
         allTabs.push({
-            id: "void_icons_tab",
+            id: "voidpp_icons_tab",
             name: "Icons",
             icon: TelescopeIcon,
             component: IconsTab,
@@ -133,7 +133,7 @@ export default definePlugin({
     },
 
     stop() {
-        const idx = allTabs.findIndex(t => t.id === "void_icons_tab");
+        const idx = allTabs.findIndex(t => t.id === "voidpp_icons_tab");
         if (idx !== -1) allTabs.splice(idx, 1);
     },
 });

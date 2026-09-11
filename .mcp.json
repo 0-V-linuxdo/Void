@@ -4,7 +4,7 @@
             "type": "http",
             "url": "http://localhost:7890/"
         },
-        "void-b": {
+        "voidpp-b": {
             "type": "http",
             "url": "http://localhost:7891/"
         }

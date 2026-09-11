@@ -71,16 +71,30 @@ function openExisting(name: string): Promise<IDBDatabase | null> {
     });
 }
 
+function dropLegacyDatabase(): Promise<void> {
+    return new Promise(resolve => {
+        const req = indexedDB.deleteDatabase(LEGACY_DB_NAME);
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+        req.onblocked = () => resolve();
+    });
+}
+
 async function migrateLegacy(db: IDBDatabase): Promise<void> {
     let legacy: IDBDatabase | null = null;
+    let drop = false;
     try {
         legacy = await openExisting(LEGACY_DB_NAME);
-        if (legacy) await copyStore(legacy, db);
+        if (legacy) {
+            await copyStore(legacy, db);
+            drop = true;
+        }
     } catch (e) {
         if (IS_DEV) logger.warn(e);
     } finally {
         legacy?.close();
     }
+    if (drop) await dropLegacyDatabase();
 }
 
 function open(): Promise<IDBDatabase> {
