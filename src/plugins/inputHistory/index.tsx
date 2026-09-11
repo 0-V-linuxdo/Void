@@ -26,12 +26,39 @@ const MAX_MIN = 10;
 const MAX_MAX = 500;
 const MAX_DEFAULT = 100;
 const HUD_GAP_PX = 8;
-const APPLY_QUIET_MS = 120;
 const CAPTURE_DEDUPE_MS = 2000;
 const PAGE_SIZE = 10;
 
 interface PrivateSettings {
     entries: string[];
+}
+
+interface PmDoc {
+    content: { size: number };
+}
+
+type PmSelection = {
+    empty: boolean;
+    from: number;
+    constructor: { atStart(doc: PmDoc): PmSelection; atEnd(doc: PmDoc): PmSelection };
+};
+
+interface PmTransaction {
+    doc: PmDoc;
+    replaceWith(from: number, to: number, nodes: unknown[]): PmTransaction;
+    setSelection(sel: PmSelection): PmTransaction;
+    scrollIntoView(): PmTransaction;
+}
+
+interface TiptapEditor {
+    state: {
+        doc: PmDoc;
+        selection: PmSelection;
+        tr: PmTransaction;
+        schema: { nodes: { paragraph: { create(attrs: null, content: unknown): unknown } }; text(text: string): unknown };
+    };
+    view: { dom: HTMLElement; composing: boolean; dispatch(tr: PmTransaction): void };
+    getText(options: { blockSeparator: string }): string;
 }
 
 const settings = definePluginSettings({
@@ -53,13 +80,8 @@ const recentAt = new Map<string, number>();
 let cursor = 0;
 let draft = "";
 let recalling = false;
-let applying = false;
 let composing = false;
-let applyGen = 0;
 let keys: AbortController | null = null;
-let applyTimer: ReturnType<typeof setTimeout> | undefined;
-let applyEl: HTMLElement | null = null;
-let applyAtStart = true;
 
 function getEntries(): string[] {
     const raw = settings.plain.entries;
@@ -86,154 +108,38 @@ function imeEvent(e: Event): boolean {
     return false;
 }
 
-function invalidateApply() {
-    applyGen++;
-    applying = false;
-    applyEl = null;
-    clearTimeout(applyTimer);
-    applyTimer = undefined;
-}
-
 function resetBrowse(length: number) {
-    invalidateApply();
     cursor = length;
     draft = "";
     recalling = false;
     hideHud();
 }
 
-function chatEditor(t: EventTarget | null): HTMLElement | null {
-    if (t instanceof Text) return t.parentElement?.closest<HTMLElement>(EDITOR_SEL) ?? null;
-    if (t instanceof Element) return t.closest<HTMLElement>(EDITOR_SEL) ?? null;
-    return null;
+function chatEditor(t: EventTarget | null): TiptapEditor | null {
+    const el = t instanceof Text ? t.parentElement : (t instanceof Element ? t : null);
+    return el?.closest<HTMLElement & { editor?: TiptapEditor }>(EDITOR_SEL)?.editor ?? null;
 }
 
-function editorText(el: HTMLElement): string {
-    const blocks = el.querySelectorAll(":scope > *");
-    const raw = blocks.length
-        ? Array.from(blocks, b => b.textContent ?? "").join("\n")
-        : (el.innerText ?? el.textContent ?? "");
-    return normalize(raw);
+function editorText(editor: TiptapEditor): string {
+    return normalize(editor.getText({ blockSeparator: "\n" }));
 }
 
-function spanHeight(range: Range): number {
-    const rects = range.getClientRects();
-    let top = Infinity;
-    let bottom = -Infinity;
-    for (const r of rects) {
-        if (r.height === 0 && r.width === 0) continue;
-        if (r.top < top) top = r.top;
-        if (r.bottom > bottom) bottom = r.bottom;
-    }
-    if (top === Infinity) return range.getBoundingClientRect().height;
-    return bottom - top;
+function caretAtStart({ state: { selection, doc } }: TiptapEditor): boolean {
+    return selection.empty && selection.from === selection.constructor.atStart(doc).from;
 }
 
-function caretOnEdge(el: HTMLElement): { first: boolean; last: boolean } {
-    const sel = window.getSelection();
-    if (!sel?.rangeCount || !sel.isCollapsed) return { first: false, last: false };
-    const caret = sel.getRangeAt(0);
-    if (!el.contains(caret.startContainer)) return { first: false, last: false };
-    if (!el.innerText?.trim()) return { first: true, last: true };
-
-    const before = document.createRange();
-    before.selectNodeContents(el);
-    before.setEnd(caret.startContainer, caret.startOffset);
-    const after = document.createRange();
-    after.selectNodeContents(el);
-    after.setStart(caret.startContainer, caret.startOffset);
-
-    const { lineHeight, fontSize } = getComputedStyle(el);
-    const lh = parseFloat(lineHeight);
-    const fs = parseFloat(fontSize) || 16;
-    const budget = (lh > 0 ? lh : fs * 1.5) * 1.5;
-
-    return {
-        first: spanHeight(before) <= budget,
-        last: spanHeight(after) <= budget,
-    };
-}
-
-function matchesRecall(el: HTMLElement): boolean {
-    if (!recalling) return false;
-    const list = getEntries();
-    const expected = cursor < list.length ? list[cursor] : draft;
-    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
-}
-
-function dropRecall(el: HTMLElement) {
-    invalidateApply();
+function dropRecall(editor: TiptapEditor) {
     cursor = getEntries().length;
-    draft = editorText(el);
+    draft = editorText(editor);
     recalling = false;
     hideHud();
 }
 
-function placeCaret(el: HTMLElement, atStart: boolean) {
-    if (composing) return;
-    try {
-        const view = (el as unknown as { pmViewDesc?: { view?: {
-            composing?: boolean;
-            state: {
-                doc: unknown;
-                selection: { constructor: { atStart(doc: unknown): unknown; atEnd(doc: unknown): unknown } };
-                tr: { setSelection(sel: unknown): { scrollIntoView(): unknown } };
-            };
-            dispatch(tr: unknown): void;
-        } } }).pmViewDesc?.view;
-        if (view) {
-            if (view.composing) return;
-            const Sel = view.state.selection.constructor;
-            const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
-            view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
-            return;
-        }
-    } catch (err) {
-        logger.debug("placeCaret pm failed:", err);
-    }
-    const native = window.getSelection();
-    if (!native) return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(atStart);
-    native.removeAllRanges();
-    native.addRange(range);
-}
-
-function scheduleApplyEnd(gen: number) {
-    clearTimeout(applyTimer);
-    applyTimer = setTimeout(() => {
-        if (gen !== applyGen) return;
-        applying = false;
-        const el = applyEl;
-        applyEl = null;
-        if (!el || composing) return;
-        if (!recalling) return;
-        if (!matchesRecall(el)) dropRecall(el);
-        else placeCaret(el, applyAtStart);
-    }, APPLY_QUIET_MS);
-}
-
-function setEditorText(el: HTMLElement, text: string, atStart: boolean) {
-    el.focus();
-    const sel = window.getSelection();
-    if (!sel) return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    sel.removeAllRanges();
-    sel.addRange(range);
-    applying = true;
-    applyEl = el;
-    applyAtStart = atStart;
-    const gen = ++applyGen;
-    try {
-        if (!text) document.execCommand("delete");
-        else document.execCommand("insertText", false, text);
-    } catch (err) {
-        logger.debug("insertText failed:", err);
-    }
-    placeCaret(el, atStart);
-    scheduleApplyEnd(gen);
+function setEditorText(editor: TiptapEditor, text: string) {
+    const { schema, doc, tr, selection } = editor.state;
+    const blocks = text.split("\n").map(line => schema.nodes.paragraph.create(null, line ? schema.text(line) : null));
+    tr.replaceWith(0, doc.content.size, blocks);
+    editor.view.dispatch(tr.setSelection(selection.constructor.atEnd(tr.doc)).scrollIntoView());
 }
 
 function hudEl(): HTMLElement {
@@ -250,8 +156,8 @@ function hideHud() {
     document.querySelector(`.${cl("hud")}`)?.classList.remove(cl("hud-on"));
 }
 
-function showHud(label: string, editor: HTMLElement) {
-    const bar = editor.closest(".query-bar");
+function showHud(label: string, editor: TiptapEditor) {
+    const bar = editor.view.dom.closest(".query-bar");
     if (!bar) return;
     const el = hudEl();
     el.textContent = label;
@@ -282,99 +188,79 @@ function pushEntry(text: string) {
     resetBrowse(next.length);
 }
 
-function cycle(older: boolean, el: HTMLElement) {
+function cycle(older: boolean, editor: TiptapEditor) {
     const list = getEntries();
-    if (!list.length && older) return;
     if (cursor >= list.length) {
-        draft = editorText(el);
+        draft = editorText(editor);
         cursor = list.length;
     }
     const next = older ? cursor - 1 : cursor + 1;
     if (next < 0 || next > list.length) return;
     cursor = next;
     recalling = true;
-    setEditorText(el, next === list.length ? draft : list[next], older);
-    if (next < list.length) showHud(`${next + 1} / ${list.length}`, el);
+    setEditorText(editor, next === list.length ? draft : list[next]);
+    if (next < list.length) showHud(`${next + 1} / ${list.length}`, editor);
     else hideHud();
 }
 
 function onKeyDown(e: KeyboardEvent) {
-    if (imeEvent(e)) return;
-    if (e.ctrlKey || e.metaKey) return;
+    if (imeEvent(e) || e.ctrlKey || e.metaKey) return;
 
-    const el = chatEditor(e.target);
-    if (!el) return;
+    const editor = chatEditor(e.target);
+    if (!editor) return;
 
-    if (applying && e.key !== "ArrowUp" && e.key !== "ArrowDown") invalidateApply();
-
-    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
-        dropRecall(el);
+    if (e.key === "Escape" && recalling) {
+        dropRecall(editor);
         e.preventDefault();
         e.stopImmediatePropagation();
         return;
     }
 
     if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
-        pushEntry(editorText(el));
+        pushEntry(editorText(editor));
         return;
     }
 
-    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
-    if (e.shiftKey) return;
+    if ((e.key !== "ArrowUp" && e.key !== "ArrowDown") || e.shiftKey) return;
 
     const older = e.key === "ArrowUp";
-    const force = e.altKey;
-    const list = getEntries();
-    if (!force) {
-        const edge = caretOnEdge(el);
-        if ((older && !edge.first) || (!older && !edge.last)) return;
-    }
-
-    if (older && (!list.length || cursor <= 0)) return;
-    if (!older && cursor >= list.length) return;
+    if (older ? cursor <= 0 : cursor >= getEntries().length) return;
+    if (!recalling && !e.altKey && !caretAtStart(editor)) return;
+    if (editor.view.composing) return;
 
     e.preventDefault();
     e.stopImmediatePropagation();
-    cycle(older, el);
+    cycle(older, editor);
 }
 
 function onPointerDown(e: PointerEvent) {
     if (!recalling) return;
-    const el = chatEditor(e.target);
-    if (!el) return;
-    dropRecall(el);
+    const editor = chatEditor(e.target);
+    if (editor) dropRecall(editor);
 }
 
 function onCompositionStart(e: Event) {
-    if (!chatEditor(e.target)) return;
+    const editor = chatEditor(e.target);
+    if (!editor) return;
     composing = true;
-    invalidateApply();
+    if (recalling) dropRecall(editor);
 }
 
-function onCompositionEnd(e: Event) {
-    const el = chatEditor(e.target);
-    if (!el) return;
+function onCompositionEnd() {
     composing = false;
-    if (recalling && !matchesRecall(el)) dropRecall(el);
 }
 
 function onInput(e: Event) {
-    const el = chatEditor(e.target);
-    if (!el) return;
-    if (imeEvent(e)) {
-        if (applying) invalidateApply();
-        return;
-    }
-    const recalled = matchesRecall(el);
-    if (applying && recalled) return;
-    if (recalling && !recalled) dropRecall(el);
+    if (!recalling || imeEvent(e)) return;
+    const editor = chatEditor(e.target);
+    if (editor) dropRecall(editor);
 }
 
 function onSubmit(e: Event) {
     const form = e.target;
     if (!(form instanceof HTMLFormElement)) return;
-    const editor = form.querySelector(EDITOR_SEL);
-    if (editor instanceof HTMLElement) pushEntry(editorText(editor));
+    const editor = chatEditor(form.querySelector(EDITOR_SEL));
+    if (editor) pushEntry(editorText(editor));
 }
 
 function onClick(e: MouseEvent) {
@@ -387,8 +273,8 @@ function onClick(e: MouseEvent) {
     const label = (ctrl.getAttribute("aria-label") ?? "").toLowerCase();
     const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
     if (!submit && !label.includes("send") && !label.includes("submit")) return;
-    const editor = bar.querySelector(EDITOR_SEL);
-    if (editor instanceof HTMLElement) pushEntry(editorText(editor));
+    const editor = chatEditor(bar.querySelector(EDITOR_SEL));
+    if (editor) pushEntry(editorText(editor));
 }
 
 function removeEntry(index: number) {
@@ -410,7 +296,7 @@ function HistoryPanel() {
     const visible = list
         .map((text, index) => ({ text, index }))
         .filter(row => !needle || row.text.toLowerCase().includes(needle))
-        .reverse();
+        .toReversed();
     const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
     const current = Math.min(page, pageCount - 1);
     const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
@@ -541,7 +427,7 @@ function HistoryPanel() {
 export default definePlugin({
     name: "InputHistory",
     icon: HistoryIcon,
-    description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
+    description: "Press Arrow Up at the start of the input to recall previous prompts, then browse with Arrow Up and Arrow Down. Alt forces a step; Esc, a click or an edit leaves history.",
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
@@ -554,7 +440,6 @@ export default definePlugin({
         cursor = getEntries().length;
         recalling = false;
         composing = false;
-        invalidateApply();
         keys = new AbortController();
         const { signal } = keys;
         document.addEventListener("keydown", onKeyDown, { capture: true, signal });
@@ -573,7 +458,6 @@ export default definePlugin({
         recentAt.clear();
         composing = false;
         recalling = false;
-        invalidateApply();
     },
 
     onSettingsChange() {
