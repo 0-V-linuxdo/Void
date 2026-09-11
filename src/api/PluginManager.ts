@@ -15,7 +15,7 @@ import { type Patch, type Plugin, StartAt } from "@utils/types";
 
 import { addChatBarButton, removeChatBarButton } from "./ChatBarButtons";
 import { addContextMenuItem, type ContextMenuItemDef, type ContextMenuLocation, removeContextMenuItem } from "./ContextMenus";
-import { dispatch, subscribe as subscribeEvent, type VoidEvent } from "./Events";
+import { dispatch, subscribe as subscribeEvent, type VoidPPEvent } from "./Events";
 import { getSettingsPluginData, mergePluginSettings, PlainSettings, pluginPath, Settings, SettingsStore, updateSettingsPluginData } from "./Settings";
 
 const logger = new Logger("PluginManager", "#b4befe");
@@ -181,7 +181,7 @@ export function startPlugin(plugin: Plugin, silent = false): boolean {
         pluginUnsubscribers.set(plugin.name, unsubs);
 
         if (plugin.events) {
-            for (const [event, handler] of Object.entries(plugin.events) as [VoidEvent, ((data: unknown) => void) | undefined][]) {
+            for (const [event, handler] of Object.entries(plugin.events) as [VoidPPEvent, ((data: unknown) => void) | undefined][]) {
                 if (handler) unsubs.push(subscribeEvent(event, handler));
             }
         }

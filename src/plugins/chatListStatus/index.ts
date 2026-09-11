@@ -6,7 +6,7 @@
 
 import "./styles.css";
 
-import type { VoidEventMap } from "@api/Events";
+import type { VoidPPEventMap } from "@api/Events";
 import { LoaderCircleIcon } from "@components/icons";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import type { ConversationStoreState, GrokConversation } from "@grok-types/stores/ConversationStore";
@@ -309,7 +309,7 @@ function convOfResponse(responseId: string): string {
     }
 }
 
-function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
+function onStreamEnd({ responseId }: VoidPPEventMap["streamEnd"]) {
     const cid = convOfResponse(responseId);
     if (!cid) return;
     if (liveIds().has(cid)) {

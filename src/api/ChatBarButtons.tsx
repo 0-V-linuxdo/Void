@@ -59,7 +59,7 @@ function renderEntry(def: ChatBarButtonDef): ReactNode {
     );
 }
 
-export function VoidChatBarButtons({ location = "chat" }: { location?: ChatBarLocation; }): ReactNode {
+export function VoidPPChatBarButtons({ location = "chat" }: { location?: ChatBarLocation; }): ReactNode {
     useExternalStore(buttons.store);
 
     if (!buttons.size) return null;

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { VoidEventMap } from "@api/Events";
+import type { VoidPPEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
 import { AppWindowIcon } from "@components/icons";
 import { ChatPageStore, ResponseStore, RoutingStore } from "@turbopack/common/stores";
@@ -344,7 +344,7 @@ function scheduleEvaluate() {
     });
 }
 
-function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
+function onStreamEnd({ responseId }: VoidPPEventMap["streamEnd"]) {
     try {
         const response = ResponseStore.useResponseStore.getState().byId[responseId];
         lastWasError = response?.state === "error" || response?.error != null;

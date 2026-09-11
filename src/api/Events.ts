@@ -7,7 +7,7 @@
 import { Logger } from "@utils/Logger";
 import { mapGetOrCreate } from "@utils/misc";
 
-export interface VoidEventMap {
+export interface VoidPPEventMap {
     pluginToggle: void;
     pluginPin: void;
     pluginStar: void;
@@ -15,15 +15,15 @@ export interface VoidEventMap {
     streamEnd: { responseId: string };
 }
 
-export type VoidEvent = keyof VoidEventMap;
+export type VoidPPEvent = keyof VoidPPEventMap;
 
 const logger = new Logger("Events");
 
 type Handler = (data: unknown) => void;
 
-const listeners = new Map<VoidEvent, Set<Handler>>();
+const listeners = new Map<VoidPPEvent, Set<Handler>>();
 
-export function subscribe<E extends VoidEvent>(event: E, handler: (data: VoidEventMap[E]) => void): () => void {
+export function subscribe<E extends VoidPPEvent>(event: E, handler: (data: VoidPPEventMap[E]) => void): () => void {
     const set = mapGetOrCreate(listeners, event, () => new Set<Handler>());
     set.add(handler as Handler);
     return () => {
@@ -32,7 +32,7 @@ export function subscribe<E extends VoidEvent>(event: E, handler: (data: VoidEve
     };
 }
 
-export function dispatch<E extends VoidEvent>(event: E, ...args: VoidEventMap[E] extends void ? [] : [data: VoidEventMap[E]]): void {
+export function dispatch<E extends VoidPPEvent>(event: E, ...args: VoidPPEventMap[E] extends void ? [] : [data: VoidPPEventMap[E]]): void {
     const set = listeners.get(event);
     if (!set?.size) return;
     const data = args[0];

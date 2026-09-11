@@ -7,10 +7,10 @@
 import "./styles.css";
 
 import { isPluginEnabled, plugins } from "@api/PluginManager";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSetting } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
 import { ErrorBoundary, Flex, Text } from "@components";
-import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidIcon } from "@components/icons";
+import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidPPIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import { usePluginMenu } from "@plugins/pluginsFlyout";
@@ -35,7 +35,7 @@ const logger = new Logger("Settings");
 const cl = classNameFactory("void-settings-");
 
 const settings = definePluginSettings({
-    showVoidMenu: {
+    showVoidPPMenu: {
         type: OptionType.BOOLEAN,
         description: "Show the Void++ sub-menu in the avatar dropdown.",
         default: true,
@@ -109,18 +109,18 @@ function openPluginSettings(name: string) {
     openSettingsTab(PLUGINS_TAB_ID);
 }
 
-function VoidMenu() {
+function VoidPPMenu() {
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
-    const { showVoidMenu } = settings.use(["showVoidMenu"]);
+    const { showVoidPPMenu } = settings.use(["showVoidPPMenu"]);
     const menuPlugins = usePluginMenu();
 
-    if (!showVoidMenu) return null;
+    if (!showVoidPPMenu) return null;
 
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-                <VoidIcon className={cl("menu-icon")} />
+                <VoidPPIcon className={cl("menu-icon")} />
                 Void++
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -157,7 +157,7 @@ function VoidMenu() {
     );
 }
 
-const WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
+const WrappedVoidPPMenu = ErrorBoundary.wrap(VoidPPMenu);
 
 export default definePlugin({
     name: "Settings",
@@ -167,7 +167,7 @@ export default definePlugin({
     required: true,
     settings,
 
-    _renderVoidMenu: () => createElement(WrappedVoidMenu),
+    _renderVoidPPMenu: () => createElement(WrappedVoidPPMenu),
 
     _setPrimitive<K extends keyof SettingsPrimitives>(name: K, component: SettingsPrimitives[K]) {
         setSettingsPrimitive(name, component);
@@ -195,6 +195,7 @@ export default definePlugin({
     },
 
     start() {
+        migratePluginSetting("Settings", "showVoidPPMenu", "showVoidMenu");
         registerStyle("void-global", "[data-sonner-toast] [data-title]{font-weight:400}");
         try {
             if (document.head) loadSavedCSS();
@@ -211,7 +212,7 @@ export default definePlugin({
             all: true,
             replacement: {
                 match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help"/,
-                replace: "$self._renderVoidMenu(),$&",
+                replace: "$self._renderVoidPPMenu(),$&",
             },
         },
         {

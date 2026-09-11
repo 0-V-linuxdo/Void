@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { type ContextMenuLocation, type MenuPrimitives, VoidContextMenuItems } from "@api/ContextMenus";
+import { type ContextMenuLocation, type MenuPrimitives, VoidPPContextMenuItems } from "@api/ContextMenus";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { React } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
@@ -20,7 +20,7 @@ export default definePlugin({
     renderItems(location: ContextMenuLocation, ctx?: Record<string, any>, menu?: MenuPrimitives) {
         return (
             <ErrorBoundary>
-                <VoidContextMenuItems location={location} menu={menu} {...ctx} />
+                <VoidPPContextMenuItems location={location} menu={menu} {...ctx} />
             </ErrorBoundary>
         );
     },
@@ -41,11 +41,11 @@ export default definePlugin({
                 },
                 {
                     match: /Item:(\i)\.(Dropdown|Context)MenuItem,/g,
-                    replace: "$&VoidMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},",
+                    replace: "$&VoidPPMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},",
                 },
                 {
                     match: /=(\i)&&(\jsx{\i}\{onSelect:\(\)=>\1\(\),)(?=.{0,80}TrashIcon)/,
-                    replace: '=$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$1&&$2',
+                    replace: '=$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidPPMenu),$1&&$2',
                 },
             ],
         },

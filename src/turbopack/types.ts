@@ -6,10 +6,10 @@
 
 export type ModuleFactory = (helpers: TurbopackHelpers, module?: TurbopackModule, exports?: Record<string, any>) => void;
 
-export const SYM_ORIGINAL = Symbol("Void.originalFactory");
-export const SYM_PATCHED = Symbol("Void.patched");
-export const SYM_PATCHED_BY = Symbol("Void.patchedBy");
-export const SYM_PATCHED_CODE = Symbol("Void.patchedCode");
+export const SYM_ORIGINAL = Symbol("VoidPP.originalFactory");
+export const SYM_PATCHED = Symbol("VoidPP.patched");
+export const SYM_PATCHED_BY = Symbol("VoidPP.patchedBy");
+export const SYM_PATCHED_CODE = Symbol("VoidPP.patchedCode");
 
 export interface PatchedModuleFactory extends ModuleFactory {
     [SYM_ORIGINAL]?: ModuleFactory;

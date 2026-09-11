@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { VoidChatBarButtons } from "@api/ChatBarButtons";
+import { VoidPPChatBarButtons } from "@api/ChatBarButtons";
 import { ModalContainer } from "@api/Modals";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Fragment, React } from "@turbopack/common/react";
@@ -14,14 +14,14 @@ import definePlugin from "@utils/types";
 function Buttons() {
     return (
         <Fragment>
-            <VoidChatBarButtons location="chat" />
+            <VoidPPChatBarButtons location="chat" />
             <ModalContainer />
         </Fragment>
     );
 }
 
 function ImagineButtons() {
-    return <VoidChatBarButtons location="imagine" />;
+    return <VoidPPChatBarButtons location="imagine" />;
 }
 
 export default definePlugin({

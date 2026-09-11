@@ -358,7 +358,7 @@ function createLazyFactory(moduleId: number, patchResult: LazyPatchResult, origi
         compiled.call(this, helpers, mod, exports);
     };
 
-    Object.defineProperty(lazy, "name", { value: `VoidPatched_${moduleId}` });
+    Object.defineProperty(lazy, "name", { value: `VoidPPPatched_${moduleId}` });
     lazy.toString = () => getFnSource(original);
     lazy[SYM_ORIGINAL] = original;
     lazy[SYM_PATCHED] = true;

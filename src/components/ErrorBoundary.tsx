@@ -22,7 +22,7 @@ let ErrorBoundaryClass: ComponentType<ErrorBoundaryProps> | null = null;
 function getErrorBoundaryClass(): ComponentType<ErrorBoundaryProps> {
     if (ErrorBoundaryClass) return ErrorBoundaryClass;
 
-    ErrorBoundaryClass = class VoidErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    ErrorBoundaryClass = class VoidPPErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
         constructor(props: ErrorBoundaryProps) {
             super(props);
             this.state = { hasError: false };

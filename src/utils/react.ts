@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { subscribe, type VoidEvent } from "@api/Events";
+import { subscribe, type VoidPPEvent } from "@api/Events";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "@turbopack/common/react";
 import { ChatPageStore } from "@turbopack/common/stores";
@@ -113,7 +113,7 @@ export function useForceUpdater() {
     return useReducer((x: number) => x + 1, 0)[1];
 }
 
-export function useEventSubscription(event: VoidEvent, handler: () => void) {
+export function useEventSubscription(event: VoidPPEvent, handler: () => void) {
     const ref = useRef(handler);
     ref.current = handler;
     useEffect(() => subscribe(event, () => ref.current()), [event]);

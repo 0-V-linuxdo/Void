@@ -19,7 +19,7 @@ import Plugins from "~plugins";
 export { addChatBarButton, removeChatBarButton } from "@api/ChatBarButtons";
 export { addContextMenuItem, removeContextMenuItem } from "@api/ContextMenus";
 export { dispatch, subscribe } from "@api/Events";
-export { type VoidEventMap } from "@api/Events";
+export { type VoidPPEventMap } from "@api/Events";
 export { closeAllModals, closeModal, openModal } from "@api/Modals";
 export { closeNotice, NoticeType, showNotice } from "@api/Notices";
 export { dismissToast, showToast, ToastType } from "@api/Notifications";

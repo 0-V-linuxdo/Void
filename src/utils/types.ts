@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { VoidEventMap } from "@api/Events";
+import type { VoidPPEventMap } from "@api/Events";
 import type * as Stores from "@turbopack/common/stores";
 import type { ComponentType, ReactNode } from "react";
 
@@ -67,7 +67,7 @@ export interface PluginDef {
     zustand?: Partial<Record<keyof typeof Stores, ZustandSubscription>>;
     chatBarButton?: import("@api/ChatBarButtons").ChatBarButtonDef;
     contextMenuItems?: { [L in import("@api/ContextMenus").ContextMenuLocation]?: import("@api/ContextMenus").ContextMenuItemDef<L> };
-    events?: { [K in keyof VoidEventMap]?: (data: VoidEventMap[K]) => void };
+    events?: { [K in keyof VoidPPEventMap]?: (data: VoidPPEventMap[K]) => void };
     cleanupSelectors?: string[];
     onSettingsChange?(): void;
 }

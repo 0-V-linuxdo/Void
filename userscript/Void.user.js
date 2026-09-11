@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260911.7] v1.0.0
+// @version      [20260911.8] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260911.7] v1.0.0 — A modification for grok.com
+ * Void++ [20260911.8] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -446,10 +446,10 @@
   }
 
   // src/turbopack/types.ts
-  var SYM_ORIGINAL = Symbol("Void.originalFactory");
-  var SYM_PATCHED = Symbol("Void.patched");
-  var SYM_PATCHED_BY = Symbol("Void.patchedBy");
-  var SYM_PATCHED_CODE = Symbol("Void.patchedCode");
+  var SYM_ORIGINAL = Symbol("VoidPP.originalFactory");
+  var SYM_PATCHED = Symbol("VoidPP.patched");
+  var SYM_PATCHED_BY = Symbol("VoidPP.patchedBy");
+  var SYM_PATCHED_CODE = Symbol("VoidPP.patchedCode");
 
   // src/turbopack/patchTurbopack.ts
   var logger3 = new Logger("TurbopackPatcher", "#e78284");
@@ -771,7 +771,7 @@ ${sourceUrl}`;
       }
       compiled.call(this, helpers, mod, exports);
     };
-    Object.defineProperty(lazy, "name", { value: `VoidPatched_${moduleId}` });
+    Object.defineProperty(lazy, "name", { value: `VoidPPPatched_${moduleId}` });
     lazy.toString = () => getFnSource(original);
     lazy[SYM_ORIGINAL] = original;
     lazy[SYM_PATCHED] = true;
@@ -2205,7 +2205,7 @@ ${sourceUrl}`;
   }), /* @__PURE__ */ React.createElement("path", {
     d: "M3 12v6"
   }));
-  var VoidIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React.createElement("path", {
+  var VoidPPIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React.createElement("path", {
     d: "M2.2 7.4 L8.4 20.2 L13.03 11.30"
   }), /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
@@ -3816,7 +3816,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function getErrorBoundaryClass() {
     if (ErrorBoundaryClass)
       return ErrorBoundaryClass;
-    ErrorBoundaryClass = class VoidErrorBoundary extends React.Component {
+    ErrorBoundaryClass = class VoidPPErrorBoundary extends React.Component {
       constructor(props) {
         super(props);
         this.state = { hasError: false };
@@ -4157,7 +4157,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       className: def.className
     });
   }
-  function VoidChatBarButtons({ location: location2 = "chat" }) {
+  function VoidPPChatBarButtons({ location: location2 = "chat" }) {
     useExternalStore(buttons.store);
     if (!buttons.size)
       return null;
@@ -4208,7 +4208,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       onSelect: () => def.onSelect?.(ctx)
     }, resolveLazy(def.icon), resolveLazy(def.label));
   }
-  function VoidContextMenuItems({ location: location2, menu, ...ctx }) {
+  function VoidPPContextMenuItems({ location: location2, menu, ...ctx }) {
     const registry = getRegistry(location2);
     useExternalStore(registry.store);
     if (!registry.size)
@@ -7087,7 +7087,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var logger15 = new Logger("Settings");
   var cl16 = classNameFactory("void-settings-");
   var settings4 = definePluginSettings({
-    showVoidMenu: {
+    showVoidPPMenu: {
       type: 3 /* BOOLEAN */,
       description: "Show the Void++ sub-menu in the avatar dropdown.",
       default: true
@@ -7131,9 +7131,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260911.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"6689801"}`
-    }, `(${"6689801"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260911.8] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"ccd6083"}`
+    }, `(${"ccd6083"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7153,14 +7153,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     setPendingPluginDialog(name);
     openSettingsTab(PLUGINS_TAB_ID);
   }
-  function VoidMenu() {
+  function VoidPPMenu() {
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
-    const { showVoidMenu } = settings4.use(["showVoidMenu"]);
+    const { showVoidPPMenu } = settings4.use(["showVoidPPMenu"]);
     const menuPlugins = usePluginMenu();
-    if (!showVoidMenu)
+    if (!showVoidPPMenu)
       return null;
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidIcon, {
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidPPIcon, {
       className: cl16("menu-icon")
     }), "Void++"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl16("menu-icon")
@@ -7184,7 +7184,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       }), t.name);
     })));
   }
-  var WrappedVoidMenu = ErrorBoundary.wrap(VoidMenu);
+  var WrappedVoidPPMenu = ErrorBoundary.wrap(VoidPPMenu);
   var settings_default = definePlugin({
     name: "Settings",
     icon: SettingsIcon,
@@ -7192,7 +7192,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     authors: [Devs.Prism],
     required: true,
     settings: settings4,
-    _renderVoidMenu: () => createElement(WrappedVoidMenu),
+    _renderVoidPPMenu: () => createElement(WrappedVoidPPMenu),
     _setPrimitive(name, component) {
       setSettingsPrimitive(name, component);
       return component;
@@ -7217,6 +7217,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       });
     },
     start() {
+      migratePluginSetting("Settings", "showVoidPPMenu", "showVoidMenu");
       registerStyle("void-global", "[data-sonner-toast] [data-title]{font-weight:400}");
       try {
         if (document.head)
@@ -7234,7 +7235,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         all: true,
         replacement: {
           match: /\(0,(\i)\.jsxs\)\((\i)\.DropdownMenuSub,\{children:\[\(0,\1\.jsxs\)\(\2\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help"/,
-          replace: "$self._renderVoidMenu(),$&"
+          replace: "$self._renderVoidPPMenu(),$&"
         }
       },
       {
@@ -7342,12 +7343,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/plugins/_api/chatBarButtons/index.tsx
   function Buttons() {
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(VoidChatBarButtons, {
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(VoidPPChatBarButtons, {
       location: "chat"
     }), /* @__PURE__ */ React.createElement(ModalContainer, null));
   }
   function ImagineButtons() {
-    return /* @__PURE__ */ React.createElement(VoidChatBarButtons, {
+    return /* @__PURE__ */ React.createElement(VoidPPChatBarButtons, {
       location: "imagine"
     });
   }
@@ -7392,7 +7393,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     required: true,
     hidden: true,
     renderItems(location2, ctx, menu) {
-      return /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VoidContextMenuItems, {
+      return /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VoidPPContextMenuItems, {
         location: location2,
         menu,
         ...ctx
@@ -7414,11 +7415,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
           },
           {
             match: /Item:(\i)\.(Dropdown|Context)MenuItem,/g,
-            replace: "$&VoidMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},"
+            replace: "$&VoidPPMenu:{Item:$1.$2MenuItem,Sub:$1.$2MenuSub,SubTrigger:$1.$2MenuSubTrigger,SubContent:$1.$2MenuSubContent,Separator:$1.$2MenuSeparator},"
           },
           {
             match: /=(\i)&&(\jsx{\i}\{onSelect:\(\)=>\1\(\),)(?=.{0,80}TrashIcon)/,
-            replace: '=$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidMenu),$1&&$2'
+            replace: '=$self.renderItems("conversation",{conversationId:arguments[0].id},arguments[0].VoidPPMenu),$1&&$2'
           }
         ]
       },
@@ -14278,7 +14279,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       description: 'Show "Open Settings" (last used tab).',
       default: true
     },
-    voidPosition: {
+    voidppPosition: {
       type: 4 /* SELECT */,
       description: "Place Void++ tabs above or below Grok tabs.",
       options: [
@@ -14346,7 +14347,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     { id: "usage", name: "Usage", setting: "usage", icon: LightningIcon },
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
   ];
-  var VOID_TABS = [
+  var VOIDPP_TABS = [
     { id: "voidpp_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
     { id: "voidpp_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
     { id: "voidpp_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
@@ -14374,7 +14375,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }), t.name);
     });
   }
-  function VoidSection({ tabs }) {
+  function VoidPPSection({ tabs }) {
     if (tabs.length === 0)
       return null;
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Text2, {
@@ -14386,7 +14387,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function SettingsMenu({ onOpen }) {
     const cfg = settings20.use([
       "showOpenSettings",
-      "voidPosition",
+      "voidppPosition",
       "plugins",
       "themes",
       "css",
@@ -14399,10 +14400,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
       "data"
     ]);
     const grokTabs = GROK_TABS.filter((t) => cfg[t.setting]);
-    const voidTabs = VOID_TABS.filter((t) => cfg[t.setting]);
-    const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidTabs.length === 0;
-    const voidFirst = cfg.voidPosition !== "below";
-    const hasBoth = grokTabs.length > 0 && voidTabs.length > 0;
+    const voidppTabs = VOIDPP_TABS.filter((t) => cfg[t.setting]);
+    const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidppTabs.length === 0;
+    const voidppFirst = cfg.voidppPosition !== "below";
+    const hasBoth = grokTabs.length > 0 && voidppTabs.length > 0;
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl24("menu-icon")
     }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
@@ -14411,10 +14412,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onSelect: (e) => openTab(undefined, onOpen, e)
     }, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl24("menu-icon")
-    }), "Open Settings"), showOpen && (voidTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidFirst && /* @__PURE__ */ React.createElement(VoidSection, {
-      tabs: voidTabs
-    }), voidFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), !voidFirst && /* @__PURE__ */ React.createElement(VoidSection, {
-      tabs: voidTabs
+    }), "Open Settings"), showOpen && (voidppTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidppFirst && /* @__PURE__ */ React.createElement(VoidPPSection, {
+      tabs: voidppTabs
+    }), voidppFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidppFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), !voidppFirst && /* @__PURE__ */ React.createElement(VoidPPSection, {
+      tabs: voidppTabs
     })));
   }
   var WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
@@ -14427,6 +14428,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
     enabledByDefault: true,
     requiresRestart: true,
     settings: settings20,
+    start() {
+      migratePluginSetting("SettingsFlyout", "voidppPosition", "voidPosition");
+    },
     _renderSettingsMenu: (onOpen) => createElement(WrappedSettingsMenu, { onOpen }),
     patches: [
       {

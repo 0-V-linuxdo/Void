@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { VoidEventMap } from "@api/Events";
+import type { VoidPPEventMap } from "@api/Events";
 import { showToast, ToastType } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import { RotateCcwIcon } from "@components/icons";
@@ -94,7 +94,7 @@ function retry(responseId: string, conversationId: string, response: GrokRespons
     }, delaySec * 1000);
 }
 
-function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
+function onStreamEnd({ responseId }: VoidPPEventMap["streamEnd"]) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "error") {
         const convId = ChatPageStore.useChatPageStore.getState().conversationId;

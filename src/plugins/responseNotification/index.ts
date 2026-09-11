@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { VoidEventMap } from "@api/Events";
+import type { VoidPPEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
 import { BellIcon } from "@components/icons";
 import { ResponseStore } from "@turbopack/common/stores";
@@ -69,7 +69,7 @@ function playSound() {
     }
 }
 
-function onStreamEnd({ responseId }: VoidEventMap["streamEnd"]) {
+function onStreamEnd({ responseId }: VoidPPEventMap["streamEnd"]) {
     const response = ResponseStore.useResponseStore.getState().byId[responseId];
     if (!response || response.state !== "closed") return;
 

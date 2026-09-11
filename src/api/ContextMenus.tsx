@@ -88,7 +88,7 @@ function renderEntry(def: ContextMenuItemDef<any>, ctx: ContextMenuLocationMap[C
     );
 }
 
-export function VoidContextMenuItems<L extends ContextMenuLocation>({ location, menu, ...ctx }: { location: L; menu?: MenuPrimitives } & ContextMenuLocationMap[L]): ReactNode {
+export function VoidPPContextMenuItems<L extends ContextMenuLocation>({ location, menu, ...ctx }: { location: L; menu?: MenuPrimitives } & ContextMenuLocationMap[L]): ReactNode {
     const registry = getRegistry(location);
     useExternalStore(registry.store);
 

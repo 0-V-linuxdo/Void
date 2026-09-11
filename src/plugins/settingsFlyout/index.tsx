@@ -6,7 +6,7 @@
 
 import "./styles.css";
 
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, migratePluginSetting } from "@api/Settings";
 import { ErrorBoundary, Text } from "@components";
 import { BracesIcon, PaletteIcon, Settings2Icon, UnplugIcon } from "@components/icons";
 import {
@@ -33,7 +33,7 @@ const settings = definePluginSettings({
         description: 'Show "Open Settings" (last used tab).',
         default: true,
     },
-    voidPosition: {
+    voidppPosition: {
         type: OptionType.SELECT,
         description: "Place Void++ tabs above or below Grok tabs.",
         options: [
@@ -94,7 +94,7 @@ const settings = definePluginSettings({
 });
 
 type GrokTabSetting = "account" | "appearance" | "behavior" | "customize" | "billing" | "usage" | "data";
-type VoidTabSetting = "plugins" | "themes" | "css";
+type VoidPPTabSetting = "plugins" | "themes" | "css";
 
 interface FlyoutTab {
     id: string;
@@ -106,8 +106,8 @@ interface GrokFlyoutTab extends FlyoutTab {
     setting: GrokTabSetting;
 }
 
-interface VoidFlyoutTab extends FlyoutTab {
-    setting: VoidTabSetting;
+interface VoidPPFlyoutTab extends FlyoutTab {
+    setting: VoidPPTabSetting;
 }
 
 const GROK_TABS: GrokFlyoutTab[] = [
@@ -120,7 +120,7 @@ const GROK_TABS: GrokFlyoutTab[] = [
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon },
 ];
 
-const VOID_TABS: VoidFlyoutTab[] = [
+const VOIDPP_TABS: VoidPPFlyoutTab[] = [
     { id: "voidpp_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
     { id: "voidpp_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
     { id: "voidpp_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon },
@@ -151,7 +151,7 @@ function tabItems(tabs: FlyoutTab[]) {
     });
 }
 
-function VoidSection({ tabs }: { tabs: FlyoutTab[] }) {
+function VoidPPSection({ tabs }: { tabs: FlyoutTab[] }) {
     if (tabs.length === 0) return null;
     return (
         <>
@@ -164,7 +164,7 @@ function VoidSection({ tabs }: { tabs: FlyoutTab[] }) {
 function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
     const cfg = settings.use([
         "showOpenSettings",
-        "voidPosition",
+        "voidppPosition",
         "plugins",
         "themes",
         "css",
@@ -178,10 +178,10 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
     ]);
 
     const grokTabs = GROK_TABS.filter(t => cfg[t.setting]);
-    const voidTabs = VOID_TABS.filter(t => cfg[t.setting]);
-    const showOpen = cfg.showOpenSettings || (grokTabs.length === 0 && voidTabs.length === 0);
-    const voidFirst = cfg.voidPosition !== "below";
-    const hasBoth = grokTabs.length > 0 && voidTabs.length > 0;
+    const voidppTabs = VOIDPP_TABS.filter(t => cfg[t.setting]);
+    const showOpen = cfg.showOpenSettings || (grokTabs.length === 0 && voidppTabs.length === 0);
+    const voidppFirst = cfg.voidppPosition !== "below";
+    const hasBoth = grokTabs.length > 0 && voidppTabs.length > 0;
 
     return (
         <DropdownMenuSub>
@@ -196,12 +196,12 @@ function SettingsMenu({ onOpen }: { onOpen?: (event?: Event) => void }) {
                         Open Settings
                     </DropdownMenuItem>
                 )}
-                {showOpen && (voidTabs.length > 0 || grokTabs.length > 0) && <DropdownMenuSeparator />}
-                {voidFirst && <VoidSection tabs={voidTabs} />}
-                {voidFirst && hasBoth && <DropdownMenuSeparator />}
+                {showOpen && (voidppTabs.length > 0 || grokTabs.length > 0) && <DropdownMenuSeparator />}
+                {voidppFirst && <VoidPPSection tabs={voidppTabs} />}
+                {voidppFirst && hasBoth && <DropdownMenuSeparator />}
                 {tabItems(grokTabs)}
-                {!voidFirst && hasBoth && <DropdownMenuSeparator />}
-                {!voidFirst && <VoidSection tabs={voidTabs} />}
+                {!voidppFirst && hasBoth && <DropdownMenuSeparator />}
+                {!voidppFirst && <VoidPPSection tabs={voidppTabs} />}
             </DropdownMenuSubContent>
         </DropdownMenuSub>
     );
@@ -218,6 +218,10 @@ export default definePlugin({
     enabledByDefault: true,
     requiresRestart: true,
     settings,
+
+    start() {
+        migratePluginSetting("SettingsFlyout", "voidppPosition", "voidPosition");
+    },
 
     _renderSettingsMenu: (onOpen?: (event?: Event) => void) => createElement(WrappedSettingsMenu, { onOpen }),
 
