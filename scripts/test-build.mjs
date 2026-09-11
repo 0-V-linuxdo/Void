@@ -58,7 +58,6 @@ function validateExtensionDir(dir, mv) {
 
 console.log("→ Userscript");
 parseJs("dist/VoidPP.user.js");
-parseJs("dist/Void.user.js");
 
 console.log("→ Extension bundle");
 parseJs("dist/VoidPP.js");

@@ -2,10 +2,10 @@ name: Test Patches
 
 on:
   push:
-    branches: [voidpp, Void++]
+    branches: [voidpp]
     paths: [src/plugins/**, scripts/test-patches.mjs]
   pull_request:
-    branches: [voidpp, Void++]
+    branches: [voidpp]
     paths: [src/plugins/**, scripts/test-patches.mjs]
 
 concurrency:
