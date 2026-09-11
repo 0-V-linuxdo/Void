@@ -12,14 +12,14 @@ const repoUrl: string = pkg.repository.url.replace(/^git\+/, "").replace(/\.git$
 
 const environment = isDev ? "Development" : "Production";
 
-const FORK_URL = "https://github.com/0-V-linuxdo/Void";
-const SCRIPT_CDN = "https://raw.githubusercontent.com/0-V-linuxdo/Void/voidpp";
-const VERSION_DATE = "20260910";
+const FORK_URL = "https://github.com/0-V-linuxdo/VoidPP";
+const SCRIPT_CDN = "https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp";
+const VERSION_DATE = "20260911";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
  * Void++ ${displayVersion} — A modification for grok.com
- * (c) ${new Date().getFullYear()} Prism & Void Contributors
+ * (c) ${new Date().getFullYear()} Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: ${FORK_URL}
  */`;
@@ -29,7 +29,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @namespace    ${FORK_URL}
 // @version      ${displayVersion}
 // @description  A modification for grok.com
-// @author       ${pkg.author} & Void Contributors
+// @author       ${pkg.author} & Void++ Contributors
 // @environment  ${environment}
 // @homepageURL  ${FORK_URL}
 // @icon         ${SCRIPT_CDN}/assets/logos/app-icon/void-icon.svg
@@ -184,9 +184,11 @@ async function buildUserscript() {
     const code = await output.text();
     const content = USERSCRIPT_HEADER + "\n" + LICENSE_BANNER + "\n" + code;
     await Bun.write("dist/Void.user.js", content);
+    await Bun.write("dist/VoidPP.user.js", content);
     mkdirSync("userscript", { recursive: true });
     await Bun.write("userscript/Void.user.js", content);
-    logger.info(`Built Void.user.js (${(content.length / 1024).toFixed(1)} KB)`);
+    await Bun.write("userscript/VoidPP.user.js", content);
+    logger.info(`Built Void.user.js + VoidPP.user.js (${(content.length / 1024).toFixed(1)} KB)`);
 }
 
 async function buildExtensions() {

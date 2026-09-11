@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** August 31, 2026
+**Last updated:** September 11, 2026
 
 ## Overview
 
@@ -45,4 +45,4 @@ Void++ does not share any data with third parties. There are no ads, affiliate l
 
 ## Contact
 
-For questions about this policy, open an issue on [GitHub](https://github.com/0-V-linuxdo/Void/issues) or reach out on [Discord](https://discord.gg/4Rx3qUCR5Y).
+For questions about this policy, open an issue on [GitHub](https://github.com/0-V-linuxdo/VoidPP/issues) or reach out on [Discord](https://discord.gg/4Rx3qUCR5Y).

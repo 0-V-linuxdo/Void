@@ -1,6 +1,6 @@
 # Contributing to Void++
 
-Void++ is a community fork of Void and we welcome contributions!
+Void++ is a community fork of upstream Void ([imjustprism/Void](https://github.com/imjustprism/Void)) and we welcome contributions!
 
 ## Writing Plugins
 
@@ -8,8 +8,8 @@ The main way to contribute is by writing plugins.
 
 Before starting, please:
 
-- Check existing [pull requests](https://github.com/0-V-linuxdo/Void/pulls) to make sure someone isn't already working on the same thing
-- Check [issues](https://github.com/0-V-linuxdo/Void/issues) for existing requests or rejected ideas
+- Check existing [pull requests](https://github.com/0-V-linuxdo/VoidPP/pulls) to make sure someone isn't already working on the same thing
+- Check [issues](https://github.com/0-V-linuxdo/VoidPP/issues) for existing requests or rejected ideas
 
 ### Plugin Rules
 
@@ -27,8 +27,8 @@ Before starting, please:
 Prerequisites: [Bun](https://bun.sh/) >= 1.0
 
 ```sh
-git clone -b Void++ https://github.com/0-V-linuxdo/Void.git
-cd Void
+git clone -b Void++ https://github.com/0-V-linuxdo/VoidPP.git
+cd VoidPP
 bun install
 bun run build
 ```

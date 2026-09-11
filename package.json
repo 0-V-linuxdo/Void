@@ -2,13 +2,13 @@
     "name": "voidpp",
     "version": "1.0.0",
     "description": "A modification for grok.com",
-    "homepage": "https://github.com/0-V-linuxdo/Void#readme",
+    "homepage": "https://github.com/0-V-linuxdo/VoidPP#readme",
     "bugs": {
-        "url": "https://github.com/0-V-linuxdo/Void/issues"
+        "url": "https://github.com/0-V-linuxdo/VoidPP/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/0-V-linuxdo/Void.git"
+        "url": "git+https://github.com/0-V-linuxdo/VoidPP.git"
     },
     "license": "GPL-3.0-or-later",
     "author": "Prism",
