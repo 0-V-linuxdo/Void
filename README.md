@@ -4,7 +4,7 @@
 
 ## Install
 
-[![Install userscript](https://img.shields.io/badge/Install-userscript-00d26a?style=for-the-badge)](https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/Void.user.js)
+[![Install userscript](https://img.shields.io/badge/Install-userscript-00d26a?style=for-the-badge)](https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/VoidPP.user.js)
 
 ## Changes
 

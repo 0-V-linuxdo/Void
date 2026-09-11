@@ -14,7 +14,7 @@ const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/VoidPP";
 const SCRIPT_CDN = "https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp";
-const VERSION_DATE = "20260911";
+const VERSION_DATE = "20260911.1";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
@@ -32,7 +32,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @author       ${pkg.author} & Void++ Contributors
 // @environment  ${environment}
 // @homepageURL  ${FORK_URL}
-// @icon         ${SCRIPT_CDN}/assets/logos/app-icon/void-icon.svg
+// @icon         ${SCRIPT_CDN}/assets/logos/app-icon/voidpp-icon.svg
 // @match        *://grok.com/*
 // @match        *://*.grok-sandbox.com/*
 // @run-at       document-start
@@ -195,8 +195,9 @@ async function buildExtensions() {
     const output = await buildCore("Void.js", true);
     const code = LICENSE_BANNER + "\n" + await output.text();
     await Bun.write("dist/Void.js", code);
+    await Bun.write("dist/VoidPP.js", code);
     const size = (code.length / 1024).toFixed(1);
-    logger.info(`Built dist/Void.js (${size} KB)`);
+    logger.info(`Built dist/Void.js + VoidPP.js (${size} KB)`);
 
     const targets = [
         {
@@ -215,6 +216,7 @@ async function buildExtensions() {
         mkdirSync(outDir, { recursive: true });
 
         cpSync("dist/Void.js", resolve(outDir, "Void.js"));
+        cpSync("dist/VoidPP.js", resolve(outDir, "VoidPP.js"));
         cpSync("browser/icons", resolve(outDir, "icons"), { recursive: true });
 
         for (const file of target.files) {

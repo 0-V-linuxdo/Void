@@ -41,7 +41,7 @@
                 "*://grok.com/*"
             ],
             "js": [
-                "Void.js"
+                "VoidPP.js"
             ],
             "all_frames": false,
             "world": "MAIN"
@@ -50,6 +50,7 @@
     "web_accessible_resources": [
         {
             "resources": [
+                "VoidPP.js",
                 "Void.js"
             ],
             "matches": [
