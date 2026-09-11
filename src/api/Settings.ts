@@ -9,7 +9,7 @@ import { idbGet } from "@utils/idb";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
-import { parseStoredSettings, SettingsStore as SettingsStoreClass, STORAGE_KEY } from "@utils/SettingsStore";
+import { parseStoredSettings, SettingsStore as SettingsStoreClass, STORAGE_KEYS } from "@utils/SettingsStore";
 import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingValue, type SettingsChecks, type SettingsDefinition } from "@utils/types";
 
 const logger = new Logger("Settings");
@@ -35,10 +35,10 @@ export const Settings = SettingsStore.store;
 
 export const pluginPath = (name: string, key?: string) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
 
-async function readGmValue(): Promise<unknown> {
+async function readGmValue(key: string): Promise<unknown> {
     if (typeof GM_getValue !== "function") return null;
     try {
-        const value = GM_getValue(STORAGE_KEY, null) as unknown;
+        const value = GM_getValue(key, null) as unknown;
         if (value != null && typeof (value as { then?: unknown }).then === "function") {
             return await (value as Promise<unknown>);
         }
@@ -50,18 +50,26 @@ async function readGmValue(): Promise<unknown> {
 }
 
 async function readStoredSettings(): Promise<Record<string, unknown> | null> {
-    const gm = parseStoredSettings(await readGmValue());
-    if (gm) return gm;
+    for (const key of STORAGE_KEYS) {
+        const gm = parseStoredSettings(await readGmValue(key));
+        if (gm) return gm;
+    }
 
     try {
-        const idb = parseStoredSettings(await idbGet(STORAGE_KEY) ?? null);
-        if (idb) return idb;
+        for (const key of STORAGE_KEYS) {
+            const idb = parseStoredSettings(await idbGet(key) ?? null);
+            if (idb) return idb;
+        }
     } catch (e) {
         logger.warn("Failed to read IndexedDB:", e);
     }
 
     try {
-        return parseStoredSettings(localStorage.getItem(STORAGE_KEY));
+        for (const key of STORAGE_KEYS) {
+            const local = parseStoredSettings(localStorage.getItem(key));
+            if (local) return local;
+        }
+        return null;
     } catch (e) {
         logger.warn("Failed to read localStorage:", e);
         return null;

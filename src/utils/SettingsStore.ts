@@ -11,7 +11,8 @@ import { mapGetOrCreate } from "./misc";
 
 const logger = new Logger("SettingsStore");
 
-export const STORAGE_KEY = "VoidSettings";
+export const STORAGE_KEYS = ["VoidPPSettings", "VoidSettings"] as const;
+export const STORAGE_KEY = STORAGE_KEYS[0];
 const SAVE_DEBOUNCE_MS = 100;
 
 type Listener = (path: string) => void;
@@ -136,16 +137,18 @@ export class SettingsStore<T extends object> {
     private save() {
         try {
             const json = JSON.stringify(this.plain);
-            if (typeof GM_setValue === "function") {
-                try { GM_setValue(STORAGE_KEY, this.plain); }
-                catch {
-                    try { GM_setValue(STORAGE_KEY, json); }
-                    catch (e2) { logger.warn("Failed to save settings to GM:", e2); }
+            for (const key of STORAGE_KEYS) {
+                if (typeof GM_setValue === "function") {
+                    try { GM_setValue(key, this.plain); }
+                    catch {
+                        try { GM_setValue(key, json); }
+                        catch (e2) { logger.warn("Failed to save settings to GM:", e2); }
+                    }
+                } else {
+                    try { localStorage.setItem(key, json); } catch {}
                 }
-            } else {
-                try { localStorage.setItem(STORAGE_KEY, json); } catch {}
+                idbSet(key, json).catch(e => logger.warn("Failed to save settings to IndexedDB:", e));
             }
-            idbSet(STORAGE_KEY, json).catch(e => logger.warn("Failed to save settings to IndexedDB:", e));
         } catch (e) {
             logger.error("Failed to save settings:", e);
         }

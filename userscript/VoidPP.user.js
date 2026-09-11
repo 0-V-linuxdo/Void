@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260911.5] v1.0.0
+// @version      [20260911.6] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -29,7 +29,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260911.5] v1.0.0 — A modification for grok.com
+ * Void++ [20260911.6] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -3084,7 +3084,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/utils/SettingsStore.ts
   var logger8 = new Logger("SettingsStore");
-  var STORAGE_KEY = "VoidSettings";
+  var STORAGE_KEYS = ["VoidPPSettings", "VoidSettings"];
+  var STORAGE_KEY = STORAGE_KEYS[0];
   var SAVE_DEBOUNCE_MS = 100;
   function parseStoredSettings(raw) {
     if (isObject(raw))
@@ -3206,22 +3207,24 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     save() {
       try {
         const json = JSON.stringify(this.plain);
-        if (typeof GM_setValue === "function") {
-          try {
-            GM_setValue(STORAGE_KEY, this.plain);
-          } catch {
+        for (const key of STORAGE_KEYS) {
+          if (typeof GM_setValue === "function") {
             try {
-              GM_setValue(STORAGE_KEY, json);
-            } catch (e2) {
-              logger8.warn("Failed to save settings to GM:", e2);
+              GM_setValue(key, this.plain);
+            } catch {
+              try {
+                GM_setValue(key, json);
+              } catch (e2) {
+                logger8.warn("Failed to save settings to GM:", e2);
+              }
             }
+          } else {
+            try {
+              localStorage.setItem(key, json);
+            } catch {}
           }
-        } else {
-          try {
-            localStorage.setItem(STORAGE_KEY, json);
-          } catch {}
+          idbSet(key, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
         }
-        idbSet(STORAGE_KEY, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
       } catch (e) {
         logger8.error("Failed to save settings:", e);
       }
@@ -3269,11 +3272,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PlainSettings = settings;
   var Settings = SettingsStore3.store;
   var pluginPath = (name, key) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
-  async function readGmValue() {
+  async function readGmValue(key) {
     if (typeof GM_getValue !== "function")
       return null;
     try {
-      const value = GM_getValue(STORAGE_KEY, null);
+      const value = GM_getValue(key, null);
       if (value != null && typeof value.then === "function") {
         return await value;
       }
@@ -3284,18 +3287,27 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
   async function readStoredSettings() {
-    const gm = parseStoredSettings(await readGmValue());
-    if (gm)
-      return gm;
+    for (const key of STORAGE_KEYS) {
+      const gm = parseStoredSettings(await readGmValue(key));
+      if (gm)
+        return gm;
+    }
     try {
-      const idb = parseStoredSettings(await idbGet(STORAGE_KEY) ?? null);
-      if (idb)
-        return idb;
+      for (const key of STORAGE_KEYS) {
+        const idb = parseStoredSettings(await idbGet(key) ?? null);
+        if (idb)
+          return idb;
+      }
     } catch (e) {
       logger9.warn("Failed to read IndexedDB:", e);
     }
     try {
-      return parseStoredSettings(localStorage.getItem(STORAGE_KEY));
+      for (const key of STORAGE_KEYS) {
+        const local = parseStoredSettings(localStorage.getItem(key));
+        if (local)
+          return local;
+      }
+      return null;
     } catch (e) {
       logger9.warn("Failed to read localStorage:", e);
       return null;
@@ -7030,9 +7042,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260911.5] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"3c66cbb"}`
-    }, `(${"3c66cbb"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260911.6] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"c0c2645"}`
+    }, `(${"c0c2645"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {

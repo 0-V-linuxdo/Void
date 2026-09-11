@@ -13,3 +13,16 @@ Before any push to `voidpp`:
 5. Purge jsDelivr:
    - `curl -s https://purge.jsdelivr.net/gh/0-V-linuxdo/VoidPP@heads/voidpp/userscript/VoidPP.user.js`
    - `curl -s https://purge.jsdelivr.net/gh/0-V-linuxdo/VoidPP@heads/voidpp/userscript/Void.user.js`
+
+## Runtime ids
+
+Leave these stable. Changing them drops settings, breaks CSS, or republishes the Firefox add-on:
+
+- `window.Void` (also alias `window.VoidPP`)
+- IndexedDB database `Void`
+- Settings keys `VoidPPSettings` + legacy `VoidSettings` (write both, read new first)
+- CSS / dataset / postMessage prefix `void-`
+- Settings tab ids `void_*_tab` and nav group `void`
+- Extension cookie bridge `void-cookies`
+- Firefox id `firefox@void.prism`
+- AccountSwitcher crypto key `VoidCryptoRootHKDF`
