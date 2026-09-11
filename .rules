@@ -2,7 +2,7 @@ title: Void++ Development Rules
 
 rules:
   critical:
-    - new files use 2026 license header, NEVER edit existing headers
+    - new files use 2026 Void++ license header (product Void++, author Void++ Contributors); do not churn existing headers except an explicit brand pass
     - push back when user idea is wrong, user NOT always right
     - NEVER assume values/APIs/module shapes you dont know, ask or inspect via void-mcp
     - smallest possible change, no refactoring unless asked
@@ -11,7 +11,7 @@ rules:
     - use void-mcp to inspect live code, NEVER guess module structure
     - run `bun run lint:fix` + `bun run tsc` after code changes, `bun run lint:styles:fix` after css changes
     - oxlint covers everything (license headers, stylistic, import sort, unused imports) via jsPlugins — eslint is gone
-    - ALWAYS `bun run build` and commit `userscript/Void.user.js` before any push
+    - ALWAYS `bun run build` and commit `userscript/VoidPP.user.js` plus compatibility `userscript/Void.user.js` before any push
     - NEVER commit/push without explicit user instruction
     - NEVER commit design specs/plans/docs to the repo
   code:
@@ -195,7 +195,7 @@ components:
 
 project:
   - src/api/: logic, state, registries
-  - src/components/: Void components + icons
+  - src/components/: Void++ components + icons
   - src/plugins/: _core/ patches, _api/ patches, user plugins
   - src/turbopack/: module system, patching, common/ finders
   - packages/grok-types/: types, enums
@@ -224,5 +224,5 @@ git:
   - NEVER --amend, create a new commit instead
   - NEVER --force push
   - group related files into one commit, dont split atomic changes
-  - ALWAYS commit `userscript/Void.user.js` with the matching source on every push
+  - ALWAYS commit `userscript/VoidPP.user.js` and `userscript/Void.user.js` with the matching source on every push
   - examples: `PluginName: fix patch`, `PluginName: add plugin`, `PluginName: drop plugin`, `PluginName: add setting`, `chore: bump deps`, `refactor: flatten plugin loader`, `perf: hoist regex to module scope`, `style: oxlint auto-fixes`

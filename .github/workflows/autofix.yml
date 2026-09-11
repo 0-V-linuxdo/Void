@@ -8,7 +8,7 @@ on:
       ref:
         description: Branch or ref to autofix
         required: true
-        default: dev
+        default: voidpp
 
 concurrency:
   group: autofix-${{ github.event.pull_request.number || github.event.inputs.ref }}

@@ -2,10 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [voidpp, Void++]
     paths: [src/**, .oxlintrc.json, .stylelintrc.json, tsconfig.json, package.json, build.ts]
   pull_request:
-    branches: [main, dev]
+    branches: [voidpp, Void++]
     paths: [src/**, .oxlintrc.json, .stylelintrc.json, tsconfig.json, package.json, build.ts]
 
 concurrency:

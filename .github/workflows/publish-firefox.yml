@@ -2,7 +2,7 @@ name: Publish Firefox Extension
 
 on:
   push:
-    branches: [main]
+    branches: [voidpp, Void++]
     paths: [package.json]
   workflow_dispatch:
 

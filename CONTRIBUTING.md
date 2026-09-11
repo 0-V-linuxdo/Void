@@ -27,7 +27,7 @@ Before starting, please:
 Prerequisites: [Bun](https://bun.sh/) >= 1.0
 
 ```sh
-git clone -b Void++ https://github.com/0-V-linuxdo/VoidPP.git
+git clone -b voidpp https://github.com/0-V-linuxdo/VoidPP.git
 cd VoidPP
 bun install
 bun run build
@@ -48,6 +48,6 @@ bun run build
 
 ## Pull Requests
 
-- Fork the repo and branch off `Void++`
+- Fork the repo and branch off `voidpp`
 - Make sure everything builds and lints cleanly
-- Open a PR against `Void++`
+- Open a PR against `voidpp`

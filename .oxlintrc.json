@@ -17,7 +17,7 @@
             "text": "/*\n * {product}, a modification for grok.com\n * Copyright (c) {year} {author}\n * SPDX-License-Identifier: GPL-3.0-or-later\n */",
             "templates": {
                 "author": [".*", "Void++ Contributors"],
-                "product": ["Void(\\+\\+)?", "Void++"]
+                "product": ["Void\\+\\+", "Void++"]
             }
         }],
         "simple-import-sort/imports": "error",

@@ -6,6 +6,8 @@
 
 [![Install userscript](https://img.shields.io/badge/安装-用户脚本-00d26a?style=for-the-badge)](https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/VoidPP.user.js)
 
+新安装使用 `userscript/VoidPP.user.js`。已有 Tampermonkey 安装仍从 `userscript/Void.user.js` 更新。
+
 ## 变更
 
 ### 新增

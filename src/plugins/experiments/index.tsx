@@ -1,6 +1,6 @@
 /*
- * Void, a modification for grok.com
- * Copyright (c) 2026 Void contributors
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
