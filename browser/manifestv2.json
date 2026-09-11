@@ -49,8 +49,7 @@
         ]
     },
     "web_accessible_resources": [
-        "VoidPP.js",
-        "Void.js"
+        "VoidPP.js"
     ],
     "browser_specific_settings": {
         "gecko": {

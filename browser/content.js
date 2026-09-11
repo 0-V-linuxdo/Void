@@ -5,11 +5,11 @@ if (typeof browser === "undefined") {
 window.addEventListener("message", event => {
     if (event.source !== window) return;
     const data = event.data;
-    if (!data || data.source !== "void-cookies" || data.direction !== "req") return;
+    if (!data || data.source !== "voidpp-cookies" || data.direction !== "req") return;
 
-    browser.runtime.sendMessage({ type: "void-cookies", op: data.op, payload: data.payload }, response => {
+    browser.runtime.sendMessage({ type: "voidpp-cookies", op: data.op, payload: data.payload }, response => {
         window.postMessage({
-            source: "void-cookies",
+            source: "voidpp-cookies",
             direction: "res",
             requestId: data.requestId,
             response: response || { ok: false, error: browser.runtime.lastError?.message || "no response" },

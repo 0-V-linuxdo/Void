@@ -49,7 +49,7 @@ function jsonRpc(id: string | number | null | undefined, result?: unknown, error
 function forwardToPage(tool: string, args: Record<string, unknown>): Promise<unknown> {
     return new Promise((resolve, reject) => {
         if (!pageSocket || pageSocket.readyState !== WS_OPEN) {
-            reject(new Error("Page not connected. Open grok.com with Void extension loaded."));
+            reject(new Error("Page not connected. Open grok.com with Void++ extension loaded."));
             return;
         }
 
@@ -119,7 +119,7 @@ const server = Bun.serve({
         const { id, method, params } = body;
 
         if (method === "initialize")
-            return Response.json(jsonRpc(id, { protocolVersion: negotiateVersion(params?.protocolVersion), serverInfo: { name: "void-mcp", version: pkg.version }, capabilities: { tools: {} } }), { headers });
+            return Response.json(jsonRpc(id, { protocolVersion: negotiateVersion(params?.protocolVersion), serverInfo: { name: "voidpp-mcp", version: pkg.version }, capabilities: { tools: {} } }), { headers });
 
         if (method?.startsWith("notifications/")) return new Response(null, { status: 202, headers });
 

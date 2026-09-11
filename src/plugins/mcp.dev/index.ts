@@ -24,7 +24,7 @@ import { clearFactoryCaches, isThenable } from "./tools/utils";
 const logger = new Logger("MCP", MCP_CONSTANTS.LOG_COLOR);
 
 function bridgePort(): number {
-    try { return Number(localStorage.getItem("void_mcp_port")) || MCP_CONSTANTS.PORT; } catch { return MCP_CONSTANTS.PORT; }
+    try { return Number(localStorage.getItem("voidpp_mcp_port") || localStorage.getItem("void_mcp_port")) || MCP_CONSTANTS.PORT; } catch { return MCP_CONSTANTS.PORT; }
 }
 const MCP_URL = `ws://127.0.0.1:${bridgePort()}`;
 const { SLOW_THRESHOLD, MAX_RESULT_SIZE, INITIAL_RECONNECT_DELAY, MAX_RECONNECT_DELAY } = MCP_CONSTANTS;

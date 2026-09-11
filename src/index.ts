@@ -5,23 +5,23 @@
  */
 
 import { bootstrapPreviewFrame, isGrokPreviewFrame } from "./plugins/themedScrollbar";
-import * as Void from "./Void";
+import * as VoidPP from "./VoidPP";
 
 const target = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
 
 if (isGrokPreviewFrame()) {
     bootstrapPreviewFrame();
-} else if (window === window.top && !(target as { Void?: unknown }).Void) {
-    Object.defineProperty(target, "Void", {
-        value: Void,
+} else if (window === window.top && !(target as { VoidPP?: unknown; Void?: unknown }).VoidPP && !(target as { Void?: unknown }).Void) {
+    Object.defineProperty(target, "VoidPP", {
+        value: VoidPP,
         writable: false,
         configurable: true,
     });
-    Object.defineProperty(target, "VoidPP", {
-        value: Void,
+    Object.defineProperty(target, "Void", {
+        value: VoidPP,
         writable: false,
         configurable: true,
     });
 
-    Void.initSettings().then(() => Void.init()).catch(e => console.error("[Void++] Fatal init error:", e));
+    VoidPP.initSettings().then(() => VoidPP.init()).catch(e => console.error("[Void++] Fatal init error:", e));
 }

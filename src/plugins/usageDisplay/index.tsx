@@ -12,7 +12,7 @@ import { definePluginSettings, PlainSettings, SettingsStore } from "@api/Setting
 import { Button, ConfirmDialog, Flex, Input, Paragraph, Switch, Text } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { CircleGaugeIcon } from "@components/icons";
-import { VoidDialogShell } from "@components/settings/tabs/VoidDialogShell";
+import { VoidPPDialogShell } from "@components/settings/tabs/VoidPPDialogShell";
 import type { GrokSubscription } from "@grok-types";
 import { getPlanName } from "@turbopack/common/plan";
 import { React, useEffect, useRef, useState } from "@turbopack/common/react";
@@ -538,7 +538,7 @@ function StatsModal({ onClose }: ModalProps) {
     }, [selected]);
 
     return (
-        <VoidDialogShell title="Usage by date" subtitle="Stored on this device." onClose={onClose} size="sm">
+        <VoidPPDialogShell title="Usage by date" subtitle="Stored on this device." onClose={onClose} size="sm">
             <StatsToggle />
             {!usageStats ? (
                 <Paragraph>Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.</Paragraph>
@@ -604,7 +604,7 @@ function StatsModal({ onClose }: ModalProps) {
                     )}
                 </Flex>
             ))}
-        </VoidDialogShell>
+        </VoidPPDialogShell>
     );
 }
 

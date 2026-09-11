@@ -50,8 +50,7 @@
     "web_accessible_resources": [
         {
             "resources": [
-                "VoidPP.js",
-                "Void.js"
+                "VoidPP.js"
             ],
             "matches": [
                 "*://grok.com/*"

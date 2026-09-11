@@ -157,7 +157,7 @@ async function voidCookieOp(op, payload, storeId) {
 }
 
 browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (!msg || msg.type !== "void-cookies") return;
+    if (!msg || msg.type !== "voidpp-cookies") return;
     if (!sender.url || !isAllowedSender(sender.url)) {
         sendResponse({ ok: false, error: "forbidden" });
         return;

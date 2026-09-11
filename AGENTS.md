@@ -6,23 +6,26 @@ Follow `.rules`. Extra constraint for this fork:
 
 Before any push to `voidpp`:
 
-1. Run `bun run build` so `userscript/VoidPP.user.js` and the compatibility copy `userscript/Void.user.js` are regenerated from current source. Extension packs write both `VoidPP.js` and `Void.js`.
-2. Commit both userscript files with the matching source.
-3. Do not push source-only. README install badge points at `userscript/VoidPP.user.js` for new installs. Tampermonkey `@updateURL` / `@downloadURL` stay on `userscript/Void.user.js` so existing installs keep updating.
-4. Also fast-forward `Void++` (`git push origin HEAD:refs/heads/Void++`) so the plus-named alias stays current.
+1. Run `bun run build` so `userscript/VoidPP.user.js` is regenerated. This migration still writes hop `userscript/Void.user.js` (same bytes; `@updateURL` / `@downloadURL` already point at VoidPP.user.js) so Tampermonkey installs that still poll the old path pick up the hop.
+2. Commit the userscript files with the matching source.
+3. Do not push source-only. Install and update URLs are `userscript/VoidPP.user.js`.
+4. Also fast-forward `Void++` (`git push origin HEAD:refs/heads/Void++`).
 5. Purge jsDelivr:
    - `curl -s https://purge.jsdelivr.net/gh/0-V-linuxdo/VoidPP@heads/voidpp/userscript/VoidPP.user.js`
    - `curl -s https://purge.jsdelivr.net/gh/0-V-linuxdo/VoidPP@heads/voidpp/userscript/Void.user.js`
 
 ## Runtime ids
 
-Leave these stable. Changing them drops settings, breaks CSS, or republishes the Firefox add-on:
+Canonical:
 
-- `window.Void` (also alias `window.VoidPP`)
-- IndexedDB database `Void`
-- Settings keys `VoidPPSettings` + legacy `VoidSettings` (write both, read new first)
-- CSS / dataset / postMessage prefix `void-`
-- Settings tab ids `void_*_tab` and nav group `void`
-- Extension cookie bridge `void-cookies`
+- `window.VoidPP` (`window.Void` is the same object)
+- IndexedDB `VoidPP` (copied from `Void` once)
+- Settings key `VoidPPSettings` (read `VoidSettings` once, then delete it)
+- Cookie bridge `voidpp-cookies`
+- Settings tab ids `voidpp_*_tab` and nav group `voidpp`
+
+Do not rename:
+
 - Firefox id `firefox@void.prism`
+- CSS / dataset prefix `void-`
 - AccountSwitcher crypto key `VoidCryptoRootHKDF`

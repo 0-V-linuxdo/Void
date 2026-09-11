@@ -8,16 +8,16 @@ import { Logger } from "./Logger";
 
 const logger = new Logger("IDB");
 
-const DB_NAME = "Void";
+const DB_NAME = "VoidPP";
+const LEGACY_DB_NAME = "Void";
 const STORE_NAME = "kv";
 const DB_VERSION = 1;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-function open(): Promise<IDBDatabase> {
-    if (dbPromise) return dbPromise;
-    const promise = new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
+function openNamed(name: string): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(name, DB_VERSION);
         req.onupgradeneeded = () => {
             if (!req.result.objectStoreNames.contains(STORE_NAME)) {
                 req.result.createObjectStore(STORE_NAME);
@@ -25,6 +25,69 @@ function open(): Promise<IDBDatabase> {
         };
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
+    });
+}
+
+function request<T>(req: IDBRequest<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+async function copyStore(from: IDBDatabase, to: IDBDatabase): Promise<void> {
+    if (!from.objectStoreNames.contains(STORE_NAME) || !to.objectStoreNames.contains(STORE_NAME)) return;
+    const destCount = await request(to.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count());
+    if (destCount > 0) return;
+    const src = from.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME);
+    const keys = await request(src.getAllKeys());
+    if (!keys.length) return;
+    const values = await request(src.getAll());
+    const destTx = to.transaction(STORE_NAME, "readwrite");
+    const dest = destTx.objectStore(STORE_NAME);
+    for (let i = 0; i < keys.length; i++) dest.put(values[i], keys[i]);
+    await new Promise<void>((resolve, reject) => {
+        destTx.oncomplete = () => resolve();
+        destTx.onerror = () => reject(destTx.error);
+    });
+}
+
+function openExisting(name: string): Promise<IDBDatabase | null> {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(name);
+        let created = false;
+        req.onupgradeneeded = () => { created = true; };
+        req.onsuccess = () => {
+            const db = req.result;
+            if (created) {
+                db.close();
+                indexedDB.deleteDatabase(name);
+                resolve(null);
+                return;
+            }
+            resolve(db);
+        };
+        req.onerror = () => reject(req.error);
+    });
+}
+
+async function migrateLegacy(db: IDBDatabase): Promise<void> {
+    let legacy: IDBDatabase | null = null;
+    try {
+        legacy = await openExisting(LEGACY_DB_NAME);
+        if (legacy) await copyStore(legacy, db);
+    } catch (e) {
+        if (IS_DEV) logger.warn(e);
+    } finally {
+        legacy?.close();
+    }
+}
+
+function open(): Promise<IDBDatabase> {
+    if (dbPromise) return dbPromise;
+    const promise = openNamed(DB_NAME).then(async db => {
+        await migrateLegacy(db);
+        return db;
     });
     promise.catch(e => { dbPromise = null; if (IS_DEV) logger.warn(e); });
     dbPromise = promise;
@@ -50,6 +113,13 @@ export function idbGet<T = unknown>(key: string): Promise<T | undefined> {
 export function idbSet(key: string, value: unknown): Promise<void> {
     return withStore("readwrite", (store, resolve) => {
         store.put(value, key);
+        store.transaction.oncomplete = () => resolve();
+    });
+}
+
+export function idbDelete(key: string): Promise<void> {
+    return withStore("readwrite", (store, resolve) => {
+        store.delete(key);
         store.transaction.oncomplete = () => resolve();
     });
 }

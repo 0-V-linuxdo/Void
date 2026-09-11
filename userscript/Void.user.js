@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260911.6] v1.0.0
+// @version      [20260911.7] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -14,6 +14,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_deleteValue
 // @grant        GM_setClipboard
 // @connect      raw.githubusercontent.com
 // @connect      cdn.jsdelivr.net
@@ -24,12 +25,12 @@
 // @compatible   opera
 // @license      GPL-3.0-or-later
 // @supportURL   https://github.com/0-V-linuxdo/VoidPP
-// @downloadURL  https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/Void.user.js
-// @updateURL    https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/Void.user.js
+// @downloadURL  https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/VoidPP.user.js
+// @updateURL    https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/VoidPP.user.js
 // ==/UserScript==
 
 /**
- * Void++ [20260911.6] v1.0.0 — A modification for grok.com
+ * Void++ [20260911.7] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -2521,9 +2522,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   });
 
-  // src/Void.ts
-  var exports_Void = {};
-  __export(exports_Void, {
+  // src/VoidPP.ts
+  var exports_VoidPP = {};
+  __export(exports_VoidPP, {
     ChunkPathRegex: () => ChunkPathRegex,
     DefaultChunkLoadRegex: () => DefaultChunkLoadRegex,
     Devs: () => Devs,
@@ -2670,15 +2671,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/utils/idb.ts
   var logger6 = new Logger("IDB");
-  var DB_NAME = "Void";
+  var DB_NAME = "VoidPP";
+  var LEGACY_DB_NAME = "Void";
   var STORE_NAME = "kv";
   var DB_VERSION = 1;
   var dbPromise = null;
-  function open() {
-    if (dbPromise)
-      return dbPromise;
-    const promise = new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
+  function openNamed(name) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(name, DB_VERSION);
       req.onupgradeneeded = () => {
         if (!req.result.objectStoreNames.contains(STORE_NAME)) {
           req.result.createObjectStore(STORE_NAME);
@@ -2686,6 +2686,73 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
+    });
+  }
+  function request(req) {
+    return new Promise((resolve, reject) => {
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function copyStore(from, to) {
+    if (!from.objectStoreNames.contains(STORE_NAME) || !to.objectStoreNames.contains(STORE_NAME))
+      return;
+    const destCount = await request(to.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count());
+    if (destCount > 0)
+      return;
+    const src = from.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME);
+    const keys = await request(src.getAllKeys());
+    if (!keys.length)
+      return;
+    const values = await request(src.getAll());
+    const destTx = to.transaction(STORE_NAME, "readwrite");
+    const dest = destTx.objectStore(STORE_NAME);
+    for (let i = 0;i < keys.length; i++)
+      dest.put(values[i], keys[i]);
+    await new Promise((resolve, reject) => {
+      destTx.oncomplete = () => resolve();
+      destTx.onerror = () => reject(destTx.error);
+    });
+  }
+  function openExisting(name) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      let created = false;
+      req.onupgradeneeded = () => {
+        created = true;
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        if (created) {
+          db.close();
+          indexedDB.deleteDatabase(name);
+          resolve(null);
+          return;
+        }
+        resolve(db);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function migrateLegacy(db) {
+    let legacy = null;
+    try {
+      legacy = await openExisting(LEGACY_DB_NAME);
+      if (legacy)
+        await copyStore(legacy, db);
+    } catch (e) {
+      if (false)
+        ;
+    } finally {
+      legacy?.close();
+    }
+  }
+  function open() {
+    if (dbPromise)
+      return dbPromise;
+    const promise = openNamed(DB_NAME).then(async (db) => {
+      await migrateLegacy(db);
+      return db;
     });
     promise.catch((e) => {
       dbPromise = null;
@@ -2712,6 +2779,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function idbSet(key, value) {
     return withStore("readwrite", (store, resolve) => {
       store.put(value, key);
+      store.transaction.oncomplete = () => resolve();
+    });
+  }
+  function idbDelete(key) {
+    return withStore("readwrite", (store, resolve) => {
+      store.delete(key);
       store.transaction.oncomplete = () => resolve();
     });
   }
@@ -3084,8 +3157,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/utils/SettingsStore.ts
   var logger8 = new Logger("SettingsStore");
-  var STORAGE_KEYS = ["VoidPPSettings", "VoidSettings"];
-  var STORAGE_KEY = STORAGE_KEYS[0];
+  var STORAGE_KEY = "VoidPPSettings";
+  var LEGACY_STORAGE_KEY = "VoidSettings";
   var SAVE_DEBOUNCE_MS = 100;
   function parseStoredSettings(raw) {
     if (isObject(raw))
@@ -3207,24 +3280,22 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     save() {
       try {
         const json = JSON.stringify(this.plain);
-        for (const key of STORAGE_KEYS) {
-          if (typeof GM_setValue === "function") {
+        if (typeof GM_setValue === "function") {
+          try {
+            GM_setValue(STORAGE_KEY, this.plain);
+          } catch {
             try {
-              GM_setValue(key, this.plain);
-            } catch {
-              try {
-                GM_setValue(key, json);
-              } catch (e2) {
-                logger8.warn("Failed to save settings to GM:", e2);
-              }
+              GM_setValue(STORAGE_KEY, json);
+            } catch (e2) {
+              logger8.warn("Failed to save settings to GM:", e2);
             }
-          } else {
-            try {
-              localStorage.setItem(key, json);
-            } catch {}
           }
-          idbSet(key, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
+        } else {
+          try {
+            localStorage.setItem(STORAGE_KEY, json);
+          } catch {}
         }
+        idbSet(STORAGE_KEY, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
       } catch (e) {
         logger8.error("Failed to save settings:", e);
       }
@@ -3286,41 +3357,59 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return null;
     }
   }
-  async function readStoredSettings() {
-    for (const key of STORAGE_KEYS) {
-      const gm = parseStoredSettings(await readGmValue(key));
-      if (gm)
-        return gm;
-    }
+  async function readKey(key) {
+    const gm = parseStoredSettings(await readGmValue(key));
+    if (gm)
+      return gm;
     try {
-      for (const key of STORAGE_KEYS) {
-        const idb = parseStoredSettings(await idbGet(key) ?? null);
-        if (idb)
-          return idb;
-      }
+      const idb = parseStoredSettings(await idbGet(key) ?? null);
+      if (idb)
+        return idb;
     } catch (e) {
       logger9.warn("Failed to read IndexedDB:", e);
     }
     try {
-      for (const key of STORAGE_KEYS) {
-        const local = parseStoredSettings(localStorage.getItem(key));
-        if (local)
-          return local;
-      }
-      return null;
+      return parseStoredSettings(localStorage.getItem(key));
     } catch (e) {
       logger9.warn("Failed to read localStorage:", e);
       return null;
     }
   }
+  async function dropLegacySettings() {
+    if (typeof GM_deleteValue === "function") {
+      try {
+        GM_deleteValue(LEGACY_STORAGE_KEY);
+      } catch {}
+    }
+    try {
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch {}
+    try {
+      await idbDelete(LEGACY_STORAGE_KEY);
+    } catch (e) {
+      logger9.warn("Failed to drop legacy settings:", e);
+    }
+  }
+  async function readStoredSettings() {
+    const next = await readKey(STORAGE_KEY);
+    if (next)
+      return { parsed: next, fromLegacy: false };
+    const legacy = await readKey(LEGACY_STORAGE_KEY);
+    if (legacy)
+      return { parsed: legacy, fromLegacy: true };
+    return null;
+  }
   async function initSettings() {
-    const parsed = await readStoredSettings();
-    if (parsed)
-      Object.assign(settings, parsed);
+    const stored = await readStoredSettings();
+    if (stored)
+      Object.assign(settings, stored.parsed);
     mergeDefaults(settings, DefaultSettings);
     const meta = settings.plugins.Settings;
     if (meta && meta.enabled === false)
       meta.enabled = true;
+    if (stored?.fromLegacy)
+      SettingsStore3.flush();
+    await dropLegacySettings();
   }
   function migratePluginSettings(name, ...oldNames) {
     const { plugins } = SettingsStore3.plain;
@@ -4200,7 +4289,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     if (!Array.isArray(patch.replacement)) {
       patch.replacement = [patch.replacement];
     }
-    const pluginPath = `Void.plugins[${JSON.stringify(pluginName)}]`;
+    const pluginPath = `VoidPP.plugins[${JSON.stringify(pluginName)}]`;
     for (const replacement of patch.replacement) {
       if (false) {}
       canonicalizeReplacement(replacement, pluginPath);
@@ -5881,8 +5970,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // src/components/settings/tabs/VoidDialogShell.tsx
-  function VoidDialogShell({ title, subtitle, onClose, children, size = "md", nested }) {
+  // src/components/settings/tabs/VoidPPDialogShell.tsx
+  function VoidPPDialogShell({ title, subtitle, onClose, children, size = "md", nested }) {
     return /* @__PURE__ */ React.createElement(Dialog, {
       open: true,
       onOpenChange: (v) => {
@@ -5942,7 +6031,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       const entryKeys = new Set(entries.map(([key]) => key));
       Settings.plugins[plugin.name] = Object.fromEntries(Object.entries(current).filter(([k]) => !entryKeys.has(k)));
     }, [plugin.name, entries]);
-    return /* @__PURE__ */ React.createElement(VoidDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: plugin.name,
       subtitle: plugin.description,
       onClose,
@@ -6333,7 +6422,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         setLoading(false);
       }
     };
-    return /* @__PURE__ */ React.createElement(VoidDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: "Add Online Theme",
       onClose,
       size: "sm",
@@ -6381,7 +6470,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         setError(errorMessage(e));
       }
     };
-    return /* @__PURE__ */ React.createElement(VoidDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: theme ? "Edit Local Theme" : "New Local Theme",
       onClose,
       size: "lg",
@@ -7004,12 +7093,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       default: true
     }
   });
-  var PLUGINS_TAB_ID = "void_plugins_tab";
+  var PLUGINS_TAB_ID = "voidpp_plugins_tab";
   var allTabs = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2 },
-    { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
-    { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
-    { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
+    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
+    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
+    { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
   ];
   function getVisibleTabs() {
     return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
@@ -7042,9 +7131,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260911.6] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"c0c2645"}`
-    }, `(${"c0c2645"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260911.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"6689801"}`
+    }, `(${"6689801"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7111,7 +7200,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     _tabEntries() {
       return getVisibleTabs().map((t) => ({
         id: t.id,
-        group: "void",
+        group: "voidpp",
         icon: t.icon,
         i18nKey: t.name,
         defaultLabel: t.name,
@@ -7124,7 +7213,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     _renderVersion() {
       return /* @__PURE__ */ React.createElement(VersionInfo, {
-        key: "void-version"
+        key: "voidpp-version"
       });
     },
     start() {
@@ -7157,11 +7246,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
           },
           {
             match: /(\["general","grok","payments","data","other"),("team-management"\])/,
-            replace: '$1,"void",$2'
+            replace: '$1,"voidpp",$2'
           },
           {
             match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
-            replace: '$1case"void":return"Void++";$2'
+            replace: '$1case"voidpp":return"Void++";$2'
           },
           {
             match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,
@@ -13919,7 +14008,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     useEffect(() => {
       chartRef.current?.querySelector(`.${cl23("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
     }, [selected]);
-    return /* @__PURE__ */ React.createElement(VoidDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: "Usage by date",
       subtitle: "Stored on this device.",
       onClose,
@@ -14258,9 +14347,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
     { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
   ];
   var VOID_TABS = [
-    { id: "void_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
-    { id: "void_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
-    { id: "void_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
+    { id: "voidpp_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
+    { id: "voidpp_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
+    { id: "voidpp_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
   ];
   function openTab(tab, onOpen, event) {
     const store = SettingsDialogStore.useSettingsDialogStore.getState();
@@ -17196,7 +17285,7 @@ div:has(> #grok-bot-nav-button) {
     useTransition: () => useTransition
   });
 
-  // src/Void.ts
+  // src/VoidPP.ts
   var logger30 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
@@ -17256,14 +17345,14 @@ div:has(> #grok-bot-nav-button) {
   var target = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
   if (isGrokPreviewFrame()) {
     bootstrapPreviewFrame();
-  } else if (window === window.top && !target.Void) {
-    Object.defineProperty(target, "Void", {
-      value: exports_Void,
+  } else if (window === window.top && !target.VoidPP && !target.Void) {
+    Object.defineProperty(target, "VoidPP", {
+      value: exports_VoidPP,
       writable: false,
       configurable: true
     });
-    Object.defineProperty(target, "VoidPP", {
-      value: exports_Void,
+    Object.defineProperty(target, "Void", {
+      value: exports_VoidPP,
       writable: false,
       configurable: true
     });

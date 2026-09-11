@@ -1,6 +1,6 @@
 {
     "mcpServers": {
-        "void-mcp": {
+        "voidpp-mcp": {
             "type": "http",
             "url": "http://localhost:7890/"
         },

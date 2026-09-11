@@ -67,7 +67,7 @@ export const toolSchemas = {
         }),
     }),
     evaluateCode: tool({
-        description: "Run JS in page context. Has window.VoidPP and window.Void, DOM. Supports await/import(). Auto-returns last expression.",
+        description: "Run JS in page context. Has window.VoidPP, DOM. Supports await/import(). Auto-returns last expression.",
         annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
         input: z.object({
             code: z.string().describe(`Max ${EVAL.MAX_CODE_LENGTH} chars.`),

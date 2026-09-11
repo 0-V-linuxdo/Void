@@ -14,7 +14,7 @@ const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/VoidPP";
 const SCRIPT_CDN = "https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp";
-const VERSION_DATE = "20260911.6";
+const VERSION_DATE = "20260911.7";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
@@ -40,6 +40,7 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_deleteValue
 // @grant        GM_setClipboard
 // @connect      raw.githubusercontent.com
 // @connect      cdn.jsdelivr.net
@@ -50,8 +51,8 @@ const USERSCRIPT_HEADER = `// ==UserScript==
 // @compatible   opera
 // @license      GPL-3.0-or-later
 // @supportURL   ${FORK_URL}
-// @downloadURL  ${SCRIPT_CDN}/userscript/Void.user.js
-// @updateURL    ${SCRIPT_CDN}/userscript/Void.user.js
+// @downloadURL  ${SCRIPT_CDN}/userscript/VoidPP.user.js
+// @updateURL    ${SCRIPT_CDN}/userscript/VoidPP.user.js
 // ==/UserScript==
 `;
 
@@ -180,24 +181,23 @@ async function buildCore(outfile: string, isExt: boolean) {
 }
 
 async function buildUserscript() {
-    const output = await buildCore("Void.user.js", false);
+    const output = await buildCore("VoidPP.user.js", false);
     const code = await output.text();
     const content = USERSCRIPT_HEADER + "\n" + LICENSE_BANNER + "\n" + code;
-    await Bun.write("dist/Void.user.js", content);
-    await Bun.write("dist/VoidPP.user.js", content);
     mkdirSync("userscript", { recursive: true });
-    await Bun.write("userscript/Void.user.js", content);
+    await Bun.write("dist/VoidPP.user.js", content);
     await Bun.write("userscript/VoidPP.user.js", content);
-    logger.info(`Built Void.user.js + VoidPP.user.js (${(content.length / 1024).toFixed(1)} KB)`);
+    await Bun.write("dist/Void.user.js", content);
+    await Bun.write("userscript/Void.user.js", content);
+    logger.info(`Built VoidPP.user.js (${(content.length / 1024).toFixed(1)} KB)`);
 }
 
 async function buildExtensions() {
-    const output = await buildCore("Void.js", true);
+    const output = await buildCore("VoidPP.js", true);
     const code = LICENSE_BANNER + "\n" + await output.text();
-    await Bun.write("dist/Void.js", code);
     await Bun.write("dist/VoidPP.js", code);
     const size = (code.length / 1024).toFixed(1);
-    logger.info(`Built dist/Void.js + VoidPP.js (${size} KB)`);
+    logger.info(`Built dist/VoidPP.js (${size} KB)`);
 
     const targets = [
         {
@@ -215,7 +215,6 @@ async function buildExtensions() {
         rmSync(outDir, { recursive: true, force: true });
         mkdirSync(outDir, { recursive: true });
 
-        cpSync("dist/Void.js", resolve(outDir, "Void.js"));
         cpSync("dist/VoidPP.js", resolve(outDir, "VoidPP.js"));
         cpSync("browser/icons", resolve(outDir, "icons"), { recursive: true });
 

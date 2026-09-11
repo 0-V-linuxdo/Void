@@ -50,13 +50,13 @@ interface SettingsTab {
     plugin?: string;
 }
 
-const PLUGINS_TAB_ID = "void_plugins_tab";
+const PLUGINS_TAB_ID = "voidpp_plugins_tab";
 
 export const allTabs: SettingsTab[] = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab },
-    { id: "void_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
-    { id: "void_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
-    { id: "void_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
+    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
+    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
+    { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
 ];
 
 export function getVisibleTabs() {
@@ -177,7 +177,7 @@ export default definePlugin({
     _tabEntries() {
         return getVisibleTabs().map(t => ({
             id: t.id,
-            group: "void",
+            group: "voidpp",
             icon: t.icon,
             i18nKey: t.name,
             defaultLabel: t.name,
@@ -191,7 +191,7 @@ export default definePlugin({
     },
 
     _renderVersion() {
-        return <VersionInfo key="void-version" />;
+        return <VersionInfo key="voidpp-version" />;
     },
 
     start() {
@@ -223,11 +223,11 @@ export default definePlugin({
                 },
                 {
                     match: /(\["general","grok","payments","data","other"),("team-management"\])/,
-                    replace: '$1,"void",$2',
+                    replace: '$1,"voidpp",$2',
                 },
                 {
                     match: /(case"other":return \i\("settings-nav-group\.other","Other"\);)(case"team-management":)/,
-                    replace: '$1case"void":return"Void++";$2',
+                    replace: '$1case"voidpp":return"Void++";$2',
                 },
                 {
                     match: /default:return\(0,\i\.logError\)\("SettingsDialog:tabLabel",`No label for settings tab \${(\i)\.id}`\),\1\.id/,

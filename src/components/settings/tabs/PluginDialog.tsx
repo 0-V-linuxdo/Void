@@ -15,7 +15,7 @@ import type { Plugin } from "@utils/types";
 
 import SettingField from "../SettingField";
 import { isVisibleSetting } from "../utils";
-import { DialogField, VoidDialogShell } from "./VoidDialogShell";
+import { DialogField, VoidPPDialogShell } from "./VoidPPDialogShell";
 
 const cl = classNameFactory("void-plugin-dialog-");
 
@@ -38,7 +38,7 @@ export default function PluginDialog({ plugin, onClose }: PluginDialogProps) {
     }, [plugin.name, entries]);
 
     return (
-        <VoidDialogShell title={plugin.name} subtitle={plugin.description} onClose={onClose} nested>
+        <VoidPPDialogShell title={plugin.name} subtitle={plugin.description} onClose={onClose} nested>
             <Separator />
             {!!plugin.authors?.length && (
                 <DialogField label="Authors">
@@ -72,6 +72,6 @@ export default function PluginDialog({ plugin, onClose }: PluginDialogProps) {
                 danger
                 onConfirm={resetSettings}
             />
-        </VoidDialogShell>
+        </VoidPPDialogShell>
     );
 }

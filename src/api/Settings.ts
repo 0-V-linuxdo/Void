@@ -5,11 +5,11 @@
  */
 
 import { useEffect } from "@turbopack/common/react";
-import { idbGet } from "@utils/idb";
+import { idbDelete, idbGet } from "@utils/idb";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
 import { useForceUpdater } from "@utils/react";
-import { parseStoredSettings, SettingsStore as SettingsStoreClass, STORAGE_KEYS } from "@utils/SettingsStore";
+import { LEGACY_STORAGE_KEY, parseStoredSettings, SettingsStore as SettingsStoreClass, STORAGE_KEY } from "@utils/SettingsStore";
 import { type DefinedSettings, OptionType, type PluginSettingDef, type PluginSettingValue, type SettingsChecks, type SettingsDefinition } from "@utils/types";
 
 const logger = new Logger("Settings");
@@ -49,39 +49,51 @@ async function readGmValue(key: string): Promise<unknown> {
     }
 }
 
-async function readStoredSettings(): Promise<Record<string, unknown> | null> {
-    for (const key of STORAGE_KEYS) {
-        const gm = parseStoredSettings(await readGmValue(key));
-        if (gm) return gm;
-    }
+async function readKey(key: string): Promise<Record<string, unknown> | null> {
+    const gm = parseStoredSettings(await readGmValue(key));
+    if (gm) return gm;
 
     try {
-        for (const key of STORAGE_KEYS) {
-            const idb = parseStoredSettings(await idbGet(key) ?? null);
-            if (idb) return idb;
-        }
+        const idb = parseStoredSettings(await idbGet(key) ?? null);
+        if (idb) return idb;
     } catch (e) {
         logger.warn("Failed to read IndexedDB:", e);
     }
 
     try {
-        for (const key of STORAGE_KEYS) {
-            const local = parseStoredSettings(localStorage.getItem(key));
-            if (local) return local;
-        }
-        return null;
+        return parseStoredSettings(localStorage.getItem(key));
     } catch (e) {
         logger.warn("Failed to read localStorage:", e);
         return null;
     }
 }
 
+async function dropLegacySettings() {
+    if (typeof GM_deleteValue === "function") {
+        try { GM_deleteValue(LEGACY_STORAGE_KEY); } catch {}
+    }
+    try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch {}
+    try { await idbDelete(LEGACY_STORAGE_KEY); } catch (e) {
+        logger.warn("Failed to drop legacy settings:", e);
+    }
+}
+
+async function readStoredSettings(): Promise<{ parsed: Record<string, unknown>; fromLegacy: boolean } | null> {
+    const next = await readKey(STORAGE_KEY);
+    if (next) return { parsed: next, fromLegacy: false };
+    const legacy = await readKey(LEGACY_STORAGE_KEY);
+    if (legacy) return { parsed: legacy, fromLegacy: true };
+    return null;
+}
+
 export async function initSettings(): Promise<void> {
-    const parsed = await readStoredSettings();
-    if (parsed) Object.assign(settings, parsed);
+    const stored = await readStoredSettings();
+    if (stored) Object.assign(settings, stored.parsed);
     mergeDefaults(settings, DefaultSettings);
     const meta = settings.plugins.Settings;
     if (meta && meta.enabled === false) meta.enabled = true;
+    if (stored?.fromLegacy) SettingsStore.flush();
+    await dropLegacySettings();
 }
 
 export function migratePluginSettings(name: string, ...oldNames: string[]) {

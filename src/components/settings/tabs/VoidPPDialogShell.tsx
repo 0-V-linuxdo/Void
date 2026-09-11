@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 
 export type DialogSize = "sm" | "md" | "lg";
 
-export function VoidDialogShell({ title, subtitle, onClose, children, size = "md", nested }: {
+export function VoidPPDialogShell({ title, subtitle, onClose, children, size = "md", nested }: {
     title: ReactNode;
     subtitle?: string;
     onClose(): void;

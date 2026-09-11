@@ -29,7 +29,7 @@ import { CssEditor } from "../CssEditor";
 import ThemeCard from "../ThemeCard";
 import { type InputChangeEvent } from "../utils";
 import { SearchFilterBar } from "./SearchFilterBar";
-import { DialogActions, DialogField, VoidDialogShell } from "./VoidDialogShell";
+import { DialogActions, DialogField, VoidPPDialogShell } from "./VoidPPDialogShell";
 
 type ThemeFilter = "all" | "enabled" | "disabled" | "online" | "local";
 
@@ -78,7 +78,7 @@ function OnlineThemeDialog({ onClose, onSave }: OnlineThemeDialogProps) {
     };
 
     return (
-        <VoidDialogShell title="Add Online Theme" onClose={onClose} size="sm" nested>
+        <VoidPPDialogShell title="Add Online Theme" onClose={onClose} size="sm" nested>
             <DialogField label="URL">
                 <Input
                     type="text"
@@ -96,7 +96,7 @@ function OnlineThemeDialog({ onClose, onSave }: OnlineThemeDialogProps) {
                 onConfirm={handleImport}
                 confirmDisabled={loading || !url.trim()}
             />
-        </VoidDialogShell>
+        </VoidPPDialogShell>
     );
 }
 
@@ -121,7 +121,7 @@ function LocalThemeDialog({ onClose, theme, onSave }: LocalThemeDialogProps) {
     };
 
     return (
-        <VoidDialogShell title={theme ? "Edit Local Theme" : "New Local Theme"} onClose={onClose} size="lg" nested>
+        <VoidPPDialogShell title={theme ? "Edit Local Theme" : "New Local Theme"} onClose={onClose} size="lg" nested>
             <DialogField label="Name">
                 <Input
                     type="text"
@@ -141,7 +141,7 @@ function LocalThemeDialog({ onClose, theme, onSave }: LocalThemeDialogProps) {
                 onConfirm={handleSave}
                 confirmDisabled={!name.trim() || !css.trim()}
             />
-        </VoidDialogShell>
+        </VoidPPDialogShell>
     );
 }
 

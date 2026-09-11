@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from "bun:test";
 
-import { parseStoredSettings, STORAGE_KEY, STORAGE_KEYS } from "./SettingsStore";
+import { LEGACY_STORAGE_KEY, parseStoredSettings, STORAGE_KEY } from "./SettingsStore";
 
 describe("parseStoredSettings", () => {
     test("returns objects as-is", () => {
@@ -35,8 +35,8 @@ describe("parseStoredSettings", () => {
 });
 
 describe("storage keys", () => {
-    test("prefers VoidPPSettings and still writes the legacy VoidSettings key", () => {
+    test("uses VoidPPSettings as the only write key", () => {
         expect(STORAGE_KEY).toBe("VoidPPSettings");
-        expect(STORAGE_KEYS).toEqual(["VoidPPSettings", "VoidSettings"]);
+        expect(LEGACY_STORAGE_KEY).toBe("VoidSettings");
     });
 });

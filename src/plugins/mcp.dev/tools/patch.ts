@@ -151,7 +151,7 @@ function testMatchOnSource(src: string, id: number, findStr: string | string[], 
     const lintWarnings = lintMatchRegex(matchStr, replaceStr);
     const warnings = lintWarnings.filter(w => w.severity === "error" || w.severity === "warn").map(w => w.message);
 
-    if (replaceStr.includes("$self")) warnings.push('$self is expanded at runtime to Void.plugins["Name"], not in test preview');
+    if (replaceStr.includes("$self")) warnings.push('$self is expanded at runtime to VoidPP.plugins["Name"], not in test preview');
 
     let matched: RegExpMatchArray | null;
     try {

@@ -57,10 +57,11 @@ function validateExtensionDir(dir, mv) {
 }
 
 console.log("→ Userscript");
+parseJs("dist/VoidPP.user.js");
 parseJs("dist/Void.user.js");
 
 console.log("→ Extension bundle");
-parseJs("dist/Void.js");
+parseJs("dist/VoidPP.js");
 
 console.log("→ Chrome (MV3)");
 validateExtensionDir("dist/chrome-unpacked", 3);

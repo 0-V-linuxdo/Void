@@ -240,7 +240,7 @@ function evaluateReplacement(rep: ReplacementSpec, mod: ModuleEntry, patch: Patc
         return { diagnostics, applied: diagnostics.every(d => d.severity !== "error"), timeMs: performance.now() - start };
     }
 
-    const replaceExpr = canonicalizeReplace(rep.replace.value, `Void.plugins[${JSON.stringify(patch.plugin)}]`);
+    const replaceExpr = canonicalizeReplace(rep.replace.value, `VoidPP.plugins[${JSON.stringify(patch.plugin)}]`);
     const replaced = mod.factory.replace(compiled ?? m.text, replaceExpr);
 
     if (replaced !== mod.factory) {

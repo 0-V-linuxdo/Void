@@ -37,7 +37,7 @@ const RefreshCwIcon = findExportedComponentLazy("RefreshCwIcon");
 const AVATAR_FETCH_TIMEOUT_MS = 4000;
 const AVATAR_MAX_BYTES = 256 * 1024;
 
-const PRESERVE_PREFIXES = ["Void"];
+const PRESERVE_PREFIXES = ["VoidPP", "Void"];
 
 interface AccountPayload {
     readonly schemaVersion: 2;

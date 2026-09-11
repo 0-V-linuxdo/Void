@@ -79,7 +79,7 @@ export function addPatch(newPatch: Omit<Patch, "plugin">, pluginName: string) {
         patch.replacement = [patch.replacement];
     }
 
-    const pluginPath = `Void.plugins[${JSON.stringify(pluginName)}]`;
+    const pluginPath = `VoidPP.plugins[${JSON.stringify(pluginName)}]`;
     for (const replacement of patch.replacement) {
         if (IS_DEV && typeof replacement.replace === "string") {
             const groups = countCaptureGroups(replacement.match instanceof RegExp ? replacement.match.source : String(replacement.match));

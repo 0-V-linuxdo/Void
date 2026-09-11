@@ -69,7 +69,7 @@ function bridgeRequest<T>(op: "list" | "set" | "remove", payload: unknown): Prom
         window.addEventListener("message", (event: MessageEvent) => {
             if (event.source !== window) return;
             const { data } = event;
-            if (!data || data.source !== "void-cookies" || data.direction !== "res" || data.requestId !== requestId) return;
+            if (!data || data.source !== "voidpp-cookies" || data.direction !== "res" || data.requestId !== requestId) return;
             clearTimeout(timer);
             ac.abort();
             const response = data.response as BridgeResponse<T> | undefined;
@@ -77,7 +77,7 @@ function bridgeRequest<T>(op: "list" | "set" | "remove", payload: unknown): Prom
             else resolve(response.result as T);
         }, { signal: ac.signal });
 
-        window.postMessage({ source: "void-cookies", direction: "req", requestId, op, payload }, window.location.origin);
+        window.postMessage({ source: "voidpp-cookies", direction: "req", requestId, op, payload }, window.location.origin);
     });
 }
 
