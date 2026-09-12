@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.35] v1.0.0
+// @version      [20260912.36] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.35] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.36] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7183,9 +7183,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.35] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"189fd42"}`
-    }, `(${"189fd42"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.36] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"bf39267"}`
+    }, `(${"bf39267"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7807,6 +7807,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       description: "Start with the Chats section expanded on page load.",
       default: true
     },
+    projectsDefaultCollapsed: {
+      type: 3 /* BOOLEAN */,
+      description: "Start with the Projects section collapsed on page load.",
+      default: true
+    },
     batchSelect: {
       type: 3 /* BOOLEAN */,
       description: "Show checkboxes on conversations for bulk selection and deletion.",
@@ -7829,10 +7834,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var BOTS_PLUS_SEL = "[data-sidebar=sidebar] :is([data-void-bots-plus], .void-bots-plus)";
   var CHATS_PLUS_SEL = "[data-sidebar=sidebar] :is([data-void-chats-plus], .void-chats-plus)";
   var CHATS_COLLAPSED_KEY = "sidebar-history-collapsed";
+  var PROJECTS_COLLAPSED_KEY = "sidebar-projects-collapsed";
+  var PROJECTS_ACTION_SEL = "[data-sidebar=sidebar] :is(button[aria-label='Add project'], button[aria-label='All projects'])";
   var botsCollapseObserver = null;
   var botsCollapseTimer = null;
   var chatsExpandObserver = null;
   var chatsExpandTimer = null;
+  var projectsCollapseObserver = null;
+  var projectsCollapseTimer = null;
   function applyHeaderHover() {
     if (settings7.store.titleRowHover)
       enableStyle("headerHover");
@@ -7948,6 +7957,69 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       stopChatsExpand();
     }, 1e4);
   }
+  function resetProjectsCollapsedStorage() {
+    if (!settings7.store.projectsDefaultCollapsed)
+      return;
+    try {
+      localStorage.setItem(PROJECTS_COLLAPSED_KEY, "true");
+    } catch {}
+  }
+  function projectsGroup() {
+    const action = document.querySelector(PROJECTS_ACTION_SEL);
+    if (action)
+      return action.closest("[data-sidebar=group]");
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar)
+      return null;
+    for (const btn of sidebar.querySelectorAll("button[aria-expanded]")) {
+      const label = (btn.getAttribute("aria-label") ?? "").trim();
+      if (label === "Projects")
+        return btn.closest("[data-sidebar=group]");
+    }
+    return null;
+  }
+  function collapseProjectsSection() {
+    const group = projectsGroup();
+    if (!group)
+      return false;
+    const expanded = group.querySelector("button[aria-expanded=true]");
+    if (!expanded)
+      return true;
+    expanded.click();
+    return true;
+  }
+  function stopProjectsCollapse() {
+    projectsCollapseObserver?.disconnect();
+    projectsCollapseObserver = null;
+    if (projectsCollapseTimer != null) {
+      clearTimeout(projectsCollapseTimer);
+      projectsCollapseTimer = null;
+    }
+  }
+  function startProjectsCollapse() {
+    stopProjectsCollapse();
+    if (!settings7.store.projectsDefaultCollapsed)
+      return;
+    resetProjectsCollapsedStorage();
+    let done = false;
+    const tick = () => {
+      if (done)
+        return;
+      if (collapseProjectsSection()) {
+        done = true;
+        stopProjectsCollapse();
+      }
+    };
+    tick();
+    if (done)
+      return;
+    projectsCollapseObserver = new MutationObserver(tick);
+    projectsCollapseObserver.observe(document.documentElement, { childList: true, subtree: true });
+    projectsCollapseTimer = setTimeout(() => {
+      done = true;
+      stopProjectsCollapse();
+    }, 1e4);
+  }
   function newChat(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -8040,7 +8112,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var betterSidebar_default = definePlugin({
     name: "BetterSidebar",
     icon: PanelLeftIcon,
-    description: "Sidebar improvements, including header-action hover, Bots default collapsed, and Chats default expanded.",
+    description: "Sidebar improvements, including header-action hover, Bots/Projects default collapsed, and Chats default expanded.",
     authors: [Devs.Prism, Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
@@ -8078,6 +8150,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       resetChatsCollapsedStorage();
       return false;
     },
+    _projectsCollapsedInit() {
+      resetProjectsCollapsedStorage();
+      return true;
+    },
+    _projectsAutoExpand() {
+      return !settings7.store.projectsDefaultCollapsed;
+    },
     _onSidebarClick() {
       if (!settings7.store.clickToToggle)
         return;
@@ -8092,8 +8171,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       selection.clear();
       applyHeaderHover();
       resetChatsCollapsedStorage();
+      resetProjectsCollapsedStorage();
       startBotsCollapse();
       startChatsExpand();
+      startProjectsCollapse();
     },
     onSettingsChange: applyHeaderHover,
     stop() {
@@ -8101,6 +8182,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       disableStyle("headerHover");
       stopBotsCollapse();
       stopChatsExpand();
+      stopProjectsCollapse();
     },
     patches: [
       {
@@ -8180,6 +8262,20 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
           match: /useLocalStorage\)\("sidebar-history-collapsed",!1,!1\)/,
           replace: 'useLocalStorage)("sidebar-history-collapsed",$self._chatsCollapsedInit(),!1)'
         }
+      },
+      {
+        find: "sidebar-projects-collapsed",
+        group: true,
+        replacement: [
+          {
+            match: /useLocalStorage\)\("sidebar-projects-collapsed",!1,!1\)/,
+            replace: 'useLocalStorage)("sidebar-projects-collapsed",$self._projectsCollapsedInit(),!1)'
+          },
+          {
+            match: /!(\i)\.current&&(\i)&&\((\i)\.length>0\|\|(\i)\.length>0\)&&\(\1\.current=!0,(\i)\(!1\)\)/,
+            replace: "!$1.current&&$2&&($3.length>0||$4.length>0)&&($1.current=!0,$self._projectsAutoExpand()&&$5(!1))"
+          }
+        ]
       }
     ]
   });

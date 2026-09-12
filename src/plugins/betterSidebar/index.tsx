@@ -48,6 +48,11 @@ const settings = definePluginSettings({
         description: "Start with the Chats section expanded on page load.",
         default: true,
     },
+    projectsDefaultCollapsed: {
+        type: OptionType.BOOLEAN,
+        description: "Start with the Projects section collapsed on page load.",
+        default: true,
+    },
     batchSelect: {
         type: OptionType.BOOLEAN,
         description: "Show checkboxes on conversations for bulk selection and deletion.",
@@ -73,11 +78,15 @@ const BTN_CLASS = "void-chats-plus flex size-5 shrink-0 items-center justify-cen
 const BOTS_PLUS_SEL = "[data-sidebar=sidebar] :is([data-void-bots-plus], .void-bots-plus)";
 const CHATS_PLUS_SEL = "[data-sidebar=sidebar] :is([data-void-chats-plus], .void-chats-plus)";
 const CHATS_COLLAPSED_KEY = "sidebar-history-collapsed";
+const PROJECTS_COLLAPSED_KEY = "sidebar-projects-collapsed";
+const PROJECTS_ACTION_SEL = "[data-sidebar=sidebar] :is(button[aria-label='Add project'], button[aria-label='All projects'])";
 
 let botsCollapseObserver: MutationObserver | null = null;
 let botsCollapseTimer: ReturnType<typeof setTimeout> | null = null;
 let chatsExpandObserver: MutationObserver | null = null;
 let chatsExpandTimer: ReturnType<typeof setTimeout> | null = null;
+let projectsCollapseObserver: MutationObserver | null = null;
+let projectsCollapseTimer: ReturnType<typeof setTimeout> | null = null;
 
 function applyHeaderHover() {
     if (settings.store.titleRowHover) enableStyle("headerHover");
@@ -194,6 +203,69 @@ function startChatsExpand() {
     }, 10_000);
 }
 
+function resetProjectsCollapsedStorage() {
+    if (!settings.store.projectsDefaultCollapsed) return;
+    try {
+        localStorage.setItem(PROJECTS_COLLAPSED_KEY, "true");
+    } catch {}
+}
+
+function projectsGroup() {
+    const action = document.querySelector(PROJECTS_ACTION_SEL);
+    if (action) return action.closest("[data-sidebar=group]");
+
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar) return null;
+    for (const btn of sidebar.querySelectorAll<HTMLElement>("button[aria-expanded]")) {
+        const label = (btn.getAttribute("aria-label") ?? "").trim();
+        if (label === "Projects") return btn.closest("[data-sidebar=group]");
+    }
+    return null;
+}
+
+function collapseProjectsSection() {
+    const group = projectsGroup();
+    if (!group) return false;
+    const expanded = group.querySelector<HTMLElement>("button[aria-expanded=true]");
+    if (!expanded) return true;
+    expanded.click();
+    return true;
+}
+
+function stopProjectsCollapse() {
+    projectsCollapseObserver?.disconnect();
+    projectsCollapseObserver = null;
+    if (projectsCollapseTimer != null) {
+        clearTimeout(projectsCollapseTimer);
+        projectsCollapseTimer = null;
+    }
+}
+
+function startProjectsCollapse() {
+    stopProjectsCollapse();
+    if (!settings.store.projectsDefaultCollapsed) return;
+    resetProjectsCollapsedStorage();
+
+    let done = false;
+    const tick = () => {
+        if (done) return;
+        if (collapseProjectsSection()) {
+            done = true;
+            stopProjectsCollapse();
+        }
+    };
+
+    tick();
+    if (done) return;
+
+    projectsCollapseObserver = new MutationObserver(tick);
+    projectsCollapseObserver.observe(document.documentElement, { childList: true, subtree: true });
+    projectsCollapseTimer = setTimeout(() => {
+        done = true;
+        stopProjectsCollapse();
+    }, 10_000);
+}
+
 function newChat(event: ReactMouseEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -290,7 +362,7 @@ const WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
 export default definePlugin({
     name: "BetterSidebar",
     icon: PanelLeftIcon,
-    description: "Sidebar improvements, including header-action hover, Bots default collapsed, and Chats default expanded.",
+    description: "Sidebar improvements, including header-action hover, Bots/Projects default collapsed, and Chats default expanded.",
     authors: [Devs.Prism, Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
@@ -331,6 +403,15 @@ export default definePlugin({
         return false;
     },
 
+    _projectsCollapsedInit() {
+        resetProjectsCollapsedStorage();
+        return true;
+    },
+
+    _projectsAutoExpand() {
+        return !settings.store.projectsDefaultCollapsed;
+    },
+
     _onSidebarClick() {
         if (!settings.store.clickToToggle) return;
         return (e: MouseEvent) => {
@@ -345,8 +426,10 @@ export default definePlugin({
         selection.clear();
         applyHeaderHover();
         resetChatsCollapsedStorage();
+        resetProjectsCollapsedStorage();
         startBotsCollapse();
         startChatsExpand();
+        startProjectsCollapse();
     },
 
     onSettingsChange: applyHeaderHover,
@@ -356,6 +439,7 @@ export default definePlugin({
         disableStyle("headerHover");
         stopBotsCollapse();
         stopChatsExpand();
+        stopProjectsCollapse();
     },
 
     patches: [
@@ -436,6 +520,20 @@ export default definePlugin({
                 match: /useLocalStorage\)\("sidebar-history-collapsed",!1,!1\)/,
                 replace: "useLocalStorage)(\"sidebar-history-collapsed\",$self._chatsCollapsedInit(),!1)",
             },
+        },
+        {
+            find: "sidebar-projects-collapsed",
+            group: true,
+            replacement: [
+                {
+                    match: /useLocalStorage\)\("sidebar-projects-collapsed",!1,!1\)/,
+                    replace: "useLocalStorage)(\"sidebar-projects-collapsed\",$self._projectsCollapsedInit(),!1)",
+                },
+                {
+                    match: /!(\i)\.current&&(\i)&&\((\i)\.length>0\|\|(\i)\.length>0\)&&\(\1\.current=!0,(\i)\(!1\)\)/,
+                    replace: "!$1.current&&$2&&($3.length>0||$4.length>0)&&($1.current=!0,$self._projectsAutoExpand()&&$5(!1))",
+                },
+            ],
         },
     ],
 });
