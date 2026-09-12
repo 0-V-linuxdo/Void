@@ -7,24 +7,30 @@
 /* stylelint-disable no-descending-specificity */
 
 @media (width >= 48rem) {
-    [data-sidebar="sidebar"] [data-sidebar="content"] :has(> a[href*="/bot/"]) > :first-child > :is(button, [role="button"]):not([data-sidebar="menu-button"], [data-sidebar="menu-action"]),
-    [data-sidebar="sidebar"] [data-sidebar="group-action"] {
+    [data-sidebar="sidebar"] button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-void-bots-plus],
+    [data-sidebar="sidebar"] .void-bots-plus,
+    [data-sidebar="sidebar"] [data-sidebar="group"]:has(a[href*="/bot/"]) > :first-child button:not([aria-expanded]) {
         opacity: 0 !important;
         transition: opacity 0.15s ease;
     }
 
-    [data-sidebar="sidebar"] [data-sidebar="content"] :has(> a[href*="/bot/"]) > :first-child > :is(button, [role="button"]):is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] [data-sidebar="content"] :has(> a[href*="/bot/"]) > :first-child:is(:hover, :focus-within) > :is(button, [role="button"]):not([data-sidebar="menu-button"], [data-sidebar="menu-action"]),
-    [data-sidebar="sidebar"] [data-sidebar="group-action"]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] [data-sidebar="group"]:has(> [data-sidebar="group-label"]:is(:hover, :focus-within)) > [data-sidebar="group-action"],
-    [data-sidebar="sidebar"] [data-sidebar="group-label"]:is(:hover, :focus-within) ~ [data-sidebar="group-action"] {
+    [data-sidebar="sidebar"]:is(:hover, :focus-within) button[aria-label="New bot"],
+    [data-sidebar="sidebar"]:is(:hover, :focus-within) [data-void-bots-plus],
+    [data-sidebar="sidebar"]:is(:hover, :focus-within) .void-bots-plus,
+    [data-sidebar="sidebar"]:is(:hover, :focus-within) [data-sidebar="group"]:has(a[href*="/bot/"]) > :first-child button:not([aria-expanded]),
+    [data-sidebar="sidebar"] button[aria-label="New bot"]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] [data-void-bots-plus]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] .void-bots-plus:is(:hover, :focus-visible, [data-state="open"]) {
         opacity: 1 !important;
     }
 }
 
 @media (width >= 48rem) and (prefers-reduced-motion: reduce) {
-    [data-sidebar="sidebar"] [data-sidebar="content"] :has(> a[href*="/bot/"]) > :first-child > :is(button, [role="button"]):not([data-sidebar="menu-button"], [data-sidebar="menu-action"]),
-    [data-sidebar="sidebar"] [data-sidebar="group-action"] {
+    [data-sidebar="sidebar"] button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-void-bots-plus],
+    [data-sidebar="sidebar"] .void-bots-plus,
+    [data-sidebar="sidebar"] [data-sidebar="group"]:has(a[href*="/bot/"]) > :first-child button:not([aria-expanded]) {
         transition: none;
     }
 }
