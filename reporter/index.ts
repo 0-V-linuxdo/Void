@@ -68,7 +68,7 @@ async function runPhases(origin: string): Promise<ChunkMap> {
 }
 
 async function run(): Promise<void> {
-    console.log(ansi.bold("\nVoid Reporter"));
+    console.log(ansi.bold("\nVoid++ Reporter"));
     console.log(ansi.dim(`  target: ${GROK_URL}`));
 
     const map = await runPhases(GROK_URL);

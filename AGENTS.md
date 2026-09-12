@@ -4,7 +4,7 @@ Follow `.rules`. Extra constraint for this fork:
 
 ## Push
 
-Working line is `voidpp` only. Do not fast-forward `Void++`.
+Working line is `voidpp` only. The `Void++` branch is retired — do not recreate or fast-forward it.
 
 Before any push to `voidpp`:
 

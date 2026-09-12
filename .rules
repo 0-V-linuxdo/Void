@@ -153,12 +153,12 @@ patching:
     - $self._method only — never inline complex logic in replace
   flags: all:true (shared factories), noWarn:true (lazy modules), group:true (multi-replace)
   workflow:
-    - 1. mcp__void-mcp__search to locate live module
-    - 2. mcp__void-mcp__module action=source to read factory body around target
+    - 1. mcp__voidpp-mcp__search to locate live module
+    - 2. mcp__voidpp-mcp__module action=source to read factory body around target
     - 3. pick stable anchor (see stableAnchors), draft narrowest regex
-    - 4. mcp__void-mcp__patch action=test → MUST be VALID + uniqueModule
-    - 5. mcp__void-mcp__patch action=analyze for find uniqueness
-    - 6. mcp__void-mcp__patch action=bench when slow patches reported
+    - 4. mcp__voidpp-mcp__patch action=test → MUST be VALID + uniqueModule
+    - 5. mcp__voidpp-mcp__patch action=analyze for find uniqueness
+    - 6. mcp__voidpp-mcp__patch action=bench when slow patches reported
   NEVER:
     - hardcoded minified vars, unbounded gaps (.+ .* without bound)
     - pure identifier chains with no string literal
