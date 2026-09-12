@@ -8,6 +8,7 @@ import type { VoidPPEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
 import { Button, Flex, Paragraph } from "@components";
 import { BellIcon } from "@components/icons";
+import { React } from "@turbopack/common/react";
 import { ResponseStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";

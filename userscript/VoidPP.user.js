@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.15] v1.0.0
+// @version      [20260912.16] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.15] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.16] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -1318,8 +1318,8 @@ ${sourceUrl}`;
     }
     const scan = () => {
       const activeFilters = [...filterFns];
-      const results2 = new Array(length).fill(null);
-      let found2 = 0;
+      const results = new Array(length).fill(null);
+      let found = 0;
       forEachModuleValue((value) => {
         for (let j = 0;j < length; j++) {
           const filter = activeFilters[j];
@@ -1327,15 +1327,15 @@ ${sourceUrl}`;
             continue;
           try {
             if (filter(value)) {
-              results2[j] = value;
+              results[j] = value;
               activeFilters[j] = undefined;
-              if (++found2 === length)
+              if (++found === length)
                 return STOP;
             }
           } catch {}
         }
       });
-      return { results: results2, found: found2 };
+      return { results, found };
     };
     const { results, found } = withLazySync(scan, (r) => r.found < length);
     if (found !== length)
@@ -1540,7 +1540,7 @@ ${sourceUrl}`;
   }
 
   // src/turbopack/common/react.tsx
-  var React;
+  var React2;
   var useState;
   var useEffect;
   var useLayoutEffect;
@@ -1560,14 +1560,14 @@ ${sourceUrl}`;
   });
   waitFor(filters.byProps("useState", "createElement"), (mod) => {
     const m = mod;
-    React = m;
+    React2 = m;
     ({ useState, useEffect, useLayoutEffect, useMemo, useRef, useReducer, useCallback, useContext, useId, useTransition, useDeferredValue, useSyncExternalStore, createElement } = m);
     setCreateElement(m.createElement);
   });
   var Fragment = Symbol.for("react.fragment");
 
   // src/components/icons.tsx
-  var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
+  var svg = (props, ...children) => /* @__PURE__ */ React2.createElement("svg", {
     width: props.width ?? props.size ?? "1em",
     height: props.height ?? props.size ?? "1em",
     viewBox: "0 0 24 24",
@@ -1579,7 +1579,7 @@ ${sourceUrl}`;
     className: props.className,
     "aria-hidden": "true"
   }, children);
-  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React.createElement("svg", {
+  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React2.createElement("svg", {
     width: props.width ?? props.size ?? "1em",
     height: props.height ?? props.size ?? "1em",
     viewBox,
@@ -1587,641 +1587,641 @@ ${sourceUrl}`;
     className: props.className,
     "aria-hidden": "true"
   }, children);
-  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"
   }));
-  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
     x: "3",
     y: "8",
     width: "13",
     height: "13",
     rx: "4",
     stroke: "currentColor"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z",
     fill: "currentColor"
   }));
-  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M10.88 21.94 15.46 14"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M21.17 8H12"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M3.95 6.06 8.54 14"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "4"
   }));
-  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React.createElement("line", {
+  }), /* @__PURE__ */ React2.createElement("line", {
     x1: "12",
     x2: "12",
     y1: "8",
     y2: "12"
-  }), /* @__PURE__ */ React.createElement("line", {
+  }), /* @__PURE__ */ React2.createElement("line", {
     x1: "12",
     x2: "12.01",
     y1: "16",
     y2: "16"
   }));
-  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "13.5",
     cy: "6.5",
     r: ".5",
     fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "17.5",
     cy: "10.5",
     r: ".5",
     fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "6.5",
     cy: "12.5",
     r: ".5",
     fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "8.5",
     cy: "7.5",
     r: ".5",
     fill: "currentColor"
   }));
-  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M10 11v6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M14 11v6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M3 6h18"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
   }));
-  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01a2.83 2.83 0 0 1 0-4L17 3"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m16 2 6 6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 16H4"
   }));
-  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-  }), /* @__PURE__ */ React.createElement("polyline", {
+  }), /* @__PURE__ */ React2.createElement("polyline", {
     points: "7 10 12 15 17 10"
-  }), /* @__PURE__ */ React.createElement("line", {
+  }), /* @__PURE__ */ React2.createElement("line", {
     x1: "12",
     x2: "12",
     y1: "15",
     y2: "3"
   }));
-  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m19 5 3-3"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m2 22 3-3"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M7.5 13.5 10 11"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M10.5 16.5 13 14"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"
   }));
-  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React.createElement("path", {
+  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React2.createElement("path", {
     d: "M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",
     fill: "currentColor",
     fillRule: "evenodd",
     clipRule: "evenodd"
   }));
-  var GripVerticalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+  var GripVerticalIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
     cx: "9",
     cy: "12",
     r: "1"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "9",
     cy: "5",
     r: "1"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "9",
     cy: "19",
     r: "1"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "15",
     cy: "12",
     r: "1"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "15",
     cy: "5",
     r: "1"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "15",
     cy: "19",
     r: "1"
   }));
-  var PinIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var PinIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M12 17v5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
   }));
-  var PinFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var PinFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M12 17v5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     fill: "currentColor",
     d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
   }));
-  var StarIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var StarIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
   }));
-  var StarFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var StarFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     fill: "currentColor",
     d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
   }));
-  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
+  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React2.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"
   }));
-  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 9v4"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 17h.01"
   }));
-  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M14 15H9v-5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M16 3h5v5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M21 3 9 15"
   }));
-  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m15 5 4 4"
   }));
-  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M2 12h20"
   }));
-  var CircleXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+  var CircleXIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m15 9-6 6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m9 9 6 6"
   }));
-  var CircleCheckIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+  var CircleCheckIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m9 12 2 2 4-4"
   }));
-  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
   }));
-  var CircleGaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var CircleGaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M15.6 2.7a10 10 0 1 0 5.7 5.7"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M13.4 10.6 19 5"
   }));
-  var LoaderCircleIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var LoaderCircleIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M21 12a9 9 0 1 1-6.219-8.56"
   }));
-  var ChevronsDownUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ChevronsDownUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m7 20 5-5 5 5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m7 4 5 5 5-5"
   }));
-  var RotateCcwIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var RotateCcwIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M3 3v5h5"
   }));
-  var AppWindowIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+  var AppWindowIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
     x: "2",
     y: "4",
     width: "20",
     height: "16",
     rx: "2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M10 4v4"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M2 8h20"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M6 4v4"
   }));
-  var BrushCleaningIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var BrushCleaningIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m16 22-1-4"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m8 22 1-4"
   }));
-  var BlendIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+  var BlendIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
     cx: "9",
     cy: "9",
     r: "7"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "15",
     cy: "15",
     r: "7"
   }));
-  var TerminalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("polyline", {
+  var TerminalIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("polyline", {
     points: "4 17 10 11 4 5"
-  }), /* @__PURE__ */ React.createElement("line", {
+  }), /* @__PURE__ */ React2.createElement("line", {
     x1: "12",
     x2: "20",
     y1: "19",
     y2: "19"
   }));
-  var MicOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("line", {
+  var MicOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("line", {
     x1: "2",
     x2: "22",
     y1: "2",
     y2: "22"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M5 10v2a7 7 0 0 0 12 5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M15 9.34V5a3 3 0 0 0-5.68-1.33"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9 9v3a3 3 0 0 0 5.12 2.12"
-  }), /* @__PURE__ */ React.createElement("line", {
+  }), /* @__PURE__ */ React2.createElement("line", {
     x1: "12",
     x2: "12",
     y1: "19",
     y2: "22"
   }));
-  var BotOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var BotOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M13.67 8H18a2 2 0 0 1 2 2v4.33"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M2 14h2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M20 14h2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M22 22 2 2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M8 8H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 1.414-.586"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9 13v2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9.67 4H12v2.33"
   }));
-  var Link2OffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var Link2OffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M9 17H7A5 5 0 0 1 7 7"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M15 7h2a5 5 0 0 1 4 8"
-  }), /* @__PURE__ */ React.createElement("line", {
+  }), /* @__PURE__ */ React2.createElement("line", {
     x1: "8",
     x2: "12",
     y1: "12",
     y2: "12"
-  }), /* @__PURE__ */ React.createElement("line", {
+  }), /* @__PURE__ */ React2.createElement("line", {
     x1: "2",
     x2: "22",
     y1: "2",
     y2: "22"
   }));
-  var UserRoundXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var UserRoundXIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M2 21a8 8 0 0 1 11.873-7"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "10",
     cy: "8",
     r: "5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m17 17 5 5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m22 17-5 5"
   }));
-  var CatIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var CatIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M8 14v.5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M16 14v.5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M11.25 16.25h1.5L12 17l-.75-.75Z"
   }));
-  var BellIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var BellIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M10.268 21a2 2 0 0 0 3.464 0"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"
   }));
-  var EyeOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var EyeOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M14.084 14.158a3 3 0 0 1-4.242-4.242"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m2 2 20 20"
   }));
-  var UnfoldHorizontalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var UnfoldHorizontalIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M16 12h6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M8 12H2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 2v2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 8v2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 14v2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 20v2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m19 15 3-3-3-3"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m5 9-3 3 3 3"
   }));
-  var FilesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var FilesIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M20 7h-3a2 2 0 0 1-2-2V2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"
   }));
-  var ImagesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ImagesIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M18 22H4a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "8",
     r: "2"
-  }), /* @__PURE__ */ React.createElement("rect", {
+  }), /* @__PURE__ */ React2.createElement("rect", {
     width: "16",
     height: "16",
     x: "6",
     y: "2",
     rx: "2"
   }));
-  var LinkIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var LinkIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
   }));
-  var PanelLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+  var PanelLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
     width: "18",
     height: "18",
     x: "3",
     y: "3",
     rx: "2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9 3v18"
   }));
-  var PanelRightCloseIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+  var PanelRightCloseIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
     width: "18",
     height: "18",
     x: "3",
     y: "3",
     rx: "2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M15 3v18"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m10 15-3-3 3-3"
   }));
-  var ScrollTextIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ScrollTextIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M15 12h-5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M15 8h-5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M19 17V5a2 2 0 0 0-2-2H4"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"
   }));
-  var Volume2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var Volume2Icon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M16 9a5 5 0 0 1 0 6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M19.364 18.364a9 9 0 0 0 0-12.728"
   }));
-  var FileDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var FileDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M14 2v4a2 2 0 0 0 2 2h4"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 18v-6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m9 15 3 3 3-3"
   }));
-  var ChevronLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ChevronLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m15 18-6-6 6-6"
   }));
-  var ChevronRightIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ChevronRightIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m9 18 6-6-6-6"
   }));
-  var ChevronUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ChevronUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m18 15-6-6-6 6"
   }));
-  var ChevronDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ChevronDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m6 9 6 6 6-6"
   }));
-  var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M3 3v5h5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M12 7v5l4 2"
   }));
-  var ClockIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+  var ClockIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React.createElement("polyline", {
+  }), /* @__PURE__ */ React2.createElement("polyline", {
     points: "12 6 12 12 16 14"
   }));
-  var TextCursorInputIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var TextCursorInputIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M12 20h-1a2 2 0 0 1-2-2 2 2 0 0 1-2 2H6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M13 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-7"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M5 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h1"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M6 4h1a2 2 0 0 1 2 2 2 2 0 0 1 2-2h1"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9 6v12"
   }));
-  var LayoutGridIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+  var LayoutGridIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
     width: "7",
     height: "7",
     x: "3",
     y: "3",
     rx: "1"
-  }), /* @__PURE__ */ React.createElement("rect", {
+  }), /* @__PURE__ */ React2.createElement("rect", {
     width: "7",
     height: "7",
     x: "14",
     y: "3",
     rx: "1"
-  }), /* @__PURE__ */ React.createElement("rect", {
+  }), /* @__PURE__ */ React2.createElement("rect", {
     width: "7",
     height: "7",
     x: "14",
     y: "14",
     rx: "1"
-  }), /* @__PURE__ */ React.createElement("rect", {
+  }), /* @__PURE__ */ React2.createElement("rect", {
     width: "7",
     height: "7",
     x: "3",
     y: "14",
     rx: "1"
   }));
-  var GrokConnectorsIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
+  var GrokConnectorsIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React2.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12 12H19V16C19 16.6836 19.0011 17.2566 18.9629 17.7236C18.9238 18.2023 18.8382 18.6571 18.6182 19.0889C18.2826 19.7474 17.7474 20.2826 17.0889 20.6182C16.6571 20.8382 16.2023 20.9238 15.7236 20.9629C15.2566 21.0011 14.6836 21 14 21H8C7.31644 21 6.74342 21.0011 6.27637 20.9629C5.79772 20.9238 5.34294 20.8382 4.91114 20.6182C4.25262 20.2826 3.71739 19.7474 3.38184 19.0889C3.16183 18.6571 3.07623 18.2023 3.03711 17.7236C2.99895 17.2566 3 16.6836 3 16V10C3 9.31644 2.99895 8.74342 3.03711 8.27637C3.07623 7.79772 3.16182 7.34294 3.38184 6.91114C3.71739 6.25262 4.25262 5.71739 4.91114 5.38184C5.34294 5.16182 5.79772 5.07623 6.27637 5.03711C6.74342 4.99895 7.31644 5 8 5H12V12ZM5 16C5 16.7165 5.00032 17.1938 5.03028 17.5605C5.05924 17.9151 5.11072 18.0777 5.16309 18.1807C5.3069 18.4629 5.5371 18.6931 5.81934 18.8369C5.92228 18.8893 6.0849 18.9408 6.43946 18.9697C6.80616 18.9997 7.28347 19 8 19H10V14H5V16ZM12 19H14C14.7165 19 15.1938 18.9997 15.5605 18.9697C15.9151 18.9408 16.0777 18.8893 16.1807 18.8369C16.4629 18.6931 16.6931 18.4629 16.8369 18.1807C16.8893 18.0777 16.9408 17.9151 16.9697 17.5605C16.9997 17.1938 17 16.7165 17 16V14H12V19ZM8 7C7.28347 7 6.80616 7.00032 6.43946 7.03028C6.0849 7.05924 5.92228 7.11072 5.81934 7.16309C5.5371 7.3069 5.3069 7.5371 5.16309 7.81934C5.11072 7.92228 5.05924 8.0849 5.03028 8.43946C5.00032 8.80616 5 9.28347 5 10V12H10V7H8Z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M17 2C17.6836 2 18.2566 1.99895 18.7236 2.03711C19.2023 2.07623 19.6571 2.16183 20.0889 2.38184C20.7474 2.71739 21.2826 3.25262 21.6182 3.91114C21.8382 4.34294 21.9238 4.79772 21.9629 5.27637C22.0011 5.74342 22 6.31644 22 7V10H14V2H17ZM16 8H20V7C20 6.28347 19.9997 5.80616 19.9697 5.43946C19.9408 5.0849 19.8893 4.92228 19.8369 4.81934C19.6931 4.5371 19.4629 4.3069 19.1807 4.16309C19.0777 4.11072 18.9151 4.05924 18.5605 4.03028C18.1938 4.00032 17.7165 4 17 4H16V8Z"
   }));
-  var ConnectedAppsIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
+  var ConnectedAppsIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
     x: "4",
     y: "4",
     width: "5",
     height: "5"
-  }), /* @__PURE__ */ React.createElement("rect", {
+  }), /* @__PURE__ */ React2.createElement("rect", {
     x: "15",
     y: "4",
     width: "5",
     height: "5"
-  }), /* @__PURE__ */ React.createElement("rect", {
+  }), /* @__PURE__ */ React2.createElement("rect", {
     x: "15",
     y: "15",
     width: "5",
     height: "5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M11 18H10C7.79086 18 6 16.2091 6 14V13"
   }));
-  var AutoModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var AutoModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     strokeLinecap: "square",
     d: "M6.5 12.5L11.5 17.5M6.5 12.5L11.8349 6.83172C13.5356 5.02464 15.9071 4 18.3887 4H20V5.61135C20 8.09292 18.9754 10.4644 17.1683 12.1651L11.5 17.5M6.5 12.5L2 11L5.12132 7.87868C5.68393 7.31607 6.44699 7 7.24264 7H11M11.5 17.5L13 22L16.1213 18.8787C16.6839 18.3161 17 17.553 17 16.7574V13"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M4.5 16.5C4.5 16.5 4 18 4 20C6 20 7.5 19.5 7.5 19.5"
   }));
-  var FastModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var FastModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M5 14.25L14 4L13 9.75H19L10 20L11 14.25H5Z"
   }));
-  var BuildModeIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
+  var BuildModeIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React2.createElement("path", {
     fillRule: "evenodd",
     d: "M6.55273 4.60517C9.30778 1.96643 12.7289 1.47144 16.748 2.49872L19.1709 3.11787L16.9883 4.34052C16.0286 4.87786 15.0421 5.85039 14.5645 6.87763C14.3308 7.38043 14.2396 7.85117 14.2852 8.26728C14.3289 8.6664 14.5051 9.08437 14.9307 9.50068L20.5068 14.9548C22.0873 16.3103 22.1844 18.7292 20.707 20.2067C19.2281 21.6857 16.8059 21.5867 15.4512 20.0017C15.4468 19.9971 15.4413 19.9919 15.4355 19.986C15.4119 19.9617 15.3773 19.9252 15.332 19.8786C15.2412 19.7851 15.1086 19.6485 14.9424 19.4772C14.6098 19.1346 14.1405 18.653 13.5977 18.0944C12.5116 16.9769 11.1275 15.5535 9.93457 14.3317C9.65277 14.0434 9.32401 13.9826 9.07031 14.0456C8.82894 14.1056 8.57482 14.2967 8.46875 14.7136L8.40137 14.9802L6.5 16.8815L1.08594 11.4675L3.08594 9.46747H3.5C3.84716 9.46747 3.9785 9.37185 4.0752 9.26728C4.22615 9.1039 4.36795 8.82197 4.55371 8.30732C4.8865 7.38517 5.29734 5.80772 6.55273 4.60517ZM11.668 13.2448C12.789 14.3937 14.0363 15.6752 15.0322 16.6999C15.5754 17.2588 16.0441 17.7419 16.377 18.0847C16.5432 18.2559 16.6757 18.3924 16.7666 18.486C16.812 18.5328 16.8474 18.569 16.8711 18.5935C16.8826 18.6053 16.8914 18.6146 16.8975 18.6208C16.9004 18.6238 16.9028 18.627 16.9043 18.6286L16.9062 18.6296L16.9072 18.6306L16.9336 18.6579L16.957 18.6862C17.5529 19.4013 18.6348 19.4509 19.293 18.7927C19.951 18.1345 19.9016 17.0526 19.1865 16.4567L19.1562 16.4313L19.1279 16.404L13.7598 11.153L11.668 13.2448ZM14.1406 4.05244C11.6131 3.80062 9.61076 4.44487 7.93555 6.04951C7.10476 6.84532 6.84901 7.83879 6.43457 8.98701C6.24676 9.5073 5.99495 10.1367 5.54395 10.6247C5.12935 11.0732 4.597 11.349 3.94531 11.4352L3.91406 11.4675L6.5 14.0534L6.61914 13.9333C6.95792 12.978 7.6995 12.326 8.58789 12.1052C9.04163 11.9924 9.51491 11.9981 9.96875 12.1159L12.5625 9.52216C12.4239 9.18685 12.3357 8.83958 12.2969 8.48505C12.2019 7.6178 12.4054 6.77723 12.751 6.03388C13.0875 5.31006 13.578 4.63529 14.1406 4.05244Z"
   }));
-  var LightbulbIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var LightbulbIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9 18h6"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M10 22h4"
   }));
-  var SparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var SparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M20 3v4"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M22 5h-4"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M4 17v2"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M5 18H3"
   }));
-  var ShieldOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ShieldOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m2 2 20 20"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M5 5a1 1 0 0 0-1 1v7c0 5 3.5 7.5 7.67 8.94a1 1 0 0 0 .67.01c2.35-.82 4.48-1.97 5.9-3.71"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M9.309 3.652A12.252 12.252 0 0 0 11.24 2.28a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1v7a9.784 9.784 0 0 1-.08 1.264"
   }));
-  var SettingsIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var SettingsIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "3"
   }));
-  var Settings2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var Settings2Icon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M20 7h-9"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M14 17H5"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "17",
     cy: "17",
     r: "3"
-  }), /* @__PURE__ */ React.createElement("circle", {
+  }), /* @__PURE__ */ React2.createElement("circle", {
     cx: "7",
     cy: "7",
     r: "3"
   }));
-  var ListFilterIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var ListFilterIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M3 6h18"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M7 12h10"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M10 18h4"
   }));
-  var Minimize2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var Minimize2Icon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "m14 10 7-7"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M20 10h-6V4"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "m3 21 7-7"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M4 14h6v6"
   }));
-  var TextQuoteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
+  var TextQuoteIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
     d: "M17 6H3"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M21 12H8"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M21 18H8"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     d: "M3 12v6"
   }));
-  var VoidPPIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React.createElement("path", {
+  var VoidPPIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React2.createElement("path", {
     d: "M2.2 7.4 L8.4 20.2 L13.03 11.30"
-  }), /* @__PURE__ */ React.createElement("path", {
+  }), /* @__PURE__ */ React2.createElement("path", {
     fill: "currentColor",
     stroke: "none",
     d: "M13.985 11.792 L14.045 11.678 L14.104 11.567 L14.163 11.458 L14.222 11.352 L14.280 11.249 L14.338 11.148 L14.395 11.049 L14.452 10.953 L14.508 10.859 L14.563 10.768 L14.618 10.679 L14.673 10.592 L14.727 10.508 L14.781 10.426 L14.834 10.347 L14.887 10.270 L14.939 10.195 L14.992 10.122 L15.044 10.052 L15.095 9.984 L15.147 9.918 L15.198 9.855 L15.249 9.794 L15.300 9.735 L15.351 9.678 L15.402 9.623 L15.452 9.571 L15.503 9.521 L15.554 9.473 L15.606 9.427 L15.657 9.384 L15.709 9.342 L15.760 9.303 L15.813 9.267 L15.865 9.232 L15.918 9.200 L15.972 9.170 L16.026 9.142 L16.081 9.117 L16.136 9.094 L16.191 9.074 L16.248 9.056 L16.305 9.041 L16.363 9.028 L16.421 9.018 L16.480 9.011 L16.540 9.006 L16.600 9.005 L23.700 9.005 L23.700 7.555 L16.600 7.555 L16.494 7.556 L16.388 7.560 L16.282 7.566 L16.177 7.574 L16.071 7.585 L15.966 7.598 L15.860 7.615 L15.755 7.634 L15.650 7.655 L15.545 7.680 L15.440 7.707 L15.336 7.737 L15.231 7.771 L15.127 7.807 L15.024 7.846 L14.921 7.888 L14.818 7.933 L14.716 7.981 L14.614 8.032 L14.513 8.086 L14.413 8.144 L14.313 8.204 L14.214 8.267 L14.116 8.334 L14.018 8.403 L13.922 8.475 L13.826 8.550 L13.731 8.629 L13.638 8.710 L13.545 8.794 L13.453 8.882 L13.363 8.972 L13.273 9.065 L13.185 9.161 L13.098 9.260 L13.012 9.361 L12.927 9.466 L12.844 9.573 L12.762 9.684 L12.681 9.797 L12.601 9.913 L12.522 10.031 L12.445 10.153 L12.369 10.277 L12.294 10.404 L12.221 10.533 L12.149 10.666 L12.077 10.800 Z"
-  }), /* @__PURE__ */ React.createElement("g", {
+  }), /* @__PURE__ */ React2.createElement("g", {
     fill: "currentColor",
     stroke: "none"
-  }, /* @__PURE__ */ React.createElement("rect", {
+  }, /* @__PURE__ */ React2.createElement("rect", {
     x: "16.775",
     y: "5.78",
     width: "1.45",
     height: "5.0"
-  }), /* @__PURE__ */ React.createElement("rect", {
+  }), /* @__PURE__ */ React2.createElement("rect", {
     x: "20.475",
     y: "5.78",
     width: "1.45",
@@ -2365,21 +2365,21 @@ ${sourceUrl}`;
     return p;
   }
   var StartAt;
-  ((StartAt2) => {
-    StartAt2["Init"] = "Init";
-    StartAt2["DOMContentLoaded"] = "DOMContentLoaded";
-    StartAt2["TurbopackReady"] = "TurbopackReady";
+  ((StartAt) => {
+    StartAt["Init"] = "Init";
+    StartAt["DOMContentLoaded"] = "DOMContentLoaded";
+    StartAt["TurbopackReady"] = "TurbopackReady";
   })(StartAt ||= {});
   var OptionType;
-  ((OptionType2) => {
-    OptionType2[OptionType2["STRING"] = 0] = "STRING";
-    OptionType2[OptionType2["NUMBER"] = 1] = "NUMBER";
-    OptionType2[OptionType2["BIGINT"] = 2] = "BIGINT";
-    OptionType2[OptionType2["BOOLEAN"] = 3] = "BOOLEAN";
-    OptionType2[OptionType2["SELECT"] = 4] = "SELECT";
-    OptionType2[OptionType2["SLIDER"] = 5] = "SLIDER";
-    OptionType2[OptionType2["COMPONENT"] = 6] = "COMPONENT";
-    OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
+  ((OptionType) => {
+    OptionType[OptionType["STRING"] = 0] = "STRING";
+    OptionType[OptionType["NUMBER"] = 1] = "NUMBER";
+    OptionType[OptionType["BIGINT"] = 2] = "BIGINT";
+    OptionType[OptionType["BOOLEAN"] = 3] = "BOOLEAN";
+    OptionType[OptionType["SELECT"] = 4] = "SELECT";
+    OptionType[OptionType["SLIDER"] = 5] = "SLIDER";
+    OptionType[OptionType["COMPONENT"] = 6] = "COMPONENT";
+    OptionType[OptionType["CUSTOM"] = 7] = "CUSTOM";
   })(OptionType ||= {});
 
   // src/plugins/themedScrollbar/index.ts
@@ -2528,148 +2528,148 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/VoidPP.ts
   var exports_VoidPP = {};
   __export(exports_VoidPP, {
-    walkFiberUp: () => walkFiberUp,
-    walkFiberTree: () => walkFiberTree,
-    waitFor: () => waitFor,
-    useSelectionSize: () => useSelectionSize,
-    useSelectionHas: () => useSelectionHas,
-    useIsStreaming: () => useIsStreaming,
-    useForceUpdater: () => useForceUpdater,
-    useExternalStore: () => useExternalStore,
-    useEventSubscription: () => useEventSubscription,
-    updateLocalTheme: () => updateLocalTheme,
-    unregisterStyle: () => unregisterStyle,
-    syncLazyModules: () => syncLazyModules,
-    subscribe: () => subscribe,
-    stopPlugin: () => stopPlugin,
-    startPlugin: () => startPlugin,
-    sortedEntries: () => sortedEntries,
-    sleep: () => sleep,
-    showToast: () => showToast,
-    showNotice: () => showNotice,
-    setThemesEnabled: () => setThemesEnabled,
-    setOnlineThemesEnabled: () => setOnlineThemesEnabled,
-    sendBrowserNotification: () => sendBrowserNotification,
-    search: () => search,
-    sanitizeFilename: () => sanitizeFilename,
-    requireModule: () => requireModule,
-    reportFailedFinders: () => reportFailedFinders,
-    removeTheme: () => removeTheme,
-    removeContextMenuItem: () => removeContextMenuItem,
-    removeChatBarButton: () => removeChatBarButton,
-    registerStyle: () => registerStyle,
-    registerPlugin: () => registerPlugin,
-    proxyLazy: () => proxyLazy,
-    pluralize: () => pluralize,
-    plugins: () => plugins,
-    patches: () => patches,
-    patchStats: () => patchStats,
-    patchResults: () => patchResults,
-    patchReport: () => patchReport,
-    openModal: () => openModal,
-    onlyOnce: () => onlyOnce,
-    onceReady: () => onceReady,
-    onModuleLoad: () => onModuleLoad,
-    migrateSettingsToPlugin: () => migrateSettingsToPlugin,
-    migratePluginSettings: () => migratePluginSettings,
-    migratePluginSetting: () => migratePluginSetting,
-    mergeDefaults: () => mergeDefaults,
-    matchesPattern: () => matchesPattern,
-    matchesAllPatterns: () => matchesAllPatterns,
-    mapMangledModuleLazy: () => mapMangledModuleLazy,
-    mapMangledModule: () => mapMangledModule,
-    mapMangledCssClasses: () => mapMangledCssClasses,
-    mapGetOrCreate: () => mapGetOrCreate,
-    makeLazy: () => makeLazy,
-    isZustandStore: () => isZustandStore,
-    isTruthy: () => isTruthy,
-    isThemesEnabled: () => isThemesEnabled,
-    isPluginEnabled: () => isPluginEnabled,
-    isOnlineThemesEnabled: () => isOnlineThemesEnabled,
-    isObject: () => isObject,
-    isNonNullish: () => isNonNullish,
-    isBlacklisted: () => isBlacklisted,
-    injectExports: () => injectExports,
-    initSettings: () => initSettings,
-    init: () => init,
-    importModule: () => importModule,
-    humanizeKey: () => humanizeKey,
-    getTurbopackHelpers: () => getTurbopackHelpers,
-    getThemes: () => getThemes,
-    getRuntimeModuleCache: () => getRuntimeModuleCache,
-    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry2,
-    getReactRoot: () => getReactRoot,
-    getModuleCache: () => getModuleCache,
-    getFnSource: () => getFnSource,
-    getFiber: () => getFiber,
-    getAllStores: () => getAllStores,
-    formatDuration: () => formatDuration,
-    formatCountdown: () => formatCountdown,
-    fnSourceCache: () => fnSourceCache,
-    findStoreLazy: () => findStoreLazy,
-    findStore: () => findStore,
-    findModuleId: () => findModuleId,
-    findModuleFactory: () => findModuleFactory,
-    findLazy: () => findLazy,
-    findExportedComponentLazy: () => findExportedComponentLazy,
-    findExportedComponent: () => findExportedComponent,
-    findCssClassesLazy: () => findCssClassesLazy,
-    findCssClasses: () => findCssClasses,
-    findComponentByCodeLazy: () => findComponentByCodeLazy,
-    findComponentByCode: () => findComponentByCode,
-    findByPropsLazy: () => findByPropsLazy,
-    findByProps: () => findByProps,
-    findByEventNameLazy: () => findByEventNameLazy,
-    findByEventName: () => findByEventName,
-    findByDisplayNameLazy: () => findByDisplayNameLazy,
-    findByDisplayName: () => findByDisplayName,
-    findByCodeLazy: () => findByCodeLazy,
-    findByCode: () => findByCode,
-    findBulk: () => findBulk,
-    findAll: () => findAll,
-    find: () => find,
-    filters: () => filters,
-    fetchExternal: () => fetchExternal,
-    extractAndLoadChunksLazy: () => extractAndLoadChunksLazy,
-    extractAndLoadChunks: () => extractAndLoadChunks,
-    escapeRegExp: () => escapeRegExp,
-    escapeHtml: () => escapeHtml,
-    errorMessage: () => errorMessage,
-    enableTheme: () => enableTheme,
-    enableStyle: () => enableStyle,
-    dispatch: () => dispatch,
-    dismissToast: () => dismissToast,
-    disableTheme: () => disableTheme,
-    disableStyle: () => disableStyle,
-    definePluginSettings: () => definePluginSettings,
-    definePlugin: () => definePlugin,
-    debounce: () => debounce,
-    createExternalStore: () => createExternalStore,
-    copyToClipboard: () => copyToClipboard,
-    common: () => exports_common,
-    closeNotice: () => closeNotice,
-    closeModal: () => closeModal,
-    closeAllModals: () => closeAllModals,
-    classes: () => classes,
-    classNameFactory: () => classNameFactory,
-    clamp: () => clamp,
-    addTheme: () => addTheme,
-    addPatch: () => addPatch,
-    addLocalTheme: () => addLocalTheme,
-    addContextMenuItem: () => addContextMenuItem,
-    addChatBarButton: () => addChatBarButton,
-    ToastType: () => ToastType,
-    StartAt: () => StartAt,
-    SettingsStore: () => SettingsStore3,
-    Settings: () => Settings,
-    PlainSettings: () => PlainSettings,
-    OptionType: () => OptionType,
-    NoticeType: () => NoticeType,
-    Logger: () => Logger,
-    ErrorBoundary: () => ErrorBoundary,
-    Devs: () => Devs,
+    ChunkPathRegex: () => ChunkPathRegex,
     DefaultChunkLoadRegex: () => DefaultChunkLoadRegex,
-    ChunkPathRegex: () => ChunkPathRegex
+    Devs: () => Devs,
+    ErrorBoundary: () => ErrorBoundary,
+    Logger: () => Logger,
+    NoticeType: () => NoticeType,
+    OptionType: () => OptionType,
+    PlainSettings: () => PlainSettings,
+    Settings: () => Settings,
+    SettingsStore: () => SettingsStore3,
+    StartAt: () => StartAt,
+    ToastType: () => ToastType,
+    addChatBarButton: () => addChatBarButton,
+    addContextMenuItem: () => addContextMenuItem,
+    addLocalTheme: () => addLocalTheme,
+    addPatch: () => addPatch,
+    addTheme: () => addTheme,
+    clamp: () => clamp,
+    classNameFactory: () => classNameFactory,
+    classes: () => classes,
+    closeAllModals: () => closeAllModals,
+    closeModal: () => closeModal,
+    closeNotice: () => closeNotice,
+    common: () => exports_common,
+    copyToClipboard: () => copyToClipboard,
+    createExternalStore: () => createExternalStore,
+    debounce: () => debounce,
+    definePlugin: () => definePlugin,
+    definePluginSettings: () => definePluginSettings,
+    disableStyle: () => disableStyle,
+    disableTheme: () => disableTheme,
+    dismissToast: () => dismissToast,
+    dispatch: () => dispatch,
+    enableStyle: () => enableStyle,
+    enableTheme: () => enableTheme,
+    errorMessage: () => errorMessage,
+    escapeHtml: () => escapeHtml,
+    escapeRegExp: () => escapeRegExp,
+    extractAndLoadChunks: () => extractAndLoadChunks,
+    extractAndLoadChunksLazy: () => extractAndLoadChunksLazy,
+    fetchExternal: () => fetchExternal,
+    filters: () => filters,
+    find: () => find,
+    findAll: () => findAll,
+    findBulk: () => findBulk,
+    findByCode: () => findByCode,
+    findByCodeLazy: () => findByCodeLazy,
+    findByDisplayName: () => findByDisplayName,
+    findByDisplayNameLazy: () => findByDisplayNameLazy,
+    findByEventName: () => findByEventName,
+    findByEventNameLazy: () => findByEventNameLazy,
+    findByProps: () => findByProps,
+    findByPropsLazy: () => findByPropsLazy,
+    findComponentByCode: () => findComponentByCode,
+    findComponentByCodeLazy: () => findComponentByCodeLazy,
+    findCssClasses: () => findCssClasses,
+    findCssClassesLazy: () => findCssClassesLazy,
+    findExportedComponent: () => findExportedComponent,
+    findExportedComponentLazy: () => findExportedComponentLazy,
+    findLazy: () => findLazy,
+    findModuleFactory: () => findModuleFactory,
+    findModuleId: () => findModuleId,
+    findStore: () => findStore,
+    findStoreLazy: () => findStoreLazy,
+    fnSourceCache: () => fnSourceCache,
+    formatCountdown: () => formatCountdown,
+    formatDuration: () => formatDuration,
+    getAllStores: () => getAllStores,
+    getFiber: () => getFiber,
+    getFnSource: () => getFnSource,
+    getModuleCache: () => getModuleCache,
+    getReactRoot: () => getReactRoot,
+    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry2,
+    getRuntimeModuleCache: () => getRuntimeModuleCache,
+    getThemes: () => getThemes,
+    getTurbopackHelpers: () => getTurbopackHelpers,
+    humanizeKey: () => humanizeKey,
+    importModule: () => importModule,
+    init: () => init,
+    initSettings: () => initSettings,
+    injectExports: () => injectExports,
+    isBlacklisted: () => isBlacklisted,
+    isNonNullish: () => isNonNullish,
+    isObject: () => isObject,
+    isOnlineThemesEnabled: () => isOnlineThemesEnabled,
+    isPluginEnabled: () => isPluginEnabled,
+    isThemesEnabled: () => isThemesEnabled,
+    isTruthy: () => isTruthy,
+    isZustandStore: () => isZustandStore,
+    makeLazy: () => makeLazy,
+    mapGetOrCreate: () => mapGetOrCreate,
+    mapMangledCssClasses: () => mapMangledCssClasses,
+    mapMangledModule: () => mapMangledModule,
+    mapMangledModuleLazy: () => mapMangledModuleLazy,
+    matchesAllPatterns: () => matchesAllPatterns,
+    matchesPattern: () => matchesPattern,
+    mergeDefaults: () => mergeDefaults,
+    migratePluginSetting: () => migratePluginSetting,
+    migratePluginSettings: () => migratePluginSettings,
+    migrateSettingsToPlugin: () => migrateSettingsToPlugin,
+    onModuleLoad: () => onModuleLoad,
+    onceReady: () => onceReady,
+    onlyOnce: () => onlyOnce,
+    openModal: () => openModal,
+    patchReport: () => patchReport,
+    patchResults: () => patchResults,
+    patchStats: () => patchStats,
+    patches: () => patches,
+    plugins: () => plugins,
+    pluralize: () => pluralize,
+    proxyLazy: () => proxyLazy,
+    registerPlugin: () => registerPlugin,
+    registerStyle: () => registerStyle,
+    removeChatBarButton: () => removeChatBarButton,
+    removeContextMenuItem: () => removeContextMenuItem,
+    removeTheme: () => removeTheme,
+    reportFailedFinders: () => reportFailedFinders,
+    requireModule: () => requireModule,
+    sanitizeFilename: () => sanitizeFilename,
+    search: () => search,
+    sendBrowserNotification: () => sendBrowserNotification,
+    setOnlineThemesEnabled: () => setOnlineThemesEnabled,
+    setThemesEnabled: () => setThemesEnabled,
+    showNotice: () => showNotice,
+    showToast: () => showToast,
+    sleep: () => sleep,
+    sortedEntries: () => sortedEntries,
+    startPlugin: () => startPlugin,
+    stopPlugin: () => stopPlugin,
+    subscribe: () => subscribe,
+    syncLazyModules: () => syncLazyModules,
+    unregisterStyle: () => unregisterStyle,
+    updateLocalTheme: () => updateLocalTheme,
+    useEventSubscription: () => useEventSubscription,
+    useExternalStore: () => useExternalStore,
+    useForceUpdater: () => useForceUpdater,
+    useIsStreaming: () => useIsStreaming,
+    useSelectionHas: () => useSelectionHas,
+    useSelectionSize: () => useSelectionSize,
+    waitFor: () => waitFor,
+    walkFiberTree: () => walkFiberTree,
+    walkFiberUp: () => walkFiberUp
   });
 
   // src/utils/idb.ts
@@ -3009,11 +3009,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/api/Events.ts
   var logger7 = new Logger("Events");
   var listeners = new Map;
-  function subscribe(event, handler2) {
+  function subscribe(event, handler) {
     const set = mapGetOrCreate(listeners, event, () => new Set);
-    set.add(handler2);
+    set.add(handler);
     return () => {
-      set.delete(handler2);
+      set.delete(handler);
       if (!set.size)
         listeners.delete(event);
     };
@@ -3023,9 +3023,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     if (!set?.size)
       return;
     const data = args[0];
-    for (const handler2 of Array.from(set)) {
+    for (const handler of Array.from(set)) {
       try {
-        handler2(data);
+        handler(data);
       } catch (e) {
         logger7.error(`Event handler error (${event}):`, e);
       }
@@ -3035,20 +3035,20 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/turbopack/common/stores.ts
   var exports_stores = {};
   __export(exports_stores, {
-    TextToSpeechStore: () => TextToSpeechStore,
-    SubscriptionsStore: () => SubscriptionsStore,
-    SettingsStore: () => SettingsStore,
-    SettingsDialogStore: () => SettingsDialogStore,
-    SessionStore: () => SessionStore,
-    RoutingStore: () => RoutingStore,
-    ResponseStore: () => ResponseStore,
-    ModesStore: () => ModesStore,
-    MessageStore: () => MessageStore,
-    MediaStore: () => MediaStore,
-    FilesPageStore: () => FilesPageStore,
-    FeatureStore: () => FeatureStore,
+    ChatPageStore: () => ChatPageStore,
     ConversationStore: () => ConversationStore,
-    ChatPageStore: () => ChatPageStore
+    FeatureStore: () => FeatureStore,
+    FilesPageStore: () => FilesPageStore,
+    MediaStore: () => MediaStore,
+    MessageStore: () => MessageStore,
+    ModesStore: () => ModesStore,
+    ResponseStore: () => ResponseStore,
+    RoutingStore: () => RoutingStore,
+    SessionStore: () => SessionStore,
+    SettingsDialogStore: () => SettingsDialogStore,
+    SettingsStore: () => SettingsStore,
+    SubscriptionsStore: () => SubscriptionsStore,
+    TextToSpeechStore: () => TextToSpeechStore
   });
   var ChatPageStore = findByPropsLazy("useChatPageStore");
   var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
@@ -3146,18 +3146,18 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function useForceUpdater() {
     return useReducer((x) => x + 1, 0)[1];
   }
-  function useEventSubscription(event, handler2) {
-    const ref = useRef(handler2);
-    ref.current = handler2;
+  function useEventSubscription(event, handler) {
+    const ref = useRef(handler);
+    ref.current = handler;
     useEffect(() => subscribe(event, () => ref.current()), [event]);
   }
-  function useFiltered(list, search2, getKey) {
+  function useFiltered(list, search, getKey) {
     return useMemo(() => {
-      const q = search2.toLowerCase().trim();
+      const q = search.toLowerCase().trim();
       if (!q)
         return list;
       return list.filter((item) => getKey(item).toLowerCase().includes(q));
-    }, [list, search2, getKey]);
+    }, [list, search, getKey]);
   }
   function useAsyncAction(fn) {
     const [busy, setBusy] = useState(false);
@@ -3268,8 +3268,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       this.proxyCache.set(target, proxy);
       return proxy;
     }
-    invokeListeners(listeners2, path) {
-      for (const l of Array.from(listeners2)) {
+    invokeListeners(listeners, path) {
+      for (const l of Array.from(listeners)) {
         try {
           l(path);
         } catch (e) {
@@ -3279,9 +3279,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     notifyListeners(path) {
       this.invokeListeners(this.globalListeners, path);
-      const listeners2 = this.pathListeners.get(path);
-      if (listeners2)
-        this.invokeListeners(listeners2, path);
+      const listeners = this.pathListeners.get(path);
+      if (listeners)
+        this.invokeListeners(listeners, path);
       for (const [prefix, set] of Array.from(this.prefixListeners)) {
         if (path.startsWith(prefix))
           this.invokeListeners(set, path);
@@ -3587,7 +3587,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ColorSettingRow.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -3608,25 +3608,25 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/components/ColorSettingRow.tsx
   var cl = classNameFactory("void-color-picker-");
   function ColorSettingRow({ value, onChange, title, description }) {
-    return /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React2.createElement(Flex, {
         alignItems: "center",
         gap: "0.5rem"
-      }, /* @__PURE__ */ React.createElement("input", {
+      }, /* @__PURE__ */ React2.createElement("input", {
         type: "color",
         className: cl("input"),
         value,
         onChange: (e) => onChange(e.target.value)
-      }), /* @__PURE__ */ React.createElement(Text2, {
+      }), /* @__PURE__ */ React2.createElement(Text2, {
         size: "sm",
         color: "muted"
       }, value))
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
+    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, title), /* @__PURE__ */ React2.createElement(SettingsDescription, null, description)));
   }
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ConfirmDialog.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3644,15 +3644,15 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var cl2 = classNameFactory("void-settings-");
   var captured = {};
   function FallbackTitle({ children, className }) {
-    return React.createElement("div", { className: classes(cl2("title"), className) }, children);
+    return React2.createElement("div", { className: classes(cl2("title"), className) }, children);
   }
   function FallbackDescription({ children }) {
-    return React.createElement("div", { className: cl2("description") }, children);
+    return React2.createElement("div", { className: cl2("description") }, children);
   }
   function FallbackRow({ children, action, hidden, className }) {
     if (hidden)
       return null;
-    return React.createElement("div", { className: classes(cl2("row"), className) }, React.createElement("div", { className: cl2("row-body") }, children), action ?? null);
+    return React2.createElement("div", { className: classes(cl2("row"), className) }, React2.createElement("div", { className: cl2("row-body") }, children), action ?? null);
   }
   var fallbacks = {
     SettingsTitle: FallbackTitle,
@@ -3662,9 +3662,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function setSettingsPrimitive(name, component) {
     captured[name] = component;
   }
-  var SettingsTitle = (props) => React.createElement(captured.SettingsTitle ?? fallbacks.SettingsTitle, props);
-  var SettingsDescription = (props) => React.createElement(captured.SettingsDescription ?? fallbacks.SettingsDescription, props);
-  var SettingsRow = (props) => React.createElement(captured.SettingsRow ?? fallbacks.SettingsRow, props);
+  var SettingsTitle = (props) => React2.createElement(captured.SettingsTitle ?? fallbacks.SettingsTitle, props);
+  var SettingsDescription = (props) => React2.createElement(captured.SettingsDescription ?? fallbacks.SettingsDescription, props);
+  var SettingsRow = (props) => React2.createElement(captured.SettingsRow ?? fallbacks.SettingsRow, props);
 
   // src/turbopack/common/components.ts
   function createModuleLazy(...filterProps) {
@@ -3813,20 +3813,20 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var AnimatePresence = lazyExport("AnimatePresence");
 
   // src/components/ConfirmDialog.tsx
-  function ConfirmDialog({ open: open2, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
-    return /* @__PURE__ */ React.createElement(AlertDialog, {
-      open: open2,
+  function ConfirmDialog({ open, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
+    return /* @__PURE__ */ React2.createElement(AlertDialog, {
+      open,
       onOpenChange
-    }, /* @__PURE__ */ React.createElement(AlertDialogContent, {
+    }, /* @__PURE__ */ React2.createElement(AlertDialogContent, {
       className: "void-confirm-dialog"
-    }, /* @__PURE__ */ React.createElement(AlertDialogHeader, null, /* @__PURE__ */ React.createElement(AlertDialogTitle, null, title), /* @__PURE__ */ React.createElement(AlertDialogDescription, null, description)), /* @__PURE__ */ React.createElement(AlertDialogFooter, null, /* @__PURE__ */ React.createElement(AlertDialogCancel, {
+    }, /* @__PURE__ */ React2.createElement(AlertDialogHeader, null, /* @__PURE__ */ React2.createElement(AlertDialogTitle, null, title), /* @__PURE__ */ React2.createElement(AlertDialogDescription, null, description)), /* @__PURE__ */ React2.createElement(AlertDialogFooter, null, /* @__PURE__ */ React2.createElement(AlertDialogCancel, {
       asChild: true
-    }, /* @__PURE__ */ React.createElement(Button, {
+    }, /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "sm"
-    }, cancelText)), /* @__PURE__ */ React.createElement(AlertDialogAction, {
+    }, cancelText)), /* @__PURE__ */ React2.createElement(AlertDialogAction, {
       asChild: true
-    }, /* @__PURE__ */ React.createElement(Button, {
+    }, /* @__PURE__ */ React2.createElement(Button, {
       variant: danger ? "danger" : "primary",
       size: "sm",
       onClick: onConfirm
@@ -3837,7 +3837,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function getErrorBoundaryClass() {
     if (ErrorBoundaryClass)
       return ErrorBoundaryClass;
-    ErrorBoundaryClass = class VoidPPErrorBoundary extends React.Component {
+    ErrorBoundaryClass = class VoidPPErrorBoundary extends React2.Component {
       constructor(props) {
         super(props);
         this.state = { hasError: false };
@@ -3858,16 +3858,16 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function ErrorBoundaryWrapper(props) {
     const Cls = getErrorBoundaryClass();
-    return /* @__PURE__ */ React.createElement(Cls, {
+    return /* @__PURE__ */ React2.createElement(Cls, {
       ...props
     });
   }
   var ErrorBoundary = ErrorBoundaryWrapper;
   Object.defineProperty(ErrorBoundary, "wrap", {
     value(Component, fallback = null) {
-      const Wrapped = (props) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+      const Wrapped = (props) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
         fallback
-      }, /* @__PURE__ */ React.createElement(Component, {
+      }, /* @__PURE__ */ React2.createElement(Component, {
         ...props
       }));
       Object.defineProperty(Wrapped, "name", { value: `ErrorBoundary(${Component.displayName ?? Component.name ?? "Unknown"})` });
@@ -3875,7 +3875,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ErrorCard.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3906,7 +3906,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var cl3 = classNameFactory("void-error-card-");
   // src/components/Flex.tsx
   function Flex({ flexDirection, gap = "1em", justifyContent, alignItems, flexWrap, children, style, ref, ...restProps }) {
-    return /* @__PURE__ */ React.createElement("div", {
+    return /* @__PURE__ */ React2.createElement("div", {
       ref,
       style: {
         display: "flex",
@@ -3922,7 +3922,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   // src/components/Grid.tsx
   function Grid({ columns, rows, gap = "0.75rem", justifyItems, alignItems, children, style, ...restProps }) {
-    return /* @__PURE__ */ React.createElement("div", {
+    return /* @__PURE__ */ React2.createElement("div", {
       style: {
         display: "grid",
         gridTemplateColumns: columns,
@@ -3970,7 +3970,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/components/Paragraph.tsx
   function Paragraph({ color = "secondary", className, children, ...props }) {
-    return /* @__PURE__ */ React.createElement(Text2, {
+    return /* @__PURE__ */ React2.createElement(Text2, {
       as: "p",
       size: "xs",
       color,
@@ -3979,16 +3979,16 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, children);
   }
   function SectionHeader({ title, description, className }) {
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
       className: ClassNames.cn("max-w-sm min-w-0", className)
-    }, /* @__PURE__ */ React.createElement(Text2, {
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       size: "sm",
       weight: "medium"
-    }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
+    }, title), description && /* @__PURE__ */ React2.createElement(Paragraph, null, description));
   }
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/SelectionUI.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -4035,13 +4035,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var cl4 = classNameFactory("void-sel-");
   function SelectionCheckbox({ selection, id }) {
     const checked = useSelectionHas(selection, id);
-    return /* @__PURE__ */ React.createElement("div", {
+    return /* @__PURE__ */ React2.createElement("div", {
       onClick: (e) => {
         e.stopPropagation();
         e.preventDefault();
       },
       className: cl4("wrap")
-    }, /* @__PURE__ */ React.createElement(Checkbox, {
+    }, /* @__PURE__ */ React2.createElement(Checkbox, {
       checked,
       onCheckedChange: () => selection.toggle(id),
       className: cl4("checkbox")
@@ -4049,7 +4049,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function SelectionActionBar({ selection, noun, title, onDelete }) {
     const count = useSelectionSize(selection);
-    const [open2, setOpen] = useState(false);
+    const [open, setOpen] = useState(false);
     if (!count)
       return null;
     const handleConfirm = async () => {
@@ -4057,24 +4057,24 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       selection.clear();
       await onDelete(ids);
     };
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement("div", {
+    return /* @__PURE__ */ React2.createElement(Fragment, null, /* @__PURE__ */ React2.createElement("div", {
       className: cl4("action-bar")
-    }, /* @__PURE__ */ React.createElement("span", {
+    }, /* @__PURE__ */ React2.createElement("span", {
       className: cl4("count")
-    }, "Selected · ", count), /* @__PURE__ */ React.createElement("div", {
+    }, "Selected · ", count), /* @__PURE__ */ React2.createElement("div", {
       className: cl4("buttons")
-    }, /* @__PURE__ */ React.createElement(Button, {
+    }, /* @__PURE__ */ React2.createElement(Button, {
       variant: "primary",
       size: "sm",
       shape: "pill",
       onClick: () => selection.clear()
-    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
+    }, "Cancel"), /* @__PURE__ */ React2.createElement(Button, {
       variant: "danger",
       size: "sm",
       shape: "pill",
       onClick: () => setOpen(true)
-    }, "Delete"))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
+    }, "Delete"))), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+      open,
       onOpenChange: setOpen,
       title,
       description: `Are you sure you want to delete ${pluralize(count, noun)}? This cannot be undone.`,
@@ -4105,7 +4105,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const cls = classes(active && "bg-button-ghost-hover", className);
     const label = ariaLabel ?? (typeof tooltip === "string" ? tooltip : undefined);
     if (popover) {
-      return /* @__PURE__ */ React.createElement(ButtonWithPopover, {
+      return /* @__PURE__ */ React2.createElement(ButtonWithPopover, {
         variant,
         size,
         shape,
@@ -4118,7 +4118,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         "aria-label": label
       }, icon);
     }
-    return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+    return /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
       variant,
       size,
       shape,
@@ -4164,7 +4164,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     buttons.delete(id);
   }
   function renderEntry(def) {
-    return /* @__PURE__ */ React.createElement(ChatBarButton, {
+    return /* @__PURE__ */ React2.createElement(ChatBarButton, {
       icon: resolveLazy(def.icon),
       tooltip: resolveLazy(def.tooltip),
       popover: resolveLazy(def.popover),
@@ -4185,7 +4185,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const entries = buttons.sorted().filter(([, def]) => (def.locations ?? ["chat"]).includes(location2));
     if (!entries.length)
       return null;
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, entries.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, entries.map(([id, def]) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
       key: id
     }, renderEntry(def))));
   }
@@ -4193,13 +4193,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/api/ContextMenus.tsx
   var menuPrimitivesContext = null;
   function getMenuPrimitivesContext() {
-    return menuPrimitivesContext ??= React.createContext(null);
+    return menuPrimitivesContext ??= React2.createContext(null);
   }
   function makeMenuPrimitive(key, fallback) {
     return (props) => {
-      const ctx = React.useContext(getMenuPrimitivesContext());
+      const ctx = React2.useContext(getMenuPrimitivesContext());
       const C = ctx?.[key] ?? fallback;
-      return /* @__PURE__ */ React.createElement(C, {
+      return /* @__PURE__ */ React2.createElement(C, {
         ...props
       });
     };
@@ -4221,11 +4221,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function renderEntry2(def, ctx) {
     if (def.render) {
       const Render = def.render;
-      return /* @__PURE__ */ React.createElement(Render, {
+      return /* @__PURE__ */ React2.createElement(Render, {
         ...ctx
       });
     }
-    return /* @__PURE__ */ React.createElement(MenuItem, {
+    return /* @__PURE__ */ React2.createElement(MenuItem, {
       onSelect: () => def.onSelect?.(ctx)
     }, resolveLazy(def.icon), resolveLazy(def.label));
   }
@@ -4235,13 +4235,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     if (!registry.size)
       return null;
     const sorted = registry.sorted();
-    const content = /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    const content = /* @__PURE__ */ React2.createElement(React2.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
       key: id,
       fallback: null
     }, renderEntry2(def, ctx))));
     if (menu) {
       const Ctx = getMenuPrimitivesContext();
-      return /* @__PURE__ */ React.createElement(Ctx.Provider, {
+      return /* @__PURE__ */ React2.createElement(Ctx.Provider, {
         value: menu
       }, content);
     }
@@ -4310,10 +4310,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     if (!Array.isArray(patch.replacement)) {
       patch.replacement = [patch.replacement];
     }
-    const pluginPath2 = `VoidPP.plugins[${JSON.stringify(pluginName)}]`;
+    const pluginPath = `VoidPP.plugins[${JSON.stringify(pluginName)}]`;
     for (const replacement of patch.replacement) {
       if (false) {}
-      canonicalizeReplacement(replacement, pluginPath2);
+      canonicalizeReplacement(replacement, pluginPath);
     }
     patches.push(patch);
   }
@@ -4393,9 +4393,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       const unsubs = [];
       pluginUnsubscribers.set(plugin.name, unsubs);
       if (plugin.events) {
-        for (const [event, handler2] of Object.entries(plugin.events)) {
-          if (handler2)
-            unsubs.push(subscribe(event, handler2));
+        for (const [event, handler] of Object.entries(plugin.events)) {
+          if (handler)
+            unsubs.push(subscribe(event, handler));
         }
       }
       if (plugin.zustand) {
@@ -4407,8 +4407,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
               logger11.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
             }
           };
-          const attach = (store2) => {
-            unsubs.push(sub.selector ? store2.subscribe(sub.selector, wrappedHandler) : store2.subscribe(wrappedHandler));
+          const attach = (store) => {
+            unsubs.push(sub.selector ? store.subscribe(sub.selector, wrappedHandler) : store.subscribe(wrappedHandler));
           };
           const store = resolveStoreHook(storeName);
           if (store) {
@@ -4642,7 +4642,92 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/_core/settings/styles.css
+  // src/plugins/_core/fixChrome.chrome/index.ts
+  var fixChrome_default = definePlugin({
+    name: "FixChrome",
+    icon: ChromiumIcon,
+    description: "Fixes Chromium-specific performance issues like backdrop blur lag.",
+    authors: [Devs.Prism],
+    required: true,
+    patches: [
+      {
+        find: "backdrop-blur-",
+        all: true,
+        replacement: {
+          match: /backdrop-blur-(?:\w+|\[[^\]]+\]) ?/g,
+          replace: ""
+        }
+      }
+    ]
+  });
+
+  // src/plugins/_core/noTelemetry/index.ts
+  var noTelemetry_default = definePlugin({
+    name: "NoTelemetry",
+    icon: ShieldOffIcon,
+    description: "Disables all tracking, telemetry, and event logging.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    required: true,
+    patches: [
+      {
+        find: '"opentelemetry.js.api."',
+        replacement: {
+          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
+          replace: "$1function(){}"
+        }
+      },
+      {
+        find: '"after-init"),(0,',
+        group: true,
+        replacement: [
+          {
+            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
+            replace: "$1return}function _ignore(){"
+          },
+          {
+            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
+            replace: '"startRecordingImagineSession",0,function(){}'
+          },
+          {
+            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
+            replace: '"stopRecordingImagineSession",0,function(){}'
+          }
+        ]
+      },
+      {
+        find: "sendBatchLogEvent",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogEvent=()=>{}"
+          },
+          {
+            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogExperimentExposure=()=>{}"
+          }
+        ]
+      },
+      {
+        find: '"/api/log_metric"',
+        replacement: {
+          match: /"\/api\/log_metric",\i\)/,
+          replace: '"/api/log_metric",[])'
+        }
+      },
+      {
+        find: "isEnvVarsSet(){return void 0!=",
+        replacement: {
+          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
+          replace: "isEnvVarsSet(){return false}"
+        }
+      }
+    ]
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4915,7 +5000,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/CustomCSSTab.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4927,7 +5012,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/CssEditor.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -5068,7 +5153,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function formatCss(raw) {
     let out = "";
     let indent = 0;
-    const pad2 = () => "    ".repeat(indent);
+    const pad = () => "    ".repeat(indent);
     const tokens = raw.replaceAll(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
     for (const t of tokens) {
       const s = t.trim();
@@ -5080,7 +5165,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         indent++;
       } else if (s === "}") {
         indent = Math.max(0, indent - 1);
-        out += pad2() + `}
+        out += pad() + `}
 
 `;
       } else if (s === ";")
@@ -5089,7 +5174,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       else if (s === ":")
         out += ": ";
       else if (indent > 0)
-        out += pad2() + s;
+        out += pad() + s;
       else
         out += s;
     }
@@ -5125,13 +5210,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         ta.selectionEnd = pos;
       });
     }, [onChange]);
-    return /* @__PURE__ */ React.createElement("div", {
+    return /* @__PURE__ */ React2.createElement("div", {
       className: classes(cl5("wrap"), className)
-    }, /* @__PURE__ */ React.createElement("pre", {
+    }, /* @__PURE__ */ React2.createElement("pre", {
       ref: highlightRef,
       className: cl5("highlight"),
       "aria-hidden": "true"
-    }), /* @__PURE__ */ React.createElement("textarea", {
+    }), /* @__PURE__ */ React2.createElement("textarea", {
       className: cl5("input"),
       value,
       placeholder,
@@ -5178,28 +5263,28 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       setEnabled(checked);
       setCustomCSSEnabled(checked);
     };
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
       className: classes(cl6("root"), "void-tab-root")
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       className: cl6("header")
-    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
       title: "Quick CSS",
       description: "Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it."
-    }), /* @__PURE__ */ React.createElement(Switch, {
+    }), /* @__PURE__ */ React2.createElement(Switch, {
       checked: enabled,
       onCheckedChange: handleToggle
-    })), /* @__PURE__ */ React.createElement(CssEditor, {
+    })), /* @__PURE__ */ React2.createElement(CssEditor, {
       value: css,
       onChange: apply,
       disabled: !enabled
     }));
   }
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/shared.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5274,7 +5359,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/PluginsTab.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5315,7 +5400,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/PluginCard.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5366,7 +5451,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/BaseCard.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5472,64 +5557,64 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/components/settings/BaseCard.tsx
   var cl7 = classNameFactory("void-card-");
   function BaseCard({ className, name, nameClassName, icon, badges, description, controls, footer }) {
-    return /* @__PURE__ */ React.createElement(Card, {
+    return /* @__PURE__ */ React2.createElement(Card, {
       className: classes(cl7("root"), className)
-    }, /* @__PURE__ */ React.createElement("div", {
+    }, /* @__PURE__ */ React2.createElement("div", {
       className: cl7("body")
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement("div", {
+    }, /* @__PURE__ */ React2.createElement("div", {
       className: classes(cl7("name"), nameClassName)
-    }, icon != null && /* @__PURE__ */ React.createElement("span", {
+    }, icon != null && /* @__PURE__ */ React2.createElement("span", {
       className: cl7("icon")
-    }, icon), /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+    }, icon), /* @__PURE__ */ React2.createElement(Tooltip, null, /* @__PURE__ */ React2.createElement(TooltipTrigger, {
       asChild: true
-    }, /* @__PURE__ */ React.createElement("span", {
+    }, /* @__PURE__ */ React2.createElement("span", {
       className: cl7("title")
-    }, name)), /* @__PURE__ */ React.createElement(TooltipContent, null, name)), badges), /* @__PURE__ */ React.createElement(Flex, {
+    }, name)), /* @__PURE__ */ React2.createElement(TooltipContent, null, name)), badges), /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
       className: cl7("controls")
-    }, controls)), description && /* @__PURE__ */ React.createElement("div", {
+    }, controls)), description && /* @__PURE__ */ React2.createElement("div", {
       className: cl7("desc")
-    }, description)), /* @__PURE__ */ React.createElement("div", {
+    }, description)), /* @__PURE__ */ React2.createElement("div", {
       className: cl7("separator")
-    }), /* @__PURE__ */ React.createElement("div", {
+    }), /* @__PURE__ */ React2.createElement("div", {
       className: cl7("footer")
     }, footer));
   }
 
   // src/components/settings/IconButton.tsx
   function IconButton({ icon: Icon, label, onClick, className }) {
-    return /* @__PURE__ */ React.createElement(Button, {
+    return /* @__PURE__ */ React2.createElement(Button, {
       variant: "tertiary",
       size: "xs",
       shape: "square",
       "aria-label": label,
       onClick,
       className
-    }, /* @__PURE__ */ React.createElement(Icon, {
+    }, /* @__PURE__ */ React2.createElement(Icon, {
       size: 14
     }));
   }
 
   // src/components/settings/pluginBadges.tsx
   function TooltipIcon({ icon: Icon, tooltip, className, as = "span" }) {
-    return /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+    return /* @__PURE__ */ React2.createElement(Tooltip, null, /* @__PURE__ */ React2.createElement(TooltipTrigger, {
       asChild: true
-    }, /* @__PURE__ */ React.createElement(Text2, {
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       as,
       className
-    }, /* @__PURE__ */ React.createElement(Icon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, tooltip));
+    }, /* @__PURE__ */ React2.createElement(Icon, null))), /* @__PURE__ */ React2.createElement(TooltipContent, null, tooltip));
   }
   var badges = [
     { key: "dev", icon: GhostFilledIcon, tooltip: "Dev Only" },
     { key: "chrome", icon: ChromiumIcon, tooltip: "Chromium Only" }
   ];
   function PluginBadges({ plugin, className }) {
-    return badges.filter((b) => plugin[b.key]).map((b) => /* @__PURE__ */ React.createElement(TooltipIcon, {
+    return badges.filter((b) => plugin[b.key]).map((b) => /* @__PURE__ */ React2.createElement(TooltipIcon, {
       key: b.key,
       icon: b.icon,
       tooltip: b.tooltip,
@@ -5588,58 +5673,58 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       forceUpdate();
       dispatch("pluginStar");
     };
-    return /* @__PURE__ */ React.createElement(BaseCard, {
+    return /* @__PURE__ */ React2.createElement(BaseCard, {
       className: classes(plugin.required && cl8("required"), crashed && cl8("crashed")),
       name,
-      icon: Icon ? /* @__PURE__ */ React.createElement(Icon, {
+      icon: Icon ? /* @__PURE__ */ React2.createElement(Icon, {
         size: 14
-      }) : /* @__PURE__ */ React.createElement(UnplugIcon, {
+      }) : /* @__PURE__ */ React2.createElement(UnplugIcon, {
         size: 14
       }),
-      badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(TooltipIcon, {
+      badges: /* @__PURE__ */ React2.createElement(React2.Fragment, null, crashed && /* @__PURE__ */ React2.createElement(TooltipIcon, {
         icon: TriangleAlert,
         tooltip: "This plugin failed to start",
         className: cl8("crashed-icon")
-      }), plugin.required && /* @__PURE__ */ React.createElement(TooltipIcon, {
+      }), plugin.required && /* @__PURE__ */ React2.createElement(TooltipIcon, {
         icon: CircleAlertIcon,
         tooltip: "This plugin is required for Void++ to work",
         className: cl8("required-icon")
-      }), /* @__PURE__ */ React.createElement(PluginBadges, {
+      }), /* @__PURE__ */ React2.createElement(PluginBadges, {
         plugin,
         className: cl8("badge")
-      }), isNewPlugin(name) && /* @__PURE__ */ React.createElement(Badge, {
+      }), isNewPlugin(name) && /* @__PURE__ */ React2.createElement(Badge, {
         variant: "accent"
       }, "New")),
       description: plugin.description,
-      controls: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(IconButton, {
+      controls: /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(IconButton, {
         icon: starred ? StarFilledIcon : StarIcon,
         label: starred ? "Remove from favorites" : "Add to favorites",
         className: classes(cl8("star"), starred && cl8("star-active")),
         onClick: handleStar
-      }), !plugin.required && /* @__PURE__ */ React.createElement(IconButton, {
+      }), !plugin.required && /* @__PURE__ */ React2.createElement(IconButton, {
         icon: pinned ? PinFilledIcon : PinIcon,
         label: pinned ? "Unpin from top" : "Pin to top",
         className: classes(cl8("pin"), pinned && cl8("pin-active")),
         onClick: handlePin
-      }), hasVisibleSettings(plugin) && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      }), hasVisibleSettings(plugin) && /* @__PURE__ */ React2.createElement(Tooltip, null, /* @__PURE__ */ React2.createElement(TooltipTrigger, {
         asChild: true
-      }, /* @__PURE__ */ React.createElement(IconButton, {
+      }, /* @__PURE__ */ React2.createElement(IconButton, {
         icon: Settings2Icon,
         label: "config",
         className: cl8("settings"),
         onClick: () => onSettings(name)
-      })), /* @__PURE__ */ React.createElement(TooltipContent, null, "config")), /* @__PURE__ */ React.createElement(Switch, {
+      })), /* @__PURE__ */ React2.createElement(TooltipContent, null, "config")), /* @__PURE__ */ React2.createElement(Switch, {
         checked: enabled,
         disabled: plugin.required,
         onCheckedChange: handleToggle
       })),
-      footer: /* @__PURE__ */ React.createElement("div", {
+      footer: /* @__PURE__ */ React2.createElement("div", {
         className: "void-card-author"
       }, plugin.authors?.join(", ") || " ")
     });
   }
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/PluginDialog.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5665,7 +5750,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/SettingField.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -5761,28 +5846,28 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return [value, update];
   }
   function SettingLabel({ id, setting }) {
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, humanizeKey(id)), setting.description && /* @__PURE__ */ React.createElement(SettingsDescription, null, setting.description));
+    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, humanizeKey(id)), setting.description && /* @__PURE__ */ React2.createElement(SettingsDescription, null, setting.description));
   }
   function LabeledField({ id, setting, children }) {
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+    }, /* @__PURE__ */ React2.createElement(SettingLabel, {
       id,
       setting
     }), children);
   }
   var BooleanField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Switch, {
+    return /* @__PURE__ */ React2.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React2.createElement(Switch, {
         checked: !!value,
         onCheckedChange: update
       })
-    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+    }, /* @__PURE__ */ React2.createElement(SettingLabel, {
       id,
       setting
     }));
@@ -5791,15 +5876,15 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const { options } = setting;
     const valueMap = useMemo(() => new Map(options.map((o) => [String(o.value), o.value])), [options]);
-    return /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Select, {
+    return /* @__PURE__ */ React2.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React2.createElement(Select, {
         value: String(value ?? ""),
         onValueChange: (v) => update(valueMap.get(v) ?? v)
-      }, /* @__PURE__ */ React.createElement(SelectTrigger, null, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
+      }, /* @__PURE__ */ React2.createElement(SelectTrigger, null, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React2.createElement(SelectItem, {
         key: String(o.value),
         value: String(o.value)
       }, o.label))))
-    }, /* @__PURE__ */ React.createElement(SettingLabel, {
+    }, /* @__PURE__ */ React2.createElement(SettingLabel, {
       id,
       setting
     }));
@@ -5809,24 +5894,24 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const { min, max } = setting;
     const n = typeof value === "number" ? value : min;
     const pct = max === min ? 100 : (n - min) / (max - min) * 100;
-    return /* @__PURE__ */ React.createElement(LabeledField, {
+    return /* @__PURE__ */ React2.createElement(LabeledField, {
       id,
       setting
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       gap: "0.75rem",
       className: cl9("slider-row")
-    }, /* @__PURE__ */ React.createElement("div", {
+    }, /* @__PURE__ */ React2.createElement("div", {
       className: cl9("slider-wrap")
-    }, /* @__PURE__ */ React.createElement("div", {
+    }, /* @__PURE__ */ React2.createElement("div", {
       className: cl9("slider-rail"),
       "aria-hidden": "true"
-    }, /* @__PURE__ */ React.createElement("div", {
+    }, /* @__PURE__ */ React2.createElement("div", {
       className: cl9("slider-fill"),
       style: { width: `${pct}%` }
-    }), /* @__PURE__ */ React.createElement("div", {
+    }), /* @__PURE__ */ React2.createElement("div", {
       className: cl9("slider-thumb"),
       style: { left: `${pct}%` }
-    })), /* @__PURE__ */ React.createElement("input", {
+    })), /* @__PURE__ */ React2.createElement("input", {
       type: "range",
       min,
       max,
@@ -5841,7 +5926,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       "aria-valuemin": min,
       "aria-valuemax": max,
       "aria-valuenow": n
-    })), /* @__PURE__ */ React.createElement(Text2, {
+    })), /* @__PURE__ */ React2.createElement(Text2, {
       size: "sm",
       color: "secondary",
       className: cl9("slider-value")
@@ -5850,17 +5935,17 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var ComponentField = ({ setting, pluginName }) => {
     const [, update] = usePluginSetting(pluginName, "component", setting);
     const Comp = setting.component;
-    return /* @__PURE__ */ React.createElement(Comp, {
+    return /* @__PURE__ */ React2.createElement(Comp, {
       setValue: update,
       option: setting
     });
   };
   var NumberField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React.createElement(LabeledField, {
+    return /* @__PURE__ */ React2.createElement(LabeledField, {
       id,
       setting
-    }, /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React2.createElement(Input, {
       type: "number",
       value: String(value ?? ""),
       onChange: (e) => {
@@ -5873,10 +5958,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   };
   var BigIntField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React.createElement(LabeledField, {
+    return /* @__PURE__ */ React2.createElement(LabeledField, {
       id,
       setting
-    }, /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React2.createElement(Input, {
       type: "text",
       inputMode: "numeric",
       value: String(value ?? ""),
@@ -5893,10 +5978,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   };
   var StringField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React.createElement(LabeledField, {
+    return /* @__PURE__ */ React2.createElement(LabeledField, {
       id,
       setting
-    }, /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React2.createElement(Input, {
       type: "text",
       value: String(value ?? ""),
       onChange: (e) => update(e.target.value),
@@ -5918,7 +6003,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const Field = FIELD_MAP[setting.type];
     if (!Field)
       return null;
-    return /* @__PURE__ */ React.createElement(Field, {
+    return /* @__PURE__ */ React2.createElement(Field, {
       id,
       setting,
       pluginName
@@ -5927,46 +6012,46 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/components/settings/tabs/VoidPPDialogShell.tsx
   function VoidPPDialogShell({ title, subtitle, onClose, children, size = "md", nested }) {
-    return /* @__PURE__ */ React.createElement(Dialog, {
+    return /* @__PURE__ */ React2.createElement(Dialog, {
       open: true,
       onOpenChange: (v) => {
         if (!v)
           onClose();
       }
-    }, /* @__PURE__ */ React.createElement(DialogContent, {
+    }, /* @__PURE__ */ React2.createElement(DialogContent, {
       className: classes("void-dialog-content", `void-dialog-content-${size}`),
       overlayClassname: nested ? "void-dialog-overlay-nested" : undefined,
       ...subtitle ? {} : { "aria-describedby": undefined }
-    }, /* @__PURE__ */ React.createElement(DialogClose, {
+    }, /* @__PURE__ */ React2.createElement(DialogClose, {
       asChild: true
-    }, /* @__PURE__ */ React.createElement(Button, {
+    }, /* @__PURE__ */ React2.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "square",
       "aria-label": "Close",
       className: "void-dialog-close"
-    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
+    }, /* @__PURE__ */ React2.createElement(Cross2Icon, null))), /* @__PURE__ */ React2.createElement(DialogHeader, {
       className: "void-dialog-header"
-    }, /* @__PURE__ */ React.createElement(DialogTitle, null, title), subtitle && /* @__PURE__ */ React.createElement(DialogDescription, null, subtitle)), children));
+    }, /* @__PURE__ */ React2.createElement(DialogTitle, null, title), subtitle && /* @__PURE__ */ React2.createElement(DialogDescription, null, subtitle)), children));
   }
   function DialogField({ label, className, children }) {
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0.25rem",
       className
-    }, /* @__PURE__ */ React.createElement(Text2, {
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       size: "sm",
       weight: "medium"
     }, label), children);
   }
   function DialogActions({ className, onCancel, confirmLabel, onConfirm, confirmDisabled }) {
-    return /* @__PURE__ */ React.createElement(DialogFooter, {
+    return /* @__PURE__ */ React2.createElement(DialogFooter, {
       className: classes("void-dialog-footer", className)
-    }, /* @__PURE__ */ React.createElement(Button, {
+    }, /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "sm",
       onClick: onCancel
-    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
+    }, "Cancel"), /* @__PURE__ */ React2.createElement(Button, {
       variant: "primary",
       size: "sm",
       onClick: onConfirm,
@@ -5986,32 +6071,32 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       const entryKeys = new Set(entries.map(([key]) => key));
       Settings.plugins[plugin.name] = Object.fromEntries(Object.entries(current).filter(([k]) => !entryKeys.has(k)));
     }, [plugin.name, entries]);
-    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
+    return /* @__PURE__ */ React2.createElement(VoidPPDialogShell, {
       title: plugin.name,
       subtitle: plugin.description,
       onClose,
       nested: true
-    }, /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(DialogField, {
+    }, /* @__PURE__ */ React2.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React2.createElement(DialogField, {
       label: "Authors"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(DialogField, {
+    }, /* @__PURE__ */ React2.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React2.createElement(DialogField, {
       label: "Settings",
       className: cl10("settings")
-    }, entries.length ? /* @__PURE__ */ React.createElement(Flex, {
+    }, entries.length ? /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
       className: cl10("settings-list")
-    }, entries.map(([key, setting]) => /* @__PURE__ */ React.createElement(SettingField, {
+    }, entries.map(([key, setting]) => /* @__PURE__ */ React2.createElement(SettingField, {
       key,
       id: key,
       setting,
       pluginName: plugin.name
-    }))) : /* @__PURE__ */ React.createElement(Paragraph, null, "No configurable settings.")), !!entries.length && /* @__PURE__ */ React.createElement(DialogFooter, {
+    }))) : /* @__PURE__ */ React2.createElement(Paragraph, null, "No configurable settings.")), !!entries.length && /* @__PURE__ */ React2.createElement(DialogFooter, {
       className: cl10("footer")
-    }, /* @__PURE__ */ React.createElement(Button, {
+    }, /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "sm",
       onClick: () => setResetOpen(true)
-    }, "Reset")), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+    }, "Reset")), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
       open: resetOpen,
       onOpenChange: setResetOpen,
       title: "Reset settings",
@@ -6023,22 +6108,22 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
 
   // src/components/settings/tabs/SearchFilterBar.tsx
-  function SearchFilterBar({ placeholder, search: search2, onSearchChange, filter, onFilterChange, options }) {
-    return /* @__PURE__ */ React.createElement(Flex, {
+  function SearchFilterBar({ placeholder, search, onSearchChange, filter, onFilterChange, options }) {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React2.createElement(Input, {
       type: "text",
       placeholder,
-      value: search2,
+      value: search,
       onChange: (e) => onSearchChange(e.target.value),
       className: "void-search-bar-input"
-    }), /* @__PURE__ */ React.createElement(Select, {
+    }), /* @__PURE__ */ React2.createElement(Select, {
       value: filter,
       onValueChange: (v) => onFilterChange(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+    }, /* @__PURE__ */ React2.createElement(SelectTrigger, {
       className: "void-search-bar-select"
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
+    }, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React2.createElement(SelectItem, {
       key: o.value,
       value: o.value
     }, o.label)))));
@@ -6058,8 +6143,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const enabled = filter === "enabled";
     return list.filter((n) => isPluginEnabled(n) === enabled);
   }
-  function emptyHint(search2, category) {
-    if (search2)
+  function emptyHint(search, category) {
+    if (search)
       return "No plugins match your search.";
     if (category === "favorites")
       return "No favorites yet. Star a plugin to see it here.";
@@ -6090,7 +6175,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return name;
   }
   function PluginsTab() {
-    const [search2, setSearch] = useState("");
+    const [search, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
     const [category, setCategory] = useState("favorites");
     const [dialogName, setDialogName] = useState(null);
@@ -6098,14 +6183,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const [needsReload, setNeedsReload] = useState(false);
     const [toggleTick, setToggleTick] = useState(0);
     const { userPlugins, requiredPlugins } = useMemo(() => {
-      const userPlugins2 = [];
-      const requiredPlugins2 = [];
+      const userPlugins = [];
+      const requiredPlugins = [];
       for (const n of Object.keys(plugins).toSorted((a, b) => a.localeCompare(b))) {
         if (plugins[n].hidden)
           continue;
-        (plugins[n].required ? requiredPlugins2 : userPlugins2).push(n);
+        (plugins[n].required ? requiredPlugins : userPlugins).push(n);
       }
-      return { userPlugins: userPlugins2, requiredPlugins: requiredPlugins2 };
+      return { userPlugins, requiredPlugins };
     }, []);
     const initialStatesRef = useRef(null);
     const changedPluginsRef = useRef(new Set);
@@ -6166,8 +6251,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         tabRequired: []
       };
     }, [category, filter, userPlugins, requiredPlugins, toggleTick]);
-    const filteredUser = useFiltered(tabUser, search2, getPluginKey);
-    const filteredRequired = useFiltered(tabRequired, search2, getPluginKey);
+    const filteredUser = useFiltered(tabUser, search, getPluginKey);
+    const filteredRequired = useFiltered(tabRequired, search, getPluginKey);
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
     const hasResults = filteredUser.length > 0 || filteredRequired.length > 0;
     const onReload = useCallback((pluginName) => {
@@ -6193,65 +6278,65 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       dismissedRef.current = true;
       setShowReload(false);
     }, []);
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
       className: "void-tab-root"
-    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
       title: "Plugins",
       description: "Turn Void++ features on or off. Some require a reload to apply. Click the sliders icon to configure a plugin."
-    }), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
+    }), needsReload && !showReload && /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       className: cl11("reload-banner")
-    }, /* @__PURE__ */ React.createElement(Text2, {
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       className: cl11("reload-text")
-    }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React.createElement(Button, {
+    }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "sm",
       onClick: () => location.reload()
-    }, "Reload")), /* @__PURE__ */ React.createElement(Flex, {
+    }, "Reload")), /* @__PURE__ */ React2.createElement(Flex, {
       className: cl11("tabs"),
       gap: "0.125rem",
       flexWrap: "wrap"
-    }, visibleTabs.map((t) => /* @__PURE__ */ React.createElement(Button, {
+    }, visibleTabs.map((t) => /* @__PURE__ */ React2.createElement(Button, {
       key: t.id,
       variant: "tertiary",
       size: "sm",
       className: classes(cl11("tab"), category === t.id && cl11("tab-active")),
       onClick: () => setCategory(t.id)
-    }, t.label))), /* @__PURE__ */ React.createElement(SearchFilterBar, {
+    }, t.label))), /* @__PURE__ */ React2.createElement(SearchFilterBar, {
       placeholder: `Search ${tabUser.length + tabRequired.length} plugins...`,
-      search: search2,
+      search,
       onSearchChange: setSearch,
       filter,
       onFilterChange: setFilter,
       options: FILTER_OPTIONS
-    }), filteredUser.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
+    }), filteredUser.length > 0 && /* @__PURE__ */ React2.createElement(Grid, {
       columns: "repeat(2, 1fr)"
-    }, filteredUser.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    }, filteredUser.map((n) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
       key: n,
       fallback: null
-    }, /* @__PURE__ */ React.createElement(PluginCard, {
+    }, /* @__PURE__ */ React2.createElement(PluginCard, {
       name: n,
       onSettings: setDialogName,
       onReload
-    })))), filteredRequired.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Separator, null), /* @__PURE__ */ React.createElement(Grid, {
+    })))), filteredRequired.length > 0 && /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(Separator, null), /* @__PURE__ */ React2.createElement(Grid, {
       columns: "repeat(2, 1fr)"
-    }, filteredRequired.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    }, filteredRequired.map((n) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
       key: n,
       fallback: null
-    }, /* @__PURE__ */ React.createElement(PluginCard, {
+    }, /* @__PURE__ */ React2.createElement(PluginCard, {
       name: n,
       onSettings: setDialogName,
       onReload
-    }))))), !hasResults && /* @__PURE__ */ React.createElement(Paragraph, {
+    }))))), !hasResults && /* @__PURE__ */ React2.createElement(Paragraph, {
       color: "secondary",
       className: "void-tab-empty"
-    }, emptyHint(search2, category)), dialogPlugin && /* @__PURE__ */ React.createElement(PluginDialog, {
+    }, emptyHint(search, category)), dialogPlugin && /* @__PURE__ */ React2.createElement(PluginDialog, {
       plugin: dialogPlugin,
       onClose: () => setDialogName(null)
-    }), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+    }), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
       open: showReload,
       onOpenChange: (v) => {
         if (!v)
@@ -6265,7 +6350,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/ThemesTab.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6288,7 +6373,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/ThemeCard.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6313,35 +6398,35 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       onToggle();
     };
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
-    return /* @__PURE__ */ React.createElement(BaseCard, {
+    return /* @__PURE__ */ React2.createElement(BaseCard, {
       name: theme.name ?? theme.url,
       nameClassName: cl12("name"),
-      icon: /* @__PURE__ */ React.createElement(PaletteIcon, {
+      icon: /* @__PURE__ */ React2.createElement(PaletteIcon, {
         size: 14
       }),
       description: theme.description,
-      controls: /* @__PURE__ */ React.createElement(React.Fragment, null, theme.local ? /* @__PURE__ */ React.createElement(IconButton, {
+      controls: /* @__PURE__ */ React2.createElement(React2.Fragment, null, theme.local ? /* @__PURE__ */ React2.createElement(IconButton, {
         icon: PencilIcon,
         label: "Edit",
         onClick: onEdit
-      }) : /* @__PURE__ */ React.createElement(IconButton, {
+      }) : /* @__PURE__ */ React2.createElement(IconButton, {
         icon: CopyIcon,
         label: "Copy URL",
         onClick: () => {
           copyToClipboard(theme.url).catch((e) => logger13.error("Failed to copy URL:", e));
         }
-      }), /* @__PURE__ */ React.createElement(IconButton, {
+      }), /* @__PURE__ */ React2.createElement(IconButton, {
         icon: Trash2Icon,
         label: "Remove",
         onClick: () => onRemove(theme.url)
-      }), /* @__PURE__ */ React.createElement(Switch, {
+      }), /* @__PURE__ */ React2.createElement(Switch, {
         checked: theme.enabled,
         onCheckedChange: handleToggle
       })),
-      footer: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SourceIcon, {
+      footer: /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(SourceIcon, {
         size: 12,
         className: cl12("footer-icon")
-      }), /* @__PURE__ */ React.createElement("div", {
+      }), /* @__PURE__ */ React2.createElement("div", {
         className: "void-card-author"
       }, theme.author ?? " "))
     });
@@ -6377,14 +6462,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         setLoading(false);
       }
     };
-    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
+    return /* @__PURE__ */ React2.createElement(VoidPPDialogShell, {
       title: "Add Online Theme",
       onClose,
       size: "sm",
       nested: true
-    }, /* @__PURE__ */ React.createElement(DialogField, {
+    }, /* @__PURE__ */ React2.createElement(DialogField, {
       label: "URL"
-    }, /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React2.createElement(Input, {
       type: "text",
       placeholder: "https://raw.githubusercontent.com/...",
       value: url,
@@ -6396,10 +6481,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         if (e.key === "Enter")
           handleImport();
       }
-    })), error && /* @__PURE__ */ React.createElement(Text2, {
+    })), error && /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       className: cl13("add-error")
-    }, error), /* @__PURE__ */ React.createElement(DialogActions, {
+    }, error), /* @__PURE__ */ React2.createElement(DialogActions, {
       className: cl13("local-footer"),
       onCancel: onClose,
       confirmLabel: loading ? "Importing..." : "Import",
@@ -6425,30 +6510,30 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         setError(errorMessage(e));
       }
     };
-    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
+    return /* @__PURE__ */ React2.createElement(VoidPPDialogShell, {
       title: theme ? "Edit Local Theme" : "New Local Theme",
       onClose,
       size: "lg",
       nested: true
-    }, /* @__PURE__ */ React.createElement(DialogField, {
+    }, /* @__PURE__ */ React2.createElement(DialogField, {
       label: "Name"
-    }, /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React2.createElement(Input, {
       type: "text",
       placeholder: "My Theme",
       value: name,
       onChange: (e) => setName(e.target.value)
-    })), /* @__PURE__ */ React.createElement(DialogField, {
+    })), /* @__PURE__ */ React2.createElement(DialogField, {
       label: "CSS",
       className: cl13("local-css-field")
-    }, /* @__PURE__ */ React.createElement(CssEditor, {
+    }, /* @__PURE__ */ React2.createElement(CssEditor, {
       className: cl13("local-editor"),
       value: css,
       onChange: setCss,
       placeholder: "Paste your CSS here..."
-    })), error && /* @__PURE__ */ React.createElement(Text2, {
+    })), error && /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       className: cl13("add-error")
-    }, error), /* @__PURE__ */ React.createElement(DialogActions, {
+    }, error), /* @__PURE__ */ React2.createElement(DialogActions, {
       className: cl13("local-footer"),
       onCancel: onClose,
       confirmLabel: theme ? "Save" : "Create",
@@ -6457,13 +6542,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
   function ThemesTab() {
-    const [search2, setSearch] = useState("");
+    const [search, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
-    const [themes, setThemes2] = useState(getThemes);
+    const [themes, setThemes] = useState(getThemes);
     const [localDialogOpen, setLocalDialogOpen] = useState(false);
     const [onlineDialogOpen, setOnlineDialogOpen] = useState(false);
     const [editingTheme, setEditingTheme] = useState();
-    const refreshThemes = () => setThemes2(getThemes());
+    const refreshThemes = () => setThemes(getThemes());
     const visible = useMemo(() => {
       switch (filter) {
         case "enabled":
@@ -6478,7 +6563,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
           return themes;
       }
     }, [themes, filter]);
-    const filtered = useFiltered(visible, search2, getThemeKey);
+    const filtered = useFiltered(visible, search, getThemeKey);
     const [removeUrl, setRemoveUrl] = useState(null);
     const removeTarget = removeUrl ? themes.find((t) => t.url === removeUrl) : null;
     const handleRemove = () => {
@@ -6488,48 +6573,48 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       setRemoveUrl(null);
       refreshThemes();
     };
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
       className: "void-tab-root"
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
       title: "Online Themes",
       description: "Load themes from a URL. Re-fetched on every page load so updates apply automatically."
-    }), /* @__PURE__ */ React.createElement(Button, {
+    }), /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "md",
       onClick: () => setOnlineDialogOpen(true)
-    }, "Manage")), /* @__PURE__ */ React.createElement(Flex, {
+    }, "Manage")), /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
       title: "Local Themes",
       description: "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly."
-    }), /* @__PURE__ */ React.createElement(Button, {
+    }), /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "md",
       onClick: () => {
         setEditingTheme(undefined);
         setLocalDialogOpen(true);
       }
-    }, "Manage")), /* @__PURE__ */ React.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React.createElement(SearchFilterBar, {
+    }, "Manage")), /* @__PURE__ */ React2.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React2.createElement(SearchFilterBar, {
       placeholder: `Search ${themes.length} themes...`,
-      search: search2,
+      search,
       onSearchChange: setSearch,
       filter,
       onFilterChange: setFilter,
       options: FILTER_OPTIONS2
-    }), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
+    }), filtered.length > 0 && /* @__PURE__ */ React2.createElement(Grid, {
       columns: "repeat(2, 1fr)"
-    }, filtered.map((t) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    }, filtered.map((t) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
       key: t.url,
       fallback: null
-    }, /* @__PURE__ */ React.createElement(ThemeCard, {
+    }, /* @__PURE__ */ React2.createElement(ThemeCard, {
       theme: t,
       onRemove: setRemoveUrl,
       onToggle: refreshThemes,
@@ -6537,10 +6622,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         setEditingTheme(t);
         setLocalDialogOpen(true);
       } : undefined
-    })))), themes.length > 0 && !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
+    })))), themes.length > 0 && !filtered.length && /* @__PURE__ */ React2.createElement(Paragraph, {
       color: "secondary",
       className: "void-tab-empty"
-    }, "No themes match your search."), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+    }, "No themes match your search."), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
       open: removeUrl != null,
       onOpenChange: (v) => {
         if (!v)
@@ -6552,10 +6637,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       cancelText: "Cancel",
       danger: true,
       onConfirm: handleRemove
-    }), onlineDialogOpen && /* @__PURE__ */ React.createElement(OnlineThemeDialog, {
+    }), onlineDialogOpen && /* @__PURE__ */ React2.createElement(OnlineThemeDialog, {
       onClose: () => setOnlineDialogOpen(false),
       onSave: refreshThemes
-    }), localDialogOpen && /* @__PURE__ */ React.createElement(LocalThemeDialog, {
+    }), localDialogOpen && /* @__PURE__ */ React2.createElement(LocalThemeDialog, {
       onClose: () => setLocalDialogOpen(false),
       theme: editingTheme,
       onSave: refreshThemes
@@ -6566,7 +6651,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/experiments/styles.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6616,13 +6701,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/api/Notifications.ts
   var ToastType;
-  ((ToastType2) => {
-    ToastType2[ToastType2["MESSAGE"] = 0] = "MESSAGE";
-    ToastType2[ToastType2["SUCCESS"] = 1] = "SUCCESS";
-    ToastType2[ToastType2["ERROR"] = 2] = "ERROR";
-    ToastType2[ToastType2["INFO"] = 3] = "INFO";
-    ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
-    ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
+  ((ToastType) => {
+    ToastType[ToastType["MESSAGE"] = 0] = "MESSAGE";
+    ToastType[ToastType["SUCCESS"] = 1] = "SUCCESS";
+    ToastType[ToastType["ERROR"] = 2] = "ERROR";
+    ToastType[ToastType["INFO"] = 3] = "INFO";
+    ToastType[ToastType["WARNING"] = 4] = "WARNING";
+    ToastType[ToastType["LOADING"] = 5] = "LOADING";
   })(ToastType ||= {});
   var TOAST_FN = {
     [0 /* MESSAGE */]: null,
@@ -6774,24 +6859,24 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       else
         setOverride(flagKey, value);
     }, [flagKey]);
-    return /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Switch, {
+    return /* @__PURE__ */ React2.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React2.createElement(Switch, {
         checked,
         onCheckedChange: handleToggle
       })
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React.createElement(Badge, {
+    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React2.createElement(Badge, {
       variant: "accent",
       className: cl14("badge")
-    }, "New"), decodedKey && /* @__PURE__ */ React.createElement(Badge, {
+    }, "New"), decodedKey && /* @__PURE__ */ React2.createElement(Badge, {
       className: cl14("badge")
-    }, "Encrypted"), isOverridden && /* @__PURE__ */ React.createElement(Text2, {
+    }, "Encrypted"), isOverridden && /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       as: "span",
       className: cl14("modified")
-    }, "(modified)")), /* @__PURE__ */ React.createElement(SettingsDescription, null, decodedKey ?? flagKey));
+    }, "(modified)")), /* @__PURE__ */ React2.createElement(SettingsDescription, null, decodedKey ?? flagKey));
   }
   function ExperimentsTab() {
-    const [search2, setSearch] = useState("");
+    const [search, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
     const config = FeatureStore.useFeatureStore((s) => s.config);
     const overrides = FeatureStore.useFeatureStore((s) => s.overrides);
@@ -6816,66 +6901,66 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return override !== undefined;
     }, [filter, config, overrides]);
     const prefiltered = useMemo(() => booleanKeys.filter(filterFn), [booleanKeys, filterFn]);
-    const filtered = useFiltered(prefiltered, search2, getFlagSearchText);
+    const filtered = useFiltered(prefiltered, search, getFlagSearchText);
     const overrideCount = Object.keys(overrides).length;
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem"
-    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
       title: "Experiments",
       description: "Toggle unreleased Grok features. These are experimental and may break. New flags are marked when they appear.",
       className: cl14("section")
-    }), /* @__PURE__ */ React.createElement(Card, {
+    }), /* @__PURE__ */ React2.createElement(Card, {
       variant: "ghost",
       className: cl14("warning")
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(Text2, {
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       className: cl14("warning-text")
-    }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React.createElement(Button, {
+    }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "sm",
       className: cl14("clear-btn"),
       onClick: () => FeatureStore.useFeatureStore.getState().clearAllOverrides()
-    }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React.createElement(Flex, {
+    }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem",
       className: cl14("section")
-    }, /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React2.createElement(Input, {
       placeholder: `Search ${prefiltered.length} flags...`,
-      value: search2,
+      value: search,
       onChange: (e) => setSearch(e.target.value),
       className: cl14("search-input")
-    }), /* @__PURE__ */ React.createElement(Select, {
+    }), /* @__PURE__ */ React2.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+    }, /* @__PURE__ */ React2.createElement(SelectTrigger, {
       className: cl14("filter-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
+    }, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, /* @__PURE__ */ React2.createElement(SelectItem, {
       value: "all"
-    }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
+    }, "All"), /* @__PURE__ */ React2.createElement(SelectItem, {
       value: "enabled"
-    }, "Enabled"), /* @__PURE__ */ React.createElement(SelectItem, {
+    }, "Enabled"), /* @__PURE__ */ React2.createElement(SelectItem, {
       value: "disabled"
-    }, "Disabled"), /* @__PURE__ */ React.createElement(SelectItem, {
+    }, "Disabled"), /* @__PURE__ */ React2.createElement(SelectItem, {
       value: "new"
-    }, "New"), /* @__PURE__ */ React.createElement(SelectItem, {
+    }, "New"), /* @__PURE__ */ React2.createElement(SelectItem, {
       value: "modified"
-    }, "Modified"), /* @__PURE__ */ React.createElement(SelectItem, {
+    }, "Modified"), /* @__PURE__ */ React2.createElement(SelectItem, {
       value: "encrypted"
-    }, "Encrypted")))), filtered.map((key) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    }, "Encrypted")))), filtered.map((key) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
       key,
       fallback: null
-    }, /* @__PURE__ */ React.createElement(ExperimentRow, {
+    }, /* @__PURE__ */ React2.createElement(ExperimentRow, {
       flagKey: key,
       isNew: isNewFlag(key)
-    }))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
+    }))), !filtered.length && /* @__PURE__ */ React2.createElement(Paragraph, {
       color: "muted",
       className: cl14("empty")
-    }, search2 ? `No flags matching "${search2}"` : `No ${filter} flags`));
+    }, search ? `No flags matching "${search}"` : `No ${filter} flags`));
   }
   var Tab = ErrorBoundary.wrap(ExperimentsTab);
   function overrideProxy(config, getState) {
@@ -6944,7 +7029,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/pluginsFlyout/styles.css
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -7003,29 +7088,29 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function MenuPluginsEditor() {
     settings3.use(["menuPlugins"]);
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
       className: cl15("root")
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Choose which plugins appear under Void++ → Plugins.")), /* @__PURE__ */ React.createElement("div", {
+    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React2.createElement(SettingsDescription, null, "Choose which plugins appear under Void++ → Plugins.")), /* @__PURE__ */ React2.createElement("div", {
       className: cl15("list")
     }, listedPlugins().map((name) => {
       const Icon = plugins[name].icon ?? UnplugIcon;
-      return /* @__PURE__ */ React.createElement(SettingsRow, {
+      return /* @__PURE__ */ React2.createElement(SettingsRow, {
         key: name,
-        action: /* @__PURE__ */ React.createElement(Switch, {
+        action: /* @__PURE__ */ React2.createElement(Switch, {
           checked: isShownInPluginMenu(name),
           onCheckedChange: (v) => setShownInPluginMenu(name, v)
         })
-      }, /* @__PURE__ */ React.createElement(Flex, {
+      }, /* @__PURE__ */ React2.createElement(Flex, {
         alignItems: "center",
         gap: "0.5rem"
-      }, /* @__PURE__ */ React.createElement(Icon, {
+      }, /* @__PURE__ */ React2.createElement(Icon, {
         className: cl15("icon")
-      }), /* @__PURE__ */ React.createElement(SettingsTitle, null, name)));
+      }), /* @__PURE__ */ React2.createElement(SettingsTitle, null, name)));
     })));
   }
   var pluginsFlyout_default = definePlugin({
@@ -7058,43 +7143,43 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function getVisibleTabs() {
     return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
   }
-  var Dot = () => /* @__PURE__ */ React.createElement(Text2, {
+  var Dot = () => /* @__PURE__ */ React2.createElement(Text2, {
     as: "span",
     color: "secondary"
   }, "•");
   function VersionLink({ href, children }) {
-    return /* @__PURE__ */ React.createElement("a", {
+    return /* @__PURE__ */ React2.createElement("a", {
       href,
       target: "_blank",
       rel: "noreferrer",
       className: cl16("version-link")
-    }, /* @__PURE__ */ React.createElement(Text2, {
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       as: "span",
       color: "secondary"
     }, children));
   }
   function VersionInfo() {
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
       className: cl16("version")
-    }, /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(VersionLink, {
+    }, /* @__PURE__ */ React2.createElement(VersionLink, {
       href: "https://github.com/0-V-linuxdo/VoidPP"
-    }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
+    }, "Void++"), /* @__PURE__ */ React2.createElement(Dot, null), /* @__PURE__ */ React2.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.15] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"de8abfa"}`
-    }, `(${"de8abfa"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.16] v1.0.0"), /* @__PURE__ */ React2.createElement(Dot, null), /* @__PURE__ */ React2.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"20ae29b"}`
+    }, `(${"20ae29b"})`)), /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
-    }, /* @__PURE__ */ React.createElement(Text2, {
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "Production"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
+    }, "Production"), /* @__PURE__ */ React2.createElement(Dot, null), /* @__PURE__ */ React2.createElement(Text2, {
       as: "span",
       color: "secondary"
     }, "Userscript")));
@@ -7115,26 +7200,26 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const menuPlugins = usePluginMenu();
     if (!showVoidPPMenu)
       return null;
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidPPIcon, {
+    return /* @__PURE__ */ React2.createElement(DropdownMenuSub, null, /* @__PURE__ */ React2.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React2.createElement(VoidPPIcon, {
       className: cl16("menu-icon")
-    }), "Void++"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
+    }), "Void++"), /* @__PURE__ */ React2.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React2.createElement(DropdownMenuSub, null, /* @__PURE__ */ React2.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React2.createElement(UnplugIcon, {
       className: cl16("menu-icon")
-    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
+    }), "Plugins"), /* @__PURE__ */ React2.createElement(DropdownMenuSubContent, {
       className: cl16("plugin-menu")
     }, menuPlugins.map((name) => {
       const Icon = plugins[name].icon ?? UnplugIcon;
-      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      return /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
         key: name,
         onSelect: () => openPluginSettings(name)
-      }, /* @__PURE__ */ React.createElement(Icon, {
+      }, /* @__PURE__ */ React2.createElement(Icon, {
         className: cl16("menu-icon")
       }), name);
     }))), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
       const Icon = t.icon;
-      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      return /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
         key: t.id,
         onSelect: () => openSettingsTab(t.id)
-      }, /* @__PURE__ */ React.createElement(Icon, {
+      }, /* @__PURE__ */ React2.createElement(Icon, {
         className: cl16("menu-icon")
       }), t.name);
     })));
@@ -7167,7 +7252,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return tab.defaultLabel || tab.i18nKey || tab.id;
     },
     _renderVersion() {
-      return /* @__PURE__ */ React.createElement(VersionInfo, {
+      return /* @__PURE__ */ React2.createElement(VersionInfo, {
         key: "voidpp-version"
       });
     },
@@ -7239,91 +7324,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // src/plugins/_core/fixChrome.chrome/index.ts
-  var fixChrome_default = definePlugin({
-    name: "FixChrome",
-    icon: ChromiumIcon,
-    description: "Fixes Chromium-specific performance issues like backdrop blur lag.",
-    authors: [Devs.Prism],
-    required: true,
-    patches: [
-      {
-        find: "backdrop-blur-",
-        all: true,
-        replacement: {
-          match: /backdrop-blur-(?:\w+|\[[^\]]+\]) ?/g,
-          replace: ""
-        }
-      }
-    ]
-  });
-
-  // src/plugins/_core/noTelemetry/index.ts
-  var noTelemetry_default = definePlugin({
-    name: "NoTelemetry",
-    icon: ShieldOffIcon,
-    description: "Disables all tracking, telemetry, and event logging.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    required: true,
-    patches: [
-      {
-        find: '"opentelemetry.js.api."',
-        replacement: {
-          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
-          replace: "$1function(){}"
-        }
-      },
-      {
-        find: '"after-init"),(0,',
-        group: true,
-        replacement: [
-          {
-            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
-            replace: "$1return}function _ignore(){"
-          },
-          {
-            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
-            replace: '"startRecordingImagineSession",0,function(){}'
-          },
-          {
-            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
-            replace: '"stopRecordingImagineSession",0,function(){}'
-          }
-        ]
-      },
-      {
-        find: "sendBatchLogEvent",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
-            replace: "sendBatchLogEvent=()=>{}"
-          },
-          {
-            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
-            replace: "sendBatchLogExperimentExposure=()=>{}"
-          }
-        ]
-      },
-      {
-        find: '"/api/log_metric"',
-        replacement: {
-          match: /"\/api\/log_metric",\i\)/,
-          replace: '"/api/log_metric",[])'
-        }
-      },
-      {
-        find: "isEnvVarsSet(){return void 0!=",
-        replacement: {
-          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
-          replace: "isEnvVarsSet(){return false}"
-        }
-      }
-    ]
-  });
-
   // src/api/Modals.tsx
   var nextId = 0;
   var modalStack = [];
@@ -7348,7 +7348,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     modalStack.length = 0;
     store.notify();
   }
-  var ModalInstance = ErrorBoundary.wrap(function ModalInstance2({ entry }) {
+  var ModalInstance = ErrorBoundary.wrap(function ModalInstance({ entry }) {
     const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
     return entry.render({ onClose });
   });
@@ -7356,7 +7356,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     useExternalStore(store);
     if (!modalStack.length)
       return null;
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, modalStack.map((entry) => /* @__PURE__ */ React.createElement(ModalInstance, {
+    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, modalStack.map((entry) => /* @__PURE__ */ React2.createElement(ModalInstance, {
       key: entry.key,
       entry
     })));
@@ -7364,12 +7364,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/plugins/_api/chatBarButtons/index.tsx
   function Buttons() {
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(VoidPPChatBarButtons, {
+    return /* @__PURE__ */ React2.createElement(Fragment, null, /* @__PURE__ */ React2.createElement(VoidPPChatBarButtons, {
       location: "chat"
-    }), /* @__PURE__ */ React.createElement(ModalContainer, null));
+    }), /* @__PURE__ */ React2.createElement(ModalContainer, null));
   }
   function ImagineButtons() {
-    return /* @__PURE__ */ React.createElement(VoidPPChatBarButtons, {
+    return /* @__PURE__ */ React2.createElement(VoidPPChatBarButtons, {
       location: "imagine"
     });
   }
@@ -7414,7 +7414,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     required: true,
     hidden: true,
     renderItems(location2, ctx, menu) {
-      return /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VoidPPContextMenuItems, {
+      return /* @__PURE__ */ React2.createElement(ErrorBoundary, null, /* @__PURE__ */ React2.createElement(VoidPPContextMenuItems, {
         location: location2,
         menu,
         ...ctx
@@ -7463,96 +7463,5933 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // src/plugins/starry/index.tsx
-  var DEFAULT_COLOR = "#ffffff";
-  var StarsBackground = findExportedComponentLazy("StarsBackground");
-  function hexToRgb(hex) {
-    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
-    if (!m)
-      return [255, 255, 255];
-    const n = parseInt(m[1], 16);
-    return [n >> 16 & 255, n >> 8 & 255, n & 255];
-  }
-  function ColorRow() {
-    const { starColor } = settings5.use(["starColor"]);
-    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
-      value: starColor,
-      onChange: (v) => {
-        settings5.store.starColor = v;
-      },
-      title: "Star color",
-      description: "Color of the twinkling stars."
-    });
-  }
-  function StarryBackground() {
-    const { starColor } = settings5.use(["starColor"]);
-    return /* @__PURE__ */ React.createElement("div", {
-      "aria-hidden": true,
-      className: "fixed inset-0 -z-10 pointer-events-none"
-    }, /* @__PURE__ */ React.createElement(StarsBackground, {
-      starColor: hexToRgb(starColor)
-    }));
-  }
-  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings5 = definePluginSettings({
-    starColor: {
-      type: 6 /* COMPONENT */,
-      default: DEFAULT_COLOR,
-      component: ColorRow
-    }
-  }).withPrivateSettings();
-  var starry_default = definePlugin({
-    name: "Starry",
-    icon: SparklesIcon,
-    description: "Adds Grok's native twinkling starry background to the main page.",
+  // src/plugins/autoCollapse/index.ts
+  var autoCollapse_default = definePlugin({
+    name: "AutoCollapse",
+    icon: ChevronsDownUpIcon,
+    description: "Automatically collapse code blocks in responses.",
     authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings5,
-    _StarryBg() {
-      return /* @__PURE__ */ React.createElement(WrappedStarry, {
-        key: "void-starry-bg"
-      });
-    },
+    tags: ["chat"],
+    _collapse: () => true,
     patches: [
       {
-        find: '"chat-page")',
+        find: ["isInitiallyCollapsed", "showRunCode"],
+        all: true,
         replacement: {
-          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
-          replace: "$1$self._StarryBg(),$2"
+          match: /isInitiallyCollapsed:(\i)=!1/g,
+          replace: "isInitiallyCollapsed:$1=$self._collapse()"
         }
       }
     ]
   });
 
-  // src/plugins/widerChat/index.ts
-  var STYLE_NAME2 = "widerChat";
-  var settings6 = definePluginSettings({
-    width: {
+  // src/plugins/autoRetry/index.ts
+  var logger16 = new Logger("AutoRetry");
+  var CONTENT_MODERATED = "grok:content-moderated";
+  var settings5 = definePluginSettings({
+    retryModeration: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry content moderation errors.",
+      default: true
+    },
+    retryNetwork: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry network and stream errors.",
+      default: true
+    },
+    maxRetries: {
       type: 1 /* NUMBER */,
-      description: "Maximum chat width in rem.",
-      default: 64
+      description: "Maximum consecutive retries per conversation.",
+      default: 3
+    },
+    delay: {
+      type: 1 /* NUMBER */,
+      description: "Seconds to wait before retrying.",
+      default: 2
     }
   });
-  function applyWidth() {
-    const w = settings6.store.width;
-    registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
+  var retryCounts = new Map;
+  var pendingTimer = null;
+  function clearPending() {
+    if (pendingTimer != null) {
+      clearTimeout(pendingTimer);
+      pendingTimer = null;
+    }
   }
-  var widerChat_default = definePlugin({
-    name: "WiderChat",
-    icon: UnfoldHorizontalIcon,
-    description: "Adjustable chat width for big monitors.",
+  function isModeration(response) {
+    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
+  }
+  function shouldRetry(response) {
+    if (isModeration(response))
+      return settings5.store.retryModeration;
+    return settings5.store.retryNetwork;
+  }
+  function retry(responseId, conversationId, response) {
+    const count = (retryCounts.get(conversationId) ?? 0) + 1;
+    const max = settings5.store.maxRetries;
+    if (count > max) {
+      showToast("Max retries reached.", 2 /* ERROR */);
+      retryCounts.delete(conversationId);
+      return;
+    }
+    retryCounts.set(conversationId, count);
+    const delaySec = settings5.store.delay;
+    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
+    logger16.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    clearPending();
+    pendingTimer = setTimeout(() => {
+      pendingTimer = null;
+      const state = ChatPageStore.useChatPageStore.getState();
+      if (state.streamedMessageId)
+        return;
+      state.sendResponse({
+        message: "",
+        parentResponseId: responseId,
+        conversationId,
+        fileAttachmentIds: response.fileAttachments,
+        setOpimisticUserResponse: false,
+        setUserResponse: false,
+        enableRetries: true
+      });
+    }, delaySec * 1000);
+  }
+  function onStreamEnd({ responseId }) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (!response || response.state !== "error") {
+      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (convId)
+        retryCounts.delete(convId);
+      return;
+    }
+    if (!shouldRetry(response))
+      return;
+    const { conversationId } = ChatPageStore.useChatPageStore.getState();
+    if (!conversationId)
+      return;
+    retry(responseId, conversationId, response);
+  }
+  var autoRetry_default = definePlugin({
+    name: "AutoRetry",
+    icon: RotateCcwIcon,
+    description: "Automatically retry failed messages on moderation or network errors.",
     authors: [Devs.Prism],
-    tags: ["chat", "ui"],
-    settings: settings6,
-    start: applyWidth,
-    onSettingsChange: applyWidth,
+    tags: ["chat"],
+    settings: settings5,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      retryCounts.clear();
+      clearPending();
+    },
     stop() {
-      unregisterStyle(STYLE_NAME2);
+      clearPending();
+      retryCounts.clear();
+    },
+    events: {
+      streamEnd: onStreamEnd
+    }
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/betterFiles/styles.css
+  registerStyle("betterFiles", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* stylelint-disable-next-line selector-class-pattern */
+.group\\/sidebar-menu-item:hover .void-sel-wrap {
+    display: inline-flex;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.group\\/sidebar-menu-item.relative > .void-sel-wrap {
+    position: absolute;
+    inset-inline-start: 0.5rem;
+    top: 0.5rem;
+    z-index: 10;
+    pointer-events: auto;
+}
+`);
+
+  // src/plugins/betterFiles/index.tsx
+  var logger17 = new Logger("BetterFiles");
+  var LibraryAssets = findByPropsLazy("deleteLibraryAsset", "useLibraryAssets");
+  var selection = createSelectionStore();
+  var assetsById = new Map;
+  function fileId(item) {
+    if (item?.kind !== "file")
+      return null;
+    return item.asset?.assetId ?? item.id ?? null;
+  }
+  function FileCheckbox({ item }) {
+    const id = fileId(item);
+    if (!id || !item.asset)
+      return null;
+    assetsById.set(id, item.asset);
+    return /* @__PURE__ */ React2.createElement(SelectionCheckbox, {
+      selection,
+      id
+    });
+  }
+  async function deleteAssets(ids) {
+    const { deleteLibraryAsset } = LibraryAssets;
+    for (const id of ids) {
+      const asset = assetsById.get(id) ?? { assetId: id };
+      try {
+        await deleteLibraryAsset(asset);
+      } catch (e) {
+        logger17.error("Failed to delete asset", id, e);
+      }
+      assetsById.delete(id);
+    }
+  }
+  function wrapItemClick(onClick, item) {
+    return (e) => {
+      const id = fileId(item);
+      if (id && item.asset && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (selection.has(id)) {
+          selection.toggle(id);
+          assetsById.delete(id);
+        } else {
+          assetsById.set(id, item.asset);
+          selection.toggle(id);
+        }
+        return;
+      }
+      onClick(e);
+    };
+  }
+  var betterFiles_default = definePlugin({
+    name: "BetterFiles",
+    icon: FilesIcon,
+    description: "Adds bulk delete to the Library page.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    managedStyle: "betterFiles",
+    start() {
+      selection.clear();
+      assetsById.clear();
+    },
+    stop() {
+      selection.clear();
+      assetsById.clear();
+    },
+    _renderFileCheckbox: ErrorBoundary.wrap(FileCheckbox, null),
+    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React2.createElement(SelectionActionBar, {
+      selection,
+      noun: "file",
+      title: "Delete files",
+      onDelete: deleteAssets
+    }), null),
+    _wrapItemClick: wrapItemClick,
+    patches: [
+      {
+        find: "LibraryPageContent:refreshAssets",
+        replacement: [
+          {
+            match: /("data-library-item-id":\i\.id,onPointerDown:\i,onClick:)(\i)(,className:"absolute inset-0 z-0 focus-visible:outline-none")/,
+            replace: "$1$self._wrapItemClick($2,arguments[0].item)$3"
+          },
+          {
+            match: /(SIDEBAR_ROW_MASK_STYLE,children:\[)(\i,\i,\i,\i)\]/,
+            replace: "$1$self._renderFileCheckbox({item:arguments[0].item}),$2]"
+          },
+          {
+            match: /("data-library-item-id":\i\.id,onClick:)(\i=>\{\i\.stopPropagation\(\),\i\(\i\)\})/,
+            replace: "$1$self._wrapItemClick($2,arguments[0].item)"
+          },
+          {
+            match: /("flex min-w-0 items-center gap-3 text-left font-medium",children:\[)(\i,\i)\]/,
+            replace: "$1$self._renderFileCheckbox({item:arguments[0].item}),$2]"
+          },
+          {
+            match: /("library-page\.title","Library"\)\}\),\(0,\i\.jsx\)\("div",\{className:"flex items-center gap-3",children:)(\i)\}\)/,
+            replace: "$1[$self._renderFileActionBar(),$2]})"
+          }
+        ]
+      }
+    ]
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/betterImagine/styles.css
+  registerStyle("betterImagine", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-imagine-chip {
+    background: hsl(var(--surface-l1));
+}
+
+.void-imagine-chip:hover {
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-search {
+    width: 10rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+}
+
+.void-imagine-date-select,
+.void-imagine-sort-select {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+    border: none;
+}
+
+.void-imagine-sort-active {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+}
+`);
+
+  // src/plugins/betterImagine/index.tsx
+  var logger18 = new Logger("BetterImagine");
+  var cl17 = classNameFactory("void-imagine-");
+  var settings6 = definePluginSettings({
+    hideDefaultPreviews: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the community image grid and templates on the Imagine home page.",
+      default: true
+    },
+    noAutoplay: {
+      type: 3 /* BOOLEAN */,
+      description: "Stop video thumbnails from autoplaying.",
+      default: true
+    },
+    playOnHover: {
+      type: 3 /* BOOLEAN */,
+      description: "Play video thumbnails when hovered.",
+      default: true
+    },
+    hideModerated: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide moderated images and videos that cannot be interacted with.",
+      default: true
+    },
+    pauseWhenHidden: {
+      type: 3 /* BOOLEAN */,
+      description: "Pause any playing video thumbnails when the tab loses focus.",
+      default: true
+    },
+    persistFilters: {
+      type: 3 /* BOOLEAN */,
+      description: "Remember Favorites filter + sort across reloads.",
+      default: true
+    },
+    smartFilenames: {
+      type: 3 /* BOOLEAN */,
+      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
+      default: true
+    },
+    bypassPaywall: {
+      type: 3 /* BOOLEAN */,
+      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
+      default: false
+    },
+    ctrlClickSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
+      default: true
+    }
+  });
+  function buildFilename(post, isVideo) {
+    if (!settings6.store.smartFilenames || !post)
+      return null;
+    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
+    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
+    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
+    const id = post.id?.slice(0, 8) ?? "";
+    const ext = isVideo ? "mp4" : "png";
+    const parts = [date, slug, id].filter(Boolean);
+    if (!parts.length)
+      return null;
+    return `${parts.join("_")}.${ext}`;
+  }
+  var FILTER_MAP = {
+    image: "MEDIA_POST_TYPE_IMAGE",
+    video: "MEDIA_POST_TYPE_VIDEO"
+  };
+  var DATE_LABELS = {
+    all: "Any time",
+    today: "Today",
+    week: "This week",
+    month: "This month"
+  };
+  var SORT_LABELS = {
+    newest: "Newest first",
+    oldest: "Oldest first",
+    "prompt-az": "Prompt A → Z",
+    "prompt-za": "Prompt Z → A",
+    random: "Shuffle"
+  };
+  var SORT_KEYS = Object.keys(SORT_LABELS);
+  var DAY_MS = 86400000;
+  var DATE_CUTOFFS = {
+    all: 0,
+    today: DAY_MS,
+    week: 7 * DAY_MS,
+    month: 30 * DAY_MS
+  };
+  var STORAGE_KEY2 = "void-imagine-filters";
+  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
+  function loadFilters() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY2);
+      if (!raw)
+        return DEFAULT_FILTERS;
+      const parsed = JSON.parse(raw);
+      return {
+        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
+        search: typeof parsed.search === "string" ? parsed.search : "",
+        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
+        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
+      };
+    } catch {
+      return DEFAULT_FILTERS;
+    }
+  }
+  var initial = loadFilters();
+  var currentFilter = initial.filter;
+  var currentSearch = initial.search;
+  var currentDate = initial.date;
+  var currentSort = initial.sort;
+  var randomSeed = Date.now();
+  var filterStore = createExternalStore();
+  function persist() {
+    if (!settings6.store.persistFilters)
+      return;
+    try {
+      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
+    } catch {}
+  }
+  function setFilter(f) {
+    currentFilter = f;
+    filterStore.notify();
+    persist();
+  }
+  var setSearch = debounce((s) => {
+    currentSearch = s;
+    filterStore.notify();
+    persist();
+  }, 200);
+  function setDate(d) {
+    currentDate = d;
+    filterStore.notify();
+    persist();
+  }
+  function setSort(s) {
+    if (s === "random" && currentSort === "random")
+      randomSeed = Date.now();
+    currentSort = s;
+    filterStore.notify();
+    persist();
+  }
+  function resetFilters() {
+    currentFilter = "all";
+    currentSearch = "";
+    currentDate = "all";
+    currentSort = "newest";
+    filterStore.notify();
+    persist();
+  }
+  function hasActiveFilters() {
+    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
+  }
+  function isModerated(p) {
+    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
+  }
+  var haystackCache = new WeakMap;
+  var tsCache = new WeakMap;
+  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+  function getHaystack(p) {
+    let h = haystackCache.get(p);
+    if (h === undefined) {
+      h = `${p.prompt ?? ""}
+${p.originalPrompt ?? ""}`.toLowerCase();
+      haystackCache.set(p, h);
+    }
+    return h;
+  }
+  function getTs(p) {
+    let t = tsCache.get(p);
+    if (t === undefined) {
+      t = new Date(p.createTime).getTime() || 0;
+      tsCache.set(p, t);
+    }
+    return t;
+  }
+  function matchesFilters(p, target, q, cutoff, hideModerated) {
+    if (!p)
+      return false;
+    if (hideModerated && isModerated(p))
+      return false;
+    if (target && p.mediaType !== target)
+      return false;
+    if (cutoff && getTs(p) < cutoff)
+      return false;
+    if (q && !getHaystack(p).includes(q))
+      return false;
+    return true;
+  }
+  var cacheKey = null;
+  var cacheList = null;
+  var cacheResult = [];
+  function filterItems(items) {
+    const { hideModerated } = settings6.store;
+    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
+    if (cacheList === items && cacheKey === key)
+      return cacheResult;
+    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
+    let out = items;
+    if (needsFilter) {
+      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
+      const q = currentSearch.toLowerCase();
+      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
+      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
+    }
+    cacheList = items;
+    cacheKey = key;
+    cacheResult = currentSort === "newest" ? out : sortItems(out);
+    return cacheResult;
+  }
+  function mulberry32(seed) {
+    let a = seed;
+    return () => {
+      a |= 0;
+      a = a + 1831565813 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function sortItems(items) {
+    if (items.length < 2)
+      return items;
+    const arr = [...items];
+    switch (currentSort) {
+      case "oldest":
+        return arr.toSorted((a, b) => getTs(a) - getTs(b));
+      case "prompt-az":
+        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
+      case "prompt-za":
+        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
+      case "random": {
+        const rand = mulberry32(randomSeed);
+        for (let i = arr.length - 1;i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+      default:
+        return arr;
+    }
+  }
+  var pending = new WeakMap;
+  function pauseVideo(video) {
+    const promise = pending.get(video);
+    pending.delete(video);
+    if (promise) {
+      promise.then(() => {
+        if (pending.has(video))
+          return;
+        video.pause();
+        video.currentTime = 0;
+      }).catch((e) => logger18.warn("Failed to pause video:", e));
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }
+  var onMouseEnter = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pending.set(video, video.play().catch((e) => logger18.error("Failed to play video", e)));
+  };
+  var onMouseLeave = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pauseVideo(video);
+  };
+  function useFilteredFavorites() {
+    const list = MediaStore.useMediaStore((s) => s.favoritesList);
+    useExternalStore(filterStore);
+    return filterItems(list);
+  }
+  function mediaState() {
+    return MediaStore.useMediaStore.getState();
+  }
+  function selectVisible() {
+    const state = mediaState();
+    const list = state.favoritesList ?? [];
+    const visible = filterItems(list);
+    if (!visible.length)
+      return;
+    state.setMultiSelectItems(visible);
+    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
+  }
+  function deselectAll() {
+    const state = mediaState();
+    state.clearMultiSelect?.();
+  }
+  function selectedPosts() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    return ids.map((id) => state.byId[id]).filter((p) => !!p);
+  }
+  async function copyLines(lines, label) {
+    if (!lines.length) {
+      Toaster.toast.info(`Selected items have no ${label}s.`);
+      return;
+    }
+    try {
+      await copyToClipboard(lines.join(`
+`));
+      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
+    } catch (e) {
+      logger18.error(`Failed to copy ${label}s`, e);
+      Toaster.toast.error(`Failed to copy ${label}s.`);
+    }
+  }
+  async function copySelectedPrompts() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
+  }
+  async function copySelectedUrls() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    const { videoByMediaId } = mediaState();
+    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
+    await copyLines(urls, "URL");
+  }
+  async function bulkUpscaleSelected() {
+    const state = mediaState();
+    const ids = Object.keys(state.multiSelectIds ?? {});
+    let upscaled = 0;
+    let alreadyHd = 0;
+    let inProgress = 0;
+    for (const id of ids) {
+      const videos = state.videoByMediaId[id];
+      if (!videos?.length)
+        continue;
+      for (const video of videos) {
+        if (video.hdMediaUrl) {
+          alreadyHd++;
+          continue;
+        }
+        if (video.upscalingInProgress) {
+          inProgress++;
+          continue;
+        }
+        try {
+          await state.upscaleVideo(id, video.id);
+          upscaled++;
+        } catch (e) {
+          logger18.error("Failed to upscale video:", id, video.id, e);
+        }
+      }
+    }
+    if (upscaled)
+      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
+    else if (alreadyHd)
+      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
+    else if (inProgress)
+      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
+    else
+      Toaster.toast.info("No videos to upscale.");
+  }
+  function FilterButtons() {
+    useExternalStore(filterStore);
+    const [searchInput, setSearchInput] = useState(currentSearch);
+    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
+    const sortActive = currentSort !== "newest";
+    const lastSync = useRef(currentSearch);
+    if (lastSync.current !== currentSearch) {
+      lastSync.current = currentSearch;
+      setSearchInput(currentSearch);
+    }
+    return /* @__PURE__ */ React2.createElement(Fragment, null, /* @__PURE__ */ React2.createElement(Select, {
+      value: currentDate,
+      onValueChange: (v) => setDate(v)
+    }, /* @__PURE__ */ React2.createElement(SelectTrigger, {
+      className: cl17("date-select")
+    }, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React2.createElement(SelectItem, {
+      key: d,
+      value: d
+    }, DATE_LABELS[d])))), /* @__PURE__ */ React2.createElement(Select, {
+      value: currentSort,
+      onValueChange: (v) => setSort(v)
+    }, /* @__PURE__ */ React2.createElement(SelectTrigger, {
+      className: sortActive ? cl17("sort-select", "sort-active") : cl17("sort-select")
+    }, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React2.createElement(SelectItem, {
+      key: s,
+      value: s
+    }, SORT_LABELS[s])))), /* @__PURE__ */ React2.createElement(Input, {
+      type: "text",
+      placeholder: "Search...",
+      value: searchInput,
+      onChange: (e) => {
+        setSearchInput(e.target.value);
+        setSearch(e.target.value);
+      },
+      className: cl17("search")
+    }), ["image", "video"].map((f) => /* @__PURE__ */ React2.createElement(Button, {
+      key: f,
+      variant: currentFilter === f ? "primary" : "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: currentFilter !== f ? cl17("chip") : undefined,
+      onClick: () => setFilter(currentFilter === f ? "all" : f)
+    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React2.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: cl17("chip"),
+      onClick: resetFilters
+    }, "Clear"));
+  }
+  function UpscaleItem() {
+    const [open, setOpen] = useState(false);
+    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+      onSelect: () => setOpen(true)
+    }, /* @__PURE__ */ React2.createElement(ScalingIcon, {
+      className: "size-4 me-2"
+    }), "Upscale videos"), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+      open,
+      onOpenChange: setOpen,
+      title: "Upscale selected videos",
+      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
+      confirmText: "Upscale",
+      onConfirm: bulkUpscaleSelected
+    }));
+  }
+  function CopyActions() {
+    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+      onSelect: copySelectedPrompts
+    }, /* @__PURE__ */ React2.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy prompts"), /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+      onSelect: copySelectedUrls
+    }, /* @__PURE__ */ React2.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy URLs"));
+  }
+  function isImaginePage() {
+    const page = RoutingStore.useRoutingStore.getState().route?.page;
+    return page === "imagine" || page === "imagine-favorites";
+  }
+  function isFavoritesPage() {
+    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
+  }
+  function isTypingTarget(t) {
+    if (!(t instanceof HTMLElement))
+      return false;
+    if (t.isContentEditable)
+      return true;
+    const tag = t.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+  }
+  function onKeyDown(e) {
+    if (!isImaginePage())
+      return;
+    if (e.ctrlKey || e.metaKey || e.altKey)
+      return;
+    if (isTypingTarget(e.target))
+      return;
+    if (e.key === "i" || e.key === "I") {
+      setFilter(currentFilter === "image" ? "all" : "image");
+      e.preventDefault();
+    } else if (e.key === "v" || e.key === "V") {
+      setFilter(currentFilter === "video" ? "all" : "video");
+      e.preventDefault();
+    } else if (e.key === "r" || e.key === "R") {
+      resetFilters();
+      e.preventDefault();
+    } else if (e.key === "A") {
+      if (isFavoritesPage()) {
+        deselectAll();
+        e.preventDefault();
+      }
+    } else if (e.key === "a") {
+      if (isFavoritesPage()) {
+        selectVisible();
+        e.preventDefault();
+      }
+    } else if (e.key === "c" || e.key === "C") {
+      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
+        copySelectedPrompts();
+        e.preventDefault();
+      }
+    }
+  }
+  function onVisibilityChange() {
+    if (!settings6.store.pauseWhenHidden)
+      return;
+    if (document.visibilityState !== "hidden")
+      return;
+    for (const video of document.querySelectorAll("video")) {
+      if (!video.paused)
+        video.pause();
+    }
+  }
+  var abortCtrl = null;
+  var betterImagine_default = definePlugin({
+    name: "BetterImagine",
+    icon: ImagesIcon,
+    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings6,
+    _hideDefault: () => settings6.store.hideDefaultPreviews,
+    _NullGrid: () => null,
+    _autoPlay: () => !settings6.store.noAutoplay,
+    _bypassPaywall: () => settings6.store.bypassPaywall,
+    _ctrlClickSelect: () => settings6.store.ctrlClickSelect,
+    _hoverProps: () => settings6.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _useFilteredFavorites: useFilteredFavorites,
+    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
+    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
+    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
+    _buildFilename: buildFilename,
+    start() {
+      if (abortCtrl)
+        return;
+      abortCtrl = new AbortController;
+      const { signal } = abortCtrl;
+      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
+      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
+    },
+    stop() {
+      abortCtrl?.abort();
+      abortCtrl = null;
+    },
+    patches: [
+      {
+        find: "image_feed_opened",
+        group: true,
+        replacement: [
+          {
+            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
+            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
+          },
+          {
+            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
+            replace: "=$self._useFilteredFavorites()"
+          }
+        ]
+      },
+      {
+        find: "image_feed_image_selected",
+        group: true,
+        replacement: [
+          {
+            match: /autoPlay:!0/g,
+            replace: "autoPlay:$self._autoPlay()"
+          },
+          {
+            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
+            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          }
+        ]
+      },
+      {
+        find: 'imagine-folder.all","All"',
+        replacement: {
+          match: /"imagine-folder\.all","All"\)\}\)/,
+          replace: "$&,$self._renderFilterButtons({})"
+        }
+      },
+      {
+        find: "imagine-templates.section-title",
+        all: true,
+        noWarn: true,
+        replacement: {
+          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
+          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
+        }
+      },
+      {
+        find: '"imagine-set-resolution"',
+        all: true,
+        replacement: {
+          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
+          replace: "if(!$self._bypassPaywall())$&"
+        }
+      },
+      {
+        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
+        group: true,
+        replacement: [
+          {
+            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
+            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
+          },
+          {
+            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
+            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/betterLinks/index.tsx
+  var DEFAULT_LINK = "#4a9eff";
+  var DEFAULT_VISITED = "#9b59b6";
+  var STYLE_NAME2 = "better-links-dynamic";
+  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
+  function isValidHex(c) {
+    return /^#[0-9a-fA-F]{6}$/.test(c);
+  }
+  function getColor(key, fallback) {
+    const val = settings7.store[key];
+    return val && isValidHex(val) ? val : fallback;
+  }
+  function applyColors() {
+    const link = getColor("linkColor", DEFAULT_LINK);
+    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
+    if (settings7.store.enableVisitedColor) {
+      const visited = getColor("visitedColor", DEFAULT_VISITED);
+      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
+    }
+    registerStyle(STYLE_NAME2, css);
+  }
+  function ColorRow({ settingKey, title, description, fallback }) {
+    settings7.use([settingKey]);
+    return /* @__PURE__ */ React2.createElement(ColorSettingRow, {
+      value: getColor(settingKey, fallback),
+      onChange: (v) => {
+        settings7.store[settingKey] = v;
+        applyColors();
+      },
+      title,
+      description
+    });
+  }
+  var settings7 = definePluginSettings({
+    linkifyDomains: {
+      type: 3 /* BOOLEAN */,
+      description: "Detect bare domains in messages and make them clickable.",
+      default: true
+    },
+    enableVisitedColor: {
+      type: 3 /* BOOLEAN */,
+      description: "Apply a different color to links you already visited.",
+      default: false,
+      onChange: applyColors
+    },
+    linkColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React2.createElement(ColorRow, {
+        settingKey: "linkColor",
+        title: "Link color",
+        description: "Colorize links in messages.",
+        fallback: DEFAULT_LINK
+      })
+    },
+    visitedColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React2.createElement(ColorRow, {
+        settingKey: "visitedColor",
+        title: "Visited color",
+        description: "Colorize links you already visited.",
+        fallback: DEFAULT_VISITED
+      })
+    }
+  }).withPrivateSettings();
+  var betterLinks_default = definePlugin({
+    name: "BetterLinks",
+    icon: LinkIcon,
+    description: "Colorize links and detect bare domains in chat messages.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings7,
+    patches: [
+      {
+        find: "chat-markdown:a:link",
+        all: true,
+        replacement: {
+          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
+          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
+        }
+      },
+      {
+        find: "chat-markdown-load-third-party",
+        replacement: {
+          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
+          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
+        }
+      }
+    ],
+    _remarkLinkify() {
+      const { store } = settings7;
+      return (tree) => {
+        try {
+          if (!store.linkifyDomains)
+            return;
+          const walk = (node) => {
+            if (!node.children)
+              return;
+            const out = [];
+            let changed = false;
+            for (const child of node.children) {
+              if (child.type !== "text") {
+                walk(child);
+                out.push(child);
+                continue;
+              }
+              DOMAIN_RE.lastIndex = 0;
+              if (!DOMAIN_RE.test(child.value)) {
+                out.push(child);
+                continue;
+              }
+              DOMAIN_RE.lastIndex = 0;
+              let last = 0;
+              let m;
+              while ((m = DOMAIN_RE.exec(child.value)) != null) {
+                if (m.index > last)
+                  out.push({ type: "text", value: child.value.slice(last, m.index) });
+                out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
+                last = m.index + m[0].length;
+              }
+              if (last < child.value.length)
+                out.push({ type: "text", value: child.value.slice(last) });
+              changed = true;
+            }
+            if (changed)
+              node.children = out;
+          };
+          walk(tree);
+        } catch {
+          return tree;
+        }
+      };
+    },
+    start() {
+      settings7.store.linkColor ??= DEFAULT_LINK;
+      settings7.store.visitedColor ??= DEFAULT_VISITED;
+      applyColors();
+      enableStyle(STYLE_NAME2);
+    },
+    stop() {
+      disableStyle(STYLE_NAME2);
+    }
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/betterSidebar/styles.css
+  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
+.group.peer [data-sidebar="content"] > .grow {
+    cursor: default !important;
+}
+
+.group.peer [data-sidebar="sidebar"] + div::after {
+    background-color: transparent !important;
+}
+
+.void-sidebar-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    min-width: 0;
+    flex: 1;
+}
+
+.void-sidebar-card:hover {
+    background-color: hsl(var(--surface-l2));
+}
+
+.void-sidebar-card button[data-state] {
+    pointer-events: none;
+    background-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.void-sidebar-info {
+    min-width: 0;
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-sidebar-card { transition: none; }
+}
+
+.void-sidebar-name,
+.void-sidebar-plan {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.group\\/sidebar-menu-item:hover .void-sel-wrap {
+    display: inline-flex;
+}
+`);
+
+  // src/turbopack/common/plan.ts
+  var PLAN_NAMES = {
+    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
+    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
+    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
+    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
+  };
+  var X_SUB_NAMES = {
+    PremiumPlus: "SuperGrok",
+    Premium: "X Premium",
+    Basic: "X Basic"
+  };
+  function getPlanName(bestSubscription, xSubscriptionType) {
+    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
+  }
+
+  // src/plugins/betterSidebar/index.tsx
+  var logger19 = new Logger("BetterSidebar");
+  var cl18 = classNameFactory("void-sidebar-");
+  var settings8 = definePluginSettings({
+    clickToToggle: {
+      type: 3 /* BOOLEAN */,
+      description: "Click anywhere on the sidebar to toggle it.",
+      default: true
+    },
+    defaultCollapsed: {
+      type: 3 /* BOOLEAN */,
+      description: "Start with the sidebar collapsed on page load.",
+      default: false
+    },
+    batchSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Show checkboxes on conversations for bulk selection and deletion.",
+      default: true
+    }
+  });
+  function UserCard({ AvatarMenu }) {
+    const { open } = SidebarComponents.useSidebar();
+    const { user } = SessionStore.useSession();
+    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
+    const cardRef = useRef(null);
+    if (!open || !user)
+      return /* @__PURE__ */ React2.createElement(AvatarMenu, null);
+    const forward = (e, type) => {
+      if (!e.isTrusted)
+        return;
+      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
+    };
+    return /* @__PURE__ */ React2.createElement("div", {
+      ref: cardRef,
+      className: cl18("card"),
+      onPointerDown: (e) => forward(e, "pointerdown"),
+      onPointerUp: (e) => forward(e, "pointerup")
+    }, /* @__PURE__ */ React2.createElement(AvatarMenu, null), /* @__PURE__ */ React2.createElement(Flex, {
+      flexDirection: "column",
+      justifyContent: "center",
+      gap: "0",
+      className: cl18("info")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
+      as: "span",
+      size: "sm",
+      weight: "medium",
+      className: cl18("name")
+    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React2.createElement(Text2, {
+      as: "span",
+      size: "xs",
+      color: "secondary",
+      className: cl18("plan")
+    }, getPlanName(bestSubscription, user.xSubscriptionType))));
+  }
+  var selection2 = createSelectionStore();
+  var CONVERSATION_PAGE = "chat";
+  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
+  async function deleteConversations(ids) {
+    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
+    if (currentConvId && ids.includes(currentConvId)) {
+      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
+    }
+    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger19.error("Failed to delete", id, e))));
+  }
+  function SelectCheckbox({ id, route }) {
+    const enabled = settings8.use(["batchSelect"]).batchSelect;
+    if (!enabled || !id || !isConversationRoute(route))
+      return null;
+    return /* @__PURE__ */ React2.createElement(SelectionCheckbox, {
+      selection: selection2,
+      id
+    });
+  }
+  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
+  var betterSidebar_default = definePlugin({
+    name: "BetterSidebar",
+    icon: PanelLeftIcon,
+    description: "Various sidebar improvements.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings8,
+    managedStyle: "betterSidebar",
+    _UserCard: ErrorBoundary.wrap(UserCard),
+    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React2.createElement(SelectionActionBar, {
+      selection: selection2,
+      noun: "conversation",
+      title: "Delete conversations",
+      onDelete: deleteConversations
+    }), null),
+    _wrapCheckbox(item, id, route) {
+      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
+    },
+    _wrapSidebarClick(onClick, id, route) {
+      return (e) => {
+        if (id && settings8.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          e.stopPropagation();
+          selection2.toggle(id);
+          return;
+        }
+        onClick?.(e);
+      };
+    },
+    _defaultOpen() {
+      return !settings8.store.defaultCollapsed;
+    },
+    _onSidebarClick() {
+      if (!settings8.store.clickToToggle)
+        return;
+      return (e) => {
+        const target = e.target;
+        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
+          return;
+        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
+      };
+    },
+    start() {
+      selection2.clear();
+    },
+    stop() {
+      selection2.clear();
+    },
+    patches: [
+      {
+        find: "AvatarDropdownMenu,{expanded:",
+        replacement: {
+          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
+          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
+        }
+      },
+      {
+        find: "useSidebar must be used within a SidebarProvider",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /\{defaultOpen:(\i),open:/,
+            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
+          },
+          {
+            match: /data-sidebar":"sidebar",className:/,
+            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
+          }
+        ]
+      },
+      {
+        find: '"Editing actions","Editing actions"',
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
+            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
+          },
+          {
+            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
+            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
+          }
+        ]
+      },
+      {
+        find: '"sidebar-expand","Expand"',
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
+          replace: "$self._renderActionBar(),$&"
+        }
+      }
+    ]
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/chatListStatus/styles.css
+  registerStyle("chatListStatus", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+[data-sidebar] :is(
+    [data-sidebar="menu-button"],
+    [data-sidebar="menu-sub-button"],
+    a
+):has(> .void-cls):not([data-void-cls-nest]) {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.void-cls {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-right: 0.25rem;
+    pointer-events: none;
+    color: #3b82f6;
+}
+
+.void-cls[data-kind="done"],
+.void-cls[data-kind="error"] {
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.3rem;
+    border-radius: 999px;
+    background: #3b82f6;
+}
+
+.void-cls[data-kind="error"] {
+    background: #ef4444;
+}
+
+[data-void-cls-nest] {
+    position: relative;
+}
+
+[data-void-cls-nest] > .void-cls {
+    position: absolute;
+    top: 50%;
+    left: 0.25rem;
+    z-index: 1;
+    margin: 0;
+    transform: translateY(-50%);
+}
+
+.void-cls[data-kind="streaming"] svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    animation: void-cls-spin 0.8s linear infinite;
+}
+
+@keyframes void-cls-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-cls[data-kind="streaming"] svg {
+        animation: none;
+    }
+}
+`);
+
+  // src/plugins/chatListStatus/index.ts
+  var logger20 = new Logger("ChatListStatus");
+  var MARK = "void-cls";
+  var LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
+  var DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
+  var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
+  var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
+  var SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
+  var EXTRA_HINT = /computer|sandbox|agent|task|working/i;
+  var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore", "useBotsStore"]);
+  var SIDEBAR = '[data-sidebar="sidebar"]';
+  var HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
+  var ROW = 'a[href*="/c/"], a[href*="/chat/"], a[href*="chat="], a[href*="/bot/"]';
+  var SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
+  var PATH_CHAT = /^\/(?:c|chat)\/([^/?#]+)/i;
+  var PATH_BOT = /^\/bot\/([^/?#]+)/i;
+  var PATH_ID = /^\/(?:c|chat|bot)\/([^/?#]+)/i;
+  var BotsStore = findByPropsLazy("useBotsStore");
+  var marks = new Map;
+  var rowById = new Map;
+  var extraStores = [];
+  var extraSeen = new WeakSet;
+  var extraScanned = new Set;
+  var extraUnsubs = [];
+  var raf = 0;
+  var extraScanRaf = 0;
+  var extraBusy = false;
+  var started2 = false;
+  var obs = null;
+  var extraOff = null;
+  var botsOff = null;
+  function isConvId(value) {
+    return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value) && !value.includes("draft");
+  }
+  function isLiveStatus(value) {
+    if (typeof value !== "string")
+      return false;
+    const status = value.trim().toLowerCase();
+    if (!status || DEAD.has(status))
+      return false;
+    return LIVE.has(status) || LIVE_WORD.test(status);
+  }
+  function isLiveBag(value, depth = 0) {
+    if (value == null || depth > 5)
+      return false;
+    if (typeof value === "string")
+      return isLiveStatus(value);
+    if (typeof value !== "object")
+      return false;
+    if (Array.isArray(value)) {
+      const start = Math.max(0, value.length - 24);
+      for (let i = value.length - 1;i >= start; i--) {
+        if (isLiveBag(value[i], depth + 1))
+          return true;
+      }
+      return false;
+    }
+    const rec = value;
+    if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus))
+      return true;
+    if (rec.workingFor || rec.working_for || rec.workingDuration)
+      return true;
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+      if (++n > 48)
+        break;
+      if (SKIP_KEY.test(key))
+        continue;
+      if (LIVE_FLAG.test(key) && child === true)
+        return true;
+      if (isLiveBag(child, depth + 1))
+        return true;
+    }
+    return false;
+  }
+  function isLiveResponse(r) {
+    if (!r)
+      return false;
+    if (r.partial)
+      return true;
+    if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata))
+      return true;
+    const state = r.state ?? "";
+    if (!state)
+      return false;
+    if (LIVE.has(state))
+      return true;
+    return !DEAD.has(state.toLowerCase());
+  }
+  function isErrorResponse(r) {
+    return !!r && (r.state === "error" || r.error != null);
+  }
+  function collectConvIds(value, out, depth = 0) {
+    if (value == null || typeof value !== "object" || depth > 5)
+      return;
+    if (Array.isArray(value)) {
+      const start = Math.max(0, value.length - 16);
+      for (let i = start;i < value.length; i++)
+        collectConvIds(value[i], out, depth + 1);
+      return;
+    }
+    const rec = value;
+    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id ?? rec.agentId;
+    if (isConvId(id) && isLiveBag(rec))
+      out.add(id);
+    let n = 0;
+    for (const [key, child] of Object.entries(rec)) {
+      if (++n > 48)
+        break;
+      if (SKIP_KEY.test(key))
+        continue;
+      if (isConvId(key) && isLiveBag(child))
+        out.add(key);
+      collectConvIds(child, out, depth + 1);
+    }
+  }
+  function addId(ids, value) {
+    if (isConvId(value) && !ids.includes(value))
+      ids.push(value);
+  }
+  function currentChatIds() {
+    const ids = [];
+    try {
+      const page = ChatPageStore.useChatPageStore.getState();
+      addId(ids, page.conversationId);
+      addId(ids, page.optimisticConversationId);
+    } catch (e) {
+      logger20.debug("page ids unavailable:", e);
+    }
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      addId(ids, route.conversationId);
+      addId(ids, route.chat);
+    } catch (e) {
+      logger20.debug("route chat ids unavailable:", e);
+    }
+    try {
+      const url = new URL(location.href);
+      addId(ids, url.searchParams.get("chat"));
+      addId(ids, url.searchParams.get("conversationId"));
+      addId(ids, url.pathname.match(PATH_CHAT)?.[1]);
+    } catch (e) {
+      logger20.debug("url chat ids unavailable:", e);
+    }
+    return ids;
+  }
+  function currentAgentIds() {
+    const ids = [];
+    try {
+      addId(ids, RoutingStore.useRoutingStore.getState().route.agentId);
+    } catch (e) {
+      logger20.debug("route agent id unavailable:", e);
+    }
+    try {
+      addId(ids, new URL(location.href).pathname.match(PATH_BOT)?.[1]);
+    } catch (e) {
+      logger20.debug("url agent id unavailable:", e);
+    }
+    return ids;
+  }
+  function currentIds() {
+    const ids = currentChatIds();
+    for (const id of currentAgentIds())
+      addId(ids, id);
+    return ids;
+  }
+  function considerConversation(ids, conversation) {
+    if (!conversation?.conversationId)
+      return;
+    if (conversation.state === "open" || isLiveBag(conversation.taskResult))
+      ids.add(conversation.conversationId);
+  }
+  function looksExtraStore(name, state) {
+    if (EXTRA_HINT.test(name))
+      return true;
+    const keys = Object.keys(state);
+    if (keys.some((key) => EXTRA_HINT.test(key)))
+      return true;
+    let n = 0;
+    for (const child of Object.values(state)) {
+      if (++n > 8)
+        break;
+      if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some((key) => EXTRA_HINT.test(key)))
+        return true;
+    }
+    return false;
+  }
+  function scanModule(exports) {
+    if (exports == null || typeof exports !== "object" || isBlacklisted(exports))
+      return;
+    const mod = exports;
+    for (const key of Object.keys(mod)) {
+      if (OWN_HOOKS.has(key))
+        continue;
+      const val = mod[key];
+      if (!isZustandStore(val) || extraSeen.has(val))
+        continue;
+      let state;
+      try {
+        state = val.getState();
+      } catch {
+        continue;
+      }
+      if (!state || typeof state !== "object")
+        continue;
+      if (!looksExtraStore(key, state))
+        continue;
+      extraSeen.add(val);
+      extraStores.push(val);
+      extraUnsubs.push(val.subscribe(() => schedule()));
+      logger20.info("extra store", key);
+    }
+  }
+  function attachExtraStores() {
+    if (extraBusy)
+      return;
+    extraBusy = true;
+    try {
+      silenceWarns(() => syncLazyModules());
+      const before = extraStores.length;
+      for (const [id, exports] of getModuleCache()) {
+        if (extraScanned.has(id))
+          continue;
+        extraScanned.add(id);
+        scanModule(exports);
+      }
+      if (extraStores.length !== before)
+        schedule();
+    } finally {
+      extraBusy = false;
+    }
+  }
+  function queueExtraScan() {
+    if (!started2 || extraScanRaf)
+      return;
+    extraScanRaf = requestAnimationFrame(() => {
+      extraScanRaf = 0;
+      if (started2)
+        attachExtraStores();
+    });
+  }
+  function extraLiveIds(ids) {
+    for (const store of extraStores) {
+      let state;
+      try {
+        state = store.getState();
+      } catch {
+        continue;
+      }
+      if (!isLiveBag(state))
+        continue;
+      const found = new Set;
+      collectConvIds(state, found);
+      if (found.size) {
+        for (const id of found)
+          ids.add(id);
+        continue;
+      }
+      for (const id of currentChatIds())
+        ids.add(id);
+    }
+  }
+  function botLiveIds(ids) {
+    try {
+      const s = BotsStore.useBotsStore.getState();
+      for (const [id, turn] of Object.entries(s.liveTurnByAgentId ?? {})) {
+        if (turn && isConvId(id))
+          ids.add(id);
+      }
+      for (const [id, pending] of Object.entries(s.pendingSendsByAgentId ?? {})) {
+        if (!isConvId(id) || !Array.isArray(pending) || !pending.some((send) => send && !send.failed))
+          continue;
+        ids.add(id);
+      }
+      for (const agent of s.agents ?? []) {
+        if (agent?.runState === "running" && isConvId(agent.agentId))
+          ids.add(agent.agentId);
+      }
+    } catch (e) {
+      logger20.debug("bots store unavailable:", e);
+    }
+  }
+  function liveIds() {
+    const ids = new Set;
+    try {
+      const page = ChatPageStore.useChatPageStore.getState();
+      const chats = currentChatIds();
+      if (page.streamedMessageId || page.showStreamingIndicator || isLiveBag(page.sidePanelContent) || isLiveBag(page.metadata)) {
+        for (const id of chats)
+          ids.add(id);
+      }
+      const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
+      if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
+        for (const id of chats)
+          ids.add(id);
+      }
+      for (const id of Object.keys(inflightPromisesByConversationId ?? {}))
+        ids.add(id);
+      for (const [id, list] of Object.entries(byConversationId ?? {})) {
+        if (list?.some(isLiveResponse))
+          ids.add(id);
+      }
+    } catch (e) {
+      logger20.debug("stream stores unavailable:", e);
+    }
+    try {
+      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+      for (const conversation of list ?? [])
+        considerConversation(ids, conversation);
+      for (const conversation of Object.values(byId ?? {}))
+        considerConversation(ids, conversation);
+      for (const conversation of Object.values(byIdWithWorkspaces ?? {}))
+        considerConversation(ids, conversation);
+    } catch (e) {
+      logger20.debug("conversation store unavailable:", e);
+    }
+    extraLiveIds(ids);
+    botLiveIds(ids);
+    return ids;
+  }
+  function errorOf(id) {
+    try {
+      const { byConversationId, byId } = ResponseStore.useResponseStore.getState();
+      const list = byConversationId[id];
+      if (list?.length) {
+        for (let i = list.length - 1;i >= 0; i--) {
+          const r = list[i];
+          if (String(r.sender ?? "").toLowerCase() === "human")
+            continue;
+          return isErrorResponse(r);
+        }
+      }
+      const page = ChatPageStore.useChatPageStore.getState();
+      if ((page.conversationId === id || page.optimisticConversationId === id) && page.lastMessageId) {
+        return isErrorResponse(byId[page.lastMessageId]);
+      }
+    } catch (e) {
+      logger20.debug("error lookup failed:", e);
+    }
+    try {
+      const pending = BotsStore.useBotsStore.getState().pendingSendsByAgentId?.[id];
+      if (Array.isArray(pending) && pending.some((send) => send?.failed))
+        return true;
+    } catch (e) {
+      logger20.debug("bot error lookup failed:", e);
+    }
+    return false;
+  }
+  function refreshMarks() {
+    const live = liveIds();
+    const opened = new Set(currentIds());
+    for (const id of live)
+      marks.set(id, "streaming");
+    for (const [id, kind] of marks) {
+      let next = kind;
+      if (kind === "streaming" && !live.has(id)) {
+        next = errorOf(id) ? "error" : "done";
+        marks.set(id, next);
+      }
+      if (next !== "streaming" && opened.has(id))
+        marks.delete(id);
+    }
+  }
+  function convOfResponse(responseId) {
+    try {
+      const { byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [id, list] of Object.entries(byConversationId ?? {})) {
+        if (list?.some((r) => r.responseId === responseId))
+          return id;
+      }
+      return currentIds()[0] ?? "";
+    } catch (e) {
+      logger20.debug("conv lookup failed:", e);
+      return "";
+    }
+  }
+  function onStreamEnd2({ responseId }) {
+    const cid = convOfResponse(responseId);
+    if (!cid)
+      return;
+    if (liveIds().has(cid)) {
+      schedule();
+      return;
+    }
+    if (currentIds().includes(cid)) {
+      marks.delete(cid);
+      schedule();
+      return;
+    }
+    try {
+      const response = ResponseStore.useResponseStore.getState().byId[responseId];
+      marks.set(cid, isErrorResponse(response) ? "error" : "done");
+    } catch (e) {
+      logger20.debug("streamEnd failed:", e);
+      marks.set(cid, "done");
+    }
+    schedule();
+  }
+  function idFromHref(href) {
+    if (!href)
+      return "";
+    try {
+      const u = new URL(href, location.origin);
+      const id = u.searchParams.get("chat") || u.searchParams.get("conversationId") || u.pathname.match(PATH_ID)?.[1] || "";
+      return isConvId(id) ? id : "";
+    } catch {
+      return "";
+    }
+  }
+  function hrefId(el) {
+    const a = el instanceof HTMLAnchorElement ? el : el.closest("a[href]") ?? el.querySelector("a[href]");
+    return idFromHref(a?.getAttribute("href") ?? el.getAttribute("href") ?? "");
+  }
+  function isPrimaryNav(el) {
+    const href = (el.getAttribute("href") ?? el.querySelector("a[href]")?.getAttribute("href") ?? "").replace(/[?#].*$/, "");
+    return href === "/" || href === "/imagine" || href === "/library" || href === "/automations";
+  }
+  function rowHost(el, root) {
+    if (el.classList.contains(MARK))
+      return null;
+    if (el.closest('[data-sidebar="menu-action"], [data-sidebar="footer"], [data-sidebar="header"]'))
+      return null;
+    if (isPrimaryNav(el))
+      return null;
+    if (!hrefId(el))
+      return null;
+    const wrapped = el.closest(HOST);
+    return wrapped && root.contains(wrapped) ? wrapped : el;
+  }
+  function isNestedHost(el) {
+    if (el.matches('[data-sidebar="menu-sub-button"]'))
+      return true;
+    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
+    const href = a?.getAttribute("href") ?? el.getAttribute("href") ?? "";
+    return href.includes("chat=") || href.includes("/project/");
+  }
+  function spinSvg() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2.5");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", SPIN_PATH);
+    svg.append(path);
+    return svg;
+  }
+  function ensureMark(btn, kind) {
+    btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
+    let mark = btn.querySelector(`:scope > .${MARK}`);
+    if (!mark) {
+      mark = document.createElement("span");
+      mark.className = MARK;
+      mark.setAttribute("aria-hidden", "true");
+      btn.prepend(mark);
+    }
+    if (mark.dataset.kind === kind && (kind !== "streaming" || mark.querySelector("svg")))
+      return;
+    mark.dataset.kind = kind;
+    mark.replaceChildren();
+    if (kind === "streaming")
+      mark.append(spinSvg());
+  }
+  function clearMark(btn) {
+    btn.querySelector(`:scope > .${MARK}`)?.remove();
+    btn.removeAttribute("data-void-cls-nest");
+  }
+  function roots() {
+    const found = [...document.querySelectorAll(SIDEBAR)];
+    return found.length ? found : [document.body];
+  }
+  function rowForId(root, id) {
+    if (!isConvId(id))
+      return null;
+    for (const a of root.querySelectorAll(`a[href*="${id}"]`)) {
+      if (hrefId(a) !== id)
+        continue;
+      const host = rowHost(a, root);
+      if (host)
+        return host;
+    }
+    return null;
+  }
+  function paint() {
+    if (!started2)
+      return;
+    refreshMarks();
+    const usedIds = new Set;
+    const seen = new Set;
+    for (const root of roots()) {
+      for (const el of root.querySelectorAll(ROW)) {
+        const host = rowHost(el, root);
+        if (!host || seen.has(host))
+          continue;
+        seen.add(host);
+        const id = hrefId(host);
+        if (!id) {
+          clearMark(host);
+          continue;
+        }
+        usedIds.add(id);
+        rowById.set(id, host);
+        const kind = marks.get(id);
+        if (kind)
+          ensureMark(host, kind);
+        else
+          clearMark(host);
+      }
+    }
+    for (const [id, el] of rowById) {
+      if (!el.isConnected || !usedIds.has(id))
+        rowById.delete(id);
+    }
+    for (const [id, kind] of marks) {
+      if (rowById.get(id)?.isConnected)
+        continue;
+      for (const root of roots()) {
+        const host = rowForId(root, id);
+        if (!host)
+          continue;
+        rowById.set(id, host);
+        ensureMark(host, kind);
+        break;
+      }
+    }
+    const live = [...marks].filter(([, kind]) => kind === "streaming").map(([id]) => id);
+    if (live.length && !rowById.size)
+      logger20.info("live ids with no rows", live);
+  }
+  function schedule() {
+    if (!started2 || raf)
+      return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      if (started2)
+        paint();
+    });
+  }
+  function ownMutation(list) {
+    if (!list.length)
+      return false;
+    for (const m of list) {
+      const { target } = m;
+      if (target instanceof Element && (target.classList.contains(MARK) || target.closest(`.${MARK}`)))
+        continue;
+      for (const n of m.addedNodes) {
+        if (n instanceof Element && (n.classList.contains(MARK) || n.querySelector(`.${MARK}`)))
+          continue;
+        return false;
+      }
+      for (const n of m.removedNodes) {
+        if (n instanceof Element && n.classList.contains(MARK))
+          continue;
+        return false;
+      }
+      if (m.type === "attributes")
+        return false;
+    }
+    return true;
+  }
+  function observe() {
+    obs?.disconnect();
+    obs = new MutationObserver((list) => {
+      if (ownMutation(list))
+        return;
+      schedule();
+    });
+    const node = document.querySelector(SIDEBAR) ?? document.body;
+    obs.observe(node, node === document.body ? { childList: true, subtree: true } : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
+  }
+  function pageKey(s) {
+    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.lastMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
+  }
+  function responseKey(s) {
+    const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
+    const bits = [];
+    for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
+      const last = list?.[list.length - 1];
+      if (!last)
+        continue;
+      bits.push(`${id}:${last.responseId}:${last.state ?? ""}:${last.partial ? 1 : 0}:${last.steps?.length ?? 0}`);
+    }
+    return `${inflight}|${bits.join(",")}`;
+  }
+  function conversationKey(s) {
+    const rows = s.list?.length ? s.list : Object.values(s.byId ?? {});
+    return rows.map((conversation) => `${conversation?.conversationId ?? ""}:${conversation?.state ?? ""}`).join(",");
+  }
+  function routeKey(s) {
+    const { route } = s;
+    return `${route.conversationId ?? ""}|${route.chat ?? ""}|${route.workspaceId ?? ""}|${route.agentId ?? ""}`;
+  }
+  var chatListStatus_default = definePlugin({
+    name: "ChatListStatus",
+    icon: LoaderCircleIcon,
+    description: "Show Grok reply status on sidebar chats and bots: spinner, blue dot, or error.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    managedStyle: "chatListStatus",
+    cleanupSelectors: [`.${MARK}`],
+    start() {
+      started2 = true;
+      attachExtraStores();
+      extraOff = onModuleLoad(() => queueExtraScan());
+      try {
+        botsOff = BotsStore.useBotsStore.subscribe(() => schedule());
+      } catch (e) {
+        logger20.debug("bots store subscribe failed:", e);
+      }
+      observe();
+      schedule();
+    },
+    stop() {
+      started2 = false;
+      if (raf)
+        cancelAnimationFrame(raf);
+      raf = 0;
+      if (extraScanRaf)
+        cancelAnimationFrame(extraScanRaf);
+      extraScanRaf = 0;
+      obs?.disconnect();
+      obs = null;
+      extraOff?.();
+      extraOff = null;
+      botsOff?.();
+      botsOff = null;
+      for (const unsub of extraUnsubs)
+        unsub();
+      extraUnsubs.length = 0;
+      extraStores.length = 0;
+      extraSeen = new WeakSet;
+      extraScanned.clear();
+      for (const el of document.querySelectorAll(`.${MARK}`)) {
+        el.parentElement?.removeAttribute("data-void-cls-nest");
+        el.remove();
+      }
+      marks.clear();
+      rowById.clear();
+    },
+    events: {
+      streamEnd: onStreamEnd2
+    },
+    zustand: {
+      ChatPageStore: {
+        selector: pageKey,
+        handler: schedule
+      },
+      ResponseStore: {
+        selector: responseKey,
+        handler: schedule
+      },
+      ConversationStore: {
+        selector: conversationKey,
+        handler: schedule
+      },
+      RoutingStore: {
+        selector: routeKey,
+        handler: schedule
+      }
+    }
+  });
+
+  // src/plugins/chatStateFavicons/detect.ts
+  var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
+  var STOP_SELECTORS = [
+    'button[aria-label="Stop model response"]',
+    'button[aria-label*="Stop"]',
+    'button[aria-label*="stop"]',
+    'button[aria-label*="停止"]'
+  ];
+  var SEND_SELECTORS = [
+    'button[aria-label*="Send"]',
+    'button[aria-label*="Submit"]',
+    'button[type="submit"]'
+  ];
+  function isVisible(el) {
+    if (!(el instanceof HTMLElement) || !el.isConnected)
+      return false;
+    if (!el.getClientRects().length)
+      return false;
+    const style = getComputedStyle(el);
+    return style.visibility !== "hidden" && style.display !== "none";
+  }
+  function isStopControl(el) {
+    const label = el.getAttribute("aria-label") ?? "";
+    const text = el.textContent ?? "";
+    return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
+  }
+  function getActiveEditor() {
+    const list = Array.from(document.querySelectorAll(EDITOR_SEL));
+    return list.find(isVisible) ?? list[0] ?? null;
+  }
+  function getComposerRoot() {
+    const editor = getActiveEditor();
+    return editor?.closest("form") ?? editor?.closest("div.relative") ?? editor?.parentElement ?? document.body;
+  }
+  function collectStopButtons(root) {
+    const candidates = [];
+    for (const sel of STOP_SELECTORS) {
+      for (const node of root.querySelectorAll(sel)) {
+        if (node instanceof HTMLElement)
+          candidates.push(node);
+      }
+    }
+    if (candidates.length === 0) {
+      for (const btn of root.querySelectorAll("button")) {
+        if (btn instanceof HTMLElement && isStopControl(btn))
+          candidates.push(btn);
+      }
+    }
+    return candidates;
+  }
+  function getStopButton() {
+    const candidates = collectStopButtons(document);
+    return candidates.find(isVisible) ?? candidates[0] ?? null;
+  }
+  function isDisabledControl(el) {
+    if (el instanceof HTMLButtonElement && el.disabled)
+      return true;
+    if (el.hasAttribute("disabled"))
+      return true;
+    if (el.getAttribute("aria-disabled") === "true")
+      return true;
+    if (el.getAttribute("data-disabled") === "true")
+      return true;
+    return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
+  }
+  function getSubmitButton() {
+    for (const root of [getComposerRoot(), document]) {
+      for (const sel of SEND_SELECTORS) {
+        for (const node of root.querySelectorAll(sel)) {
+          if (!(node instanceof HTMLElement) || isStopControl(node))
+            continue;
+          if (isVisible(node) || isDisabledControl(node))
+            return node;
+        }
+      }
+    }
+    return null;
+  }
+  function submitIsGray() {
+    const btn = getSubmitButton();
+    return !!btn && isDisabledControl(btn);
+  }
+  function isInputEmpty() {
+    const editor = getActiveEditor();
+    if (!editor)
+      return true;
+    if (editor.querySelector("p.is-empty.is-editor-empty"))
+      return true;
+    return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
+  }
+  function conversationToken() {
+    const params = new URLSearchParams(location.search);
+    const paramId = params.get("conversationId") ?? params.get("conversation_id") ?? params.get("chatId") ?? params.get("chat_id") ?? params.get("cid") ?? params.get("id") ?? "";
+    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
+    const pathId = /^[a-z0-9_-]{8,}$/i.test(lastSeg) ? lastSeg : "";
+    const dataId = document.querySelector("[data-conversation-id]")?.getAttribute("data-conversation-id") ?? "";
+    return [dataId, paramId, pathId].filter(Boolean).join("|");
+  }
+  function contextKeyFromUrl(token) {
+    const base = `${location.origin}${location.pathname}`;
+    return token ? `${base}|${token}` : `${base}|draft`;
+  }
+
+  // src/plugins/chatStateFavicons/icons.ts
+  var ICON_STYLES = ["original", "badge", "dot", "hole", "bg"];
+  var STYLE_OPTIONS = [
+    { label: "only emoji", value: "original" },
+    { label: "Badge + glyph", value: "badge", default: true },
+    { label: "Color dot", value: "dot" },
+    { label: "Mark tint", value: "hole" },
+    { label: "Background tint", value: "bg" }
+  ];
+  var KIND_COLOR = {
+    rotate: "#3B82F6",
+    done: "#22C55E",
+    ready: "#F59E0B",
+    error: "#EF4444"
+  };
+  var HOLE_IDLE = "#050505";
+  var MARK_FILL = "#FCFCFC";
+  var GROK_MARK_PATH = "M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815";
+  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var ORIGINAL_EMOJI = {
+    rotate: "\uD83D\uDD04",
+    done: "✔️",
+    ready: "\uD83D\uDC4D",
+    error: "\uD83D\uDEAB"
+  };
+  function isIconStyle(value) {
+    return typeof value === "string" && ICON_STYLES.includes(value);
+  }
+  function svgEmoji(emoji) {
+    return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`)}`;
+  }
+  function toSvgData(inner, viewBox = "0 0 64 64") {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }
+  function grokMarkSvg() {
+    return [
+      `<rect width="64" height="64" rx="14" fill="${HOLE_IDLE}"/>`,
+      `<g transform="translate(8 8) scale(2)" fill="${MARK_FILL}" fill-rule="evenodd">`,
+      `<path d="${GROK_MARK_PATH}"/>`,
+      "</g>"
+    ].join("");
+  }
+  function officialGrokSvg(markColor, bgColor) {
+    return [
+      `<path d="${GROK_BG_PATH}" fill="${bgColor}"/>`,
+      `<path d="${GROK_MARK_P1}" fill="${markColor}"/>`,
+      `<path d="${GROK_MARK_P2}" fill="${markColor}"/>`
+    ].join("");
+  }
+  function badgeGlyph(kind) {
+    if (kind === "rotate") {
+      return [
+        '<g transform="translate(51.5 51.5)"><g>',
+        '<path d="M0-6.1 A6.1 6.1 0 1 1 -5.3 3.05" fill="none" stroke="#fff" stroke-width="2.15" stroke-linecap="round"/>',
+        '<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.85s" repeatCount="indefinite"/>',
+        "</g></g>"
+      ].join("");
+    }
+    if (kind === "done") {
+      return '<path d="M46.6 51.7 L50.1 55.3 L56.8 47.4" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    if (kind === "ready") {
+      return [
+        '<path d="M51.5 56.4 V46.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+        '<path d="M46.6 51.2 L51.5 46.2 L56.4 51.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+      ].join("");
+    }
+    return [
+      '<path d="M47.2 47.2 L55.8 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+      '<path d="M55.8 47.2 L47.2 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
+    ].join("");
+  }
+  function composeIcon(style, kind, officialHref) {
+    if (style === "original") {
+      if (kind === "wait")
+        return officialHref;
+      return svgEmoji(ORIGINAL_EMOJI[kind]);
+    }
+    const color = kind === "wait" ? undefined : KIND_COLOR[kind];
+    if (style === "hole") {
+      return toSvgData(officialGrokSvg(color ?? MARK_FILL, HOLE_IDLE), "0 0 512 512");
+    }
+    if (style === "bg") {
+      return toSvgData(officialGrokSvg(MARK_FILL, color ?? HOLE_IDLE), "0 0 512 512");
+    }
+    if (!color || kind === "wait")
+      return toSvgData(grokMarkSvg());
+    const badge = style === "dot" ? [
+      '<circle cx="52.2" cy="52.2" r="10.4" fill="#050505"/>',
+      `<circle cx="52.2" cy="52.2" r="7.7" fill="${color}"/>`
+    ].join("") : [
+      '<circle cx="51.5" cy="51.5" r="12.15" fill="#050505"/>',
+      `<circle cx="51.5" cy="51.5" r="9.55" fill="${color}"/>`,
+      badgeGlyph(kind)
+    ].join("");
+    return toSvgData(grokMarkSvg() + badge);
+  }
+  function buildIcons(style, officialHref) {
+    return {
+      wait: composeIcon(style, "wait", officialHref),
+      rotate: composeIcon(style, "rotate", officialHref),
+      done: composeIcon(style, "done", officialHref),
+      ready: composeIcon(style, "ready", officialHref),
+      error: composeIcon(style, "error", officialHref)
+    };
+  }
+
+  // src/plugins/chatStateFavicons/index.ts
+  var logger21 = new Logger("ChatStateFavicons");
+  var ICON_ID = "void-chat-state-favicon";
+  var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
+  var settings9 = definePluginSettings({
+    style: {
+      type: 4 /* SELECT */,
+      description: "How the Grok mark is overlaid with chat state.",
+      options: STYLE_OPTIONS
+    }
+  });
+  var officialHref = "/images/favicon.svg";
+  var icons = buildIcons("badge", officialHref);
+  var kind = "wait";
+  var wasStreaming = false;
+  var justFinished = false;
+  var streamContext = null;
+  var lockedToken = "";
+  var lastWasError = false;
+  var lastConvId = "";
+  var primedReady = true;
+  var faviconObs = null;
+  var globalObs = null;
+  var composerObs = null;
+  var buttonObs = null;
+  var inputCtrl = null;
+  var unsubRoute = null;
+  var unsubPage = null;
+  var raf2 = 0;
+  var started3 = false;
+  function currentStyle() {
+    const value = settings9.store.style;
+    return isIconStyle(value) ? value : "badge";
+  }
+  function captureOfficial() {
+    const existing = document.querySelector(`link[rel~="icon"]:not(#${ICON_ID})`);
+    const href = existing?.href;
+    if (href && !href.startsWith("data:"))
+      return href;
+    return `${location.origin}/images/favicon.svg`;
+  }
+  function isIconLink(node) {
+    return node instanceof HTMLLinkElement && (node.relList.contains("icon") || /\bicon\b/i.test(node.rel));
+  }
+  function stripCompetitors() {
+    const { head } = document;
+    if (!head)
+      return;
+    for (const node of head.querySelectorAll("link")) {
+      if (node.id !== ICON_ID && isIconLink(node))
+        node.remove();
+    }
+  }
+  function applyHref(href) {
+    const { head } = document;
+    if (!head)
+      return;
+    stripCompetitors();
+    let link = document.getElementById(ICON_ID);
+    if (!link) {
+      link = document.createElement("link");
+      link.id = ICON_ID;
+      link.rel = "icon shortcut icon";
+      link.type = "image/svg+xml";
+      link.setAttribute("sizes", "any");
+      head.prepend(link);
+    } else if (head.firstChild !== link) {
+      head.prepend(link);
+    }
+    if (link.getAttribute("href") !== href)
+      link.setAttribute("href", href);
+  }
+  function setKind(next) {
+    kind = next;
+    applyHref(icons[next]);
+  }
+  function rebuildIcons() {
+    icons = buildIcons(currentStyle(), officialHref);
+    applyHref(icons[kind]);
+  }
+  function liveResponse(id, byId) {
+    if (!id)
+      return false;
+    const response = byId[id];
+    if (!response)
+      return false;
+    if (response.partial)
+      return true;
+    return LIVE_RESPONSE.has(response.state ?? "");
+  }
+  function storeStreaming() {
+    try {
+      const page = ChatPageStore.useChatPageStore.getState();
+      if (page.streamedMessageId || page.showStreamingIndicator)
+        return true;
+      const { byId } = ResponseStore.useResponseStore.getState();
+      return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
+    } catch (e) {
+      logger21.debug("stream stores unavailable:", e);
+      return false;
+    }
+  }
+  function isStreaming() {
+    if (storeStreaming())
+      return true;
+    return getStopButton() != null;
+  }
+  function currentConversationId() {
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      if (route.conversationId)
+        return String(route.conversationId);
+    } catch (e) {
+      logger21.debug("RoutingStore unavailable:", e);
+    }
+    try {
+      const id = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (id)
+        return id;
+    } catch (e) {
+      logger21.debug("ChatPageStore unavailable:", e);
+    }
+    return conversationToken();
+  }
+  function getContextKey() {
+    const id = currentConversationId();
+    const key = id || contextKeyFromUrl("");
+    if (isStreaming()) {
+      if (!lockedToken && key)
+        lockedToken = key;
+      return lockedToken;
+    }
+    lockedToken = "";
+    return key;
+  }
+  function sameStreamContext(key) {
+    return !!streamContext && !!key && streamContext === key;
+  }
+  function resetStreamFlags() {
+    wasStreaming = false;
+    justFinished = false;
+    streamContext = null;
+    lockedToken = "";
+    lastWasError = false;
+  }
+  function onConversationSwitch(id) {
+    lastConvId = id;
+    resetStreamFlags();
+    primedReady = false;
+    composerObs?.disconnect();
+    composerObs = null;
+    buttonObs?.disconnect();
+    buttonObs = null;
+    setKind("wait");
+  }
+  function hasError() {
+    if (lastWasError)
+      return true;
+    try {
+      const { byId } = ResponseStore.useResponseStore.getState();
+      const page = ChatPageStore.useChatPageStore.getState();
+      const id = page.streamedMessageId ?? page.lastMessageId;
+      if (!id)
+        return false;
+      const response = byId[id];
+      return response?.state === "error" || response?.error != null;
+    } catch (e) {
+      logger21.debug("ResponseStore unavailable:", e);
+      return false;
+    }
+  }
+  function evaluateState() {
+    if (!started3)
+      return;
+    const conv = currentConversationId();
+    if (lastConvId && conv && lastConvId !== conv) {
+      onConversationSwitch(conv);
+      return;
+    }
+    if (conv)
+      lastConvId = conv;
+    const contextKey = getContextKey();
+    const streaming = isStreaming();
+    const empty = isInputEmpty();
+    const gray = submitIsGray();
+    if (hasError() && !streaming) {
+      setKind("error");
+      wasStreaming = false;
+      justFinished = false;
+      streamContext = null;
+      lastWasError = false;
+      return;
+    }
+    if (streaming && empty) {
+      wasStreaming = true;
+      justFinished = false;
+      lastWasError = false;
+      streamContext = contextKey;
+      setKind("rotate");
+      return;
+    }
+    if (wasStreaming) {
+      const sameContext = sameStreamContext(contextKey);
+      wasStreaming = false;
+      if (sameContext && gray) {
+        justFinished = true;
+        streamContext = contextKey;
+        setKind("done");
+        return;
+      }
+      justFinished = false;
+      streamContext = null;
+    }
+    if (justFinished) {
+      const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);
+      if (contextChanged) {
+        justFinished = false;
+        streamContext = null;
+      } else if (empty) {
+        setKind("done");
+        return;
+      } else if (primedReady) {
+        justFinished = false;
+        setKind("ready");
+        return;
+      } else {
+        justFinished = false;
+        setKind("wait");
+        return;
+      }
+    }
+    streamContext = null;
+    lastWasError = false;
+    if (empty)
+      setKind("wait");
+    else if (primedReady)
+      setKind("ready");
+    else
+      setKind("wait");
+  }
+  function nodeTouchesStop(node) {
+    if (!(node instanceof Element))
+      return false;
+    if (node instanceof HTMLElement && node.tagName === "BUTTON" && isStopControl(node))
+      return true;
+    for (const btn of node.querySelectorAll("button")) {
+      if (isStopControl(btn))
+        return true;
+    }
+    return false;
+  }
+  function stopButtonMutation(list) {
+    for (const m of list) {
+      if (nodeTouchesStop(m.target))
+        return true;
+      for (const n of m.addedNodes) {
+        if (nodeTouchesStop(n))
+          return true;
+      }
+      for (const n of m.removedNodes) {
+        if (nodeTouchesStop(n))
+          return true;
+      }
+      if (m.type === "attributes" && m.attributeName === "aria-label" && m.target instanceof HTMLElement) {
+        if (isStopControl(m.target) || /stop|停止/i.test(String(m.oldValue ?? "")))
+          return true;
+      }
+    }
+    return false;
+  }
+  function nodeInEditor(node) {
+    const el = node instanceof Element ? node : node?.parentElement;
+    return !!el?.closest(EDITOR_SEL);
+  }
+  function mutationsAreEditorOnly(list) {
+    if (!list.length)
+      return false;
+    for (const m of list) {
+      if (!nodeInEditor(m.target))
+        return false;
+      for (const n of m.addedNodes) {
+        if (n instanceof Text)
+          continue;
+        if (!nodeInEditor(n))
+          return false;
+      }
+      for (const n of m.removedNodes) {
+        if (n instanceof Text)
+          continue;
+        if (!nodeInEditor(n))
+          return false;
+      }
+    }
+    return true;
+  }
+  function onDomMutate(list) {
+    if (kind === "rotate" || wasStreaming) {
+      if (mutationsAreEditorOnly(list))
+        return;
+      if (!stopButtonMutation(list))
+        return;
+    }
+    scheduleEvaluate();
+  }
+  function onEditorInput() {
+    primedReady = true;
+    scheduleEvaluate();
+  }
+  function scheduleEvaluate() {
+    if (!started3 || raf2)
+      return;
+    raf2 = requestAnimationFrame(() => {
+      raf2 = 0;
+      if (!started3)
+        return;
+      bindEditorInput();
+      const root = getComposerRoot();
+      if (!composerObs || !root.isConnected) {
+        observeComposer();
+        observeButtons();
+      }
+      evaluateState();
+    });
+  }
+  function onStreamEnd3({ responseId }) {
+    try {
+      const response = ResponseStore.useResponseStore.getState().byId[responseId];
+      lastWasError = response?.state === "error" || response?.error != null;
+    } catch (e) {
+      logger21.debug("ResponseStore unavailable:", e);
+    }
+  }
+  function startFaviconGuard() {
+    faviconObs?.disconnect();
+    const { head } = document;
+    if (!head)
+      return;
+    faviconObs = new MutationObserver((list) => {
+      for (const m of list) {
+        if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
+          applyHref(icons[kind]);
+          return;
+        }
+        for (const node of m.addedNodes) {
+          if (isIconLink(node) && node.id !== ICON_ID) {
+            applyHref(icons[kind]);
+            return;
+          }
+        }
+      }
+    });
+    faviconObs.observe(head, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href", "rel"]
+    });
+  }
+  function bindEditorInput() {
+    const editor = getActiveEditor();
+    if (!editor || editor.dataset.voidCsfBound === "1")
+      return;
+    editor.dataset.voidCsfBound = "1";
+    editor.addEventListener("input", onEditorInput, { passive: true });
+    editor.addEventListener("compositionend", onEditorInput, { passive: true });
+  }
+  function observeComposer() {
+    composerObs?.disconnect();
+    const root = getComposerRoot();
+    composerObs = new MutationObserver(onDomMutate);
+    composerObs.observe(root, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["aria-label", "aria-disabled", "disabled", "data-testid", "class"],
+      attributeOldValue: true
+    });
+  }
+  function observeButtons() {
+    buttonObs?.disconnect();
+    const target = getComposerRoot();
+    buttonObs = new MutationObserver(onDomMutate);
+    buttonObs.observe(target, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-label", "type"],
+      attributeOldValue: true
+    });
+  }
+  function attachStores() {
+    unsubRoute?.();
+    unsubPage?.();
+    try {
+      const routeStore = RoutingStore.useRoutingStore;
+      if (typeof routeStore?.subscribe === "function") {
+        unsubRoute = routeStore.subscribe((s) => s.route.conversationId, (id, prev) => {
+          if (!id || id === prev)
+            return;
+          onConversationSwitch(String(id));
+        });
+      }
+    } catch (e) {
+      logger21.debug("RoutingStore subscribe failed:", e);
+      try {
+        unsubRoute = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
+      } catch (err) {
+        logger21.debug("RoutingStore full subscribe failed:", err);
+      }
+    }
+    try {
+      const pageStore = ChatPageStore.useChatPageStore;
+      if (typeof pageStore?.subscribe === "function") {
+        unsubPage = pageStore.subscribe((s) => s.conversationId, (id, prev) => {
+          if (!id || id === prev)
+            return;
+          onConversationSwitch(id);
+        });
+      }
+    } catch (e) {
+      logger21.debug("ChatPageStore subscribe failed:", e);
+    }
+  }
+  function restoreOfficial() {
+    faviconObs?.disconnect();
+    faviconObs = null;
+    document.getElementById(ICON_ID)?.remove();
+    const { head } = document;
+    if (!head)
+      return;
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.type = "image/svg+xml";
+    link.href = officialHref;
+    head.prepend(link);
+  }
+  var chatStateFavicons_default = definePlugin({
+    name: "ChatStateFavicons",
+    icon: AppWindowIcon,
+    description: "Show streaming, done, ready, and error states on the tab favicon.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings9,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    cleanupSelectors: [`#${ICON_ID}`],
+    start() {
+      started3 = true;
+      officialHref = captureOfficial();
+      rebuildIcons();
+      startFaviconGuard();
+      inputCtrl?.abort();
+      inputCtrl = new AbortController;
+      window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
+      globalObs?.disconnect();
+      globalObs = new MutationObserver(onDomMutate);
+      globalObs.observe(document.body, { childList: true, subtree: true });
+      bindEditorInput();
+      observeComposer();
+      observeButtons();
+      attachStores();
+      evaluateState();
+    },
+    stop() {
+      started3 = false;
+      if (raf2)
+        cancelAnimationFrame(raf2);
+      raf2 = 0;
+      inputCtrl?.abort();
+      inputCtrl = null;
+      unsubRoute?.();
+      unsubRoute = null;
+      unsubPage?.();
+      unsubPage = null;
+      globalObs?.disconnect();
+      globalObs = null;
+      composerObs?.disconnect();
+      composerObs = null;
+      buttonObs?.disconnect();
+      buttonObs = null;
+      wasStreaming = false;
+      justFinished = false;
+      streamContext = null;
+      lockedToken = "";
+      lastConvId = "";
+      primedReady = true;
+      lastWasError = false;
+      restoreOfficial();
+    },
+    onSettingsChange: rebuildIcons,
+    events: {
+      streamEnd: onStreamEnd3
+    }
+  });
+
+  // src/plugins/cleaner/index.ts
+  var settings10 = definePluginSettings({
+    hideUpgradePlan: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade plan button in the user menu.",
+      default: true
+    },
+    hideUpsellCard: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upsell card banner.",
+      default: true
+    },
+    hideUpsellSmall: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the small SuperGrok upsell banner.",
+      default: true
+    },
+    hideModelUpsell: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade prompt in the model selector.",
+      default: true
+    },
+    hideInaccessibleModels: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide locked/inaccessible models in the model selector.",
+      default: true
+    },
+    hideNotificationBanner: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Get notified when Grok finishes answering" banner.',
+      default: true
+    },
+    hideConnectX: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
+      default: true
+    }
+  });
+  var hideComponentPatch = (name, setting, all = true) => ({
+    find: `"${name}",0,`,
+    all,
+    replacement: {
+      match: new RegExp(`"${name}",0,`),
+      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
+    }
+  });
+  var cleaner_default = definePlugin({
+    name: "Cleaner",
+    icon: BrushCleaningIcon,
+    description: "Hides upgrade nags and upsell banners.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    enabledByDefault: true,
+    settings: settings10,
+    patches: [
+      {
+        find: '"user-dropdown.upgrade","Upgrade plan"',
+        all: true,
+        replacement: {
+          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          replace: ",$self.settings.store.hideUpgradePlan||$1"
+        }
+      },
+      {
+        find: "UPSELL_CARD_PRIORITY)",
+        all: true,
+        replacement: {
+          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
+          replace: "$1&&!$self.settings.store.hideUpsellCard"
+        }
+      },
+      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
+      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
+      {
+        find: "connect-x-upsell-dismissed",
+        replacement: {
+          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
+          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
+        }
+      },
+      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
+      {
+        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
+            replace: "$&$self.settings.store.hideModelUpsell||"
+          },
+          {
+            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
+            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
+          }
+        ]
+      }
+    ]
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/cloneChats/styles.css
+  registerStyle("cloneChats", `.void-clone-icon {
+    margin-inline-end: 0.5rem;
+}
+`);
+
+  // src/plugins/cloneChats/index.tsx
+  var logger22 = new Logger("CloneChats");
+  async function cloneChat(conversationId) {
+    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
+    if (!lastResponseId)
+      throw new Error("No responses found in conversation.");
+    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
+      conversationId,
+      body: { responseId: lastResponseId, allowIndexing: false }
+    });
+    if (!shareLinkId)
+      throw new Error("Failed to create share link.");
+    try {
+      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
+      if (conversation?.conversationId) {
+        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
+      }
+    } finally {
+      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
+    }
+  }
+  function CloneItem({ conversationId }) {
+    const streaming = useIsStreaming(conversationId);
+    return /* @__PURE__ */ React2.createElement(MenuItem, {
+      onSelect: () => cloneChat(conversationId).catch((e) => logger22.error("Failed to clone chat:", e)),
+      disabled: streaming
+    }, /* @__PURE__ */ React2.createElement(CopyIcon, {
+      size: 16,
+      className: "void-clone-icon"
+    }), "Clone");
+  }
+  var cloneChats_default = definePlugin({
+    name: "CloneChats",
+    icon: CopyIcon,
+    description: "Clone conversations from the context-menu.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    contextMenuItems: {
+      conversation: {
+        label: "Clone",
+        render: ErrorBoundary.wrap(CloneItem)
+      }
+    }
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/compactModeSelect/styles.css
+  registerStyle("compactModeSelect", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-cms-pins {
+    display: contents;
+}
+
+.void-cms-pin {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    max-height: 2.25rem;
+    padding: 0;
+    box-sizing: border-box;
+    background: transparent;
+    box-shadow: none;
+}
+
+.query-bar .void-cms-on {
+    color: #ff7a17;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.void-cms-label {
+    display: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.void-cms-glyph {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+}
+
+.void-cms-glyph svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+}
+
+.query-bar:has(.void-cms-hide-native) [data-query-bar-mode-select] {
+    position: absolute;
+    width: 0;
+    height: 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    max-height: 2.25rem;
+    padding: 0;
+    position: relative;
+    display: grid;
+    place-items: center;
+}
+
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button > * {
+    display: none !important;
+}
+
+.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button::after {
+    content: "";
+    width: 18px;
+    height: 18px;
+    background-color: currentcolor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='5' cy='12' r='1'/%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3Ccircle cx='19' cy='12' r='1'/%3E%3C/svg%3E") center / 18px 18px no-repeat;
+}
+
+html.void-cms-picking .query-bar [data-query-bar-mode-select] {
+    pointer-events: auto !important;
+}
+
+html.void-cms-picking [role="tooltip"],
+html.void-cms-picking [data-radix-tooltip-content] {
+    display: none !important;
+}
+
+.void-cms-ghost {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+html.void-cms-picked .void-cms-ghost {
+    pointer-events: none !important;
+}
+
+.void-cms-order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.void-cms-order-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.25rem 0.25rem 0;
+    border-radius: 0.5rem;
+    user-select: none;
+}
+
+.void-cms-order-row:hover {
+    background: hsl(var(--fg-primary) / 6%);
+}
+
+.void-cms-order-row.void-cms-dragging {
+    opacity: 0.45;
+}
+
+.void-cms-order-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.void-cms-grip {
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: hsl(var(--fg-secondary));
+    cursor: grab;
+}
+
+.void-cms-grip:active {
+    cursor: grabbing;
+}
+
+.void-cms-order-icon {
+    flex-shrink: 0;
+    color: hsl(var(--fg-secondary));
+}
+
+@media (width >= 48rem) {
+    .void-cms-labeled {
+        width: auto;
+        min-width: 2.25rem;
+        max-height: 2.25rem;
+        border-radius: 999px;
+        padding-inline: 0.5rem;
+        gap: 0.25rem;
+    }
+
+    .void-cms-labeled .void-cms-label {
+        display: inline;
+    }
+}
+`);
+
+  // src/plugins/compactModeSelect/index.tsx
+  var logger23 = new Logger("CompactModeSelect");
+  var cl19 = classNameFactory("void-cms-");
+  var MODES = [
+    { id: "auto", pin: "pinAuto", label: "Auto", Icon: AutoModeIcon },
+    { id: "fast", pin: "pinFast", label: "Fast", Icon: FastModeIcon },
+    { id: "expert", pin: "pinExpert", label: "Expert", Icon: LightbulbIcon },
+    { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: ConnectedAppsIcon },
+    { id: "build", pin: "pinBuild", label: "Build", Icon: BuildModeIcon }
+  ];
+  var KNOWN_IDS = new Set(MODES.map((m) => m.id));
+  var PIN_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m.pin]));
+  var MODE_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m]));
+  var DEFAULT_PIN_ORDER = "heavy,build";
+  var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels", "hideNativeTrigger", "pinOrder"];
+  var ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
+  var MENU_ROOT_SEL = [
+    "[data-radix-popper-content-wrapper]",
+    "[data-radix-menu-content]",
+    "[data-radix-dropdown-menu-content]",
+    "[data-radix-select-content]",
+    "[data-radix-popover-content]",
+    "[role='menu']",
+    "[role='listbox']"
+  ].join(", ");
+  var TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
+  var PICK_MS = 900;
+  var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
+  var GHOST_STYLE = { opacity: "0", visibility: "hidden" };
+  var settings11 = definePluginSettings({
+    pinList: {
+      type: 6 /* COMPONENT */,
+      description: "Toggle pins and drag to set chip order.",
+      component: PinOrderEditor
+    },
+    hideNativeTrigger: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the native mode menu button and keep its popup invisible.",
+      default: true
+    },
+    showLabels: {
+      type: 3 /* BOOLEAN */,
+      description: "Show mode names on pinned chips.",
+      default: false
+    },
+    pinAuto: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Auto next to the compact selector.",
+      default: false,
+      hidden: true
+    },
+    pinFast: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Fast next to the compact selector.",
+      default: false,
+      hidden: true
+    },
+    pinExpert: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Expert next to the compact selector.",
+      default: false,
+      hidden: true
+    },
+    pinHeavy: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Heavy next to the compact selector.",
+      default: true,
+      hidden: true
+    },
+    pinBuild: {
+      type: 3 /* BOOLEAN */,
+      description: "Pin Build next to the compact selector.",
+      default: true,
+      hidden: true
+    },
+    pinOrder: {
+      type: 0 /* STRING */,
+      description: "Order of pinned chips.",
+      default: DEFAULT_PIN_ORDER,
+      hidden: true
+    }
+  });
+  var picking = false;
+  var harvesting = false;
+  var tipLock = false;
+  var harvested = new Map;
+  var harvestListeners = new Set;
+  var tipListeners = new Set;
+  var ghosts = new Set;
+  var cloakWatch = null;
+  function uncloak() {
+    for (const host of ghosts) {
+      host.classList.remove(cl19("ghost"));
+      host.style.removeProperty("opacity");
+      host.style.removeProperty("visibility");
+      host.style.removeProperty("pointer-events");
+    }
+    ghosts.clear();
+  }
+  function notifyTips() {
+    for (const fn of tipListeners)
+      fn();
+  }
+  function onDocPointerOver(e) {
+    if (!tipLock || picking)
+      return;
+    const el = e.target;
+    if (el instanceof Element && el.closest(".query-bar .void-cms-pin"))
+      return;
+    setTipLock(false);
+  }
+  function setTipLock(on) {
+    if (tipLock === on)
+      return;
+    tipLock = on;
+    if (on)
+      document.addEventListener("pointerover", onDocPointerOver);
+    else
+      document.removeEventListener("pointerover", onDocPointerOver);
+    notifyTips();
+  }
+  function subscribeTips(fn) {
+    tipListeners.add(fn);
+    return () => {
+      tipListeners.delete(fn);
+    };
+  }
+  function getTipLock() {
+    return tipLock;
+  }
+  function useTipLock() {
+    return React2.useSyncExternalStore(subscribeTips, getTipLock, getTipLock);
+  }
+  function setPicking(on) {
+    picking = on;
+    document.documentElement.classList.toggle("void-cms-picking", on);
+    if (on) {
+      setTipLock(true);
+      cloakWatch ??= new MutationObserver(onCloakMutations);
+      cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
+      return;
+    }
+    cloakWatch?.disconnect();
+    cloakWatch = null;
+    document.documentElement.classList.remove("void-cms-picked");
+    uncloak();
+    if (!document.querySelector(".query-bar .void-cms-pin:hover"))
+      setTipLock(false);
+  }
+  function notifyHarvest() {
+    for (const fn of harvestListeners)
+      fn();
+  }
+  function parseOrder(raw) {
+    const seen = new Set;
+    const ordered = [];
+    for (const token of String(raw ?? "").split(/[,\s]+/)) {
+      const id = token.toLowerCase();
+      if (!KNOWN_IDS.has(id) || seen.has(id))
+        continue;
+      seen.add(id);
+      ordered.push(id);
+    }
+    for (const m of MODES) {
+      if (seen.has(m.id))
+        continue;
+      ordered.push(m.id);
+    }
+    return ordered;
+  }
+  function reorder(ids, from, to) {
+    if (from === to || from < 0 || to < 0 || to >= ids.length)
+      return ids;
+    const next = ids.slice();
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    return next;
+  }
+  function setOrder(ids) {
+    settings11.store.pinOrder = ids.join(",");
+  }
+  function setPinned(pin, on) {
+    settings11.store[pin] = on;
+  }
+  function itemText(el) {
+    return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
+  }
+  function titlesFor(id) {
+    const mode = MODES.find((m) => m.id === id);
+    const catalogTitle = ModesStore.useModesStore.getState().modes.find((m) => m.id === id)?.title;
+    return [catalogTitle, mode?.label, id].filter((t) => !!t).map((t) => t.toLowerCase());
+  }
+  function matchItem(el, id) {
+    const hay = itemText(el);
+    if (!hay)
+      return false;
+    return titlesFor(id).some((t) => hay === t || hay.startsWith(`${t} `));
+  }
+  function isModeMenu(items) {
+    return items.filter((el) => MODES.some((m) => matchItem(el, m.id))).length >= 2;
+  }
+  function ghostHost(el) {
+    const wrap = el.closest("[data-radix-popper-content-wrapper]");
+    if (wrap instanceof HTMLElement)
+      return wrap;
+    let host = el;
+    for (let n = el;n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+      const pos = getComputedStyle(n).position;
+      if (pos === "fixed" || pos === "absolute")
+        host = n;
+    }
+    return host;
+  }
+  function cloak(menu) {
+    const host = ghostHost(menu.root);
+    if (ghosts.has(host))
+      return;
+    host.classList.add(cl19("ghost"));
+    host.style.setProperty("opacity", GHOST_STYLE.opacity, "important");
+    host.style.setProperty("visibility", GHOST_STYLE.visibility, "important");
+    ghosts.add(host);
+  }
+  function lockGhosts() {
+    document.documentElement.classList.add("void-cms-picked");
+    for (const host of ghosts)
+      host.style.setProperty("pointer-events", "none", "important");
+  }
+  function modeMenu() {
+    for (const root of document.querySelectorAll(MENU_ROOT_SEL)) {
+      if (!(root instanceof HTMLElement))
+        continue;
+      const items = [...root.querySelectorAll(ITEM_SEL)];
+      if (isModeMenu(items))
+        return { root, items };
+    }
+    const loose = [...document.querySelectorAll(ITEM_SEL)].filter((el) => MODES.some((m) => matchItem(el, m.id)));
+    if (loose.length < 2)
+      return null;
+    const nested = loose[0].closest(MENU_ROOT_SEL);
+    const root = nested instanceof HTMLElement ? nested : ghostHost(loose[0]);
+    return { root, items: loose };
+  }
+  function onCloakMutations() {
+    const menu = modeMenu();
+    if (menu)
+      cloak(menu);
+  }
+  function waitUntil(ok) {
+    const start = performance.now();
+    return new Promise((resolve) => {
+      const tick = () => {
+        if (ok()) {
+          resolve(true);
+          return;
+        }
+        if (performance.now() - start > PICK_MS) {
+          resolve(false);
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+  async function waitForMenu() {
+    await waitUntil(() => {
+      const menu = modeMenu();
+      if (menu)
+        cloak(menu);
+      return !!menu;
+    });
+    return modeMenu();
+  }
+  function waitForGone() {
+    return waitUntil(() => !modeMenu());
+  }
+  function nativeTrigger() {
+    return document.querySelector(TRIGGER_SEL);
+  }
+  function clickEl(el) {
+    el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
+    el.dispatchEvent(new PointerEvent("pointerup", POINTER));
+    el.click();
+  }
+  function paintCurrent(el) {
+    for (const attr of ["fill", "stroke"]) {
+      const v = el.getAttribute(attr);
+      if (!v || v === "none" || v === "currentColor")
+        continue;
+      el.setAttribute(attr, "currentColor");
+    }
+    for (const name of el.getAttributeNames()) {
+      if (name.startsWith("on"))
+        el.removeAttribute(name);
+    }
+    el.removeAttribute("class");
+  }
+  function normalizeSvg(src) {
+    const svg = src.cloneNode(true);
+    svg.setAttribute("width", "18");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("aria-hidden", "true");
+    svg.querySelectorAll("script").forEach((n) => n.remove());
+    paintCurrent(svg);
+    svg.querySelectorAll("*").forEach(paintCurrent);
+    return svg.outerHTML;
+  }
+  function stashGlyphs(items) {
+    let added = false;
+    for (const item of items) {
+      const mode = MODES.find((m) => matchItem(item, m.id));
+      if (!mode || harvested.has(mode.id))
+        continue;
+      const svg = item.querySelector("svg");
+      if (!(svg instanceof SVGSVGElement))
+        continue;
+      harvested.set(mode.id, normalizeSvg(svg));
+      added = true;
+    }
+    if (added)
+      notifyHarvest();
+  }
+  async function harvestIcons() {
+    if (harvesting || picking || harvested.size > 0)
+      return;
+    const trigger = nativeTrigger();
+    if (!trigger)
+      return;
+    harvesting = true;
+    setPicking(true);
+    try {
+      let menu = modeMenu();
+      if (!menu) {
+        clickEl(trigger);
+        menu = await waitForMenu();
+      }
+      if (!menu)
+        return;
+      cloak(menu);
+      stashGlyphs(menu.items);
+      if (modeMenu())
+        clickEl(trigger);
+      lockGhosts();
+      await waitForGone();
+    } catch (e) {
+      logger23.warn("Failed to harvest mode icons:", e);
+    } finally {
+      setPicking(false);
+      harvesting = false;
+    }
+  }
+  async function selectMode(id) {
+    if (picking)
+      return;
+    setPicking(true);
+    try {
+      await ModesStore.useModesStore.getState().ensureLoaded();
+      let menu = modeMenu();
+      if (!menu) {
+        const trigger = nativeTrigger();
+        if (!trigger) {
+          logger23.warn("Native mode selector not found");
+          return;
+        }
+        clickEl(trigger);
+        menu = await waitForMenu();
+      }
+      if (!menu) {
+        logger23.warn("Native mode item not found:", id);
+        return;
+      }
+      cloak(menu);
+      stashGlyphs(menu.items);
+      const item = menu.items.find((el) => matchItem(el, id));
+      if (!item) {
+        logger23.warn("Native mode item not found:", id);
+        const trigger = nativeTrigger();
+        if (modeMenu() && trigger)
+          clickEl(trigger);
+        lockGhosts();
+        await waitForGone();
+        return;
+      }
+      clickEl(item);
+      lockGhosts();
+      await waitForGone();
+    } catch (e) {
+      logger23.warn("Failed to select mode:", e);
+    } finally {
+      setPicking(false);
+    }
+  }
+  function useNativeGlyph(id) {
+    const [, bump] = React2.useState(0);
+    React2.useEffect(() => {
+      const onHarvest = () => bump((n) => n + 1);
+      harvestListeners.add(onHarvest);
+      harvestIcons();
+      return () => {
+        harvestListeners.delete(onHarvest);
+      };
+    }, [id]);
+    return harvested.get(id);
+  }
+  function PinGlyph({ id, Icon, label, showLabels }) {
+    const html = useNativeGlyph(id);
+    const glyph = html ? /* @__PURE__ */ React2.createElement("span", {
+      className: cl19("glyph"),
+      dangerouslySetInnerHTML: { __html: html }
+    }) : /* @__PURE__ */ React2.createElement(Icon, {
+      size: 18
+    });
+    if (!showLabels)
+      return glyph;
+    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, glyph, /* @__PURE__ */ React2.createElement("span", {
+      className: cl19("label")
+    }, label));
+  }
+  function preventDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }
+  function PinOrderEditor() {
+    const cfg = settings11.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
+    const ids = parseOrder(cfg.pinOrder);
+    const [dragId, setDragId] = React2.useState(null);
+    const onDragStart = (id) => (e) => {
+      e.dataTransfer.setData("text/plain", id);
+      e.dataTransfer.effectAllowed = "move";
+      setDragId(id);
+    };
+    const onDrop = (toId) => (e) => {
+      e.preventDefault();
+      const fromId = e.dataTransfer.getData("text/plain");
+      setOrder(reorder(ids, ids.indexOf(fromId), ids.indexOf(toId)));
+      setDragId(null);
+    };
+    return /* @__PURE__ */ React2.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem",
+      className: cl19("order")
+    }, /* @__PURE__ */ React2.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, "Pinned modes"), /* @__PURE__ */ React2.createElement(SettingsDescription, null, "Toggle pins and drag to set chip order.")), /* @__PURE__ */ React2.createElement("div", {
+      className: cl19("order-list"),
+      role: "list"
+    }, ids.map((id, i) => {
+      const m = MODE_BY_ID[id];
+      return /* @__PURE__ */ React2.createElement("div", {
+        key: m.id,
+        role: "listitem",
+        className: classes(cl19("order-row"), dragId === m.id && cl19("dragging")),
+        onDragOver: preventDragOver,
+        onDrop: onDrop(m.id)
+      }, /* @__PURE__ */ React2.createElement(Flex, {
+        alignItems: "center",
+        gap: "0.5rem",
+        className: cl19("order-main")
+      }, /* @__PURE__ */ React2.createElement("span", {
+        className: cl19("grip"),
+        draggable: true,
+        onDragStart: onDragStart(m.id),
+        onDragEnd: () => setDragId(null),
+        "aria-label": `Reorder ${m.label}`
+      }, /* @__PURE__ */ React2.createElement(GripVerticalIcon, {
+        size: 16
+      })), /* @__PURE__ */ React2.createElement(m.Icon, {
+        size: 16,
+        className: cl19("order-icon")
+      }), /* @__PURE__ */ React2.createElement(SettingsTitle, null, m.label)), /* @__PURE__ */ React2.createElement(Flex, {
+        alignItems: "center",
+        gap: "0.25rem"
+      }, /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "xs",
+        shape: "square",
+        tooltipContent: "Move up",
+        "aria-label": `Move ${m.label} up`,
+        disabled: i === 0,
+        onClick: () => setOrder(reorder(ids, i, i - 1))
+      }, /* @__PURE__ */ React2.createElement(ChevronUpIcon, {
+        size: 14
+      })), /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "xs",
+        shape: "square",
+        tooltipContent: "Move down",
+        "aria-label": `Move ${m.label} down`,
+        disabled: i === ids.length - 1,
+        onClick: () => setOrder(reorder(ids, i, i + 1))
+      }, /* @__PURE__ */ React2.createElement(ChevronDownIcon, {
+        size: 14
+      })), /* @__PURE__ */ React2.createElement(Switch, {
+        checked: !!cfg[m.pin],
+        onCheckedChange: (on) => setPinned(m.pin, on)
+      })));
+    })));
+  }
+  function PinnedModes() {
+    const cfg = settings11.use([...SETTING_KEYS]);
+    const page = RoutingStore.useRoutingStore((s) => s.route.page);
+    const selectedModeId = ModesStore.useModesStore((s) => s.selectedModeId);
+    const catalog = ModesStore.useModesStore((s) => s.modes);
+    const hideTip = useTipLock();
+    const knownCatalog = catalog.filter((c) => KNOWN_IDS.has(c.id));
+    const items = parseOrder(cfg.pinOrder).map((id) => MODE_BY_ID[id]).filter((m) => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some((c) => c.id === m.id)));
+    if (page === "bot" || !items.length)
+      return null;
+    const { showLabels } = cfg;
+    const allCovered = knownCatalog.length > 0 && knownCatalog.every((c) => cfg[PIN_BY_ID[c.id]]);
+    const hideNative = cfg.hideNativeTrigger || allCovered;
+    const onPin = (id) => (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setTipLock(true);
+      selectMode(id);
+    };
+    return /* @__PURE__ */ React2.createElement("div", {
+      className: classes(cl19("pins"), hideNative && cl19("hide-native"))
+    }, items.map((m) => /* @__PURE__ */ React2.createElement(ChatBarButton, {
+      key: m.id,
+      size: "sm",
+      icon: /* @__PURE__ */ React2.createElement(PinGlyph, {
+        id: m.id,
+        Icon: m.Icon,
+        label: m.label,
+        showLabels
+      }),
+      tooltip: hideTip ? undefined : m.label,
+      onClick: onPin(m.id),
+      className: classes(cl19("pin"), selectedModeId === m.id && cl19("on"), showLabels && cl19("labeled")),
+      "aria-label": m.label
+    })));
+  }
+  var compactModeSelect_default = definePlugin({
+    name: "CompactModeSelect",
+    icon: Minimize2Icon,
+    description: "Pin 1–N chat modes as always-visible chips. Click a chip to switch without opening the menu.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings11,
+    managedStyle: "compactModeSelect",
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      ModesStore.useModesStore.getState().ensureLoaded();
+    },
+    stop() {
+      setPicking(false);
+      setTipLock(false);
+      harvested.clear();
+      harvestListeners.clear();
+      tipListeners.clear();
+    },
+    renderPinned: ErrorBoundary.wrap(PinnedModes),
+    patches: [
+      {
+        find: "data-query-bar-mode-select",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /ModeSelect,\{compact:\i\|\|\i,/,
+            replace: "ModeSelect,{compact:!0,"
+          },
+          {
+            match: /\},"mode-select"\),/,
+            replace: "$&$self.renderPinned(),"
+          }
+        ]
+      }
+    ]
+  });
+
+  // src/plugins/composerOpacity/index.ts
+  var STYLE_NAME3 = "composerOpacity";
+  var SHELL = ".query-bar";
+  var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
+  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
+  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
+  var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
+  var settings12 = definePluginSettings({
+    opacity: {
+      type: 5 /* SLIDER */,
+      description: "Background opacity of the chat input. 100 is fully opaque.",
+      min: 0,
+      max: 100,
+      default: 100
+    },
+    blur: {
+      type: 5 /* SLIDER */,
+      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
+      min: 0,
+      max: 40,
+      default: 16
+    }
+  });
+  function apply() {
+    const pct = clamp(settings12.store.opacity, 0, 100);
+    const blur = clamp(settings12.store.blur, 0, 40);
+    const alpha = pct / 100;
+    const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
+    registerStyle(STYLE_NAME3, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
+  }
+  var composerOpacity_default = definePlugin({
+    name: "ComposerOpacity",
+    icon: BlendIcon,
+    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
+    authors: [Devs.p],
+    tags: ["ui", "chat"],
+    enabledByDefault: true,
+    settings: settings12,
+    start: apply,
+    onSettingsChange: apply,
+    stop() {
+      unregisterStyle(STYLE_NAME3);
+    }
+  });
+
+  // src/plugins/consoleJanitor/index.ts
+  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
+  var consoleJanitor_default = definePlugin({
+    name: "ConsoleJanitor",
+    icon: TerminalIcon,
+    description: "Silences noisy warnings and info logs in the browser console.",
+    authors: [Devs.Prism],
+    patches: [
+      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
+      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
+      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
+      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
+      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
+    ]
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/customInstructions/styles.css
+  registerStyle("customInstructions", `.void-ci-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.void-ci-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.void-ci-card {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: 1rem;
+    padding: 0.625rem 0.75rem;
+    height: 3.25rem;
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l1));
+    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
+    cursor: pointer;
+}
+
+.void-ci-card:hover {
+    background: var(--button-ghost-hover, rgb(255 255 255 / 8%));
+}
+
+.void-ci-card-add {
+    justify-content: center;
+    box-shadow: none;
+    border: 1px dashed hsl(var(--border-l1));
+}
+
+.void-ci-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.void-ci-card-name {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    flex: 1;
+    gap: 0.125rem;
+}
+
+.void-ci-card-name>* {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.void-ci-card-actions {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.void-ci-card:hover .void-ci-card-actions {
+    opacity: 1;
+}
+
+.void-ci-card:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ci-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.void-ci-label {
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--fg-primary));
+}
+
+.void-ci-input {
+    width: 100%;
+}
+
+.void-ci-textarea-wrap {
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.75rem;
+}
+
+.void-ci-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ci-textarea-wrap-error {
+    border-color: hsl(var(--fg-danger));
+}
+
+.void-ci-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: hsl(var(--fg-primary));
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.void-ci-textarea:focus {
+    outline: none;
+}
+
+.void-ci-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 0.25rem;
+}
+
+.void-ci-error-text {
+    color: hsl(var(--fg-danger));
+}
+
+.void-ci-trigger {
+    gap: 0.5rem;
+}
+
+.void-ci-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-ci-card-actions {
+        transition: none;
+    }
+}
+`);
+
+  // src/plugins/customInstructions/index.tsx
+  var cl20 = classNameFactory("void-ci-");
+  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
+  var CheckIcon = findExportedComponentLazy("CheckIcon");
+  var BookIcon = findExportedComponentLazy("BookIcon");
+  var PenIcon = findExportedComponentLazy("PenIcon");
+  var TrashIcon = findExportedComponentLazy("TrashIcon");
+  var PlusIcon = findExportedComponentLazy("PlusIcon");
+  var MAX_LENGTH = 4000;
+  var settings13 = definePluginSettings({
+    editor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React2.createElement(PresetsEditor, null)
+    }
+  }).withPrivateSettings();
+  function getPresets() {
+    return settings13.plain.presets ?? [];
+  }
+  function setPresets(presets) {
+    settings13.store.presets = presets;
+  }
+  function getAssignments() {
+    return settings13.plain.assignments ?? {};
+  }
+  function PresetCard({ preset, onEdit, onDelete }) {
+    return /* @__PURE__ */ React2.createElement("div", {
+      role: "button",
+      className: cl20("card"),
+      onClick: onEdit
+    }, /* @__PURE__ */ React2.createElement("div", {
+      className: cl20("avatar")
+    }, /* @__PURE__ */ React2.createElement(PixelAvatarModule.PixelAvatar, {
+      seed: preset.id,
+      size: 32
+    })), /* @__PURE__ */ React2.createElement("div", {
+      className: cl20("card-name")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
+      size: "sm",
+      weight: "medium"
+    }, preset.name || "Untitled")), /* @__PURE__ */ React2.createElement("div", {
+      className: cl20("card-actions")
+    }, /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Edit",
+      onClick: (e) => {
+        e.stopPropagation();
+        onEdit();
+      }
+    }, /* @__PURE__ */ React2.createElement(PenIcon, {
+      className: "size-3.5 text-secondary"
+    })), /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Delete",
+      onClick: (e) => {
+        e.stopPropagation();
+        onDelete();
+      }
+    }, /* @__PURE__ */ React2.createElement(TrashIcon, {
+      className: "size-3.5 text-secondary"
+    }))));
+  }
+  function PresetEditor({ preset, onUpdate, onClose }) {
+    const overLimit = preset.prompt.length > MAX_LENGTH;
+    return /* @__PURE__ */ React2.createElement("div", {
+      className: cl20("editor")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      className: cl20("label")
+    }, "Name"), /* @__PURE__ */ React2.createElement(Input, {
+      type: "text",
+      className: cl20("input"),
+      placeholder: "Preset name",
+      value: preset.name,
+      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
+      autoComplete: "off"
+    }), /* @__PURE__ */ React2.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      className: cl20("label")
+    }, "Instructions"), /* @__PURE__ */ React2.createElement("div", {
+      className: cl20("textarea-wrap", { "textarea-wrap-error": overLimit })
+    }, /* @__PURE__ */ React2.createElement(Textarea, {
+      className: cl20("textarea"),
+      placeholder: "How should Grok behave?",
+      value: preset.prompt,
+      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
+    })), /* @__PURE__ */ React2.createElement("div", {
+      className: cl20("editor-footer")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
+      size: "xs",
+      color: overLimit ? undefined : "muted",
+      className: overLimit ? cl20("error-text") : undefined
+    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React2.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      onClick: onClose
+    }, "Done")));
+  }
+  function PresetsEditor() {
+    const presets = settings13.use(["presets"]).presets ?? [];
+    const [editingId, setEditingId] = useState(null);
+    const updatePreset = useCallback((updated) => {
+      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
+    }, []);
+    const deletePreset = useCallback((id) => {
+      setPresets(getPresets().filter((p) => p.id !== id));
+      const a = { ...getAssignments() };
+      for (const [k, v] of Object.entries(a)) {
+        if (v === id)
+          delete a[k];
+      }
+      settings13.store.assignments = a;
+      setEditingId((prev) => prev === id ? null : prev);
+    }, []);
+    const addPreset = useCallback(() => {
+      const id = randomId();
+      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
+      setEditingId(id);
+    }, []);
+    const editing = presets.find((p) => p.id === editingId);
+    return /* @__PURE__ */ React2.createElement("div", {
+      className: cl20("root")
+    }, /* @__PURE__ */ React2.createElement("div", {
+      className: cl20("grid")
+    }, presets.map((p) => /* @__PURE__ */ React2.createElement(PresetCard, {
+      key: p.id,
+      preset: p,
+      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
+      onDelete: () => deletePreset(p.id)
+    })), /* @__PURE__ */ React2.createElement("div", {
+      role: "button",
+      className: cl20("card", "card-add"),
+      onClick: addPreset
+    }, /* @__PURE__ */ React2.createElement(PlusIcon, {
+      className: "size-4 text-secondary"
+    }), /* @__PURE__ */ React2.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      color: "muted"
+    }, "New"))), editing && /* @__PURE__ */ React2.createElement(PresetEditor, {
+      preset: editing,
+      onUpdate: updatePreset,
+      onClose: () => setEditingId(null)
+    }));
+  }
+  function InstructionsMenu({ conversationId }) {
+    const presets = settings13.use(["presets"]).presets ?? [];
+    const assignments = settings13.use(["assignments"]).assignments ?? {};
+    const activePresetId = assignments[conversationId];
+    const assign = useCallback((presetId) => {
+      const a = { ...getAssignments() };
+      if (presetId)
+        a[conversationId] = presetId;
+      else
+        delete a[conversationId];
+      settings13.store.assignments = a;
+    }, [conversationId]);
+    if (!presets.length)
+      return null;
+    return /* @__PURE__ */ React2.createElement(MenuSub, null, /* @__PURE__ */ React2.createElement(MenuSubTrigger, {
+      className: cl20("trigger")
+    }, /* @__PURE__ */ React2.createElement(BookIcon, {
+      size: 16
+    }), " Instructions"), /* @__PURE__ */ React2.createElement(MenuSubContent, null, /* @__PURE__ */ React2.createElement(MenuItem, {
+      onSelect: () => assign(),
+      className: cl20("menu-item")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
+      size: "sm"
+    }, "None"), !activePresetId && /* @__PURE__ */ React2.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })), presets.map((p) => /* @__PURE__ */ React2.createElement(MenuItem, {
+      key: p.id,
+      onSelect: () => assign(p.id),
+      className: cl20("menu-item")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
+      size: "sm"
+    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React2.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })))));
+  }
+  var customInstructions_default = definePlugin({
+    name: "CustomInstructions",
+    icon: ScrollTextIcon,
+    description: "Create instruction presets and assign them to conversations.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings13,
+    contextMenuItems: {
+      conversation: {
+        label: "Instructions",
+        render: ErrorBoundary.wrap(InstructionsMenu)
+      }
+    },
+    _getPrompt() {
+      const { conversationId } = ChatPageStore.useChatPageStore.getState();
+      if (!conversationId)
+        return;
+      const presetId = getAssignments()[conversationId];
+      if (!presetId)
+        return;
+      const preset = getPresets().find((p) => p.id === presetId);
+      return preset?.prompt?.trim() || undefined;
+    },
+    patches: [
+      {
+        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
+        all: true,
+        replacement: {
+          match: /customInstructions:(\i)\.customInstructions/g,
+          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
+        }
+      }
+    ]
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/downloadTTS/styles.css
+  registerStyle("downloadTTS", `.void-download-tts-spinner {
+    pointer-events: none;
+}
+`);
+
+  // src/plugins/downloadTTS/index.tsx
+  var cl21 = classNameFactory("void-download-tts-");
+  var logger24 = new Logger("DownloadTTS");
+  async function fetchAndDownload() {
+    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
+    if (!currentStreamId)
+      return;
+    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
+    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
+    if (voiceId)
+      url += `?voiceId=${encodeURIComponent(voiceId)}`;
+    const res = await fetch(url);
+    if (!res.ok)
+      throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
+  }
+  function DownloadButton() {
+    const [loading, onClick] = useAsyncAction(async () => {
+      try {
+        await fetchAndDownload();
+      } catch (e) {
+        logger24.error("Failed to download TTS audio:", e);
+      }
+    });
+    return /* @__PURE__ */ React2.createElement(Button, {
+      "aria-label": "Download audio",
+      onClick,
+      disabled: loading,
+      size: "md",
+      shape: "square",
+      variant: "tertiary"
+    }, loading ? /* @__PURE__ */ React2.createElement(Spinner, {
+      size: "sm",
+      className: cl21("spinner")
+    }) : /* @__PURE__ */ React2.createElement(DownloadIcon, {
+      size: 16
+    }));
+  }
+  var downloadTTS_default = definePlugin({
+    name: "DownloadTTS",
+    icon: Volume2Icon,
+    description: "Add a download button to the TTS playback controls.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    patches: [{
+      find: 'tts-controls.stop.label","Stop"',
+      all: true,
+      replacement: {
+        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
+        replace: "$1,$self._renderDownloadButton()]"
+      }
+    }],
+    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/exportChat/styles.css
+  registerStyle("exportChat", `.void-export-icon {
+    margin-inline-end: 0.5rem;
+}
+`);
+
+  // src/plugins/exportChat/index.tsx
+  var logger25 = new Logger("ExportChat");
+  function buildExportMessage(r) {
+    return {
+      id: r.responseId,
+      sender: r.sender,
+      message: r.message,
+      query: r.query,
+      createTime: r.createTime,
+      model: r.requestMetadata?.model ?? r.model,
+      ...r.thinkingTrace && { thinkingTrace: r.thinkingTrace },
+      ...r.webSearchResults?.length && { webSearchResults: r.webSearchResults },
+      ...r.generatedImageUrls?.length && { generatedImageUrls: r.generatedImageUrls },
+      ...r.fileAttachments?.length && { fileAttachments: r.fileAttachments },
+      ...r.steps?.length && { steps: r.steps }
+    };
+  }
+  function formatTs(ts) {
+    return ts ? new Date(ts).toLocaleString() : "";
+  }
+  function sender(s) {
+    return s.toLowerCase() === "human" ? "You" : "Grok";
+  }
+  function toMarkdown(title, messages) {
+    const lines = [`# ${title}`, ""];
+    for (const m of messages) {
+      const ts = formatTs(m.createTime);
+      lines.push(`## ${sender(m.sender)}${ts ? ` — ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
+      if (m.thinkingTrace)
+        lines.push("<details><summary>Thinking</summary>", "", m.thinkingTrace, "", "</details>", "");
+      const mdText = m.query || m.message;
+      if (mdText)
+        lines.push(mdText, "");
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls)
+          lines.push(`![image](${url})`);
+        lines.push("");
+      }
+      if (m.webSearchResults?.length) {
+        lines.push("**Web search results:**", "");
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (url)
+            lines.push(`- [${t ?? url}](${url})`);
+        }
+        lines.push("");
+      }
+      lines.push("---", "");
+    }
+    return lines.join(`
+`);
+  }
+  function toPlainText(title, messages) {
+    const lines = [title, "=".repeat(title.length), ""];
+    for (const m of messages) {
+      const ts = formatTs(m.createTime);
+      lines.push(`[${sender(m.sender)}]${ts ? ` ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
+      if (m.thinkingTrace)
+        lines.push("[Thinking]", m.thinkingTrace, "");
+      const txtText = m.query || m.message;
+      if (txtText)
+        lines.push(txtText, "");
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls)
+          lines.push(`  ${url}`);
+        lines.push("");
+      }
+      if (m.webSearchResults?.length) {
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (url)
+            lines.push(`  ${t ?? ""} - ${url}`);
+        }
+        lines.push("");
+      }
+      lines.push("-".repeat(40), "");
+    }
+    return lines.join(`
+`);
+  }
+  var HTML_HEAD = [
+    '<!DOCTYPE html><html><head><meta charset="utf-8">',
+    "<style>",
+    "body{font-family:system-ui,sans-serif;max-width:50rem;margin:2rem auto;padding:0 1rem;background:#0d0d0d;color:#e0e0e0}",
+    ".m{margin:1.5rem 0;padding:1rem;border-radius:.5rem;border:1px solid #222}",
+    ".h{background:#1a1a2e}.g{background:#111}",
+    ".s{font-weight:600;margin-bottom:.5rem;color:#aaa}.t{font-size:.8rem;color:#666}",
+    ".th{margin:.5rem 0;padding:.5rem;background:#1a1a1a;border-left:3px solid #444;font-size:.9rem;color:#999}",
+    "a{color:#6ea8fe}",
+    "</style></head><body>"
+  ].join(`
+`);
+  function toHtml(title, messages) {
+    const p = [HTML_HEAD, `<h1>${escapeHtml(title)}</h1>`];
+    for (const m of messages) {
+      const cls = m.sender.toLowerCase() === "human" ? "h" : "g";
+      const ts = formatTs(m.createTime);
+      p.push(`<div class="m ${cls}"><div class="s">${sender(m.sender)} <span class="t">${ts ? escapeHtml(ts) : ""}${m.model ? ` · ${escapeHtml(m.model)}` : ""}</span></div>`);
+      if (m.thinkingTrace)
+        p.push(`<details><summary>Thinking</summary><div class="th">${escapeHtml(m.thinkingTrace)}</div></details>`);
+      const text = m.query || m.message;
+      if (text)
+        p.push(`<div>${escapeHtml(text).replaceAll(`
+`, "<br>")}</div>`);
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls) {
+          const safe = safeUrl(url);
+          if (safe)
+            p.push(`<img src="${escapeHtml(safe, true)}" style="max-width:100%;margin:.5rem 0">`);
+        }
+      }
+      if (m.webSearchResults?.length) {
+        p.push("<ul>");
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (!url)
+            continue;
+          const safe = safeUrl(url);
+          if (safe)
+            p.push(`<li><a href="${escapeHtml(safe, true)}" rel="noopener noreferrer">${escapeHtml(t ?? safe)}</a></li>`);
+          else
+            p.push(`<li>${escapeHtml(t ?? url)}</li>`);
+        }
+        p.push("</ul>");
+      }
+      p.push("</div>");
+    }
+    p.push("</body></html>");
+    return p.join(`
+`);
+  }
+  var FORMATS = [
+    { fmt: "json", label: "JSON" },
+    { fmt: "md", label: "Markdown" },
+    { fmt: "txt", label: "Plain Text" },
+    { fmt: "html", label: "HTML" }
+  ];
+  async function exportChat(conversationId, format) {
+    const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
+    if (!responses?.length)
+      return;
+    const conversation = ConversationStore.useConversationStore.getState().byId[conversationId];
+    const title = conversation?.title ?? "Untitled Chat";
+    const messages = responses.map(buildExportMessage);
+    const filename = sanitizeFilename(title, "chat");
+    let content;
+    let mime;
+    switch (format) {
+      case "json":
+        content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
+        mime = "application/json";
+        break;
+      case "md":
+        content = toMarkdown(title, messages);
+        mime = "text/markdown";
+        break;
+      case "txt":
+        content = toPlainText(title, messages);
+        mime = "text/plain";
+        break;
+      case "html":
+        content = toHtml(title, messages);
+        mime = "text/html";
+        break;
+    }
+    await FileUtils.downloadBlob(new Blob([content], { type: mime }), `${filename}.${format}`);
+  }
+  function ExportMenu({ conversationId }) {
+    const streaming = useIsStreaming(conversationId);
+    return /* @__PURE__ */ React2.createElement(MenuSub, null, /* @__PURE__ */ React2.createElement(MenuSubTrigger, {
+      disabled: streaming
+    }, /* @__PURE__ */ React2.createElement(DownloadIcon, {
+      size: 16,
+      className: "void-export-icon"
+    }), "Export"), /* @__PURE__ */ React2.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React2.createElement(MenuItem, {
+      key: fmt,
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger25.error("Failed to export chat", e))
+    }, label))));
+  }
+  var exportChat_default = definePlugin({
+    name: "ExportChat",
+    icon: FileDownIcon,
+    description: "Export conversations in multiple formats from the right-click menu.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    contextMenuItems: {
+      conversation: {
+        label: "Export",
+        render: ErrorBoundary.wrap(ExportMenu)
+      }
+    }
+  });
+
+  // src/plugins/incognito/index.ts
+  var store2 = () => SettingsStore.useSettingsStore.getState();
+  var unsubscribe = null;
+  function enforce() {
+    if (!store2().isIncognito)
+      store2().setIsIncognito(true);
+  }
+  var incognito_default = definePlugin({
+    name: "Incognito",
+    icon: GhostFilledIcon,
+    description: "Force private chat mode for new conversations.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      enforce();
+      unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce);
+    },
+    stop() {
+      unsubscribe?.();
+      unsubscribe = null;
+      store2().setIsIncognito(false);
+    }
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/inputHistory/styles.css
+  registerStyle("inputHistory", `.void-ih-hud {
+    contain: content;
+    position: fixed;
+    z-index: 2147483646;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.5rem;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-secondary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.12s ease;
+}
+
+.void-ih-hud-on {
+    opacity: 1;
+}
+
+.void-ih-panel {
+    min-width: 0;
+}
+
+.void-ih-head {
+    min-width: 0;
+}
+
+.void-ih-search {
+    width: 100%;
+}
+
+.void-ih-empty {
+    margin: 0;
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-ih-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow: auto;
+    max-height: min(22rem, 45vh);
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-l2) / 80%) transparent;
+}
+
+.void-ih-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    background: hsl(var(--surface-l1) / 72%);
+}
+
+.void-ih-item:hover {
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 45%);
+}
+
+.void-ih-item-on {
+    align-items: start;
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 60%);
+}
+
+.void-ih-item:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ih-main {
+    min-width: 0;
+    cursor: pointer;
+}
+
+.void-ih-body {
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: hsl(var(--fg-primary));
+    font-size: 0.8125rem;
+    line-height: 1.45;
+}
+
+.void-ih-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.void-ih-item-on .void-ih-body {
+    max-height: 12rem;
+    overflow: auto;
+    scrollbar-width: thin;
+}
+
+.void-ih-side {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.void-ih-item-on .void-ih-side {
+    align-items: flex-start;
+    padding-top: 0.125rem;
+}
+
+.void-ih-lines {
+    min-width: 1.5rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-tertiary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.void-ih-actions {
+    display: flex;
+    gap: 0.125rem;
+    padding: 0.125rem;
+    border-radius: 0.5rem;
+    background: hsl(var(--surface-l2) / 90%);
+}
+
+.void-ih-actions :is(button) {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+}
+
+.void-ih-item-on .void-ih-actions,
+.void-ih-item:hover .void-ih-actions {
+    background: hsl(var(--surface-l1));
+}
+
+.void-ih-pager {
+    min-width: 0;
+}
+
+.void-ih-page {
+    min-width: 3.5rem;
+    color: hsl(var(--fg-secondary));
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-ih-hud {
+        transition: none;
+    }
+}
+`);
+
+  // src/plugins/inputHistory/index.tsx
+  var logger26 = new Logger("InputHistory");
+  var cl22 = classNameFactory("void-ih-");
+  var EDITOR_SEL2 = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
+  var ZWSP = /\u200B/g;
+  var MAX_MIN = 10;
+  var MAX_MAX = 500;
+  var MAX_DEFAULT = 100;
+  var HUD_GAP_PX = 8;
+  var APPLY_QUIET_MS = 120;
+  var CAPTURE_DEDUPE_MS = 2000;
+  var PAGE_SIZE = 10;
+  var settings14 = definePluginSettings({
+    maxEntries: {
+      type: 5 /* SLIDER */,
+      description: "Maximum stored prompts.",
+      min: MAX_MIN,
+      max: MAX_MAX,
+      default: MAX_DEFAULT
+    },
+    history: {
+      type: 6 /* COMPONENT */,
+      component: HistoryPanel
+    }
+  }).withPrivateSettings();
+  var recentAt = new Map;
+  var cursor = 0;
+  var draft = "";
+  var recalling = false;
+  var applying = false;
+  var composing = false;
+  var applyGen = 0;
+  var keys = null;
+  var applyTimer;
+  var applyEl = null;
+  var applyAtStart = true;
+  function getEntries() {
+    const raw = settings14.plain.entries;
+    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
+  }
+  function cap(entries) {
+    const max = clamp(settings14.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
+    return entries.length > max ? entries.slice(entries.length - max) : entries;
+  }
+  function setEntries(entries) {
+    settings14.store.entries = entries;
+  }
+  function normalize(text) {
+    return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
+  }
+  function imeEvent(e) {
+    if (composing)
+      return true;
+    if (e instanceof InputEvent && e.isComposing)
+      return true;
+    if (e instanceof KeyboardEvent && (e.isComposing || e.keyCode === 229))
+      return true;
+    return false;
+  }
+  function invalidateApply() {
+    applyGen++;
+    applying = false;
+    applyEl = null;
+    clearTimeout(applyTimer);
+    applyTimer = undefined;
+  }
+  function resetBrowse(length) {
+    invalidateApply();
+    cursor = length;
+    draft = "";
+    recalling = false;
+    hideHud();
+  }
+  function chatEditor(t) {
+    if (t instanceof Text)
+      return t.parentElement?.closest(EDITOR_SEL2) ?? null;
+    if (t instanceof Element)
+      return t.closest(EDITOR_SEL2) ?? null;
+    return null;
+  }
+  function editorText(el) {
+    const blocks = el.querySelectorAll(":scope > *");
+    const raw = blocks.length ? Array.from(blocks, (b) => b.textContent ?? "").join(`
+`) : el.innerText ?? el.textContent ?? "";
+    return normalize(raw);
+  }
+  function spanHeight(range) {
+    const rects = range.getClientRects();
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (const r of rects) {
+      if (r.height === 0 && r.width === 0)
+        continue;
+      if (r.top < top)
+        top = r.top;
+      if (r.bottom > bottom)
+        bottom = r.bottom;
+    }
+    if (top === Infinity)
+      return range.getBoundingClientRect().height;
+    return bottom - top;
+  }
+  function caretOnEdge(el) {
+    const sel = window.getSelection();
+    if (!sel?.rangeCount || !sel.isCollapsed)
+      return { first: false, last: false };
+    const caret = sel.getRangeAt(0);
+    if (!el.contains(caret.startContainer))
+      return { first: false, last: false };
+    if (!el.innerText?.trim())
+      return { first: true, last: true };
+    const before = document.createRange();
+    before.selectNodeContents(el);
+    before.setEnd(caret.startContainer, caret.startOffset);
+    const after = document.createRange();
+    after.selectNodeContents(el);
+    after.setStart(caret.startContainer, caret.startOffset);
+    const { lineHeight, fontSize } = getComputedStyle(el);
+    const lh = parseFloat(lineHeight);
+    const fs = parseFloat(fontSize) || 16;
+    const budget = (lh > 0 ? lh : fs * 1.5) * 1.5;
+    return {
+      first: spanHeight(before) <= budget,
+      last: spanHeight(after) <= budget
+    };
+  }
+  function matchesRecall(el) {
+    if (!recalling)
+      return false;
+    const list = getEntries();
+    const expected = cursor < list.length ? list[cursor] : draft;
+    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
+  }
+  function dropRecall(el) {
+    invalidateApply();
+    cursor = getEntries().length;
+    draft = editorText(el);
+    recalling = false;
+    hideHud();
+  }
+  function placeCaret(el, atStart) {
+    if (composing)
+      return;
+    try {
+      const view = el.pmViewDesc?.view;
+      if (view) {
+        if (view.composing)
+          return;
+        const Sel = view.state.selection.constructor;
+        const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
+        view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
+        return;
+      }
+    } catch (err) {
+      logger26.debug("placeCaret pm failed:", err);
+    }
+    const native = window.getSelection();
+    if (!native)
+      return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(atStart);
+    native.removeAllRanges();
+    native.addRange(range);
+  }
+  function scheduleApplyEnd(gen) {
+    clearTimeout(applyTimer);
+    applyTimer = setTimeout(() => {
+      if (gen !== applyGen)
+        return;
+      applying = false;
+      const el = applyEl;
+      applyEl = null;
+      if (!el || composing)
+        return;
+      if (!recalling)
+        return;
+      if (!matchesRecall(el))
+        dropRecall(el);
+      else
+        placeCaret(el, applyAtStart);
+    }, APPLY_QUIET_MS);
+  }
+  function setEditorText(el, text, atStart) {
+    el.focus();
+    const sel = window.getSelection();
+    if (!sel)
+      return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    applying = true;
+    applyEl = el;
+    applyAtStart = atStart;
+    const gen = ++applyGen;
+    try {
+      if (!text)
+        document.execCommand("delete");
+      else
+        document.execCommand("insertText", false, text);
+    } catch (err) {
+      logger26.debug("insertText failed:", err);
+    }
+    placeCaret(el, atStart);
+    scheduleApplyEnd(gen);
+  }
+  function hudEl() {
+    let el = document.querySelector(`.${cl22("hud")}`);
+    if (el)
+      return el;
+    el = document.createElement("div");
+    el.className = cl22("hud");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+    return el;
+  }
+  function hideHud() {
+    document.querySelector(`.${cl22("hud")}`)?.classList.remove(cl22("hud-on"));
+  }
+  function showHud(label, editor) {
+    const bar = editor.closest(".query-bar");
+    if (!bar)
+      return;
+    const el = hudEl();
+    el.textContent = label;
+    requestAnimationFrame(() => {
+      const r = bar.getBoundingClientRect();
+      el.style.left = `${r.left + r.width / 2}px`;
+      el.style.top = `${r.top - HUD_GAP_PX}px`;
+      el.classList.add(cl22("hud-on"));
+    });
+  }
+  function pushEntry(text) {
+    const value = normalize(text);
+    if (!value)
+      return;
+    const now = Date.now();
+    const prev = recentAt.get(value);
+    if (prev != null && now - prev < CAPTURE_DEDUPE_MS)
+      return;
+    recentAt.set(value, now);
+    const list = getEntries();
+    if (list[list.length - 1] === value) {
+      resetBrowse(list.length);
+      return;
+    }
+    const next = cap([...list, value]);
+    setEntries(next);
+    resetBrowse(next.length);
+  }
+  function cycle(older, el) {
+    const list = getEntries();
+    if (!list.length && older)
+      return;
+    if (cursor >= list.length) {
+      draft = editorText(el);
+      cursor = list.length;
+    }
+    const next = older ? cursor - 1 : cursor + 1;
+    if (next < 0 || next > list.length)
+      return;
+    cursor = next;
+    recalling = true;
+    setEditorText(el, next === list.length ? draft : list[next], older);
+    if (next < list.length)
+      showHud(`${next + 1} / ${list.length}`, el);
+    else
+      hideHud();
+  }
+  function onKeyDown2(e) {
+    if (imeEvent(e))
+      return;
+    if (e.ctrlKey || e.metaKey)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    if (applying && e.key !== "ArrowUp" && e.key !== "ArrowDown")
+      invalidateApply();
+    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
+      dropRecall(el);
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
+      pushEntry(editorText(el));
+      return;
+    }
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown")
+      return;
+    if (e.shiftKey)
+      return;
+    const older = e.key === "ArrowUp";
+    const force = e.altKey;
+    const list = getEntries();
+    if (!force) {
+      const edge = caretOnEdge(el);
+      if (older && !edge.first || !older && !edge.last)
+        return;
+    }
+    if (older && (!list.length || cursor <= 0))
+      return;
+    if (!older && cursor >= list.length)
+      return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    cycle(older, el);
+  }
+  function onPointerDown(e) {
+    if (!recalling)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    dropRecall(el);
+  }
+  function onCompositionStart(e) {
+    if (!chatEditor(e.target))
+      return;
+    composing = true;
+    invalidateApply();
+  }
+  function onCompositionEnd(e) {
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    composing = false;
+    if (recalling && !matchesRecall(el))
+      dropRecall(el);
+  }
+  function onInput(e) {
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    if (imeEvent(e)) {
+      if (applying)
+        invalidateApply();
+      return;
+    }
+    const recalled = matchesRecall(el);
+    if (applying && recalled)
+      return;
+    if (recalling && !recalled)
+      dropRecall(el);
+  }
+  function onSubmit(e) {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement))
+      return;
+    const editor = form.querySelector(EDITOR_SEL2);
+    if (editor instanceof HTMLElement)
+      pushEntry(editorText(editor));
+  }
+  function onClick(e) {
+    const t = e.target;
+    if (!(t instanceof Element))
+      return;
+    const ctrl = t.closest("button, [role='button']");
+    if (!ctrl)
+      return;
+    const bar = ctrl.closest(".query-bar");
+    if (!bar || ctrl.closest("[data-query-bar-mode-select]"))
+      return;
+    const label = (ctrl.getAttribute("aria-label") ?? "").toLowerCase();
+    const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
+    if (!submit && !label.includes("send") && !label.includes("submit"))
+      return;
+    const editor = bar.querySelector(EDITOR_SEL2);
+    if (editor instanceof HTMLElement)
+      pushEntry(editorText(editor));
+  }
+  function removeEntry(index) {
+    const list = getEntries();
+    if (index < 0 || index >= list.length)
+      return;
+    const next = list.filter((_, i) => i !== index);
+    setEntries(next);
+    resetBrowse(next.length);
+  }
+  function HistoryPanel() {
+    const { entries } = settings14.use(["entries"]);
+    const list = entries ?? [];
+    const [query, setQuery] = useState("");
+    const [page, setPage] = useState(0);
+    const [openId, setOpenId] = useState(null);
+    const [confirm, setConfirm] = useState(false);
+    const needle = query.trim().toLowerCase();
+    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).reverse();
+    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+    const current = Math.min(page, pageCount - 1);
+    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
+    return /* @__PURE__ */ React2.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.65rem",
+      className: cl22("panel")
+    }, /* @__PURE__ */ React2.createElement(Flex, {
+      className: cl22("head"),
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React2.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React2.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      disabled: !list.length,
+      onClick: () => setConfirm(true)
+    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React2.createElement(Input, {
+      type: "text",
+      placeholder: "Search prompts",
+      value: query,
+      onChange: (e) => {
+        setQuery(e.target.value);
+        setPage(0);
+      },
+      className: cl22("search")
+    }), list.length === 0 && /* @__PURE__ */ React2.createElement(Paragraph, {
+      className: cl22("empty")
+    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React2.createElement(Paragraph, {
+      className: cl22("empty")
+    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React2.createElement("div", {
+      className: cl22("list")
+    }, slice.map((row) => {
+      const lines = row.text.split(`
+`).length;
+      const expanded = openId === row.index;
+      return /* @__PURE__ */ React2.createElement("div", {
+        key: row.index,
+        className: cl22("item", expanded && "item-on")
+      }, /* @__PURE__ */ React2.createElement("div", {
+        className: cl22("main"),
+        role: "button",
+        tabIndex: 0,
+        onClick: () => setOpenId(expanded ? null : row.index),
+        onKeyDown: (e) => {
+          if (e.key !== "Enter" && e.key !== " ")
+            return;
+          e.preventDefault();
+          setOpenId(expanded ? null : row.index);
+        }
+      }, /* @__PURE__ */ React2.createElement("span", {
+        className: cl22("body", !expanded && "clamp")
+      }, row.text)), /* @__PURE__ */ React2.createElement("div", {
+        className: cl22("side")
+      }, lines > 1 && /* @__PURE__ */ React2.createElement("span", {
+        className: cl22("lines")
+      }, lines), /* @__PURE__ */ React2.createElement("div", {
+        className: cl22("actions")
+      }, /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "sm",
+        shape: "square",
+        tooltipContent: "Copy",
+        "aria-label": "Copy",
+        onClick: () => {
+          copyToClipboard(row.text).catch((err) => logger26.error("copy failed:", err));
+        }
+      }, /* @__PURE__ */ React2.createElement(CopyIcon, {
+        size: 18
+      })), /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "sm",
+        shape: "square",
+        tooltipContent: "Delete",
+        "aria-label": "Delete",
+        onClick: () => {
+          if (openId === row.index)
+            setOpenId(null);
+          removeEntry(row.index);
+        }
+      }, /* @__PURE__ */ React2.createElement(Trash2Icon, {
+        size: 18
+      })))));
+    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React2.createElement(Flex, {
+      className: cl22("pager"),
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React2.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Previous page",
+      disabled: current <= 0,
+      onClick: () => setPage(current - 1)
+    }, /* @__PURE__ */ React2.createElement(ChevronLeftIcon, {
+      size: 18
+    })), /* @__PURE__ */ React2.createElement("span", {
+      className: cl22("page")
+    }, current + 1, " / ", pageCount), /* @__PURE__ */ React2.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Next page",
+      disabled: current >= pageCount - 1,
+      onClick: () => setPage(current + 1)
+    }, /* @__PURE__ */ React2.createElement(ChevronRightIcon, {
+      size: 18
+    }))), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+      open: confirm,
+      onOpenChange: setConfirm,
+      title: "Clear input history",
+      description: "Delete all stored prompts? This cannot be undone.",
+      confirmText: "Clear",
+      danger: true,
+      onConfirm: () => {
+        setEntries([]);
+        resetBrowse(0);
+        setOpenId(null);
+        setQuery("");
+        setPage(0);
+      }
+    }));
+  }
+  var inputHistory_default = definePlugin({
+    name: "InputHistory",
+    icon: HistoryIcon,
+    description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    enabledByDefault: true,
+    settings: settings14,
+    managedStyle: "inputHistory",
+    cleanupSelectors: [".void-ih-hud"],
+    start() {
+      if (keys)
+        return;
+      cursor = getEntries().length;
+      recalling = false;
+      composing = false;
+      invalidateApply();
+      keys = new AbortController;
+      const { signal } = keys;
+      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
+      document.addEventListener("input", onInput, { capture: true, signal });
+      document.addEventListener("compositionstart", onCompositionStart, { capture: true, signal });
+      document.addEventListener("compositionend", onCompositionEnd, { capture: true, signal });
+      document.addEventListener("submit", onSubmit, { capture: true, signal });
+      document.addEventListener("click", onClick, { capture: true, signal });
+      document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
+    },
+    stop() {
+      keys?.abort();
+      keys = null;
+      hideHud();
+      recentAt.clear();
+      composing = false;
+      recalling = false;
+      invalidateApply();
+    },
+    onSettingsChange() {
+      const current = getEntries();
+      const next = cap(current);
+      if (next.length !== current.length)
+        setEntries(next);
+      if (cursor > next.length)
+        cursor = next.length;
+    }
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/messageTimestamps/styles.css
+  registerStyle("messageTimestamps", `.void-timestamp {
+    margin-bottom: 0.125rem;
+}
+
+@media print {
+    .void-timestamp {
+        display: none;
+    }
+}
+`);
+
+  // src/plugins/messageTimestamps/time.ts
+  var FRESH_MS = 2 * 60 * 1000;
+  var BORROW_MS = 1000;
+  var MIN_MS = Date.UTC(2020, 0, 1);
+  var MAX_SKEW_MS = 24 * 60 * 60 * 1000;
+  var TIME_KEYS = ["thinkingStartTime", "createTime", "create_time", "createdAt", "created_at"];
+  function isFresh(ms, now = Date.now()) {
+    return Math.abs(now - ms) < FRESH_MS;
+  }
+  function inRange(ms, now = Date.now()) {
+    return Number.isFinite(ms) && ms >= MIN_MS && ms <= now + MAX_SKEW_MS;
+  }
+  function fromUnixish(n, now = Date.now()) {
+    if (!Number.isFinite(n) || n <= 0)
+      return null;
+    const ms = n < 1000000000000 ? n * 1000 : n;
+    return inRange(ms, now) ? Math.round(ms) : null;
+  }
+  function parseTime(value, now = Date.now()) {
+    if (value == null || value === "")
+      return null;
+    if (typeof value === "number")
+      return fromUnixish(value, now);
+    if (typeof value === "bigint")
+      return fromUnixish(Number(value), now);
+    if (value instanceof Date) {
+      const t = value.getTime();
+      return Number.isNaN(t) || !inRange(t, now) ? null : t;
+    }
+    if (typeof value === "string") {
+      const s = value.trim();
+      if (!s)
+        return null;
+      if (/^\d+(\.\d+)?$/.test(s))
+        return fromUnixish(Number(s), now);
+      const t = Date.parse(s);
+      return Number.isNaN(t) || !inRange(t, now) ? null : t;
+    }
+    if (typeof value !== "object")
+      return null;
+    const rec = value;
+    if (rec.seconds != null) {
+      const sec = typeof rec.seconds === "string" ? Number(rec.seconds) : Number(rec.seconds);
+      const nanos = Number(rec.nanos) || 0;
+      if (!Number.isFinite(sec))
+        return null;
+      const ms = sec * 1000 + Math.floor(nanos / 1e6);
+      return inRange(ms, now) ? Math.round(ms) : null;
+    }
+    if (rec.$date != null) {
+      const date = rec.$date;
+      if (date && typeof date === "object" && "$numberLong" in date) {
+        return parseTime(date.$numberLong, now);
+      }
+      return parseTime(date, now);
+    }
+    if (rec.$numberLong != null)
+      return parseTime(rec.$numberLong, now);
+    return parseTime(rec.createTime ?? rec.create_time ?? rec.createdAt ?? rec.created_at, now);
+  }
+  function uuidTime(id, now = Date.now()) {
+    if (typeof id !== "string")
+      return null;
+    const compact = id.trim().replaceAll("-", "").toLowerCase();
+    if (compact.length !== 32)
+      return null;
+    if (compact.charAt(12) !== "7")
+      return null;
+    const variant = parseInt(compact.charAt(16), 16);
+    if (!Number.isFinite(variant) || (variant & 12) !== 8)
+      return null;
+    const ms = parseInt(compact.slice(0, 12), 16);
+    return inRange(ms, now) ? ms : null;
+  }
+  function asRecord(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
+  }
+  function recordId(record) {
+    const { responseId, _id } = record;
+    if (typeof responseId === "string" && responseId)
+      return responseId;
+    return typeof _id === "string" ? _id : "";
+  }
+  function isHumanSender(sender) {
+    if (typeof sender !== "string")
+      return false;
+    const normalized = sender.toLowerCase();
+    return normalized === "human" || normalized === "user";
+  }
+  function isOptimisticState(state) {
+    if (typeof state !== "string")
+      return false;
+    const normalized = state.toLowerCase();
+    return normalized === "optimistic" || normalized === "streaming";
+  }
+  function pickTimes(record, now = Date.now()) {
+    const out = [];
+    const seen = new Set;
+    const add = (value) => {
+      const ms = parseTime(value, now);
+      if (ms == null || seen.has(ms))
+        return;
+      seen.add(ms);
+      out.push(ms);
+    };
+    for (const key of TIME_KEYS)
+      add(record[key]);
+    const meta = asRecord(record.metadata);
+    if (meta) {
+      for (const key of TIME_KEYS)
+        add(meta[key]);
+    }
+    return out;
+  }
+  function oldestTrusted(values, now = Date.now()) {
+    let best = null;
+    for (const ms of values) {
+      if (ms == null || isFresh(ms, now))
+        continue;
+      if (best == null || ms < best)
+        best = ms;
+    }
+    return best;
+  }
+  function chooseTime(opts) {
+    const now = opts.now ?? Date.now();
+    const trusted = oldestTrusted([opts.stored, ...opts.fieldTimes, opts.uuid], now);
+    if (trusted != null)
+      return trusted;
+    return opts.stored ?? opts.fieldTimes[0] ?? opts.uuid ?? null;
+  }
+  function trustedTime(opts) {
+    const now = opts.now ?? Date.now();
+    return oldestTrusted([opts.stored ?? null, ...opts.fieldTimes, opts.uuid], now);
+  }
+  function shouldKeepStored(prev, incoming, now = Date.now()) {
+    if (incoming === prev)
+      return true;
+    if (isFresh(incoming, now) && incoming >= prev)
+      return true;
+    if (!isFresh(prev, now) && incoming > prev)
+      return true;
+    return false;
+  }
+  function preferHumanTime(own, borrowed) {
+    if (borrowed == null)
+      return own;
+    if (own == null || own > borrowed)
+      return borrowed;
+    return own;
+  }
+  function textKey(value) {
+    if (typeof value !== "string")
+      return "";
+    const s = value.trim();
+    if (!s)
+      return "";
+    const slice = s.slice(0, 240);
+    let h = 5381;
+    for (let i = 0;i < slice.length; i++)
+      h = Math.imul(h, 33) ^ slice.charCodeAt(i);
+    return (h >>> 0).toString(36);
+  }
+  function stampOf(rec, now) {
+    const id = recordId(rec);
+    const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(id, now), now });
+    return ms == null ? null : ms - BORROW_MS;
+  }
+  function nextNonHuman(records, from) {
+    for (let i = from;i < records.length; i++) {
+      if (!isHumanSender(records[i].sender))
+        return records[i];
+    }
+    return null;
+  }
+  function childTime(id, records, now = Date.now()) {
+    if (!id)
+      return null;
+    for (const rec of records) {
+      if (rec.parentResponseId !== id || isHumanSender(rec.sender))
+        continue;
+      const ms = parseTime(rec.thinkingStartTime, now);
+      if (ms != null)
+        return ms - BORROW_MS;
+    }
+    return null;
+  }
+  function authoritativeTime(rec, records, now = Date.now()) {
+    if (isHumanSender(rec.sender))
+      return childTime(recordId(rec), records, now);
+    return parseTime(rec.thinkingStartTime, now);
+  }
+  function neighborTime(id, records, now = Date.now()) {
+    if (!id)
+      return null;
+    let next = null;
+    for (let i = 0;i < records.length; i++) {
+      const rec = records[i];
+      const recId = recordId(rec);
+      if (rec.parentResponseId === id && !isHumanSender(rec.sender)) {
+        const ms = stampOf(rec, now);
+        if (ms != null)
+          return ms;
+      }
+      if (recId === id && next == null)
+        next = nextNonHuman(records, i + 1);
+    }
+    if (!next)
+      return null;
+    return stampOf(next, now);
+  }
+  function childTimeFromNodes(id, nodes, byId, now = Date.now()) {
+    if (!id || !nodes.length)
+      return null;
+    let nextId = "";
+    for (let i = 0;i < nodes.length; i++) {
+      const node = nodes[i];
+      const recId = recordId(node);
+      if (node.parentResponseId === id && !isHumanSender(node.sender)) {
+        const rec = byId[recId] ?? node;
+        const ms = stampOf(rec, now);
+        if (ms != null)
+          return ms;
+      }
+      if (recId === id && !nextId)
+        nextId = recordId(nextNonHuman(nodes, i + 1) ?? {});
+    }
+    if (!nextId)
+      return null;
+    const rec = byId[nextId] ?? nodes.find((n) => recordId(n) === nextId);
+    return rec && !isHumanSender(rec.sender) ? stampOf(rec, now) : null;
+  }
+  function shouldPersistStamp(sender, ms, stored, now = Date.now(), state) {
+    if (stored != null)
+      return !shouldKeepStored(stored, ms, now);
+    if (isHumanSender(sender) && isFresh(ms, now))
+      return isOptimisticState(state);
+    return true;
+  }
+  function harvestResponses(value, now = Date.now()) {
+    const records = [];
+    collectRecords(value, 0, records, new Set);
+    const out = [];
+    const seen = new Set;
+    for (const rec of records) {
+      const id = recordId(rec);
+      if (!id || seen.has(id))
+        continue;
+      const authoritative = authoritativeTime(rec, records, now);
+      if (authoritative != null) {
+        seen.add(id);
+        out.push({ id, ms: authoritative, rec, authoritative: true });
+        continue;
+      }
+      const uuid = uuidTime(id, now);
+      const { sender, state } = rec;
+      const human = isHumanSender(sender);
+      const fieldTimes = human && !isOptimisticState(state) ? [] : pickTimes(rec, now);
+      let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
+      if (human) {
+        if (isOptimisticState(state)) {
+          if (ms == null)
+            continue;
+        } else {
+          ms = preferHumanTime(ms, neighborTime(id, records, now));
+          if (ms != null && isFresh(ms, now))
+            ms = null;
+        }
+      }
+      if (ms == null)
+        continue;
+      seen.add(id);
+      out.push({ id, ms, rec, authoritative: false });
+    }
+    return out;
+  }
+  function collectRecords(value, depth, out, seen) {
+    if (value == null || depth > 8)
+      return;
+    if (typeof value !== "object")
+      return;
+    if (seen.has(value))
+      return;
+    seen.add(value);
+    if (Array.isArray(value)) {
+      for (const item of value)
+        collectRecords(item, depth + 1, out, seen);
+      return;
+    }
+    const rec = value;
+    if (recordId(rec))
+      out.push(rec);
+    for (const child of Object.values(rec))
+      collectRecords(child, depth + 1, out, seen);
+  }
+
+  // src/plugins/messageTimestamps/index.tsx
+  var logger27 = new Logger("MessageTimestamps");
+  var STAMP_MAX = 5000;
+  var RESPONSE_URL = /\/(?:load-responses|share_links|response-node)(?:\/|\?|$)/i;
+  var settings15 = definePluginSettings({
+    showDate: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the full date for messages older than today.",
+      default: true
+    },
+    hideOwnMessages: {
+      type: 3 /* BOOLEAN */,
+      default: false,
+      description: "Hide timestamps on your own messages."
+    }
+  }).withPrivateSettings();
+  var tick = createExternalStore();
+  var cache = null;
+  var origFetch = null;
+  var origXhrOpen = null;
+  var origXhrSend = null;
+  var origList = null;
+  var hookedWindow = null;
+  var xhrMeta = new WeakMap;
+  function pageWindow2() {
+    return typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  }
+  function stamps() {
+    if (cache)
+      return cache;
+    cache = new Map;
+    const raw = settings15.plain.stamps;
+    if (raw && typeof raw === "object") {
+      for (const [id, ms] of Object.entries(raw)) {
+        if (typeof ms === "number" && Number.isFinite(ms))
+          cache.set(id, ms);
+      }
+    }
+    return cache;
+  }
+  function persistNow() {
+    const next = {};
+    for (const [id, ms] of stamps())
+      next[id] = ms;
+    settings15.store.stamps = next;
+  }
+  var persist2 = debounce(persistNow, 400);
+  function remember(id, ms, sender, state, force = false) {
+    if (!id)
+      return false;
+    const map = stamps();
+    const prev = map.get(id) ?? null;
+    if (!force && !shouldPersistStamp(sender, ms, prev, Date.now(), state))
+      return false;
+    if (map.has(id))
+      map.delete(id);
+    map.set(id, ms);
+    while (map.size > STAMP_MAX) {
+      const oldest = map.keys().next().value;
+      if (oldest == null)
+        break;
+      map.delete(oldest);
+    }
+    persist2();
+    return prev !== ms;
+  }
+  function conversationIdOf(id, rec) {
+    if (typeof rec.conversationId === "string")
+      return rec.conversationId;
+    try {
+      const { byConversationId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        if (list?.some((r) => r.responseId === id))
+          return cid;
+      }
+      for (const [cid, nodes] of Object.entries(nodesByConversationId ?? {})) {
+        if (nodes?.some((n) => n.responseId === id))
+          return cid;
+      }
+    } catch (e) {
+      logger27.debug("conversation id lookup failed", e);
+    }
+    return "";
+  }
+  function userKeys(rec, id) {
+    const keys = [];
+    if (id)
+      keys.push(`u:${id}`);
+    const { parentResponseId } = rec;
+    if (typeof parentResponseId === "string" && parentResponseId)
+      keys.push(`u:p:${parentResponseId}`);
+    const text = typeof rec.message === "string" && rec.message ? rec.message : typeof rec.query === "string" ? rec.query : "";
+    const fp = textKey(text);
+    if (fp) {
+      const cid = conversationIdOf(id, rec);
+      keys.push(cid ? `u:t:${cid}:${fp}` : `u:t:${fp}`);
+    }
+    return keys;
+  }
+  function gatewayRecords(cid) {
+    const out = [];
+    try {
+      const { conversations } = MessageStore.useMessageStore.getState();
+      const slices = cid ? [conversations?.[cid]] : Object.values(conversations ?? {});
+      for (const slice of slices) {
+        for (const { status, content } of Object.values(slice?.nodes ?? {})) {
+          if (!content)
+            continue;
+          const { responseId, sender, parentResponseId, createTime, thinkingStartTime, state } = content;
+          out.push({
+            responseId,
+            sender,
+            parentResponseId,
+            thinkingStartTime,
+            createTime: status === "complete" ? undefined : createTime,
+            state: status === "ack-pending" ? "optimistic" : state
+          });
+        }
+      }
+    } catch (e) {
+      logger27.debug("message store unavailable", e);
+    }
+    return out;
+  }
+  function gatewaySettled(cid, id) {
+    if (!cid)
+      return false;
+    try {
+      return MessageStore.useMessageStore.getState().conversations?.[cid]?.nodes?.[id]?.status === "complete";
+    } catch (e) {
+      logger27.debug("message store unavailable", e);
+      return false;
+    }
+  }
+  function extraKeys(rec, id) {
+    const keys = [];
+    if (id)
+      keys.push(`h:${id}`);
+    const { parentResponseId } = rec;
+    if (typeof parentResponseId === "string" && parentResponseId)
+      keys.push(`h:${parentResponseId}`);
+    try {
+      const { byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        const index = list?.findIndex((r) => r.responseId === id) ?? -1;
+        if (index < 0)
+          continue;
+        keys.push(`h:${cid}:${index}`);
+        break;
+      }
+    } catch (e) {
+      logger27.debug("stable key lookup failed", e);
+    }
+    return keys;
+  }
+  function storedMs(id, rec, user) {
+    const map = stamps();
+    const keys = user ? userKeys(rec, id) : [id, ...extraKeys(rec, id)];
+    for (const key of keys) {
+      const ms = map.get(key);
+      if (ms != null)
+        return ms;
+    }
+    return null;
+  }
+  function rememberKeys(id, rec, ms, sender, user, force = false) {
+    const { state } = rec;
+    let changed = false;
+    if (user) {
+      for (const key of userKeys(rec, id)) {
+        if (remember(key, ms, "human", state, force))
+          changed = true;
+      }
+      return changed;
+    }
+    if (remember(id, ms, sender, state, force))
+      changed = true;
+    for (const key of extraKeys(rec, id)) {
+      if (remember(key, ms, sender, state, force))
+        changed = true;
+    }
+    return changed;
+  }
+  function storeRecords(id) {
+    try {
+      const { byId, byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const list of Object.values(byConversationId ?? {})) {
+        if (list?.some((r) => r.responseId === id))
+          return list;
+      }
+      return Object.values(byId ?? {});
+    } catch (e) {
+      logger27.debug("response store unavailable", e);
+      return [];
+    }
+  }
+  function borrowedMs(id, cid) {
+    if (cid) {
+      const ms = neighborTime(id, gatewayRecords(cid));
+      if (ms != null)
+        return ms;
+    }
+    try {
+      const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+      const lookup = byId;
+      for (const nodes of Object.values(nodesByConversationId ?? {})) {
+        const ms = childTimeFromNodes(id, nodes ?? [], lookup);
+        if (ms != null)
+          return ms;
+      }
+      const records = [
+        ...storeRecords(id),
+        ...Object.values(lookup).filter((r) => r != null)
+      ];
+      return neighborTime(id, records) ?? conversationCreateTime(id);
+    } catch (e) {
+      logger27.debug("node neighbor lookup failed", e);
+    }
+    return neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
+  }
+  function conversationCreateTime(id) {
+    try {
+      const { byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        const first = list?.find((r) => isHumanSender(r.sender));
+        if (first?.responseId !== id)
+          continue;
+        const conv = ConversationStore.useConversationStore.getState().byId?.[cid];
+        const ms = parseTime(conv?.createTime);
+        return ms != null && !isFresh(ms) ? ms : null;
+      }
+    } catch (e) {
+      logger27.debug("conversation time lookup failed", e);
+    }
+    return null;
+  }
+  function fullRecord(id, rec) {
+    if (!id)
+      return rec;
+    try {
+      const hit = asRecord(ResponseStore.useResponseStore.getState().byId?.[id]);
+      if (hit)
+        return { ...rec, ...hit };
+    } catch (e) {
+      logger27.debug("byId lookup failed", e);
+    }
+    return rec;
+  }
+  function resolveMs(response, isUser) {
+    const rec = asRecord(response);
+    if (!rec)
+      return null;
+    const id = recordId(rec);
+    const full = fullRecord(id, rec);
+    const human = isUser === true || isHumanSender(full.sender);
+    const sender = human ? "human" : full.sender;
+    const cid = id ? conversationIdOf(id, full) : "";
+    let authoritative = null;
+    if (id)
+      authoritative = human ? childTime(id, [...gatewayRecords(cid), ...storeRecords(id)]) : parseTime(full.thinkingStartTime);
+    if (authoritative != null) {
+      rememberKeys(id, full, authoritative, sender, human, true);
+      return authoritative;
+    }
+    const stored = id ? storedMs(id, full, human) : null;
+    const fieldTimes = human && !isOptimisticState(full.state) || gatewaySettled(cid, id) ? [] : pickTimes(full);
+    let ms = chooseTime({
+      fieldTimes,
+      stored,
+      uuid: uuidTime(id)
+    });
+    if (human && id)
+      ms = preferHumanTime(ms, borrowedMs(id, cid));
+    if (id && ms != null)
+      rememberKeys(id, full, ms, sender, human);
+    return ms;
+  }
+  function ingest(value) {
+    let changed = false;
+    for (const { id, ms, rec, authoritative } of harvestResponses(value)) {
+      const human = isHumanSender(rec.sender);
+      if (rememberKeys(id, rec, ms, rec.sender, human, authoritative))
+        changed = true;
+    }
+    if (changed)
+      tick.notify();
+  }
+  function requestUrl(input) {
+    if (typeof input === "string")
+      return input;
+    if (input instanceof URL)
+      return input.href;
+    try {
+      return input.url;
+    } catch {
+      return "";
+    }
+  }
+  function hookFetch() {
+    if (origFetch)
+      return;
+    const w = pageWindow2();
+    origFetch = w.fetch;
+    hookedWindow = w;
+    w.fetch = function voidMessageTimestampsFetch(input, init) {
+      const url = requestUrl(input);
+      const promise = origFetch.call(w, input, init);
+      if (!RESPONSE_URL.test(url))
+        return promise;
+      return promise.then((res) => {
+        try {
+          res.clone().json().then(ingest, () => {});
+        } catch (e) {
+          logger27.debug("fetch ingest failed", e);
+        }
+        return res;
+      });
+    };
+  }
+  function unhookFetch() {
+    if (!origFetch || !hookedWindow)
+      return;
+    hookedWindow.fetch = origFetch;
+    origFetch = null;
+    hookedWindow = null;
+  }
+  function ingestXhr(xhr) {
+    if (xhr.status < 200 || xhr.status >= 300)
+      return;
+    const { responseType } = xhr;
+    if (responseType === "json") {
+      ingest(xhr.response);
+      return;
+    }
+    if (responseType !== "" && responseType !== "text")
+      return;
+    const text = xhr.responseText;
+    if (!text)
+      return;
+    ingest(JSON.parse(text));
+  }
+  function hookXhr() {
+    if (origXhrOpen)
+      return;
+    const XHR = pageWindow2().XMLHttpRequest;
+    origXhrOpen = XHR.prototype.open;
+    origXhrSend = XHR.prototype.send;
+    XHR.prototype.open = function voidMessageTimestampsOpen(method, url, ...rest) {
+      try {
+        xhrMeta.set(this, requestUrl(url));
+      } catch (e) {
+        logger27.debug("xhr open failed", e);
+      }
+      return origXhrOpen.call(this, method, url, ...rest);
+    };
+    XHR.prototype.send = function voidMessageTimestampsSend(body) {
+      const url = xhrMeta.get(this) ?? "";
+      if (RESPONSE_URL.test(url)) {
+        this.addEventListener("load", () => {
+          try {
+            ingestXhr(this);
+          } catch (e) {
+            logger27.debug("xhr ingest failed", e);
+          }
+        }, { once: true });
+      }
+      return origXhrSend.call(this, body);
+    };
+  }
+  function unhookXhr() {
+    if (!origXhrOpen || !origXhrSend)
+      return;
+    const XHR = pageWindow2().XMLHttpRequest;
+    XHR.prototype.open = origXhrOpen;
+    XHR.prototype.send = origXhrSend;
+    origXhrOpen = null;
+    origXhrSend = null;
+  }
+  function hookListResponses() {
+    if (origList)
+      return;
+    try {
+      const { chatApi } = ApiClients;
+      origList = chatApi.chatListResponses;
+      chatApi.chatListResponses = function voidMessageTimestampsList(a) {
+        return origList.call(chatApi, a).then((data) => {
+          ingest(data);
+          return data;
+        });
+      };
+    } catch (e) {
+      origList = null;
+      logger27.debug("chatListResponses wrap skipped", e);
+    }
+  }
+  function unhookListResponses() {
+    if (!origList)
+      return;
+    try {
+      ApiClients.chatApi.chatListResponses = origList;
+    } catch (e) {
+      logger27.debug("chatListResponses unwrap skipped", e);
+    }
+    origList = null;
+  }
+  function formatTimestamp(ms, showDate) {
+    const date = new Date(ms);
+    const now = new Date;
+    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (!showDate || today)
+      return time;
+    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
+  }
+  var messageTimestamps_default = definePlugin({
+    name: "MessageTimestamps",
+    icon: ClockIcon,
+    description: "Shows timestamps on chat messages.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings15,
+    start() {
+      try {
+        hookFetch();
+        hookXhr();
+        hookListResponses();
+      } catch (e) {
+        logger27.warn("Failed to hook network", e);
+      }
+    },
+    stop() {
+      unhookFetch();
+      unhookXhr();
+      unhookListResponses();
+      persistNow();
+    },
+    zustand: {
+      ResponseStore: {
+        selector: (s) => {
+          let n = 0;
+          for (const list of Object.values(s.nodesByConversationId ?? {}))
+            n += list?.length ?? 0;
+          return `${Object.keys(s.byId ?? {}).length}:${n}`;
+        },
+        handler() {
+          try {
+            const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+            ingest({
+              responses: Object.values(byId ?? {}),
+              nodes: Object.values(nodesByConversationId ?? {}).flat()
+            });
+          } catch (e) {
+            logger27.debug("store ingest failed", e);
+          }
+        }
+      },
+      MessageStore: {
+        selector: (s) => {
+          let n = 0;
+          for (const slice of Object.values(s.conversations ?? {}))
+            n += Object.keys(slice?.nodes ?? {}).length;
+          return n;
+        },
+        handler() {
+          ingest({ responses: gatewayRecords("") });
+        }
+      }
+    },
+    _renderTimestamp: ErrorBoundary.wrap(({ response, isUser }) => {
+      useExternalStore(tick);
+      const human = isUser === true || isHumanSender(response.sender);
+      if (settings15.store.hideOwnMessages && human)
+        return null;
+      const ms = resolveMs(response, isUser);
+      if (ms == null)
+        return null;
+      return /* @__PURE__ */ React2.createElement(Text2, {
+        as: "span",
+        size: "xs",
+        color: "muted",
+        className: "void-timestamp"
+      }, formatTimestamp(ms, settings15.store.showDate));
+    }),
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:(\i),isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._renderTimestamp({response:$2,isUser:$1}),$&"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/noDictation/index.ts
+  var STYLE_NAME4 = "noDictation";
+  var REFINEMENT_MARK = "void-no-dictation-refinement";
+  var BUTTON_CSS = `
+button[aria-label="Dictation"]:not([role="dialog"] *),
+button[aria-label^="Dictation ("]:not([role="dialog"] *),
+div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
+div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
+    display: none !important;
+}
+`;
+  var REFINEMENT_CSS = `.${REFINEMENT_MARK}{display:none!important}`;
+  var settings16 = definePluginSettings({
+    hideDictationRefinement: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
+      default: true
+    }
+  });
+  function apply2() {
+    const rules = [BUTTON_CSS];
+    if (settings16.store.hideDictationRefinement)
+      rules.push(REFINEMENT_CSS);
+    registerStyle(STYLE_NAME4, rules.join(`
+`));
+  }
+  var noDictation_default = definePlugin({
+    name: "NoDictation",
+    icon: MicOffIcon,
+    description: "Hide the Dictation (voice input) button from the chat input bar, and optionally Dictation Refinement in Settings.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings16,
+    patches: [
+      {
+        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
+        replacement: {
+          match: /DISABLE_VOICE_MODE&&\(0,(\i)\.jsxs\)\(\i\.Fragment,\{/,
+          replace: `DISABLE_VOICE_MODE&&(0,$1.jsxs)("div",{className:"${REFINEMENT_MARK}",style:{display:"contents"},`
+        }
+      }
+    ],
+    start: apply2,
+    onSettingsChange: apply2,
+    stop() {
+      unregisterStyle(STYLE_NAME4);
     }
   });
 
   // src/plugins/noGrokBot/index.ts
-  var STYLE_NAME3 = "noGrokBot";
+  var STYLE_NAME5 = "noGrokBot";
   var CSS2 = `
 #grok-bot-nav-button,
 div:has(> #grok-bot-nav-button) {
@@ -7570,118 +13407,105 @@ div:has(> #grok-bot-nav-button) {
     tags: ["ui"],
     enabledByDefault: true,
     start() {
-      registerStyle(STYLE_NAME3, CSS2);
+      registerStyle(STYLE_NAME5, CSS2);
     },
     stop() {
-      unregisterStyle(STYLE_NAME3);
+      unregisterStyle(STYLE_NAME5);
     }
   });
 
-  // src/plugins/responseNotification/index.ts
-  var settings7 = definePluginSettings({
-    sound: {
+  // src/plugins/noRightPanel/index.ts
+  function isRightOpen(s) {
+    return s.sidePanelContent?.type === "rightPanel";
+  }
+  function enforce2() {
+    const state = ChatPageStore.useChatPageStore.getState();
+    if (isRightOpen(state))
+      state.closeSidePanelExplicitly();
+  }
+  var noRightPanel_default = definePlugin({
+    name: "NoRightPanel",
+    icon: PanelRightCloseIcon,
+    description: "Keep Grok's right panel closed.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start: enforce2,
+    zustand: {
+      ChatPageStore: {
+        selector: isRightOpen,
+        handler(open) {
+          if (open)
+            enforce2();
+        }
+      }
+    },
+    patches: [
+      {
+        find: "willRestoreRightPanelByIntent",
+        replacement: {
+          match: /willRestoreRightPanelByIntent=\i=>\{/,
+          replace: "willRestoreRightPanelByIntent=()=>{return!1;"
+        }
+      },
+      {
+        find: '"computePreviewAutoOpen"',
+        replacement: {
+          match: /&&(\i)\(\{source:"auto"\}\)/,
+          replace: '&&!1&&$1({source:"auto"})'
+        }
+      }
+    ]
+  });
+
+  // src/plugins/noShareLink/index.ts
+  var STYLE_NAME6 = "noShareLink";
+  var settings17 = definePluginSettings({
+    hideShareProject: {
       type: 3 /* BOOLEAN */,
-      description: "Play a notification sound.",
+      description: "Inside a project: hide the top-right Share Project button.",
       default: true
     },
-    soundUrl: {
-      type: 0 /* STRING */,
-      description: "Custom sound URL (leave empty for default beep).",
-      default: "",
-      placeholder: "https://example.com/sound.mp3"
-    },
-    browserNotification: {
+    hideCreateShareLink: {
       type: 3 /* BOOLEAN */,
-      description: "Show a browser notification.",
-      default: true
-    },
-    onlyWhenHidden: {
-      type: 3 /* BOOLEAN */,
-      description: "Only notify when the tab is not focused.",
+      description: "Not in a project: hide the top-right Create share link button on chats.",
       default: true
     }
   });
-  var userGestured = false;
-  var gestureCtrl = null;
-  function playBeep() {
-    const ctx = new AudioContext;
-    const start = () => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 800;
-      gain.gain.value = 0.15;
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-      osc.onended = () => ctx.close();
-    };
-    if (ctx.state === "suspended")
-      ctx.resume().then(start, () => ctx.close());
-    else
-      start();
-  }
-  function playSound() {
-    if (!userGestured)
-      return;
-    const url = settings7.store.soundUrl?.trim();
-    if (url) {
-      const audio = new Audio(url);
-      audio.volume = 0.3;
-      audio.play().catch(() => playBeep());
-    } else {
-      playBeep();
+  function apply3() {
+    const rules = [];
+    if (settings17.store.hideShareProject) {
+      rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
+    if (settings17.store.hideCreateShareLink) {
+      rules.push('button[aria-label="Create share link"]{display:none!important}');
+    }
+    registerStyle(STYLE_NAME6, rules.join(`
+`));
   }
-  function onStreamEnd({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "closed")
-      return;
-    if (settings7.store.onlyWhenHidden && document.visibilityState === "visible")
-      return;
-    if (settings7.store.sound)
-      playSound();
-    if (settings7.store.browserNotification)
-      sendBrowserNotification("Grok", "Response complete.");
-  }
-  var responseNotification_default = definePlugin({
-    name: "ResponseNotification",
-    icon: BellIcon,
-    description: "Notify when Grok finishes responding.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings7,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      if (gestureCtrl)
-        return;
-      gestureCtrl = new AbortController;
-      const markGestured = () => {
-        userGestured = true;
-        gestureCtrl?.abort();
-        gestureCtrl = null;
-      };
-      for (const evt of ["pointerdown", "keydown", "touchstart"]) {
-        addEventListener(evt, markGestured, { capture: true, passive: true, signal: gestureCtrl.signal });
-      }
-    },
+  var noShareLink_default = definePlugin({
+    name: "NoShareLink",
+    icon: Link2OffIcon,
+    description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
+    authors: [Devs.p],
+    tags: ["ui", "privacy"],
+    enabledByDefault: true,
+    settings: settings17,
+    start: apply3,
+    onSettingsChange: apply3,
     stop() {
-      gestureCtrl?.abort();
-      gestureCtrl = null;
-    },
-    events: {
-      streamEnd: onStreamEnd
+      unregisterStyle(STYLE_NAME6);
     }
   });
 
   // src/plugins/noSidebarIdentity/index.ts
-  var STYLE_NAME4 = "noSidebarIdentity";
+  var STYLE_NAME7 = "noSidebarIdentity";
   var FOOTER = '[data-sidebar="footer"]';
   var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
   var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
   var MENU_EMAIL = '[role="menu"] [class*="max-w-[400px]"].truncate';
-  var settings8 = definePluginSettings({
+  var settings18 = definePluginSettings({
     hideUsername: {
       type: 3 /* BOOLEAN */,
       description: "Hide the username next to the sidebar avatar.",
@@ -7693,21 +13517,21 @@ div:has(> #grok-bot-nav-button) {
       default: true
     }
   });
-  function apply() {
+  function apply4() {
     const rules = [];
-    if (settings8.store.hideUsername) {
+    if (settings18.store.hideUsername) {
       rules.push(`${STACK}>:first-child{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
     }
-    if (settings8.store.hideEmail) {
+    if (settings18.store.hideEmail) {
       rules.push(`${STACK}>:nth-child(2){display:none!important}`);
       rules.push(`${MENU_EMAIL}{display:none!important}`);
     }
-    if (settings8.store.hideUsername && settings8.store.hideEmail) {
+    if (settings18.store.hideUsername && settings18.store.hideEmail) {
       rules.push(`${TEXT_WRAP}{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
     }
-    registerStyle(STYLE_NAME4, rules.join(`
+    registerStyle(STYLE_NAME7, rules.join(`
 `));
   }
   var noSidebarIdentity_default = definePlugin({
@@ -7717,7 +13541,7 @@ div:has(> #grok-bot-nav-button) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings8,
+    settings: settings18,
     patches: [
       {
         find: '"max-w-[400px] truncate"',
@@ -7728,14 +13552,2903 @@ div:has(> #grok-bot-nav-button) {
         }
       }
     ],
-    start: apply,
-    onSettingsChange: apply,
+    start: apply4,
+    onSettingsChange: apply4,
     stop() {
-      unregisterStyle(STYLE_NAME4);
+      unregisterStyle(STYLE_NAME7);
     }
   });
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/usageDisplay/styles.css
+  // src/plugins/noSidebarPlugins/index.tsx
+  var PluginsDialogStore = findByPropsLazy("usePluginsDialogStore");
+  function PluginsIcon(props = {}) {
+    const Comp = findExportedComponent("ConnectorsIcon") ?? GrokConnectorsIcon;
+    return /* @__PURE__ */ React2.createElement(Comp, {
+      ...props
+    });
+  }
+  function openPlugins() {
+    PluginsDialogStore.usePluginsDialogStore.getState().setOpen(true);
+  }
+  function PluginsItem() {
+    return /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+      onSelect: openPlugins
+    }, /* @__PURE__ */ React2.createElement(PluginsIcon, {
+      className: "void-settings-menu-icon"
+    }), "Plugins");
+  }
+  var WrappedPluginsItem = ErrorBoundary.wrap(PluginsItem);
+  var noSidebarPlugins_default = definePlugin({
+    name: "NoSidebarPlugins",
+    icon: PluginsIcon,
+    description: "Move the sidebar Plugins button into the avatar menu.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    _renderItem: () => createElement(WrappedPluginsItem),
+    patches: [
+      {
+        find: "usePluginsDialogStore.getState().setOpen(!0)",
+        replacement: {
+          match: /(\(0,\i\.jsx\)\(\i\.AppSidebarItem,\{icon:.{0,80}?onClick:\(\)=>\{"skills-and-connectors")/,
+          replace: "false&&$1"
+        }
+      },
+      {
+        find: 'ENABLE_GROK_WEB_PLUGIN_MARKETPLACE)&&{id:"skills-and-connectors"',
+        replacement: {
+          match: /ENABLE_GROK_WEB_PLUGIN_MARKETPLACE\)&&\{id:"skills-and-connectors"/,
+          replace: 'ENABLE_GROK_WEB_PLUGIN_MARKETPLACE)&&!1&&{id:"skills-and-connectors"'
+        }
+      },
+      {
+        find: '"user-dropdown.help"',
+        replacement: {
+          match: /(?=\(0,\i\.jsxs\)\(\i\.DropdownMenuSub,\{children:\[\(0,\i\.jsxs\)\(\i\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help")/,
+          replace: "$self._renderItem(),"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/oneko/index.ts
+  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
+  var ONEKO_SCRIPT = '(function oneko(){const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
+  var oneko_default = definePlugin({
+    name: "Oneko",
+    icon: CatIcon,
+    description: "Cat follows your mouse cursor.",
+    authors: [Devs.adryd],
+    tags: ["ui"],
+    cleanupSelectors: ["#oneko"],
+    start() {
+      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
+      const el = document.createElement("script");
+      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
+      document.head.appendChild(el);
+      el.addEventListener("load", () => {
+        el.remove();
+        URL.revokeObjectURL(el.src);
+      }, { once: true });
+    }
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/placeholder/styles.css
+  registerStyle("placeholder", `.void-ph-root {
+    contain: content;
+}
+
+.void-ph-textarea-wrap {
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.75rem;
+}
+
+.void-ph-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ph-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: hsl(var(--fg-primary));
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.void-ph-textarea:focus {
+    outline: none;
+}
+`);
+
+  // src/plugins/placeholder/index.tsx
+  var cl23 = classNameFactory("void-ph-");
+  var DEFAULT_PHRASES = [
+    "What do you want to know?",
+    "How can I help you today?",
+    "What's on your mind?"
+  ].join(`
+`);
+  function parsePhrases(raw) {
+    return String(raw ?? "").split(`
+`).map((s) => s.trim()).filter(Boolean);
+  }
+  var settings19 = definePluginSettings({
+    phrases: {
+      type: 6 /* COMPONENT */,
+      default: DEFAULT_PHRASES,
+      component: PhrasesEditor
+    }
+  }).withPrivateSettings();
+  function PhrasesEditor() {
+    const { phrases } = settings19.use(["phrases"]);
+    return /* @__PURE__ */ React2.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.5rem",
+      className: cl23("root")
+    }, /* @__PURE__ */ React2.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0"
+    }, /* @__PURE__ */ React2.createElement(Text2, {
+      size: "sm",
+      weight: "medium"
+    }, "Phrases"), /* @__PURE__ */ React2.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React2.createElement("div", {
+      className: cl23("textarea-wrap")
+    }, /* @__PURE__ */ React2.createElement(Textarea, {
+      className: cl23("textarea"),
+      value: phrases ?? DEFAULT_PHRASES,
+      onChange: (e) => {
+        settings19.store.phrases = e.target.value;
+      },
+      placeholder: DEFAULT_PHRASES
+    })));
+  }
+  var placeholder_default = definePlugin({
+    name: "Placeholder",
+    icon: TextCursorInputIcon,
+    description: "Replace the rotating chat and Grok Bot input placeholder.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    settings: settings19,
+    _phrases() {
+      const lines = parsePhrases(settings19.store.phrases ?? DEFAULT_PHRASES);
+      return lines.length ? lines : null;
+    },
+    _inputPlaceholder(value) {
+      if (typeof value !== "string")
+        return value;
+      return this._phrases()?.[0] ?? value;
+    },
+    patches: [
+      {
+        find: `query-bar-placeholder.whats-on-your-mind","What's on your mind?"`,
+        replacement: {
+          match: /("query-bar-placeholder\.whats-on-your-mind","What's on your mind\?"\)\],\[\i,\i,\i,\i\]\),)(\i)=(\i\(\)),(\i)=(\i)\.map\(\2\)/,
+          replace: "$1$2=$3,$4=($self._phrases()??$5).map($2)"
+        }
+      },
+      {
+        find: "data-query-bar-mode-select",
+        all: true,
+        replacement: {
+          match: /("query-bar\.voice-connecting-placeholder","Connecting…"\):)(\i)(?=,isLoading)/,
+          replace: "$1$self._inputPlaceholder($2)"
+        }
+      }
+    ]
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/recentTopics/styles.css
+  registerStyle("recentTopics", `.void-rt-root,
+.void-rt-root:popover-open {
+    isolation: isolate;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    background: transparent !important;
+    color: inherit;
+    pointer-events: auto !important;
+}
+
+.void-rt-root::backdrop {
+    background: transparent;
+}
+
+html.void-rt-open [data-sidebar="sidebar"],
+html.void-rt-open [data-sidebar="gap"] {
+    z-index: 0 !important;
+}
+
+.void-rt-panel,
+.void-rt-card,
+.void-rt-meta,
+.void-rt-name,
+.void-rt-host,
+.void-rt-empty {
+    font-family: inherit;
+    letter-spacing: inherit;
+}
+
+.void-rt-panel,
+.void-rt-panel * {
+    box-sizing: border-box;
+}
+
+.void-rt-panel {
+    --void-rt-accent: hsl(var(--fg-primary));
+    --void-rt-card-width: clamp(136px, calc((100vw - 68px) / 5), 204px);
+    --void-rt-gap: 8px;
+    --void-rt-padding-panel: 12px;
+    --void-rt-padding-card: 8px;
+    --void-rt-border-card: 1px;
+    --void-rt-radius-panel: 16px;
+    --void-rt-radius-card: calc(var(--void-rt-radius-panel) - var(--void-rt-padding-panel));
+    --void-rt-radius-thumb: calc(var(--void-rt-radius-card) - var(--void-rt-padding-card) - var(--void-rt-border-card));
+    --void-rt-radius-icon: 8px;
+    --void-rt-radius-title-icon: 8px;
+    --void-rt-meta-inline-padding: 4px;
+    --void-rt-motion-card: 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    --void-rt-motion-cover: 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    --void-rt-thumb-stroke-inset: -0.5px;
+    --void-rt-thumb-stroke-radius-offset: 0.5px;
+    --void-rt-thumb-stroke-color: hsl(var(--border-l2));
+    --void-rt-title-icon-size: 16px;
+    --void-rt-title-icon-gap: 4px;
+
+    all: unset;
+    color-scheme: inherit;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    transform-origin: center center;
+    z-index: 1;
+    display: block;
+    width: fit-content;
+    max-width: calc(100vw - 24px);
+    overflow: auto hidden;
+    scrollbar-width: none;
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+    border: 1px solid hsl(var(--border-l1));
+    border-radius: var(--void-rt-radius-panel);
+    box-shadow: 0 4px 16px hsl(var(--black) / 12%);
+    padding: var(--void-rt-padding-panel);
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity 90ms ease;
+    will-change: opacity;
+}
+
+.void-rt-panel::-webkit-scrollbar {
+    display: none;
+}
+
+.void-rt-panel[data-visible="true"] {
+    opacity: 1;
+}
+
+.void-rt-list {
+    display: grid;
+    grid-template-columns: repeat(var(--void-rt-count, 5), var(--void-rt-card-width));
+    gap: var(--void-rt-gap);
+    width: max-content;
+    max-width: 100%;
+    padding: 2px;
+}
+
+.void-rt-card {
+    all: unset;
+    box-sizing: border-box;
+    width: var(--void-rt-card-width);
+    min-width: var(--void-rt-card-width);
+    max-width: var(--void-rt-card-width);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: var(--void-rt-radius-card);
+    border: var(--void-rt-border-card) solid transparent;
+    outline: 0;
+    background: transparent;
+    padding: var(--void-rt-padding-card);
+    color: hsl(var(--fg-primary));
+    cursor: pointer;
+    box-shadow: none;
+    transition:
+        border-color 140ms ease,
+        box-shadow var(--void-rt-motion-card);
+}
+
+.void-rt-card[data-active="true"] {
+    z-index: 1;
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 82%, hsl(var(--border-l2)));
+    background: transparent;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 55%, transparent);
+}
+
+.void-rt-card:focus-visible {
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 88%, hsl(var(--border-l2)));
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 60%, transparent);
+}
+
+.void-rt-thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--void-rt-radius-thumb);
+    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, hsl(var(--surface-l1)));
+}
+
+.void-rt-thumb::after {
+    content: "";
+    position: absolute;
+    inset: var(--void-rt-thumb-stroke-inset);
+    z-index: 2;
+    border-radius: calc(var(--void-rt-radius-thumb) + var(--void-rt-thumb-stroke-radius-offset));
+    box-sizing: border-box;
+    border: 1px solid var(--void-rt-thumb-stroke-color);
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.void-rt-shot {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+}
+
+.void-rt-shot,
+.void-rt-shot * {
+    pointer-events: none !important;
+    scrollbar-width: none;
+}
+
+.void-rt-thumb:has(.void-rt-shot) .void-rt-fallback {
+    display: none;
+}
+
+.void-rt-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: top center;
+}
+
+.void-rt-mark {
+    display: none !important;
+}
+
+.void-rt-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    overflow: hidden;
+    padding: 8px 12px 12px;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-primary));
+    font-family: inherit;
+}
+
+.void-rt-page-line {
+    display: -webkit-box;
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 94%;
+    overflow: hidden;
+    color: hsl(var(--fg-secondary));
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+}
+
+.void-rt-page-line-user,
+.void-rt-page-line[data-role="user"] {
+    align-self: flex-end;
+    width: fit-content;
+    max-width: 78%;
+    padding: 6px 8px;
+    border-radius: 12px 12px 4px 12px;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-primary));
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.void-rt-page-line[data-role="assistant"] {
+    align-self: flex-start;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    color: hsl(var(--fg-secondary));
+}
+
+.void-rt-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.void-rt-favicon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--void-rt-radius-icon);
+    object-fit: cover;
+    display: block;
+}
+
+.void-rt-favicon[data-broken="true"],
+.void-rt-title-favicon[data-broken="true"] {
+    visibility: hidden;
+}
+
+.void-rt-meta {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+    padding: 0 var(--void-rt-meta-inline-padding);
+}
+
+.void-rt-name-row {
+    min-width: 0;
+}
+
+.void-rt-title-favicon {
+    display: none;
+}
+
+.void-rt-name {
+    min-width: 0;
+    display: block;
+    overflow: hidden;
+    color: hsl(var(--fg-primary));
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.16;
+    letter-spacing: inherit;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-rt-host {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    color: hsl(var(--fg-secondary));
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.18;
+}
+
+.void-rt-folder {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 12px;
+    display: block;
+}
+
+.void-rt-host-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-rt-empty {
+    min-width: min(22rem, calc(100vw - 3rem));
+    padding: 16px 20px;
+    color: hsl(var(--fg-primary));
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.void-rt-panel[data-theme="dark"] {
+    color-scheme: dark;
+}
+`);
+
+  // src/plugins/recentTopics/index.tsx
+  var logger28 = new Logger("RecentTopics");
+  var cl24 = classNameFactory("void-rt-");
+  var HOME_KEY = "home";
+  var HOME_SEP = "home:";
+  var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
+  var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
+  var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
+  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation|see all(?: chats| conversations)?|show all(?: chats| conversations)?|view all(?: chats| conversations)?|all chats|all conversations|查看全部|显示全部|查看所有|全部会话|所有对话)$/i;
+  var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
+  var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
+  var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
+  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
+  var settings20 = definePluginSettings({
+    maxRecent: {
+      type: 4 /* SELECT */,
+      description: "How many recently opened conversations to show.",
+      options: COUNT_OPTIONS
+    },
+    includeHome: {
+      type: 3 /* BOOLEAN */,
+      description: "Include new-chat home pages in the switcher.",
+      default: true
+    }
+  }).withPrivateSettings();
+  var thumbs = new Map;
+  var wsNames = {};
+  var open2 = false;
+  var selected = 0;
+  var held = false;
+  var ctrlHeld = false;
+  var keys2 = null;
+  var host = null;
+  var paintedKey = "";
+  var sidebarSnap = null;
+  var pendingWs = new Set;
+  function isSkipLabel(name) {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    if (!t)
+      return false;
+    SKIP_LABEL.lastIndex = 0;
+    return SKIP_LABEL.test(t);
+  }
+  function usableName(name) {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    return t && !isSkipLabel(t) ? t : "";
+  }
+  function unique(ids) {
+    const seen = new Set;
+    const out = [];
+    for (const id of ids) {
+      if (seen.has(id))
+        continue;
+      seen.add(id);
+      out.push(id);
+    }
+    return out;
+  }
+  function readVisits() {
+    return settings20.plain.visits ?? [];
+  }
+  function maxCount() {
+    const n = Number(settings20.store.maxRecent);
+    return Number.isFinite(n) && n > 0 ? n : 5;
+  }
+  function capVisits(ids) {
+    const allowHome = settings20.store.includeHome;
+    return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
+  }
+  function pruneRecord(source, ids) {
+    const keep = {};
+    if (!source)
+      return keep;
+    for (const id of ids) {
+      if (source[id])
+        keep[id] = source[id];
+    }
+    return keep;
+  }
+  function sameList(a, b) {
+    return a.length === b.length && a.every((id, i) => id === b[i]);
+  }
+  function sameRecord(a, b) {
+    const src = a ?? {};
+    const keys = Object.keys(b);
+    if (Object.keys(src).length !== keys.length)
+      return false;
+    return keys.every((k) => src[k] === b[k]);
+  }
+  function assignRecord(key, next) {
+    if (sameRecord(settings20.plain[key], next))
+      return false;
+    settings20.store[key] = next;
+    return true;
+  }
+  var writing = false;
+  function writeVisits(next) {
+    if (writing)
+      return;
+    writing = true;
+    try {
+      const visits = capVisits(next);
+      const rawWs = pruneRecord(settings20.plain.workspaceByConv, visits);
+      const workspaceByConv = {};
+      for (const [id, value] of Object.entries(rawWs)) {
+        const ws = asWorkspaceId(value);
+        if (ws)
+          workspaceByConv[id] = ws;
+      }
+      const pages = pruneRecord(settings20.plain.pages, visits);
+      const usedWs = new Set(Object.values(workspaceByConv));
+      for (const id of visits) {
+        const ws = workspaceFromHomeId(id);
+        if (!ws)
+          continue;
+        usedWs.add(ws);
+        workspaceByConv[id] = ws;
+      }
+      const keepProjects = {};
+      for (const [id, name] of Object.entries(settings20.plain.projectNames ?? {})) {
+        const n = usableName(name);
+        if (usedWs.has(id) && n)
+          keepProjects[id] = n;
+      }
+      let changed = false;
+      if (!sameList(readVisits(), visits)) {
+        settings20.store.visits = visits;
+        changed = true;
+      }
+      if (assignRecord("titles", pruneRecord(settings20.plain.titles, visits)))
+        changed = true;
+      if (assignRecord("workspaceByConv", workspaceByConv))
+        changed = true;
+      if (assignRecord("pages", pages))
+        changed = true;
+      if (assignRecord("projectNames", keepProjects))
+        changed = true;
+      if (changed && open2)
+        paint2();
+    } finally {
+      writing = false;
+    }
+  }
+  function rememberTitle(id, title) {
+    const t = title?.trim();
+    if (!id || isHomeId(id) || !t)
+      return;
+    const prev = settings20.plain.titles ?? {};
+    if (prev[id] === t)
+      return;
+    settings20.store.titles = { ...prev, [id]: t };
+  }
+  function isHomeId(id) {
+    return id === HOME_KEY || id.startsWith(HOME_SEP);
+  }
+  function homeId(workspaceId) {
+    const ws = asWorkspaceId(workspaceId);
+    return ws ? HOME_SEP + ws : HOME_KEY;
+  }
+  function workspaceFromHomeId(id) {
+    return id.startsWith(HOME_SEP) ? asWorkspaceId(id.slice(HOME_SEP.length)) : "";
+  }
+  function routeConvId(route) {
+    if (!route)
+      return null;
+    if (route.conversationId)
+      return route.conversationId;
+    if (typeof route.chat === "string" && route.chat)
+      return route.chat;
+    if (route.page === "main")
+      return HOME_KEY;
+    if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
+      return homeId(route.workspaceId);
+    return null;
+  }
+  function projectIdFromUrl() {
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
+    return m?.[1] ?? "";
+  }
+  function chatIdFromUrl() {
+    try {
+      const u = new URL(location.href);
+      const q = u.searchParams.get("chat");
+      if (q)
+        return q;
+      return u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] ?? "";
+    } catch {
+      return "";
+    }
+  }
+  var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
+  function asWorkspaceId(value) {
+    if (typeof value === "string") {
+      const s = value.trim();
+      return WS_ID.test(s) ? s : "";
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const id = asWorkspaceId(item);
+        if (id)
+          return id;
+      }
+      return "";
+    }
+    if (value && typeof value === "object") {
+      const rec = value;
+      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    }
+    return "";
+  }
+  function hrefFor(id, workspaceId) {
+    if (isHomeId(id)) {
+      const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceId);
+      return ws ? `/project/${ws}` : "/";
+    }
+    const ws = asWorkspaceId(workspaceId);
+    if (!id)
+      return ws ? `/project/${ws}` : "/";
+    if (ws)
+      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
+    return `/c/${encodeURIComponent(id)}`;
+  }
+  function hrefParts(href) {
+    if (!href)
+      return { ws: "", chat: "" };
+    try {
+      const u = new URL(href, location.origin);
+      const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+      const chat = u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
+      return { ws, chat };
+    } catch {
+      return { ws: "", chat: "" };
+    }
+  }
+  function currentVisit() {
+    const urlChat = chatIdFromUrl();
+    if (urlChat)
+      return urlChat;
+    try {
+      const { conversationId, optimisticConversationId } = ChatPageStore.useChatPageStore.getState();
+      if (conversationId)
+        return conversationId;
+      if (optimisticConversationId)
+        return optimisticConversationId;
+    } catch (e) {
+      logger28.debug("ChatPageStore unavailable:", e);
+    }
+    try {
+      const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
+      if (fromRoute != null)
+        return fromRoute;
+    } catch (e) {
+      logger28.debug("RoutingStore unavailable:", e);
+    }
+    const ws = projectIdFromUrl();
+    return ws ? homeId(ws) : null;
+  }
+  function idsFromHistory() {
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      const ids = [];
+      const add = (r) => {
+        const id = routeConvId(r);
+        if (id != null)
+          ids.push(id);
+      };
+      add(route);
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
+        add(historyStack[i]);
+      return unique(ids);
+    } catch (e) {
+      logger28.debug("historyStack unavailable:", e);
+      return [];
+    }
+  }
+  function pageTitle() {
+    const raw = document.title.replace(TITLE_TAIL, "").trim();
+    if (!raw || /^grok$/i.test(raw))
+      return "";
+    return raw;
+  }
+  function lookup(id) {
+    try {
+      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
+    } catch (e) {
+      logger28.debug("Conversation lookup failed:", e);
+      return;
+    }
+  }
+  function titleOf(id) {
+    if (!id || isHomeId(id))
+      return "New chat";
+    const conv = lookup(id);
+    if (conv?.title?.trim())
+      return conv.title.trim();
+    const cached = settings20.plain.titles?.[id];
+    if (cached)
+      return cached;
+    if (id === currentVisit())
+      return pageTitle() || "Untitled";
+    return "Untitled";
+  }
+  function liveWorkspaceId() {
+    try {
+      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
+      if (pid)
+        return pid;
+    } catch {}
+    try {
+      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
+      const id = asWorkspaceId(workspaceId);
+      if (id)
+        return id;
+    } catch {}
+    return asWorkspaceId(projectIdFromUrl());
+  }
+  function workspaceFromHistory(id) {
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      if (routeConvId(route) === id) {
+        const ws = asWorkspaceId(route.workspaceId);
+        if (ws)
+          return ws;
+      }
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
+        const r = historyStack[i];
+        if (routeConvId(r) === id) {
+          const ws = asWorkspaceId(r?.workspaceId);
+          if (ws)
+            return ws;
+        }
+      }
+    } catch {}
+    return "";
+  }
+  function convWorkspaceId(id) {
+    try {
+      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
+      const fromResolver = asWorkspaceId(resolved);
+      if (fromResolver)
+        return fromResolver;
+      const conv = byId[id] ?? byIdWithWorkspaces[id];
+      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+    } catch (e) {
+      logger28.debug("convWorkspaceId failed:", e);
+      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
+    }
+  }
+  function workspaceFromDom(id) {
+    if (!id)
+      return "";
+    try {
+      for (const a of document.querySelectorAll("a[href]")) {
+        const href = a.getAttribute("href");
+        if (!href || !href.includes(id))
+          continue;
+        const { ws, chat } = hrefParts(href);
+        if (chat === id && ws)
+          return ws;
+      }
+    } catch {}
+    return "";
+  }
+  function shortOwnText(el) {
+    const parts = [];
+    for (const n of el.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) {
+        parts.push(n.textContent ?? "");
+        continue;
+      }
+      if (!(n instanceof HTMLElement))
+        continue;
+      if (n.matches("svg, a[href]"))
+        continue;
+      const nestedHref = n.getAttribute("href") ?? "";
+      if (nestedHref.includes("chat=") || nestedHref.includes("/c/"))
+        continue;
+      if (n.querySelector("a[href*='chat='], a[href*='/c/']"))
+        continue;
+      const t = (n.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+      if (t.length > 0 && t.length <= 64)
+        parts.push(t);
+    }
+    const out = parts.join(" ").replaceAll(/\s+/g, " ").trim();
+    return out.length >= 2 && out.length <= 64 ? out : "";
+  }
+  function folderLabel(el) {
+    if (!el.querySelector("svg"))
+      return "";
+    return usableName(shortOwnText(el));
+  }
+  function projectNameFromAncestors(el) {
+    const sidebar = el.closest("[data-sidebar=sidebar]");
+    let cur = el.parentElement;
+    while (cur && cur !== sidebar) {
+      let sib = cur;
+      while (sib) {
+        const name = folderLabel(sib);
+        if (name)
+          return name;
+        sib = sib.previousElementSibling;
+      }
+      cur = cur.parentElement;
+    }
+    return "";
+  }
+  function invalidateSidebar() {
+    sidebarSnap = null;
+  }
+  function sidebarIndex() {
+    const empty = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar)
+      return empty;
+    const key = `${sidebar.childElementCount}:${(sidebar.textContent ?? "").length}`;
+    if (sidebarSnap?.key === key)
+      return sidebarSnap.index;
+    const index = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    let currentName = "";
+    const assignConv = (chat, ws, name) => {
+      if (!chat || !ws)
+        return;
+      index.wsByConv[chat] = ws;
+      const label = usableName(name || currentName || index.nameByWs[ws] || "");
+      if (label) {
+        index.nameByWs[ws] = label;
+        index.nameByConv[chat] = label;
+      }
+    };
+    for (const el of sidebar.querySelectorAll("a[href], button, [role='button']")) {
+      const { ws, chat } = hrefParts(el.getAttribute("href"));
+      if (chat) {
+        assignConv(chat, ws, currentName);
+        if (ws && !index.nameByConv[chat]) {
+          const up = usableName(projectNameFromAncestors(el));
+          if (up) {
+            index.nameByConv[chat] = up;
+            index.nameByWs[ws] ??= up;
+            currentName ||= up;
+          }
+        }
+        continue;
+      }
+      const label = shortOwnText(el) || folderLabel(el);
+      if (isSkipLabel(label) && !ws) {
+        currentName = "";
+        continue;
+      }
+      if (ws) {
+        const n = usableName(label);
+        if (n) {
+          currentName = n;
+          index.nameByWs[ws] = n;
+        } else if (isSkipLabel(label)) {
+          currentName = index.nameByWs[ws] || "";
+        }
+        continue;
+      }
+      const folder = folderLabel(el);
+      if (folder)
+        currentName = folder;
+    }
+    sidebarSnap = { key, index };
+    return index;
+  }
+  function workspaceFetchedEmpty(id) {
+    try {
+      const { byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      return !!byIdWithWorkspaces[id] && !convWorkspaceId(id);
+    } catch {
+      return false;
+    }
+  }
+  function routeWorkspaceFor(id) {
+    if (id === chatIdFromUrl())
+      return asWorkspaceId(projectIdFromUrl());
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      const chat = route.conversationId || (typeof route.chat === "string" ? route.chat : "");
+      if (chat === id)
+        return asWorkspaceId(route.workspaceId);
+    } catch {}
+    return "";
+  }
+  function dropWorkspace(id) {
+    const prev = settings20.plain.workspaceByConv ?? {};
+    if (!prev[id])
+      return;
+    const next = { ...prev };
+    delete next[id];
+    settings20.store.workspaceByConv = next;
+  }
+  function workspaceOf(id) {
+    if (!id)
+      return "";
+    if (isHomeId(id)) {
+      const fromKey = workspaceFromHomeId(id);
+      if (fromKey)
+        return fromKey;
+      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings20.plain.workspaceByConv?.[id]);
+    }
+    const fromConv = convWorkspaceId(id);
+    if (fromConv)
+      return fromConv;
+    if (workspaceFetchedEmpty(id))
+      return "";
+    const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
+    if (fromSidebar)
+      return fromSidebar;
+    const cached = asWorkspaceId(settings20.plain.workspaceByConv?.[id]);
+    if (cached)
+      return cached;
+    const fromHist = workspaceFromHistory(id);
+    if (fromHist)
+      return fromHist;
+    if (id === currentVisit())
+      return routeWorkspaceFor(id);
+    return "";
+  }
+  function readOpenProjectName() {
+    const idx = sidebarIndex();
+    const live = liveWorkspaceId();
+    if (live) {
+      const n = usableName(idx.nameByWs[live]);
+      if (n)
+        return n;
+    }
+    const current = currentVisit();
+    const ws = current ? workspaceOf(current) : "";
+    if (!current || !ws)
+      return "";
+    return usableName(idx.nameByConv[current] || idx.nameByWs[ws]);
+  }
+  function projectNameOf(id) {
+    if (!id)
+      return "";
+    const ws = workspaceOf(id);
+    if (!ws)
+      return "";
+    const idx = sidebarIndex();
+    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings20.plain.projectNames?.[ws] || "");
+    if (!named)
+      return "";
+    const live = liveWorkspaceId();
+    const liveName = readOpenProjectName();
+    if (live && ws !== live && liveName && named === liveName)
+      return "";
+    return named;
+  }
+  function rememberProject(id) {
+    if (!id)
+      return;
+    const ws = workspaceOf(id);
+    if (!ws)
+      return;
+    const prevWs = settings20.plain.workspaceByConv ?? {};
+    if (prevWs[id] !== ws)
+      settings20.store.workspaceByConv = { ...prevWs, [id]: ws };
+    const idx = sidebarIndex();
+    const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
+    const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
+    const name = usableName(sidebarName || wsNames[ws] || liveName || settings20.plain.projectNames?.[ws] || "");
+    if (!name)
+      return;
+    wsNames[ws] = name;
+    const prevNames = settings20.plain.projectNames ?? {};
+    if (prevNames[ws] !== name)
+      settings20.store.projectNames = { ...prevNames, [ws]: name };
+  }
+  function reconcileSidebarCache() {
+    const idx = sidebarIndex();
+    const prevWs = { ...settings20.plain.workspaceByConv };
+    const prevNames = { ...settings20.plain.projectNames };
+    let wsChanged = false;
+    let namesChanged = false;
+    for (const [conv, ws] of Object.entries(idx.wsByConv)) {
+      if (prevWs[conv] !== ws) {
+        prevWs[conv] = ws;
+        wsChanged = true;
+      }
+    }
+    for (const [ws, name] of Object.entries(idx.nameByWs)) {
+      const n = usableName(name);
+      if (!n)
+        continue;
+      wsNames[ws] = n;
+      if (prevNames[ws] !== n) {
+        prevNames[ws] = n;
+        namesChanged = true;
+      }
+    }
+    for (const [ws, name] of Object.entries(prevNames)) {
+      if (usableName(name))
+        continue;
+      delete prevNames[ws];
+      delete wsNames[ws];
+      namesChanged = true;
+    }
+    if (wsChanged)
+      settings20.store.workspaceByConv = prevWs;
+    if (namesChanged)
+      settings20.store.projectNames = prevNames;
+  }
+  function requestWorkspace(id) {
+    if (!id || isHomeId(id) || pendingWs.has(id))
+      return;
+    if (convWorkspaceId(id))
+      return;
+    if (workspaceFetchedEmpty(id)) {
+      dropWorkspace(id);
+      return;
+    }
+    if (sidebarIndex().wsByConv[id])
+      return;
+    pendingWs.add(id);
+    try {
+      const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+      const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+      if (!fetchConv) {
+        pendingWs.delete(id);
+        return;
+      }
+      fetchConv(id).then((conv) => {
+        const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+        if (!ws) {
+          dropWorkspace(id);
+          if (open2)
+            paint2();
+          return;
+        }
+        const prev = settings20.plain.workspaceByConv ?? {};
+        if (prev[id] !== ws)
+          settings20.store.workspaceByConv = { ...prev, [id]: ws };
+        const live = liveWorkspaceId();
+        const liveName = usableName(readOpenProjectName());
+        const names = settings20.plain.projectNames ?? {};
+        if (live && ws !== live && liveName && names[ws] === liveName) {
+          const next = { ...names };
+          delete next[ws];
+          settings20.store.projectNames = next;
+          delete wsNames[ws];
+        }
+        if (open2)
+          paint2();
+      }).catch((e) => logger28.debug("workspace fetch failed:", e)).finally(() => {
+        pendingWs.delete(id);
+      });
+    } catch {
+      pendingWs.delete(id);
+    }
+  }
+  function chatPane() {
+    const main = document.querySelector("main");
+    if (!main)
+      return null;
+    let best = null;
+    let bestScore = 0;
+    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
+      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
+        continue;
+      const r = n.getBoundingClientRect();
+      if (r.width < 240 || r.height < 120)
+        continue;
+      const score = r.width * r.height;
+      if (score > bestScore) {
+        best = n;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+  function messageList(pane) {
+    let node = pane;
+    for (let i = 0;i < 8; i++) {
+      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
+      if (kids.length === 1 && kids[0].children.length > 1) {
+        node = kids[0];
+        continue;
+      }
+      break;
+    }
+    return node;
+  }
+  function chromeOff(el) {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach((n) => n.remove());
+    return clone;
+  }
+  function userBubble(root) {
+    const tagged = root.querySelector("[data-void-rt-role='user'], .void-rt-user-msg");
+    if (tagged)
+      return tagged;
+    const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
+    if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className))
+      cands.unshift(root);
+    if (!cands.length)
+      return null;
+    const inner = cands.filter((el) => !cands.some((other) => other !== el && el.contains(other)));
+    inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
+    return inner[0] ?? null;
+  }
+  function extractTurn(kid) {
+    const bubble = userBubble(kid);
+    const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
+    const rest = chromeOff(kid);
+    if (bubble && bubble !== kid) {
+      rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach((n) => n.remove());
+    }
+    let asstText = scrubText(rest.innerText ?? "");
+    if (userText && asstText.includes(userText))
+      asstText = scrubText(asstText.replace(userText, " "));
+    const lines = [];
+    if (userText)
+      lines.push({ role: "user", text: userText });
+    if (asstText && asstText !== userText)
+      lines.push({ role: "assistant", text: asstText });
+    return lines;
+  }
+  function extractMarks(root) {
+    const marks = [...root.querySelectorAll(".void-rt-mark")];
+    if (!marks.length)
+      return [];
+    const out = [];
+    for (const m of marks) {
+      const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
+      const text = scrubText(m.textContent ?? "");
+      if (text)
+        out.push({ role, text });
+    }
+    return lastRound(out);
+  }
+  function extractLines(pane) {
+    const fromMarks = extractMarks(pane);
+    if (fromMarks.length)
+      return fromMarks;
+    const source = messageList(pane);
+    const kids = [...source.children].filter((c) => c instanceof HTMLElement);
+    const out = [];
+    for (const kid of kids)
+      out.push(...extractTurn(kid));
+    return lastRound(out);
+  }
+  function scrubText(raw) {
+    let t = raw.replaceAll(/\s+/g, " ").trim();
+    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
+    t = t.replaceAll(/\s+/g, " ").trim();
+    if (!t || SKIP_NOISE.test(t))
+      return "";
+    return t;
+  }
+  function plainText(md) {
+    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
+    return scrubText(t);
+  }
+  function clipLine(text, max) {
+    const t = scrubText(text);
+    if (t.length <= max)
+      return t;
+    return `${t.slice(0, Math.max(1, max - 1))}…`;
+  }
+  function lastRound(lines) {
+    const cleaned = lines.map((line) => ({ role: line.role, text: scrubText(line.text) })).filter((line) => !!line.text);
+    if (!cleaned.length)
+      return [];
+    let asst = -1;
+    let user = -1;
+    for (let i = cleaned.length - 1;i >= 0; i--) {
+      if (asst < 0 && cleaned[i].role === "assistant")
+        asst = i;
+      if (user < 0 && cleaned[i].role === "user")
+        user = i;
+      if (asst >= 0 && user >= 0)
+        break;
+    }
+    const pick = user >= 0 && asst >= 0 && user < asst ? [cleaned[user], cleaned[asst]] : user >= 0 && (asst < 0 || user > asst) ? [cleaned[user]] : asst >= 0 ? [cleaned[asst]] : cleaned.slice(-1);
+    return pick.map((line) => ({
+      role: line.role,
+      text: clipLine(line.text, line.role === "user" ? 72 : 140)
+    }));
+  }
+  function pickUserText(query, message) {
+    const q = plainText(query);
+    const m = plainText(message);
+    if (q && m) {
+      if (m.startsWith(q) && m.length > q.length)
+        return q;
+      return q.length <= m.length ? q : m;
+    }
+    return q || m;
+  }
+  function walkThread(startId) {
+    if (!startId)
+      return [];
+    try {
+      const { byId } = ResponseStore.useResponseStore.getState();
+      const out = [];
+      const seen = new Set;
+      let id = startId;
+      while (id && !seen.has(id) && out.length < 50) {
+        seen.add(id);
+        const r = byId[id];
+        if (!r)
+          break;
+        out.unshift(r);
+        id = r.parentResponseId;
+      }
+      return out;
+    } catch {
+      return [];
+    }
+  }
+  function responsesOf(id) {
+    const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+    const nodes = nodesByConversationId[id] ?? [];
+    if (nodes.length) {
+      const list = nodes.map((n) => byId[n.responseId]).filter((r) => !!r);
+      if (list.length)
+        return list;
+      const walked = walkThread(nodes.at(-1)?.responseId);
+      if (walked.length)
+        return walked;
+    }
+    const cached = byConversationId[id];
+    if (cached?.length)
+      return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      if (chat.conversationId === id) {
+        return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
+      }
+    } catch {}
+    return [];
+  }
+  function responsesToLines(list) {
+    const out = [];
+    for (const r of list) {
+      if (!r || r.isControl)
+        continue;
+      const sender = String(r.sender ?? "").toLowerCase();
+      const human = sender === "human" || sender === "user";
+      if (human) {
+        const text = pickUserText(r.query || "", r.message || "");
+        if (text)
+          out.push({ role: "user", text });
+        continue;
+      }
+      const query = pickUserText(r.query || "", "");
+      let message = plainText(r.message || "");
+      if (query && message.startsWith(query) && message.length > query.length) {
+        message = scrubText(message.slice(query.length));
+      }
+      if (query && out.at(-1)?.text !== query)
+        out.push({ role: "user", text: query });
+      if (message && message !== query)
+        out.push({ role: "assistant", text: message });
+    }
+    return lastRound(out);
+  }
+  function linesFromStore(id) {
+    if (!id)
+      return [];
+    try {
+      return responsesToLines(responsesOf(id));
+    } catch (e) {
+      logger28.debug("ResponseStore snapshot failed:", e);
+      return [];
+    }
+  }
+  function betterLines(store, dom) {
+    const pair = (lines) => lines.some((l) => l.role === "user") && lines.some((l) => l.role === "assistant");
+    if (pair(store))
+      return store;
+    if (pair(dom))
+      return dom;
+    return store.length ? store : dom;
+  }
+  function parseSnap(raw) {
+    if (!raw)
+      return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
+        return null;
+      return {
+        title: typeof parsed.title === "string" ? parsed.title : "",
+        theme: parsed.theme === "light" ? "light" : "dark",
+        lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"))
+      };
+    } catch {
+      return null;
+    }
+  }
+  function snapOf(id) {
+    return thumbs.get(id) ?? parseSnap(settings20.plain.pages?.[id]);
+  }
+  function rememberPage(id, snap) {
+    const json = JSON.stringify(snap);
+    const prev = settings20.plain.pages ?? {};
+    if (prev[id] === json)
+      return;
+    settings20.store.pages = { ...prev, [id]: json };
+  }
+  function applyLineStyle(el, role, theme) {
+    el.style.display = "-webkit-box";
+    el.style.webkitBoxOrient = "vertical";
+    el.style.overflow = "hidden";
+    el.style.width = "fit-content";
+    el.style.overflowWrap = "anywhere";
+    el.style.fontSize = "11px";
+    el.style.lineHeight = "1.35";
+    if (role === "user") {
+      el.style.alignSelf = "flex-end";
+      el.style.maxWidth = "78%";
+      el.style.padding = "6px 9px";
+      el.style.borderRadius = "14px 14px 4px 14px";
+      el.style.background = theme === "light" ? "#e8e6e0" : "#2f2f2f";
+      el.style.color = theme === "light" ? "#171717" : "#fff";
+      el.style.webkitLineClamp = "2";
+    } else {
+      el.style.alignSelf = "flex-start";
+      el.style.maxWidth = "94%";
+      el.style.padding = "0";
+      el.style.background = "transparent";
+      el.style.color = theme === "light" ? "#3f3f3f" : "#c4c4c4";
+      el.style.webkitLineClamp = "4";
+    }
+  }
+  function buildPageShot(snap) {
+    const page = node("span", cl24("page"));
+    page.dataset.theme = snap.theme;
+    for (const line of lastRound(snap.lines)) {
+      const el = node("span", cl24("page-line", line.role === "user" && "page-line-user"), line.text);
+      el.dataset.role = line.role;
+      applyLineStyle(el, line.role, snap.theme);
+      page.append(el);
+    }
+    return page;
+  }
+  function captureId(id) {
+    if (!id)
+      return;
+    const fromStore = linesFromStore(id);
+    let fromDom = [];
+    if (id === currentVisit()) {
+      const pane = chatPane();
+      if (pane)
+        fromDom = extractLines(pane);
+    }
+    const lines = betterLines(fromStore, fromDom);
+    if (!lines.length)
+      return;
+    const snap = {
+      title: titleOf(id),
+      theme: detectTheme(),
+      lines: lastRound(lines)
+    };
+    thumbs.set(id, snap);
+    rememberPage(id, snap);
+  }
+  var capturing = false;
+  function captureCurrent() {
+    if (capturing || open2)
+      return;
+    capturing = true;
+    try {
+      const current = currentVisit();
+      if (current)
+        captureId(current);
+      for (const id of capVisits(readVisits())) {
+        if (id && id !== current)
+          captureId(id);
+      }
+    } catch (e) {
+      logger28.debug("snapshot failed:", e);
+    } finally {
+      capturing = false;
+    }
+  }
+  function scheduleCapture() {
+    if (open2)
+      return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!open2)
+          captureCurrent();
+      });
+    });
+  }
+  function bump(id) {
+    if (!id)
+      return;
+    if (isHomeId(id) && !settings20.store.includeHome)
+      return;
+    writeVisits(capVisits([id, ...readVisits()]));
+    if (isHomeId(id)) {
+      if (shouldRememberProject(id))
+        rememberProject(id);
+      return;
+    }
+    const conv = lookup(id);
+    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    if (shouldRememberProject(id))
+      rememberProject(id);
+  }
+  function shouldRememberProject(id) {
+    if (!id || workspaceFetchedEmpty(id))
+      return false;
+    return !!workspaceOf(id);
+  }
+  function hydrate() {
+    invalidateSidebar();
+    const current = currentVisit();
+    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
+    writeVisits(capVisits(merged));
+    reconcileSidebarCache();
+    if (current) {
+      rememberTitle(current, lookup(current)?.title || pageTitle());
+      if (shouldRememberProject(current))
+        rememberProject(current);
+    }
+    for (const id of capVisits(readVisits())) {
+      if (id)
+        requestWorkspace(id);
+    }
+  }
+  function topics() {
+    return capVisits(readVisits()).map((id) => ({
+      id,
+      title: titleOf(id),
+      project: projectNameOf(id)
+    }));
+  }
+  function parseHref(href) {
+    try {
+      const u = new URL(href, location.origin);
+      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
+      if (parsed?.page && parsed.page !== "unknown")
+        return parsed;
+    } catch (e) {
+      logger28.debug("urlToRoute failed:", e);
+    }
+    return null;
+  }
+  function applyChatPage(id, workspaceId) {
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      chat.setConversationId(id || undefined);
+      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
+    } catch (e) {
+      logger28.debug("ChatPageStore update failed:", e);
+    }
+  }
+  function navigateTo(id) {
+    try {
+      const routing = RoutingStore.useRoutingStore.getState();
+      const { route } = routing;
+      const teamId = route.teamId ?? null;
+      if (isHomeId(id) || !id) {
+        const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceOf(id));
+        const hereWs = asWorkspaceId(route.workspaceId) || projectIdFromUrl();
+        const hereChat = route.conversationId || chatIdFromUrl();
+        if (!ws) {
+          if (!hereChat && (route.page === "main" || !hereWs))
+            return;
+          routing.push({ page: "main", teamId });
+          applyChatPage("");
+          return;
+        }
+        if (!hereChat && hereWs === ws)
+          return;
+        routing.push({ page: "workspace", workspaceId: ws, tab: "conversations", teamId });
+        applyChatPage("", ws);
+        return;
+      }
+      const workspaceId = workspaceOf(id);
+      const href = hrefFor(id, workspaceId);
+      const parsed = parseHref(href);
+      const dest = workspaceId ? {
+        page: "workspace",
+        workspaceId,
+        tab: "conversations",
+        conversationId: id,
+        teamId
+      } : {
+        page: "chat",
+        conversationId: id,
+        temporary: lookup(id)?.temporary ?? false,
+        teamId
+      };
+      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
+        dest.page = "workspace";
+        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
+        dest.conversationId = parsed.conversationId || id;
+        dest.tab = parsed.tab || "conversations";
+        if (parsed.filePath)
+          dest.filePath = parsed.filePath;
+      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
+        dest.page = "chat";
+        dest.conversationId = parsed.conversationId;
+        dest.temporary = parsed.temporary ?? dest.temporary;
+      }
+      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
+        dest.page = "chat";
+        dest.conversationId = id;
+        delete dest.workspaceId;
+        delete dest.tab;
+      }
+      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
+        return;
+      routing.push(dest);
+      applyChatPage(id, asWorkspaceId(dest.workspaceId));
+      if (dest.page !== "workspace") {
+        try {
+          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+          fetchConv?.(id).then((conv) => {
+            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
+            if (!ws)
+              return;
+            const now = RoutingStore.useRoutingStore.getState();
+            if (routeConvId(now.route) !== id)
+              return;
+            now.replace({
+              page: "workspace",
+              workspaceId: ws,
+              tab: "conversations",
+              conversationId: id,
+              teamId
+            });
+            applyChatPage(id, ws);
+            rememberProject(id);
+          }).catch((e) => logger28.debug("workspace resolve failed:", e));
+        } catch (e) {
+          logger28.debug("workspace fetch skipped:", e);
+        }
+      }
+    } catch (e) {
+      logger28.error("Failed to navigate:", e);
+      try {
+        location.assign(hrefFor(id, workspaceOf(id) || undefined));
+      } catch (navErr) {
+        logger28.error("Fallback navigation failed:", navErr);
+      }
+    }
+  }
+  function isTrigger(e) {
+    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
+      return true;
+    return TRIGGER_KEYS.has(e.key);
+  }
+  function isCtrlKey(e) {
+    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
+  }
+  function begin(reverse, fromHold) {
+    held = fromHold;
+    open2 = false;
+    captureCurrent();
+    open2 = true;
+    selected = 0;
+    try {
+      hydrate();
+      const current = currentVisit();
+      if (current != null)
+        bump(current);
+      if (topics().length > 1)
+        selected = reverse ? topics().length - 1 : 1;
+    } catch (e) {
+      logger28.error("Failed to open switcher:", e);
+    }
+    paint2();
+  }
+  function cycle2(reverse) {
+    const { length } = topics();
+    if (!length)
+      return;
+    selected = (selected + (reverse ? -1 : 1) + length) % length;
+    paint2();
+  }
+  function commit() {
+    if (!open2)
+      return;
+    const target = topics()[selected];
+    open2 = false;
+    held = false;
+    paint2();
+    if (target)
+      navigateTo(target.id);
+  }
+  function cancel() {
+    if (!open2)
+      return;
+    open2 = false;
+    held = false;
+    paint2();
+  }
+  function onKeyDown3(e) {
+    if (isCtrlKey(e)) {
+      ctrlHeld = true;
+      return;
+    }
+    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
+    if (combo) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      try {
+        if (open2)
+          cycle2(e.shiftKey);
+        else
+          begin(e.shiftKey, true);
+      } catch (err) {
+        logger28.error("Hotkey failed:", err);
+      }
+      return;
+    }
+    if (!open2)
+      return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancel();
+      return;
+    }
+    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
+      e.preventDefault();
+      cycle2(e.shiftKey);
+    }
+  }
+  function onKeyUp(e) {
+    if (!isCtrlKey(e))
+      return;
+    ctrlHeld = false;
+    if (open2 && held)
+      commit();
+  }
+  function onBeforeInput(e) {
+    if (!ctrlHeld && !open2)
+      return;
+    const { data } = e;
+    if (data && TRIGGER_KEYS.has(data))
+      e.preventDefault();
+  }
+  function onWindowBlur() {
+    ctrlHeld = false;
+  }
+  function onVisibility() {
+    if (document.hidden) {
+      ctrlHeld = false;
+      cancel();
+    }
+  }
+  function pick(index) {
+    selected = index;
+    commit();
+  }
+  function node(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className)
+      el.className = className;
+    if (text)
+      el.textContent = text;
+    return el;
+  }
+  function fillShot(box, id) {
+    const snap = snapOf(id);
+    if (!snap) {
+      const fallback = node("span", cl24("fallback"));
+      fallback.append(faviconImg(cl24("favicon")));
+      box.append(fallback);
+      return;
+    }
+    const shot = node("span", cl24("shot"));
+    shot.append(buildPageShot(snap));
+    box.append(shot);
+  }
+  var GROK_BG_PATH2 = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P12 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P22 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH2}" fill="#050505"/><path d="${GROK_MARK_P12}" fill="#FCFCFC"/><path d="${GROK_MARK_P22}" fill="#FCFCFC"/></svg>`)}`;
+  var ACCENTS = [
+    "rgb(37, 99, 235)",
+    "rgb(14, 165, 233)",
+    "rgb(20, 184, 166)",
+    "rgb(249, 115, 22)",
+    "rgb(100, 116, 139)"
+  ];
+  function accentOf(id) {
+    if (!id)
+      return ACCENTS[4];
+    let hash = 0;
+    for (let i = 0;i < id.length; i++)
+      hash = hash * 31 + id.charCodeAt(i) >>> 0;
+    return ACCENTS[hash % ACCENTS.length];
+  }
+  function detectTheme() {
+    const html = document.documentElement;
+    const { body } = document;
+    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
+    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
+      return "dark";
+    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
+      return "light";
+    try {
+      const bg = getComputedStyle(body || html).backgroundColor;
+      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+      if (m) {
+        const r = Number(m[1]) / 255;
+        const g = Number(m[2]) / 255;
+        const b = Number(m[3]) / 255;
+        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+        return lum < 0.42 ? "dark" : "light";
+      }
+    } catch {}
+    const scheme = getComputedStyle(html).colorScheme;
+    if (scheme.includes("light") && !scheme.includes("dark"))
+      return "light";
+    return "dark";
+  }
+  function grokFaviconSrc() {
+    try {
+      if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
+        const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
+        const href = link?.href;
+        if (href && !href.startsWith("data:"))
+          return href;
+        return `${location.origin}/images/favicon.svg`;
+      }
+    } catch {}
+    return GROK_ICON_DATA;
+  }
+  function faviconImg(className) {
+    const img = document.createElement("img");
+    img.className = className;
+    img.alt = "";
+    img.draggable = false;
+    img.src = grokFaviconSrc();
+    img.addEventListener("error", () => {
+      if (img.src === GROK_ICON_DATA) {
+        img.dataset.broken = "true";
+        return;
+      }
+      img.src = GROK_ICON_DATA;
+    });
+    return img;
+  }
+  function folderIcon() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", cl24("folder"));
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
+    svg.append(path);
+    return svg;
+  }
+  function applyTheme(panel) {
+    const theme = detectTheme();
+    panel.setAttribute("data-theme", theme);
+    panel.style.colorScheme = theme;
+  }
+  function buildHost() {
+    const root = node("div", cl24("root"));
+    root.id = "void-rt-host";
+    root.setAttribute("role", "presentation");
+    root.addEventListener("click", cancel);
+    const panel = node("div", cl24("panel"));
+    panel.setAttribute("role", "listbox");
+    panel.setAttribute("aria-label", "Recent conversations");
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    panel.append(node("div", cl24("list")));
+    root.append(panel);
+    return root;
+  }
+  function renderList(items) {
+    if (!host)
+      return;
+    const panel = host.querySelector(`.${cl24("panel")}`);
+    if (!panel)
+      return;
+    let list = panel.querySelector(`.${cl24("list")}`);
+    if (!list) {
+      panel.replaceChildren();
+      list = node("div", cl24("list"));
+      panel.append(list);
+    }
+    list.replaceChildren();
+    items.forEach((topic, i) => {
+      const btn = node("button", cl24("card"));
+      btn.type = "button";
+      btn.tabIndex = -1;
+      btn.setAttribute("role", "option");
+      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+      btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
+      btn.addEventListener("pointerenter", () => {
+        if (selected === i)
+          return;
+        selected = i;
+        syncActive();
+      });
+      btn.addEventListener("focus", () => {
+        if (selected === i)
+          return;
+        selected = i;
+        syncActive();
+      });
+      btn.addEventListener("click", () => pick(i));
+      const shot = node("span", cl24("thumb"));
+      shot.setAttribute("aria-hidden", "true");
+      fillShot(shot, topic.id);
+      const meta = node("span", cl24("meta"));
+      meta.append(node("span", cl24("name"), topic.title));
+      if (topic.project) {
+        const proj = node("span", cl24("host"));
+        proj.append(folderIcon(), node("span", cl24("host-name"), topic.project));
+        meta.append(proj);
+      }
+      btn.append(shot, meta);
+      list.append(btn);
+    });
+  }
+  function syncActive() {
+    if (!host)
+      return;
+    const cards = host.querySelectorAll(`.${cl24("card")}`);
+    cards.forEach((card, i) => {
+      const on = i === selected;
+      card.setAttribute("data-active", on ? "true" : "false");
+      card.setAttribute("aria-selected", on ? "true" : "false");
+      card.tabIndex = on ? 0 : -1;
+      if (on)
+        card.setAttribute("aria-current", "true");
+      else
+        card.removeAttribute("aria-current");
+    });
+    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
+  }
+  function paint2() {
+    document.documentElement.classList.toggle("void-rt-open", open2);
+    if (!open2) {
+      detachHost();
+      return;
+    }
+    const items = topics();
+    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
+    if (!host) {
+      host = buildHost();
+      mountOverlay(host);
+    }
+    const panel = host.querySelector(`.${cl24("panel")}`);
+    if (!panel)
+      return;
+    applyTheme(panel);
+    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
+    if (!items.length) {
+      if (paintedKey !== "__empty__") {
+        panel.replaceChildren(node("div", cl24("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+        paintedKey = "__empty__";
+      }
+      requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+      return;
+    }
+    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl24("list")}`)) {
+      panel.replaceChildren(node("div", cl24("list")));
+      paintedKey = "";
+    }
+    if (paintedKey !== key) {
+      renderList(items);
+      paintedKey = key;
+    }
+    syncActive();
+    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+  }
+  function detachHost() {
+    document.documentElement.classList.remove("void-rt-open");
+    paintedKey = "";
+    if (host) {
+      try {
+        host.hidePopover();
+      } catch {}
+      host.remove();
+      host = null;
+    }
+    document.getElementById("void-rt-host")?.remove();
+    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
+      const p = el;
+      try {
+        p.hidePopover?.();
+      } catch {}
+      try {
+        p.close?.();
+      } catch {}
+      el.remove();
+    });
+  }
+  function mountOverlay(root) {
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
+    document.documentElement.append(root);
+    document.documentElement.classList.add("void-rt-open");
+    if (typeof root.showPopover !== "function")
+      return;
+    root.setAttribute("popover", "manual");
+    try {
+      root.showPopover();
+    } catch {
+      root.removeAttribute("popover");
+    }
+  }
+  var recentTopics_default = definePlugin({
+    name: "RecentTopics",
+    icon: LayoutGridIcon,
+    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings20,
+    managedStyle: "recentTopics",
+    _mark({ response }) {
+      try {
+        if (!response || response.isControl)
+          return null;
+        const sender = String(response.sender ?? "").toLowerCase();
+        const human = sender === "human" || sender === "user";
+        const text = human ? pickUserText(response.query || "", response.message || "") : plainText(response.message || "");
+        if (!text)
+          return null;
+        return React2.createElement("span", {
+          className: "void-rt-mark",
+          "data-role": human ? "user" : "assistant",
+          hidden: true
+        }, text);
+      } catch {
+        return null;
+      }
+    },
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._mark({response:$1}),$&"
+        }
+      }
+    ],
+    start() {
+      detachHost();
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      try {
+        hydrate();
+        const current = currentVisit();
+        if (current != null)
+          bump(current);
+        scheduleCapture();
+      } catch (e) {
+        logger28.error("Hydrate failed:", e);
+      }
+      if (!keys2) {
+        keys2 = new AbortController;
+        const { signal } = keys2;
+        window.addEventListener("keydown", onKeyDown3, { capture: true, signal });
+        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+        window.addEventListener("blur", onWindowBlur, { signal });
+        document.addEventListener("visibilitychange", onVisibility, { signal });
+        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+      }
+    },
+    stop() {
+      keys2?.abort();
+      keys2 = null;
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      thumbs.clear();
+      detachHost();
+    },
+    onSettingsChange() {
+      try {
+        writeVisits(capVisits(readVisits()));
+      } catch (e) {
+        logger28.error("Settings update failed:", e);
+      }
+    },
+    zustand: {
+      RoutingStore: {
+        selector: (s) => routeConvId(s.route),
+        handler(id) {
+          if (open2)
+            return;
+          const current = currentVisit();
+          if (current == null)
+            return;
+          if (id && isHomeId(current) && !isHomeId(id))
+            return;
+          bump(current);
+          scheduleCapture();
+        }
+      },
+      ChatPageStore: {
+        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
+        handler() {
+          if (open2)
+            return;
+          const id = currentVisit();
+          if (id == null)
+            return;
+          bump(id);
+          scheduleCapture();
+        }
+      },
+      ResponseStore: {
+        selector: (s) => {
+          const id = currentVisit();
+          if (!id || isHomeId(id))
+            return "";
+          const list = s.byConversationId[id];
+          const last = list?.[list.length - 1];
+          return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
+        },
+        handler() {
+          if (open2)
+            return;
+          scheduleCapture();
+        }
+      }
+    }
+  });
+
+  // src/plugins/responseNotification/index.tsx
+  var logger29 = new Logger("ResponseNotification");
+  var LIVE_STATES = new Set(["streaming", "optimistic", "reconnecting"]);
+  var RETRY_MS = 80;
+  var CHIME_LOW = 523.25;
+  var CHIME_HIGH = 659.25;
+  var CHIME_GAIN = 0.18;
+  var settings21 = definePluginSettings({
+    sound: {
+      type: 3 /* BOOLEAN */,
+      description: "Play a notification sound.",
+      default: true
+    },
+    soundUrl: {
+      type: 0 /* STRING */,
+      description: "Custom sound URL. Leave empty for the Cursor-style chime.",
+      default: "",
+      placeholder: "https://example.com/sound.mp3"
+    },
+    preview: {
+      type: 6 /* COMPONENT */,
+      component: PreviewSound
+    },
+    browserNotification: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a browser notification.",
+      default: true
+    },
+    onlyWhenHidden: {
+      type: 3 /* BOOLEAN */,
+      description: "Only notify when the tab is hidden.",
+      default: true
+    }
+  });
+  var userGestured = false;
+  var gestureCtrl = null;
+  var audioCtx = null;
+  var retryTimer;
+  function getCtx() {
+    if (audioCtx && audioCtx.state !== "closed")
+      return audioCtx;
+    try {
+      audioCtx = new AudioContext;
+      return audioCtx;
+    } catch (e) {
+      logger29.debug("AudioContext unavailable:", e);
+      audioCtx = null;
+      return null;
+    }
+  }
+  function markGestured() {
+    userGestured = true;
+    const ctx = getCtx();
+    if (ctx?.state === "suspended")
+      ctx.resume();
+  }
+  function tone(ctx, freq, when, dur) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(CHIME_GAIN, when);
+    gain.gain.exponentialRampToValueAtTime(0.001, when + dur);
+    osc.start(when);
+    osc.stop(when + dur);
+  }
+  function playChime() {
+    if (!userGestured)
+      return;
+    const ctx = getCtx();
+    if (!ctx)
+      return;
+    const start = () => {
+      const t = ctx.currentTime;
+      tone(ctx, CHIME_LOW, t, 0.12);
+      tone(ctx, CHIME_HIGH, t + 0.09, 0.2);
+    };
+    if (ctx.state === "suspended")
+      ctx.resume().then(start, () => logger29.debug("AudioContext resume failed"));
+    else
+      start();
+  }
+  function playSound() {
+    if (!userGestured) {
+      logger29.debug("sound skipped, no user gesture yet");
+      return;
+    }
+    const url = settings21.store.soundUrl?.trim();
+    if (url) {
+      const audio = new Audio(url);
+      audio.volume = 0.3;
+      audio.play().catch(() => playChime());
+    } else {
+      playChime();
+    }
+  }
+  function PreviewSound() {
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.35rem"
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, "Preview the default Cursor-style chime."), /* @__PURE__ */ React.createElement(Button, {
+      size: "sm",
+      variant: "secondary",
+      onClick: () => {
+        markGestured();
+        playChime();
+      }
+    }, "Play preview"));
+  }
+  function isErrorResponse2(response) {
+    return response?.state === "error" || response?.error != null;
+  }
+  function isLiveResponse2(response) {
+    return !!response?.state && LIVE_STATES.has(response.state);
+  }
+  function shouldNotify(response) {
+    if (!response || isErrorResponse2(response) || isLiveResponse2(response))
+      return false;
+    return true;
+  }
+  function notify(responseId, state) {
+    logger29.debug("notify", responseId, state ?? "unset", "permission", Notification.permission);
+    if (settings21.store.onlyWhenHidden && document.visibilityState === "visible")
+      return;
+    if (settings21.store.sound)
+      playSound();
+    if (settings21.store.browserNotification)
+      sendBrowserNotification("Grok", "Response complete.");
+  }
+  function onStreamEnd4({ responseId }) {
+    if (retryTimer)
+      clearTimeout(retryTimer);
+    const attempt = (retried) => {
+      let response;
+      try {
+        response = ResponseStore.useResponseStore.getState().byId[responseId];
+      } catch (e) {
+        logger29.debug("ResponseStore unavailable:", e);
+      }
+      if (shouldNotify(response)) {
+        notify(responseId, response?.state);
+        return;
+      }
+      if (isErrorResponse2(response)) {
+        logger29.debug("skip error", responseId);
+        return;
+      }
+      if (!retried && (!response || isLiveResponse2(response))) {
+        retryTimer = setTimeout(() => attempt(true), RETRY_MS);
+        return;
+      }
+      if (!response) {
+        notify(responseId, "missing");
+        return;
+      }
+      logger29.debug("skip", responseId, response.state ?? "unset");
+    };
+    attempt(false);
+  }
+  var responseNotification_default = definePlugin({
+    name: "ResponseNotification",
+    icon: BellIcon,
+    description: "Notify when Grok finishes responding.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings21,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      if (gestureCtrl)
+        return;
+      gestureCtrl = new AbortController;
+      const { signal } = gestureCtrl;
+      for (const evt of ["pointerdown", "keydown", "touchstart"]) {
+        addEventListener(evt, markGestured, { capture: true, passive: true, signal });
+      }
+    },
+    stop() {
+      if (retryTimer)
+        clearTimeout(retryTimer);
+      retryTimer = undefined;
+      gestureCtrl?.abort();
+      gestureCtrl = null;
+      if (audioCtx && audioCtx.state !== "closed")
+        audioCtx.close();
+      audioCtx = null;
+    },
+    events: {
+      streamEnd: onStreamEnd4
+    }
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/settingsFlyout/styles.css
+  registerStyle("settingsFlyout", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-sf-menu-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-inline-end: 0.5rem;
+    color: hsl(var(--fg-secondary));
+    flex-shrink: 0;
+}
+
+.void-sf-group {
+    padding: 0.25rem 0.5rem 0.125rem;
+    pointer-events: none;
+}
+
+.void-sf-menu {
+    max-height: min(24rem, calc(100vh - 6rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+`);
+
+  // src/plugins/settingsFlyout/icons.tsx
+  function grokSvg(props, ...children) {
+    return /* @__PURE__ */ React2.createElement("svg", {
+      width: props.width ?? props.size ?? 16,
+      height: props.height ?? props.size ?? 16,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg",
+      className: props.className,
+      "aria-hidden": "true"
+    }, children);
+  }
+  var CogIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+    fill: "currentColor",
+    d: "m13.456 1.75.296.445c.832 1.247 1.198 1.654 1.558 1.818.321.146.82.172 2.242-.157l.54-.124 2.171 2.171-.124.54c-.328 1.423-.302 1.921-.156 2.243.164.36.57.726 1.817 1.557l.446.297v2.92l-.446.297c-1.247.831-1.653 1.198-1.817 1.558-.146.32-.172.82.156 2.242l.124.54-2.17 2.17-.54-.123c-1.423-.329-1.922-.303-2.243-.157-.36.164-.726.57-1.558 1.818l-.296.445h-2.92l-.297-.445c-.832-1.247-1.198-1.654-1.558-1.818-.321-.146-.82-.172-2.242.157l-.54.124-2.171-2.171.124-.54c.328-1.423.303-1.921.156-2.242-.164-.36-.57-.727-1.817-1.558l-.445-.297v-2.92l.445-.297c1.247-.831 1.653-1.198 1.817-1.557.147-.322.172-.82-.156-2.243l-.124-.54 2.17-2.17.541.123c1.422.329 1.92.303 2.242.157.36-.164.727-.57 1.558-1.818l.297-.445zm-1.853 2c-.637.93-1.249 1.699-2.092 2.083-.875.4-1.845.324-2.977.092l-.614.613c.232 1.132.308 2.102-.091 2.978-.385.842-1.153 1.454-2.083 2.09v.787c.93.636 1.698 1.248 2.083 2.091.399.876.323 1.845.091 2.977l.614.613c1.132-.232 2.102-.306 2.977.093.843.384 1.455 1.153 2.092 2.083h.785c.637-.93 1.249-1.699 2.092-2.083.875-.399 1.845-.325 2.976-.093l.614-.613c-.232-1.132-.306-2.101.093-2.977.384-.843 1.152-1.455 2.083-2.091v-.787c-.93-.636-1.7-1.248-2.083-2.09-.4-.876-.325-1.846-.093-2.978l-.614-.613c-1.131.232-2.1.307-2.976-.092-.843-.384-1.455-1.153-2.092-2.083zM14.001 12A2 2 0 1 0 10 12a2 2 0 0 0 4 0m2 0A4 4 0 1 1 8 12a4 4 0 0 1 8 0"
+  }));
+  var PersonIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 12.25C16.4183 12.25 20 15.8317 20 20.25V22H4V20.25C4 15.8317 7.58172 12.25 12 12.25ZM12 14.25C8.77005 14.25 6.13694 16.8022 6.00586 20H17.9941C17.8631 16.8022 15.23 14.25 12 14.25Z",
+    fill: "currentColor"
+  }), /* @__PURE__ */ React2.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 2C14.4853 2 16.5 4.01472 16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2ZM12 4C10.6193 4 9.5 5.11929 9.5 6.5C9.5 7.88071 10.6193 9 12 9C13.3807 9 14.5 7.88071 14.5 6.5C14.5 5.11929 13.3807 4 12 4Z",
+    fill: "currentColor"
+  }));
+  var PaintIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+    fill: "currentColor",
+    d: "M16.2637 3.19188C17.5328 2.03183 19.4908 2.07547 20.707 3.29149C21.9244 4.50883 21.967 6.46969 20.8037 7.73876L20.8027 7.73778L12.4814 16.9038C12.2753 19.4758 10.1251 21.4985 7.5 21.4985H2.5V16.4985C2.50025 13.8741 4.52251 11.7229 7.09375 11.5161L16.2637 3.19188ZM19.293 4.70653C18.8329 4.24643 18.0921 4.2299 17.6123 4.66942L17.6084 4.67333L9.58594 11.9546C10.67 12.453 11.5441 13.3277 12.043 14.4116L19.3262 6.39012L19.3291 6.3872C19.7688 5.90754 19.7529 5.16673 19.293 4.70653ZM4.5 19.4985H7.5C9.15685 19.4985 10.5 18.1554 10.5 16.4985C10.4997 14.8419 9.15669 13.4985 7.5 13.4985C5.84331 13.4985 4.50026 14.8419 4.5 16.4985V19.4985Z"
+  }));
+  var VisitIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+    fill: "currentColor",
+    d: "M21.5 14.5L19.2402 16.1201L22.0596 18.9404L19.9404 21.0596L17.1201 18.2402L15.5 20.5L13 12L21.5 14.5Z"
+  }), /* @__PURE__ */ React2.createElement("path", {
+    fill: "currentColor",
+    d: "M18.5 2C20.433 2 22 3.567 22 5.5V11H20V5.5C20 4.67157 19.3284 4 18.5 4H5.5C4.67157 4 4 4.67157 4 5.5V16.5C4 17.3284 4.67157 18 5.5 18H12V20H5.5C3.567 20 2 18.433 2 16.5V5.5C2 3.567 3.567 2 5.5 2H18.5Z"
+  }), /* @__PURE__ */ React2.createElement("path", {
+    fill: "currentColor",
+    d: "M10.4941 5.52441C10.7365 5.57269 10.9591 5.69148 11.1338 5.86621C11.3085 6.04094 11.4273 6.26352 11.4756 6.50586C11.5238 6.74833 11.4999 7.00011 11.4053 7.22852C11.3107 7.45691 11.1499 7.65171 10.9443 7.78906C10.7388 7.92641 10.4972 8 10.25 8C9.91848 8 9.60063 7.86821 9.36621 7.63379C9.13179 7.39937 9 7.08152 9 6.75C9 6.50277 9.07359 6.26123 9.21094 6.05566C9.34829 5.85012 9.54309 5.68933 9.77148 5.59473C9.99989 5.50012 10.2517 5.47618 10.4941 5.52441Z"
+  }), /* @__PURE__ */ React2.createElement("path", {
+    fill: "currentColor",
+    d: "M6.75 5.5C7.08152 5.5 7.39937 5.63179 7.63379 5.86621C7.86821 6.10063 8 6.41848 8 6.75C8 6.99723 7.92641 7.23877 7.78906 7.44434C7.65171 7.64988 7.45691 7.81067 7.22852 7.90527C7.00011 7.99988 6.74833 8.02382 6.50586 7.97559C6.26352 7.92731 6.04094 7.80852 5.86621 7.63379C5.69148 7.45906 5.57269 7.23648 5.52441 6.99414C5.47618 6.75167 5.50012 6.49989 5.59473 6.27148C5.68933 6.04309 5.85012 5.84829 6.05566 5.71094C6.26123 5.57359 6.50277 5.5 6.75 5.5Z"
+  }), /* @__PURE__ */ React2.createElement("path", {
+    fill: "currentColor",
+    d: "M13.75 5.5C14.0815 5.5 14.3994 5.63179 14.6338 5.86621C14.8682 6.10063 15 6.41848 15 6.75C15 6.99723 14.9264 7.23877 14.7891 7.44434C14.6517 7.64988 14.4569 7.81067 14.2285 7.90527C14.0001 7.99988 13.7483 8.02382 13.5059 7.97559C13.2635 7.92731 13.0409 7.80852 12.8662 7.63379C12.6915 7.45906 12.5727 7.23648 12.5244 6.99414C12.4762 6.75167 12.5001 6.49989 12.5947 6.27148C12.6893 6.04309 12.8501 5.84829 13.0557 5.71094C13.2612 5.57359 13.5028 5.5 13.75 5.5Z"
+  }));
+  var SlidersIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+    d: "M21 7H10M14 17H3M20.25 17C20.25 18.6569 18.9069 20 17.25 20C15.5931 20 14.25 18.6569 14.25 17C14.25 15.3431 15.5931 14 17.25 14C18.9069 14 20.25 15.3431 20.25 17ZM9.75 7C9.75 8.65685 8.40685 10 6.75 10C5.09315 10 3.75 8.65685 3.75 7C3.75 5.34315 5.09315 4 6.75 4C8.40685 4 9.75 5.34315 9.75 7Z",
+    stroke: "currentColor",
+    strokeLinejoin: "round",
+    strokeWidth: "2"
+  }));
+  var PaymentsIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+    fill: "currentColor",
+    d: "M12.9004 7.83984C13.0629 7.87413 13.2225 7.91676 13.376 7.96777C13.9053 8.14378 14.4688 8.45248 14.8301 8.95215L13.3711 10.0068C13.3148 9.92902 13.1447 9.78764 12.8086 9.67578C12.4889 9.56951 12.1071 9.52104 11.75 9.5459C11.3842 9.57147 11.1204 9.6686 10.9727 9.77734C10.6672 10.0025 10.7901 10.4692 11.0615 10.6533C11.3259 10.8325 11.7135 10.964 12.2734 11.1426C12.7633 11.2988 13.4271 11.5024 13.9502 11.8574C14.5404 12.2581 15.0008 12.8825 15.001 13.8027C15.001 14.6074 14.6157 15.2292 14.0645 15.6318C13.716 15.8862 13.3104 16.0473 12.9004 16.1426V17.5H11.1006V16.1924C10.8876 16.158 10.6783 16.1108 10.4785 16.0488C9.92674 15.8775 9.3358 15.5675 8.95996 15.0479L10.4189 13.9932C10.4778 14.0743 10.6555 14.2195 11.0117 14.3301C11.3503 14.4351 11.7577 14.4787 12.1426 14.4453C12.5359 14.411 12.8313 14.303 13.0029 14.1777C13.3128 13.9513 13.2321 13.5454 12.9395 13.3467C12.6751 13.1673 12.2868 13.0361 11.7266 12.8574C11.2368 12.7012 10.5739 12.4974 10.0508 12.1426C9.46027 11.7419 9.00013 11.1178 9 10.1973V10.1328C9 9.34586 9.36032 8.72911 9.9043 8.32812C10.2629 8.06395 10.6821 7.90612 11.1006 7.82129V6.5H12.9004V7.83984Z"
+  }), /* @__PURE__ */ React2.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z",
+    fill: "currentColor"
+  }));
+  var LightningIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+    d: "M5 14.25L14 4L13 9.75H19L10 20L11 14.25H5Z",
+    stroke: "currentColor",
+    strokeWidth: "2"
+  }));
+  var DatabaseIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M20.5 18C20.5 18.7778 20.1017 19.4178 19.5977 19.8945C19.0957 20.3692 18.423 20.7505 17.6748 21.0498C16.1726 21.6507 14.1657 22 12 22C9.83428 22 7.82743 21.6507 6.3252 21.0498C5.57697 20.7505 4.90428 20.3692 4.40234 19.8945C3.89825 19.4178 3.5 18.7778 3.5 18V5.5C3.5 4.71709 3.97721 4.13013 4.4707 3.74121C4.97543 3.34352 5.64416 3.02877 6.38086 2.7832C7.86497 2.28858 9.85158 2 12 2C14.1484 2 16.135 2.28858 17.6191 2.7832C18.3558 3.02877 19.0246 3.34352 19.5293 3.74121C20.0228 4.13013 20.5 4.71709 20.5 5.5V18ZM18.5 14.166C18.2396 14.3063 17.963 14.4345 17.6748 14.5498C16.1726 15.1507 14.1657 15.5 12 15.5C9.83428 15.5 7.82743 15.1507 6.3252 14.5498C6.03697 14.4345 5.76036 14.3063 5.5 14.166V18C5.5 18.0506 5.52142 18.2003 5.77637 18.4414C6.03343 18.6845 6.4595 18.9488 7.06836 19.1924C8.28059 19.6773 10.0236 20 12 20C13.9764 20 15.7194 19.6773 16.9316 19.1924C17.5405 18.9488 17.9666 18.6845 18.2236 18.4414C18.4786 18.2003 18.5 18.0506 18.5 18V14.166ZM5.5 11.5C5.5 11.5506 5.52142 11.7003 5.77637 11.9414C6.03343 12.1845 6.4595 12.4488 7.06836 12.6924C8.28059 13.1773 10.0236 13.5 12 13.5C13.9764 13.5 15.7194 13.1773 16.9316 12.6924C17.5405 12.4488 17.9666 12.1845 18.2236 11.9414C18.4786 11.7003 18.5 11.5506 18.5 11.5V7.86914C18.2226 7.99709 17.9273 8.11407 17.6191 8.2168C16.135 8.71142 14.1484 9 12 9C9.85158 9 7.86497 8.71142 6.38086 8.2168C6.07267 8.11407 5.77737 7.99709 5.5 7.86914V11.5ZM12 4C10.0065 4 8.24301 4.27056 7.0127 4.68066C6.39238 4.88745 5.96226 5.11212 5.70801 5.3125C5.59875 5.39864 5.5459 5.46254 5.51953 5.5C5.5459 5.53746 5.59875 5.60136 5.70801 5.6875C5.96226 5.88788 6.39238 6.11255 7.0127 6.31934C8.24301 6.72944 10.0065 7 12 7C13.9935 7 15.757 6.72944 16.9873 6.31934C17.6076 6.11255 18.0377 5.88788 18.292 5.6875C18.4008 5.60171 18.453 5.53752 18.4795 5.5C18.453 5.46248 18.4008 5.39829 18.292 5.3125C18.0377 5.11212 17.6076 4.88745 16.9873 4.68066C15.757 4.27056 13.9935 4 12 4Z",
+    fill: "currentColor"
+  }));
+
+  // src/plugins/settingsFlyout/index.tsx
+  var cl25 = classNameFactory("void-sf-");
+  var settings22 = definePluginSettings({
+    showOpenSettings: {
+      type: 3 /* BOOLEAN */,
+      description: 'Show "Open Settings" (last used tab).',
+      default: true
+    },
+    voidppPosition: {
+      type: 4 /* SELECT */,
+      description: "Place Void++ tabs above or below Grok tabs.",
+      options: [
+        { label: "Above Grok tabs", value: "above", default: true },
+        { label: "Below Grok tabs", value: "below" }
+      ]
+    },
+    plugins: {
+      type: 3 /* BOOLEAN */,
+      description: "Plugins",
+      default: true
+    },
+    themes: {
+      type: 3 /* BOOLEAN */,
+      description: "Themes",
+      default: true
+    },
+    css: {
+      type: 3 /* BOOLEAN */,
+      description: "Quick CSS",
+      default: true
+    },
+    account: {
+      type: 3 /* BOOLEAN */,
+      description: "Account",
+      default: true
+    },
+    appearance: {
+      type: 3 /* BOOLEAN */,
+      description: "Appearance",
+      default: true
+    },
+    behavior: {
+      type: 3 /* BOOLEAN */,
+      description: "Behavior",
+      default: true
+    },
+    customize: {
+      type: 3 /* BOOLEAN */,
+      description: "Customize",
+      default: true
+    },
+    billing: {
+      type: 3 /* BOOLEAN */,
+      description: "Billing",
+      default: true
+    },
+    usage: {
+      type: 3 /* BOOLEAN */,
+      description: "Usage",
+      default: true
+    },
+    data: {
+      type: 3 /* BOOLEAN */,
+      description: "Data Controls",
+      default: true
+    }
+  });
+  var GROK_TABS = [
+    { id: "account", name: "Account", setting: "account", icon: PersonIcon },
+    { id: "appearance", name: "Appearance", setting: "appearance", icon: PaintIcon },
+    { id: "behavior", name: "Behavior", setting: "behavior", icon: VisitIcon },
+    { id: "personality", name: "Customize", setting: "customize", icon: SlidersIcon },
+    { id: "billing", name: "Billing", setting: "billing", icon: PaymentsIcon },
+    { id: "usage", name: "Usage", setting: "usage", icon: LightningIcon },
+    { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
+  ];
+  var VOIDPP_TABS = [
+    { id: "voidpp_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
+    { id: "voidpp_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
+    { id: "voidpp_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
+  ];
+  function openTab(tab, onOpen, event) {
+    const store = SettingsDialogStore.useSettingsDialogStore.getState();
+    if (tab) {
+      store.setTab(tab);
+      store.setOpen(true);
+      return;
+    }
+    try {
+      onOpen?.(event);
+    } catch {}
+    store.setOpen(true);
+  }
+  function tabItems(tabs) {
+    return tabs.map((t) => {
+      const Icon = t.icon;
+      return /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+        key: t.id,
+        onSelect: () => openTab(t.id)
+      }, /* @__PURE__ */ React2.createElement(Icon, {
+        className: cl25("menu-icon")
+      }), t.name);
+    });
+  }
+  function VoidPPSection({ tabs }) {
+    if (tabs.length === 0)
+      return null;
+    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(Text2, {
+      size: "xs",
+      color: "secondary",
+      className: cl25("group")
+    }, "Void++"), tabItems(tabs));
+  }
+  function SettingsMenu({ onOpen }) {
+    const cfg = settings22.use([
+      "showOpenSettings",
+      "voidppPosition",
+      "plugins",
+      "themes",
+      "css",
+      "account",
+      "appearance",
+      "behavior",
+      "customize",
+      "billing",
+      "usage",
+      "data"
+    ]);
+    const grokTabs = GROK_TABS.filter((t) => cfg[t.setting]);
+    const voidppTabs = VOIDPP_TABS.filter((t) => cfg[t.setting]);
+    const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidppTabs.length === 0;
+    const voidppFirst = cfg.voidppPosition !== "below";
+    const hasBoth = grokTabs.length > 0 && voidppTabs.length > 0;
+    return /* @__PURE__ */ React2.createElement(DropdownMenuSub, null, /* @__PURE__ */ React2.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React2.createElement(CogIcon, {
+      className: cl25("menu-icon")
+    }), "Settings"), /* @__PURE__ */ React2.createElement(DropdownMenuSubContent, {
+      className: cl25("menu")
+    }, showOpen && /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+      onSelect: (e) => openTab(undefined, onOpen, e)
+    }, /* @__PURE__ */ React2.createElement(CogIcon, {
+      className: cl25("menu-icon")
+    }), "Open Settings"), showOpen && (voidppTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React2.createElement(DropdownMenuSeparator, null), voidppFirst && /* @__PURE__ */ React2.createElement(VoidPPSection, {
+      tabs: voidppTabs
+    }), voidppFirst && hasBoth && /* @__PURE__ */ React2.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidppFirst && hasBoth && /* @__PURE__ */ React2.createElement(DropdownMenuSeparator, null), !voidppFirst && /* @__PURE__ */ React2.createElement(VoidPPSection, {
+      tabs: voidppTabs
+    })));
+  }
+  var WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
+  var settingsFlyout_default = definePlugin({
+    name: "SettingsFlyout",
+    icon: Settings2Icon,
+    description: "Replace the avatar Settings item with a flyout of shortcuts to Void++ and Grok settings tabs.",
+    authors: [Devs.p],
+    tags: ["ui", "settings"],
+    enabledByDefault: true,
+    requiresRestart: true,
+    settings: settings22,
+    start() {
+      migratePluginSetting("SettingsFlyout", "voidppPosition", "voidPosition");
+    },
+    _renderSettingsMenu: (onOpen) => createElement(WrappedSettingsMenu, { onOpen }),
+    patches: [
+      {
+        find: '"user-dropdown.settings","Settings"',
+        replacement: {
+          match: /\jsx{\i\.DropdownMenuItem}\{onSelect:(\i),children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
+          replace: "$self._renderSettingsMenu($1)"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/stableComposer/index.ts
+  var cachedDeps = null;
+  var cachedSig = "";
+  var cachedMention;
+  var stableComposer_default = definePlugin({
+    name: "StableComposer",
+    icon: TextCursorInputIcon,
+    description: "Stop the Grok composer from destroying and recreating its editor when the extension list is rebuilt unchanged, which was resetting the caret and breaking IME composition.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    enabledByDefault: true,
+    _deps(extensions, mention) {
+      const sig = Array.isArray(extensions) ? `${extensions.length}:${extensions.map((e) => e?.name ?? "?").join(",")}` : String(extensions);
+      if (cachedDeps && sig === cachedSig && mention === cachedMention)
+        return cachedDeps;
+      cachedSig = sig;
+      cachedMention = mention;
+      cachedDeps = [extensions, mention];
+      return cachedDeps;
+    },
+    patches: [
+      {
+        find: "transformPastedHTML:",
+        replacement: {
+          match: /(transformPastedHTML:\i\}\},)\[(\i),(\i)\]\)/,
+          replace: "$1$self._deps($2,$3))"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/starry/index.tsx
+  var DEFAULT_COLOR = "#ffffff";
+  var StarsBackground = findExportedComponentLazy("StarsBackground");
+  function hexToRgb(hex) {
+    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
+    if (!m)
+      return [255, 255, 255];
+    const n = parseInt(m[1], 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  function ColorRow2() {
+    const { starColor } = settings23.use(["starColor"]);
+    return /* @__PURE__ */ React2.createElement(ColorSettingRow, {
+      value: starColor,
+      onChange: (v) => {
+        settings23.store.starColor = v;
+      },
+      title: "Star color",
+      description: "Color of the twinkling stars."
+    });
+  }
+  function StarryBackground() {
+    const { starColor } = settings23.use(["starColor"]);
+    return /* @__PURE__ */ React2.createElement("div", {
+      "aria-hidden": true,
+      className: "fixed inset-0 -z-10 pointer-events-none"
+    }, /* @__PURE__ */ React2.createElement(StarsBackground, {
+      starColor: hexToRgb(starColor)
+    }));
+  }
+  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
+  var settings23 = definePluginSettings({
+    starColor: {
+      type: 6 /* COMPONENT */,
+      default: DEFAULT_COLOR,
+      component: ColorRow2
+    }
+  }).withPrivateSettings();
+  var starry_default = definePlugin({
+    name: "Starry",
+    icon: SparklesIcon,
+    description: "Adds Grok's native twinkling starry background to the main page.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings23,
+    _StarryBg() {
+      return /* @__PURE__ */ React2.createElement(WrappedStarry, {
+        key: "void-starry-bg"
+      });
+    },
+    patches: [
+      {
+        find: '"chat-page")',
+        replacement: {
+          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
+          replace: "$1$self._StarryBg(),$2"
+        }
+      }
+    ]
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/streamerMode/styles.css
+  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
+
+/* Sidebar avatar */
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
+html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
+    filter: none;
+}
+
+/* Sidebar username */
+html.void-streamer-sidebar-name .void-sidebar-info {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
+    filter: none;
+}
+
+/* Account tab avatar (inside settings dialog) */
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
+    filter: none;
+}
+
+/* Account tab username */
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
+    filter: none;
+}
+
+/* Account tab email */
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
+    filter: none;
+}
+
+/* Account tab birth year */
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
+    filter: none;
+}
+
+/* Conversation titles in sidebar (pinned + recent buckets) */
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
+    filter: none;
+}
+
+/* Project names in sidebar */
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
+    filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
+    html.void-streamer-sidebar-name .void-sidebar-info,
+    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
+    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
+    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
+    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
+    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
+    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
+}
+`);
+
+  // src/plugins/streamerMode/index.ts
+  var CSS_CLASSES = {
+    sidebarAvatar: "void-streamer-sidebar-avatar",
+    sidebarName: "void-streamer-sidebar-name",
+    accountAvatar: "void-streamer-account-avatar",
+    accountName: "void-streamer-account-name",
+    accountEmail: "void-streamer-account-email",
+    accountAge: "void-streamer-account-age",
+    projects: "void-streamer-projects",
+    conversations: "void-streamer-conversations"
+  };
+  var settings24 = definePluginSettings({
+    sidebarAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the sidebar.",
+      default: true
+    },
+    sidebarName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your username in the sidebar.",
+      default: true
+    },
+    accountAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the account settings tab.",
+      default: true
+    },
+    accountName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your name in the account settings tab.",
+      default: true
+    },
+    accountEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your email in the account settings tab.",
+      default: true
+    },
+    accountAge: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your birth year in the account settings tab.",
+      default: true
+    },
+    projects: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur project names in the sidebar.",
+      default: true
+    },
+    conversations: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur conversation titles in the sidebar.",
+      default: true
+    }
+  });
+  function syncClasses() {
+    const { classList } = document.documentElement;
+    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
+      classList.toggle(cls, !!settings24.store[key]);
+    }
+  }
+  var streamerMode_default = definePlugin({
+    name: "StreamerMode",
+    icon: EyeOffIcon,
+    description: "Blurs personal information for privacy while streaming.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    settings: settings24,
+    start: syncClasses,
+    onSettingsChange: syncClasses,
+    stop() {
+      const { classList } = document.documentElement;
+      for (const cls of Object.values(CSS_CLASSES)) {
+        classList.remove(cls);
+      }
+    }
+  });
+
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -7954,24 +16667,6 @@ button:has(.void-ud-trigger > .void-ud-label) {
     width: 100%;
 }
 `);
-
-  // src/turbopack/common/plan.ts
-  var PLAN_NAMES = {
-    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
-    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
-    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
-    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
-  };
-  var X_SUB_NAMES = {
-    PremiumPlus: "SuperGrok",
-    Premium: "X Premium",
-    Basic: "X Basic"
-  };
-  function getPlanName(bestSubscription, xSubscriptionType) {
-    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
-  }
 
   // src/plugins/usageDisplay/credits.ts
   var CREDITS_CONFIG_PATH = "/grok_api_v2.GrokBuildBilling/GetGrokCreditsConfig";
@@ -8367,8 +17062,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var CHART_WINDOW = 7;
   var CHART_SCALE_MIN = 20;
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-  var DAY_MS = 86400000;
-  var logger16 = new Logger("UsageDisplay");
+  var DAY_MS2 = 86400000;
+  var logger30 = new Logger("UsageDisplay");
   function isRecord2(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
   }
@@ -8424,7 +17119,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      logger16.debug("Failed to read usage stats", error);
+      logger30.debug("Failed to read usage stats", error);
       return memory.get(key) ?? null;
     }
   }
@@ -8436,7 +17131,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       localStorage.setItem(key, value);
     } catch (error) {
-      logger16.debug("Failed to persist usage stats", error);
+      logger30.debug("Failed to persist usage stats", error);
       memory.set(key, value);
     }
   }
@@ -8448,7 +17143,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      logger16.debug("Failed to clear usage stats", error);
+      logger30.debug("Failed to clear usage stats", error);
       memory.delete(key);
     }
   }
@@ -8468,7 +17163,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }
       return { version: STATS_VERSION, userId, days };
     } catch (error) {
-      logger16.debug("Failed to read usage stats", error);
+      logger30.debug("Failed to read usage stats", error);
       return emptyStore(userId);
     }
   }
@@ -8595,7 +17290,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function pruneDays(days, retainDays, now) {
     const keep = clamp(Math.floor(retainDays), RETAIN_MIN, RETAIN_MAX);
-    const cutoff = localDateKey(startOfLocalDay(now) - (keep - 1) * DAY_MS);
+    const cutoff = localDateKey(startOfLocalDay(now) - (keep - 1) * DAY_MS2);
     const out = {};
     for (const [date, rec] of Object.entries(days)) {
       if (date >= cutoff)
@@ -8652,9 +17347,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
 
   // src/plugins/usageDisplay/index.tsx
-  var logger17 = new Logger("UsageDisplay");
-  var cl17 = classNameFactory("void-ud-");
-  var settings9 = definePluginSettings({
+  var logger31 = new Logger("UsageDisplay");
+  var cl26 = classNameFactory("void-ud-");
+  var settings25 = definePluginSettings({
     usageStats: {
       type: 3 /* BOOLEAN */,
       description: "Record daily usage. Hover shows today after a delay; click opens history.",
@@ -8693,8 +17388,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
   var LOCAL_ACCOUNT = "local";
   var BOT_POOL = ":bot";
-  var BotsStore = findByPropsLazy("useBotsStore");
-  var store2 = createExternalStore();
+  var BotsStore2 = findByPropsLazy("useBotsStore");
+  var store3 = createExternalStore();
   var state = {
     loading: false,
     lastFetchAt: 0,
@@ -8703,7 +17398,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     userId: ""
   };
   var refreshPromise = null;
-  var unsubRoute = null;
+  var unsubRoute2 = null;
   function isBotPage() {
     try {
       return RoutingStore.useRoutingStore.getState().route?.page === "bot";
@@ -8741,7 +17436,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     state.usage = stored;
     state.lastUpdatedAt = stored ? Date.now() : 0;
     state.lastFetchAt = 0;
-    store2.notify();
+    store3.notify();
   }
   function syncAccount() {
     const userId = currentPoolId();
@@ -8751,11 +17446,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   async function fetchBotUsage() {
     try {
-      const hook = BotsStore.useBotsStore;
+      const hook = BotsStore2.useBotsStore;
       await hook.getState().refreshUsage();
       return normalizeBotUsage(hook.getState().usage);
     } catch (error) {
-      logger17.warn("Failed to fetch Grok Bot usage", error);
+      logger31.warn("Failed to fetch Grok Bot usage", error);
       return null;
     }
   }
@@ -8769,12 +17464,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     SettingsStore3.markAsChanged();
   }
   function snapshotToday() {
-    if (!settings9.store.usageStats)
+    if (!settings25.store.usageStats)
       return;
     syncAccount();
     if (!state.userId)
       return;
-    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings9.store.retainDays));
+    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings25.store.retainDays));
   }
   async function refresh(reason = "manual") {
     if (refreshPromise)
@@ -8785,7 +17480,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const poolId = currentPoolId();
     state.loading = true;
     state.lastFetchAt = Date.now();
-    store2.notify();
+    store3.notify();
     refreshPromise = (async () => {
       try {
         if (poolId.endsWith(BOT_POOL)) {
@@ -8803,7 +17498,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         }
         const pageUsage = readNativeUsage();
         const remote = await fetchOfficialUsage().then((usage) => ({ ok: true, usage })).catch((error) => {
-          logger17.warn("Failed to fetch official usage", error);
+          logger31.warn("Failed to fetch official usage", error);
           return { ok: false };
         });
         if (currentPoolId() !== poolId)
@@ -8820,18 +17515,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
       } finally {
         state.loading = false;
         refreshPromise = null;
-        store2.notify();
+        store3.notify();
         if (currentPoolId() !== poolId)
           queueMicrotask(() => void refresh("route"));
       }
     })();
     return refreshPromise;
   }
-  function onVisibility() {
+  function onVisibility2() {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS)
       refresh("visible");
   }
-  function onStreamEnd2() {
+  function onStreamEnd5() {
     refresh("stream");
   }
   function readPlan() {
@@ -8870,29 +17565,29 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function ProgressRing({ percent, tone }) {
     const fraction = percent === null ? 0 : clamp(percent, 0, 100) / 100;
-    return /* @__PURE__ */ React.createElement("svg", {
+    return /* @__PURE__ */ React2.createElement("svg", {
       width: RING_SIZE,
       height: RING_SIZE,
       viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
-      className: classes(cl17("ring"), cl17(`ring-${tone}`))
-    }, /* @__PURE__ */ React.createElement("circle", {
+      className: classes(cl26("ring"), cl26(`ring-${tone}`))
+    }, /* @__PURE__ */ React2.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl17("ring-track")
-    }), /* @__PURE__ */ React.createElement("circle", {
+      className: cl26("ring-track")
+    }), /* @__PURE__ */ React2.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl17("ring-fill"),
+      className: cl26("ring-fill"),
       strokeDasharray: RING_CIRCUMFERENCE,
       strokeDashoffset: RING_CIRCUMFERENCE * (1 - fraction),
       transform: `rotate(-90 ${RING_CENTER} ${RING_CENTER})`
     }));
   }
   function ButtonIcon() {
-    useExternalStore(store2);
-    const { showPercent } = settings9.use(["showPercent"]);
+    useExternalStore(store3);
+    const { showPercent } = settings25.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -8904,19 +17599,19 @@ button:has(.void-ud-trigger > .void-ud-label) {
         if (!document.hidden)
           refresh("poll");
       }, AUTO_REFRESH_MS);
-      document.addEventListener("visibilitychange", onVisibility);
+      document.addEventListener("visibilitychange", onVisibility2);
       return () => {
         window.clearInterval(id);
-        document.removeEventListener("visibilitychange", onVisibility);
+        document.removeEventListener("visibilitychange", onVisibility2);
       };
     }, []);
-    return /* @__PURE__ */ React.createElement("span", {
-      className: classes(cl17("trigger"), label == null && cl17("icon-only"))
-    }, /* @__PURE__ */ React.createElement(ProgressRing, {
+    return /* @__PURE__ */ React2.createElement("span", {
+      className: classes(cl26("trigger"), label == null && cl26("icon-only"))
+    }, /* @__PURE__ */ React2.createElement(ProgressRing, {
       percent: isFree ? null : percent,
       tone: isFree ? "waiting" : tone
-    }), label != null && /* @__PURE__ */ React.createElement("span", {
-      className: cl17("label")
+    }), label != null && /* @__PURE__ */ React2.createElement("span", {
+      className: cl26("label")
     }, label));
   }
   function WeekBlock({ isFree, percent, resetAt, loading, labeled }) {
@@ -8928,18 +17623,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return () => window.clearInterval(id);
     }, [resetAt]);
     const left = resetAt == null ? 0 : Math.max(0, Math.ceil((resetAt - now) / 1000));
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl17("week")
-    }, labeled && /* @__PURE__ */ React.createElement(Text2, {
+      className: cl26("week")
+    }, labeled && /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, isBotPage() ? "Grok Bot" : "Week"), /* @__PURE__ */ React.createElement(Text2, {
+    }, isBotPage() ? "Grok Bot" : "Week"), /* @__PURE__ */ React2.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl17("used")
-    }, usedLabel(isFree, percent, loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
+      className: cl26("used")
+    }, usedLabel(isFree, percent, loading)), resetAt != null && /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Resets in ", formatResetCountdown(left)));
@@ -8947,22 +17642,22 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function TodayBlock({ isFree, percent }) {
     const today = state.userId ? readToday(state.userId) : null;
     const delta = today ? dayDelta(today) : null;
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl17("today")
-    }, /* @__PURE__ */ React.createElement(Text2, {
+      className: cl26("today")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, "Today"), !isFree && /* @__PURE__ */ React.createElement(Text2, {
+    }, "Today"), !isFree && /* @__PURE__ */ React2.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl17("used")
+      className: cl26("used")
     }, formatDelta(delta ?? (percent != null ? 0 : null)), " of weekly quota"));
   }
   function UsagePanel() {
-    useExternalStore(store2);
-    const { usageStats, hoverStatsDelay } = settings9.use(["usageStats", "hoverStatsDelay"]);
+    useExternalStore(store3);
+    const { usageStats, hoverStatsDelay } = settings25.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
     const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
@@ -8986,16 +17681,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
       if (!showToday)
         return;
       snapshotToday();
-      store2.notify();
+      store3.notify();
     }, [showToday, percent]);
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: 8,
-      className: cl17("panel")
-    }, showToday && /* @__PURE__ */ React.createElement(TodayBlock, {
+      className: cl26("panel")
+    }, showToday && /* @__PURE__ */ React2.createElement(TodayBlock, {
       isFree,
       percent
-    }), /* @__PURE__ */ React.createElement(WeekBlock, {
+    }), /* @__PURE__ */ React2.createElement(WeekBlock, {
       isFree,
       percent,
       resetAt,
@@ -9004,26 +17699,26 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function StatsToggle() {
-    const { usageStats } = settings9.use(["usageStats"]);
-    return /* @__PURE__ */ React.createElement(Flex, {
+    const { usageStats } = settings25.use(["usageStats"]);
+    return /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem",
-      className: cl17("toggle")
-    }, /* @__PURE__ */ React.createElement(Flex, {
+      className: cl26("toggle")
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React.createElement(Text2, {
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       size: "sm",
       weight: "medium"
-    }, "Daily usage stats"), /* @__PURE__ */ React.createElement(Text2, {
+    }, "Daily usage stats"), /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
+    }, "Record local daily usage on this device.")), /* @__PURE__ */ React2.createElement(Switch, {
       checked: !!usageStats,
       onCheckedChange: (value) => {
-        settings9.store.usageStats = value;
-        store2.notify();
+        settings25.store.usageStats = value;
+        store3.notify();
         if (value)
           refresh("manual");
       }
@@ -9033,28 +17728,28 @@ button:has(.void-ud-trigger > .void-ud-label) {
     terms,
     ops
   }) {
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "flex-start",
       gap: "0.5rem",
-      className: cl17("formula")
-    }, terms.map((term, i) => /* @__PURE__ */ React.createElement(React.Fragment, {
+      className: cl26("formula")
+    }, terms.map((term, i) => /* @__PURE__ */ React2.createElement(React2.Fragment, {
       key: term.label
-    }, i > 0 && /* @__PURE__ */ React.createElement(Flex, {
+    }, i > 0 && /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl17("formula-op-col")
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("formula-op")
-    }, ops[i - 1]), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("formula-op")
-    }, ops[i - 1])), /* @__PURE__ */ React.createElement(Flex, {
+      className: cl26("formula-op-col")
+    }, /* @__PURE__ */ React2.createElement("span", {
+      className: cl26("formula-op")
+    }, ops[i - 1]), /* @__PURE__ */ React2.createElement("span", {
+      className: cl26("formula-op")
+    }, ops[i - 1])), /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl17("formula-term")
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: cl17("formula-label")
-    }, term.label), /* @__PURE__ */ React.createElement("span", {
-      className: cl17("formula-value")
+      className: cl26("formula-term")
+    }, /* @__PURE__ */ React2.createElement("span", {
+      className: cl26("formula-label")
+    }, term.label), /* @__PURE__ */ React2.createElement("span", {
+      className: cl26("formula-value")
     }, term.value)))));
   }
   function DayFormula({ rec, today }) {
@@ -9069,23 +17764,23 @@ button:has(.void-ud-trigger > .void-ud-label) {
           caption += `  +  ${formatPercent(rec.startPercent)} → ${formatPercent(rec.lastPercent)}`;
         }
       }
-      return /* @__PURE__ */ React.createElement(Flex, {
+      return /* @__PURE__ */ React2.createElement(Flex, {
         flexDirection: "column",
         gap: "0.25rem"
-      }, /* @__PURE__ */ React.createElement(Formula, {
+      }, /* @__PURE__ */ React2.createElement(Formula, {
         terms: [
           { label: "Before", value: formatPercent(accrued) },
           { label: "After", value: formatPercent(after) },
           { label: "Used", value: formatPercent(used) }
         ],
         ops: ["+", "="]
-      }), caption != null && /* @__PURE__ */ React.createElement(Text2, {
+      }), caption != null && /* @__PURE__ */ React2.createElement(Text2, {
         size: "xs",
         color: "muted",
-        className: cl17("formula-caption")
+        className: cl26("formula-caption")
       }, caption));
     }
-    return /* @__PURE__ */ React.createElement(Formula, {
+    return /* @__PURE__ */ React2.createElement(Formula, {
       terms: [
         { label: today ? "Current" : "Last", value: formatPercent(rec.lastPercent) },
         { label: "Start", value: formatPercent(rec.startPercent) },
@@ -9104,26 +17799,26 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return null;
     const pre = finiteNumber(draft);
     const dayStart = hint ?? 0;
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0.35rem",
-      className: cl17("repair")
-    }, /* @__PURE__ */ React.createElement(Text2, {
+      className: cl26("repair")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, "Week reset overwrote this day with 0%. Enter weekly usage just before the reset."), /* @__PURE__ */ React.createElement(Flex, {
+    }, "Week reset overwrote this day with 0%. Enter weekly usage just before the reset."), /* @__PURE__ */ React2.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(Input, {
+    }, /* @__PURE__ */ React2.createElement(Input, {
       type: "number",
       min: 0,
       max: 100,
       step: 0.1,
       value: draft,
       onChange: (e) => setDraft(e.target.value),
-      className: cl17("repair-input"),
+      className: cl26("repair-input"),
       "aria-label": "Weekly percent before reset"
-    }), /* @__PURE__ */ React.createElement(Button, {
+    }), /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "sm",
       shape: "rectangle",
@@ -9131,14 +17826,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onClick: () => {
         if (pre == null)
           return;
-        writeDay(userId, repairWipedReset(rec, dayStart, pre, Date.now()), retainDaysOf(settings9.store.retainDays));
-        store2.notify();
+        writeDay(userId, repairWipedReset(rec, dayStart, pre, Date.now()), retainDaysOf(settings25.store.retainDays));
+        store3.notify();
       }
     }, "Repair")));
   }
   function StatsModal({ onClose }) {
-    useExternalStore(store2);
-    const { usageStats } = settings9.use(["usageStats"]);
+    useExternalStore(store3);
+    const { usageStats } = settings25.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
     const todayKey = localDateKey(Date.now());
     const bars = days.length ? fillChartDays(days) : [];
@@ -9152,20 +17847,20 @@ button:has(.void-ud-trigger > .void-ud-label) {
         node.scrollLeft = node.scrollWidth;
     }, [bars.length]);
     useEffect(() => {
-      chartRef.current?.querySelector(`.${cl17("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
+      chartRef.current?.querySelector(`.${cl26("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
     }, [selected]);
-    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
+    return /* @__PURE__ */ React2.createElement(VoidPPDialogShell, {
       title: "Usage by date",
       subtitle: "Stored on this device.",
       onClose,
       size: "sm"
-    }, /* @__PURE__ */ React.createElement(StatsToggle, null), !usageStats ? /* @__PURE__ */ React.createElement(Paragraph, null, "Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.") : days.length === 0 ? /* @__PURE__ */ React.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React2.createElement(StatsToggle, null), !usageStats ? /* @__PURE__ */ React2.createElement(Paragraph, null, "Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.") : days.length === 0 ? /* @__PURE__ */ React2.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl17("history")
-    }, /* @__PURE__ */ React.createElement(Flex, {
+      className: cl26("history")
+    }, /* @__PURE__ */ React2.createElement(Flex, {
       ref: chartRef,
-      className: cl17("chart"),
+      className: cl26("chart"),
       alignItems: "stretch",
       gap: "0.35rem",
       tabIndex: 0,
@@ -9185,7 +17880,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       const empty = delta == null;
       const on = rec.date === active?.date;
       const pct = empty || !scale ? 0 : clamp(delta / scale * 100, 0, 100);
-      return /* @__PURE__ */ React.createElement(Button, {
+      return /* @__PURE__ */ React2.createElement(Button, {
         key: rec.date,
         variant: "none",
         size: "none",
@@ -9194,50 +17889,50 @@ button:has(.void-ud-trigger > .void-ud-label) {
         role: "option",
         "aria-selected": on,
         "aria-label": `${rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}, ${formatDelta(delta)}`,
-        className: classes(cl17("bar"), on && cl17("bar-on"), empty && cl17("bar-empty")),
+        className: classes(cl26("bar"), on && cl26("bar-on"), empty && cl26("bar-empty")),
         onClick: () => setSelected(rec.date)
-      }, /* @__PURE__ */ React.createElement("span", {
-        className: cl17("bar-value")
-      }, empty ? " " : formatPercent(delta)), /* @__PURE__ */ React.createElement("span", {
-        className: cl17("bar-track")
-      }, /* @__PURE__ */ React.createElement("span", {
-        className: cl17("bar-fill"),
+      }, /* @__PURE__ */ React2.createElement("span", {
+        className: cl26("bar-value")
+      }, empty ? " " : formatPercent(delta)), /* @__PURE__ */ React2.createElement("span", {
+        className: cl26("bar-track")
+      }, /* @__PURE__ */ React2.createElement("span", {
+        className: cl26("bar-fill"),
         style: { height: `${pct}%` }
-      })), /* @__PURE__ */ React.createElement("span", {
-        className: cl17("bar-label")
+      })), /* @__PURE__ */ React2.createElement("span", {
+        className: cl26("bar-label")
       }, rec.date === todayKey ? "Today" : formatDayNumber(rec.date)));
-    })), active != null && /* @__PURE__ */ React.createElement(Flex, {
+    })), active != null && /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0.35rem",
-      className: cl17("detail")
-    }, /* @__PURE__ */ React.createElement(Text2, {
+      className: cl26("detail")
+    }, /* @__PURE__ */ React2.createElement(Text2, {
       size: "sm",
       weight: "semibold"
-    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(DayFormula, {
+    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React2.createElement(DayFormula, {
       rec: active,
       today: active.date === todayKey
-    }), state.userId && /* @__PURE__ */ React.createElement(RepairReset, {
+    }), state.userId && /* @__PURE__ */ React2.createElement(RepairReset, {
       rec: active,
       prev: bars.find((d) => d.date === shiftDateKey(active.date, -1)) ?? null,
       userId: state.userId
     }))));
   }
   function ClearStats() {
-    useExternalStore(store2);
-    const [open2, setOpen] = useState(false);
+    useExternalStore(store3);
+    const [open, setOpen] = useState(false);
     const userId = state.userId || currentPoolId();
     const days = userId ? listDays(userId) : [];
-    return /* @__PURE__ */ React.createElement(Flex, {
+    return /* @__PURE__ */ React2.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(days.length, "recorded day"), "."), /* @__PURE__ */ React.createElement(Button, {
+    }, /* @__PURE__ */ React2.createElement(Paragraph, null, pluralize(days.length, "recorded day"), "."), /* @__PURE__ */ React2.createElement(Button, {
       variant: "secondary",
       size: "sm",
       shape: "rectangle",
       disabled: !days.length,
       onClick: () => setOpen(true)
-    }, "Clear usage history"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
+    }, "Clear usage history"), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+      open,
       onOpenChange: setOpen,
       title: "Clear usage history",
       description: "Delete all locally recorded daily usage? This cannot be undone.",
@@ -9246,13 +17941,13 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onConfirm: () => {
         if (userId)
           clearStats(userId);
-        store2.notify();
+        store3.notify();
       }
     }));
   }
   function openHistory() {
     refresh("manual");
-    openModal((props) => /* @__PURE__ */ React.createElement(SafeStatsModal, {
+    openModal((props) => /* @__PURE__ */ React2.createElement(SafeStatsModal, {
       ...props
     }), { modalKey: "void-ud-stats" });
   }
@@ -9260,7 +17955,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var SafeUsagePanel = ErrorBoundary.wrap(UsagePanel);
   var SafeStatsModal = ErrorBoundary.wrap(StatsModal);
   var BUTTON_BASE = {
-    icon: () => /* @__PURE__ */ React.createElement(SafeButtonIcon, null),
+    icon: () => /* @__PURE__ */ React2.createElement(SafeButtonIcon, null),
     onClick: () => openHistory(),
     order: 1,
     className: "text-fg-primary",
@@ -9274,309 +17969,36 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings9,
+    settings: settings25,
     start() {
       migrateUsageStats();
       try {
-        unsubRoute = RoutingStore.useRoutingStore.subscribe((s) => s.route.page, (page, prev) => {
+        unsubRoute2 = RoutingStore.useRoutingStore.subscribe((s) => s.route.page, (page, prev) => {
           if (page === prev)
             return;
           syncAccount();
           refresh("route");
         });
       } catch (error) {
-        logger17.warn("RoutingStore subscribe failed", error);
+        logger31.warn("RoutingStore subscribe failed", error);
       }
     },
     stop() {
-      unsubRoute?.();
-      unsubRoute = null;
+      unsubRoute2?.();
+      unsubRoute2 = null;
     },
-    chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
+    chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React2.createElement(SafeUsagePanel, null) },
     events: {
-      streamEnd: onStreamEnd2
+      streamEnd: onStreamEnd5
     },
     onSettingsChange() {
-      if (settings9.store.usageStats)
+      if (settings25.store.usageStats)
         refresh("manual");
     }
   });
 
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/settingsFlyout/styles.css
-  registerStyle("settingsFlyout", `/*
- * Void++, a modification for grok.com
- * Copyright (c) 2026 Void++ Contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-sf-menu-icon {
-    width: 1rem;
-    height: 1rem;
-    margin-inline-end: 0.5rem;
-    color: hsl(var(--fg-secondary));
-    flex-shrink: 0;
-}
-
-.void-sf-group {
-    padding: 0.25rem 0.5rem 0.125rem;
-    pointer-events: none;
-}
-
-.void-sf-menu {
-    max-height: min(24rem, calc(100vh - 6rem));
-    overflow-y: auto;
-    overscroll-behavior: contain;
-}
-`);
-
-  // src/plugins/settingsFlyout/icons.tsx
-  function grokSvg(props, ...children) {
-    return /* @__PURE__ */ React.createElement("svg", {
-      width: props.width ?? props.size ?? 16,
-      height: props.height ?? props.size ?? 16,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      xmlns: "http://www.w3.org/2000/svg",
-      className: props.className,
-      "aria-hidden": "true"
-    }, children);
-  }
-  var CogIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "m13.456 1.75.296.445c.832 1.247 1.198 1.654 1.558 1.818.321.146.82.172 2.242-.157l.54-.124 2.171 2.171-.124.54c-.328 1.423-.302 1.921-.156 2.243.164.36.57.726 1.817 1.557l.446.297v2.92l-.446.297c-1.247.831-1.653 1.198-1.817 1.558-.146.32-.172.82.156 2.242l.124.54-2.17 2.17-.54-.123c-1.423-.329-1.922-.303-2.243-.157-.36.164-.726.57-1.558 1.818l-.296.445h-2.92l-.297-.445c-.832-1.247-1.198-1.654-1.558-1.818-.321-.146-.82-.172-2.242.157l-.54.124-2.171-2.171.124-.54c.328-1.423.303-1.921.156-2.242-.164-.36-.57-.727-1.817-1.558l-.445-.297v-2.92l.445-.297c1.247-.831 1.653-1.198 1.817-1.557.147-.322.172-.82-.156-2.243l-.124-.54 2.17-2.17.541.123c1.422.329 1.92.303 2.242.157.36-.164.727-.57 1.558-1.818l.297-.445zm-1.853 2c-.637.93-1.249 1.699-2.092 2.083-.875.4-1.845.324-2.977.092l-.614.613c.232 1.132.308 2.102-.091 2.978-.385.842-1.153 1.454-2.083 2.09v.787c.93.636 1.698 1.248 2.083 2.091.399.876.323 1.845.091 2.977l.614.613c1.132-.232 2.102-.306 2.977.093.843.384 1.455 1.153 2.092 2.083h.785c.637-.93 1.249-1.699 2.092-2.083.875-.399 1.845-.325 2.976-.093l.614-.613c-.232-1.132-.306-2.101.093-2.977.384-.843 1.152-1.455 2.083-2.091v-.787c-.93-.636-1.7-1.248-2.083-2.09-.4-.876-.325-1.846-.093-2.978l-.614-.613c-1.131.232-2.1.307-2.976-.092-.843-.384-1.455-1.153-2.092-2.083zM14.001 12A2 2 0 1 0 10 12a2 2 0 0 0 4 0m2 0A4 4 0 1 1 8 12a4 4 0 0 1 8 0"
-  }));
-  var PersonIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 12.25C16.4183 12.25 20 15.8317 20 20.25V22H4V20.25C4 15.8317 7.58172 12.25 12 12.25ZM12 14.25C8.77005 14.25 6.13694 16.8022 6.00586 20H17.9941C17.8631 16.8022 15.23 14.25 12 14.25Z",
-    fill: "currentColor"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 2C14.4853 2 16.5 4.01472 16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2ZM12 4C10.6193 4 9.5 5.11929 9.5 6.5C9.5 7.88071 10.6193 9 12 9C13.3807 9 14.5 7.88071 14.5 6.5C14.5 5.11929 13.3807 4 12 4Z",
-    fill: "currentColor"
-  }));
-  var PaintIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M16.2637 3.19188C17.5328 2.03183 19.4908 2.07547 20.707 3.29149C21.9244 4.50883 21.967 6.46969 20.8037 7.73876L20.8027 7.73778L12.4814 16.9038C12.2753 19.4758 10.1251 21.4985 7.5 21.4985H2.5V16.4985C2.50025 13.8741 4.52251 11.7229 7.09375 11.5161L16.2637 3.19188ZM19.293 4.70653C18.8329 4.24643 18.0921 4.2299 17.6123 4.66942L17.6084 4.67333L9.58594 11.9546C10.67 12.453 11.5441 13.3277 12.043 14.4116L19.3262 6.39012L19.3291 6.3872C19.7688 5.90754 19.7529 5.16673 19.293 4.70653ZM4.5 19.4985H7.5C9.15685 19.4985 10.5 18.1554 10.5 16.4985C10.4997 14.8419 9.15669 13.4985 7.5 13.4985C5.84331 13.4985 4.50026 14.8419 4.5 16.4985V19.4985Z"
-  }));
-  var VisitIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M21.5 14.5L19.2402 16.1201L22.0596 18.9404L19.9404 21.0596L17.1201 18.2402L15.5 20.5L13 12L21.5 14.5Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M18.5 2C20.433 2 22 3.567 22 5.5V11H20V5.5C20 4.67157 19.3284 4 18.5 4H5.5C4.67157 4 4 4.67157 4 5.5V16.5C4 17.3284 4.67157 18 5.5 18H12V20H5.5C3.567 20 2 18.433 2 16.5V5.5C2 3.567 3.567 2 5.5 2H18.5Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M10.4941 5.52441C10.7365 5.57269 10.9591 5.69148 11.1338 5.86621C11.3085 6.04094 11.4273 6.26352 11.4756 6.50586C11.5238 6.74833 11.4999 7.00011 11.4053 7.22852C11.3107 7.45691 11.1499 7.65171 10.9443 7.78906C10.7388 7.92641 10.4972 8 10.25 8C9.91848 8 9.60063 7.86821 9.36621 7.63379C9.13179 7.39937 9 7.08152 9 6.75C9 6.50277 9.07359 6.26123 9.21094 6.05566C9.34829 5.85012 9.54309 5.68933 9.77148 5.59473C9.99989 5.50012 10.2517 5.47618 10.4941 5.52441Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M6.75 5.5C7.08152 5.5 7.39937 5.63179 7.63379 5.86621C7.86821 6.10063 8 6.41848 8 6.75C8 6.99723 7.92641 7.23877 7.78906 7.44434C7.65171 7.64988 7.45691 7.81067 7.22852 7.90527C7.00011 7.99988 6.74833 8.02382 6.50586 7.97559C6.26352 7.92731 6.04094 7.80852 5.86621 7.63379C5.69148 7.45906 5.57269 7.23648 5.52441 6.99414C5.47618 6.75167 5.50012 6.49989 5.59473 6.27148C5.68933 6.04309 5.85012 5.84829 6.05566 5.71094C6.26123 5.57359 6.50277 5.5 6.75 5.5Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M13.75 5.5C14.0815 5.5 14.3994 5.63179 14.6338 5.86621C14.8682 6.10063 15 6.41848 15 6.75C15 6.99723 14.9264 7.23877 14.7891 7.44434C14.6517 7.64988 14.4569 7.81067 14.2285 7.90527C14.0001 7.99988 13.7483 8.02382 13.5059 7.97559C13.2635 7.92731 13.0409 7.80852 12.8662 7.63379C12.6915 7.45906 12.5727 7.23648 12.5244 6.99414C12.4762 6.75167 12.5001 6.49989 12.5947 6.27148C12.6893 6.04309 12.8501 5.84829 13.0557 5.71094C13.2612 5.57359 13.5028 5.5 13.75 5.5Z"
-  }));
-  var SlidersIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M21 7H10M14 17H3M20.25 17C20.25 18.6569 18.9069 20 17.25 20C15.5931 20 14.25 18.6569 14.25 17C14.25 15.3431 15.5931 14 17.25 14C18.9069 14 20.25 15.3431 20.25 17ZM9.75 7C9.75 8.65685 8.40685 10 6.75 10C5.09315 10 3.75 8.65685 3.75 7C3.75 5.34315 5.09315 4 6.75 4C8.40685 4 9.75 5.34315 9.75 7Z",
-    stroke: "currentColor",
-    strokeLinejoin: "round",
-    strokeWidth: "2"
-  }));
-  var PaymentsIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fill: "currentColor",
-    d: "M12.9004 7.83984C13.0629 7.87413 13.2225 7.91676 13.376 7.96777C13.9053 8.14378 14.4688 8.45248 14.8301 8.95215L13.3711 10.0068C13.3148 9.92902 13.1447 9.78764 12.8086 9.67578C12.4889 9.56951 12.1071 9.52104 11.75 9.5459C11.3842 9.57147 11.1204 9.6686 10.9727 9.77734C10.6672 10.0025 10.7901 10.4692 11.0615 10.6533C11.3259 10.8325 11.7135 10.964 12.2734 11.1426C12.7633 11.2988 13.4271 11.5024 13.9502 11.8574C14.5404 12.2581 15.0008 12.8825 15.001 13.8027C15.001 14.6074 14.6157 15.2292 14.0645 15.6318C13.716 15.8862 13.3104 16.0473 12.9004 16.1426V17.5H11.1006V16.1924C10.8876 16.158 10.6783 16.1108 10.4785 16.0488C9.92674 15.8775 9.3358 15.5675 8.95996 15.0479L10.4189 13.9932C10.4778 14.0743 10.6555 14.2195 11.0117 14.3301C11.3503 14.4351 11.7577 14.4787 12.1426 14.4453C12.5359 14.411 12.8313 14.303 13.0029 14.1777C13.3128 13.9513 13.2321 13.5454 12.9395 13.3467C12.6751 13.1673 12.2868 13.0361 11.7266 12.8574C11.2368 12.7012 10.5739 12.4974 10.0508 12.1426C9.46027 11.7419 9.00013 11.1178 9 10.1973V10.1328C9 9.34586 9.36032 8.72911 9.9043 8.32812C10.2629 8.06395 10.6821 7.90612 11.1006 7.82129V6.5H12.9004V7.83984Z"
-  }), /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z",
-    fill: "currentColor"
-  }));
-  var LightningIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    d: "M5 14.25L14 4L13 9.75H19L10 20L11 14.25H5Z",
-    stroke: "currentColor",
-    strokeWidth: "2"
-  }));
-  var DatabaseIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M20.5 18C20.5 18.7778 20.1017 19.4178 19.5977 19.8945C19.0957 20.3692 18.423 20.7505 17.6748 21.0498C16.1726 21.6507 14.1657 22 12 22C9.83428 22 7.82743 21.6507 6.3252 21.0498C5.57697 20.7505 4.90428 20.3692 4.40234 19.8945C3.89825 19.4178 3.5 18.7778 3.5 18V5.5C3.5 4.71709 3.97721 4.13013 4.4707 3.74121C4.97543 3.34352 5.64416 3.02877 6.38086 2.7832C7.86497 2.28858 9.85158 2 12 2C14.1484 2 16.135 2.28858 17.6191 2.7832C18.3558 3.02877 19.0246 3.34352 19.5293 3.74121C20.0228 4.13013 20.5 4.71709 20.5 5.5V18ZM18.5 14.166C18.2396 14.3063 17.963 14.4345 17.6748 14.5498C16.1726 15.1507 14.1657 15.5 12 15.5C9.83428 15.5 7.82743 15.1507 6.3252 14.5498C6.03697 14.4345 5.76036 14.3063 5.5 14.166V18C5.5 18.0506 5.52142 18.2003 5.77637 18.4414C6.03343 18.6845 6.4595 18.9488 7.06836 19.1924C8.28059 19.6773 10.0236 20 12 20C13.9764 20 15.7194 19.6773 16.9316 19.1924C17.5405 18.9488 17.9666 18.6845 18.2236 18.4414C18.4786 18.2003 18.5 18.0506 18.5 18V14.166ZM5.5 11.5C5.5 11.5506 5.52142 11.7003 5.77637 11.9414C6.03343 12.1845 6.4595 12.4488 7.06836 12.6924C8.28059 13.1773 10.0236 13.5 12 13.5C13.9764 13.5 15.7194 13.1773 16.9316 12.6924C17.5405 12.4488 17.9666 12.1845 18.2236 11.9414C18.4786 11.7003 18.5 11.5506 18.5 11.5V7.86914C18.2226 7.99709 17.9273 8.11407 17.6191 8.2168C16.135 8.71142 14.1484 9 12 9C9.85158 9 7.86497 8.71142 6.38086 8.2168C6.07267 8.11407 5.77737 7.99709 5.5 7.86914V11.5ZM12 4C10.0065 4 8.24301 4.27056 7.0127 4.68066C6.39238 4.88745 5.96226 5.11212 5.70801 5.3125C5.59875 5.39864 5.5459 5.46254 5.51953 5.5C5.5459 5.53746 5.59875 5.60136 5.70801 5.6875C5.96226 5.88788 6.39238 6.11255 7.0127 6.31934C8.24301 6.72944 10.0065 7 12 7C13.9935 7 15.757 6.72944 16.9873 6.31934C17.6076 6.11255 18.0377 5.88788 18.292 5.6875C18.4008 5.60171 18.453 5.53752 18.4795 5.5C18.453 5.46248 18.4008 5.39829 18.292 5.3125C18.0377 5.11212 17.6076 4.88745 16.9873 4.68066C15.757 4.27056 13.9935 4 12 4Z",
-    fill: "currentColor"
-  }));
-
-  // src/plugins/settingsFlyout/index.tsx
-  var cl18 = classNameFactory("void-sf-");
-  var settings10 = definePluginSettings({
-    showOpenSettings: {
-      type: 3 /* BOOLEAN */,
-      description: 'Show "Open Settings" (last used tab).',
-      default: true
-    },
-    voidppPosition: {
-      type: 4 /* SELECT */,
-      description: "Place Void++ tabs above or below Grok tabs.",
-      options: [
-        { label: "Above Grok tabs", value: "above", default: true },
-        { label: "Below Grok tabs", value: "below" }
-      ]
-    },
-    plugins: {
-      type: 3 /* BOOLEAN */,
-      description: "Plugins",
-      default: true
-    },
-    themes: {
-      type: 3 /* BOOLEAN */,
-      description: "Themes",
-      default: true
-    },
-    css: {
-      type: 3 /* BOOLEAN */,
-      description: "Quick CSS",
-      default: true
-    },
-    account: {
-      type: 3 /* BOOLEAN */,
-      description: "Account",
-      default: true
-    },
-    appearance: {
-      type: 3 /* BOOLEAN */,
-      description: "Appearance",
-      default: true
-    },
-    behavior: {
-      type: 3 /* BOOLEAN */,
-      description: "Behavior",
-      default: true
-    },
-    customize: {
-      type: 3 /* BOOLEAN */,
-      description: "Customize",
-      default: true
-    },
-    billing: {
-      type: 3 /* BOOLEAN */,
-      description: "Billing",
-      default: true
-    },
-    usage: {
-      type: 3 /* BOOLEAN */,
-      description: "Usage",
-      default: true
-    },
-    data: {
-      type: 3 /* BOOLEAN */,
-      description: "Data Controls",
-      default: true
-    }
-  });
-  var GROK_TABS = [
-    { id: "account", name: "Account", setting: "account", icon: PersonIcon },
-    { id: "appearance", name: "Appearance", setting: "appearance", icon: PaintIcon },
-    { id: "behavior", name: "Behavior", setting: "behavior", icon: VisitIcon },
-    { id: "personality", name: "Customize", setting: "customize", icon: SlidersIcon },
-    { id: "billing", name: "Billing", setting: "billing", icon: PaymentsIcon },
-    { id: "usage", name: "Usage", setting: "usage", icon: LightningIcon },
-    { id: "data", name: "Data Controls", setting: "data", icon: DatabaseIcon }
-  ];
-  var VOIDPP_TABS = [
-    { id: "voidpp_plugins_tab", name: "Plugins", setting: "plugins", icon: UnplugIcon },
-    { id: "voidpp_themes_tab", name: "Themes", setting: "themes", icon: PaletteIcon },
-    { id: "voidpp_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
-  ];
-  function openTab(tab, onOpen, event) {
-    const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
-    if (tab) {
-      store3.setTab(tab);
-      store3.setOpen(true);
-      return;
-    }
-    try {
-      onOpen?.(event);
-    } catch {}
-    store3.setOpen(true);
-  }
-  function tabItems(tabs) {
-    return tabs.map((t) => {
-      const Icon = t.icon;
-      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-        key: t.id,
-        onSelect: () => openTab(t.id)
-      }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl18("menu-icon")
-      }), t.name);
-    });
-  }
-  function VoidPPSection({ tabs }) {
-    if (tabs.length === 0)
-      return null;
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: "secondary",
-      className: cl18("group")
-    }, "Void++"), tabItems(tabs));
-  }
-  function SettingsMenu({ onOpen }) {
-    const cfg = settings10.use([
-      "showOpenSettings",
-      "voidppPosition",
-      "plugins",
-      "themes",
-      "css",
-      "account",
-      "appearance",
-      "behavior",
-      "customize",
-      "billing",
-      "usage",
-      "data"
-    ]);
-    const grokTabs = GROK_TABS.filter((t) => cfg[t.setting]);
-    const voidppTabs = VOIDPP_TABS.filter((t) => cfg[t.setting]);
-    const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidppTabs.length === 0;
-    const voidppFirst = cfg.voidppPosition !== "below";
-    const hasBoth = grokTabs.length > 0 && voidppTabs.length > 0;
-    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl18("menu-icon")
-    }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
-      className: cl18("menu")
-    }, showOpen && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: (e) => openTab(undefined, onOpen, e)
-    }, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl18("menu-icon")
-    }), "Open Settings"), showOpen && (voidppTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidppFirst && /* @__PURE__ */ React.createElement(VoidPPSection, {
-      tabs: voidppTabs
-    }), voidppFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidppFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), !voidppFirst && /* @__PURE__ */ React.createElement(VoidPPSection, {
-      tabs: voidppTabs
-    })));
-  }
-  var WrappedSettingsMenu = ErrorBoundary.wrap(SettingsMenu);
-  var settingsFlyout_default = definePlugin({
-    name: "SettingsFlyout",
-    icon: Settings2Icon,
-    description: "Replace the avatar Settings item with a flyout of shortcuts to Void++ and Grok settings tabs.",
-    authors: [Devs.p],
-    tags: ["ui", "settings"],
-    enabledByDefault: true,
-    requiresRestart: true,
-    settings: settings10,
-    start() {
-      migratePluginSetting("SettingsFlyout", "voidppPosition", "voidPosition");
-    },
-    _renderSettingsMenu: (onOpen) => createElement(WrappedSettingsMenu, { onOpen }),
-    patches: [
-      {
-        find: '"user-dropdown.settings","Settings"',
-        replacement: {
-          match: /\jsx{\i\.DropdownMenuItem}\{onSelect:(\i),children:\[\jsx{\i\.CogIcon}\{[^}]{0,80}\}\),\i\("user-dropdown\.settings","Settings"\)\]\}\)/,
-          replace: "$self._renderSettingsMenu($1)"
-        }
-      }
-    ]
-  });
-
   // src/plugins/userQuotes/index.ts
-  var STYLE_NAME5 = "userQuotes";
+  var STYLE_NAME8 = "userQuotes";
   var CSS3 = `
 [data-testid="user-message"] blockquote:not(.twitter-tweet) {
     border-inline-start-color: hsl(var(--fg-tertiary)) !important;
@@ -9593,8362 +18015,35 @@ button:has(.void-ud-trigger > .void-ud-label) {
     tags: ["chat", "ui"],
     enabledByDefault: true,
     start() {
-      registerStyle(STYLE_NAME5, CSS3);
+      registerStyle(STYLE_NAME8, CSS3);
     },
-    stop() {
-      unregisterStyle(STYLE_NAME5);
-    }
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/exportChat/styles.css
-  registerStyle("exportChat", `.void-export-icon {
-    margin-inline-end: 0.5rem;
-}
-`);
-
-  // src/plugins/exportChat/index.tsx
-  var logger18 = new Logger("ExportChat");
-  function buildExportMessage(r) {
-    return {
-      id: r.responseId,
-      sender: r.sender,
-      message: r.message,
-      query: r.query,
-      createTime: r.createTime,
-      model: r.requestMetadata?.model ?? r.model,
-      ...r.thinkingTrace && { thinkingTrace: r.thinkingTrace },
-      ...r.webSearchResults?.length && { webSearchResults: r.webSearchResults },
-      ...r.generatedImageUrls?.length && { generatedImageUrls: r.generatedImageUrls },
-      ...r.fileAttachments?.length && { fileAttachments: r.fileAttachments },
-      ...r.steps?.length && { steps: r.steps }
-    };
-  }
-  function formatTs(ts) {
-    return ts ? new Date(ts).toLocaleString() : "";
-  }
-  function sender(s) {
-    return s.toLowerCase() === "human" ? "You" : "Grok";
-  }
-  function toMarkdown(title, messages) {
-    const lines = [`# ${title}`, ""];
-    for (const m of messages) {
-      const ts = formatTs(m.createTime);
-      lines.push(`## ${sender(m.sender)}${ts ? ` — ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
-      if (m.thinkingTrace)
-        lines.push("<details><summary>Thinking</summary>", "", m.thinkingTrace, "", "</details>", "");
-      const mdText = m.query || m.message;
-      if (mdText)
-        lines.push(mdText, "");
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls)
-          lines.push(`![image](${url})`);
-        lines.push("");
-      }
-      if (m.webSearchResults?.length) {
-        lines.push("**Web search results:**", "");
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (url)
-            lines.push(`- [${t ?? url}](${url})`);
-        }
-        lines.push("");
-      }
-      lines.push("---", "");
-    }
-    return lines.join(`
-`);
-  }
-  function toPlainText(title, messages) {
-    const lines = [title, "=".repeat(title.length), ""];
-    for (const m of messages) {
-      const ts = formatTs(m.createTime);
-      lines.push(`[${sender(m.sender)}]${ts ? ` ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
-      if (m.thinkingTrace)
-        lines.push("[Thinking]", m.thinkingTrace, "");
-      const txtText = m.query || m.message;
-      if (txtText)
-        lines.push(txtText, "");
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls)
-          lines.push(`  ${url}`);
-        lines.push("");
-      }
-      if (m.webSearchResults?.length) {
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (url)
-            lines.push(`  ${t ?? ""} - ${url}`);
-        }
-        lines.push("");
-      }
-      lines.push("-".repeat(40), "");
-    }
-    return lines.join(`
-`);
-  }
-  var HTML_HEAD = [
-    '<!DOCTYPE html><html><head><meta charset="utf-8">',
-    "<style>",
-    "body{font-family:system-ui,sans-serif;max-width:50rem;margin:2rem auto;padding:0 1rem;background:#0d0d0d;color:#e0e0e0}",
-    ".m{margin:1.5rem 0;padding:1rem;border-radius:.5rem;border:1px solid #222}",
-    ".h{background:#1a1a2e}.g{background:#111}",
-    ".s{font-weight:600;margin-bottom:.5rem;color:#aaa}.t{font-size:.8rem;color:#666}",
-    ".th{margin:.5rem 0;padding:.5rem;background:#1a1a1a;border-left:3px solid #444;font-size:.9rem;color:#999}",
-    "a{color:#6ea8fe}",
-    "</style></head><body>"
-  ].join(`
-`);
-  function toHtml(title, messages) {
-    const p = [HTML_HEAD, `<h1>${escapeHtml(title)}</h1>`];
-    for (const m of messages) {
-      const cls = m.sender.toLowerCase() === "human" ? "h" : "g";
-      const ts = formatTs(m.createTime);
-      p.push(`<div class="m ${cls}"><div class="s">${sender(m.sender)} <span class="t">${ts ? escapeHtml(ts) : ""}${m.model ? ` · ${escapeHtml(m.model)}` : ""}</span></div>`);
-      if (m.thinkingTrace)
-        p.push(`<details><summary>Thinking</summary><div class="th">${escapeHtml(m.thinkingTrace)}</div></details>`);
-      const text = m.query || m.message;
-      if (text)
-        p.push(`<div>${escapeHtml(text).replaceAll(`
-`, "<br>")}</div>`);
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls) {
-          const safe = safeUrl(url);
-          if (safe)
-            p.push(`<img src="${escapeHtml(safe, true)}" style="max-width:100%;margin:.5rem 0">`);
-        }
-      }
-      if (m.webSearchResults?.length) {
-        p.push("<ul>");
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (!url)
-            continue;
-          const safe = safeUrl(url);
-          if (safe)
-            p.push(`<li><a href="${escapeHtml(safe, true)}" rel="noopener noreferrer">${escapeHtml(t ?? safe)}</a></li>`);
-          else
-            p.push(`<li>${escapeHtml(t ?? url)}</li>`);
-        }
-        p.push("</ul>");
-      }
-      p.push("</div>");
-    }
-    p.push("</body></html>");
-    return p.join(`
-`);
-  }
-  var FORMATS = [
-    { fmt: "json", label: "JSON" },
-    { fmt: "md", label: "Markdown" },
-    { fmt: "txt", label: "Plain Text" },
-    { fmt: "html", label: "HTML" }
-  ];
-  async function exportChat(conversationId, format) {
-    const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
-    if (!responses?.length)
-      return;
-    const conversation = ConversationStore.useConversationStore.getState().byId[conversationId];
-    const title = conversation?.title ?? "Untitled Chat";
-    const messages = responses.map(buildExportMessage);
-    const filename = sanitizeFilename(title, "chat");
-    let content;
-    let mime;
-    switch (format) {
-      case "json":
-        content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
-        mime = "application/json";
-        break;
-      case "md":
-        content = toMarkdown(title, messages);
-        mime = "text/markdown";
-        break;
-      case "txt":
-        content = toPlainText(title, messages);
-        mime = "text/plain";
-        break;
-      case "html":
-        content = toHtml(title, messages);
-        mime = "text/html";
-        break;
-    }
-    await FileUtils.downloadBlob(new Blob([content], { type: mime }), `${filename}.${format}`);
-  }
-  function ExportMenu({ conversationId }) {
-    const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      disabled: streaming
-    }, /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 16,
-      className: "void-export-icon"
-    }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
-      key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger18.error("Failed to export chat", e))
-    }, label))));
-  }
-  var exportChat_default = definePlugin({
-    name: "ExportChat",
-    icon: FileDownIcon,
-    description: "Export conversations in multiple formats from the right-click menu.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    contextMenuItems: {
-      conversation: {
-        label: "Export",
-        render: ErrorBoundary.wrap(ExportMenu)
-      }
-    }
-  });
-
-  // src/plugins/chatStateFavicons/detect.ts
-  var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
-  var STOP_SELECTORS = [
-    'button[aria-label="Stop model response"]',
-    'button[aria-label*="Stop"]',
-    'button[aria-label*="stop"]',
-    'button[aria-label*="停止"]'
-  ];
-  var SEND_SELECTORS = [
-    'button[aria-label*="Send"]',
-    'button[aria-label*="Submit"]',
-    'button[type="submit"]'
-  ];
-  function isVisible(el) {
-    if (!(el instanceof HTMLElement) || !el.isConnected)
-      return false;
-    if (!el.getClientRects().length)
-      return false;
-    const style = getComputedStyle(el);
-    return style.visibility !== "hidden" && style.display !== "none";
-  }
-  function isStopControl(el) {
-    const label = el.getAttribute("aria-label") ?? "";
-    const text = el.textContent ?? "";
-    return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
-  }
-  function getActiveEditor() {
-    const list = Array.from(document.querySelectorAll(EDITOR_SEL));
-    return list.find(isVisible) ?? list[0] ?? null;
-  }
-  function getComposerRoot() {
-    const editor = getActiveEditor();
-    return editor?.closest("form") ?? editor?.closest("div.relative") ?? editor?.parentElement ?? document.body;
-  }
-  function collectStopButtons(root) {
-    const candidates = [];
-    for (const sel of STOP_SELECTORS) {
-      for (const node of root.querySelectorAll(sel)) {
-        if (node instanceof HTMLElement)
-          candidates.push(node);
-      }
-    }
-    if (candidates.length === 0) {
-      for (const btn of root.querySelectorAll("button")) {
-        if (btn instanceof HTMLElement && isStopControl(btn))
-          candidates.push(btn);
-      }
-    }
-    return candidates;
-  }
-  function getStopButton() {
-    const candidates = collectStopButtons(document);
-    return candidates.find(isVisible) ?? candidates[0] ?? null;
-  }
-  function isDisabledControl(el) {
-    if (el instanceof HTMLButtonElement && el.disabled)
-      return true;
-    if (el.hasAttribute("disabled"))
-      return true;
-    if (el.getAttribute("aria-disabled") === "true")
-      return true;
-    if (el.getAttribute("data-disabled") === "true")
-      return true;
-    return el.classList.contains("opacity-50") || el.classList.contains("cursor-not-allowed");
-  }
-  function getSubmitButton() {
-    for (const root of [getComposerRoot(), document]) {
-      for (const sel of SEND_SELECTORS) {
-        for (const node of root.querySelectorAll(sel)) {
-          if (!(node instanceof HTMLElement) || isStopControl(node))
-            continue;
-          if (isVisible(node) || isDisabledControl(node))
-            return node;
-        }
-      }
-    }
-    return null;
-  }
-  function submitIsGray() {
-    const btn = getSubmitButton();
-    return !!btn && isDisabledControl(btn);
-  }
-  function isInputEmpty() {
-    const editor = getActiveEditor();
-    if (!editor)
-      return true;
-    if (editor.querySelector("p.is-empty.is-editor-empty"))
-      return true;
-    return (editor.textContent ?? "").replaceAll("​", "").trim().length === 0;
-  }
-  function conversationToken() {
-    const params = new URLSearchParams(location.search);
-    const paramId = params.get("conversationId") ?? params.get("conversation_id") ?? params.get("chatId") ?? params.get("chat_id") ?? params.get("cid") ?? params.get("id") ?? "";
-    const lastSeg = location.pathname.split("/").filter(Boolean).slice(-1)[0] ?? "";
-    const pathId = /^[a-z0-9_-]{8,}$/i.test(lastSeg) ? lastSeg : "";
-    const dataId = document.querySelector("[data-conversation-id]")?.getAttribute("data-conversation-id") ?? "";
-    return [dataId, paramId, pathId].filter(Boolean).join("|");
-  }
-  function contextKeyFromUrl(token) {
-    const base = `${location.origin}${location.pathname}`;
-    return token ? `${base}|${token}` : `${base}|draft`;
-  }
-
-  // src/plugins/chatStateFavicons/icons.ts
-  var ICON_STYLES = ["original", "badge", "dot", "hole", "bg"];
-  var STYLE_OPTIONS = [
-    { label: "only emoji", value: "original" },
-    { label: "Badge + glyph", value: "badge", default: true },
-    { label: "Color dot", value: "dot" },
-    { label: "Mark tint", value: "hole" },
-    { label: "Background tint", value: "bg" }
-  ];
-  var KIND_COLOR = {
-    rotate: "#3B82F6",
-    done: "#22C55E",
-    ready: "#F59E0B",
-    error: "#EF4444"
-  };
-  var HOLE_IDLE = "#050505";
-  var MARK_FILL = "#FCFCFC";
-  var GROK_MARK_PATH = "M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815";
-  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
-  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
-  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
-  var ORIGINAL_EMOJI = {
-    rotate: "\uD83D\uDD04",
-    done: "✔️",
-    ready: "\uD83D\uDC4D",
-    error: "\uD83D\uDEAB"
-  };
-  function isIconStyle(value) {
-    return typeof value === "string" && ICON_STYLES.includes(value);
-  }
-  function svgEmoji(emoji) {
-    return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`)}`;
-  }
-  function toSvgData(inner, viewBox = "0 0 64 64") {
-    const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg2)}`;
-  }
-  function grokMarkSvg() {
-    return [
-      `<rect width="64" height="64" rx="14" fill="${HOLE_IDLE}"/>`,
-      `<g transform="translate(8 8) scale(2)" fill="${MARK_FILL}" fill-rule="evenodd">`,
-      `<path d="${GROK_MARK_PATH}"/>`,
-      "</g>"
-    ].join("");
-  }
-  function officialGrokSvg(markColor, bgColor) {
-    return [
-      `<path d="${GROK_BG_PATH}" fill="${bgColor}"/>`,
-      `<path d="${GROK_MARK_P1}" fill="${markColor}"/>`,
-      `<path d="${GROK_MARK_P2}" fill="${markColor}"/>`
-    ].join("");
-  }
-  function badgeGlyph(kind) {
-    if (kind === "rotate") {
-      return [
-        '<g transform="translate(51.5 51.5)"><g>',
-        '<path d="M0-6.1 A6.1 6.1 0 1 1 -5.3 3.05" fill="none" stroke="#fff" stroke-width="2.15" stroke-linecap="round"/>',
-        '<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="0.85s" repeatCount="indefinite"/>',
-        "</g></g>"
-      ].join("");
-    }
-    if (kind === "done") {
-      return '<path d="M46.6 51.7 L50.1 55.3 L56.8 47.4" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>';
-    }
-    if (kind === "ready") {
-      return [
-        '<path d="M51.5 56.4 V46.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
-        '<path d="M46.6 51.2 L51.5 46.2 L56.4 51.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
-      ].join("");
-    }
-    return [
-      '<path d="M47.2 47.2 L55.8 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
-      '<path d="M55.8 47.2 L47.2 55.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
-    ].join("");
-  }
-  function composeIcon(style, kind, officialHref) {
-    if (style === "original") {
-      if (kind === "wait")
-        return officialHref;
-      return svgEmoji(ORIGINAL_EMOJI[kind]);
-    }
-    const color = kind === "wait" ? undefined : KIND_COLOR[kind];
-    if (style === "hole") {
-      return toSvgData(officialGrokSvg(color ?? MARK_FILL, HOLE_IDLE), "0 0 512 512");
-    }
-    if (style === "bg") {
-      return toSvgData(officialGrokSvg(MARK_FILL, color ?? HOLE_IDLE), "0 0 512 512");
-    }
-    if (!color || kind === "wait")
-      return toSvgData(grokMarkSvg());
-    const badge = style === "dot" ? [
-      '<circle cx="52.2" cy="52.2" r="10.4" fill="#050505"/>',
-      `<circle cx="52.2" cy="52.2" r="7.7" fill="${color}"/>`
-    ].join("") : [
-      '<circle cx="51.5" cy="51.5" r="12.15" fill="#050505"/>',
-      `<circle cx="51.5" cy="51.5" r="9.55" fill="${color}"/>`,
-      badgeGlyph(kind)
-    ].join("");
-    return toSvgData(grokMarkSvg() + badge);
-  }
-  function buildIcons(style, officialHref) {
-    return {
-      wait: composeIcon(style, "wait", officialHref),
-      rotate: composeIcon(style, "rotate", officialHref),
-      done: composeIcon(style, "done", officialHref),
-      ready: composeIcon(style, "ready", officialHref),
-      error: composeIcon(style, "error", officialHref)
-    };
-  }
-
-  // src/plugins/chatStateFavicons/index.ts
-  var logger19 = new Logger("ChatStateFavicons");
-  var ICON_ID = "void-chat-state-favicon";
-  var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var settings11 = definePluginSettings({
-    style: {
-      type: 4 /* SELECT */,
-      description: "How the Grok mark is overlaid with chat state.",
-      options: STYLE_OPTIONS
-    }
-  });
-  var officialHref = "/images/favicon.svg";
-  var icons = buildIcons("badge", officialHref);
-  var kind = "wait";
-  var wasStreaming = false;
-  var justFinished = false;
-  var streamContext = null;
-  var lockedToken = "";
-  var lastWasError = false;
-  var lastConvId = "";
-  var primedReady = true;
-  var faviconObs = null;
-  var globalObs = null;
-  var composerObs = null;
-  var buttonObs = null;
-  var inputCtrl = null;
-  var unsubRoute2 = null;
-  var unsubPage = null;
-  var raf = 0;
-  var started2 = false;
-  function currentStyle() {
-    const value = settings11.store.style;
-    return isIconStyle(value) ? value : "badge";
-  }
-  function captureOfficial() {
-    const existing = document.querySelector(`link[rel~="icon"]:not(#${ICON_ID})`);
-    const href = existing?.href;
-    if (href && !href.startsWith("data:"))
-      return href;
-    return `${location.origin}/images/favicon.svg`;
-  }
-  function isIconLink(node) {
-    return node instanceof HTMLLinkElement && (node.relList.contains("icon") || /\bicon\b/i.test(node.rel));
-  }
-  function stripCompetitors() {
-    const { head } = document;
-    if (!head)
-      return;
-    for (const node of head.querySelectorAll("link")) {
-      if (node.id !== ICON_ID && isIconLink(node))
-        node.remove();
-    }
-  }
-  function applyHref(href) {
-    const { head } = document;
-    if (!head)
-      return;
-    stripCompetitors();
-    let link = document.getElementById(ICON_ID);
-    if (!link) {
-      link = document.createElement("link");
-      link.id = ICON_ID;
-      link.rel = "icon shortcut icon";
-      link.type = "image/svg+xml";
-      link.setAttribute("sizes", "any");
-      head.prepend(link);
-    } else if (head.firstChild !== link) {
-      head.prepend(link);
-    }
-    if (link.getAttribute("href") !== href)
-      link.setAttribute("href", href);
-  }
-  function setKind(next) {
-    kind = next;
-    applyHref(icons[next]);
-  }
-  function rebuildIcons() {
-    icons = buildIcons(currentStyle(), officialHref);
-    applyHref(icons[kind]);
-  }
-  function liveResponse(id, byId) {
-    if (!id)
-      return false;
-    const response = byId[id];
-    if (!response)
-      return false;
-    if (response.partial)
-      return true;
-    return LIVE_RESPONSE.has(response.state ?? "");
-  }
-  function storeStreaming() {
-    try {
-      const page = ChatPageStore.useChatPageStore.getState();
-      if (page.streamedMessageId || page.showStreamingIndicator)
-        return true;
-      const { byId } = ResponseStore.useResponseStore.getState();
-      return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
-    } catch (e) {
-      logger19.debug("stream stores unavailable:", e);
-      return false;
-    }
-  }
-  function isStreaming() {
-    if (storeStreaming())
-      return true;
-    return getStopButton() != null;
-  }
-  function currentConversationId() {
-    try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      if (route.conversationId)
-        return String(route.conversationId);
-    } catch (e) {
-      logger19.debug("RoutingStore unavailable:", e);
-    }
-    try {
-      const id = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (id)
-        return id;
-    } catch (e) {
-      logger19.debug("ChatPageStore unavailable:", e);
-    }
-    return conversationToken();
-  }
-  function getContextKey() {
-    const id = currentConversationId();
-    const key = id || contextKeyFromUrl("");
-    if (isStreaming()) {
-      if (!lockedToken && key)
-        lockedToken = key;
-      return lockedToken;
-    }
-    lockedToken = "";
-    return key;
-  }
-  function sameStreamContext(key) {
-    return !!streamContext && !!key && streamContext === key;
-  }
-  function resetStreamFlags() {
-    wasStreaming = false;
-    justFinished = false;
-    streamContext = null;
-    lockedToken = "";
-    lastWasError = false;
-  }
-  function onConversationSwitch(id) {
-    lastConvId = id;
-    resetStreamFlags();
-    primedReady = false;
-    composerObs?.disconnect();
-    composerObs = null;
-    buttonObs?.disconnect();
-    buttonObs = null;
-    setKind("wait");
-  }
-  function hasError() {
-    if (lastWasError)
-      return true;
-    try {
-      const { byId } = ResponseStore.useResponseStore.getState();
-      const page = ChatPageStore.useChatPageStore.getState();
-      const id = page.streamedMessageId ?? page.lastMessageId;
-      if (!id)
-        return false;
-      const response = byId[id];
-      return response?.state === "error" || response?.error != null;
-    } catch (e) {
-      logger19.debug("ResponseStore unavailable:", e);
-      return false;
-    }
-  }
-  function evaluateState() {
-    if (!started2)
-      return;
-    const conv = currentConversationId();
-    if (lastConvId && conv && lastConvId !== conv) {
-      onConversationSwitch(conv);
-      return;
-    }
-    if (conv)
-      lastConvId = conv;
-    const contextKey = getContextKey();
-    const streaming = isStreaming();
-    const empty = isInputEmpty();
-    const gray = submitIsGray();
-    if (hasError() && !streaming) {
-      setKind("error");
-      wasStreaming = false;
-      justFinished = false;
-      streamContext = null;
-      lastWasError = false;
-      return;
-    }
-    if (streaming && empty) {
-      wasStreaming = true;
-      justFinished = false;
-      lastWasError = false;
-      streamContext = contextKey;
-      setKind("rotate");
-      return;
-    }
-    if (wasStreaming) {
-      const sameContext = sameStreamContext(contextKey);
-      wasStreaming = false;
-      if (sameContext && gray) {
-        justFinished = true;
-        streamContext = contextKey;
-        setKind("done");
-        return;
-      }
-      justFinished = false;
-      streamContext = null;
-    }
-    if (justFinished) {
-      const contextChanged = !!(streamContext && contextKey && streamContext !== contextKey);
-      if (contextChanged) {
-        justFinished = false;
-        streamContext = null;
-      } else if (empty) {
-        setKind("done");
-        return;
-      } else if (primedReady) {
-        justFinished = false;
-        setKind("ready");
-        return;
-      } else {
-        justFinished = false;
-        setKind("wait");
-        return;
-      }
-    }
-    streamContext = null;
-    lastWasError = false;
-    if (empty)
-      setKind("wait");
-    else if (primedReady)
-      setKind("ready");
-    else
-      setKind("wait");
-  }
-  function nodeTouchesStop(node) {
-    if (!(node instanceof Element))
-      return false;
-    if (node instanceof HTMLElement && node.tagName === "BUTTON" && isStopControl(node))
-      return true;
-    for (const btn of node.querySelectorAll("button")) {
-      if (isStopControl(btn))
-        return true;
-    }
-    return false;
-  }
-  function stopButtonMutation(list) {
-    for (const m of list) {
-      if (nodeTouchesStop(m.target))
-        return true;
-      for (const n of m.addedNodes) {
-        if (nodeTouchesStop(n))
-          return true;
-      }
-      for (const n of m.removedNodes) {
-        if (nodeTouchesStop(n))
-          return true;
-      }
-      if (m.type === "attributes" && m.attributeName === "aria-label" && m.target instanceof HTMLElement) {
-        if (isStopControl(m.target) || /stop|停止/i.test(String(m.oldValue ?? "")))
-          return true;
-      }
-    }
-    return false;
-  }
-  function nodeInEditor(node) {
-    const el = node instanceof Element ? node : node?.parentElement;
-    return !!el?.closest(EDITOR_SEL);
-  }
-  function mutationsAreEditorOnly(list) {
-    if (!list.length)
-      return false;
-    for (const m of list) {
-      if (!nodeInEditor(m.target))
-        return false;
-      for (const n of m.addedNodes) {
-        if (n instanceof Text)
-          continue;
-        if (!nodeInEditor(n))
-          return false;
-      }
-      for (const n of m.removedNodes) {
-        if (n instanceof Text)
-          continue;
-        if (!nodeInEditor(n))
-          return false;
-      }
-    }
-    return true;
-  }
-  function onDomMutate(list) {
-    if (kind === "rotate" || wasStreaming) {
-      if (mutationsAreEditorOnly(list))
-        return;
-      if (!stopButtonMutation(list))
-        return;
-    }
-    scheduleEvaluate();
-  }
-  function onEditorInput() {
-    primedReady = true;
-    scheduleEvaluate();
-  }
-  function scheduleEvaluate() {
-    if (!started2 || raf)
-      return;
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      if (!started2)
-        return;
-      bindEditorInput();
-      const root = getComposerRoot();
-      if (!composerObs || !root.isConnected) {
-        observeComposer();
-        observeButtons();
-      }
-      evaluateState();
-    });
-  }
-  function onStreamEnd3({ responseId }) {
-    try {
-      const response = ResponseStore.useResponseStore.getState().byId[responseId];
-      lastWasError = response?.state === "error" || response?.error != null;
-    } catch (e) {
-      logger19.debug("ResponseStore unavailable:", e);
-    }
-  }
-  function startFaviconGuard() {
-    faviconObs?.disconnect();
-    const { head } = document;
-    if (!head)
-      return;
-    faviconObs = new MutationObserver((list) => {
-      for (const m of list) {
-        if (m.type === "attributes" && isIconLink(m.target) && m.target.id !== ICON_ID) {
-          applyHref(icons[kind]);
-          return;
-        }
-        for (const node of m.addedNodes) {
-          if (isIconLink(node) && node.id !== ICON_ID) {
-            applyHref(icons[kind]);
-            return;
-          }
-        }
-      }
-    });
-    faviconObs.observe(head, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["href", "rel"]
-    });
-  }
-  function bindEditorInput() {
-    const editor = getActiveEditor();
-    if (!editor || editor.dataset.voidCsfBound === "1")
-      return;
-    editor.dataset.voidCsfBound = "1";
-    editor.addEventListener("input", onEditorInput, { passive: true });
-    editor.addEventListener("compositionend", onEditorInput, { passive: true });
-  }
-  function observeComposer() {
-    composerObs?.disconnect();
-    const root = getComposerRoot();
-    composerObs = new MutationObserver(onDomMutate);
-    composerObs.observe(root, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ["aria-label", "aria-disabled", "disabled", "data-testid", "class"],
-      attributeOldValue: true
-    });
-  }
-  function observeButtons() {
-    buttonObs?.disconnect();
-    const target = getComposerRoot();
-    buttonObs = new MutationObserver(onDomMutate);
-    buttonObs.observe(target, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["aria-label", "type"],
-      attributeOldValue: true
-    });
-  }
-  function attachStores() {
-    unsubRoute2?.();
-    unsubPage?.();
-    try {
-      const routeStore = RoutingStore.useRoutingStore;
-      if (typeof routeStore?.subscribe === "function") {
-        unsubRoute2 = routeStore.subscribe((s) => s.route.conversationId, (id, prev) => {
-          if (!id || id === prev)
-            return;
-          onConversationSwitch(String(id));
-        });
-      }
-    } catch (e) {
-      logger19.debug("RoutingStore subscribe failed:", e);
-      try {
-        unsubRoute2 = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
-      } catch (err) {
-        logger19.debug("RoutingStore full subscribe failed:", err);
-      }
-    }
-    try {
-      const pageStore = ChatPageStore.useChatPageStore;
-      if (typeof pageStore?.subscribe === "function") {
-        unsubPage = pageStore.subscribe((s) => s.conversationId, (id, prev) => {
-          if (!id || id === prev)
-            return;
-          onConversationSwitch(id);
-        });
-      }
-    } catch (e) {
-      logger19.debug("ChatPageStore subscribe failed:", e);
-    }
-  }
-  function restoreOfficial() {
-    faviconObs?.disconnect();
-    faviconObs = null;
-    document.getElementById(ICON_ID)?.remove();
-    const { head } = document;
-    if (!head)
-      return;
-    const link = document.createElement("link");
-    link.rel = "icon";
-    link.type = "image/svg+xml";
-    link.href = officialHref;
-    head.prepend(link);
-  }
-  var chatStateFavicons_default = definePlugin({
-    name: "ChatStateFavicons",
-    icon: AppWindowIcon,
-    description: "Show streaming, done, ready, and error states on the tab favicon.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings11,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    cleanupSelectors: [`#${ICON_ID}`],
-    start() {
-      started2 = true;
-      officialHref = captureOfficial();
-      rebuildIcons();
-      startFaviconGuard();
-      inputCtrl?.abort();
-      inputCtrl = new AbortController;
-      window.addEventListener("popstate", scheduleEvaluate, { signal: inputCtrl.signal });
-      globalObs?.disconnect();
-      globalObs = new MutationObserver(onDomMutate);
-      globalObs.observe(document.body, { childList: true, subtree: true });
-      bindEditorInput();
-      observeComposer();
-      observeButtons();
-      attachStores();
-      evaluateState();
-    },
-    stop() {
-      started2 = false;
-      if (raf)
-        cancelAnimationFrame(raf);
-      raf = 0;
-      inputCtrl?.abort();
-      inputCtrl = null;
-      unsubRoute2?.();
-      unsubRoute2 = null;
-      unsubPage?.();
-      unsubPage = null;
-      globalObs?.disconnect();
-      globalObs = null;
-      composerObs?.disconnect();
-      composerObs = null;
-      buttonObs?.disconnect();
-      buttonObs = null;
-      wasStreaming = false;
-      justFinished = false;
-      streamContext = null;
-      lockedToken = "";
-      lastConvId = "";
-      primedReady = true;
-      lastWasError = false;
-      restoreOfficial();
-    },
-    onSettingsChange: rebuildIcons,
-    events: {
-      streamEnd: onStreamEnd3
-    }
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterImagine/styles.css
-  registerStyle("betterImagine", `/*
- * Void++, a modification for grok.com
- * Copyright (c) 2026 Void++ Contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-imagine-chip {
-    background: hsl(var(--surface-l1));
-}
-
-.void-imagine-chip:hover {
-    background: hsl(var(--surface-l2));
-}
-
-.void-imagine-search {
-    width: 10rem;
-    flex-shrink: 0;
-    border-radius: 9999px;
-}
-
-.void-imagine-date-select,
-.void-imagine-sort-select {
-    flex-shrink: 0;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    background: hsl(var(--surface-l1));
-    color: hsl(var(--fg-secondary));
-    border: none;
-}
-
-.void-imagine-sort-active {
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l2));
-}
-`);
-
-  // src/plugins/betterImagine/index.tsx
-  var logger20 = new Logger("BetterImagine");
-  var cl19 = classNameFactory("void-imagine-");
-  var settings12 = definePluginSettings({
-    hideDefaultPreviews: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the community image grid and templates on the Imagine home page.",
-      default: true
-    },
-    noAutoplay: {
-      type: 3 /* BOOLEAN */,
-      description: "Stop video thumbnails from autoplaying.",
-      default: true
-    },
-    playOnHover: {
-      type: 3 /* BOOLEAN */,
-      description: "Play video thumbnails when hovered.",
-      default: true
-    },
-    hideModerated: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide moderated images and videos that cannot be interacted with.",
-      default: true
-    },
-    pauseWhenHidden: {
-      type: 3 /* BOOLEAN */,
-      description: "Pause any playing video thumbnails when the tab loses focus.",
-      default: true
-    },
-    persistFilters: {
-      type: 3 /* BOOLEAN */,
-      description: "Remember Favorites filter + sort across reloads.",
-      default: true
-    },
-    smartFilenames: {
-      type: 3 /* BOOLEAN */,
-      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
-      default: true
-    },
-    bypassPaywall: {
-      type: 3 /* BOOLEAN */,
-      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
-      default: false
-    },
-    ctrlClickSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
-      default: true
-    }
-  });
-  function buildFilename(post, isVideo) {
-    if (!settings12.store.smartFilenames || !post)
-      return null;
-    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
-    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
-    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
-    const id = post.id?.slice(0, 8) ?? "";
-    const ext = isVideo ? "mp4" : "png";
-    const parts = [date, slug, id].filter(Boolean);
-    if (!parts.length)
-      return null;
-    return `${parts.join("_")}.${ext}`;
-  }
-  var FILTER_MAP = {
-    image: "MEDIA_POST_TYPE_IMAGE",
-    video: "MEDIA_POST_TYPE_VIDEO"
-  };
-  var DATE_LABELS = {
-    all: "Any time",
-    today: "Today",
-    week: "This week",
-    month: "This month"
-  };
-  var SORT_LABELS = {
-    newest: "Newest first",
-    oldest: "Oldest first",
-    "prompt-az": "Prompt A → Z",
-    "prompt-za": "Prompt Z → A",
-    random: "Shuffle"
-  };
-  var SORT_KEYS = Object.keys(SORT_LABELS);
-  var DAY_MS2 = 86400000;
-  var DATE_CUTOFFS = {
-    all: 0,
-    today: DAY_MS2,
-    week: 7 * DAY_MS2,
-    month: 30 * DAY_MS2
-  };
-  var STORAGE_KEY2 = "void-imagine-filters";
-  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
-  function loadFilters() {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY2);
-      if (!raw)
-        return DEFAULT_FILTERS;
-      const parsed = JSON.parse(raw);
-      return {
-        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
-        search: typeof parsed.search === "string" ? parsed.search : "",
-        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
-        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
-      };
-    } catch {
-      return DEFAULT_FILTERS;
-    }
-  }
-  var initial = loadFilters();
-  var currentFilter = initial.filter;
-  var currentSearch = initial.search;
-  var currentDate = initial.date;
-  var currentSort = initial.sort;
-  var randomSeed = Date.now();
-  var filterStore = createExternalStore();
-  function persist() {
-    if (!settings12.store.persistFilters)
-      return;
-    try {
-      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
-    } catch {}
-  }
-  function setFilter(f) {
-    currentFilter = f;
-    filterStore.notify();
-    persist();
-  }
-  var setSearch = debounce((s) => {
-    currentSearch = s;
-    filterStore.notify();
-    persist();
-  }, 200);
-  function setDate(d) {
-    currentDate = d;
-    filterStore.notify();
-    persist();
-  }
-  function setSort(s) {
-    if (s === "random" && currentSort === "random")
-      randomSeed = Date.now();
-    currentSort = s;
-    filterStore.notify();
-    persist();
-  }
-  function resetFilters() {
-    currentFilter = "all";
-    currentSearch = "";
-    currentDate = "all";
-    currentSort = "newest";
-    filterStore.notify();
-    persist();
-  }
-  function hasActiveFilters() {
-    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
-  }
-  function isModerated(p) {
-    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
-  }
-  var haystackCache = new WeakMap;
-  var tsCache = new WeakMap;
-  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
-  function getHaystack(p) {
-    let h = haystackCache.get(p);
-    if (h === undefined) {
-      h = `${p.prompt ?? ""}
-${p.originalPrompt ?? ""}`.toLowerCase();
-      haystackCache.set(p, h);
-    }
-    return h;
-  }
-  function getTs(p) {
-    let t = tsCache.get(p);
-    if (t === undefined) {
-      t = new Date(p.createTime).getTime() || 0;
-      tsCache.set(p, t);
-    }
-    return t;
-  }
-  function matchesFilters(p, target, q, cutoff, hideModerated) {
-    if (!p)
-      return false;
-    if (hideModerated && isModerated(p))
-      return false;
-    if (target && p.mediaType !== target)
-      return false;
-    if (cutoff && getTs(p) < cutoff)
-      return false;
-    if (q && !getHaystack(p).includes(q))
-      return false;
-    return true;
-  }
-  var cacheKey = null;
-  var cacheList = null;
-  var cacheResult = [];
-  function filterItems(items) {
-    const { hideModerated } = settings12.store;
-    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
-    if (cacheList === items && cacheKey === key)
-      return cacheResult;
-    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
-    let out = items;
-    if (needsFilter) {
-      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
-      const q = currentSearch.toLowerCase();
-      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
-      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
-    }
-    cacheList = items;
-    cacheKey = key;
-    cacheResult = currentSort === "newest" ? out : sortItems(out);
-    return cacheResult;
-  }
-  function mulberry32(seed) {
-    let a = seed;
-    return () => {
-      a |= 0;
-      a = a + 1831565813 | 0;
-      let t = Math.imul(a ^ a >>> 15, 1 | a);
-      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-  function sortItems(items) {
-    if (items.length < 2)
-      return items;
-    const arr = [...items];
-    switch (currentSort) {
-      case "oldest":
-        return arr.toSorted((a, b) => getTs(a) - getTs(b));
-      case "prompt-az":
-        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
-      case "prompt-za":
-        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
-      case "random": {
-        const rand = mulberry32(randomSeed);
-        for (let i = arr.length - 1;i > 0; i--) {
-          const j = Math.floor(rand() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      }
-      default:
-        return arr;
-    }
-  }
-  var pending = new WeakMap;
-  function pauseVideo(video) {
-    const promise = pending.get(video);
-    pending.delete(video);
-    if (promise) {
-      promise.then(() => {
-        if (pending.has(video))
-          return;
-        video.pause();
-        video.currentTime = 0;
-      }).catch((e) => logger20.warn("Failed to pause video:", e));
-    } else {
-      video.pause();
-      video.currentTime = 0;
-    }
-  }
-  var onMouseEnter = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pending.set(video, video.play().catch((e2) => logger20.error("Failed to play video", e2)));
-  };
-  var onMouseLeave = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pauseVideo(video);
-  };
-  function useFilteredFavorites() {
-    const list = MediaStore.useMediaStore((s) => s.favoritesList);
-    useExternalStore(filterStore);
-    return filterItems(list);
-  }
-  function mediaState() {
-    return MediaStore.useMediaStore.getState();
-  }
-  function selectVisible() {
-    const state2 = mediaState();
-    const list = state2.favoritesList ?? [];
-    const visible = filterItems(list);
-    if (!visible.length)
-      return;
-    state2.setMultiSelectItems(visible);
-    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
-  }
-  function deselectAll() {
-    const state2 = mediaState();
-    state2.clearMultiSelect?.();
-  }
-  function selectedPosts() {
-    const state2 = mediaState();
-    const ids = Object.keys(state2.multiSelectIds ?? {});
-    return ids.map((id) => state2.byId[id]).filter((p) => !!p);
-  }
-  async function copyLines(lines, label) {
-    if (!lines.length) {
-      Toaster.toast.info(`Selected items have no ${label}s.`);
-      return;
-    }
-    try {
-      await copyToClipboard(lines.join(`
-`));
-      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
-    } catch (e) {
-      logger20.error(`Failed to copy ${label}s`, e);
-      Toaster.toast.error(`Failed to copy ${label}s.`);
-    }
-  }
-  async function copySelectedPrompts() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
-  }
-  async function copySelectedUrls() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    const { videoByMediaId } = mediaState();
-    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
-    await copyLines(urls, "URL");
-  }
-  async function bulkUpscaleSelected() {
-    const state2 = mediaState();
-    const ids = Object.keys(state2.multiSelectIds ?? {});
-    let upscaled = 0;
-    let alreadyHd = 0;
-    let inProgress = 0;
-    for (const id of ids) {
-      const videos = state2.videoByMediaId[id];
-      if (!videos?.length)
-        continue;
-      for (const video of videos) {
-        if (video.hdMediaUrl) {
-          alreadyHd++;
-          continue;
-        }
-        if (video.upscalingInProgress) {
-          inProgress++;
-          continue;
-        }
-        try {
-          await state2.upscaleVideo(id, video.id);
-          upscaled++;
-        } catch (e) {
-          logger20.error("Failed to upscale video:", id, video.id, e);
-        }
-      }
-    }
-    if (upscaled)
-      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
-    else if (alreadyHd)
-      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
-    else if (inProgress)
-      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
-    else
-      Toaster.toast.info("No videos to upscale.");
-  }
-  function FilterButtons() {
-    useExternalStore(filterStore);
-    const [searchInput, setSearchInput] = useState(currentSearch);
-    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
-    const sortActive = currentSort !== "newest";
-    const lastSync = useRef(currentSearch);
-    if (lastSync.current !== currentSearch) {
-      lastSync.current = currentSearch;
-      setSearchInput(currentSearch);
-    }
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
-      value: currentDate,
-      onValueChange: (v) => setDate(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl19("date-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: d,
-      value: d
-    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
-      value: currentSort,
-      onValueChange: (v) => setSort(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: sortActive ? cl19("sort-select", "sort-active") : cl19("sort-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: s,
-      value: s
-    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      placeholder: "Search...",
-      value: searchInput,
-      onChange: (e) => {
-        setSearchInput(e.target.value);
-        setSearch(e.target.value);
-      },
-      className: cl19("search")
-    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
-      key: f,
-      variant: currentFilter === f ? "primary" : "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: currentFilter !== f ? cl19("chip") : undefined,
-      onClick: () => setFilter(currentFilter === f ? "all" : f)
-    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: cl19("chip"),
-      onClick: resetFilters
-    }, "Clear"));
-  }
-  function UpscaleItem() {
-    const [open2, setOpen] = useState(false);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => setOpen(true)
-    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
-      className: "size-4 me-2"
-    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: open2,
-      onOpenChange: setOpen,
-      title: "Upscale selected videos",
-      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
-      confirmText: "Upscale",
-      onConfirm: bulkUpscaleSelected
-    }));
-  }
-  function CopyActions() {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedPrompts
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedUrls
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy URLs"));
-  }
-  function isImaginePage() {
-    const page = RoutingStore.useRoutingStore.getState().route?.page;
-    return page === "imagine" || page === "imagine-favorites";
-  }
-  function isFavoritesPage() {
-    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
-  }
-  function isTypingTarget(t) {
-    if (!(t instanceof HTMLElement))
-      return false;
-    if (t.isContentEditable)
-      return true;
-    const tag = t.tagName;
-    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-  }
-  function onKeyDown(e) {
-    if (!isImaginePage())
-      return;
-    if (e.ctrlKey || e.metaKey || e.altKey)
-      return;
-    if (isTypingTarget(e.target))
-      return;
-    if (e.key === "i" || e.key === "I") {
-      setFilter(currentFilter === "image" ? "all" : "image");
-      e.preventDefault();
-    } else if (e.key === "v" || e.key === "V") {
-      setFilter(currentFilter === "video" ? "all" : "video");
-      e.preventDefault();
-    } else if (e.key === "r" || e.key === "R") {
-      resetFilters();
-      e.preventDefault();
-    } else if (e.key === "A") {
-      if (isFavoritesPage()) {
-        deselectAll();
-        e.preventDefault();
-      }
-    } else if (e.key === "a") {
-      if (isFavoritesPage()) {
-        selectVisible();
-        e.preventDefault();
-      }
-    } else if (e.key === "c" || e.key === "C") {
-      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
-        copySelectedPrompts();
-        e.preventDefault();
-      }
-    }
-  }
-  function onVisibilityChange() {
-    if (!settings12.store.pauseWhenHidden)
-      return;
-    if (document.visibilityState !== "hidden")
-      return;
-    for (const video of document.querySelectorAll("video")) {
-      if (!video.paused)
-        video.pause();
-    }
-  }
-  var abortCtrl = null;
-  var betterImagine_default = definePlugin({
-    name: "BetterImagine",
-    icon: ImagesIcon,
-    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings12,
-    _hideDefault: () => settings12.store.hideDefaultPreviews,
-    _NullGrid: () => null,
-    _autoPlay: () => !settings12.store.noAutoplay,
-    _bypassPaywall: () => settings12.store.bypassPaywall,
-    _ctrlClickSelect: () => settings12.store.ctrlClickSelect,
-    _hoverProps: () => settings12.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
-    _useFilteredFavorites: useFilteredFavorites,
-    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
-    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
-    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
-    _buildFilename: buildFilename,
-    start() {
-      if (abortCtrl)
-        return;
-      abortCtrl = new AbortController;
-      const { signal } = abortCtrl;
-      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
-      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
-    },
-    stop() {
-      abortCtrl?.abort();
-      abortCtrl = null;
-    },
-    patches: [
-      {
-        find: "image_feed_opened",
-        group: true,
-        replacement: [
-          {
-            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
-            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
-          },
-          {
-            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
-            replace: "=$self._useFilteredFavorites()"
-          }
-        ]
-      },
-      {
-        find: "image_feed_image_selected",
-        group: true,
-        replacement: [
-          {
-            match: /autoPlay:!0/g,
-            replace: "autoPlay:$self._autoPlay()"
-          },
-          {
-            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
-            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          }
-        ]
-      },
-      {
-        find: 'imagine-folder.all","All"',
-        replacement: {
-          match: /"imagine-folder\.all","All"\)\}\)/,
-          replace: "$&,$self._renderFilterButtons({})"
-        }
-      },
-      {
-        find: "imagine-templates.section-title",
-        all: true,
-        noWarn: true,
-        replacement: {
-          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
-          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
-        }
-      },
-      {
-        find: '"imagine-set-resolution"',
-        all: true,
-        replacement: {
-          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
-          replace: "if(!$self._bypassPaywall())$&"
-        }
-      },
-      {
-        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
-        group: true,
-        replacement: [
-          {
-            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
-            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
-          },
-          {
-            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
-            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
-          }
-        ]
-      }
-    ]
-  });
-
-  // src/plugins/consoleJanitor/index.ts
-  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
-  var consoleJanitor_default = definePlugin({
-    name: "ConsoleJanitor",
-    icon: TerminalIcon,
-    description: "Silences noisy warnings and info logs in the browser console.",
-    authors: [Devs.Prism],
-    patches: [
-      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
-      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
-      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
-      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
-      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
-    ]
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterFiles/styles.css
-  registerStyle("betterFiles", `/*
- * Void++, a modification for grok.com
- * Copyright (c) 2026 Void++ Contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-/* stylelint-disable-next-line selector-class-pattern */
-.group\\/sidebar-menu-item:hover .void-sel-wrap {
-    display: inline-flex;
-}
-
-/* stylelint-disable-next-line selector-class-pattern */
-.group\\/sidebar-menu-item.relative > .void-sel-wrap {
-    position: absolute;
-    inset-inline-start: 0.5rem;
-    top: 0.5rem;
-    z-index: 10;
-    pointer-events: auto;
-}
-`);
-
-  // src/plugins/betterFiles/index.tsx
-  var logger21 = new Logger("BetterFiles");
-  var LibraryAssets = findByPropsLazy("deleteLibraryAsset", "useLibraryAssets");
-  var selection = createSelectionStore();
-  var assetsById = new Map;
-  function fileId(item) {
-    if (item?.kind !== "file")
-      return null;
-    return item.asset?.assetId ?? item.id ?? null;
-  }
-  function FileCheckbox({ item }) {
-    const id = fileId(item);
-    if (!id || !item.asset)
-      return null;
-    assetsById.set(id, item.asset);
-    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
-      selection,
-      id
-    });
-  }
-  async function deleteAssets(ids) {
-    const { deleteLibraryAsset } = LibraryAssets;
-    for (const id of ids) {
-      const asset = assetsById.get(id) ?? { assetId: id };
-      try {
-        await deleteLibraryAsset(asset);
-      } catch (e) {
-        logger21.error("Failed to delete asset", id, e);
-      }
-      assetsById.delete(id);
-    }
-  }
-  function wrapItemClick(onClick, item) {
-    return (e) => {
-      const id = fileId(item);
-      if (id && item.asset && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (selection.has(id)) {
-          selection.toggle(id);
-          assetsById.delete(id);
-        } else {
-          assetsById.set(id, item.asset);
-          selection.toggle(id);
-        }
-        return;
-      }
-      onClick(e);
-    };
-  }
-  var betterFiles_default = definePlugin({
-    name: "BetterFiles",
-    icon: FilesIcon,
-    description: "Adds bulk delete to the Library page.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    managedStyle: "betterFiles",
-    start() {
-      selection.clear();
-      assetsById.clear();
-    },
-    stop() {
-      selection.clear();
-      assetsById.clear();
-    },
-    _renderFileCheckbox: ErrorBoundary.wrap(FileCheckbox, null),
-    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
-      selection,
-      noun: "file",
-      title: "Delete files",
-      onDelete: deleteAssets
-    }), null),
-    _wrapItemClick: wrapItemClick,
-    patches: [
-      {
-        find: "LibraryPageContent:refreshAssets",
-        replacement: [
-          {
-            match: /("data-library-item-id":\i\.id,onPointerDown:\i,onClick:)(\i)(,className:"absolute inset-0 z-0 focus-visible:outline-none")/,
-            replace: "$1$self._wrapItemClick($2,arguments[0].item)$3"
-          },
-          {
-            match: /(SIDEBAR_ROW_MASK_STYLE,children:\[)(\i,\i,\i,\i)\]/,
-            replace: "$1$self._renderFileCheckbox({item:arguments[0].item}),$2]"
-          },
-          {
-            match: /("data-library-item-id":\i\.id,onClick:)(\i=>\{\i\.stopPropagation\(\),\i\(\i\)\})/,
-            replace: "$1$self._wrapItemClick($2,arguments[0].item)"
-          },
-          {
-            match: /("flex min-w-0 items-center gap-3 text-left font-medium",children:\[)(\i,\i)\]/,
-            replace: "$1$self._renderFileCheckbox({item:arguments[0].item}),$2]"
-          },
-          {
-            match: /("library-page\.title","Library"\)\}\),\(0,\i\.jsx\)\("div",\{className:"flex items-center gap-3",children:)(\i)\}\)/,
-            replace: "$1[$self._renderFileActionBar(),$2]})"
-          }
-        ]
-      }
-    ]
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/cloneChats/styles.css
-  registerStyle("cloneChats", `.void-clone-icon {
-    margin-inline-end: 0.5rem;
-}
-`);
-
-  // src/plugins/cloneChats/index.tsx
-  var logger22 = new Logger("CloneChats");
-  async function cloneChat(conversationId) {
-    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
-    if (!lastResponseId)
-      throw new Error("No responses found in conversation.");
-    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
-      conversationId,
-      body: { responseId: lastResponseId, allowIndexing: false }
-    });
-    if (!shareLinkId)
-      throw new Error("Failed to create share link.");
-    try {
-      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
-      if (conversation?.conversationId) {
-        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
-      }
-    } finally {
-      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
-    }
-  }
-  function CloneItem({ conversationId }) {
-    const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger22.error("Failed to clone chat:", e)),
-      disabled: streaming
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      size: 16,
-      className: "void-clone-icon"
-    }), "Clone");
-  }
-  var cloneChats_default = definePlugin({
-    name: "CloneChats",
-    icon: CopyIcon,
-    description: "Clone conversations from the context-menu.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    contextMenuItems: {
-      conversation: {
-        label: "Clone",
-        render: ErrorBoundary.wrap(CloneItem)
-      }
-    }
-  });
-
-  // src/plugins/noShareLink/index.ts
-  var STYLE_NAME6 = "noShareLink";
-  var settings13 = definePluginSettings({
-    hideShareProject: {
-      type: 3 /* BOOLEAN */,
-      description: "Inside a project: hide the top-right Share Project button.",
-      default: true
-    },
-    hideCreateShareLink: {
-      type: 3 /* BOOLEAN */,
-      description: "Not in a project: hide the top-right Create share link button on chats.",
-      default: true
-    }
-  });
-  function apply2() {
-    const rules = [];
-    if (settings13.store.hideShareProject) {
-      rules.push('button[aria-label="Share Project"]{display:none!important}');
-    }
-    if (settings13.store.hideCreateShareLink) {
-      rules.push('button[aria-label="Create share link"]{display:none!important}');
-    }
-    registerStyle(STYLE_NAME6, rules.join(`
-`));
-  }
-  var noShareLink_default = definePlugin({
-    name: "NoShareLink",
-    icon: Link2OffIcon,
-    description: "Hide share buttons: Share Project (in a project) and Create share link (top-right of chats).",
-    authors: [Devs.p],
-    tags: ["ui", "privacy"],
-    enabledByDefault: true,
-    settings: settings13,
-    start: apply2,
-    onSettingsChange: apply2,
-    stop() {
-      unregisterStyle(STYLE_NAME6);
-    }
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/chatListStatus/styles.css
-  registerStyle("chatListStatus", `/*
- * Void++, a modification for grok.com
- * Copyright (c) 2026 Void++ Contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-[data-sidebar] :is(
-    [data-sidebar="menu-button"],
-    [data-sidebar="menu-sub-button"],
-    a
-):has(> .void-cls):not([data-void-cls-nest]) {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-}
-
-.void-cls {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 0.75rem;
-    height: 0.75rem;
-    margin-right: 0.25rem;
-    pointer-events: none;
-    color: #3b82f6;
-}
-
-.void-cls[data-kind="done"],
-.void-cls[data-kind="error"] {
-    width: 0.45rem;
-    height: 0.45rem;
-    margin-right: 0.3rem;
-    border-radius: 999px;
-    background: #3b82f6;
-}
-
-.void-cls[data-kind="error"] {
-    background: #ef4444;
-}
-
-[data-void-cls-nest] {
-    position: relative;
-}
-
-[data-void-cls-nest] > .void-cls {
-    position: absolute;
-    top: 50%;
-    left: 0.25rem;
-    z-index: 1;
-    margin: 0;
-    transform: translateY(-50%);
-}
-
-.void-cls[data-kind="streaming"] svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-    animation: void-cls-spin 0.8s linear infinite;
-}
-
-@keyframes void-cls-spin {
-    to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-cls[data-kind="streaming"] svg {
-        animation: none;
-    }
-}
-`);
-
-  // src/plugins/chatListStatus/index.ts
-  var logger23 = new Logger("ChatListStatus");
-  var MARK = "void-cls";
-  var LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
-  var DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
-  var LIVE_WORD = /^(working|running|in[_-]?progress|executing|processing|pending|continuing|started)$/i;
-  var LIVE_FLAG = /^(isWorking|isRunning|inProgress|isInProgress|isExecuting|working)$/;
-  var SKIP_KEY = /^(message|content|html|query|text|title|thinkingTrace)$/i;
-  var EXTRA_HINT = /computer|sandbox|agent|task|working/i;
-  var OWN_HOOKS = new Set(["useChatPageStore", "useConversationStore", "useResponseStore", "useRoutingStore", "useBotsStore"]);
-  var SIDEBAR = '[data-sidebar="sidebar"]';
-  var HOST = '[data-sidebar="menu-button"], [data-sidebar="menu-sub-button"]';
-  var ROW = 'a[href*="/c/"], a[href*="/chat/"], a[href*="chat="], a[href*="/bot/"]';
-  var SPIN_PATH = "M21 12a9 9 0 1 1-6.219-8.56";
-  var PATH_CHAT = /^\/(?:c|chat)\/([^/?#]+)/i;
-  var PATH_BOT = /^\/bot\/([^/?#]+)/i;
-  var PATH_ID = /^\/(?:c|chat|bot)\/([^/?#]+)/i;
-  var BotsStore2 = findByPropsLazy("useBotsStore");
-  var marks = new Map;
-  var rowById = new Map;
-  var extraStores = [];
-  var extraSeen = new WeakSet;
-  var extraScanned = new Set;
-  var extraUnsubs = [];
-  var raf2 = 0;
-  var extraScanRaf = 0;
-  var extraBusy = false;
-  var started3 = false;
-  var obs = null;
-  var extraOff = null;
-  var botsOff = null;
-  function isConvId(value) {
-    return typeof value === "string" && value.length >= 8 && /^[a-z0-9_-]+$/i.test(value) && !value.includes("draft");
-  }
-  function isLiveStatus(value) {
-    if (typeof value !== "string")
-      return false;
-    const status = value.trim().toLowerCase();
-    if (!status || DEAD.has(status))
-      return false;
-    return LIVE.has(status) || LIVE_WORD.test(status);
-  }
-  function isLiveBag(value, depth = 0) {
-    if (value == null || depth > 5)
-      return false;
-    if (typeof value === "string")
-      return isLiveStatus(value);
-    if (typeof value !== "object")
-      return false;
-    if (Array.isArray(value)) {
-      const start = Math.max(0, value.length - 24);
-      for (let i = value.length - 1;i >= start; i--) {
-        if (isLiveBag(value[i], depth + 1))
-          return true;
-      }
-      return false;
-    }
-    const rec = value;
-    if (isLiveStatus(rec.status ?? rec.state ?? rec.phase ?? rec.activity ?? rec.taskStatus))
-      return true;
-    if (rec.workingFor || rec.working_for || rec.workingDuration)
-      return true;
-    let n = 0;
-    for (const [key, child] of Object.entries(rec)) {
-      if (++n > 48)
-        break;
-      if (SKIP_KEY.test(key))
-        continue;
-      if (LIVE_FLAG.test(key) && child === true)
-        return true;
-      if (isLiveBag(child, depth + 1))
-        return true;
-    }
-    return false;
-  }
-  function isLiveResponse(r) {
-    if (!r)
-      return false;
-    if (r.partial)
-      return true;
-    if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata))
-      return true;
-    const state2 = r.state ?? "";
-    if (!state2)
-      return false;
-    if (LIVE.has(state2))
-      return true;
-    return !DEAD.has(state2.toLowerCase());
-  }
-  function isErrorResponse(r) {
-    return !!r && (r.state === "error" || r.error != null);
-  }
-  function collectConvIds(value, out, depth = 0) {
-    if (value == null || typeof value !== "object" || depth > 5)
-      return;
-    if (Array.isArray(value)) {
-      const start = Math.max(0, value.length - 16);
-      for (let i = start;i < value.length; i++)
-        collectConvIds(value[i], out, depth + 1);
-      return;
-    }
-    const rec = value;
-    const id = rec.conversationId ?? rec.optimisticConversationId ?? rec.chat ?? rec.conversation_id ?? rec.agentId;
-    if (isConvId(id) && isLiveBag(rec))
-      out.add(id);
-    let n = 0;
-    for (const [key, child] of Object.entries(rec)) {
-      if (++n > 48)
-        break;
-      if (SKIP_KEY.test(key))
-        continue;
-      if (isConvId(key) && isLiveBag(child))
-        out.add(key);
-      collectConvIds(child, out, depth + 1);
-    }
-  }
-  function addId(ids, value) {
-    if (isConvId(value) && !ids.includes(value))
-      ids.push(value);
-  }
-  function currentChatIds() {
-    const ids = [];
-    try {
-      const page = ChatPageStore.useChatPageStore.getState();
-      addId(ids, page.conversationId);
-      addId(ids, page.optimisticConversationId);
-    } catch (e) {
-      logger23.debug("page ids unavailable:", e);
-    }
-    try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      addId(ids, route.conversationId);
-      addId(ids, route.chat);
-    } catch (e) {
-      logger23.debug("route chat ids unavailable:", e);
-    }
-    try {
-      const url = new URL(location.href);
-      addId(ids, url.searchParams.get("chat"));
-      addId(ids, url.searchParams.get("conversationId"));
-      addId(ids, url.pathname.match(PATH_CHAT)?.[1]);
-    } catch (e) {
-      logger23.debug("url chat ids unavailable:", e);
-    }
-    return ids;
-  }
-  function currentAgentIds() {
-    const ids = [];
-    try {
-      addId(ids, RoutingStore.useRoutingStore.getState().route.agentId);
-    } catch (e) {
-      logger23.debug("route agent id unavailable:", e);
-    }
-    try {
-      addId(ids, new URL(location.href).pathname.match(PATH_BOT)?.[1]);
-    } catch (e) {
-      logger23.debug("url agent id unavailable:", e);
-    }
-    return ids;
-  }
-  function currentIds() {
-    const ids = currentChatIds();
-    for (const id of currentAgentIds())
-      addId(ids, id);
-    return ids;
-  }
-  function considerConversation(ids, conversation) {
-    if (!conversation?.conversationId)
-      return;
-    if (conversation.state === "open" || isLiveBag(conversation.taskResult))
-      ids.add(conversation.conversationId);
-  }
-  function looksExtraStore(name, state2) {
-    if (EXTRA_HINT.test(name))
-      return true;
-    const keys = Object.keys(state2);
-    if (keys.some((key) => EXTRA_HINT.test(key)))
-      return true;
-    let n = 0;
-    for (const child of Object.values(state2)) {
-      if (++n > 8)
-        break;
-      if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some((key) => EXTRA_HINT.test(key)))
-        return true;
-    }
-    return false;
-  }
-  function scanModule(exports) {
-    if (exports == null || typeof exports !== "object" || isBlacklisted(exports))
-      return;
-    const mod = exports;
-    for (const key of Object.keys(mod)) {
-      if (OWN_HOOKS.has(key))
-        continue;
-      const val = mod[key];
-      if (!isZustandStore(val) || extraSeen.has(val))
-        continue;
-      let state2;
-      try {
-        state2 = val.getState();
-      } catch {
-        continue;
-      }
-      if (!state2 || typeof state2 !== "object")
-        continue;
-      if (!looksExtraStore(key, state2))
-        continue;
-      extraSeen.add(val);
-      extraStores.push(val);
-      extraUnsubs.push(val.subscribe(() => schedule()));
-      logger23.info("extra store", key);
-    }
-  }
-  function attachExtraStores() {
-    if (extraBusy)
-      return;
-    extraBusy = true;
-    try {
-      silenceWarns(() => syncLazyModules());
-      const before = extraStores.length;
-      for (const [id, exports] of getModuleCache()) {
-        if (extraScanned.has(id))
-          continue;
-        extraScanned.add(id);
-        scanModule(exports);
-      }
-      if (extraStores.length !== before)
-        schedule();
-    } finally {
-      extraBusy = false;
-    }
-  }
-  function queueExtraScan() {
-    if (!started3 || extraScanRaf)
-      return;
-    extraScanRaf = requestAnimationFrame(() => {
-      extraScanRaf = 0;
-      if (started3)
-        attachExtraStores();
-    });
-  }
-  function extraLiveIds(ids) {
-    for (const store3 of extraStores) {
-      let state2;
-      try {
-        state2 = store3.getState();
-      } catch {
-        continue;
-      }
-      if (!isLiveBag(state2))
-        continue;
-      const found = new Set;
-      collectConvIds(state2, found);
-      if (found.size) {
-        for (const id of found)
-          ids.add(id);
-        continue;
-      }
-      for (const id of currentChatIds())
-        ids.add(id);
-    }
-  }
-  function botLiveIds(ids) {
-    try {
-      const s = BotsStore2.useBotsStore.getState();
-      for (const [id, turn] of Object.entries(s.liveTurnByAgentId ?? {})) {
-        if (turn && isConvId(id))
-          ids.add(id);
-      }
-      for (const [id, pending2] of Object.entries(s.pendingSendsByAgentId ?? {})) {
-        if (!isConvId(id) || !Array.isArray(pending2) || !pending2.some((send) => send && !send.failed))
-          continue;
-        ids.add(id);
-      }
-      for (const agent of s.agents ?? []) {
-        if (agent?.runState === "running" && isConvId(agent.agentId))
-          ids.add(agent.agentId);
-      }
-    } catch (e) {
-      logger23.debug("bots store unavailable:", e);
-    }
-  }
-  function liveIds() {
-    const ids = new Set;
-    try {
-      const page = ChatPageStore.useChatPageStore.getState();
-      const chats = currentChatIds();
-      if (page.streamedMessageId || page.showStreamingIndicator || isLiveBag(page.sidePanelContent) || isLiveBag(page.metadata)) {
-        for (const id of chats)
-          ids.add(id);
-      }
-      const { byId, byConversationId, inflightPromisesByConversationId } = ResponseStore.useResponseStore.getState();
-      if (isLiveResponse(byId[page.streamedMessageId ?? ""]) || isLiveResponse(byId[page.lastMessageId ?? ""]) || isLiveResponse(byId[page.sidePanelResponseId ?? ""])) {
-        for (const id of chats)
-          ids.add(id);
-      }
-      for (const id of Object.keys(inflightPromisesByConversationId ?? {}))
-        ids.add(id);
-      for (const [id, list] of Object.entries(byConversationId ?? {})) {
-        if (list?.some(isLiveResponse))
-          ids.add(id);
-      }
-    } catch (e) {
-      logger23.debug("stream stores unavailable:", e);
-    }
-    try {
-      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-      for (const conversation of list ?? [])
-        considerConversation(ids, conversation);
-      for (const conversation of Object.values(byId ?? {}))
-        considerConversation(ids, conversation);
-      for (const conversation of Object.values(byIdWithWorkspaces ?? {}))
-        considerConversation(ids, conversation);
-    } catch (e) {
-      logger23.debug("conversation store unavailable:", e);
-    }
-    extraLiveIds(ids);
-    botLiveIds(ids);
-    return ids;
-  }
-  function errorOf(id) {
-    try {
-      const { byConversationId, byId } = ResponseStore.useResponseStore.getState();
-      const list = byConversationId[id];
-      if (list?.length) {
-        for (let i = list.length - 1;i >= 0; i--) {
-          const r = list[i];
-          if (String(r.sender ?? "").toLowerCase() === "human")
-            continue;
-          return isErrorResponse(r);
-        }
-      }
-      const page = ChatPageStore.useChatPageStore.getState();
-      if ((page.conversationId === id || page.optimisticConversationId === id) && page.lastMessageId) {
-        return isErrorResponse(byId[page.lastMessageId]);
-      }
-    } catch (e) {
-      logger23.debug("error lookup failed:", e);
-    }
-    try {
-      const pending2 = BotsStore2.useBotsStore.getState().pendingSendsByAgentId?.[id];
-      if (Array.isArray(pending2) && pending2.some((send) => send?.failed))
-        return true;
-    } catch (e) {
-      logger23.debug("bot error lookup failed:", e);
-    }
-    return false;
-  }
-  function refreshMarks() {
-    const live = liveIds();
-    const opened = new Set(currentIds());
-    for (const id of live)
-      marks.set(id, "streaming");
-    for (const [id, kind2] of marks) {
-      let next = kind2;
-      if (kind2 === "streaming" && !live.has(id)) {
-        next = errorOf(id) ? "error" : "done";
-        marks.set(id, next);
-      }
-      if (next !== "streaming" && opened.has(id))
-        marks.delete(id);
-    }
-  }
-  function convOfResponse(responseId) {
-    try {
-      const { byConversationId } = ResponseStore.useResponseStore.getState();
-      for (const [id, list] of Object.entries(byConversationId ?? {})) {
-        if (list?.some((r) => r.responseId === responseId))
-          return id;
-      }
-      return currentIds()[0] ?? "";
-    } catch (e) {
-      logger23.debug("conv lookup failed:", e);
-      return "";
-    }
-  }
-  function onStreamEnd4({ responseId }) {
-    const cid = convOfResponse(responseId);
-    if (!cid)
-      return;
-    if (liveIds().has(cid)) {
-      schedule();
-      return;
-    }
-    if (currentIds().includes(cid)) {
-      marks.delete(cid);
-      schedule();
-      return;
-    }
-    try {
-      const response = ResponseStore.useResponseStore.getState().byId[responseId];
-      marks.set(cid, isErrorResponse(response) ? "error" : "done");
-    } catch (e) {
-      logger23.debug("streamEnd failed:", e);
-      marks.set(cid, "done");
-    }
-    schedule();
-  }
-  function idFromHref(href) {
-    if (!href)
-      return "";
-    try {
-      const u = new URL(href, location.origin);
-      const id = u.searchParams.get("chat") || u.searchParams.get("conversationId") || u.pathname.match(PATH_ID)?.[1] || "";
-      return isConvId(id) ? id : "";
-    } catch {
-      return "";
-    }
-  }
-  function hrefId(el) {
-    const a = el instanceof HTMLAnchorElement ? el : el.closest("a[href]") ?? el.querySelector("a[href]");
-    return idFromHref(a?.getAttribute("href") ?? el.getAttribute("href") ?? "");
-  }
-  function isPrimaryNav(el) {
-    const href = (el.getAttribute("href") ?? el.querySelector("a[href]")?.getAttribute("href") ?? "").replace(/[?#].*$/, "");
-    return href === "/" || href === "/imagine" || href === "/library" || href === "/automations";
-  }
-  function rowHost(el, root) {
-    if (el.classList.contains(MARK))
-      return null;
-    if (el.closest('[data-sidebar="menu-action"], [data-sidebar="footer"], [data-sidebar="header"]'))
-      return null;
-    if (isPrimaryNav(el))
-      return null;
-    if (!hrefId(el))
-      return null;
-    const wrapped = el.closest(HOST);
-    return wrapped && root.contains(wrapped) ? wrapped : el;
-  }
-  function isNestedHost(el) {
-    if (el.matches('[data-sidebar="menu-sub-button"]'))
-      return true;
-    const a = el instanceof HTMLAnchorElement ? el : el.querySelector("a[href]");
-    const href = a?.getAttribute("href") ?? el.getAttribute("href") ?? "";
-    return href.includes("chat=") || href.includes("/project/");
-  }
-  function spinSvg() {
-    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg2.setAttribute("viewBox", "0 0 24 24");
-    svg2.setAttribute("fill", "none");
-    svg2.setAttribute("stroke", "currentColor");
-    svg2.setAttribute("stroke-width", "2.5");
-    svg2.setAttribute("stroke-linecap", "round");
-    svg2.setAttribute("aria-hidden", "true");
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", SPIN_PATH);
-    svg2.append(path);
-    return svg2;
-  }
-  function ensureMark(btn, kind2) {
-    btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
-    let mark = btn.querySelector(`:scope > .${MARK}`);
-    if (!mark) {
-      mark = document.createElement("span");
-      mark.className = MARK;
-      mark.setAttribute("aria-hidden", "true");
-      btn.prepend(mark);
-    }
-    if (mark.dataset.kind === kind2 && (kind2 !== "streaming" || mark.querySelector("svg")))
-      return;
-    mark.dataset.kind = kind2;
-    mark.replaceChildren();
-    if (kind2 === "streaming")
-      mark.append(spinSvg());
-  }
-  function clearMark(btn) {
-    btn.querySelector(`:scope > .${MARK}`)?.remove();
-    btn.removeAttribute("data-void-cls-nest");
-  }
-  function roots() {
-    const found = [...document.querySelectorAll(SIDEBAR)];
-    return found.length ? found : [document.body];
-  }
-  function rowForId(root, id) {
-    if (!isConvId(id))
-      return null;
-    for (const a of root.querySelectorAll(`a[href*="${id}"]`)) {
-      if (hrefId(a) !== id)
-        continue;
-      const host = rowHost(a, root);
-      if (host)
-        return host;
-    }
-    return null;
-  }
-  function paint() {
-    if (!started3)
-      return;
-    refreshMarks();
-    const usedIds = new Set;
-    const seen = new Set;
-    for (const root of roots()) {
-      for (const el of root.querySelectorAll(ROW)) {
-        const host = rowHost(el, root);
-        if (!host || seen.has(host))
-          continue;
-        seen.add(host);
-        const id = hrefId(host);
-        if (!id) {
-          clearMark(host);
-          continue;
-        }
-        usedIds.add(id);
-        rowById.set(id, host);
-        const kind2 = marks.get(id);
-        if (kind2)
-          ensureMark(host, kind2);
-        else
-          clearMark(host);
-      }
-    }
-    for (const [id, el] of rowById) {
-      if (!el.isConnected || !usedIds.has(id))
-        rowById.delete(id);
-    }
-    for (const [id, kind2] of marks) {
-      if (rowById.get(id)?.isConnected)
-        continue;
-      for (const root of roots()) {
-        const host = rowForId(root, id);
-        if (!host)
-          continue;
-        rowById.set(id, host);
-        ensureMark(host, kind2);
-        break;
-      }
-    }
-    const live = [...marks].filter(([, kind2]) => kind2 === "streaming").map(([id]) => id);
-    if (live.length && !rowById.size)
-      logger23.info("live ids with no rows", live);
-  }
-  function schedule() {
-    if (!started3 || raf2)
-      return;
-    raf2 = requestAnimationFrame(() => {
-      raf2 = 0;
-      if (started3)
-        paint();
-    });
-  }
-  function ownMutation(list) {
-    if (!list.length)
-      return false;
-    for (const m of list) {
-      const { target } = m;
-      if (target instanceof Element && (target.classList.contains(MARK) || target.closest(`.${MARK}`)))
-        continue;
-      for (const n of m.addedNodes) {
-        if (n instanceof Element && (n.classList.contains(MARK) || n.querySelector(`.${MARK}`)))
-          continue;
-        return false;
-      }
-      for (const n of m.removedNodes) {
-        if (n instanceof Element && n.classList.contains(MARK))
-          continue;
-        return false;
-      }
-      if (m.type === "attributes")
-        return false;
-    }
-    return true;
-  }
-  function observe() {
-    obs?.disconnect();
-    obs = new MutationObserver((list) => {
-      if (ownMutation(list))
-        return;
-      schedule();
-    });
-    const node = document.querySelector(SIDEBAR) ?? document.body;
-    obs.observe(node, node === document.body ? { childList: true, subtree: true } : { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] });
-  }
-  function pageKey(s) {
-    return `${s.conversationId ?? ""}|${s.optimisticConversationId ?? ""}|${s.streamedMessageId ?? ""}|${s.lastMessageId ?? ""}|${s.sidePanelResponseId ?? ""}|${s.showStreamingIndicator ? 1 : 0}`;
-  }
-  function responseKey(s) {
-    const inflight = Object.keys(s.inflightPromisesByConversationId ?? {}).join(",");
-    const bits = [];
-    for (const [id, list] of Object.entries(s.byConversationId ?? {})) {
-      const last = list?.[list.length - 1];
-      if (!last)
-        continue;
-      bits.push(`${id}:${last.responseId}:${last.state ?? ""}:${last.partial ? 1 : 0}:${last.steps?.length ?? 0}`);
-    }
-    return `${inflight}|${bits.join(",")}`;
-  }
-  function conversationKey(s) {
-    const rows = s.list?.length ? s.list : Object.values(s.byId ?? {});
-    return rows.map((conversation) => `${conversation?.conversationId ?? ""}:${conversation?.state ?? ""}`).join(",");
-  }
-  function routeKey(s) {
-    const { route } = s;
-    return `${route.conversationId ?? ""}|${route.chat ?? ""}|${route.workspaceId ?? ""}|${route.agentId ?? ""}`;
-  }
-  var chatListStatus_default = definePlugin({
-    name: "ChatListStatus",
-    icon: LoaderCircleIcon,
-    description: "Show Grok reply status on sidebar chats and bots: spinner, blue dot, or error.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    managedStyle: "chatListStatus",
-    cleanupSelectors: [`.${MARK}`],
-    start() {
-      started3 = true;
-      attachExtraStores();
-      extraOff = onModuleLoad(() => queueExtraScan());
-      try {
-        botsOff = BotsStore2.useBotsStore.subscribe(() => schedule());
-      } catch (e) {
-        logger23.debug("bots store subscribe failed:", e);
-      }
-      observe();
-      schedule();
-    },
-    stop() {
-      started3 = false;
-      if (raf2)
-        cancelAnimationFrame(raf2);
-      raf2 = 0;
-      if (extraScanRaf)
-        cancelAnimationFrame(extraScanRaf);
-      extraScanRaf = 0;
-      obs?.disconnect();
-      obs = null;
-      extraOff?.();
-      extraOff = null;
-      botsOff?.();
-      botsOff = null;
-      for (const unsub of extraUnsubs)
-        unsub();
-      extraUnsubs.length = 0;
-      extraStores.length = 0;
-      extraSeen = new WeakSet;
-      extraScanned.clear();
-      for (const el of document.querySelectorAll(`.${MARK}`)) {
-        el.parentElement?.removeAttribute("data-void-cls-nest");
-        el.remove();
-      }
-      marks.clear();
-      rowById.clear();
-    },
-    events: {
-      streamEnd: onStreamEnd4
-    },
-    zustand: {
-      ChatPageStore: {
-        selector: pageKey,
-        handler: schedule
-      },
-      ResponseStore: {
-        selector: responseKey,
-        handler: schedule
-      },
-      ConversationStore: {
-        selector: conversationKey,
-        handler: schedule
-      },
-      RoutingStore: {
-        selector: routeKey,
-        handler: schedule
-      }
-    }
-  });
-
-  // src/plugins/autoCollapse/index.ts
-  var autoCollapse_default = definePlugin({
-    name: "AutoCollapse",
-    icon: ChevronsDownUpIcon,
-    description: "Automatically collapse code blocks in responses.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    _collapse: () => true,
-    patches: [
-      {
-        find: ["isInitiallyCollapsed", "showRunCode"],
-        all: true,
-        replacement: {
-          match: /isInitiallyCollapsed:(\i)=!1/g,
-          replace: "isInitiallyCollapsed:$1=$self._collapse()"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/betterLinks/index.tsx
-  var DEFAULT_LINK = "#4a9eff";
-  var DEFAULT_VISITED = "#9b59b6";
-  var STYLE_NAME7 = "better-links-dynamic";
-  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
-  function isValidHex(c) {
-    return /^#[0-9a-fA-F]{6}$/.test(c);
-  }
-  function getColor(key, fallback) {
-    const val = settings14.store[key];
-    return val && isValidHex(val) ? val : fallback;
-  }
-  function applyColors() {
-    const link = getColor("linkColor", DEFAULT_LINK);
-    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings14.store.enableVisitedColor) {
-      const visited = getColor("visitedColor", DEFAULT_VISITED);
-      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
-    }
-    registerStyle(STYLE_NAME7, css);
-  }
-  function ColorRow2({ settingKey, title, description, fallback }) {
-    settings14.use([settingKey]);
-    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
-      value: getColor(settingKey, fallback),
-      onChange: (v) => {
-        settings14.store[settingKey] = v;
-        applyColors();
-      },
-      title,
-      description
-    });
-  }
-  var settings14 = definePluginSettings({
-    linkifyDomains: {
-      type: 3 /* BOOLEAN */,
-      description: "Detect bare domains in messages and make them clickable.",
-      default: true
-    },
-    enableVisitedColor: {
-      type: 3 /* BOOLEAN */,
-      description: "Apply a different color to links you already visited.",
-      default: false,
-      onChange: applyColors
-    },
-    linkColor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
-        settingKey: "linkColor",
-        title: "Link color",
-        description: "Colorize links in messages.",
-        fallback: DEFAULT_LINK
-      })
-    },
-    visitedColor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
-        settingKey: "visitedColor",
-        title: "Visited color",
-        description: "Colorize links you already visited.",
-        fallback: DEFAULT_VISITED
-      })
-    }
-  }).withPrivateSettings();
-  var betterLinks_default = definePlugin({
-    name: "BetterLinks",
-    icon: LinkIcon,
-    description: "Colorize links and detect bare domains in chat messages.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings14,
-    patches: [
-      {
-        find: "chat-markdown:a:link",
-        all: true,
-        replacement: {
-          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
-          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
-        }
-      },
-      {
-        find: "chat-markdown-load-third-party",
-        replacement: {
-          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
-          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
-        }
-      }
-    ],
-    _remarkLinkify() {
-      const { store: store3 } = settings14;
-      return (tree) => {
-        try {
-          if (!store3.linkifyDomains)
-            return;
-          const walk = (node) => {
-            if (!node.children)
-              return;
-            const out = [];
-            let changed = false;
-            for (const child of node.children) {
-              if (child.type !== "text") {
-                walk(child);
-                out.push(child);
-                continue;
-              }
-              DOMAIN_RE.lastIndex = 0;
-              if (!DOMAIN_RE.test(child.value)) {
-                out.push(child);
-                continue;
-              }
-              DOMAIN_RE.lastIndex = 0;
-              let last = 0;
-              let m;
-              while ((m = DOMAIN_RE.exec(child.value)) != null) {
-                if (m.index > last)
-                  out.push({ type: "text", value: child.value.slice(last, m.index) });
-                out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
-                last = m.index + m[0].length;
-              }
-              if (last < child.value.length)
-                out.push({ type: "text", value: child.value.slice(last) });
-              changed = true;
-            }
-            if (changed)
-              node.children = out;
-          };
-          walk(tree);
-        } catch {
-          return tree;
-        }
-      };
-    },
-    start() {
-      settings14.store.linkColor ??= DEFAULT_LINK;
-      settings14.store.visitedColor ??= DEFAULT_VISITED;
-      applyColors();
-      enableStyle(STYLE_NAME7);
-    },
-    stop() {
-      disableStyle(STYLE_NAME7);
-    }
-  });
-
-  // src/plugins/stableComposer/index.ts
-  var cachedDeps = null;
-  var cachedSig = "";
-  var cachedMention;
-  var stableComposer_default = definePlugin({
-    name: "StableComposer",
-    icon: TextCursorInputIcon,
-    description: "Stop the Grok composer from destroying and recreating its editor when the extension list is rebuilt unchanged, which was resetting the caret and breaking IME composition.",
-    authors: [Devs.p],
-    tags: ["chat"],
-    enabledByDefault: true,
-    _deps(extensions, mention) {
-      const sig = Array.isArray(extensions) ? `${extensions.length}:${extensions.map((e) => e?.name ?? "?").join(",")}` : String(extensions);
-      if (cachedDeps && sig === cachedSig && mention === cachedMention)
-        return cachedDeps;
-      cachedSig = sig;
-      cachedMention = mention;
-      cachedDeps = [extensions, mention];
-      return cachedDeps;
-    },
-    patches: [
-      {
-        find: "transformPastedHTML:",
-        replacement: {
-          match: /(transformPastedHTML:\i\}\},)\[(\i),(\i)\]\)/,
-          replace: "$1$self._deps($2,$3))"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/autoRetry/index.ts
-  var logger24 = new Logger("AutoRetry");
-  var CONTENT_MODERATED = "grok:content-moderated";
-  var settings15 = definePluginSettings({
-    retryModeration: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry content moderation errors.",
-      default: true
-    },
-    retryNetwork: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry network and stream errors.",
-      default: true
-    },
-    maxRetries: {
-      type: 1 /* NUMBER */,
-      description: "Maximum consecutive retries per conversation.",
-      default: 3
-    },
-    delay: {
-      type: 1 /* NUMBER */,
-      description: "Seconds to wait before retrying.",
-      default: 2
-    }
-  });
-  var retryCounts = new Map;
-  var pendingTimer = null;
-  function clearPending() {
-    if (pendingTimer != null) {
-      clearTimeout(pendingTimer);
-      pendingTimer = null;
-    }
-  }
-  function isModeration(response) {
-    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
-  }
-  function shouldRetry(response) {
-    if (isModeration(response))
-      return settings15.store.retryModeration;
-    return settings15.store.retryNetwork;
-  }
-  function retry(responseId, conversationId, response) {
-    const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings15.store.maxRetries;
-    if (count > max) {
-      showToast("Max retries reached.", 2 /* ERROR */);
-      retryCounts.delete(conversationId);
-      return;
-    }
-    retryCounts.set(conversationId, count);
-    const delaySec = settings15.store.delay;
-    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger24.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
-    clearPending();
-    pendingTimer = setTimeout(() => {
-      pendingTimer = null;
-      const state2 = ChatPageStore.useChatPageStore.getState();
-      if (state2.streamedMessageId)
-        return;
-      state2.sendResponse({
-        message: "",
-        parentResponseId: responseId,
-        conversationId,
-        fileAttachmentIds: response.fileAttachments,
-        setOpimisticUserResponse: false,
-        setUserResponse: false,
-        enableRetries: true
-      });
-    }, delaySec * 1000);
-  }
-  function onStreamEnd5({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "error") {
-      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (convId)
-        retryCounts.delete(convId);
-      return;
-    }
-    if (!shouldRetry(response))
-      return;
-    const { conversationId } = ChatPageStore.useChatPageStore.getState();
-    if (!conversationId)
-      return;
-    retry(responseId, conversationId, response);
-  }
-  var autoRetry_default = definePlugin({
-    name: "AutoRetry",
-    icon: RotateCcwIcon,
-    description: "Automatically retry failed messages on moderation or network errors.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings15,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      retryCounts.clear();
-      clearPending();
-    },
-    stop() {
-      clearPending();
-      retryCounts.clear();
-    },
-    events: {
-      streamEnd: onStreamEnd5
-    }
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/compactModeSelect/styles.css
-  registerStyle("compactModeSelect", `/*
- * Void++, a modification for grok.com
- * Copyright (c) 2026 Void++ Contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-cms-pins {
-    display: contents;
-}
-
-.void-cms-pin {
-    width: 2.25rem;
-    height: 2.25rem;
-    min-width: 2.25rem;
-    min-height: 2.25rem;
-    max-height: 2.25rem;
-    padding: 0;
-    box-sizing: border-box;
-    background: transparent;
-    box-shadow: none;
-}
-
-.query-bar .void-cms-on {
-    color: #ff7a17;
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-.void-cms-label {
-    display: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 1;
-}
-
-.void-cms-glyph {
-    display: grid;
-    place-items: center;
-    width: 18px;
-    height: 18px;
-}
-
-.void-cms-glyph svg {
-    display: block;
-    width: 18px;
-    height: 18px;
-}
-
-.query-bar:has(.void-cms-hide-native) [data-query-bar-mode-select] {
-    position: absolute;
-    width: 0;
-    height: 0;
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button {
-    width: 2.25rem;
-    height: 2.25rem;
-    min-width: 2.25rem;
-    min-height: 2.25rem;
-    max-height: 2.25rem;
-    padding: 0;
-    position: relative;
-    display: grid;
-    place-items: center;
-}
-
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button > * {
-    display: none !important;
-}
-
-.query-bar:has(.void-cms-pins):not(:has(.void-cms-hide-native)) [data-query-bar-mode-select] button::after {
-    content: "";
-    width: 18px;
-    height: 18px;
-    background-color: currentcolor;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='5' cy='12' r='1'/%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3Ccircle cx='19' cy='12' r='1'/%3E%3C/svg%3E") center / 18px 18px no-repeat;
-}
-
-html.void-cms-picking .query-bar [data-query-bar-mode-select] {
-    pointer-events: auto !important;
-}
-
-html.void-cms-picking [role="tooltip"],
-html.void-cms-picking [data-radix-tooltip-content] {
-    display: none !important;
-}
-
-.void-cms-ghost {
-    opacity: 0 !important;
-    visibility: hidden !important;
-}
-
-html.void-cms-picked .void-cms-ghost {
-    pointer-events: none !important;
-}
-
-.void-cms-order-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.void-cms-order-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    min-height: 2.25rem;
-    padding: 0.25rem 0.25rem 0.25rem 0;
-    border-radius: 0.5rem;
-    user-select: none;
-}
-
-.void-cms-order-row:hover {
-    background: hsl(var(--fg-primary) / 6%);
-}
-
-.void-cms-order-row.void-cms-dragging {
-    opacity: 0.45;
-}
-
-.void-cms-order-main {
-    min-width: 0;
-    flex: 1;
-}
-
-.void-cms-grip {
-    display: grid;
-    place-items: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    color: hsl(var(--fg-secondary));
-    cursor: grab;
-}
-
-.void-cms-grip:active {
-    cursor: grabbing;
-}
-
-.void-cms-order-icon {
-    flex-shrink: 0;
-    color: hsl(var(--fg-secondary));
-}
-
-@media (width >= 48rem) {
-    .void-cms-labeled {
-        width: auto;
-        min-width: 2.25rem;
-        max-height: 2.25rem;
-        border-radius: 999px;
-        padding-inline: 0.5rem;
-        gap: 0.25rem;
-    }
-
-    .void-cms-labeled .void-cms-label {
-        display: inline;
-    }
-}
-`);
-
-  // src/plugins/compactModeSelect/index.tsx
-  var logger25 = new Logger("CompactModeSelect");
-  var cl20 = classNameFactory("void-cms-");
-  var MODES = [
-    { id: "auto", pin: "pinAuto", label: "Auto", Icon: AutoModeIcon },
-    { id: "fast", pin: "pinFast", label: "Fast", Icon: FastModeIcon },
-    { id: "expert", pin: "pinExpert", label: "Expert", Icon: LightbulbIcon },
-    { id: "heavy", pin: "pinHeavy", label: "Heavy", Icon: ConnectedAppsIcon },
-    { id: "build", pin: "pinBuild", label: "Build", Icon: BuildModeIcon }
-  ];
-  var KNOWN_IDS = new Set(MODES.map((m) => m.id));
-  var PIN_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m.pin]));
-  var MODE_BY_ID = Object.fromEntries(MODES.map((m) => [m.id, m]));
-  var DEFAULT_PIN_ORDER = "heavy,build";
-  var SETTING_KEYS = ["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "showLabels", "hideNativeTrigger", "pinOrder"];
-  var ITEM_SEL = "[role='menuitem'], [role='option'], [data-radix-collection-item]";
-  var MENU_ROOT_SEL = [
-    "[data-radix-popper-content-wrapper]",
-    "[data-radix-menu-content]",
-    "[data-radix-dropdown-menu-content]",
-    "[data-radix-select-content]",
-    "[data-radix-popover-content]",
-    "[role='menu']",
-    "[role='listbox']"
-  ].join(", ");
-  var TRIGGER_SEL = ".query-bar [data-query-bar-mode-select] button";
-  var PICK_MS = 900;
-  var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
-  var GHOST_STYLE = { opacity: "0", visibility: "hidden" };
-  var settings16 = definePluginSettings({
-    pinList: {
-      type: 6 /* COMPONENT */,
-      description: "Toggle pins and drag to set chip order.",
-      component: PinOrderEditor
-    },
-    hideNativeTrigger: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the native mode menu button and keep its popup invisible.",
-      default: true
-    },
-    showLabels: {
-      type: 3 /* BOOLEAN */,
-      description: "Show mode names on pinned chips.",
-      default: false
-    },
-    pinAuto: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Auto next to the compact selector.",
-      default: false,
-      hidden: true
-    },
-    pinFast: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Fast next to the compact selector.",
-      default: false,
-      hidden: true
-    },
-    pinExpert: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Expert next to the compact selector.",
-      default: false,
-      hidden: true
-    },
-    pinHeavy: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Heavy next to the compact selector.",
-      default: true,
-      hidden: true
-    },
-    pinBuild: {
-      type: 3 /* BOOLEAN */,
-      description: "Pin Build next to the compact selector.",
-      default: true,
-      hidden: true
-    },
-    pinOrder: {
-      type: 0 /* STRING */,
-      description: "Order of pinned chips.",
-      default: DEFAULT_PIN_ORDER,
-      hidden: true
-    }
-  });
-  var picking = false;
-  var harvesting = false;
-  var tipLock = false;
-  var harvested = new Map;
-  var harvestListeners = new Set;
-  var tipListeners = new Set;
-  var ghosts = new Set;
-  var cloakWatch = null;
-  function uncloak() {
-    for (const host of ghosts) {
-      host.classList.remove(cl20("ghost"));
-      host.style.removeProperty("opacity");
-      host.style.removeProperty("visibility");
-      host.style.removeProperty("pointer-events");
-    }
-    ghosts.clear();
-  }
-  function notifyTips() {
-    for (const fn of tipListeners)
-      fn();
-  }
-  function onDocPointerOver(e) {
-    if (!tipLock || picking)
-      return;
-    const el = e.target;
-    if (el instanceof Element && el.closest(".query-bar .void-cms-pin"))
-      return;
-    setTipLock(false);
-  }
-  function setTipLock(on) {
-    if (tipLock === on)
-      return;
-    tipLock = on;
-    if (on)
-      document.addEventListener("pointerover", onDocPointerOver);
-    else
-      document.removeEventListener("pointerover", onDocPointerOver);
-    notifyTips();
-  }
-  function subscribeTips(fn) {
-    tipListeners.add(fn);
-    return () => {
-      tipListeners.delete(fn);
-    };
-  }
-  function getTipLock() {
-    return tipLock;
-  }
-  function useTipLock() {
-    return React.useSyncExternalStore(subscribeTips, getTipLock, getTipLock);
-  }
-  function setPicking(on) {
-    picking = on;
-    document.documentElement.classList.toggle("void-cms-picking", on);
-    if (on) {
-      setTipLock(true);
-      cloakWatch ??= new MutationObserver(onCloakMutations);
-      cloakWatch.observe(document.documentElement, { childList: true, subtree: true });
-      return;
-    }
-    cloakWatch?.disconnect();
-    cloakWatch = null;
-    document.documentElement.classList.remove("void-cms-picked");
-    uncloak();
-    if (!document.querySelector(".query-bar .void-cms-pin:hover"))
-      setTipLock(false);
-  }
-  function notifyHarvest() {
-    for (const fn of harvestListeners)
-      fn();
-  }
-  function parseOrder(raw) {
-    const seen = new Set;
-    const ordered = [];
-    for (const token of String(raw ?? "").split(/[,\s]+/)) {
-      const id = token.toLowerCase();
-      if (!KNOWN_IDS.has(id) || seen.has(id))
-        continue;
-      seen.add(id);
-      ordered.push(id);
-    }
-    for (const m of MODES) {
-      if (seen.has(m.id))
-        continue;
-      ordered.push(m.id);
-    }
-    return ordered;
-  }
-  function reorder(ids, from, to) {
-    if (from === to || from < 0 || to < 0 || to >= ids.length)
-      return ids;
-    const next = ids.slice();
-    const [item] = next.splice(from, 1);
-    next.splice(to, 0, item);
-    return next;
-  }
-  function setOrder(ids) {
-    settings16.store.pinOrder = ids.join(",");
-  }
-  function setPinned(pin, on) {
-    settings16.store[pin] = on;
-  }
-  function itemText(el) {
-    return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
-  }
-  function titlesFor(id) {
-    const mode = MODES.find((m) => m.id === id);
-    const catalogTitle = ModesStore.useModesStore.getState().modes.find((m) => m.id === id)?.title;
-    return [catalogTitle, mode?.label, id].filter((t) => !!t).map((t) => t.toLowerCase());
-  }
-  function matchItem(el, id) {
-    const hay = itemText(el);
-    if (!hay)
-      return false;
-    return titlesFor(id).some((t) => hay === t || hay.startsWith(`${t} `));
-  }
-  function isModeMenu(items) {
-    return items.filter((el) => MODES.some((m) => matchItem(el, m.id))).length >= 2;
-  }
-  function ghostHost(el) {
-    const wrap = el.closest("[data-radix-popper-content-wrapper]");
-    if (wrap instanceof HTMLElement)
-      return wrap;
-    let host = el;
-    for (let n = el;n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
-      const pos = getComputedStyle(n).position;
-      if (pos === "fixed" || pos === "absolute")
-        host = n;
-    }
-    return host;
-  }
-  function cloak(menu) {
-    const host = ghostHost(menu.root);
-    if (ghosts.has(host))
-      return;
-    host.classList.add(cl20("ghost"));
-    host.style.setProperty("opacity", GHOST_STYLE.opacity, "important");
-    host.style.setProperty("visibility", GHOST_STYLE.visibility, "important");
-    ghosts.add(host);
-  }
-  function lockGhosts() {
-    document.documentElement.classList.add("void-cms-picked");
-    for (const host of ghosts)
-      host.style.setProperty("pointer-events", "none", "important");
-  }
-  function modeMenu() {
-    for (const root2 of document.querySelectorAll(MENU_ROOT_SEL)) {
-      if (!(root2 instanceof HTMLElement))
-        continue;
-      const items = [...root2.querySelectorAll(ITEM_SEL)];
-      if (isModeMenu(items))
-        return { root: root2, items };
-    }
-    const loose = [...document.querySelectorAll(ITEM_SEL)].filter((el) => MODES.some((m) => matchItem(el, m.id)));
-    if (loose.length < 2)
-      return null;
-    const nested = loose[0].closest(MENU_ROOT_SEL);
-    const root = nested instanceof HTMLElement ? nested : ghostHost(loose[0]);
-    return { root, items: loose };
-  }
-  function onCloakMutations() {
-    const menu = modeMenu();
-    if (menu)
-      cloak(menu);
-  }
-  function waitUntil(ok) {
-    const start = performance.now();
-    return new Promise((resolve) => {
-      const tick = () => {
-        if (ok()) {
-          resolve(true);
-          return;
-        }
-        if (performance.now() - start > PICK_MS) {
-          resolve(false);
-          return;
-        }
-        requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    });
-  }
-  async function waitForMenu() {
-    await waitUntil(() => {
-      const menu = modeMenu();
-      if (menu)
-        cloak(menu);
-      return !!menu;
-    });
-    return modeMenu();
-  }
-  function waitForGone() {
-    return waitUntil(() => !modeMenu());
-  }
-  function nativeTrigger() {
-    return document.querySelector(TRIGGER_SEL);
-  }
-  function clickEl(el) {
-    el.dispatchEvent(new PointerEvent("pointerdown", POINTER));
-    el.dispatchEvent(new PointerEvent("pointerup", POINTER));
-    el.click();
-  }
-  function paintCurrent(el) {
-    for (const attr of ["fill", "stroke"]) {
-      const v = el.getAttribute(attr);
-      if (!v || v === "none" || v === "currentColor")
-        continue;
-      el.setAttribute(attr, "currentColor");
-    }
-    for (const name of el.getAttributeNames()) {
-      if (name.startsWith("on"))
-        el.removeAttribute(name);
-    }
-    el.removeAttribute("class");
-  }
-  function normalizeSvg(src) {
-    const svg2 = src.cloneNode(true);
-    svg2.setAttribute("width", "18");
-    svg2.setAttribute("height", "18");
-    svg2.setAttribute("aria-hidden", "true");
-    svg2.querySelectorAll("script").forEach((n) => n.remove());
-    paintCurrent(svg2);
-    svg2.querySelectorAll("*").forEach(paintCurrent);
-    return svg2.outerHTML;
-  }
-  function stashGlyphs(items) {
-    let added = false;
-    for (const item of items) {
-      const mode = MODES.find((m) => matchItem(item, m.id));
-      if (!mode || harvested.has(mode.id))
-        continue;
-      const svg2 = item.querySelector("svg");
-      if (!(svg2 instanceof SVGSVGElement))
-        continue;
-      harvested.set(mode.id, normalizeSvg(svg2));
-      added = true;
-    }
-    if (added)
-      notifyHarvest();
-  }
-  async function harvestIcons() {
-    if (harvesting || picking || harvested.size > 0)
-      return;
-    const trigger = nativeTrigger();
-    if (!trigger)
-      return;
-    harvesting = true;
-    setPicking(true);
-    try {
-      let menu = modeMenu();
-      if (!menu) {
-        clickEl(trigger);
-        menu = await waitForMenu();
-      }
-      if (!menu)
-        return;
-      cloak(menu);
-      stashGlyphs(menu.items);
-      if (modeMenu())
-        clickEl(trigger);
-      lockGhosts();
-      await waitForGone();
-    } catch (e) {
-      logger25.warn("Failed to harvest mode icons:", e);
-    } finally {
-      setPicking(false);
-      harvesting = false;
-    }
-  }
-  async function selectMode(id) {
-    if (picking)
-      return;
-    setPicking(true);
-    try {
-      await ModesStore.useModesStore.getState().ensureLoaded();
-      let menu = modeMenu();
-      if (!menu) {
-        const trigger = nativeTrigger();
-        if (!trigger) {
-          logger25.warn("Native mode selector not found");
-          return;
-        }
-        clickEl(trigger);
-        menu = await waitForMenu();
-      }
-      if (!menu) {
-        logger25.warn("Native mode item not found:", id);
-        return;
-      }
-      cloak(menu);
-      stashGlyphs(menu.items);
-      const item = menu.items.find((el) => matchItem(el, id));
-      if (!item) {
-        logger25.warn("Native mode item not found:", id);
-        const trigger = nativeTrigger();
-        if (modeMenu() && trigger)
-          clickEl(trigger);
-        lockGhosts();
-        await waitForGone();
-        return;
-      }
-      clickEl(item);
-      lockGhosts();
-      await waitForGone();
-    } catch (e) {
-      logger25.warn("Failed to select mode:", e);
-    } finally {
-      setPicking(false);
-    }
-  }
-  function useNativeGlyph(id) {
-    const [, bump] = React.useState(0);
-    React.useEffect(() => {
-      const onHarvest = () => bump((n) => n + 1);
-      harvestListeners.add(onHarvest);
-      harvestIcons();
-      return () => {
-        harvestListeners.delete(onHarvest);
-      };
-    }, [id]);
-    return harvested.get(id);
-  }
-  function PinGlyph({ id, Icon, label, showLabels }) {
-    const html = useNativeGlyph(id);
-    const glyph = html ? /* @__PURE__ */ React.createElement("span", {
-      className: cl20("glyph"),
-      dangerouslySetInnerHTML: { __html: html }
-    }) : /* @__PURE__ */ React.createElement(Icon, {
-      size: 18
-    });
-    if (!showLabels)
-      return glyph;
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, glyph, /* @__PURE__ */ React.createElement("span", {
-      className: cl20("label")
-    }, label));
-  }
-  function preventDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  }
-  function PinOrderEditor() {
-    const cfg = settings16.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
-    const ids = parseOrder(cfg.pinOrder);
-    const [dragId, setDragId] = React.useState(null);
-    const onDragStart = (id) => (e) => {
-      e.dataTransfer.setData("text/plain", id);
-      e.dataTransfer.effectAllowed = "move";
-      setDragId(id);
-    };
-    const onDrop = (toId) => (e) => {
-      e.preventDefault();
-      const fromId = e.dataTransfer.getData("text/plain");
-      setOrder(reorder(ids, ids.indexOf(fromId), ids.indexOf(toId)));
-      setDragId(null);
-    };
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem",
-      className: cl20("order")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Pinned modes"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Toggle pins and drag to set chip order.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl20("order-list"),
-      role: "list"
-    }, ids.map((id, i) => {
-      const m = MODE_BY_ID[id];
-      return /* @__PURE__ */ React.createElement("div", {
-        key: m.id,
-        role: "listitem",
-        className: classes(cl20("order-row"), dragId === m.id && cl20("dragging")),
-        onDragOver: preventDragOver,
-        onDrop: onDrop(m.id)
-      }, /* @__PURE__ */ React.createElement(Flex, {
-        alignItems: "center",
-        gap: "0.5rem",
-        className: cl20("order-main")
-      }, /* @__PURE__ */ React.createElement("span", {
-        className: cl20("grip"),
-        draggable: true,
-        onDragStart: onDragStart(m.id),
-        onDragEnd: () => setDragId(null),
-        "aria-label": `Reorder ${m.label}`
-      }, /* @__PURE__ */ React.createElement(GripVerticalIcon, {
-        size: 16
-      })), /* @__PURE__ */ React.createElement(m.Icon, {
-        size: 16,
-        className: cl20("order-icon")
-      }), /* @__PURE__ */ React.createElement(SettingsTitle, null, m.label)), /* @__PURE__ */ React.createElement(Flex, {
-        alignItems: "center",
-        gap: "0.25rem"
-      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "xs",
-        shape: "square",
-        tooltipContent: "Move up",
-        "aria-label": `Move ${m.label} up`,
-        disabled: i === 0,
-        onClick: () => setOrder(reorder(ids, i, i - 1))
-      }, /* @__PURE__ */ React.createElement(ChevronUpIcon, {
-        size: 14
-      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "xs",
-        shape: "square",
-        tooltipContent: "Move down",
-        "aria-label": `Move ${m.label} down`,
-        disabled: i === ids.length - 1,
-        onClick: () => setOrder(reorder(ids, i, i + 1))
-      }, /* @__PURE__ */ React.createElement(ChevronDownIcon, {
-        size: 14
-      })), /* @__PURE__ */ React.createElement(Switch, {
-        checked: !!cfg[m.pin],
-        onCheckedChange: (on) => setPinned(m.pin, on)
-      })));
-    })));
-  }
-  function PinnedModes() {
-    const cfg = settings16.use([...SETTING_KEYS]);
-    const page = RoutingStore.useRoutingStore((s) => s.route.page);
-    const selectedModeId = ModesStore.useModesStore((s) => s.selectedModeId);
-    const catalog = ModesStore.useModesStore((s) => s.modes);
-    const hideTip = useTipLock();
-    const knownCatalog = catalog.filter((c) => KNOWN_IDS.has(c.id));
-    const items = parseOrder(cfg.pinOrder).map((id) => MODE_BY_ID[id]).filter((m) => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some((c) => c.id === m.id)));
-    if (page === "bot" || !items.length)
-      return null;
-    const { showLabels } = cfg;
-    const allCovered = knownCatalog.length > 0 && knownCatalog.every((c) => cfg[PIN_BY_ID[c.id]]);
-    const hideNative = cfg.hideNativeTrigger || allCovered;
-    const onPin = (id) => (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setTipLock(true);
-      selectMode(id);
-    };
-    return /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl20("pins"), hideNative && cl20("hide-native"))
-    }, items.map((m) => /* @__PURE__ */ React.createElement(ChatBarButton, {
-      key: m.id,
-      size: "sm",
-      icon: /* @__PURE__ */ React.createElement(PinGlyph, {
-        id: m.id,
-        Icon: m.Icon,
-        label: m.label,
-        showLabels
-      }),
-      tooltip: hideTip ? undefined : m.label,
-      onClick: onPin(m.id),
-      className: classes(cl20("pin"), selectedModeId === m.id && cl20("on"), showLabels && cl20("labeled")),
-      "aria-label": m.label
-    })));
-  }
-  var compactModeSelect_default = definePlugin({
-    name: "CompactModeSelect",
-    icon: Minimize2Icon,
-    description: "Pin 1–N chat modes as always-visible chips. Click a chip to switch without opening the menu.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings16,
-    managedStyle: "compactModeSelect",
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      ModesStore.useModesStore.getState().ensureLoaded();
-    },
-    stop() {
-      setPicking(false);
-      setTipLock(false);
-      harvested.clear();
-      harvestListeners.clear();
-      tipListeners.clear();
-    },
-    renderPinned: ErrorBoundary.wrap(PinnedModes),
-    patches: [
-      {
-        find: "data-query-bar-mode-select",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /ModeSelect,\{compact:\i\|\|\i,/,
-            replace: "ModeSelect,{compact:!0,"
-          },
-          {
-            match: /\},"mode-select"\),/,
-            replace: "$&$self.renderPinned(),"
-          }
-        ]
-      }
-    ]
-  });
-
-  // src/plugins/noRightPanel/index.ts
-  function isRightOpen(s) {
-    return s.sidePanelContent?.type === "rightPanel";
-  }
-  function enforce() {
-    const state2 = ChatPageStore.useChatPageStore.getState();
-    if (isRightOpen(state2))
-      state2.closeSidePanelExplicitly();
-  }
-  var noRightPanel_default = definePlugin({
-    name: "NoRightPanel",
-    icon: PanelRightCloseIcon,
-    description: "Keep Grok's right panel closed.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start: enforce,
-    zustand: {
-      ChatPageStore: {
-        selector: isRightOpen,
-        handler(open2) {
-          if (open2)
-            enforce();
-        }
-      }
-    },
-    patches: [
-      {
-        find: "willRestoreRightPanelByIntent",
-        replacement: {
-          match: /willRestoreRightPanelByIntent=\i=>\{/,
-          replace: "willRestoreRightPanelByIntent=()=>{return!1;"
-        }
-      },
-      {
-        find: '"computePreviewAutoOpen"',
-        replacement: {
-          match: /&&(\i)\(\{source:"auto"\}\)/,
-          replace: '&&!1&&$1({source:"auto"})'
-        }
-      }
-    ]
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/inputHistory/styles.css
-  registerStyle("inputHistory", `.void-ih-hud {
-    contain: content;
-    position: fixed;
-    z-index: 2147483646;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.5rem;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-secondary));
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.2;
-    pointer-events: none;
-    opacity: 0;
-    transform: translate(-50%, -100%);
-    transition: opacity 0.12s ease;
-}
-
-.void-ih-hud-on {
-    opacity: 1;
-}
-
-.void-ih-panel {
-    min-width: 0;
-}
-
-.void-ih-head {
-    min-width: 0;
-}
-
-.void-ih-search {
-    width: 100%;
-}
-
-.void-ih-empty {
-    margin: 0;
-    color: hsl(var(--fg-tertiary));
-}
-
-.void-ih-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    overflow: auto;
-    max-height: min(22rem, 45vh);
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border-l2) / 80%) transparent;
-}
-
-.void-ih-item {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid transparent;
-    border-radius: 0.75rem;
-    background: hsl(var(--surface-l1) / 72%);
-}
-
-.void-ih-item:hover {
-    background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 45%);
-}
-
-.void-ih-item-on {
-    align-items: start;
-    background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 60%);
-}
-
-.void-ih-item:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ih-main {
-    min-width: 0;
-    cursor: pointer;
-}
-
-.void-ih-body {
-    display: block;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    color: hsl(var(--fg-primary));
-    font-size: 0.8125rem;
-    line-height: 1.45;
-}
-
-.void-ih-clamp {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-}
-
-.void-ih-item-on .void-ih-body {
-    max-height: 12rem;
-    overflow: auto;
-    scrollbar-width: thin;
-}
-
-.void-ih-side {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.void-ih-item-on .void-ih-side {
-    align-items: flex-start;
-    padding-top: 0.125rem;
-}
-
-.void-ih-lines {
-    min-width: 1.5rem;
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-tertiary));
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.3;
-    text-align: center;
-}
-
-.void-ih-actions {
-    display: flex;
-    gap: 0.125rem;
-    padding: 0.125rem;
-    border-radius: 0.5rem;
-    background: hsl(var(--surface-l2) / 90%);
-}
-
-.void-ih-actions :is(button) {
-    width: 2.25rem;
-    height: 2.25rem;
-    min-width: 2.25rem;
-    min-height: 2.25rem;
-}
-
-.void-ih-item-on .void-ih-actions,
-.void-ih-item:hover .void-ih-actions {
-    background: hsl(var(--surface-l1));
-}
-
-.void-ih-pager {
-    min-width: 0;
-}
-
-.void-ih-page {
-    min-width: 3.5rem;
-    color: hsl(var(--fg-secondary));
-    font-size: 0.8125rem;
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-ih-hud {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/inputHistory/index.tsx
-  var logger26 = new Logger("InputHistory");
-  var cl21 = classNameFactory("void-ih-");
-  var EDITOR_SEL2 = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
-  var ZWSP = /\u200B/g;
-  var MAX_MIN = 10;
-  var MAX_MAX = 500;
-  var MAX_DEFAULT = 100;
-  var HUD_GAP_PX = 8;
-  var APPLY_QUIET_MS = 120;
-  var CAPTURE_DEDUPE_MS = 2000;
-  var PAGE_SIZE = 10;
-  var settings17 = definePluginSettings({
-    maxEntries: {
-      type: 5 /* SLIDER */,
-      description: "Maximum stored prompts.",
-      min: MAX_MIN,
-      max: MAX_MAX,
-      default: MAX_DEFAULT
-    },
-    history: {
-      type: 6 /* COMPONENT */,
-      component: HistoryPanel
-    }
-  }).withPrivateSettings();
-  var recentAt = new Map;
-  var cursor = 0;
-  var draft = "";
-  var recalling = false;
-  var applying = false;
-  var composing = false;
-  var applyGen = 0;
-  var keys = null;
-  var applyTimer;
-  var applyEl = null;
-  var applyAtStart = true;
-  function getEntries() {
-    const raw = settings17.plain.entries;
-    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
-  }
-  function cap(entries) {
-    const max = clamp(settings17.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
-    return entries.length > max ? entries.slice(entries.length - max) : entries;
-  }
-  function setEntries(entries) {
-    settings17.store.entries = entries;
-  }
-  function normalize(text) {
-    return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
-  }
-  function imeEvent(e) {
-    if (composing)
-      return true;
-    if (e instanceof InputEvent && e.isComposing)
-      return true;
-    if (e instanceof KeyboardEvent && (e.isComposing || e.keyCode === 229))
-      return true;
-    return false;
-  }
-  function invalidateApply() {
-    applyGen++;
-    applying = false;
-    applyEl = null;
-    clearTimeout(applyTimer);
-    applyTimer = undefined;
-  }
-  function resetBrowse(length) {
-    invalidateApply();
-    cursor = length;
-    draft = "";
-    recalling = false;
-    hideHud();
-  }
-  function chatEditor(t) {
-    if (t instanceof Text)
-      return t.parentElement?.closest(EDITOR_SEL2) ?? null;
-    if (t instanceof Element)
-      return t.closest(EDITOR_SEL2) ?? null;
-    return null;
-  }
-  function editorText(el) {
-    const blocks = el.querySelectorAll(":scope > *");
-    const raw = blocks.length ? Array.from(blocks, (b) => b.textContent ?? "").join(`
-`) : el.innerText ?? el.textContent ?? "";
-    return normalize(raw);
-  }
-  function spanHeight(range) {
-    const rects = range.getClientRects();
-    let top = Infinity;
-    let bottom = -Infinity;
-    for (const r of rects) {
-      if (r.height === 0 && r.width === 0)
-        continue;
-      if (r.top < top)
-        top = r.top;
-      if (r.bottom > bottom)
-        bottom = r.bottom;
-    }
-    if (top === Infinity)
-      return range.getBoundingClientRect().height;
-    return bottom - top;
-  }
-  function caretOnEdge(el) {
-    const sel = window.getSelection();
-    if (!sel?.rangeCount || !sel.isCollapsed)
-      return { first: false, last: false };
-    const caret = sel.getRangeAt(0);
-    if (!el.contains(caret.startContainer))
-      return { first: false, last: false };
-    if (!el.innerText?.trim())
-      return { first: true, last: true };
-    const before = document.createRange();
-    before.selectNodeContents(el);
-    before.setEnd(caret.startContainer, caret.startOffset);
-    const after = document.createRange();
-    after.selectNodeContents(el);
-    after.setStart(caret.startContainer, caret.startOffset);
-    const { lineHeight, fontSize } = getComputedStyle(el);
-    const lh = parseFloat(lineHeight);
-    const fs = parseFloat(fontSize) || 16;
-    const budget = (lh > 0 ? lh : fs * 1.5) * 1.5;
-    return {
-      first: spanHeight(before) <= budget,
-      last: spanHeight(after) <= budget
-    };
-  }
-  function matchesRecall(el) {
-    if (!recalling)
-      return false;
-    const list = getEntries();
-    const expected = cursor < list.length ? list[cursor] : draft;
-    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
-  }
-  function dropRecall(el) {
-    invalidateApply();
-    cursor = getEntries().length;
-    draft = editorText(el);
-    recalling = false;
-    hideHud();
-  }
-  function placeCaret(el, atStart) {
-    if (composing)
-      return;
-    try {
-      const view = el.pmViewDesc?.view;
-      if (view) {
-        if (view.composing)
-          return;
-        const Sel = view.state.selection.constructor;
-        const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
-        view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
-        return;
-      }
-    } catch (err) {
-      logger26.debug("placeCaret pm failed:", err);
-    }
-    const native = window.getSelection();
-    if (!native)
-      return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(atStart);
-    native.removeAllRanges();
-    native.addRange(range);
-  }
-  function scheduleApplyEnd(gen) {
-    clearTimeout(applyTimer);
-    applyTimer = setTimeout(() => {
-      if (gen !== applyGen)
-        return;
-      applying = false;
-      const el = applyEl;
-      applyEl = null;
-      if (!el || composing)
-        return;
-      if (!recalling)
-        return;
-      if (!matchesRecall(el))
-        dropRecall(el);
-      else
-        placeCaret(el, applyAtStart);
-    }, APPLY_QUIET_MS);
-  }
-  function setEditorText(el, text, atStart) {
-    el.focus();
-    const sel = window.getSelection();
-    if (!sel)
-      return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    sel.removeAllRanges();
-    sel.addRange(range);
-    applying = true;
-    applyEl = el;
-    applyAtStart = atStart;
-    const gen = ++applyGen;
-    try {
-      if (!text)
-        document.execCommand("delete");
-      else
-        document.execCommand("insertText", false, text);
-    } catch (err) {
-      logger26.debug("insertText failed:", err);
-    }
-    placeCaret(el, atStart);
-    scheduleApplyEnd(gen);
-  }
-  function hudEl() {
-    let el = document.querySelector(`.${cl21("hud")}`);
-    if (el)
-      return el;
-    el = document.createElement("div");
-    el.className = cl21("hud");
-    el.setAttribute("aria-live", "polite");
-    document.body.appendChild(el);
-    return el;
-  }
-  function hideHud() {
-    document.querySelector(`.${cl21("hud")}`)?.classList.remove(cl21("hud-on"));
-  }
-  function showHud(label, editor) {
-    const bar = editor.closest(".query-bar");
-    if (!bar)
-      return;
-    const el = hudEl();
-    el.textContent = label;
-    requestAnimationFrame(() => {
-      const r = bar.getBoundingClientRect();
-      el.style.left = `${r.left + r.width / 2}px`;
-      el.style.top = `${r.top - HUD_GAP_PX}px`;
-      el.classList.add(cl21("hud-on"));
-    });
-  }
-  function pushEntry(text) {
-    const value = normalize(text);
-    if (!value)
-      return;
-    const now = Date.now();
-    const prev = recentAt.get(value);
-    if (prev != null && now - prev < CAPTURE_DEDUPE_MS)
-      return;
-    recentAt.set(value, now);
-    const list = getEntries();
-    if (list[list.length - 1] === value) {
-      resetBrowse(list.length);
-      return;
-    }
-    const next = cap([...list, value]);
-    setEntries(next);
-    resetBrowse(next.length);
-  }
-  function cycle(older, el) {
-    const list = getEntries();
-    if (!list.length && older)
-      return;
-    if (cursor >= list.length) {
-      draft = editorText(el);
-      cursor = list.length;
-    }
-    const next = older ? cursor - 1 : cursor + 1;
-    if (next < 0 || next > list.length)
-      return;
-    cursor = next;
-    recalling = true;
-    setEditorText(el, next === list.length ? draft : list[next], older);
-    if (next < list.length)
-      showHud(`${next + 1} / ${list.length}`, el);
-    else
-      hideHud();
-  }
-  function onKeyDown2(e) {
-    if (imeEvent(e))
-      return;
-    if (e.ctrlKey || e.metaKey)
-      return;
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    if (applying && e.key !== "ArrowUp" && e.key !== "ArrowDown")
-      invalidateApply();
-    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
-      dropRecall(el);
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return;
-    }
-    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
-      pushEntry(editorText(el));
-      return;
-    }
-    if (e.key !== "ArrowUp" && e.key !== "ArrowDown")
-      return;
-    if (e.shiftKey)
-      return;
-    const older = e.key === "ArrowUp";
-    const force = e.altKey;
-    const list = getEntries();
-    if (!force) {
-      const edge = caretOnEdge(el);
-      if (older && !edge.first || !older && !edge.last)
-        return;
-    }
-    if (older && (!list.length || cursor <= 0))
-      return;
-    if (!older && cursor >= list.length)
-      return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    cycle(older, el);
-  }
-  function onPointerDown(e) {
-    if (!recalling)
-      return;
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    dropRecall(el);
-  }
-  function onCompositionStart(e) {
-    if (!chatEditor(e.target))
-      return;
-    composing = true;
-    invalidateApply();
-  }
-  function onCompositionEnd(e) {
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    composing = false;
-    if (recalling && !matchesRecall(el))
-      dropRecall(el);
-  }
-  function onInput(e) {
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    if (imeEvent(e)) {
-      if (applying)
-        invalidateApply();
-      return;
-    }
-    const recalled = matchesRecall(el);
-    if (applying && recalled)
-      return;
-    if (recalling && !recalled)
-      dropRecall(el);
-  }
-  function onSubmit(e) {
-    const form = e.target;
-    if (!(form instanceof HTMLFormElement))
-      return;
-    const editor = form.querySelector(EDITOR_SEL2);
-    if (editor instanceof HTMLElement)
-      pushEntry(editorText(editor));
-  }
-  function onClick(e) {
-    const t = e.target;
-    if (!(t instanceof Element))
-      return;
-    const ctrl = t.closest("button, [role='button']");
-    if (!ctrl)
-      return;
-    const bar = ctrl.closest(".query-bar");
-    if (!bar || ctrl.closest("[data-query-bar-mode-select]"))
-      return;
-    const label = (ctrl.getAttribute("aria-label") ?? "").toLowerCase();
-    const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
-    if (!submit && !label.includes("send") && !label.includes("submit"))
-      return;
-    const editor = bar.querySelector(EDITOR_SEL2);
-    if (editor instanceof HTMLElement)
-      pushEntry(editorText(editor));
-  }
-  function removeEntry(index) {
-    const list = getEntries();
-    if (index < 0 || index >= list.length)
-      return;
-    const next = list.filter((_, i) => i !== index);
-    setEntries(next);
-    resetBrowse(next.length);
-  }
-  function HistoryPanel() {
-    const { entries } = settings17.use(["entries"]);
-    const list = entries ?? [];
-    const [query, setQuery] = useState("");
-    const [page, setPage] = useState(0);
-    const [openId, setOpenId] = useState(null);
-    const [confirm, setConfirm] = useState(false);
-    const needle = query.trim().toLowerCase();
-    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).reverse();
-    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
-    const current = Math.min(page, pageCount - 1);
-    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.65rem",
-      className: cl21("panel")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      className: cl21("head"),
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      disabled: !list.length,
-      onClick: () => setConfirm(true)
-    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      placeholder: "Search prompts",
-      value: query,
-      onChange: (e) => {
-        setQuery(e.target.value);
-        setPage(0);
-      },
-      className: cl21("search")
-    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl21("empty")
-    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl21("empty")
-    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
-      className: cl21("list")
-    }, slice.map((row) => {
-      const lines = row.text.split(`
-`).length;
-      const expanded = openId === row.index;
-      return /* @__PURE__ */ React.createElement("div", {
-        key: row.index,
-        className: cl21("item", expanded && "item-on")
-      }, /* @__PURE__ */ React.createElement("div", {
-        className: cl21("main"),
-        role: "button",
-        tabIndex: 0,
-        onClick: () => setOpenId(expanded ? null : row.index),
-        onKeyDown: (e) => {
-          if (e.key !== "Enter" && e.key !== " ")
-            return;
-          e.preventDefault();
-          setOpenId(expanded ? null : row.index);
-        }
-      }, /* @__PURE__ */ React.createElement("span", {
-        className: cl21("body", !expanded && "clamp")
-      }, row.text)), /* @__PURE__ */ React.createElement("div", {
-        className: cl21("side")
-      }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
-        className: cl21("lines")
-      }, lines), /* @__PURE__ */ React.createElement("div", {
-        className: cl21("actions")
-      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "sm",
-        shape: "square",
-        tooltipContent: "Copy",
-        "aria-label": "Copy",
-        onClick: () => {
-          copyToClipboard(row.text).catch((err) => logger26.error("copy failed:", err));
-        }
-      }, /* @__PURE__ */ React.createElement(CopyIcon, {
-        size: 18
-      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "sm",
-        shape: "square",
-        tooltipContent: "Delete",
-        "aria-label": "Delete",
-        onClick: () => {
-          if (openId === row.index)
-            setOpenId(null);
-          removeEntry(row.index);
-        }
-      }, /* @__PURE__ */ React.createElement(Trash2Icon, {
-        size: 18
-      })))));
-    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
-      className: cl21("pager"),
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "square",
-      "aria-label": "Previous page",
-      disabled: current <= 0,
-      onClick: () => setPage(current - 1)
-    }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
-      size: 18
-    })), /* @__PURE__ */ React.createElement("span", {
-      className: cl21("page")
-    }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "square",
-      "aria-label": "Next page",
-      disabled: current >= pageCount - 1,
-      onClick: () => setPage(current + 1)
-    }, /* @__PURE__ */ React.createElement(ChevronRightIcon, {
-      size: 18
-    }))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: confirm,
-      onOpenChange: setConfirm,
-      title: "Clear input history",
-      description: "Delete all stored prompts? This cannot be undone.",
-      confirmText: "Clear",
-      danger: true,
-      onConfirm: () => {
-        setEntries([]);
-        resetBrowse(0);
-        setOpenId(null);
-        setQuery("");
-        setPage(0);
-      }
-    }));
-  }
-  var inputHistory_default = definePlugin({
-    name: "InputHistory",
-    icon: HistoryIcon,
-    description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
-    authors: [Devs.p],
-    tags: ["chat"],
-    enabledByDefault: true,
-    settings: settings17,
-    managedStyle: "inputHistory",
-    cleanupSelectors: [".void-ih-hud"],
-    start() {
-      if (keys)
-        return;
-      cursor = getEntries().length;
-      recalling = false;
-      composing = false;
-      invalidateApply();
-      keys = new AbortController;
-      const { signal } = keys;
-      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
-      document.addEventListener("input", onInput, { capture: true, signal });
-      document.addEventListener("compositionstart", onCompositionStart, { capture: true, signal });
-      document.addEventListener("compositionend", onCompositionEnd, { capture: true, signal });
-      document.addEventListener("submit", onSubmit, { capture: true, signal });
-      document.addEventListener("click", onClick, { capture: true, signal });
-      document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
-    },
-    stop() {
-      keys?.abort();
-      keys = null;
-      hideHud();
-      recentAt.clear();
-      composing = false;
-      recalling = false;
-      invalidateApply();
-    },
-    onSettingsChange() {
-      const current = getEntries();
-      const next = cap(current);
-      if (next.length !== current.length)
-        setEntries(next);
-      if (cursor > next.length)
-        cursor = next.length;
-    }
-  });
-
-  // src/plugins/noSidebarPlugins/index.tsx
-  var PluginsDialogStore = findByPropsLazy("usePluginsDialogStore");
-  function PluginsIcon(props = {}) {
-    const Comp = findExportedComponent("ConnectorsIcon") ?? GrokConnectorsIcon;
-    return /* @__PURE__ */ React.createElement(Comp, {
-      ...props
-    });
-  }
-  function openPlugins() {
-    PluginsDialogStore.usePluginsDialogStore.getState().setOpen(true);
-  }
-  function PluginsItem() {
-    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: openPlugins
-    }, /* @__PURE__ */ React.createElement(PluginsIcon, {
-      className: "void-settings-menu-icon"
-    }), "Plugins");
-  }
-  var WrappedPluginsItem = ErrorBoundary.wrap(PluginsItem);
-  var noSidebarPlugins_default = definePlugin({
-    name: "NoSidebarPlugins",
-    icon: PluginsIcon,
-    description: "Move the sidebar Plugins button into the avatar menu.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    _renderItem: () => createElement(WrappedPluginsItem),
-    patches: [
-      {
-        find: "usePluginsDialogStore.getState().setOpen(!0)",
-        replacement: {
-          match: /(\(0,\i\.jsx\)\(\i\.AppSidebarItem,\{icon:.{0,80}?onClick:\(\)=>\{"skills-and-connectors")/,
-          replace: "false&&$1"
-        }
-      },
-      {
-        find: 'ENABLE_GROK_WEB_PLUGIN_MARKETPLACE)&&{id:"skills-and-connectors"',
-        replacement: {
-          match: /ENABLE_GROK_WEB_PLUGIN_MARKETPLACE\)&&\{id:"skills-and-connectors"/,
-          replace: 'ENABLE_GROK_WEB_PLUGIN_MARKETPLACE)&&!1&&{id:"skills-and-connectors"'
-        }
-      },
-      {
-        find: '"user-dropdown.help"',
-        replacement: {
-          match: /(?=\(0,\i\.jsxs\)\(\i\.DropdownMenuSub,\{children:\[\(0,\i\.jsxs\)\(\i\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help")/,
-          replace: "$self._renderItem(),"
-        }
-      }
-    ]
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/downloadTTS/styles.css
-  registerStyle("downloadTTS", `.void-download-tts-spinner {
-    pointer-events: none;
-}
-`);
-
-  // src/plugins/downloadTTS/index.tsx
-  var cl22 = classNameFactory("void-download-tts-");
-  var logger27 = new Logger("DownloadTTS");
-  async function fetchAndDownload() {
-    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
-    if (!currentStreamId)
-      return;
-    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
-    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
-    if (voiceId)
-      url += `?voiceId=${encodeURIComponent(voiceId)}`;
-    const res = await fetch(url);
-    if (!res.ok)
-      throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
-    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
-  }
-  function DownloadButton() {
-    const [loading, onClick2] = useAsyncAction(async () => {
-      try {
-        await fetchAndDownload();
-      } catch (e) {
-        logger27.error("Failed to download TTS audio:", e);
-      }
-    });
-    return /* @__PURE__ */ React.createElement(Button, {
-      "aria-label": "Download audio",
-      onClick: onClick2,
-      disabled: loading,
-      size: "md",
-      shape: "square",
-      variant: "tertiary"
-    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
-      size: "sm",
-      className: cl22("spinner")
-    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 16
-    }));
-  }
-  var downloadTTS_default = definePlugin({
-    name: "DownloadTTS",
-    icon: Volume2Icon,
-    description: "Add a download button to the TTS playback controls.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    patches: [{
-      find: 'tts-controls.stop.label","Stop"',
-      all: true,
-      replacement: {
-        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
-        replace: "$1,$self._renderDownloadButton()]"
-      }
-    }],
-    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
-  });
-
-  // src/plugins/incognito/index.ts
-  var store3 = () => SettingsStore.useSettingsStore.getState();
-  var unsubscribe = null;
-  function enforce2() {
-    if (!store3().isIncognito)
-      store3().setIsIncognito(true);
-  }
-  var incognito_default = definePlugin({
-    name: "Incognito",
-    icon: GhostFilledIcon,
-    description: "Force private chat mode for new conversations.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      enforce2();
-      unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce2);
-    },
-    stop() {
-      unsubscribe?.();
-      unsubscribe = null;
-      store3().setIsIncognito(false);
-    }
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/streamerMode/styles.css
-  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
-
-/* Sidebar avatar */
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
-html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
-    filter: none;
-}
-
-/* Sidebar username */
-html.void-streamer-sidebar-name .void-sidebar-info {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
-    filter: none;
-}
-
-/* Account tab avatar (inside settings dialog) */
-html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
-    filter: none;
-}
-
-/* Account tab username */
-html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
-    filter: none;
-}
-
-/* Account tab email */
-html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
-    filter: none;
-}
-
-/* Account tab birth year */
-html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
-    filter: none;
-}
-
-/* Conversation titles in sidebar (pinned + recent buckets) */
-html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
-    filter: none;
-}
-
-/* Project names in sidebar */
-html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
-    filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
-    html.void-streamer-sidebar-name .void-sidebar-info,
-    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
-    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
-    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
-    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
-    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
-    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
-}
-`);
-
-  // src/plugins/streamerMode/index.ts
-  var CSS_CLASSES = {
-    sidebarAvatar: "void-streamer-sidebar-avatar",
-    sidebarName: "void-streamer-sidebar-name",
-    accountAvatar: "void-streamer-account-avatar",
-    accountName: "void-streamer-account-name",
-    accountEmail: "void-streamer-account-email",
-    accountAge: "void-streamer-account-age",
-    projects: "void-streamer-projects",
-    conversations: "void-streamer-conversations"
-  };
-  var settings18 = definePluginSettings({
-    sidebarAvatar: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your avatar in the sidebar.",
-      default: true
-    },
-    sidebarName: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your username in the sidebar.",
-      default: true
-    },
-    accountAvatar: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your avatar in the account settings tab.",
-      default: true
-    },
-    accountName: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your name in the account settings tab.",
-      default: true
-    },
-    accountEmail: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your email in the account settings tab.",
-      default: true
-    },
-    accountAge: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your birth year in the account settings tab.",
-      default: true
-    },
-    projects: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur project names in the sidebar.",
-      default: true
-    },
-    conversations: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur conversation titles in the sidebar.",
-      default: true
-    }
-  });
-  function syncClasses() {
-    const { classList } = document.documentElement;
-    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings18.store[key]);
-    }
-  }
-  var streamerMode_default = definePlugin({
-    name: "StreamerMode",
-    icon: EyeOffIcon,
-    description: "Blurs personal information for privacy while streaming.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    settings: settings18,
-    start: syncClasses,
-    onSettingsChange: syncClasses,
-    stop() {
-      const { classList } = document.documentElement;
-      for (const cls of Object.values(CSS_CLASSES)) {
-        classList.remove(cls);
-      }
-    }
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/customInstructions/styles.css
-  registerStyle("customInstructions", `.void-ci-root {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.void-ci-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-}
-
-.void-ci-card {
-    position: relative;
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 0.625rem;
-    border-radius: 1rem;
-    padding: 0.625rem 0.75rem;
-    height: 3.25rem;
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l1));
-    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
-    cursor: pointer;
-}
-
-.void-ci-card:hover {
-    background: var(--button-ghost-hover, rgb(255 255 255 / 8%));
-}
-
-.void-ci-card-add {
-    justify-content: center;
-    box-shadow: none;
-    border: 1px dashed hsl(var(--border-l1));
-}
-
-.void-ci-avatar {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.void-ci-card-name {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-    flex: 1;
-    gap: 0.125rem;
-}
-
-.void-ci-card-name>* {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-}
-
-.void-ci-card-actions {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-end: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.125rem;
-    opacity: 0;
-    transition: opacity 0.15s;
-}
-
-.void-ci-card:hover .void-ci-card-actions {
-    opacity: 1;
-}
-
-.void-ci-card:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ci-editor {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.void-ci-label {
-    padding-inline: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: hsl(var(--fg-primary));
-}
-
-.void-ci-input {
-    width: 100%;
-}
-
-.void-ci-textarea-wrap {
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.75rem;
-}
-
-.void-ci-textarea-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ci-textarea-wrap-error {
-    border-color: hsl(var(--fg-danger));
-}
-
-.void-ci-textarea {
-    width: 100%;
-    min-height: 7.5rem;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    color: hsl(var(--fg-primary));
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.void-ci-textarea:focus {
-    outline: none;
-}
-
-.void-ci-editor-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-inline: 0.25rem;
-}
-
-.void-ci-error-text {
-    color: hsl(var(--fg-danger));
-}
-
-.void-ci-trigger {
-    gap: 0.5rem;
-}
-
-.void-ci-menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-ci-card-actions {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/customInstructions/index.tsx
-  var cl23 = classNameFactory("void-ci-");
-  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
-  var CheckIcon = findExportedComponentLazy("CheckIcon");
-  var BookIcon = findExportedComponentLazy("BookIcon");
-  var PenIcon = findExportedComponentLazy("PenIcon");
-  var TrashIcon = findExportedComponentLazy("TrashIcon");
-  var PlusIcon = findExportedComponentLazy("PlusIcon");
-  var MAX_LENGTH = 4000;
-  var settings19 = definePluginSettings({
-    editor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
-    }
-  }).withPrivateSettings();
-  function getPresets() {
-    return settings19.plain.presets ?? [];
-  }
-  function setPresets(presets) {
-    settings19.store.presets = presets;
-  }
-  function getAssignments() {
-    return settings19.plain.assignments ?? {};
-  }
-  function PresetCard({ preset, onEdit, onDelete }) {
-    return /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl23("card"),
-      onClick: onEdit
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl23("avatar")
-    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
-      seed: preset.id,
-      size: 32
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl23("card-name")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium"
-    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl23("card-actions")
-    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Edit",
-      onClick: (e) => {
-        e.stopPropagation();
-        onEdit();
-      }
-    }, /* @__PURE__ */ React.createElement(PenIcon, {
-      className: "size-3.5 text-secondary"
-    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Delete",
-      onClick: (e) => {
-        e.stopPropagation();
-        onDelete();
-      }
-    }, /* @__PURE__ */ React.createElement(TrashIcon, {
-      className: "size-3.5 text-secondary"
-    }))));
-  }
-  function PresetEditor({ preset, onUpdate, onClose }) {
-    const overLimit = preset.prompt.length > MAX_LENGTH;
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl23("editor")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      className: cl23("label")
-    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      className: cl23("input"),
-      placeholder: "Preset name",
-      value: preset.name,
-      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
-      autoComplete: "off"
-    }), /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      className: cl23("label")
-    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl23("textarea-wrap", { "textarea-wrap-error": overLimit })
-    }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl23("textarea"),
-      placeholder: "How should Grok behave?",
-      value: preset.prompt,
-      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl23("editor-footer")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: overLimit ? undefined : "muted",
-      className: overLimit ? cl23("error-text") : undefined
-    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      onClick: onClose
-    }, "Done")));
-  }
-  function PresetsEditor() {
-    const presets = settings19.use(["presets"]).presets ?? [];
-    const [editingId, setEditingId] = useState(null);
-    const updatePreset = useCallback((updated) => {
-      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
-    }, []);
-    const deletePreset = useCallback((id) => {
-      setPresets(getPresets().filter((p) => p.id !== id));
-      const a = { ...getAssignments() };
-      for (const [k, v] of Object.entries(a)) {
-        if (v === id)
-          delete a[k];
-      }
-      settings19.store.assignments = a;
-      setEditingId((prev) => prev === id ? null : prev);
-    }, []);
-    const addPreset = useCallback(() => {
-      const id = randomId();
-      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
-      setEditingId(id);
-    }, []);
-    const editing = presets.find((p) => p.id === editingId);
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl23("root")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl23("grid")
-    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
-      key: p.id,
-      preset: p,
-      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
-      onDelete: () => deletePreset(p.id)
-    })), /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl23("card", "card-add"),
-      onClick: addPreset
-    }, /* @__PURE__ */ React.createElement(PlusIcon, {
-      className: "size-4 text-secondary"
-    }), /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      color: "muted"
-    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
-      preset: editing,
-      onUpdate: updatePreset,
-      onClose: () => setEditingId(null)
-    }));
-  }
-  function InstructionsMenu({ conversationId }) {
-    const presets = settings19.use(["presets"]).presets ?? [];
-    const assignments = settings19.use(["assignments"]).assignments ?? {};
-    const activePresetId = assignments[conversationId];
-    const assign = useCallback((presetId) => {
-      const a = { ...getAssignments() };
-      if (presetId)
-        a[conversationId] = presetId;
-      else
-        delete a[conversationId];
-      settings19.store.assignments = a;
-    }, [conversationId]);
-    if (!presets.length)
-      return null;
-    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl23("trigger")
-    }, /* @__PURE__ */ React.createElement(BookIcon, {
-      size: 16
-    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => assign(),
-      className: cl23("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
-      key: p.id,
-      onSelect: () => assign(p.id),
-      className: cl23("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })))));
-  }
-  var customInstructions_default = definePlugin({
-    name: "CustomInstructions",
-    icon: ScrollTextIcon,
-    description: "Create instruction presets and assign them to conversations.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings19,
-    contextMenuItems: {
-      conversation: {
-        label: "Instructions",
-        render: ErrorBoundary.wrap(InstructionsMenu)
-      }
-    },
-    _getPrompt() {
-      const { conversationId } = ChatPageStore.useChatPageStore.getState();
-      if (!conversationId)
-        return;
-      const presetId = getAssignments()[conversationId];
-      if (!presetId)
-        return;
-      const preset = getPresets().find((p) => p.id === presetId);
-      return preset?.prompt?.trim() || undefined;
-    },
-    patches: [
-      {
-        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
-        all: true,
-        replacement: {
-          match: /customInstructions:(\i)\.customInstructions/g,
-          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/noDictation/index.ts
-  var STYLE_NAME8 = "noDictation";
-  var REFINEMENT_MARK = "void-no-dictation-refinement";
-  var BUTTON_CSS = `
-button[aria-label="Dictation"]:not([role="dialog"] *),
-button[aria-label^="Dictation ("]:not([role="dialog"] *),
-div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
-div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
-    display: none !important;
-}
-`;
-  var REFINEMENT_CSS = `.${REFINEMENT_MARK}{display:none!important}`;
-  var settings20 = definePluginSettings({
-    hideDictationRefinement: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
-      default: true
-    }
-  });
-  function apply3() {
-    const rules = [BUTTON_CSS];
-    if (settings20.store.hideDictationRefinement)
-      rules.push(REFINEMENT_CSS);
-    registerStyle(STYLE_NAME8, rules.join(`
-`));
-  }
-  var noDictation_default = definePlugin({
-    name: "NoDictation",
-    icon: MicOffIcon,
-    description: "Hide the Dictation (voice input) button from the chat input bar, and optionally Dictation Refinement in Settings.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings20,
-    patches: [
-      {
-        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
-        replacement: {
-          match: /DISABLE_VOICE_MODE&&\(0,(\i)\.jsxs\)\(\i\.Fragment,\{/,
-          replace: `DISABLE_VOICE_MODE&&(0,$1.jsxs)("div",{className:"${REFINEMENT_MARK}",style:{display:"contents"},`
-        }
-      }
-    ],
-    start: apply3,
-    onSettingsChange: apply3,
     stop() {
       unregisterStyle(STYLE_NAME8);
     }
   });
 
-  // src/plugins/oneko/index.ts
-  var ONEKO_GIF = "https://raw.githubusercontent.com/adryd325/oneko.js/14bab15a755d0e35cd4ae19c931d96d306f99f42/oneko.gif";
-  var ONEKO_SCRIPT = '(function oneko(){const nekoEl=document.createElement("div");let nekoPosX=32,nekoPosY=32,mousePosX=0,mousePosY=0,frameCount=0,idleTime=0,idleAnimation=null,idleAnimationFrame=0;const nekoSpeed=10;const spriteSets={idle:[[-3,-3]],alert:[[-7,-3]],scratchSelf:[[-5,0],[-6,0],[-7,0]],scratchWallN:[[0,0],[0,-1]],scratchWallS:[[-7,-1],[-6,-2]],scratchWallE:[[-2,-2],[-2,-3]],scratchWallW:[[-4,0],[-4,-1]],tired:[[-3,-2]],sleeping:[[-2,0],[-2,-1]],N:[[-1,-2],[-1,-3]],NE:[[0,-2],[0,-3]],E:[[-3,0],[-3,-1]],SE:[[-5,-1],[-5,-2]],S:[[-6,-3],[-7,-2]],SW:[[-5,-3],[-6,-1]],W:[[-4,-2],[-4,-3]],NW:[[-1,0],[-1,-1]]};function init(){nekoEl.id="oneko";nekoEl.ariaHidden=true;nekoEl.style.width="32px";nekoEl.style.height="32px";nekoEl.style.position="fixed";nekoEl.style.pointerEvents="none";nekoEl.style.imageRendering="pixelated";nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px";nekoEl.style.zIndex=2147483647;nekoEl.style.backgroundImage="url(ONEKO_GIF_URL)";document.body.appendChild(nekoEl);document.addEventListener("mousemove",function(e){mousePosX=e.clientX;mousePosY=e.clientY});window.requestAnimationFrame(onAnimationFrame)}let lastFrameTimestamp;function onAnimationFrame(timestamp){if(!nekoEl.isConnected)return;if(!lastFrameTimestamp)lastFrameTimestamp=timestamp;if(timestamp-lastFrameTimestamp>100){lastFrameTimestamp=timestamp;frame()}window.requestAnimationFrame(onAnimationFrame)}function setSprite(name,frame){const sprite=spriteSets[name][frame%spriteSets[name].length];nekoEl.style.backgroundPosition=sprite[0]*32+"px "+sprite[1]*32+"px"}function resetIdleAnimation(){idleAnimation=null;idleAnimationFrame=0}function idle(){idleTime+=1;if(idleTime>10&&Math.floor(Math.random()*200)==0&&idleAnimation==null){let a=["sleeping","scratchSelf"];if(nekoPosX<32)a.push("scratchWallW");if(nekoPosY<32)a.push("scratchWallN");if(nekoPosX>window.innerWidth-32)a.push("scratchWallE");if(nekoPosY>window.innerHeight-32)a.push("scratchWallS");idleAnimation=a[Math.floor(Math.random()*a.length)]}switch(idleAnimation){case"sleeping":if(idleAnimationFrame<8){setSprite("tired",0);break}setSprite("sleeping",Math.floor(idleAnimationFrame/4));if(idleAnimationFrame>192)resetIdleAnimation();break;case"scratchWallN":case"scratchWallS":case"scratchWallE":case"scratchWallW":case"scratchSelf":setSprite(idleAnimation,idleAnimationFrame);if(idleAnimationFrame>9)resetIdleAnimation();break;default:setSprite("idle",0);return}idleAnimationFrame+=1}function frame(){frameCount+=1;const diffX=nekoPosX-mousePosX;const diffY=nekoPosY-mousePosY;const distance=Math.sqrt(diffX**2+diffY**2);if(distance<nekoSpeed||distance<48){idle();return}idleAnimation=null;idleAnimationFrame=0;if(idleTime>1){setSprite("alert",0);idleTime=Math.min(idleTime,7);idleTime-=1;return}let direction;direction=diffY/distance>0.5?"N":"";direction+=diffY/distance<-0.5?"S":"";direction+=diffX/distance>0.5?"W":"";direction+=diffX/distance<-0.5?"E":"";setSprite(direction,frameCount);nekoPosX-=(diffX/distance)*nekoSpeed;nekoPosY-=(diffY/distance)*nekoSpeed;nekoPosX=Math.min(Math.max(16,nekoPosX),window.innerWidth-16);nekoPosY=Math.min(Math.max(16,nekoPosY),window.innerHeight-16);nekoEl.style.left=nekoPosX-16+"px";nekoEl.style.top=nekoPosY-16+"px"}init()})();';
-  var oneko_default = definePlugin({
-    name: "Oneko",
-    icon: CatIcon,
-    description: "Cat follows your mouse cursor.",
-    authors: [Devs.adryd],
-    tags: ["ui"],
-    cleanupSelectors: ["#oneko"],
-    start() {
-      const s = ONEKO_SCRIPT.replace("ONEKO_GIF_URL", ONEKO_GIF);
-      const el = document.createElement("script");
-      el.src = URL.createObjectURL(new Blob([s], { type: "text/javascript" }));
-      document.head.appendChild(el);
-      el.addEventListener("load", () => {
-        el.remove();
-        URL.revokeObjectURL(el.src);
-      }, { once: true });
-    }
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterSidebar/styles.css
-  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
-.group.peer [data-sidebar="content"] > .grow {
-    cursor: default !important;
-}
-
-.group.peer [data-sidebar="sidebar"] + div::after {
-    background-color: transparent !important;
-}
-
-.void-sidebar-card {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    min-width: 0;
-    flex: 1;
-}
-
-.void-sidebar-card:hover {
-    background-color: hsl(var(--surface-l2));
-}
-
-.void-sidebar-card button[data-state] {
-    pointer-events: none;
-    background-color: transparent !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.void-sidebar-info {
-    min-width: 0;
-    overflow: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-sidebar-card { transition: none; }
-}
-
-.void-sidebar-name,
-.void-sidebar-plan {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    user-select: none;
-}
-
-/* stylelint-disable-next-line selector-class-pattern */
-.group\\/sidebar-menu-item:hover .void-sel-wrap {
-    display: inline-flex;
-}
-`);
-
-  // src/plugins/betterSidebar/index.tsx
-  var logger28 = new Logger("BetterSidebar");
-  var cl24 = classNameFactory("void-sidebar-");
-  var settings21 = definePluginSettings({
-    clickToToggle: {
-      type: 3 /* BOOLEAN */,
-      description: "Click anywhere on the sidebar to toggle it.",
-      default: true
-    },
-    defaultCollapsed: {
-      type: 3 /* BOOLEAN */,
-      description: "Start with the sidebar collapsed on page load.",
-      default: false
-    },
-    batchSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Show checkboxes on conversations for bulk selection and deletion.",
-      default: true
-    }
-  });
-  function UserCard({ AvatarMenu }) {
-    const { open: open2 } = SidebarComponents.useSidebar();
-    const { user } = SessionStore.useSession();
-    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
-    const cardRef = useRef(null);
-    if (!open2 || !user)
-      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
-    const forward = (e, type) => {
-      if (!e.isTrusted)
-        return;
-      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
-    };
-    return /* @__PURE__ */ React.createElement("div", {
-      ref: cardRef,
-      className: cl24("card"),
-      onPointerDown: (e) => forward(e, "pointerdown"),
-      onPointerUp: (e) => forward(e, "pointerup")
-    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      justifyContent: "center",
-      gap: "0",
-      className: cl24("info")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      size: "sm",
-      weight: "medium",
-      className: cl24("name")
-    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      size: "xs",
-      color: "secondary",
-      className: cl24("plan")
-    }, getPlanName(bestSubscription, user.xSubscriptionType))));
-  }
-  var selection2 = createSelectionStore();
-  var CONVERSATION_PAGE = "chat";
-  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
-  async function deleteConversations(ids) {
-    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
-    if (currentConvId && ids.includes(currentConvId)) {
-      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
-    }
-    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger28.error("Failed to delete", id, e))));
-  }
-  function SelectCheckbox({ id, route }) {
-    const enabled = settings21.use(["batchSelect"]).batchSelect;
-    if (!enabled || !id || !isConversationRoute(route))
-      return null;
-    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
-      selection: selection2,
-      id
-    });
-  }
-  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
-  var betterSidebar_default = definePlugin({
-    name: "BetterSidebar",
-    icon: PanelLeftIcon,
-    description: "Various sidebar improvements.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings21,
-    managedStyle: "betterSidebar",
-    _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
-      selection: selection2,
-      noun: "conversation",
-      title: "Delete conversations",
-      onDelete: deleteConversations
-    }), null),
-    _wrapCheckbox(item, id, route) {
-      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
-    },
-    _wrapSidebarClick(onClick2, id, route) {
-      return (e) => {
-        if (id && settings21.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection2.toggle(id);
-          return;
-        }
-        onClick2?.(e);
-      };
-    },
-    _defaultOpen() {
-      return !settings21.store.defaultCollapsed;
-    },
-    _onSidebarClick() {
-      if (!settings21.store.clickToToggle)
-        return;
-      return (e) => {
-        const target = e.target;
-        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
-          return;
-        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
-      };
-    },
-    start() {
-      selection2.clear();
-    },
-    stop() {
-      selection2.clear();
-    },
-    patches: [
-      {
-        find: "AvatarDropdownMenu,{expanded:",
-        replacement: {
-          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
-          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
-        }
-      },
-      {
-        find: "useSidebar must be used within a SidebarProvider",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /\{defaultOpen:(\i),open:/,
-            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
-          },
-          {
-            match: /data-sidebar":"sidebar",className:/,
-            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
-          }
-        ]
-      },
-      {
-        find: '"Editing actions","Editing actions"',
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
-            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
-          },
-          {
-            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
-            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
-          }
-        ]
-      },
-      {
-        find: '"sidebar-expand","Expand"',
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
-          replace: "$self._renderActionBar(),$&"
-        }
-      }
-    ]
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/placeholder/styles.css
-  registerStyle("placeholder", `.void-ph-root {
-    contain: content;
-}
-
-.void-ph-textarea-wrap {
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.75rem;
-}
-
-.void-ph-textarea-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ph-textarea {
-    width: 100%;
-    min-height: 7.5rem;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    color: hsl(var(--fg-primary));
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.void-ph-textarea:focus {
-    outline: none;
-}
-`);
-
-  // src/plugins/placeholder/index.tsx
-  var cl25 = classNameFactory("void-ph-");
-  var DEFAULT_PHRASES = [
-    "What do you want to know?",
-    "How can I help you today?",
-    "What's on your mind?"
-  ].join(`
-`);
-  function parsePhrases(raw) {
-    return String(raw ?? "").split(`
-`).map((s) => s.trim()).filter(Boolean);
-  }
-  var settings22 = definePluginSettings({
-    phrases: {
-      type: 6 /* COMPONENT */,
-      default: DEFAULT_PHRASES,
-      component: PhrasesEditor
-    }
-  }).withPrivateSettings();
-  function PhrasesEditor() {
-    const { phrases } = settings22.use(["phrases"]);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.5rem",
-      className: cl25("root")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium"
-    }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl25("textarea-wrap")
-    }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl25("textarea"),
-      value: phrases ?? DEFAULT_PHRASES,
-      onChange: (e) => {
-        settings22.store.phrases = e.target.value;
-      },
-      placeholder: DEFAULT_PHRASES
-    })));
-  }
-  var placeholder_default = definePlugin({
-    name: "Placeholder",
-    icon: TextCursorInputIcon,
-    description: "Replace the rotating chat and Grok Bot input placeholder.",
-    authors: [Devs.p],
-    tags: ["chat"],
-    settings: settings22,
-    _phrases() {
-      const lines = parsePhrases(settings22.store.phrases ?? DEFAULT_PHRASES);
-      return lines.length ? lines : null;
-    },
-    _inputPlaceholder(value) {
-      if (typeof value !== "string")
-        return value;
-      return this._phrases()?.[0] ?? value;
-    },
-    patches: [
-      {
-        find: `query-bar-placeholder.whats-on-your-mind","What's on your mind?"`,
-        replacement: {
-          match: /("query-bar-placeholder\.whats-on-your-mind","What's on your mind\?"\)\],\[\i,\i,\i,\i\]\),)(\i)=(\i\(\)),(\i)=(\i)\.map\(\2\)/,
-          replace: "$1$2=$3,$4=($self._phrases()??$5).map($2)"
-        }
-      },
-      {
-        find: "data-query-bar-mode-select",
-        all: true,
-        replacement: {
-          match: /("query-bar\.voice-connecting-placeholder","Connecting…"\):)(\i)(?=,isLoading)/,
-          replace: "$1$self._inputPlaceholder($2)"
-        }
-      }
-    ]
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/messageTimestamps/styles.css
-  registerStyle("messageTimestamps", `.void-timestamp {
-    margin-bottom: 0.125rem;
-}
-
-@media print {
-    .void-timestamp {
-        display: none;
-    }
-}
-`);
-
-  // src/plugins/messageTimestamps/time.ts
-  var FRESH_MS = 2 * 60 * 1000;
-  var BORROW_MS = 1000;
-  var MIN_MS = Date.UTC(2020, 0, 1);
-  var MAX_SKEW_MS = 24 * 60 * 60 * 1000;
-  var TIME_KEYS = ["thinkingStartTime", "createTime", "create_time", "createdAt", "created_at"];
-  function isFresh(ms, now = Date.now()) {
-    return Math.abs(now - ms) < FRESH_MS;
-  }
-  function inRange(ms, now = Date.now()) {
-    return Number.isFinite(ms) && ms >= MIN_MS && ms <= now + MAX_SKEW_MS;
-  }
-  function fromUnixish(n, now = Date.now()) {
-    if (!Number.isFinite(n) || n <= 0)
-      return null;
-    const ms = n < 1000000000000 ? n * 1000 : n;
-    return inRange(ms, now) ? Math.round(ms) : null;
-  }
-  function parseTime(value, now = Date.now()) {
-    if (value == null || value === "")
-      return null;
-    if (typeof value === "number")
-      return fromUnixish(value, now);
-    if (typeof value === "bigint")
-      return fromUnixish(Number(value), now);
-    if (value instanceof Date) {
-      const t = value.getTime();
-      return Number.isNaN(t) || !inRange(t, now) ? null : t;
-    }
-    if (typeof value === "string") {
-      const s = value.trim();
-      if (!s)
-        return null;
-      if (/^\d+(\.\d+)?$/.test(s))
-        return fromUnixish(Number(s), now);
-      const t = Date.parse(s);
-      return Number.isNaN(t) || !inRange(t, now) ? null : t;
-    }
-    if (typeof value !== "object")
-      return null;
-    const rec = value;
-    if (rec.seconds != null) {
-      const sec = typeof rec.seconds === "string" ? Number(rec.seconds) : Number(rec.seconds);
-      const nanos = Number(rec.nanos) || 0;
-      if (!Number.isFinite(sec))
-        return null;
-      const ms = sec * 1000 + Math.floor(nanos / 1e6);
-      return inRange(ms, now) ? Math.round(ms) : null;
-    }
-    if (rec.$date != null) {
-      const date = rec.$date;
-      if (date && typeof date === "object" && "$numberLong" in date) {
-        return parseTime(date.$numberLong, now);
-      }
-      return parseTime(date, now);
-    }
-    if (rec.$numberLong != null)
-      return parseTime(rec.$numberLong, now);
-    return parseTime(rec.createTime ?? rec.create_time ?? rec.createdAt ?? rec.created_at, now);
-  }
-  function uuidTime(id, now = Date.now()) {
-    if (typeof id !== "string")
-      return null;
-    const compact = id.trim().replaceAll("-", "").toLowerCase();
-    if (compact.length !== 32)
-      return null;
-    if (compact.charAt(12) !== "7")
-      return null;
-    const variant = parseInt(compact.charAt(16), 16);
-    if (!Number.isFinite(variant) || (variant & 12) !== 8)
-      return null;
-    const ms = parseInt(compact.slice(0, 12), 16);
-    return inRange(ms, now) ? ms : null;
-  }
-  function asRecord(value) {
-    return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
-  }
-  function recordId(record) {
-    const { responseId, _id } = record;
-    if (typeof responseId === "string" && responseId)
-      return responseId;
-    return typeof _id === "string" ? _id : "";
-  }
-  function isHumanSender(sender2) {
-    if (typeof sender2 !== "string")
-      return false;
-    const normalized = sender2.toLowerCase();
-    return normalized === "human" || normalized === "user";
-  }
-  function isOptimisticState(state2) {
-    if (typeof state2 !== "string")
-      return false;
-    const normalized = state2.toLowerCase();
-    return normalized === "optimistic" || normalized === "streaming";
-  }
-  function pickTimes(record, now = Date.now()) {
-    const out = [];
-    const seen = new Set;
-    const add = (value) => {
-      const ms = parseTime(value, now);
-      if (ms == null || seen.has(ms))
-        return;
-      seen.add(ms);
-      out.push(ms);
-    };
-    for (const key of TIME_KEYS)
-      add(record[key]);
-    const meta = asRecord(record.metadata);
-    if (meta) {
-      for (const key of TIME_KEYS)
-        add(meta[key]);
-    }
-    return out;
-  }
-  function oldestTrusted(values, now = Date.now()) {
-    let best = null;
-    for (const ms of values) {
-      if (ms == null || isFresh(ms, now))
-        continue;
-      if (best == null || ms < best)
-        best = ms;
-    }
-    return best;
-  }
-  function chooseTime(opts) {
-    const now = opts.now ?? Date.now();
-    const trusted = oldestTrusted([opts.stored, ...opts.fieldTimes, opts.uuid], now);
-    if (trusted != null)
-      return trusted;
-    return opts.stored ?? opts.fieldTimes[0] ?? opts.uuid ?? null;
-  }
-  function trustedTime(opts) {
-    const now = opts.now ?? Date.now();
-    return oldestTrusted([opts.stored ?? null, ...opts.fieldTimes, opts.uuid], now);
-  }
-  function shouldKeepStored(prev, incoming, now = Date.now()) {
-    if (incoming === prev)
-      return true;
-    if (isFresh(incoming, now) && incoming >= prev)
-      return true;
-    if (!isFresh(prev, now) && incoming > prev)
-      return true;
-    return false;
-  }
-  function preferHumanTime(own, borrowed) {
-    if (borrowed == null)
-      return own;
-    if (own == null || own > borrowed)
-      return borrowed;
-    return own;
-  }
-  function textKey(value) {
-    if (typeof value !== "string")
-      return "";
-    const s = value.trim();
-    if (!s)
-      return "";
-    const slice = s.slice(0, 240);
-    let h = 5381;
-    for (let i = 0;i < slice.length; i++)
-      h = Math.imul(h, 33) ^ slice.charCodeAt(i);
-    return (h >>> 0).toString(36);
-  }
-  function stampOf(rec, now) {
-    const id = recordId(rec);
-    const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(id, now), now });
-    return ms == null ? null : ms - BORROW_MS;
-  }
-  function nextNonHuman(records, from) {
-    for (let i = from;i < records.length; i++) {
-      if (!isHumanSender(records[i].sender))
-        return records[i];
-    }
-    return null;
-  }
-  function childTime(id, records, now = Date.now()) {
-    if (!id)
-      return null;
-    for (const rec of records) {
-      if (rec.parentResponseId !== id || isHumanSender(rec.sender))
-        continue;
-      const ms = parseTime(rec.thinkingStartTime, now);
-      if (ms != null)
-        return ms - BORROW_MS;
-    }
-    return null;
-  }
-  function authoritativeTime(rec, records, now = Date.now()) {
-    if (isHumanSender(rec.sender))
-      return childTime(recordId(rec), records, now);
-    return parseTime(rec.thinkingStartTime, now);
-  }
-  function neighborTime(id, records, now = Date.now()) {
-    if (!id)
-      return null;
-    let next = null;
-    for (let i = 0;i < records.length; i++) {
-      const rec = records[i];
-      const recId = recordId(rec);
-      if (rec.parentResponseId === id && !isHumanSender(rec.sender)) {
-        const ms = stampOf(rec, now);
-        if (ms != null)
-          return ms;
-      }
-      if (recId === id && next == null)
-        next = nextNonHuman(records, i + 1);
-    }
-    if (!next)
-      return null;
-    return stampOf(next, now);
-  }
-  function childTimeFromNodes(id, nodes, byId, now = Date.now()) {
-    if (!id || !nodes.length)
-      return null;
-    let nextId2 = "";
-    for (let i = 0;i < nodes.length; i++) {
-      const node = nodes[i];
-      const recId = recordId(node);
-      if (node.parentResponseId === id && !isHumanSender(node.sender)) {
-        const rec2 = byId[recId] ?? node;
-        const ms = stampOf(rec2, now);
-        if (ms != null)
-          return ms;
-      }
-      if (recId === id && !nextId2)
-        nextId2 = recordId(nextNonHuman(nodes, i + 1) ?? {});
-    }
-    if (!nextId2)
-      return null;
-    const rec = byId[nextId2] ?? nodes.find((n) => recordId(n) === nextId2);
-    return rec && !isHumanSender(rec.sender) ? stampOf(rec, now) : null;
-  }
-  function shouldPersistStamp(sender2, ms, stored, now = Date.now(), state2) {
-    if (stored != null)
-      return !shouldKeepStored(stored, ms, now);
-    if (isHumanSender(sender2) && isFresh(ms, now))
-      return isOptimisticState(state2);
-    return true;
-  }
-  function harvestResponses(value, now = Date.now()) {
-    const records = [];
-    collectRecords(value, 0, records, new Set);
-    const out = [];
-    const seen = new Set;
-    for (const rec of records) {
-      const id = recordId(rec);
-      if (!id || seen.has(id))
-        continue;
-      const authoritative = authoritativeTime(rec, records, now);
-      if (authoritative != null) {
-        seen.add(id);
-        out.push({ id, ms: authoritative, rec, authoritative: true });
-        continue;
-      }
-      const uuid = uuidTime(id, now);
-      const { sender: sender2, state: state2 } = rec;
-      const human = isHumanSender(sender2);
-      const fieldTimes = human && !isOptimisticState(state2) ? [] : pickTimes(rec, now);
-      let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
-      if (human) {
-        if (isOptimisticState(state2)) {
-          if (ms == null)
-            continue;
-        } else {
-          ms = preferHumanTime(ms, neighborTime(id, records, now));
-          if (ms != null && isFresh(ms, now))
-            ms = null;
-        }
-      }
-      if (ms == null)
-        continue;
-      seen.add(id);
-      out.push({ id, ms, rec, authoritative: false });
-    }
-    return out;
-  }
-  function collectRecords(value, depth, out, seen) {
-    if (value == null || depth > 8)
-      return;
-    if (typeof value !== "object")
-      return;
-    if (seen.has(value))
-      return;
-    seen.add(value);
-    if (Array.isArray(value)) {
-      for (const item of value)
-        collectRecords(item, depth + 1, out, seen);
-      return;
-    }
-    const rec = value;
-    if (recordId(rec))
-      out.push(rec);
-    for (const child of Object.values(rec))
-      collectRecords(child, depth + 1, out, seen);
-  }
-
-  // src/plugins/messageTimestamps/index.tsx
-  var logger29 = new Logger("MessageTimestamps");
-  var STAMP_MAX = 5000;
-  var RESPONSE_URL = /\/(?:load-responses|share_links|response-node)(?:\/|\?|$)/i;
-  var settings23 = definePluginSettings({
-    showDate: {
-      type: 3 /* BOOLEAN */,
-      description: "Show the full date for messages older than today.",
-      default: true
-    },
-    hideOwnMessages: {
-      type: 3 /* BOOLEAN */,
-      default: false,
-      description: "Hide timestamps on your own messages."
-    }
-  }).withPrivateSettings();
-  var tick = createExternalStore();
-  var cache = null;
-  var origFetch = null;
-  var origXhrOpen = null;
-  var origXhrSend = null;
-  var origList = null;
-  var hookedWindow = null;
-  var xhrMeta = new WeakMap;
-  function pageWindow2() {
-    return typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-  }
-  function stamps() {
-    if (cache)
-      return cache;
-    cache = new Map;
-    const raw = settings23.plain.stamps;
-    if (raw && typeof raw === "object") {
-      for (const [id, ms] of Object.entries(raw)) {
-        if (typeof ms === "number" && Number.isFinite(ms))
-          cache.set(id, ms);
-      }
-    }
-    return cache;
-  }
-  function persistNow() {
-    const next = {};
-    for (const [id, ms] of stamps())
-      next[id] = ms;
-    settings23.store.stamps = next;
-  }
-  var persist2 = debounce(persistNow, 400);
-  function remember(id, ms, sender2, state2, force = false) {
-    if (!id)
-      return false;
-    const map = stamps();
-    const prev = map.get(id) ?? null;
-    if (!force && !shouldPersistStamp(sender2, ms, prev, Date.now(), state2))
-      return false;
-    if (map.has(id))
-      map.delete(id);
-    map.set(id, ms);
-    while (map.size > STAMP_MAX) {
-      const oldest = map.keys().next().value;
-      if (oldest == null)
-        break;
-      map.delete(oldest);
-    }
-    persist2();
-    return prev !== ms;
-  }
-  function conversationIdOf(id, rec) {
-    if (typeof rec.conversationId === "string")
-      return rec.conversationId;
-    try {
-      const { byConversationId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
-        if (list?.some((r) => r.responseId === id))
-          return cid;
-      }
-      for (const [cid, nodes] of Object.entries(nodesByConversationId ?? {})) {
-        if (nodes?.some((n) => n.responseId === id))
-          return cid;
-      }
-    } catch (e) {
-      logger29.debug("conversation id lookup failed", e);
-    }
-    return "";
-  }
-  function userKeys(rec, id) {
-    const keys2 = [];
-    if (id)
-      keys2.push(`u:${id}`);
-    const { parentResponseId } = rec;
-    if (typeof parentResponseId === "string" && parentResponseId)
-      keys2.push(`u:p:${parentResponseId}`);
-    const text = typeof rec.message === "string" && rec.message ? rec.message : typeof rec.query === "string" ? rec.query : "";
-    const fp = textKey(text);
-    if (fp) {
-      const cid = conversationIdOf(id, rec);
-      keys2.push(cid ? `u:t:${cid}:${fp}` : `u:t:${fp}`);
-    }
-    return keys2;
-  }
-  function gatewayRecords(cid) {
-    const out = [];
-    try {
-      const { conversations } = MessageStore.useMessageStore.getState();
-      const slices = cid ? [conversations?.[cid]] : Object.values(conversations ?? {});
-      for (const slice of slices) {
-        for (const { status, content } of Object.values(slice?.nodes ?? {})) {
-          if (!content)
-            continue;
-          const { responseId, sender: sender2, parentResponseId, createTime, thinkingStartTime, state: state2 } = content;
-          out.push({
-            responseId,
-            sender: sender2,
-            parentResponseId,
-            thinkingStartTime,
-            createTime: status === "complete" ? undefined : createTime,
-            state: status === "ack-pending" ? "optimistic" : state2
-          });
-        }
-      }
-    } catch (e) {
-      logger29.debug("message store unavailable", e);
-    }
-    return out;
-  }
-  function gatewaySettled(cid, id) {
-    if (!cid)
-      return false;
-    try {
-      return MessageStore.useMessageStore.getState().conversations?.[cid]?.nodes?.[id]?.status === "complete";
-    } catch (e) {
-      logger29.debug("message store unavailable", e);
-      return false;
-    }
-  }
-  function extraKeys(rec, id) {
-    const keys2 = [];
-    if (id)
-      keys2.push(`h:${id}`);
-    const { parentResponseId } = rec;
-    if (typeof parentResponseId === "string" && parentResponseId)
-      keys2.push(`h:${parentResponseId}`);
-    try {
-      const { byConversationId } = ResponseStore.useResponseStore.getState();
-      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
-        const index = list?.findIndex((r) => r.responseId === id) ?? -1;
-        if (index < 0)
-          continue;
-        keys2.push(`h:${cid}:${index}`);
-        break;
-      }
-    } catch (e) {
-      logger29.debug("stable key lookup failed", e);
-    }
-    return keys2;
-  }
-  function storedMs(id, rec, user) {
-    const map = stamps();
-    const keys2 = user ? userKeys(rec, id) : [id, ...extraKeys(rec, id)];
-    for (const key of keys2) {
-      const ms = map.get(key);
-      if (ms != null)
-        return ms;
-    }
-    return null;
-  }
-  function rememberKeys(id, rec, ms, sender2, user, force = false) {
-    const { state: state2 } = rec;
-    let changed = false;
-    if (user) {
-      for (const key of userKeys(rec, id)) {
-        if (remember(key, ms, "human", state2, force))
-          changed = true;
-      }
-      return changed;
-    }
-    if (remember(id, ms, sender2, state2, force))
-      changed = true;
-    for (const key of extraKeys(rec, id)) {
-      if (remember(key, ms, sender2, state2, force))
-        changed = true;
-    }
-    return changed;
-  }
-  function storeRecords(id) {
-    try {
-      const { byId, byConversationId } = ResponseStore.useResponseStore.getState();
-      for (const list of Object.values(byConversationId ?? {})) {
-        if (list?.some((r) => r.responseId === id))
-          return list;
-      }
-      return Object.values(byId ?? {});
-    } catch (e) {
-      logger29.debug("response store unavailable", e);
-      return [];
-    }
-  }
-  function borrowedMs(id, cid) {
-    if (cid) {
-      const ms = neighborTime(id, gatewayRecords(cid));
-      if (ms != null)
-        return ms;
-    }
-    try {
-      const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-      const lookup = byId;
-      for (const nodes of Object.values(nodesByConversationId ?? {})) {
-        const ms = childTimeFromNodes(id, nodes ?? [], lookup);
-        if (ms != null)
-          return ms;
-      }
-      const records = [
-        ...storeRecords(id),
-        ...Object.values(lookup).filter((r) => r != null)
-      ];
-      return neighborTime(id, records) ?? conversationCreateTime(id);
-    } catch (e) {
-      logger29.debug("node neighbor lookup failed", e);
-    }
-    return neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
-  }
-  function conversationCreateTime(id) {
-    try {
-      const { byConversationId } = ResponseStore.useResponseStore.getState();
-      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
-        const first = list?.find((r) => isHumanSender(r.sender));
-        if (first?.responseId !== id)
-          continue;
-        const conv = ConversationStore.useConversationStore.getState().byId?.[cid];
-        const ms = parseTime(conv?.createTime);
-        return ms != null && !isFresh(ms) ? ms : null;
-      }
-    } catch (e) {
-      logger29.debug("conversation time lookup failed", e);
-    }
-    return null;
-  }
-  function fullRecord(id, rec) {
-    if (!id)
-      return rec;
-    try {
-      const hit = asRecord(ResponseStore.useResponseStore.getState().byId?.[id]);
-      if (hit)
-        return { ...rec, ...hit };
-    } catch (e) {
-      logger29.debug("byId lookup failed", e);
-    }
-    return rec;
-  }
-  function resolveMs(response, isUser) {
-    const rec = asRecord(response);
-    if (!rec)
-      return null;
-    const id = recordId(rec);
-    const full = fullRecord(id, rec);
-    const human = isUser === true || isHumanSender(full.sender);
-    const sender2 = human ? "human" : full.sender;
-    const cid = id ? conversationIdOf(id, full) : "";
-    let authoritative = null;
-    if (id)
-      authoritative = human ? childTime(id, [...gatewayRecords(cid), ...storeRecords(id)]) : parseTime(full.thinkingStartTime);
-    if (authoritative != null) {
-      rememberKeys(id, full, authoritative, sender2, human, true);
-      return authoritative;
-    }
-    const stored = id ? storedMs(id, full, human) : null;
-    const fieldTimes = human && !isOptimisticState(full.state) || gatewaySettled(cid, id) ? [] : pickTimes(full);
-    let ms = chooseTime({
-      fieldTimes,
-      stored,
-      uuid: uuidTime(id)
-    });
-    if (human && id)
-      ms = preferHumanTime(ms, borrowedMs(id, cid));
-    if (id && ms != null)
-      rememberKeys(id, full, ms, sender2, human);
-    return ms;
-  }
-  function ingest(value) {
-    let changed = false;
-    for (const { id, ms, rec, authoritative } of harvestResponses(value)) {
-      const human = isHumanSender(rec.sender);
-      if (rememberKeys(id, rec, ms, rec.sender, human, authoritative))
-        changed = true;
-    }
-    if (changed)
-      tick.notify();
-  }
-  function requestUrl(input) {
-    if (typeof input === "string")
-      return input;
-    if (input instanceof URL)
-      return input.href;
-    try {
-      return input.url;
-    } catch {
-      return "";
-    }
-  }
-  function hookFetch() {
-    if (origFetch)
-      return;
-    const w = pageWindow2();
-    origFetch = w.fetch;
-    hookedWindow = w;
-    w.fetch = function voidMessageTimestampsFetch(input, init) {
-      const url = requestUrl(input);
-      const promise = origFetch.call(w, input, init);
-      if (!RESPONSE_URL.test(url))
-        return promise;
-      return promise.then((res) => {
-        try {
-          res.clone().json().then(ingest, () => {});
-        } catch (e) {
-          logger29.debug("fetch ingest failed", e);
-        }
-        return res;
-      });
-    };
-  }
-  function unhookFetch() {
-    if (!origFetch || !hookedWindow)
-      return;
-    hookedWindow.fetch = origFetch;
-    origFetch = null;
-    hookedWindow = null;
-  }
-  function ingestXhr(xhr) {
-    if (xhr.status < 200 || xhr.status >= 300)
-      return;
-    const { responseType } = xhr;
-    if (responseType === "json") {
-      ingest(xhr.response);
-      return;
-    }
-    if (responseType !== "" && responseType !== "text")
-      return;
-    const text = xhr.responseText;
-    if (!text)
-      return;
-    ingest(JSON.parse(text));
-  }
-  function hookXhr() {
-    if (origXhrOpen)
-      return;
-    const XHR = pageWindow2().XMLHttpRequest;
-    origXhrOpen = XHR.prototype.open;
-    origXhrSend = XHR.prototype.send;
-    XHR.prototype.open = function voidMessageTimestampsOpen(method, url, ...rest) {
-      try {
-        xhrMeta.set(this, requestUrl(url));
-      } catch (e) {
-        logger29.debug("xhr open failed", e);
-      }
-      return origXhrOpen.call(this, method, url, ...rest);
-    };
-    XHR.prototype.send = function voidMessageTimestampsSend(body) {
-      const url = xhrMeta.get(this) ?? "";
-      if (RESPONSE_URL.test(url)) {
-        this.addEventListener("load", () => {
-          try {
-            ingestXhr(this);
-          } catch (e) {
-            logger29.debug("xhr ingest failed", e);
-          }
-        }, { once: true });
-      }
-      return origXhrSend.call(this, body);
-    };
-  }
-  function unhookXhr() {
-    if (!origXhrOpen || !origXhrSend)
-      return;
-    const XHR = pageWindow2().XMLHttpRequest;
-    XHR.prototype.open = origXhrOpen;
-    XHR.prototype.send = origXhrSend;
-    origXhrOpen = null;
-    origXhrSend = null;
-  }
-  function hookListResponses() {
-    if (origList)
-      return;
-    try {
-      const { chatApi } = ApiClients;
-      origList = chatApi.chatListResponses;
-      chatApi.chatListResponses = function voidMessageTimestampsList(a) {
-        return origList.call(chatApi, a).then((data) => {
-          ingest(data);
-          return data;
-        });
-      };
-    } catch (e) {
-      origList = null;
-      logger29.debug("chatListResponses wrap skipped", e);
-    }
-  }
-  function unhookListResponses() {
-    if (!origList)
-      return;
-    try {
-      ApiClients.chatApi.chatListResponses = origList;
-    } catch (e) {
-      logger29.debug("chatListResponses unwrap skipped", e);
-    }
-    origList = null;
-  }
-  function formatTimestamp(ms, showDate) {
-    const date = new Date(ms);
-    const now = new Date;
-    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
-    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (!showDate || today)
-      return time;
-    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
-  }
-  var messageTimestamps_default = definePlugin({
-    name: "MessageTimestamps",
-    icon: ClockIcon,
-    description: "Shows timestamps on chat messages.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings23,
-    start() {
-      try {
-        hookFetch();
-        hookXhr();
-        hookListResponses();
-      } catch (e) {
-        logger29.warn("Failed to hook network", e);
-      }
-    },
-    stop() {
-      unhookFetch();
-      unhookXhr();
-      unhookListResponses();
-      persistNow();
-    },
-    zustand: {
-      ResponseStore: {
-        selector: (s) => {
-          let n = 0;
-          for (const list of Object.values(s.nodesByConversationId ?? {}))
-            n += list?.length ?? 0;
-          return `${Object.keys(s.byId ?? {}).length}:${n}`;
-        },
-        handler() {
-          try {
-            const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-            ingest({
-              responses: Object.values(byId ?? {}),
-              nodes: Object.values(nodesByConversationId ?? {}).flat()
-            });
-          } catch (e) {
-            logger29.debug("store ingest failed", e);
-          }
-        }
-      },
-      MessageStore: {
-        selector: (s) => {
-          let n = 0;
-          for (const slice of Object.values(s.conversations ?? {}))
-            n += Object.keys(slice?.nodes ?? {}).length;
-          return n;
-        },
-        handler() {
-          ingest({ responses: gatewayRecords("") });
-        }
-      }
-    },
-    _renderTimestamp: ErrorBoundary.wrap(({ response, isUser }) => {
-      useExternalStore(tick);
-      const human = isUser === true || isHumanSender(response.sender);
-      if (settings23.store.hideOwnMessages && human)
-        return null;
-      const ms = resolveMs(response, isUser);
-      if (ms == null)
-        return null;
-      return /* @__PURE__ */ React.createElement(Text2, {
-        as: "span",
-        size: "xs",
-        color: "muted",
-        className: "void-timestamp"
-      }, formatTimestamp(ms, settings23.store.showDate));
-    }),
-    patches: [
-      {
-        find: "response-family:handleEditSave",
-        all: true,
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:(\i),isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._renderTimestamp({response:$2,isUser:$1}),$&"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/cleaner/index.ts
-  var settings24 = definePluginSettings({
-    hideUpgradePlan: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade plan button in the user menu.",
-      default: true
-    },
-    hideUpsellCard: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upsell card banner.",
-      default: true
-    },
-    hideUpsellSmall: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the small SuperGrok upsell banner.",
-      default: true
-    },
-    hideModelUpsell: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade prompt in the model selector.",
-      default: true
-    },
-    hideInaccessibleModels: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide locked/inaccessible models in the model selector.",
-      default: true
-    },
-    hideNotificationBanner: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Get notified when Grok finishes answering" banner.',
-      default: true
-    },
-    hideConnectX: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
-      default: true
-    }
-  });
-  var hideComponentPatch = (name, setting, all = true) => ({
-    find: `"${name}",0,`,
-    all,
-    replacement: {
-      match: new RegExp(`"${name}",0,`),
-      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
-    }
-  });
-  var cleaner_default = definePlugin({
-    name: "Cleaner",
-    icon: BrushCleaningIcon,
-    description: "Hides upgrade nags and upsell banners.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    enabledByDefault: true,
-    settings: settings24,
-    patches: [
-      {
-        find: '"user-dropdown.upgrade","Upgrade plan"',
-        all: true,
-        replacement: {
-          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
-          replace: ",$self.settings.store.hideUpgradePlan||$1"
-        }
-      },
-      {
-        find: "UPSELL_CARD_PRIORITY)",
-        all: true,
-        replacement: {
-          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
-          replace: "$1&&!$self.settings.store.hideUpsellCard"
-        }
-      },
-      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
-      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
-      {
-        find: "connect-x-upsell-dismissed",
-        replacement: {
-          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
-          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
-        }
-      },
-      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
-      {
-        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
-            replace: "$&$self.settings.store.hideModelUpsell||"
-          },
-          {
-            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
-            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
-          }
-        ]
-      }
-    ]
-  });
-
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/recentTopics/styles.css
-  registerStyle("recentTopics", `.void-rt-root,
-.void-rt-root:popover-open {
-    isolation: isolate;
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 2147483647 !important;
-    display: block !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    max-width: none !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    border: none !important;
-    background: transparent !important;
-    color: inherit;
-    pointer-events: auto !important;
-}
-
-.void-rt-root::backdrop {
-    background: transparent;
-}
-
-html.void-rt-open [data-sidebar="sidebar"],
-html.void-rt-open [data-sidebar="gap"] {
-    z-index: 0 !important;
-}
-
-.void-rt-panel,
-.void-rt-card,
-.void-rt-meta,
-.void-rt-name,
-.void-rt-host,
-.void-rt-empty {
-    font-family: inherit;
-    letter-spacing: inherit;
-}
-
-.void-rt-panel,
-.void-rt-panel * {
-    box-sizing: border-box;
-}
-
-.void-rt-panel {
-    --void-rt-accent: hsl(var(--fg-primary));
-    --void-rt-card-width: clamp(136px, calc((100vw - 68px) / 5), 204px);
-    --void-rt-gap: 8px;
-    --void-rt-padding-panel: 12px;
-    --void-rt-padding-card: 8px;
-    --void-rt-border-card: 1px;
-    --void-rt-radius-panel: 16px;
-    --void-rt-radius-card: calc(var(--void-rt-radius-panel) - var(--void-rt-padding-panel));
-    --void-rt-radius-thumb: calc(var(--void-rt-radius-card) - var(--void-rt-padding-card) - var(--void-rt-border-card));
-    --void-rt-radius-icon: 8px;
-    --void-rt-radius-title-icon: 8px;
-    --void-rt-meta-inline-padding: 4px;
-    --void-rt-motion-card: 180ms cubic-bezier(0.22, 1, 0.36, 1);
-    --void-rt-motion-cover: 220ms cubic-bezier(0.22, 1, 0.36, 1);
-    --void-rt-thumb-stroke-inset: -0.5px;
-    --void-rt-thumb-stroke-radius-offset: 0.5px;
-    --void-rt-thumb-stroke-color: hsl(var(--border-l2));
-    --void-rt-title-icon-size: 16px;
-    --void-rt-title-icon-gap: 4px;
-
-    all: unset;
-    color-scheme: inherit;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate3d(-50%, -50%, 0);
-    transform-origin: center center;
-    z-index: 1;
-    display: block;
-    width: fit-content;
-    max-width: calc(100vw - 24px);
-    overflow: auto hidden;
-    scrollbar-width: none;
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l2));
-    border: 1px solid hsl(var(--border-l1));
-    border-radius: var(--void-rt-radius-panel);
-    box-shadow: 0 4px 16px hsl(var(--black) / 12%);
-    padding: var(--void-rt-padding-panel);
-    pointer-events: auto;
-    opacity: 0;
-    transition: opacity 90ms ease;
-    will-change: opacity;
-}
-
-.void-rt-panel::-webkit-scrollbar {
-    display: none;
-}
-
-.void-rt-panel[data-visible="true"] {
-    opacity: 1;
-}
-
-.void-rt-list {
-    display: grid;
-    grid-template-columns: repeat(var(--void-rt-count, 5), var(--void-rt-card-width));
-    gap: var(--void-rt-gap);
-    width: max-content;
-    max-width: 100%;
-    padding: 2px;
-}
-
-.void-rt-card {
-    all: unset;
-    box-sizing: border-box;
-    width: var(--void-rt-card-width);
-    min-width: var(--void-rt-card-width);
-    max-width: var(--void-rt-card-width);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border-radius: var(--void-rt-radius-card);
-    border: var(--void-rt-border-card) solid transparent;
-    outline: 0;
-    background: transparent;
-    padding: var(--void-rt-padding-card);
-    color: hsl(var(--fg-primary));
-    cursor: pointer;
-    box-shadow: none;
-    transition:
-        border-color 140ms ease,
-        box-shadow var(--void-rt-motion-card);
-}
-
-.void-rt-card[data-active="true"] {
-    z-index: 1;
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 82%, hsl(var(--border-l2)));
-    background: transparent;
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 55%, transparent);
-}
-
-.void-rt-card:focus-visible {
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 88%, hsl(var(--border-l2)));
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 60%, transparent);
-}
-
-.void-rt-thumb {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    border-radius: var(--void-rt-radius-thumb);
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, hsl(var(--surface-l1)));
-}
-
-.void-rt-thumb::after {
-    content: "";
-    position: absolute;
-    inset: var(--void-rt-thumb-stroke-inset);
-    z-index: 2;
-    border-radius: calc(var(--void-rt-radius-thumb) + var(--void-rt-thumb-stroke-radius-offset));
-    box-sizing: border-box;
-    border: 1px solid var(--void-rt-thumb-stroke-color);
-    box-shadow: none;
-    pointer-events: none;
-}
-
-.void-rt-shot {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-    user-select: none;
-}
-
-.void-rt-shot,
-.void-rt-shot * {
-    pointer-events: none !important;
-    scrollbar-width: none;
-}
-
-.void-rt-thumb:has(.void-rt-shot) .void-rt-fallback {
-    display: none;
-}
-
-.void-rt-cover {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    object-position: top center;
-}
-
-.void-rt-mark {
-    display: none !important;
-}
-
-.void-rt-page {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 8px;
-    overflow: hidden;
-    padding: 8px 12px 12px;
-    background: hsl(var(--surface-l1));
-    color: hsl(var(--fg-primary));
-    font-family: inherit;
-}
-
-.void-rt-page-line {
-    display: -webkit-box;
-    align-self: flex-start;
-    width: fit-content;
-    max-width: 94%;
-    overflow: hidden;
-    color: hsl(var(--fg-secondary));
-    font-size: 11px;
-    font-weight: 400;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-    /* stylelint-disable-next-line property-no-vendor-prefix */
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-}
-
-.void-rt-page-line-user,
-.void-rt-page-line[data-role="user"] {
-    align-self: flex-end;
-    width: fit-content;
-    max-width: 78%;
-    padding: 6px 8px;
-    border-radius: 12px 12px 4px 12px;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-primary));
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-}
-
-.void-rt-page-line[data-role="assistant"] {
-    align-self: flex-start;
-    padding: 0;
-    border-radius: 0;
-    background: none;
-    color: hsl(var(--fg-secondary));
-}
-
-.void-rt-fallback {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.void-rt-favicon {
-    width: 38px;
-    height: 38px;
-    border-radius: var(--void-rt-radius-icon);
-    object-fit: cover;
-    display: block;
-}
-
-.void-rt-favicon[data-broken="true"],
-.void-rt-title-favicon[data-broken="true"] {
-    visibility: hidden;
-}
-
-.void-rt-meta {
-    min-width: 0;
-    display: grid;
-    gap: 4px;
-    padding: 0 var(--void-rt-meta-inline-padding);
-}
-
-.void-rt-name-row {
-    min-width: 0;
-}
-
-.void-rt-title-favicon {
-    display: none;
-}
-
-.void-rt-name {
-    min-width: 0;
-    display: block;
-    overflow: hidden;
-    color: hsl(var(--fg-primary));
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.16;
-    letter-spacing: inherit;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.void-rt-host {
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    overflow: hidden;
-    color: hsl(var(--fg-secondary));
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.18;
-}
-
-.void-rt-folder {
-    width: 12px;
-    height: 12px;
-    flex: 0 0 12px;
-    display: block;
-}
-
-.void-rt-host-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.void-rt-empty {
-    min-width: min(22rem, calc(100vw - 3rem));
-    padding: 16px 20px;
-    color: hsl(var(--fg-primary));
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.4;
-}
-
-.void-rt-panel[data-theme="dark"] {
-    color-scheme: dark;
-}
-`);
-
-  // src/plugins/recentTopics/index.tsx
-  var logger30 = new Logger("RecentTopics");
-  var cl26 = classNameFactory("void-rt-");
-  var HOME_KEY = "home";
-  var HOME_SEP = "home:";
-  var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
-  var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
-  var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
-  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation|see all(?: chats| conversations)?|show all(?: chats| conversations)?|view all(?: chats| conversations)?|all chats|all conversations|查看全部|显示全部|查看所有|全部会话|所有对话)$/i;
-  var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
-  var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
-  var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
-  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
-  var settings25 = definePluginSettings({
-    maxRecent: {
-      type: 4 /* SELECT */,
-      description: "How many recently opened conversations to show.",
-      options: COUNT_OPTIONS
-    },
-    includeHome: {
-      type: 3 /* BOOLEAN */,
-      description: "Include new-chat home pages in the switcher.",
-      default: true
-    }
-  }).withPrivateSettings();
-  var thumbs = new Map;
-  var wsNames = {};
-  var open2 = false;
-  var selected = 0;
-  var held = false;
-  var ctrlHeld = false;
-  var keys2 = null;
-  var host = null;
-  var paintedKey = "";
-  var sidebarSnap = null;
-  var pendingWs = new Set;
-  function isSkipLabel(name) {
-    const t = name.replaceAll(/\s+/g, " ").trim();
-    if (!t)
-      return false;
-    SKIP_LABEL.lastIndex = 0;
-    return SKIP_LABEL.test(t);
-  }
-  function usableName(name) {
-    const t = name.replaceAll(/\s+/g, " ").trim();
-    return t && !isSkipLabel(t) ? t : "";
-  }
-  function unique(ids) {
-    const seen = new Set;
-    const out = [];
-    for (const id of ids) {
-      if (seen.has(id))
-        continue;
-      seen.add(id);
-      out.push(id);
-    }
-    return out;
-  }
-  function readVisits() {
-    return settings25.plain.visits ?? [];
-  }
-  function maxCount() {
-    const n = Number(settings25.store.maxRecent);
-    return Number.isFinite(n) && n > 0 ? n : 5;
-  }
-  function capVisits(ids) {
-    const allowHome = settings25.store.includeHome;
-    return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
-  }
-  function pruneRecord(source, ids) {
-    const keep = {};
-    if (!source)
-      return keep;
-    for (const id of ids) {
-      if (source[id])
-        keep[id] = source[id];
-    }
-    return keep;
-  }
-  function sameList(a, b) {
-    return a.length === b.length && a.every((id, i) => id === b[i]);
-  }
-  function sameRecord(a, b) {
-    const src = a ?? {};
-    const keys3 = Object.keys(b);
-    if (Object.keys(src).length !== keys3.length)
-      return false;
-    return keys3.every((k) => src[k] === b[k]);
-  }
-  function assignRecord(key, next) {
-    if (sameRecord(settings25.plain[key], next))
-      return false;
-    settings25.store[key] = next;
-    return true;
-  }
-  var writing = false;
-  function writeVisits(next) {
-    if (writing)
-      return;
-    writing = true;
-    try {
-      const visits = capVisits(next);
-      const rawWs = pruneRecord(settings25.plain.workspaceByConv, visits);
-      const workspaceByConv = {};
-      for (const [id, value] of Object.entries(rawWs)) {
-        const ws = asWorkspaceId(value);
-        if (ws)
-          workspaceByConv[id] = ws;
-      }
-      const pages = pruneRecord(settings25.plain.pages, visits);
-      const usedWs = new Set(Object.values(workspaceByConv));
-      for (const id of visits) {
-        const ws = workspaceFromHomeId(id);
-        if (!ws)
-          continue;
-        usedWs.add(ws);
-        workspaceByConv[id] = ws;
-      }
-      const keepProjects = {};
-      for (const [id, name] of Object.entries(settings25.plain.projectNames ?? {})) {
-        const n = usableName(name);
-        if (usedWs.has(id) && n)
-          keepProjects[id] = n;
-      }
-      let changed = false;
-      if (!sameList(readVisits(), visits)) {
-        settings25.store.visits = visits;
-        changed = true;
-      }
-      if (assignRecord("titles", pruneRecord(settings25.plain.titles, visits)))
-        changed = true;
-      if (assignRecord("workspaceByConv", workspaceByConv))
-        changed = true;
-      if (assignRecord("pages", pages))
-        changed = true;
-      if (assignRecord("projectNames", keepProjects))
-        changed = true;
-      if (changed && open2)
-        paint2();
-    } finally {
-      writing = false;
-    }
-  }
-  function rememberTitle(id, title) {
-    const t = title?.trim();
-    if (!id || isHomeId(id) || !t)
-      return;
-    const prev = settings25.plain.titles ?? {};
-    if (prev[id] === t)
-      return;
-    settings25.store.titles = { ...prev, [id]: t };
-  }
-  function isHomeId(id) {
-    return id === HOME_KEY || id.startsWith(HOME_SEP);
-  }
-  function homeId(workspaceId) {
-    const ws = asWorkspaceId(workspaceId);
-    return ws ? HOME_SEP + ws : HOME_KEY;
-  }
-  function workspaceFromHomeId(id) {
-    return id.startsWith(HOME_SEP) ? asWorkspaceId(id.slice(HOME_SEP.length)) : "";
-  }
-  function routeConvId(route) {
-    if (!route)
-      return null;
-    if (route.conversationId)
-      return route.conversationId;
-    if (typeof route.chat === "string" && route.chat)
-      return route.chat;
-    if (route.page === "main")
-      return HOME_KEY;
-    if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
-      return homeId(route.workspaceId);
-    return null;
-  }
-  function projectIdFromUrl() {
-    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
-    return m?.[1] ?? "";
-  }
-  function chatIdFromUrl() {
-    try {
-      const u = new URL(location.href);
-      const q = u.searchParams.get("chat");
-      if (q)
-        return q;
-      return u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] ?? "";
-    } catch {
-      return "";
-    }
-  }
-  var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
-  function asWorkspaceId(value) {
-    if (typeof value === "string") {
-      const s = value.trim();
-      return WS_ID.test(s) ? s : "";
-    }
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        const id = asWorkspaceId(item);
-        if (id)
-          return id;
-      }
-      return "";
-    }
-    if (value && typeof value === "object") {
-      const rec = value;
-      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
-    }
-    return "";
-  }
-  function hrefFor(id, workspaceId) {
-    if (isHomeId(id)) {
-      const ws2 = workspaceFromHomeId(id) || asWorkspaceId(workspaceId);
-      return ws2 ? `/project/${ws2}` : "/";
-    }
-    const ws = asWorkspaceId(workspaceId);
-    if (!id)
-      return ws ? `/project/${ws}` : "/";
-    if (ws)
-      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
-    return `/c/${encodeURIComponent(id)}`;
-  }
-  function hrefParts(href) {
-    if (!href)
-      return { ws: "", chat: "" };
-    try {
-      const u = new URL(href, location.origin);
-      const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
-      const chat = u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
-      return { ws, chat };
-    } catch {
-      return { ws: "", chat: "" };
-    }
-  }
-  function currentVisit() {
-    const urlChat = chatIdFromUrl();
-    if (urlChat)
-      return urlChat;
-    try {
-      const { conversationId, optimisticConversationId } = ChatPageStore.useChatPageStore.getState();
-      if (conversationId)
-        return conversationId;
-      if (optimisticConversationId)
-        return optimisticConversationId;
-    } catch (e) {
-      logger30.debug("ChatPageStore unavailable:", e);
-    }
-    try {
-      const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
-      if (fromRoute != null)
-        return fromRoute;
-    } catch (e) {
-      logger30.debug("RoutingStore unavailable:", e);
-    }
-    const ws = projectIdFromUrl();
-    return ws ? homeId(ws) : null;
-  }
-  function idsFromHistory() {
-    try {
-      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      const ids = [];
-      const add = (r) => {
-        const id = routeConvId(r);
-        if (id != null)
-          ids.push(id);
-      };
-      add(route);
-      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
-        add(historyStack[i]);
-      return unique(ids);
-    } catch (e) {
-      logger30.debug("historyStack unavailable:", e);
-      return [];
-    }
-  }
-  function pageTitle() {
-    const raw = document.title.replace(TITLE_TAIL, "").trim();
-    if (!raw || /^grok$/i.test(raw))
-      return "";
-    return raw;
-  }
-  function lookup(id) {
-    try {
-      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
-    } catch (e) {
-      logger30.debug("Conversation lookup failed:", e);
-      return;
-    }
-  }
-  function titleOf(id) {
-    if (!id || isHomeId(id))
-      return "New chat";
-    const conv = lookup(id);
-    if (conv?.title?.trim())
-      return conv.title.trim();
-    const cached = settings25.plain.titles?.[id];
-    if (cached)
-      return cached;
-    if (id === currentVisit())
-      return pageTitle() || "Untitled";
-    return "Untitled";
-  }
-  function liveWorkspaceId() {
-    try {
-      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
-      if (pid)
-        return pid;
-    } catch {}
-    try {
-      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
-      const id = asWorkspaceId(workspaceId);
-      if (id)
-        return id;
-    } catch {}
-    return asWorkspaceId(projectIdFromUrl());
-  }
-  function workspaceFromHistory(id) {
-    try {
-      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      if (routeConvId(route) === id) {
-        const ws = asWorkspaceId(route.workspaceId);
-        if (ws)
-          return ws;
-      }
-      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
-        const r = historyStack[i];
-        if (routeConvId(r) === id) {
-          const ws = asWorkspaceId(r?.workspaceId);
-          if (ws)
-            return ws;
-        }
-      }
-    } catch {}
-    return "";
-  }
-  function convWorkspaceId(id) {
-    try {
-      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
-      const fromResolver = asWorkspaceId(resolved);
-      if (fromResolver)
-        return fromResolver;
-      const conv = byId[id] ?? byIdWithWorkspaces[id];
-      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-    } catch (e) {
-      logger30.debug("convWorkspaceId failed:", e);
-      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
-    }
-  }
-  function workspaceFromDom(id) {
-    if (!id)
-      return "";
-    try {
-      for (const a of document.querySelectorAll("a[href]")) {
-        const href = a.getAttribute("href");
-        if (!href || !href.includes(id))
-          continue;
-        const { ws, chat } = hrefParts(href);
-        if (chat === id && ws)
-          return ws;
-      }
-    } catch {}
-    return "";
-  }
-  function shortOwnText(el) {
-    const parts = [];
-    for (const n of el.childNodes) {
-      if (n.nodeType === Node.TEXT_NODE) {
-        parts.push(n.textContent ?? "");
-        continue;
-      }
-      if (!(n instanceof HTMLElement))
-        continue;
-      if (n.matches("svg, a[href]"))
-        continue;
-      const nestedHref = n.getAttribute("href") ?? "";
-      if (nestedHref.includes("chat=") || nestedHref.includes("/c/"))
-        continue;
-      if (n.querySelector("a[href*='chat='], a[href*='/c/']"))
-        continue;
-      const t = (n.textContent ?? "").replaceAll(/\s+/g, " ").trim();
-      if (t.length > 0 && t.length <= 64)
-        parts.push(t);
-    }
-    const out = parts.join(" ").replaceAll(/\s+/g, " ").trim();
-    return out.length >= 2 && out.length <= 64 ? out : "";
-  }
-  function folderLabel(el) {
-    if (!el.querySelector("svg"))
-      return "";
-    return usableName(shortOwnText(el));
-  }
-  function projectNameFromAncestors(el) {
-    const sidebar = el.closest("[data-sidebar=sidebar]");
-    let cur = el.parentElement;
-    while (cur && cur !== sidebar) {
-      let sib = cur;
-      while (sib) {
-        const name = folderLabel(sib);
-        if (name)
-          return name;
-        sib = sib.previousElementSibling;
-      }
-      cur = cur.parentElement;
-    }
-    return "";
-  }
-  function invalidateSidebar() {
-    sidebarSnap = null;
-  }
-  function sidebarIndex() {
-    const empty = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
-    const sidebar = document.querySelector("[data-sidebar=sidebar]");
-    if (!sidebar)
-      return empty;
-    const key = `${sidebar.childElementCount}:${(sidebar.textContent ?? "").length}`;
-    if (sidebarSnap?.key === key)
-      return sidebarSnap.index;
-    const index = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
-    let currentName = "";
-    const assignConv = (chat, ws, name) => {
-      if (!chat || !ws)
-        return;
-      index.wsByConv[chat] = ws;
-      const label = usableName(name || currentName || index.nameByWs[ws] || "");
-      if (label) {
-        index.nameByWs[ws] = label;
-        index.nameByConv[chat] = label;
-      }
-    };
-    for (const el of sidebar.querySelectorAll("a[href], button, [role='button']")) {
-      const { ws, chat } = hrefParts(el.getAttribute("href"));
-      if (chat) {
-        assignConv(chat, ws, currentName);
-        if (ws && !index.nameByConv[chat]) {
-          const up = usableName(projectNameFromAncestors(el));
-          if (up) {
-            index.nameByConv[chat] = up;
-            index.nameByWs[ws] ??= up;
-            currentName ||= up;
-          }
-        }
-        continue;
-      }
-      const label = shortOwnText(el) || folderLabel(el);
-      if (isSkipLabel(label) && !ws) {
-        currentName = "";
-        continue;
-      }
-      if (ws) {
-        const n = usableName(label);
-        if (n) {
-          currentName = n;
-          index.nameByWs[ws] = n;
-        } else if (isSkipLabel(label)) {
-          currentName = index.nameByWs[ws] || "";
-        }
-        continue;
-      }
-      const folder = folderLabel(el);
-      if (folder)
-        currentName = folder;
-    }
-    sidebarSnap = { key, index };
-    return index;
-  }
-  function workspaceFetchedEmpty(id) {
-    try {
-      const { byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-      return !!byIdWithWorkspaces[id] && !convWorkspaceId(id);
-    } catch {
-      return false;
-    }
-  }
-  function routeWorkspaceFor(id) {
-    if (id === chatIdFromUrl())
-      return asWorkspaceId(projectIdFromUrl());
-    try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      const chat = route.conversationId || (typeof route.chat === "string" ? route.chat : "");
-      if (chat === id)
-        return asWorkspaceId(route.workspaceId);
-    } catch {}
-    return "";
-  }
-  function dropWorkspace(id) {
-    const prev = settings25.plain.workspaceByConv ?? {};
-    if (!prev[id])
-      return;
-    const next = { ...prev };
-    delete next[id];
-    settings25.store.workspaceByConv = next;
-  }
-  function workspaceOf(id) {
-    if (!id)
-      return "";
-    if (isHomeId(id)) {
-      const fromKey = workspaceFromHomeId(id);
-      if (fromKey)
-        return fromKey;
-      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings25.plain.workspaceByConv?.[id]);
-    }
-    const fromConv = convWorkspaceId(id);
-    if (fromConv)
-      return fromConv;
-    if (workspaceFetchedEmpty(id))
-      return "";
-    const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
-    if (fromSidebar)
-      return fromSidebar;
-    const cached = asWorkspaceId(settings25.plain.workspaceByConv?.[id]);
-    if (cached)
-      return cached;
-    const fromHist = workspaceFromHistory(id);
-    if (fromHist)
-      return fromHist;
-    if (id === currentVisit())
-      return routeWorkspaceFor(id);
-    return "";
-  }
-  function readOpenProjectName() {
-    const idx = sidebarIndex();
-    const live = liveWorkspaceId();
-    if (live) {
-      const n = usableName(idx.nameByWs[live]);
-      if (n)
-        return n;
-    }
-    const current = currentVisit();
-    const ws = current ? workspaceOf(current) : "";
-    if (!current || !ws)
-      return "";
-    return usableName(idx.nameByConv[current] || idx.nameByWs[ws]);
-  }
-  function projectNameOf(id) {
-    if (!id)
-      return "";
-    const ws = workspaceOf(id);
-    if (!ws)
-      return "";
-    const idx = sidebarIndex();
-    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings25.plain.projectNames?.[ws] || "");
-    if (!named)
-      return "";
-    const live = liveWorkspaceId();
-    const liveName = readOpenProjectName();
-    if (live && ws !== live && liveName && named === liveName)
-      return "";
-    return named;
-  }
-  function rememberProject(id) {
-    if (!id)
-      return;
-    const ws = workspaceOf(id);
-    if (!ws)
-      return;
-    const prevWs = settings25.plain.workspaceByConv ?? {};
-    if (prevWs[id] !== ws)
-      settings25.store.workspaceByConv = { ...prevWs, [id]: ws };
-    const idx = sidebarIndex();
-    const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
-    const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
-    const name = usableName(sidebarName || wsNames[ws] || liveName || settings25.plain.projectNames?.[ws] || "");
-    if (!name)
-      return;
-    wsNames[ws] = name;
-    const prevNames = settings25.plain.projectNames ?? {};
-    if (prevNames[ws] !== name)
-      settings25.store.projectNames = { ...prevNames, [ws]: name };
-  }
-  function reconcileSidebarCache() {
-    const idx = sidebarIndex();
-    const prevWs = { ...settings25.plain.workspaceByConv };
-    const prevNames = { ...settings25.plain.projectNames };
-    let wsChanged = false;
-    let namesChanged = false;
-    for (const [conv, ws] of Object.entries(idx.wsByConv)) {
-      if (prevWs[conv] !== ws) {
-        prevWs[conv] = ws;
-        wsChanged = true;
-      }
-    }
-    for (const [ws, name] of Object.entries(idx.nameByWs)) {
-      const n = usableName(name);
-      if (!n)
-        continue;
-      wsNames[ws] = n;
-      if (prevNames[ws] !== n) {
-        prevNames[ws] = n;
-        namesChanged = true;
-      }
-    }
-    for (const [ws, name] of Object.entries(prevNames)) {
-      if (usableName(name))
-        continue;
-      delete prevNames[ws];
-      delete wsNames[ws];
-      namesChanged = true;
-    }
-    if (wsChanged)
-      settings25.store.workspaceByConv = prevWs;
-    if (namesChanged)
-      settings25.store.projectNames = prevNames;
-  }
-  function requestWorkspace(id) {
-    if (!id || isHomeId(id) || pendingWs.has(id))
-      return;
-    if (convWorkspaceId(id))
-      return;
-    if (workspaceFetchedEmpty(id)) {
-      dropWorkspace(id);
-      return;
-    }
-    if (sidebarIndex().wsByConv[id])
-      return;
-    pendingWs.add(id);
-    try {
-      const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-      const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-      if (!fetchConv) {
-        pendingWs.delete(id);
-        return;
-      }
-      fetchConv(id).then((conv) => {
-        const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-        if (!ws) {
-          dropWorkspace(id);
-          if (open2)
-            paint2();
-          return;
-        }
-        const prev = settings25.plain.workspaceByConv ?? {};
-        if (prev[id] !== ws)
-          settings25.store.workspaceByConv = { ...prev, [id]: ws };
-        const live = liveWorkspaceId();
-        const liveName = usableName(readOpenProjectName());
-        const names = settings25.plain.projectNames ?? {};
-        if (live && ws !== live && liveName && names[ws] === liveName) {
-          const next = { ...names };
-          delete next[ws];
-          settings25.store.projectNames = next;
-          delete wsNames[ws];
-        }
-        if (open2)
-          paint2();
-      }).catch((e) => logger30.debug("workspace fetch failed:", e)).finally(() => {
-        pendingWs.delete(id);
-      });
-    } catch {
-      pendingWs.delete(id);
-    }
-  }
-  function chatPane() {
-    const main = document.querySelector("main");
-    if (!main)
-      return null;
-    let best = null;
-    let bestScore = 0;
-    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
-      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
-        continue;
-      const r = n.getBoundingClientRect();
-      if (r.width < 240 || r.height < 120)
-        continue;
-      const score = r.width * r.height;
-      if (score > bestScore) {
-        best = n;
-        bestScore = score;
-      }
-    }
-    return best;
-  }
-  function messageList(pane) {
-    let node = pane;
-    for (let i = 0;i < 8; i++) {
-      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
-      if (kids.length === 1 && kids[0].children.length > 1) {
-        node = kids[0];
-        continue;
-      }
-      break;
-    }
-    return node;
-  }
-  function chromeOff(el) {
-    const clone = el.cloneNode(true);
-    clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach((n) => n.remove());
-    return clone;
-  }
-  function userBubble(root) {
-    const tagged = root.querySelector("[data-void-rt-role='user'], .void-rt-user-msg");
-    if (tagged)
-      return tagged;
-    const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
-    if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className))
-      cands.unshift(root);
-    if (!cands.length)
-      return null;
-    const inner = cands.filter((el) => !cands.some((other) => other !== el && el.contains(other)));
-    inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
-    return inner[0] ?? null;
-  }
-  function extractTurn(kid) {
-    const bubble = userBubble(kid);
-    const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
-    const rest = chromeOff(kid);
-    if (bubble && bubble !== kid) {
-      rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach((n) => n.remove());
-    }
-    let asstText = scrubText(rest.innerText ?? "");
-    if (userText && asstText.includes(userText))
-      asstText = scrubText(asstText.replace(userText, " "));
-    const lines = [];
-    if (userText)
-      lines.push({ role: "user", text: userText });
-    if (asstText && asstText !== userText)
-      lines.push({ role: "assistant", text: asstText });
-    return lines;
-  }
-  function extractMarks(root) {
-    const marks2 = [...root.querySelectorAll(".void-rt-mark")];
-    if (!marks2.length)
-      return [];
-    const out = [];
-    for (const m of marks2) {
-      const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
-      const text = scrubText(m.textContent ?? "");
-      if (text)
-        out.push({ role, text });
-    }
-    return lastRound(out);
-  }
-  function extractLines(pane) {
-    const fromMarks = extractMarks(pane);
-    if (fromMarks.length)
-      return fromMarks;
-    const source = messageList(pane);
-    const kids = [...source.children].filter((c) => c instanceof HTMLElement);
-    const out = [];
-    for (const kid of kids)
-      out.push(...extractTurn(kid));
-    return lastRound(out);
-  }
-  function scrubText(raw) {
-    let t = raw.replaceAll(/\s+/g, " ").trim();
-    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
-    t = t.replaceAll(/\s+/g, " ").trim();
-    if (!t || SKIP_NOISE.test(t))
-      return "";
-    return t;
-  }
-  function plainText(md) {
-    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
-    return scrubText(t);
-  }
-  function clipLine(text, max) {
-    const t = scrubText(text);
-    if (t.length <= max)
-      return t;
-    return `${t.slice(0, Math.max(1, max - 1))}…`;
-  }
-  function lastRound(lines) {
-    const cleaned = lines.map((line) => ({ role: line.role, text: scrubText(line.text) })).filter((line) => !!line.text);
-    if (!cleaned.length)
-      return [];
-    let asst = -1;
-    let user = -1;
-    for (let i = cleaned.length - 1;i >= 0; i--) {
-      if (asst < 0 && cleaned[i].role === "assistant")
-        asst = i;
-      if (user < 0 && cleaned[i].role === "user")
-        user = i;
-      if (asst >= 0 && user >= 0)
-        break;
-    }
-    const pick = user >= 0 && asst >= 0 && user < asst ? [cleaned[user], cleaned[asst]] : user >= 0 && (asst < 0 || user > asst) ? [cleaned[user]] : asst >= 0 ? [cleaned[asst]] : cleaned.slice(-1);
-    return pick.map((line) => ({
-      role: line.role,
-      text: clipLine(line.text, line.role === "user" ? 72 : 140)
-    }));
-  }
-  function pickUserText(query, message) {
-    const q = plainText(query);
-    const m = plainText(message);
-    if (q && m) {
-      if (m.startsWith(q) && m.length > q.length)
-        return q;
-      return q.length <= m.length ? q : m;
-    }
-    return q || m;
-  }
-  function walkThread(startId) {
-    if (!startId)
-      return [];
-    try {
-      const { byId } = ResponseStore.useResponseStore.getState();
-      const out = [];
-      const seen = new Set;
-      let id = startId;
-      while (id && !seen.has(id) && out.length < 50) {
-        seen.add(id);
-        const r = byId[id];
-        if (!r)
-          break;
-        out.unshift(r);
-        id = r.parentResponseId;
-      }
-      return out;
-    } catch {
-      return [];
-    }
-  }
-  function responsesOf(id) {
-    const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-    const nodes = nodesByConversationId[id] ?? [];
-    if (nodes.length) {
-      const list = nodes.map((n) => byId[n.responseId]).filter((r) => !!r);
-      if (list.length)
-        return list;
-      const walked = walkThread(nodes.at(-1)?.responseId);
-      if (walked.length)
-        return walked;
-    }
-    const cached = byConversationId[id];
-    if (cached?.length)
-      return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
-    try {
-      const chat = ChatPageStore.useChatPageStore.getState();
-      if (chat.conversationId === id) {
-        return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
-      }
-    } catch {}
-    return [];
-  }
-  function responsesToLines(list) {
-    const out = [];
-    for (const r of list) {
-      if (!r || r.isControl)
-        continue;
-      const sender2 = String(r.sender ?? "").toLowerCase();
-      const human = sender2 === "human" || sender2 === "user";
-      if (human) {
-        const text = pickUserText(r.query || "", r.message || "");
-        if (text)
-          out.push({ role: "user", text });
-        continue;
-      }
-      const query = pickUserText(r.query || "", "");
-      let message = plainText(r.message || "");
-      if (query && message.startsWith(query) && message.length > query.length) {
-        message = scrubText(message.slice(query.length));
-      }
-      if (query && out.at(-1)?.text !== query)
-        out.push({ role: "user", text: query });
-      if (message && message !== query)
-        out.push({ role: "assistant", text: message });
-    }
-    return lastRound(out);
-  }
-  function linesFromStore(id) {
-    if (!id)
-      return [];
-    try {
-      return responsesToLines(responsesOf(id));
-    } catch (e) {
-      logger30.debug("ResponseStore snapshot failed:", e);
-      return [];
-    }
-  }
-  function betterLines(store4, dom) {
-    const pair = (lines) => lines.some((l) => l.role === "user") && lines.some((l) => l.role === "assistant");
-    if (pair(store4))
-      return store4;
-    if (pair(dom))
-      return dom;
-    return store4.length ? store4 : dom;
-  }
-  function parseSnap(raw) {
-    if (!raw)
-      return null;
-    try {
-      const parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
-        return null;
-      return {
-        title: typeof parsed.title === "string" ? parsed.title : "",
-        theme: parsed.theme === "light" ? "light" : "dark",
-        lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"))
-      };
-    } catch {
-      return null;
-    }
-  }
-  function snapOf(id) {
-    return thumbs.get(id) ?? parseSnap(settings25.plain.pages?.[id]);
-  }
-  function rememberPage(id, snap) {
-    const json = JSON.stringify(snap);
-    const prev = settings25.plain.pages ?? {};
-    if (prev[id] === json)
-      return;
-    settings25.store.pages = { ...prev, [id]: json };
-  }
-  function applyLineStyle(el, role, theme) {
-    el.style.display = "-webkit-box";
-    el.style.webkitBoxOrient = "vertical";
-    el.style.overflow = "hidden";
-    el.style.width = "fit-content";
-    el.style.overflowWrap = "anywhere";
-    el.style.fontSize = "11px";
-    el.style.lineHeight = "1.35";
-    if (role === "user") {
-      el.style.alignSelf = "flex-end";
-      el.style.maxWidth = "78%";
-      el.style.padding = "6px 9px";
-      el.style.borderRadius = "14px 14px 4px 14px";
-      el.style.background = theme === "light" ? "#e8e6e0" : "#2f2f2f";
-      el.style.color = theme === "light" ? "#171717" : "#fff";
-      el.style.webkitLineClamp = "2";
-    } else {
-      el.style.alignSelf = "flex-start";
-      el.style.maxWidth = "94%";
-      el.style.padding = "0";
-      el.style.background = "transparent";
-      el.style.color = theme === "light" ? "#3f3f3f" : "#c4c4c4";
-      el.style.webkitLineClamp = "4";
-    }
-  }
-  function buildPageShot(snap) {
-    const page = node("span", cl26("page"));
-    page.dataset.theme = snap.theme;
-    for (const line of lastRound(snap.lines)) {
-      const el = node("span", cl26("page-line", line.role === "user" && "page-line-user"), line.text);
-      el.dataset.role = line.role;
-      applyLineStyle(el, line.role, snap.theme);
-      page.append(el);
-    }
-    return page;
-  }
-  function captureId(id) {
-    if (!id)
-      return;
-    const fromStore = linesFromStore(id);
-    let fromDom = [];
-    if (id === currentVisit()) {
-      const pane = chatPane();
-      if (pane)
-        fromDom = extractLines(pane);
-    }
-    const lines = betterLines(fromStore, fromDom);
-    if (!lines.length)
-      return;
-    const snap = {
-      title: titleOf(id),
-      theme: detectTheme(),
-      lines: lastRound(lines)
-    };
-    thumbs.set(id, snap);
-    rememberPage(id, snap);
-  }
-  var capturing = false;
-  function captureCurrent() {
-    if (capturing || open2)
-      return;
-    capturing = true;
-    try {
-      const current = currentVisit();
-      if (current)
-        captureId(current);
-      for (const id of capVisits(readVisits())) {
-        if (id && id !== current)
-          captureId(id);
-      }
-    } catch (e) {
-      logger30.debug("snapshot failed:", e);
-    } finally {
-      capturing = false;
-    }
-  }
-  function scheduleCapture() {
-    if (open2)
-      return;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!open2)
-          captureCurrent();
-      });
-    });
-  }
-  function bump(id) {
-    if (!id)
-      return;
-    if (isHomeId(id) && !settings25.store.includeHome)
-      return;
-    writeVisits(capVisits([id, ...readVisits()]));
-    if (isHomeId(id)) {
-      if (shouldRememberProject(id))
-        rememberProject(id);
-      return;
-    }
-    const conv = lookup(id);
-    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-    if (shouldRememberProject(id))
-      rememberProject(id);
-  }
-  function shouldRememberProject(id) {
-    if (!id || workspaceFetchedEmpty(id))
-      return false;
-    return !!workspaceOf(id);
-  }
-  function hydrate() {
-    invalidateSidebar();
-    const current = currentVisit();
-    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
-    writeVisits(capVisits(merged));
-    reconcileSidebarCache();
-    if (current) {
-      rememberTitle(current, lookup(current)?.title || pageTitle());
-      if (shouldRememberProject(current))
-        rememberProject(current);
-    }
-    for (const id of capVisits(readVisits())) {
-      if (id)
-        requestWorkspace(id);
-    }
-  }
-  function topics() {
-    return capVisits(readVisits()).map((id) => ({
-      id,
-      title: titleOf(id),
-      project: projectNameOf(id)
-    }));
-  }
-  function parseHref(href) {
-    try {
-      const u = new URL(href, location.origin);
-      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
-      if (parsed?.page && parsed.page !== "unknown")
-        return parsed;
-    } catch (e) {
-      logger30.debug("urlToRoute failed:", e);
-    }
-    return null;
-  }
-  function applyChatPage(id, workspaceId) {
-    try {
-      const chat = ChatPageStore.useChatPageStore.getState();
-      chat.setConversationId(id || undefined);
-      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
-    } catch (e) {
-      logger30.debug("ChatPageStore update failed:", e);
-    }
-  }
-  function navigateTo(id) {
-    try {
-      const routing = RoutingStore.useRoutingStore.getState();
-      const { route } = routing;
-      const teamId = route.teamId ?? null;
-      if (isHomeId(id) || !id) {
-        const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceOf(id));
-        const hereWs = asWorkspaceId(route.workspaceId) || projectIdFromUrl();
-        const hereChat = route.conversationId || chatIdFromUrl();
-        if (!ws) {
-          if (!hereChat && (route.page === "main" || !hereWs))
-            return;
-          routing.push({ page: "main", teamId });
-          applyChatPage("");
-          return;
-        }
-        if (!hereChat && hereWs === ws)
-          return;
-        routing.push({ page: "workspace", workspaceId: ws, tab: "conversations", teamId });
-        applyChatPage("", ws);
-        return;
-      }
-      const workspaceId = workspaceOf(id);
-      const href = hrefFor(id, workspaceId);
-      const parsed = parseHref(href);
-      const dest = workspaceId ? {
-        page: "workspace",
-        workspaceId,
-        tab: "conversations",
-        conversationId: id,
-        teamId
-      } : {
-        page: "chat",
-        conversationId: id,
-        temporary: lookup(id)?.temporary ?? false,
-        teamId
-      };
-      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
-        dest.page = "workspace";
-        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
-        dest.conversationId = parsed.conversationId || id;
-        dest.tab = parsed.tab || "conversations";
-        if (parsed.filePath)
-          dest.filePath = parsed.filePath;
-      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
-        dest.page = "chat";
-        dest.conversationId = parsed.conversationId;
-        dest.temporary = parsed.temporary ?? dest.temporary;
-      }
-      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
-        dest.page = "chat";
-        dest.conversationId = id;
-        delete dest.workspaceId;
-        delete dest.tab;
-      }
-      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
-        return;
-      routing.push(dest);
-      applyChatPage(id, asWorkspaceId(dest.workspaceId));
-      if (dest.page !== "workspace") {
-        try {
-          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-          fetchConv?.(id).then((conv) => {
-            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
-            if (!ws)
-              return;
-            const now = RoutingStore.useRoutingStore.getState();
-            if (routeConvId(now.route) !== id)
-              return;
-            now.replace({
-              page: "workspace",
-              workspaceId: ws,
-              tab: "conversations",
-              conversationId: id,
-              teamId
-            });
-            applyChatPage(id, ws);
-            rememberProject(id);
-          }).catch((e) => logger30.debug("workspace resolve failed:", e));
-        } catch (e) {
-          logger30.debug("workspace fetch skipped:", e);
-        }
-      }
-    } catch (e) {
-      logger30.error("Failed to navigate:", e);
-      try {
-        location.assign(hrefFor(id, workspaceOf(id) || undefined));
-      } catch (navErr) {
-        logger30.error("Fallback navigation failed:", navErr);
-      }
-    }
-  }
-  function isTrigger(e) {
-    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
-      return true;
-    return TRIGGER_KEYS.has(e.key);
-  }
-  function isCtrlKey(e) {
-    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
-  }
-  function begin(reverse, fromHold) {
-    held = fromHold;
-    open2 = false;
-    captureCurrent();
-    open2 = true;
-    selected = 0;
-    try {
-      hydrate();
-      const current = currentVisit();
-      if (current != null)
-        bump(current);
-      if (topics().length > 1)
-        selected = reverse ? topics().length - 1 : 1;
-    } catch (e) {
-      logger30.error("Failed to open switcher:", e);
-    }
-    paint2();
-  }
-  function cycle2(reverse) {
-    const { length } = topics();
-    if (!length)
-      return;
-    selected = (selected + (reverse ? -1 : 1) + length) % length;
-    paint2();
-  }
-  function commit() {
-    if (!open2)
-      return;
-    const target = topics()[selected];
-    open2 = false;
-    held = false;
-    paint2();
-    if (target)
-      navigateTo(target.id);
-  }
-  function cancel() {
-    if (!open2)
-      return;
-    open2 = false;
-    held = false;
-    paint2();
-  }
-  function onKeyDown3(e) {
-    if (isCtrlKey(e)) {
-      ctrlHeld = true;
-      return;
-    }
-    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
-    if (combo) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      try {
-        if (open2)
-          cycle2(e.shiftKey);
-        else
-          begin(e.shiftKey, true);
-      } catch (err) {
-        logger30.error("Hotkey failed:", err);
-      }
-      return;
-    }
-    if (!open2)
-      return;
-    if (e.key === "Escape") {
-      e.preventDefault();
-      cancel();
-      return;
-    }
-    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
-      e.preventDefault();
-      cycle2(e.shiftKey);
-    }
-  }
-  function onKeyUp(e) {
-    if (!isCtrlKey(e))
-      return;
-    ctrlHeld = false;
-    if (open2 && held)
-      commit();
-  }
-  function onBeforeInput(e) {
-    if (!ctrlHeld && !open2)
-      return;
-    const { data } = e;
-    if (data && TRIGGER_KEYS.has(data))
-      e.preventDefault();
-  }
-  function onWindowBlur() {
-    ctrlHeld = false;
-  }
-  function onVisibility2() {
-    if (document.hidden) {
-      ctrlHeld = false;
-      cancel();
-    }
-  }
-  function pick(index) {
-    selected = index;
-    commit();
-  }
-  function node(tag, className, text) {
-    const el = document.createElement(tag);
-    if (className)
-      el.className = className;
-    if (text)
-      el.textContent = text;
-    return el;
-  }
-  function fillShot(box, id) {
-    const snap = snapOf(id);
-    if (!snap) {
-      const fallback = node("span", cl26("fallback"));
-      fallback.append(faviconImg(cl26("favicon")));
-      box.append(fallback);
-      return;
-    }
-    const shot = node("span", cl26("shot"));
-    shot.append(buildPageShot(snap));
-    box.append(shot);
-  }
-  var GROK_BG_PATH2 = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
-  var GROK_MARK_P12 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
-  var GROK_MARK_P22 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
-  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH2}" fill="#050505"/><path d="${GROK_MARK_P12}" fill="#FCFCFC"/><path d="${GROK_MARK_P22}" fill="#FCFCFC"/></svg>`)}`;
-  var ACCENTS = [
-    "rgb(37, 99, 235)",
-    "rgb(14, 165, 233)",
-    "rgb(20, 184, 166)",
-    "rgb(249, 115, 22)",
-    "rgb(100, 116, 139)"
-  ];
-  function accentOf(id) {
-    if (!id)
-      return ACCENTS[4];
-    let hash = 0;
-    for (let i = 0;i < id.length; i++)
-      hash = hash * 31 + id.charCodeAt(i) >>> 0;
-    return ACCENTS[hash % ACCENTS.length];
-  }
-  function detectTheme() {
-    const html = document.documentElement;
-    const { body } = document;
-    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
-    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
-      return "dark";
-    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
-      return "light";
-    try {
-      const bg = getComputedStyle(body || html).backgroundColor;
-      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
-      if (m) {
-        const r = Number(m[1]) / 255;
-        const g = Number(m[2]) / 255;
-        const b = Number(m[3]) / 255;
-        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-        return lum < 0.42 ? "dark" : "light";
-      }
-    } catch {}
-    const scheme = getComputedStyle(html).colorScheme;
-    if (scheme.includes("light") && !scheme.includes("dark"))
-      return "light";
-    return "dark";
-  }
-  function grokFaviconSrc() {
-    try {
-      if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
-        const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
-        const href = link?.href;
-        if (href && !href.startsWith("data:"))
-          return href;
-        return `${location.origin}/images/favicon.svg`;
-      }
-    } catch {}
-    return GROK_ICON_DATA;
-  }
-  function faviconImg(className) {
-    const img = document.createElement("img");
-    img.className = className;
-    img.alt = "";
-    img.draggable = false;
-    img.src = grokFaviconSrc();
-    img.addEventListener("error", () => {
-      if (img.src === GROK_ICON_DATA) {
-        img.dataset.broken = "true";
-        return;
-      }
-      img.src = GROK_ICON_DATA;
-    });
-    return img;
-  }
-  function folderIcon() {
-    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg2.setAttribute("class", cl26("folder"));
-    svg2.setAttribute("viewBox", "0 0 24 24");
-    svg2.setAttribute("fill", "none");
-    svg2.setAttribute("stroke", "currentColor");
-    svg2.setAttribute("stroke-width", "2");
-    svg2.setAttribute("stroke-linecap", "round");
-    svg2.setAttribute("stroke-linejoin", "round");
-    svg2.setAttribute("aria-hidden", "true");
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
-    svg2.append(path);
-    return svg2;
-  }
-  function applyTheme(panel) {
-    const theme = detectTheme();
-    panel.setAttribute("data-theme", theme);
-    panel.style.colorScheme = theme;
-  }
-  function buildHost() {
-    const root = node("div", cl26("root"));
-    root.id = "void-rt-host";
-    root.setAttribute("role", "presentation");
-    root.addEventListener("click", cancel);
-    const panel = node("div", cl26("panel"));
-    panel.setAttribute("role", "listbox");
-    panel.setAttribute("aria-label", "Recent conversations");
-    panel.addEventListener("click", (e) => e.stopPropagation());
-    panel.append(node("div", cl26("list")));
-    root.append(panel);
-    return root;
-  }
-  function renderList(items) {
-    if (!host)
-      return;
-    const panel = host.querySelector(`.${cl26("panel")}`);
-    if (!panel)
-      return;
-    let list = panel.querySelector(`.${cl26("list")}`);
-    if (!list) {
-      panel.replaceChildren();
-      list = node("div", cl26("list"));
-      panel.append(list);
-    }
-    list.replaceChildren();
-    items.forEach((topic, i) => {
-      const btn = node("button", cl26("card"));
-      btn.type = "button";
-      btn.tabIndex = -1;
-      btn.setAttribute("role", "option");
-      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
-      btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
-      btn.addEventListener("pointerenter", () => {
-        if (selected === i)
-          return;
-        selected = i;
-        syncActive();
-      });
-      btn.addEventListener("focus", () => {
-        if (selected === i)
-          return;
-        selected = i;
-        syncActive();
-      });
-      btn.addEventListener("click", () => pick(i));
-      const shot = node("span", cl26("thumb"));
-      shot.setAttribute("aria-hidden", "true");
-      fillShot(shot, topic.id);
-      const meta = node("span", cl26("meta"));
-      meta.append(node("span", cl26("name"), topic.title));
-      if (topic.project) {
-        const proj = node("span", cl26("host"));
-        proj.append(folderIcon(), node("span", cl26("host-name"), topic.project));
-        meta.append(proj);
-      }
-      btn.append(shot, meta);
-      list.append(btn);
-    });
-  }
-  function syncActive() {
-    if (!host)
-      return;
-    const cards = host.querySelectorAll(`.${cl26("card")}`);
-    cards.forEach((card, i) => {
-      const on = i === selected;
-      card.setAttribute("data-active", on ? "true" : "false");
-      card.setAttribute("aria-selected", on ? "true" : "false");
-      card.tabIndex = on ? 0 : -1;
-      if (on)
-        card.setAttribute("aria-current", "true");
-      else
-        card.removeAttribute("aria-current");
-    });
-    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
-  }
-  function paint2() {
-    document.documentElement.classList.toggle("void-rt-open", open2);
-    if (!open2) {
-      detachHost();
-      return;
-    }
-    const items = topics();
-    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
-    if (!host) {
-      host = buildHost();
-      mountOverlay(host);
-    }
-    const panel = host.querySelector(`.${cl26("panel")}`);
-    if (!panel)
-      return;
-    applyTheme(panel);
-    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
-    if (!items.length) {
-      if (paintedKey !== "__empty__") {
-        panel.replaceChildren(node("div", cl26("empty"), "Open a few chats, then hold Ctrl+` to switch."));
-        paintedKey = "__empty__";
-      }
-      requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-      return;
-    }
-    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl26("list")}`)) {
-      panel.replaceChildren(node("div", cl26("list")));
-      paintedKey = "";
-    }
-    if (paintedKey !== key) {
-      renderList(items);
-      paintedKey = key;
-    }
-    syncActive();
-    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-  }
-  function detachHost() {
-    document.documentElement.classList.remove("void-rt-open");
-    paintedKey = "";
-    if (host) {
-      try {
-        host.hidePopover();
-      } catch {}
-      host.remove();
-      host = null;
-    }
-    document.getElementById("void-rt-host")?.remove();
-    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
-      const p = el;
-      try {
-        p.hidePopover?.();
-      } catch {}
-      try {
-        p.close?.();
-      } catch {}
-      el.remove();
-    });
-  }
-  function mountOverlay(root) {
-    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
-    document.documentElement.append(root);
-    document.documentElement.classList.add("void-rt-open");
-    if (typeof root.showPopover !== "function")
-      return;
-    root.setAttribute("popover", "manual");
-    try {
-      root.showPopover();
-    } catch {
-      root.removeAttribute("popover");
-    }
-  }
-  var recentTopics_default = definePlugin({
-    name: "RecentTopics",
-    icon: LayoutGridIcon,
-    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings25,
-    managedStyle: "recentTopics",
-    _mark({ response }) {
-      try {
-        if (!response || response.isControl)
-          return null;
-        const sender2 = String(response.sender ?? "").toLowerCase();
-        const human = sender2 === "human" || sender2 === "user";
-        const text = human ? pickUserText(response.query || "", response.message || "") : plainText(response.message || "");
-        if (!text)
-          return null;
-        return React.createElement("span", {
-          className: "void-rt-mark",
-          "data-role": human ? "user" : "assistant",
-          hidden: true
-        }, text);
-      } catch {
-        return null;
-      }
-    },
-    patches: [
-      {
-        find: "response-family:handleEditSave",
-        all: true,
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._mark({response:$1}),$&"
-        }
-      }
-    ],
-    start() {
-      detachHost();
-      open2 = false;
-      held = false;
-      ctrlHeld = false;
-      try {
-        hydrate();
-        const current = currentVisit();
-        if (current != null)
-          bump(current);
-        scheduleCapture();
-      } catch (e) {
-        logger30.error("Hydrate failed:", e);
-      }
-      if (!keys2) {
-        keys2 = new AbortController;
-        const { signal } = keys2;
-        window.addEventListener("keydown", onKeyDown3, { capture: true, signal });
-        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
-        window.addEventListener("blur", onWindowBlur, { signal });
-        document.addEventListener("visibilitychange", onVisibility2, { signal });
-        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
-      }
-    },
-    stop() {
-      keys2?.abort();
-      keys2 = null;
-      open2 = false;
-      held = false;
-      ctrlHeld = false;
-      thumbs.clear();
-      detachHost();
-    },
-    onSettingsChange() {
-      try {
-        writeVisits(capVisits(readVisits()));
-      } catch (e) {
-        logger30.error("Settings update failed:", e);
-      }
-    },
-    zustand: {
-      RoutingStore: {
-        selector: (s) => routeConvId(s.route),
-        handler(id) {
-          if (open2)
-            return;
-          const current = currentVisit();
-          if (current == null)
-            return;
-          if (id && isHomeId(current) && !isHomeId(id))
-            return;
-          bump(current);
-          scheduleCapture();
-        }
-      },
-      ChatPageStore: {
-        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
-        handler() {
-          if (open2)
-            return;
-          const id = currentVisit();
-          if (id == null)
-            return;
-          bump(id);
-          scheduleCapture();
-        }
-      },
-      ResponseStore: {
-        selector: (s) => {
-          const id = currentVisit();
-          if (!id || isHomeId(id))
-            return "";
-          const list = s.byConversationId[id];
-          const last = list?.[list.length - 1];
-          return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
-        },
-        handler() {
-          if (open2)
-            return;
-          scheduleCapture();
-        }
-      }
-    }
-  });
-
-  // src/plugins/composerOpacity/index.ts
-  var STYLE_NAME9 = "composerOpacity";
-  var SHELL = ".query-bar";
-  var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
-  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
-  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
-  var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
+  // src/plugins/widerChat/index.ts
+  var STYLE_NAME9 = "widerChat";
   var settings26 = definePluginSettings({
-    opacity: {
-      type: 5 /* SLIDER */,
-      description: "Background opacity of the chat input. 100 is fully opaque.",
-      min: 0,
-      max: 100,
-      default: 100
-    },
-    blur: {
-      type: 5 /* SLIDER */,
-      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
-      min: 0,
-      max: 40,
-      default: 16
+    width: {
+      type: 1 /* NUMBER */,
+      description: "Maximum chat width in rem.",
+      default: 64
     }
   });
-  function apply4() {
-    const pct = clamp(settings26.store.opacity, 0, 100);
-    const blur = clamp(settings26.store.blur, 0, 40);
-    const alpha = pct / 100;
-    const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
-    registerStyle(STYLE_NAME9, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
+  function applyWidth() {
+    const w = settings26.store.width;
+    registerStyle(STYLE_NAME9, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
-  var composerOpacity_default = definePlugin({
-    name: "ComposerOpacity",
-    icon: BlendIcon,
-    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
-    authors: [Devs.p],
-    tags: ["ui", "chat"],
-    enabledByDefault: true,
+  var widerChat_default = definePlugin({
+    name: "WiderChat",
+    icon: UnfoldHorizontalIcon,
+    description: "Adjustable chat width for big monitors.",
+    authors: [Devs.Prism],
+    tags: ["chat", "ui"],
     settings: settings26,
-    start: apply4,
-    onSettingsChange: apply4,
+    start: applyWidth,
+    onSettingsChange: applyWidth,
     stop() {
       unregisterStyle(STYLE_NAME9);
     }
@@ -17957,8 +18052,8 @@ html.void-rt-open [data-sidebar="gap"] {
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [noGrokBot_default.name]: noGrokBot_default, [responseNotification_default.name]: responseNotification_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [usageDisplay_default.name]: usageDisplay_default, [settingsFlyout_default.name]: settingsFlyout_default, [userQuotes_default.name]: userQuotes_default, [exportChat_default.name]: exportChat_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [stableComposer_default.name]: stableComposer_default, [autoRetry_default.name]: autoRetry_default, [compactModeSelect_default.name]: compactModeSelect_default, [noRightPanel_default.name]: noRightPanel_default, [inputHistory_default.name]: inputHistory_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [noDictation_default.name]: noDictation_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [placeholder_default.name]: placeholder_default, [messageTimestamps_default.name]: messageTimestamps_default, [themedScrollbar_default.name]: themedScrollbar_default, [cleaner_default.name]: cleaner_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [recentTopics_default.name]: recentTopics_default, [composerOpacity_default.name]: composerOpacity_default };
-  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/api/Notices.css
+  var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [chatListStatus_default.name]: chatListStatus_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [compactModeSelect_default.name]: compactModeSelect_default, [composerOpacity_default.name]: composerOpacity_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [inputHistory_default.name]: inputHistory_default, [messageTimestamps_default.name]: messageTimestamps_default, [noDictation_default.name]: noDictation_default, [noGrokBot_default.name]: noGrokBot_default, [noRightPanel_default.name]: noRightPanel_default, [noShareLink_default.name]: noShareLink_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [oneko_default.name]: oneko_default, [placeholder_default.name]: placeholder_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [recentTopics_default.name]: recentTopics_default, [responseNotification_default.name]: responseNotification_default, [settingsFlyout_default.name]: settingsFlyout_default, [stableComposer_default.name]: stableComposer_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [themedScrollbar_default.name]: themedScrollbar_default, [usageDisplay_default.name]: usageDisplay_default, [userQuotes_default.name]: userQuotes_default, [widerChat_default.name]: widerChat_default };
+  // voidpp-css:/home/workdir/artifacts/Void-src/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
@@ -18022,47 +18117,47 @@ html.void-rt-open [data-sidebar="gap"] {
 
   // src/api/Notices.tsx
   var NoticeType;
-  ((NoticeType2) => {
-    NoticeType2["INFO"] = "info";
-    NoticeType2["WARNING"] = "warning";
-    NoticeType2["ERROR"] = "error";
-    NoticeType2["SUCCESS"] = "success";
+  ((NoticeType) => {
+    NoticeType["INFO"] = "info";
+    NoticeType["WARNING"] = "warning";
+    NoticeType["ERROR"] = "error";
+    NoticeType["SUCCESS"] = "success";
   })(NoticeType ||= {});
   var cl27 = classNameFactory("void-notice-");
   var ICONS = {
-    ["info" /* INFO */]: () => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
+    ["info" /* INFO */]: () => /* @__PURE__ */ React2.createElement(CircleAlertIcon, {
       size: 18
     }),
-    ["warning" /* WARNING */]: () => /* @__PURE__ */ React.createElement(TriangleAlert, {
+    ["warning" /* WARNING */]: () => /* @__PURE__ */ React2.createElement(TriangleAlert, {
       size: 18
     }),
-    ["error" /* ERROR */]: () => /* @__PURE__ */ React.createElement(CircleXIcon, {
+    ["error" /* ERROR */]: () => /* @__PURE__ */ React2.createElement(CircleXIcon, {
       size: 18
     }),
-    ["success" /* SUCCESS */]: () => /* @__PURE__ */ React.createElement(CircleCheckIcon, {
+    ["success" /* SUCCESS */]: () => /* @__PURE__ */ React2.createElement(CircleCheckIcon, {
       size: 18
     })
   };
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
-    return /* @__PURE__ */ React.createElement("div", {
+    return /* @__PURE__ */ React2.createElement("div", {
       className: cl27("root")
-    }, /* @__PURE__ */ React.createElement("span", {
+    }, /* @__PURE__ */ React2.createElement("span", {
       className: cl27("icon")
-    }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
+    }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React2.createElement("span", {
       className: cl27("message")
-    }, message), action && /* @__PURE__ */ React.createElement(Button, {
+    }, message), action && /* @__PURE__ */ React2.createElement(Button, {
       variant: "primary",
       size: "sm",
       shape: "pill",
       onClick: action.onClick
-    }, action.icon, action.label), /* @__PURE__ */ React.createElement(Button, {
+    }, action.icon, action.label), /* @__PURE__ */ React2.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "square",
       className: cl27("close"),
       onClick: onClose
-    }, /* @__PURE__ */ React.createElement(Cross2Icon, {
+    }, /* @__PURE__ */ React2.createElement(Cross2Icon, {
       size: 16
     })));
   }
@@ -18071,7 +18166,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const { toast } = Toaster;
     if (!toast)
       return -1;
-    activeNoticeId = toast.custom((id) => /* @__PURE__ */ React.createElement(Notice, {
+    activeNoticeId = toast.custom((id) => /* @__PURE__ */ React2.createElement(Notice, {
       ...options,
       onClose: () => {
         toast.dismiss(id);
@@ -18089,156 +18184,156 @@ html.void-rt-open [data-sidebar="gap"] {
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
-    useTransition: () => useTransition,
-    useSyncExternalStore: () => useSyncExternalStore,
-    useState: () => useState,
-    useRef: () => useRef,
-    useReducer: () => useReducer,
-    useReducedMotion: () => useReducedMotion,
-    useMemo: () => useMemo,
-    useLayoutEffect: () => useLayoutEffect,
-    useId: () => useId,
-    useEffect: () => useEffect,
-    useDeferredValue: () => useDeferredValue,
-    useContext: () => useContext,
-    useCallback: () => useCallback,
-    onceReady: () => onceReady,
-    createElement: () => createElement,
-    TooltipTrigger: () => TooltipTrigger,
-    TooltipProvider: () => TooltipProvider,
-    TooltipContent: () => TooltipContent,
-    Tooltip: () => Tooltip,
-    ToggleGroupItem: () => ToggleGroupItem,
-    ToggleGroup: () => ToggleGroup,
-    Toaster: () => Toaster,
-    Textarea: () => Textarea,
-    TextToSpeechStore: () => TextToSpeechStore,
-    TabsTrigger: () => TabsTrigger,
-    TabsList: () => TabsList,
-    TabsContent: () => TabsContent,
-    Tabs: () => Tabs,
-    TableRow: () => TableRow,
-    TableHeader: () => TableHeader,
-    TableHead: () => TableHead,
-    TableCell: () => TableCell,
-    TableBody: () => TableBody,
-    Table: () => Table,
-    Switch: () => Switch,
-    SubscriptionsStore: () => SubscriptionsStore,
-    Spinner: () => Spinner,
-    Slider: () => Slider,
-    Skeleton: () => Skeleton,
-    SidebarComponents: () => SidebarComponents,
-    SettingsTitle: () => SettingsTitle,
-    SettingsStore: () => SettingsStore,
-    SettingsRow: () => SettingsRow,
-    SettingsDialogStore: () => SettingsDialogStore,
-    SettingsDescription: () => SettingsDescription,
-    SessionStore: () => SessionStore,
-    Separator: () => Separator,
-    SelectValue: () => SelectValue,
-    SelectTrigger: () => SelectTrigger,
-    SelectItem: () => SelectItem,
-    SelectContent: () => SelectContent,
-    Select: () => Select,
-    RoutingStore: () => RoutingStore,
-    ResponsiveDialog: () => ResponsiveDialog,
-    ResponseStore: () => ResponseStore,
-    React: () => React,
-    Portal: () => Portal,
-    PopoverTrigger: () => PopoverTrigger,
-    PopoverContent: () => PopoverContent,
-    PopoverArrow: () => PopoverArrow,
-    Popover: () => Popover,
-    MotionDiv: () => MotionDiv,
-    ModesStore: () => ModesStore,
-    MessageStore: () => MessageStore,
-    MediaStore: () => MediaStore,
-    LazyComponent: () => LazyComponent,
-    Label: () => Label,
-    Input: () => Input,
-    HoverCardTrigger: () => HoverCardTrigger,
-    HoverCardContent: () => HoverCardContent,
-    HoverCard: () => HoverCard,
-    Fragment: () => Fragment,
-    FilesPageStore: () => FilesPageStore,
-    FileUtils: () => FileUtils,
-    FeatureStore: () => FeatureStore,
-    DropdownMenuTrigger: () => DropdownMenuTrigger,
-    DropdownMenuSubTrigger: () => DropdownMenuSubTrigger,
-    DropdownMenuSubContent: () => DropdownMenuSubContent,
-    DropdownMenuSub: () => DropdownMenuSub,
-    DropdownMenuSeparator: () => DropdownMenuSeparator,
-    DropdownMenuRadioItem: () => DropdownMenuRadioItem,
-    DropdownMenuRadioGroup: () => DropdownMenuRadioGroup,
-    DropdownMenuPortal: () => DropdownMenuPortal,
-    DropdownMenuItem: () => DropdownMenuItem,
-    DropdownMenuContent: () => DropdownMenuContent,
-    DropdownMenuCheckboxItem: () => DropdownMenuCheckboxItem,
-    DropdownMenu: () => DropdownMenu,
-    DrawerTrigger: () => DrawerTrigger,
-    DrawerTitle: () => DrawerTitle,
-    DrawerHeader: () => DrawerHeader,
-    DrawerFooter: () => DrawerFooter,
-    DrawerDescription: () => DrawerDescription,
-    DrawerContent: () => DrawerContent,
-    Drawer: () => Drawer,
-    DialogTrigger: () => DialogTrigger,
-    DialogTitle: () => DialogTitle,
-    DialogPortal: () => DialogPortal,
-    DialogOverlay: () => DialogOverlay,
-    DialogHeader: () => DialogHeader,
-    DialogFooter: () => DialogFooter,
-    DialogDescription: () => DialogDescription,
-    DialogContent: () => DialogContent,
-    DialogClose: () => DialogClose,
-    Dialog: () => Dialog,
-    ConversationStore: () => ConversationStore,
-    CommandList: () => CommandList,
-    CommandItem: () => CommandItem,
-    CommandInput: () => CommandInput,
-    CommandGroup: () => CommandGroup,
-    CommandEmpty: () => CommandEmpty,
-    Command: () => Command,
-    ClassNames: () => ClassNames,
-    Checkbox: () => Checkbox,
-    ChatPageStore: () => ChatPageStore,
-    CardTitle: () => CardTitle,
-    CardHeader: () => CardHeader,
-    CardContent: () => CardContent,
-    Card: () => Card,
-    ButtonWithTooltipOptimized: () => ButtonWithTooltipOptimized,
-    ButtonWithTooltip: () => ButtonWithTooltip,
-    ButtonWithPopover: () => ButtonWithPopover,
-    Button: () => Button,
-    Badge: () => Badge,
-    Avatar: () => Avatar,
-    ApiClients: () => ApiClients,
-    AnimatePresence: () => AnimatePresence,
-    AlertDialogTrigger: () => AlertDialogTrigger,
-    AlertDialogTitle: () => AlertDialogTitle,
-    AlertDialogHeader: () => AlertDialogHeader,
-    AlertDialogFooter: () => AlertDialogFooter,
-    AlertDialogDescription: () => AlertDialogDescription,
-    AlertDialogContent: () => AlertDialogContent,
-    AlertDialogCancel: () => AlertDialogCancel,
-    AlertDialogAction: () => AlertDialogAction,
-    AlertDialog: () => AlertDialog,
-    AccordionTrigger: () => AccordionTrigger,
-    AccordionItem: () => AccordionItem,
+    Accordion: () => Accordion,
     AccordionContent: () => AccordionContent,
-    Accordion: () => Accordion
+    AccordionItem: () => AccordionItem,
+    AccordionTrigger: () => AccordionTrigger,
+    AlertDialog: () => AlertDialog,
+    AlertDialogAction: () => AlertDialogAction,
+    AlertDialogCancel: () => AlertDialogCancel,
+    AlertDialogContent: () => AlertDialogContent,
+    AlertDialogDescription: () => AlertDialogDescription,
+    AlertDialogFooter: () => AlertDialogFooter,
+    AlertDialogHeader: () => AlertDialogHeader,
+    AlertDialogTitle: () => AlertDialogTitle,
+    AlertDialogTrigger: () => AlertDialogTrigger,
+    AnimatePresence: () => AnimatePresence,
+    ApiClients: () => ApiClients,
+    Avatar: () => Avatar,
+    Badge: () => Badge,
+    Button: () => Button,
+    ButtonWithPopover: () => ButtonWithPopover,
+    ButtonWithTooltip: () => ButtonWithTooltip,
+    ButtonWithTooltipOptimized: () => ButtonWithTooltipOptimized,
+    Card: () => Card,
+    CardContent: () => CardContent,
+    CardHeader: () => CardHeader,
+    CardTitle: () => CardTitle,
+    ChatPageStore: () => ChatPageStore,
+    Checkbox: () => Checkbox,
+    ClassNames: () => ClassNames,
+    Command: () => Command,
+    CommandEmpty: () => CommandEmpty,
+    CommandGroup: () => CommandGroup,
+    CommandInput: () => CommandInput,
+    CommandItem: () => CommandItem,
+    CommandList: () => CommandList,
+    ConversationStore: () => ConversationStore,
+    Dialog: () => Dialog,
+    DialogClose: () => DialogClose,
+    DialogContent: () => DialogContent,
+    DialogDescription: () => DialogDescription,
+    DialogFooter: () => DialogFooter,
+    DialogHeader: () => DialogHeader,
+    DialogOverlay: () => DialogOverlay,
+    DialogPortal: () => DialogPortal,
+    DialogTitle: () => DialogTitle,
+    DialogTrigger: () => DialogTrigger,
+    Drawer: () => Drawer,
+    DrawerContent: () => DrawerContent,
+    DrawerDescription: () => DrawerDescription,
+    DrawerFooter: () => DrawerFooter,
+    DrawerHeader: () => DrawerHeader,
+    DrawerTitle: () => DrawerTitle,
+    DrawerTrigger: () => DrawerTrigger,
+    DropdownMenu: () => DropdownMenu,
+    DropdownMenuCheckboxItem: () => DropdownMenuCheckboxItem,
+    DropdownMenuContent: () => DropdownMenuContent,
+    DropdownMenuItem: () => DropdownMenuItem,
+    DropdownMenuPortal: () => DropdownMenuPortal,
+    DropdownMenuRadioGroup: () => DropdownMenuRadioGroup,
+    DropdownMenuRadioItem: () => DropdownMenuRadioItem,
+    DropdownMenuSeparator: () => DropdownMenuSeparator,
+    DropdownMenuSub: () => DropdownMenuSub,
+    DropdownMenuSubContent: () => DropdownMenuSubContent,
+    DropdownMenuSubTrigger: () => DropdownMenuSubTrigger,
+    DropdownMenuTrigger: () => DropdownMenuTrigger,
+    FeatureStore: () => FeatureStore,
+    FileUtils: () => FileUtils,
+    FilesPageStore: () => FilesPageStore,
+    Fragment: () => Fragment,
+    HoverCard: () => HoverCard,
+    HoverCardContent: () => HoverCardContent,
+    HoverCardTrigger: () => HoverCardTrigger,
+    Input: () => Input,
+    Label: () => Label,
+    LazyComponent: () => LazyComponent,
+    MediaStore: () => MediaStore,
+    MessageStore: () => MessageStore,
+    ModesStore: () => ModesStore,
+    MotionDiv: () => MotionDiv,
+    Popover: () => Popover,
+    PopoverArrow: () => PopoverArrow,
+    PopoverContent: () => PopoverContent,
+    PopoverTrigger: () => PopoverTrigger,
+    Portal: () => Portal,
+    React: () => React2,
+    ResponseStore: () => ResponseStore,
+    ResponsiveDialog: () => ResponsiveDialog,
+    RoutingStore: () => RoutingStore,
+    Select: () => Select,
+    SelectContent: () => SelectContent,
+    SelectItem: () => SelectItem,
+    SelectTrigger: () => SelectTrigger,
+    SelectValue: () => SelectValue,
+    Separator: () => Separator,
+    SessionStore: () => SessionStore,
+    SettingsDescription: () => SettingsDescription,
+    SettingsDialogStore: () => SettingsDialogStore,
+    SettingsRow: () => SettingsRow,
+    SettingsStore: () => SettingsStore,
+    SettingsTitle: () => SettingsTitle,
+    SidebarComponents: () => SidebarComponents,
+    Skeleton: () => Skeleton,
+    Slider: () => Slider,
+    Spinner: () => Spinner,
+    SubscriptionsStore: () => SubscriptionsStore,
+    Switch: () => Switch,
+    Table: () => Table,
+    TableBody: () => TableBody,
+    TableCell: () => TableCell,
+    TableHead: () => TableHead,
+    TableHeader: () => TableHeader,
+    TableRow: () => TableRow,
+    Tabs: () => Tabs,
+    TabsContent: () => TabsContent,
+    TabsList: () => TabsList,
+    TabsTrigger: () => TabsTrigger,
+    TextToSpeechStore: () => TextToSpeechStore,
+    Textarea: () => Textarea,
+    Toaster: () => Toaster,
+    ToggleGroup: () => ToggleGroup,
+    ToggleGroupItem: () => ToggleGroupItem,
+    Tooltip: () => Tooltip,
+    TooltipContent: () => TooltipContent,
+    TooltipProvider: () => TooltipProvider,
+    TooltipTrigger: () => TooltipTrigger,
+    createElement: () => createElement,
+    onceReady: () => onceReady,
+    useCallback: () => useCallback,
+    useContext: () => useContext,
+    useDeferredValue: () => useDeferredValue,
+    useEffect: () => useEffect,
+    useId: () => useId,
+    useLayoutEffect: () => useLayoutEffect,
+    useMemo: () => useMemo,
+    useReducedMotion: () => useReducedMotion,
+    useReducer: () => useReducer,
+    useRef: () => useRef,
+    useState: () => useState,
+    useSyncExternalStore: () => useSyncExternalStore,
+    useTransition: () => useTransition
   });
 
   // src/VoidPP.ts
-  var logger31 = new Logger("TurbopackPatcher", "#e78284");
+  var logger32 = new Logger("TurbopackPatcher", "#e78284");
   var FALLBACK_MS = 15000;
   var ORPHAN_REPORT_DELAY_MS = 5000;
   function safely(name, fn) {
     try {
       fn();
     } catch (e) {
-      logger31.error(`${name} failed:`, e);
+      logger32.error(`${name} failed:`, e);
     }
   }
   function deferOrphanReport() {
@@ -18259,7 +18354,7 @@ html.void-rt-open [data-sidebar="gap"] {
       safely("initStreamEvents", initStreamEvents);
       safely("_resolveReady", _resolveReady);
       safely("startAllPlugins", () => startAllPlugins("TurbopackReady" /* TurbopackReady */));
-      logger31.info(`${getModuleCache().size} modules loaded, ready`);
+      logger32.info(`${getModuleCache().size} modules loaded, ready`);
       safely("retryFailedPlugins", retryFailedPlugins);
       safely("deferOrphanReport", deferOrphanReport);
       safely("checkBuildFingerprint", checkBuildFingerprint);
