@@ -324,6 +324,12 @@ export const BotOffIcon = (props: IconProps = {}) =>
         <path d="M9.67 4H12v2.33" />,
     );
 
+export const PlusIcon = (props: IconProps = {}) =>
+    svg(props,
+        <path d="M5 12h14" />,
+        <path d="M12 5v14" />,
+    );
+
 export const Link2OffIcon = (props: IconProps = {}) =>
     svg(props,
         <path d="M9 17H7A5 5 0 0 1 7 7" />,

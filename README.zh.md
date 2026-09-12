@@ -32,6 +32,7 @@
 | UserQuotes | 开 | 自己气泡里的引用行画出可见左竖条，避免 `>` 被 markdown 吃掉后看起来像消失。 |
 | NoRightPanel | 开 | 保持 Grok 右侧栏关闭，包括自动打开和切会话时的恢复。 |
 | NoSidebarPlugins | 开 | 把侧栏 Plugins 按钮挪到头像折叠菜单（Void++ / Help 旁边）。 |
+| BotsPlusHover | 开 | 侧栏 Bots 标题右侧加号仅在悬停时显示，与 Projects 一致。 |
 
 #### 设置 UI
 

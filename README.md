@@ -32,6 +32,7 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 | UserQuotes | On | Keep quoted lines in your own bubbles marked with a visible left bar after markdown hides `>`. |
 | NoRightPanel | On | Keep Grok's right panel closed, including auto-open and restore when switching chats. |
 | NoSidebarPlugins | On | Move the sidebar Plugins button into the avatar menu (next to Void++ / Help). |
+| BotsPlusHover | On | Show the sidebar Bots header plus only on hover, matching Projects. |
 
 #### Settings UI
 
