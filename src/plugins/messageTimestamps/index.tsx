@@ -24,14 +24,12 @@ import definePlugin, { OptionType } from "@utils/types";
 import {
     asRecord,
     chooseTime,
-    familyUserTime,
     harvestResponses,
     isFresh,
     isHumanSender,
     neighborTime,
     parseTime,
     pickTimes,
-    preferHumanTime,
     recordId,
     shouldPersistStamp,
     uuidTime,
@@ -103,10 +101,8 @@ function remember(id: string, ms: number, sender?: unknown): boolean {
     return prev !== ms;
 }
 
-function extraKeys(rec: Record<string, unknown>, id: string, user = false): string[] {
-    if (user) return id ? [`u:${id}`] : [];
+function extraKeys(rec: Record<string, unknown>, id: string): string[] {
     const keys: string[] = [];
-    if (id) keys.push(`h:${id}`);
     const { parentResponseId } = rec;
     if (typeof parentResponseId === "string" && parentResponseId) keys.push(`h:${parentResponseId}`);
     try {
@@ -123,26 +119,20 @@ function extraKeys(rec: Record<string, unknown>, id: string, user = false): stri
     return keys;
 }
 
-function storedMs(id: string, rec: Record<string, unknown>, user = false): number | null {
+function storedMs(id: string, rec: Record<string, unknown>): number | null {
     const map = stamps();
-    if (user) {
-        const mine = map.get(`u:${id}`);
-        if (mine != null) return mine;
-        return null;
-    }
     const direct = map.get(id);
     if (direct != null) return direct;
-    for (const key of extraKeys(rec, id, false)) {
+    for (const key of extraKeys(rec, id)) {
         const ms = map.get(key);
         if (ms != null) return ms;
     }
     return null;
 }
 
-function rememberKeys(id: string, rec: Record<string, unknown>, ms: number, sender: unknown, user = false): boolean {
-    let changed = false;
-    if (!user && remember(id, ms, sender)) changed = true;
-    for (const key of extraKeys(rec, id, user)) {
+function rememberKeys(id: string, rec: Record<string, unknown>, ms: number, sender: unknown): boolean {
+    let changed = remember(id, ms, sender);
+    for (const key of extraKeys(rec, id)) {
         if (remember(key, ms, sender)) changed = true;
     }
     return changed;
@@ -161,17 +151,6 @@ function storeRecords(id: string): Record<string, unknown>[] {
     }
 }
 
-function fullRecord(id: string, rec: Record<string, unknown>): Record<string, unknown> {
-    if (!id) return rec;
-    try {
-        const hit = asRecord(ResponseStore.useResponseStore.getState().byId?.[id]);
-        if (hit) return hit;
-    } catch (e) {
-        logger.debug("byId lookup failed", e);
-    }
-    return rec;
-}
-
 function conversationCreateTime(id: string): number | null {
     try {
         const { byConversationId } = ResponseStore.useResponseStore.getState();
@@ -188,25 +167,22 @@ function conversationCreateTime(id: string): number | null {
     return null;
 }
 
-function resolveMs(response: GrokResponse, isUser?: boolean): number | null {
+function resolveMs(response: GrokResponse): number | null {
     const rec = asRecord(response);
     if (!rec) return null;
     const id = recordId(rec);
-    const full = fullRecord(id, rec);
-    const human = isUser === true || isHumanSender(full.sender);
-    const stored = id ? storedMs(id, full, human) : null;
+    const { sender } = rec;
+    const stored = id ? storedMs(id, rec) : null;
     let ms = chooseTime({
-        fieldTimes: pickTimes(full),
+        fieldTimes: pickTimes(rec),
         stored,
         uuid: uuidTime(id),
     });
-    if (human && id) {
-        const borrowed = familyUserTime(full, id)
-            ?? neighborTime(id, storeRecords(id))
-            ?? conversationCreateTime(id);
-        ms = preferHumanTime(ms, borrowed);
+    if (id && isHumanSender(sender) && (ms == null || isFresh(ms))) {
+        const borrowed = neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
+        if (borrowed != null && !isFresh(borrowed)) ms = borrowed;
     }
-    if (id && ms != null) rememberKeys(id, full, ms, human ? "human" : full.sender, human);
+    if (id && ms != null) rememberKeys(id, rec, ms, sender);
     return ms;
 }
 
@@ -375,11 +351,10 @@ export default definePlugin({
         },
     },
 
-    _renderTimestamp: ErrorBoundary.wrap(({ response, isUser }: { response: GrokResponse; isUser?: boolean }) => {
+    _renderTimestamp: ErrorBoundary.wrap(({ response }: { response: GrokResponse }) => {
         useExternalStore(tick);
-        const human = isUser === true || isHumanSender(response.sender);
-        if (settings.store.hideOwnMessages && human) return null;
-        const ms = resolveMs(response, isUser);
+        if (settings.store.hideOwnMessages && response.sender === "human") return null;
+        const ms = resolveMs(response);
         if (ms == null) return null;
         return (
             <Text as="span" size="xs" color="muted" className="void-timestamp">
@@ -393,8 +368,8 @@ export default definePlugin({
             find: "response-family:handleEditSave",
             all: true,
             replacement: {
-                match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:(\i),isIncognito:\i,responseId:(\i)\.responseId/,
-                replace: "$self._renderTimestamp({response:$2,isUser:$1}),$&",
+                match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+                replace: "$self._renderTimestamp({response:$1}),$&",
             },
         },
     ],

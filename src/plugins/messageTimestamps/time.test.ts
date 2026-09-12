@@ -9,13 +9,11 @@ import { describe, expect, test } from "bun:test";
 import {
     BORROW_MS,
     chooseTime,
-    familyUserTime,
     FRESH_MS,
     harvestResponses,
     isHumanSender,
     neighborTime,
     parseTime,
-    preferHumanTime,
     recordId,
     shouldKeepStored,
     shouldPersistStamp,
@@ -24,10 +22,8 @@ import {
 
 const NOW = Date.UTC(2026, 8, 12, 4, 0, 0);
 const HOUR_AGO = NOW - 60 * 60 * 1000;
-const HALF_HOUR_AGO = NOW - 31 * 60 * 1000;
 const ISO_HOUR_AGO = new Date(HOUR_AGO).toISOString();
 const ISO_NOW = new Date(NOW).toISOString();
-const ISO_RELOAD = new Date(HALF_HOUR_AGO).toISOString();
 const HUMAN_V4 = "550e8400-e29b-41d4-a716-446655440000";
 
 function v7(ms: number): string {
@@ -145,54 +141,6 @@ describe("chooseTime", () => {
             now: NOW,
         })).toBeNull();
     });
-
-    test("prefers thinkingStartTime over an aged hydration createTime", () => {
-        expect(chooseTime({
-            fieldTimes: [HALF_HOUR_AGO, HOUR_AGO],
-            stored: HALF_HOUR_AGO,
-            uuid: HOUR_AGO,
-            now: NOW,
-        })).toBe(HOUR_AGO);
-    });
-});
-
-describe("preferHumanTime", () => {
-    test("replaces an own stamp that is newer than the child", () => {
-        expect(preferHumanTime(HALF_HOUR_AGO, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - BORROW_MS);
-        expect(preferHumanTime(HOUR_AGO - 5_000, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - 5_000);
-        expect(preferHumanTime(null, HOUR_AGO)).toBe(HOUR_AGO);
-        expect(preferHumanTime(HOUR_AGO, null)).toBe(HOUR_AGO);
-    });
-});
-
-describe("familyUserTime", () => {
-    test("uses the family assistant thinkingStartTime minus one second", () => {
-        const id = v7(HOUR_AGO);
-        expect(familyUserTime({
-            responseId: id,
-            sender: "assistant",
-            createTime: ISO_RELOAD,
-            thinkingStartTime: ISO_HOUR_AGO,
-            query: "完成落地",
-        }, id, NOW)).toBe(HOUR_AGO - BORROW_MS);
-    });
-
-    test("uses UUID v7 when thinkingStartTime is missing", () => {
-        const id = v7(HOUR_AGO);
-        expect(familyUserTime({
-            responseId: id,
-            sender: "assistant",
-            createTime: ISO_RELOAD,
-        }, id, NOW)).toBe(HOUR_AGO - BORROW_MS);
-    });
-
-    test("does not treat a human-only record as a family", () => {
-        expect(familyUserTime({
-            responseId: HUMAN_V4,
-            sender: "human",
-            createTime: ISO_RELOAD,
-        }, HUMAN_V4, NOW)).toBeNull();
-    });
 });
 
 describe("shouldKeepStored", () => {
@@ -203,10 +151,6 @@ describe("shouldKeepStored", () => {
 
     test("accepts an older server stamp over a fresh optimistic one", () => {
         expect(shouldKeepStored(NOW, HOUR_AGO, NOW)).toBe(false);
-    });
-
-    test("overwrites an aged hydration stamp with a trusted older neighbor", () => {
-        expect(shouldKeepStored(HALF_HOUR_AGO, HOUR_AGO, NOW)).toBe(false);
     });
 });
 
@@ -220,7 +164,6 @@ describe("shouldPersistStamp", () => {
     test("overwrites a poisoned now with a trusted older stamp", () => {
         expect(shouldPersistStamp("human", HOUR_AGO, NOW, NOW)).toBe(true);
         expect(shouldPersistStamp("human", NOW, HOUR_AGO, NOW)).toBe(false);
-        expect(shouldPersistStamp("human", HOUR_AGO, HALF_HOUR_AGO, NOW)).toBe(true);
     });
 });
 
@@ -275,18 +218,6 @@ describe("harvestResponses", () => {
             responses: [
                 { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
                 { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_NOW, thinkingStartTime: ISO_HOUR_AGO },
-            ],
-        }, NOW);
-        expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
-        expect(hits).toContainEqual({ id: child, ms: HOUR_AGO });
-    });
-
-    test("replaces an aged hydration stamp with the child", () => {
-        const child = v7(HOUR_AGO);
-        const hits = harvestResponses({
-            responses: [
-                { responseId: HUMAN_V4, sender: "human", createTime: ISO_RELOAD },
-                { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4, thinkingStartTime: ISO_HOUR_AGO },
             ],
         }, NOW);
         expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
