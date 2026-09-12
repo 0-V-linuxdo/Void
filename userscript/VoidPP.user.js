@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.20] v1.0.0
+// @version      [20260912.21] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.20] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.21] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -1318,8 +1318,8 @@ ${sourceUrl}`;
     }
     const scan = () => {
       const activeFilters = [...filterFns];
-      const results = new Array(length).fill(null);
-      let found = 0;
+      const results2 = new Array(length).fill(null);
+      let found2 = 0;
       forEachModuleValue((value) => {
         for (let j = 0;j < length; j++) {
           const filter = activeFilters[j];
@@ -1327,15 +1327,15 @@ ${sourceUrl}`;
             continue;
           try {
             if (filter(value)) {
-              results[j] = value;
+              results2[j] = value;
               activeFilters[j] = undefined;
-              if (++found === length)
+              if (++found2 === length)
                 return STOP;
             }
           } catch {}
         }
       });
-      return { results, found };
+      return { results: results2, found: found2 };
     };
     const { results, found } = withLazySync(scan, (r) => r.found < length);
     if (found !== length)
@@ -2365,21 +2365,21 @@ ${sourceUrl}`;
     return p;
   }
   var StartAt;
-  ((StartAt) => {
-    StartAt["Init"] = "Init";
-    StartAt["DOMContentLoaded"] = "DOMContentLoaded";
-    StartAt["TurbopackReady"] = "TurbopackReady";
+  ((StartAt2) => {
+    StartAt2["Init"] = "Init";
+    StartAt2["DOMContentLoaded"] = "DOMContentLoaded";
+    StartAt2["TurbopackReady"] = "TurbopackReady";
   })(StartAt ||= {});
   var OptionType;
-  ((OptionType) => {
-    OptionType[OptionType["STRING"] = 0] = "STRING";
-    OptionType[OptionType["NUMBER"] = 1] = "NUMBER";
-    OptionType[OptionType["BIGINT"] = 2] = "BIGINT";
-    OptionType[OptionType["BOOLEAN"] = 3] = "BOOLEAN";
-    OptionType[OptionType["SELECT"] = 4] = "SELECT";
-    OptionType[OptionType["SLIDER"] = 5] = "SLIDER";
-    OptionType[OptionType["COMPONENT"] = 6] = "COMPONENT";
-    OptionType[OptionType["CUSTOM"] = 7] = "CUSTOM";
+  ((OptionType2) => {
+    OptionType2[OptionType2["STRING"] = 0] = "STRING";
+    OptionType2[OptionType2["NUMBER"] = 1] = "NUMBER";
+    OptionType2[OptionType2["BIGINT"] = 2] = "BIGINT";
+    OptionType2[OptionType2["BOOLEAN"] = 3] = "BOOLEAN";
+    OptionType2[OptionType2["SELECT"] = 4] = "SELECT";
+    OptionType2[OptionType2["SLIDER"] = 5] = "SLIDER";
+    OptionType2[OptionType2["COMPONENT"] = 6] = "COMPONENT";
+    OptionType2[OptionType2["CUSTOM"] = 7] = "CUSTOM";
   })(OptionType ||= {});
 
   // src/plugins/themedScrollbar/index.ts
@@ -2528,148 +2528,148 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/VoidPP.ts
   var exports_VoidPP = {};
   __export(exports_VoidPP, {
-    ChunkPathRegex: () => ChunkPathRegex,
-    DefaultChunkLoadRegex: () => DefaultChunkLoadRegex,
-    Devs: () => Devs,
-    ErrorBoundary: () => ErrorBoundary,
-    Logger: () => Logger,
-    NoticeType: () => NoticeType,
-    OptionType: () => OptionType,
-    PlainSettings: () => PlainSettings,
-    Settings: () => Settings,
-    SettingsStore: () => SettingsStore3,
-    StartAt: () => StartAt,
-    ToastType: () => ToastType,
-    addChatBarButton: () => addChatBarButton,
-    addContextMenuItem: () => addContextMenuItem,
-    addLocalTheme: () => addLocalTheme,
-    addPatch: () => addPatch,
-    addTheme: () => addTheme,
-    clamp: () => clamp,
-    classNameFactory: () => classNameFactory,
-    classes: () => classes,
-    closeAllModals: () => closeAllModals,
-    closeModal: () => closeModal,
-    closeNotice: () => closeNotice,
-    common: () => exports_common,
-    copyToClipboard: () => copyToClipboard,
-    createExternalStore: () => createExternalStore,
-    debounce: () => debounce,
-    definePlugin: () => definePlugin,
-    definePluginSettings: () => definePluginSettings,
-    disableStyle: () => disableStyle,
-    disableTheme: () => disableTheme,
-    dismissToast: () => dismissToast,
-    dispatch: () => dispatch,
-    enableStyle: () => enableStyle,
-    enableTheme: () => enableTheme,
-    errorMessage: () => errorMessage,
-    escapeHtml: () => escapeHtml,
-    escapeRegExp: () => escapeRegExp,
-    extractAndLoadChunks: () => extractAndLoadChunks,
-    extractAndLoadChunksLazy: () => extractAndLoadChunksLazy,
-    fetchExternal: () => fetchExternal,
-    filters: () => filters,
-    find: () => find,
-    findAll: () => findAll,
-    findBulk: () => findBulk,
-    findByCode: () => findByCode,
-    findByCodeLazy: () => findByCodeLazy,
-    findByDisplayName: () => findByDisplayName,
-    findByDisplayNameLazy: () => findByDisplayNameLazy,
-    findByEventName: () => findByEventName,
-    findByEventNameLazy: () => findByEventNameLazy,
-    findByProps: () => findByProps,
-    findByPropsLazy: () => findByPropsLazy,
-    findComponentByCode: () => findComponentByCode,
-    findComponentByCodeLazy: () => findComponentByCodeLazy,
-    findCssClasses: () => findCssClasses,
-    findCssClassesLazy: () => findCssClassesLazy,
-    findExportedComponent: () => findExportedComponent,
-    findExportedComponentLazy: () => findExportedComponentLazy,
-    findLazy: () => findLazy,
-    findModuleFactory: () => findModuleFactory,
-    findModuleId: () => findModuleId,
-    findStore: () => findStore,
-    findStoreLazy: () => findStoreLazy,
-    fnSourceCache: () => fnSourceCache,
-    formatCountdown: () => formatCountdown,
-    formatDuration: () => formatDuration,
-    getAllStores: () => getAllStores,
-    getFiber: () => getFiber,
-    getFnSource: () => getFnSource,
-    getModuleCache: () => getModuleCache,
-    getReactRoot: () => getReactRoot,
-    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry2,
-    getRuntimeModuleCache: () => getRuntimeModuleCache,
-    getThemes: () => getThemes,
-    getTurbopackHelpers: () => getTurbopackHelpers,
-    humanizeKey: () => humanizeKey,
-    importModule: () => importModule,
-    init: () => init,
-    initSettings: () => initSettings,
-    injectExports: () => injectExports,
-    isBlacklisted: () => isBlacklisted,
-    isNonNullish: () => isNonNullish,
-    isObject: () => isObject,
-    isOnlineThemesEnabled: () => isOnlineThemesEnabled,
-    isPluginEnabled: () => isPluginEnabled,
-    isThemesEnabled: () => isThemesEnabled,
-    isTruthy: () => isTruthy,
-    isZustandStore: () => isZustandStore,
-    makeLazy: () => makeLazy,
-    mapGetOrCreate: () => mapGetOrCreate,
-    mapMangledCssClasses: () => mapMangledCssClasses,
-    mapMangledModule: () => mapMangledModule,
-    mapMangledModuleLazy: () => mapMangledModuleLazy,
-    matchesAllPatterns: () => matchesAllPatterns,
-    matchesPattern: () => matchesPattern,
-    mergeDefaults: () => mergeDefaults,
-    migratePluginSetting: () => migratePluginSetting,
-    migratePluginSettings: () => migratePluginSettings,
-    migrateSettingsToPlugin: () => migrateSettingsToPlugin,
-    onModuleLoad: () => onModuleLoad,
-    onceReady: () => onceReady,
-    onlyOnce: () => onlyOnce,
-    openModal: () => openModal,
-    patchReport: () => patchReport,
-    patchResults: () => patchResults,
-    patchStats: () => patchStats,
-    patches: () => patches,
-    plugins: () => plugins,
-    pluralize: () => pluralize,
-    proxyLazy: () => proxyLazy,
-    registerPlugin: () => registerPlugin,
-    registerStyle: () => registerStyle,
-    removeChatBarButton: () => removeChatBarButton,
-    removeContextMenuItem: () => removeContextMenuItem,
-    removeTheme: () => removeTheme,
-    reportFailedFinders: () => reportFailedFinders,
-    requireModule: () => requireModule,
-    sanitizeFilename: () => sanitizeFilename,
-    search: () => search,
-    sendBrowserNotification: () => sendBrowserNotification,
-    setOnlineThemesEnabled: () => setOnlineThemesEnabled,
-    setThemesEnabled: () => setThemesEnabled,
-    showNotice: () => showNotice,
-    showToast: () => showToast,
-    sleep: () => sleep,
-    sortedEntries: () => sortedEntries,
-    startPlugin: () => startPlugin,
-    stopPlugin: () => stopPlugin,
-    subscribe: () => subscribe,
-    syncLazyModules: () => syncLazyModules,
-    unregisterStyle: () => unregisterStyle,
-    updateLocalTheme: () => updateLocalTheme,
-    useEventSubscription: () => useEventSubscription,
-    useExternalStore: () => useExternalStore,
-    useForceUpdater: () => useForceUpdater,
-    useIsStreaming: () => useIsStreaming,
-    useSelectionHas: () => useSelectionHas,
-    useSelectionSize: () => useSelectionSize,
-    waitFor: () => waitFor,
+    walkFiberUp: () => walkFiberUp,
     walkFiberTree: () => walkFiberTree,
-    walkFiberUp: () => walkFiberUp
+    waitFor: () => waitFor,
+    useSelectionSize: () => useSelectionSize,
+    useSelectionHas: () => useSelectionHas,
+    useIsStreaming: () => useIsStreaming,
+    useForceUpdater: () => useForceUpdater,
+    useExternalStore: () => useExternalStore,
+    useEventSubscription: () => useEventSubscription,
+    updateLocalTheme: () => updateLocalTheme,
+    unregisterStyle: () => unregisterStyle,
+    syncLazyModules: () => syncLazyModules,
+    subscribe: () => subscribe,
+    stopPlugin: () => stopPlugin,
+    startPlugin: () => startPlugin,
+    sortedEntries: () => sortedEntries,
+    sleep: () => sleep,
+    showToast: () => showToast,
+    showNotice: () => showNotice,
+    setThemesEnabled: () => setThemesEnabled,
+    setOnlineThemesEnabled: () => setOnlineThemesEnabled,
+    sendBrowserNotification: () => sendBrowserNotification,
+    search: () => search,
+    sanitizeFilename: () => sanitizeFilename,
+    requireModule: () => requireModule,
+    reportFailedFinders: () => reportFailedFinders,
+    removeTheme: () => removeTheme,
+    removeContextMenuItem: () => removeContextMenuItem,
+    removeChatBarButton: () => removeChatBarButton,
+    registerStyle: () => registerStyle,
+    registerPlugin: () => registerPlugin,
+    proxyLazy: () => proxyLazy,
+    pluralize: () => pluralize,
+    plugins: () => plugins,
+    patches: () => patches,
+    patchStats: () => patchStats,
+    patchResults: () => patchResults,
+    patchReport: () => patchReport,
+    openModal: () => openModal,
+    onlyOnce: () => onlyOnce,
+    onceReady: () => onceReady,
+    onModuleLoad: () => onModuleLoad,
+    migrateSettingsToPlugin: () => migrateSettingsToPlugin,
+    migratePluginSettings: () => migratePluginSettings,
+    migratePluginSetting: () => migratePluginSetting,
+    mergeDefaults: () => mergeDefaults,
+    matchesPattern: () => matchesPattern,
+    matchesAllPatterns: () => matchesAllPatterns,
+    mapMangledModuleLazy: () => mapMangledModuleLazy,
+    mapMangledModule: () => mapMangledModule,
+    mapMangledCssClasses: () => mapMangledCssClasses,
+    mapGetOrCreate: () => mapGetOrCreate,
+    makeLazy: () => makeLazy,
+    isZustandStore: () => isZustandStore,
+    isTruthy: () => isTruthy,
+    isThemesEnabled: () => isThemesEnabled,
+    isPluginEnabled: () => isPluginEnabled,
+    isOnlineThemesEnabled: () => isOnlineThemesEnabled,
+    isObject: () => isObject,
+    isNonNullish: () => isNonNullish,
+    isBlacklisted: () => isBlacklisted,
+    injectExports: () => injectExports,
+    initSettings: () => initSettings,
+    init: () => init,
+    importModule: () => importModule,
+    humanizeKey: () => humanizeKey,
+    getTurbopackHelpers: () => getTurbopackHelpers,
+    getThemes: () => getThemes,
+    getRuntimeModuleCache: () => getRuntimeModuleCache,
+    getRuntimeFactoryRegistry: () => getRuntimeFactoryRegistry2,
+    getReactRoot: () => getReactRoot,
+    getModuleCache: () => getModuleCache,
+    getFnSource: () => getFnSource,
+    getFiber: () => getFiber,
+    getAllStores: () => getAllStores,
+    formatDuration: () => formatDuration,
+    formatCountdown: () => formatCountdown,
+    fnSourceCache: () => fnSourceCache,
+    findStoreLazy: () => findStoreLazy,
+    findStore: () => findStore,
+    findModuleId: () => findModuleId,
+    findModuleFactory: () => findModuleFactory,
+    findLazy: () => findLazy,
+    findExportedComponentLazy: () => findExportedComponentLazy,
+    findExportedComponent: () => findExportedComponent,
+    findCssClassesLazy: () => findCssClassesLazy,
+    findCssClasses: () => findCssClasses,
+    findComponentByCodeLazy: () => findComponentByCodeLazy,
+    findComponentByCode: () => findComponentByCode,
+    findByPropsLazy: () => findByPropsLazy,
+    findByProps: () => findByProps,
+    findByEventNameLazy: () => findByEventNameLazy,
+    findByEventName: () => findByEventName,
+    findByDisplayNameLazy: () => findByDisplayNameLazy,
+    findByDisplayName: () => findByDisplayName,
+    findByCodeLazy: () => findByCodeLazy,
+    findByCode: () => findByCode,
+    findBulk: () => findBulk,
+    findAll: () => findAll,
+    find: () => find,
+    filters: () => filters,
+    fetchExternal: () => fetchExternal,
+    extractAndLoadChunksLazy: () => extractAndLoadChunksLazy,
+    extractAndLoadChunks: () => extractAndLoadChunks,
+    escapeRegExp: () => escapeRegExp,
+    escapeHtml: () => escapeHtml,
+    errorMessage: () => errorMessage,
+    enableTheme: () => enableTheme,
+    enableStyle: () => enableStyle,
+    dispatch: () => dispatch,
+    dismissToast: () => dismissToast,
+    disableTheme: () => disableTheme,
+    disableStyle: () => disableStyle,
+    definePluginSettings: () => definePluginSettings,
+    definePlugin: () => definePlugin,
+    debounce: () => debounce,
+    createExternalStore: () => createExternalStore,
+    copyToClipboard: () => copyToClipboard,
+    common: () => exports_common,
+    closeNotice: () => closeNotice,
+    closeModal: () => closeModal,
+    closeAllModals: () => closeAllModals,
+    classes: () => classes,
+    classNameFactory: () => classNameFactory,
+    clamp: () => clamp,
+    addTheme: () => addTheme,
+    addPatch: () => addPatch,
+    addLocalTheme: () => addLocalTheme,
+    addContextMenuItem: () => addContextMenuItem,
+    addChatBarButton: () => addChatBarButton,
+    ToastType: () => ToastType,
+    StartAt: () => StartAt,
+    SettingsStore: () => SettingsStore3,
+    Settings: () => Settings,
+    PlainSettings: () => PlainSettings,
+    OptionType: () => OptionType,
+    NoticeType: () => NoticeType,
+    Logger: () => Logger,
+    ErrorBoundary: () => ErrorBoundary,
+    Devs: () => Devs,
+    DefaultChunkLoadRegex: () => DefaultChunkLoadRegex,
+    ChunkPathRegex: () => ChunkPathRegex
   });
 
   // src/utils/idb.ts
@@ -3009,11 +3009,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/api/Events.ts
   var logger7 = new Logger("Events");
   var listeners = new Map;
-  function subscribe(event, handler) {
+  function subscribe(event, handler2) {
     const set = mapGetOrCreate(listeners, event, () => new Set);
-    set.add(handler);
+    set.add(handler2);
     return () => {
-      set.delete(handler);
+      set.delete(handler2);
       if (!set.size)
         listeners.delete(event);
     };
@@ -3023,9 +3023,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     if (!set?.size)
       return;
     const data = args[0];
-    for (const handler of Array.from(set)) {
+    for (const handler2 of Array.from(set)) {
       try {
-        handler(data);
+        handler2(data);
       } catch (e) {
         logger7.error(`Event handler error (${event}):`, e);
       }
@@ -3035,20 +3035,20 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/turbopack/common/stores.ts
   var exports_stores = {};
   __export(exports_stores, {
-    ChatPageStore: () => ChatPageStore,
-    ConversationStore: () => ConversationStore,
-    FeatureStore: () => FeatureStore,
-    FilesPageStore: () => FilesPageStore,
-    MediaStore: () => MediaStore,
-    MessageStore: () => MessageStore,
-    ModesStore: () => ModesStore,
-    ResponseStore: () => ResponseStore,
-    RoutingStore: () => RoutingStore,
-    SessionStore: () => SessionStore,
-    SettingsDialogStore: () => SettingsDialogStore,
-    SettingsStore: () => SettingsStore,
+    TextToSpeechStore: () => TextToSpeechStore,
     SubscriptionsStore: () => SubscriptionsStore,
-    TextToSpeechStore: () => TextToSpeechStore
+    SettingsStore: () => SettingsStore,
+    SettingsDialogStore: () => SettingsDialogStore,
+    SessionStore: () => SessionStore,
+    RoutingStore: () => RoutingStore,
+    ResponseStore: () => ResponseStore,
+    ModesStore: () => ModesStore,
+    MessageStore: () => MessageStore,
+    MediaStore: () => MediaStore,
+    FilesPageStore: () => FilesPageStore,
+    FeatureStore: () => FeatureStore,
+    ConversationStore: () => ConversationStore,
+    ChatPageStore: () => ChatPageStore
   });
   var ChatPageStore = findByPropsLazy("useChatPageStore");
   var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
@@ -3146,18 +3146,18 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function useForceUpdater() {
     return useReducer((x) => x + 1, 0)[1];
   }
-  function useEventSubscription(event, handler) {
-    const ref = useRef(handler);
-    ref.current = handler;
+  function useEventSubscription(event, handler2) {
+    const ref = useRef(handler2);
+    ref.current = handler2;
     useEffect(() => subscribe(event, () => ref.current()), [event]);
   }
-  function useFiltered(list, search, getKey) {
+  function useFiltered(list, search2, getKey) {
     return useMemo(() => {
-      const q = search.toLowerCase().trim();
+      const q = search2.toLowerCase().trim();
       if (!q)
         return list;
       return list.filter((item) => getKey(item).toLowerCase().includes(q));
-    }, [list, search, getKey]);
+    }, [list, search2, getKey]);
   }
   function useAsyncAction(fn) {
     const [busy, setBusy] = useState(false);
@@ -3268,8 +3268,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       this.proxyCache.set(target, proxy);
       return proxy;
     }
-    invokeListeners(listeners, path) {
-      for (const l of Array.from(listeners)) {
+    invokeListeners(listeners2, path) {
+      for (const l of Array.from(listeners2)) {
         try {
           l(path);
         } catch (e) {
@@ -3279,9 +3279,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     notifyListeners(path) {
       this.invokeListeners(this.globalListeners, path);
-      const listeners = this.pathListeners.get(path);
-      if (listeners)
-        this.invokeListeners(listeners, path);
+      const listeners2 = this.pathListeners.get(path);
+      if (listeners2)
+        this.invokeListeners(listeners2, path);
       for (const [prefix, set] of Array.from(this.prefixListeners)) {
         if (path.startsWith(prefix))
           this.invokeListeners(set, path);
@@ -3587,7 +3587,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // voidpp-css:/tmp/VoidPP/src/components/ColorSettingRow.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -3626,7 +3626,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // voidpp-css:/tmp/VoidPP/src/components/ConfirmDialog.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3813,9 +3813,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var AnimatePresence = lazyExport("AnimatePresence");
 
   // src/components/ConfirmDialog.tsx
-  function ConfirmDialog({ open, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
+  function ConfirmDialog({ open: open2, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
     return /* @__PURE__ */ React.createElement(AlertDialog, {
-      open,
+      open: open2,
       onOpenChange
     }, /* @__PURE__ */ React.createElement(AlertDialogContent, {
       className: "void-confirm-dialog"
@@ -3875,7 +3875,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // voidpp-css:/tmp/VoidPP/src/components/ErrorCard.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3988,7 +3988,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // voidpp-css:/tmp/VoidPP/src/components/SelectionUI.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -4049,7 +4049,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function SelectionActionBar({ selection, noun, title, onDelete }) {
     const count = useSelectionSize(selection);
-    const [open, setOpen] = useState(false);
+    const [open2, setOpen] = useState(false);
     if (!count)
       return null;
     const handleConfirm = async () => {
@@ -4074,7 +4074,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       shape: "pill",
       onClick: () => setOpen(true)
     }, "Delete"))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open,
+      open: open2,
       onOpenChange: setOpen,
       title,
       description: `Are you sure you want to delete ${pluralize(count, noun)}? This cannot be undone.`,
@@ -4310,10 +4310,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     if (!Array.isArray(patch.replacement)) {
       patch.replacement = [patch.replacement];
     }
-    const pluginPath = `VoidPP.plugins[${JSON.stringify(pluginName)}]`;
+    const pluginPath2 = `VoidPP.plugins[${JSON.stringify(pluginName)}]`;
     for (const replacement of patch.replacement) {
       if (false) {}
-      canonicalizeReplacement(replacement, pluginPath);
+      canonicalizeReplacement(replacement, pluginPath2);
     }
     patches.push(patch);
   }
@@ -4393,9 +4393,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       const unsubs = [];
       pluginUnsubscribers.set(plugin.name, unsubs);
       if (plugin.events) {
-        for (const [event, handler] of Object.entries(plugin.events)) {
-          if (handler)
-            unsubs.push(subscribe(event, handler));
+        for (const [event, handler2] of Object.entries(plugin.events)) {
+          if (handler2)
+            unsubs.push(subscribe(event, handler2));
         }
       }
       if (plugin.zustand) {
@@ -4407,8 +4407,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
               logger11.error(`Zustand handler error in ${plugin.name} for ${storeName}:`, e);
             }
           };
-          const attach = (store) => {
-            unsubs.push(sub.selector ? store.subscribe(sub.selector, wrappedHandler) : store.subscribe(wrappedHandler));
+          const attach = (store2) => {
+            unsubs.push(sub.selector ? store2.subscribe(sub.selector, wrappedHandler) : store2.subscribe(wrappedHandler));
           };
           const store = resolveStoreHook(storeName);
           if (store) {
@@ -4630,6 +4630,21 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/api/StreamEvents.ts
   var started = false;
+  var GATEWAY_LIVE = new Set(["send-queued", "send-sent", "streaming"]);
+  function onGatewayChange(state, prev) {
+    for (const [cid, conv] of Object.entries(state.conversations)) {
+      const old = prev.conversations[cid];
+      if (!old || old === conv)
+        continue;
+      for (const [id, node] of Object.entries(conv.nodes)) {
+        const before = old.nodes[id];
+        if (node === before || node.role !== "assistant" || node.status !== "complete")
+          continue;
+        if (before && GATEWAY_LIVE.has(before.status))
+          dispatch("streamEnd", { responseId: id });
+      }
+    }
+  }
   function initStreamEvents() {
     if (started)
       return;
@@ -4642,75 +4657,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
           dispatch("streamEnd", { responseId: previous });
       });
     });
+    waitFor(filters.byProps("useMessageStore", "nodeToResponse"), (mod) => {
+      mod.useMessageStore.subscribe(onGatewayChange);
+    });
   }
 
-  // src/plugins/_core/noTelemetry/index.ts
-  var noTelemetry_default = definePlugin({
-    name: "NoTelemetry",
-    icon: ShieldOffIcon,
-    description: "Disables all tracking, telemetry, and event logging.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    required: true,
-    patches: [
-      {
-        find: '"opentelemetry.js.api."',
-        replacement: {
-          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
-          replace: "$1function(){}"
-        }
-      },
-      {
-        find: '"after-init"),(0,',
-        group: true,
-        replacement: [
-          {
-            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
-            replace: "$1return}function _ignore(){"
-          },
-          {
-            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
-            replace: '"startRecordingImagineSession",0,function(){}'
-          },
-          {
-            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
-            replace: '"stopRecordingImagineSession",0,function(){}'
-          }
-        ]
-      },
-      {
-        find: "sendBatchLogEvent",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
-            replace: "sendBatchLogEvent=()=>{}"
-          },
-          {
-            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
-            replace: "sendBatchLogExperimentExposure=()=>{}"
-          }
-        ]
-      },
-      {
-        find: '"/api/log_metric"',
-        replacement: {
-          match: /"\/api\/log_metric",\i\)/,
-          replace: '"/api/log_metric",[])'
-        }
-      },
-      {
-        find: "isEnvVarsSet(){return void 0!=",
-        replacement: {
-          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
-          replace: "isEnvVarsSet(){return false}"
-        }
-      }
-    ]
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/_core/settings/styles.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -4983,7 +4935,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/tabs/CustomCSSTab.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -4995,7 +4947,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/CssEditor.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -5136,7 +5088,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function formatCss(raw) {
     let out = "";
     let indent = 0;
-    const pad = () => "    ".repeat(indent);
+    const pad2 = () => "    ".repeat(indent);
     const tokens = raw.replaceAll(/\s+/g, " ").trim().split(/(?=[{}:;])|(?<=[{}:;])/g);
     for (const t of tokens) {
       const s = t.trim();
@@ -5148,7 +5100,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         indent++;
       } else if (s === "}") {
         indent = Math.max(0, indent - 1);
-        out += pad() + `}
+        out += pad2() + `}
 
 `;
       } else if (s === ";")
@@ -5157,7 +5109,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       else if (s === ":")
         out += ": ";
       else if (indent > 0)
-        out += pad() + s;
+        out += pad2() + s;
       else
         out += s;
     }
@@ -5267,7 +5219,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/shared.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5342,7 +5294,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/tabs/PluginsTab.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5383,7 +5335,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/PluginCard.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5434,7 +5386,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/BaseCard.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5707,7 +5659,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/tabs/PluginDialog.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5733,7 +5685,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/SettingField.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -6091,14 +6043,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
 
   // src/components/settings/tabs/SearchFilterBar.tsx
-  function SearchFilterBar({ placeholder, search, onSearchChange, filter, onFilterChange, options }) {
+  function SearchFilterBar({ placeholder, search: search2, onSearchChange, filter, onFilterChange, options }) {
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder,
-      value: search,
+      value: search2,
       onChange: (e) => onSearchChange(e.target.value),
       className: "void-search-bar-input"
     }), /* @__PURE__ */ React.createElement(Select, {
@@ -6126,8 +6078,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const enabled = filter === "enabled";
     return list.filter((n) => isPluginEnabled(n) === enabled);
   }
-  function emptyHint(search, category) {
-    if (search)
+  function emptyHint(search2, category) {
+    if (search2)
       return "No plugins match your search.";
     if (category === "favorites")
       return "No favorites yet. Star a plugin to see it here.";
@@ -6158,7 +6110,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return name;
   }
   function PluginsTab() {
-    const [search, setSearch] = useState("");
+    const [search2, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
     const [category, setCategory] = useState("favorites");
     const [dialogName, setDialogName] = useState(null);
@@ -6166,14 +6118,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const [needsReload, setNeedsReload] = useState(false);
     const [toggleTick, setToggleTick] = useState(0);
     const { userPlugins, requiredPlugins } = useMemo(() => {
-      const userPlugins = [];
-      const requiredPlugins = [];
+      const userPlugins2 = [];
+      const requiredPlugins2 = [];
       for (const n of Object.keys(plugins).toSorted((a, b) => a.localeCompare(b))) {
         if (plugins[n].hidden)
           continue;
-        (plugins[n].required ? requiredPlugins : userPlugins).push(n);
+        (plugins[n].required ? requiredPlugins2 : userPlugins2).push(n);
       }
-      return { userPlugins, requiredPlugins };
+      return { userPlugins: userPlugins2, requiredPlugins: requiredPlugins2 };
     }, []);
     const initialStatesRef = useRef(null);
     const changedPluginsRef = useRef(new Set);
@@ -6234,8 +6186,8 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         tabRequired: []
       };
     }, [category, filter, userPlugins, requiredPlugins, toggleTick]);
-    const filteredUser = useFiltered(tabUser, search, getPluginKey);
-    const filteredRequired = useFiltered(tabRequired, search, getPluginKey);
+    const filteredUser = useFiltered(tabUser, search2, getPluginKey);
+    const filteredRequired = useFiltered(tabRequired, search2, getPluginKey);
     const dialogPlugin = dialogName ? plugins[dialogName] : null;
     const hasResults = filteredUser.length > 0 || filteredRequired.length > 0;
     const onReload = useCallback((pluginName) => {
@@ -6290,7 +6242,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       onClick: () => setCategory(t.id)
     }, t.label))), /* @__PURE__ */ React.createElement(SearchFilterBar, {
       placeholder: `Search ${tabUser.length + tabRequired.length} plugins...`,
-      search,
+      search: search2,
       onSearchChange: setSearch,
       filter,
       onFilterChange: setFilter,
@@ -6316,7 +6268,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }))))), !hasResults && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
       className: "void-tab-empty"
-    }, emptyHint(search, category)), dialogPlugin && /* @__PURE__ */ React.createElement(ErrorBoundary, {
+    }, emptyHint(search2, category)), dialogPlugin && /* @__PURE__ */ React.createElement(ErrorBoundary, {
       fallback: null
     }, /* @__PURE__ */ React.createElement(PluginDialog, {
       plugin: dialogPlugin,
@@ -6335,7 +6287,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/tabs/ThemesTab.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6358,7 +6310,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/tmp/VoidPP/src/components/settings/ThemeCard.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6527,13 +6479,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
   function ThemesTab() {
-    const [search, setSearch] = useState("");
+    const [search2, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
-    const [themes, setThemes] = useState(getThemes);
+    const [themes, setThemes2] = useState(getThemes);
     const [localDialogOpen, setLocalDialogOpen] = useState(false);
     const [onlineDialogOpen, setOnlineDialogOpen] = useState(false);
     const [editingTheme, setEditingTheme] = useState();
-    const refreshThemes = () => setThemes(getThemes());
+    const refreshThemes = () => setThemes2(getThemes());
     const visible = useMemo(() => {
       switch (filter) {
         case "enabled":
@@ -6548,7 +6500,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
           return themes;
       }
     }, [themes, filter]);
-    const filtered = useFiltered(visible, search, getThemeKey);
+    const filtered = useFiltered(visible, search2, getThemeKey);
     const [removeUrl, setRemoveUrl] = useState(null);
     const removeTarget = removeUrl ? themes.find((t) => t.url === removeUrl) : null;
     const handleRemove = () => {
@@ -6589,7 +6541,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       }
     }, "Manage")), /* @__PURE__ */ React.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React.createElement(SearchFilterBar, {
       placeholder: `Search ${themes.length} themes...`,
-      search,
+      search: search2,
       onSearchChange: setSearch,
       filter,
       onFilterChange: setFilter,
@@ -6636,7 +6588,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // voidpp-css:/tmp/VoidPP/src/plugins/experiments/styles.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6686,13 +6638,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/api/Notifications.ts
   var ToastType;
-  ((ToastType) => {
-    ToastType[ToastType["MESSAGE"] = 0] = "MESSAGE";
-    ToastType[ToastType["SUCCESS"] = 1] = "SUCCESS";
-    ToastType[ToastType["ERROR"] = 2] = "ERROR";
-    ToastType[ToastType["INFO"] = 3] = "INFO";
-    ToastType[ToastType["WARNING"] = 4] = "WARNING";
-    ToastType[ToastType["LOADING"] = 5] = "LOADING";
+  ((ToastType2) => {
+    ToastType2[ToastType2["MESSAGE"] = 0] = "MESSAGE";
+    ToastType2[ToastType2["SUCCESS"] = 1] = "SUCCESS";
+    ToastType2[ToastType2["ERROR"] = 2] = "ERROR";
+    ToastType2[ToastType2["INFO"] = 3] = "INFO";
+    ToastType2[ToastType2["WARNING"] = 4] = "WARNING";
+    ToastType2[ToastType2["LOADING"] = 5] = "LOADING";
   })(ToastType ||= {});
   var TOAST_FN = {
     [0 /* MESSAGE */]: null,
@@ -6861,7 +6813,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "(modified)")), /* @__PURE__ */ React.createElement(SettingsDescription, null, decodedKey ?? flagKey));
   }
   function ExperimentsTab() {
-    const [search, setSearch] = useState("");
+    const [search2, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
     const config = FeatureStore.useFeatureStore((s) => s.config);
     const overrides = FeatureStore.useFeatureStore((s) => s.overrides);
@@ -6886,7 +6838,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return override !== undefined;
     }, [filter, config, overrides]);
     const prefiltered = useMemo(() => booleanKeys.filter(filterFn), [booleanKeys, filterFn]);
-    const filtered = useFiltered(prefiltered, search, getFlagSearchText);
+    const filtered = useFiltered(prefiltered, search2, getFlagSearchText);
     const overrideCount = Object.keys(overrides).length;
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
@@ -6916,7 +6868,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       className: cl14("section")
     }, /* @__PURE__ */ React.createElement(Input, {
       placeholder: `Search ${prefiltered.length} flags...`,
-      value: search,
+      value: search2,
       onChange: (e) => setSearch(e.target.value),
       className: cl14("search-input")
     }), /* @__PURE__ */ React.createElement(Select, {
@@ -6945,7 +6897,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "muted",
       className: cl14("empty")
-    }, search ? `No flags matching "${search}"` : `No ${filter} flags`));
+    }, search2 ? `No flags matching "${search2}"` : `No ${filter} flags`));
   }
   var Tab = ErrorBoundary.wrap(ExperimentsTab);
   function overrideProxy(config, getState) {
@@ -7014,7 +6966,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/tmp/VoidPP/src/plugins/pluginsFlyout/styles.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -7156,9 +7108,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.20] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"6a0c702"}`
-    }, `(${"6a0c702"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.21] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"e902170"}`
+    }, `(${"e902170"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7328,6 +7280,72 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
+  // src/plugins/_core/noTelemetry/index.ts
+  var noTelemetry_default = definePlugin({
+    name: "NoTelemetry",
+    icon: ShieldOffIcon,
+    description: "Disables all tracking, telemetry, and event logging.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    required: true,
+    patches: [
+      {
+        find: '"opentelemetry.js.api."',
+        replacement: {
+          match: /("onRouterTransitionStart",0,)function\([^)]*\)\{[^}]{0,200}\}/,
+          replace: "$1function(){}"
+        }
+      },
+      {
+        find: '"after-init"),(0,',
+        group: true,
+        replacement: [
+          {
+            match: /(function \i\(\)\{)if\(Object\.prototype\.hasOwnProperty\.call\(\i\.default,"get_distinct_id"\)\)return;/,
+            replace: "$1return}function _ignore(){"
+          },
+          {
+            match: /"startRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?start_session_recording\(\)\}/,
+            replace: '"startRecordingImagineSession",0,function(){}'
+          },
+          {
+            match: /"stopRecordingImagineSession",0,function\(\)\{[\s\S]{0,300}?stop_session_recording\(\)\},\d+e?\d*\)\}/,
+            replace: '"stopRecordingImagineSession",0,function(){}'
+          }
+        ]
+      },
+      {
+        find: "sendBatchLogEvent",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /sendBatchLogEvent=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogEvent=()=>{}"
+          },
+          {
+            match: /sendBatchLogExperimentExposure=\i=>\{[^}]{0,150}\}/,
+            replace: "sendBatchLogExperimentExposure=()=>{}"
+          }
+        ]
+      },
+      {
+        find: '"/api/log_metric"',
+        replacement: {
+          match: /"\/api\/log_metric",\i\)/,
+          replace: '"/api/log_metric",[])'
+        }
+      },
+      {
+        find: "isEnvVarsSet(){return void 0!=",
+        replacement: {
+          match: /isEnvVarsSet\(\)\{return void 0!=\i&&""!=\i\|\|!!this\.customEndpoint\}/,
+          replace: "isEnvVarsSet(){return false}"
+        }
+      }
+    ]
+  });
+
   // src/api/Modals.tsx
   var nextId = 0;
   var modalStack = [];
@@ -7352,7 +7370,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     modalStack.length = 0;
     store.notify();
   }
-  var ModalInstance = ErrorBoundary.wrap(function ModalInstance({ entry }) {
+  var ModalInstance = ErrorBoundary.wrap(function ModalInstance2({ entry }) {
     const onClose = useCallback(() => closeModal(entry.key), [entry.key]);
     return entry.render({ onClose });
   });
@@ -7467,1978 +7485,111 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // src/plugins/noSidebarIdentity/index.ts
-  var STYLE_NAME2 = "noSidebarIdentity";
-  var FOOTER = '[data-sidebar="footer"]';
-  var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
-  var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
-  var MENU_EMAIL = '[role="menu"] [class*="max-w-[400px]"].truncate';
-  var settings5 = definePluginSettings({
-    hideUsername: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the username next to the sidebar avatar.",
-      default: true
-    },
-    hideEmail: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the email next to the sidebar avatar and at the top of the account menu.",
-      default: true
-    }
-  });
-  function apply() {
-    const rules = [];
-    if (settings5.store.hideUsername) {
-      rules.push(`${STACK}>:first-child{display:none!important}`);
-      rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
-    }
-    if (settings5.store.hideEmail) {
-      rules.push(`${STACK}>:nth-child(2){display:none!important}`);
-      rules.push(`${MENU_EMAIL}{display:none!important}`);
-    }
-    if (settings5.store.hideUsername && settings5.store.hideEmail) {
-      rules.push(`${TEXT_WRAP}{display:none!important}`);
-      rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
-    }
-    registerStyle(STYLE_NAME2, rules.join(`
-`));
+  // src/plugins/starry/index.tsx
+  var DEFAULT_COLOR = "#ffffff";
+  var StarsBackground = findExportedComponentLazy("StarsBackground");
+  function hexToRgb(hex) {
+    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
+    if (!m)
+      return [255, 255, 255];
+    const n = parseInt(m[1], 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
-  var noSidebarIdentity_default = definePlugin({
-    name: "NoSidebarIdentity",
-    icon: UserRoundXIcon,
-    description: "Hide username and/or email in the Grok sidebar and account menu. Avatar stays clickable.",
-    authors: [Devs.p],
-    tags: ["ui", "privacy"],
-    enabledByDefault: true,
+  function ColorRow() {
+    const { starColor } = settings5.use(["starColor"]);
+    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
+      value: starColor,
+      onChange: (v) => {
+        settings5.store.starColor = v;
+      },
+      title: "Star color",
+      description: "Color of the twinkling stars."
+    });
+  }
+  function StarryBackground() {
+    const { starColor } = settings5.use(["starColor"]);
+    return /* @__PURE__ */ React.createElement("div", {
+      "aria-hidden": true,
+      className: "fixed inset-0 -z-10 pointer-events-none"
+    }, /* @__PURE__ */ React.createElement(StarsBackground, {
+      starColor: hexToRgb(starColor)
+    }));
+  }
+  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
+  var settings5 = definePluginSettings({
+    starColor: {
+      type: 6 /* COMPONENT */,
+      default: DEFAULT_COLOR,
+      component: ColorRow
+    }
+  }).withPrivateSettings();
+  var starry_default = definePlugin({
+    name: "Starry",
+    icon: SparklesIcon,
+    description: "Adds Grok's native twinkling starry background to the main page.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
     settings: settings5,
+    _StarryBg() {
+      return /* @__PURE__ */ React.createElement(WrappedStarry, {
+        key: "void-starry-bg"
+      });
+    },
     patches: [
       {
-        find: '"max-w-[400px] truncate"',
-        all: true,
+        find: '"chat-page")',
         replacement: {
-          match: /WD_REFRESH&&(\i)\.user\.email&&/,
-          replace: "WD_REFRESH&&!$self.settings.store.hideEmail&&$1.user.email&&"
+          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
+          replace: "$1$self._StarryBg(),$2"
         }
       }
-    ],
-    start: apply,
-    onSettingsChange: apply,
+    ]
+  });
+
+  // src/plugins/widerChat/index.ts
+  var STYLE_NAME2 = "widerChat";
+  var settings6 = definePluginSettings({
+    width: {
+      type: 1 /* NUMBER */,
+      description: "Maximum chat width in rem.",
+      default: 64
+    }
+  });
+  function applyWidth() {
+    const w = settings6.store.width;
+    registerStyle(STYLE_NAME2, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
+  }
+  var widerChat_default = definePlugin({
+    name: "WiderChat",
+    icon: UnfoldHorizontalIcon,
+    description: "Adjustable chat width for big monitors.",
+    authors: [Devs.Prism],
+    tags: ["chat", "ui"],
+    settings: settings6,
+    start: applyWidth,
+    onSettingsChange: applyWidth,
     stop() {
       unregisterStyle(STYLE_NAME2);
     }
   });
 
-  // src/plugins/cleaner/index.ts
-  var settings6 = definePluginSettings({
-    hideUpgradePlan: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade plan button in the user menu.",
-      default: true
-    },
-    hideUpsellCard: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upsell card banner.",
-      default: true
-    },
-    hideUpsellSmall: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the small SuperGrok upsell banner.",
-      default: true
-    },
-    hideModelUpsell: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the upgrade prompt in the model selector.",
-      default: true
-    },
-    hideInaccessibleModels: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide locked/inaccessible models in the model selector.",
-      default: true
-    },
-    hideNotificationBanner: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Get notified when Grok finishes answering" banner.',
-      default: true
-    },
-    hideConnectX: {
-      type: 3 /* BOOLEAN */,
-      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
-      default: true
-    }
-  });
-  var hideComponentPatch = (name, setting, all = true) => ({
-    find: `"${name}",0,`,
-    all,
-    replacement: {
-      match: new RegExp(`"${name}",0,`),
-      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
-    }
-  });
-  var cleaner_default = definePlugin({
-    name: "Cleaner",
-    icon: BrushCleaningIcon,
-    description: "Hides upgrade nags and upsell banners.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    enabledByDefault: true,
-    settings: settings6,
-    patches: [
-      {
-        find: '"user-dropdown.upgrade","Upgrade plan"',
-        all: true,
-        replacement: {
-          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
-          replace: ",$self.settings.store.hideUpgradePlan||$1"
-        }
-      },
-      {
-        find: "UPSELL_CARD_PRIORITY)",
-        all: true,
-        replacement: {
-          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
-          replace: "$1&&!$self.settings.store.hideUpsellCard"
-        }
-      },
-      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
-      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
-      {
-        find: "connect-x-upsell-dismissed",
-        replacement: {
-          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
-          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
-        }
-      },
-      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
-      {
-        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
-            replace: "$&$self.settings.store.hideModelUpsell||"
-          },
-          {
-            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
-            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
-          }
-        ]
-      }
-    ]
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/betterSidebar/styles.css
-  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
-.group.peer [data-sidebar="content"] > .grow {
-    cursor: default !important;
-}
-
-.group.peer [data-sidebar="sidebar"] + div::after {
-    background-color: transparent !important;
-}
-
-.void-sidebar-card {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    min-width: 0;
-    flex: 1;
-}
-
-.void-sidebar-card:hover {
-    background-color: hsl(var(--surface-l2));
-}
-
-.void-sidebar-card button[data-state] {
-    pointer-events: none;
-    background-color: transparent !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.void-sidebar-info {
-    min-width: 0;
-    overflow: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-sidebar-card { transition: none; }
-}
-
-.void-sidebar-name,
-.void-sidebar-plan {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    user-select: none;
-}
-
-/* stylelint-disable-next-line selector-class-pattern */
-.group\\/sidebar-menu-item:hover .void-sel-wrap {
-    display: inline-flex;
-}
-`);
-
-  // src/turbopack/common/plan.ts
-  var PLAN_NAMES = {
-    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
-    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
-    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
-    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
-    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
-    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
-  };
-  var X_SUB_NAMES = {
-    PremiumPlus: "SuperGrok",
-    Premium: "X Premium",
-    Basic: "X Basic"
-  };
-  function getPlanName(bestSubscription, xSubscriptionType) {
-    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
-  }
-
-  // src/plugins/betterSidebar/index.tsx
-  var logger16 = new Logger("BetterSidebar");
-  var cl17 = classNameFactory("void-sidebar-");
-  var settings7 = definePluginSettings({
-    clickToToggle: {
-      type: 3 /* BOOLEAN */,
-      description: "Click anywhere on the sidebar to toggle it.",
-      default: true
-    },
-    defaultCollapsed: {
-      type: 3 /* BOOLEAN */,
-      description: "Start with the sidebar collapsed on page load.",
-      default: false
-    },
-    batchSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Show checkboxes on conversations for bulk selection and deletion.",
-      default: true
-    }
-  });
-  function UserCard({ AvatarMenu }) {
-    const { open } = SidebarComponents.useSidebar();
-    const { user } = SessionStore.useSession();
-    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
-    const cardRef = useRef(null);
-    if (!open || !user)
-      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
-    const forward = (e, type) => {
-      if (!e.isTrusted)
-        return;
-      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
-    };
-    return /* @__PURE__ */ React.createElement("div", {
-      ref: cardRef,
-      className: cl17("card"),
-      onPointerDown: (e) => forward(e, "pointerdown"),
-      onPointerUp: (e) => forward(e, "pointerup")
-    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      justifyContent: "center",
-      gap: "0",
-      className: cl17("info")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      size: "sm",
-      weight: "medium",
-      className: cl17("name")
-    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
-      as: "span",
-      size: "xs",
-      color: "secondary",
-      className: cl17("plan")
-    }, getPlanName(bestSubscription, user.xSubscriptionType))));
-  }
-  var selection = createSelectionStore();
-  var CONVERSATION_PAGE = "chat";
-  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
-  async function deleteConversations(ids) {
-    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
-    if (currentConvId && ids.includes(currentConvId)) {
-      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
-    }
-    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
-    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger16.error("Failed to delete", id, e))));
-  }
-  function SelectCheckbox({ id, route }) {
-    const enabled = settings7.use(["batchSelect"]).batchSelect;
-    if (!enabled || !id || !isConversationRoute(route))
-      return null;
-    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
-      selection,
-      id
-    });
-  }
-  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
-  var betterSidebar_default = definePlugin({
-    name: "BetterSidebar",
-    icon: PanelLeftIcon,
-    description: "Various sidebar improvements.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings7,
-    managedStyle: "betterSidebar",
-    _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
-      selection,
-      noun: "conversation",
-      title: "Delete conversations",
-      onDelete: deleteConversations
-    }), null),
-    _wrapCheckbox(item, id, route) {
-      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
-    },
-    _wrapSidebarClick(onClick, id, route) {
-      return (e) => {
-        if (id && settings7.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
-          e.preventDefault();
-          e.stopPropagation();
-          selection.toggle(id);
-          return;
-        }
-        onClick?.(e);
-      };
-    },
-    _defaultOpen() {
-      return !settings7.store.defaultCollapsed;
-    },
-    _onSidebarClick() {
-      if (!settings7.store.clickToToggle)
-        return;
-      return (e) => {
-        const target = e.target;
-        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
-          return;
-        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
-      };
-    },
-    start() {
-      selection.clear();
-    },
-    stop() {
-      selection.clear();
-    },
-    patches: [
-      {
-        find: "AvatarDropdownMenu,{expanded:",
-        replacement: {
-          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
-          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
-        }
-      },
-      {
-        find: "useSidebar must be used within a SidebarProvider",
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /\{defaultOpen:(\i),open:/,
-            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
-          },
-          {
-            match: /data-sidebar":"sidebar",className:/,
-            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
-          }
-        ]
-      },
-      {
-        find: '"Editing actions","Editing actions"',
-        all: true,
-        group: true,
-        replacement: [
-          {
-            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
-            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
-          },
-          {
-            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
-            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
-          }
-        ]
-      },
-      {
-        find: '"sidebar-expand","Expand"',
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
-          replace: "$self._renderActionBar(),$&"
-        }
-      }
-    ]
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/betterImagine/styles.css
-  registerStyle("betterImagine", `/*
- * Void++, a modification for grok.com
- * Copyright (c) 2026 Void++ Contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-.void-imagine-chip {
-    background: hsl(var(--surface-l1));
-}
-
-.void-imagine-chip:hover {
-    background: hsl(var(--surface-l2));
-}
-
-.void-imagine-search {
-    width: 10rem;
-    flex-shrink: 0;
-    border-radius: 9999px;
-}
-
-.void-imagine-date-select,
-.void-imagine-sort-select {
-    flex-shrink: 0;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    background: hsl(var(--surface-l1));
-    color: hsl(var(--fg-secondary));
-    border: none;
-}
-
-.void-imagine-sort-active {
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l2));
-}
-`);
-
-  // src/plugins/betterImagine/index.tsx
-  var logger17 = new Logger("BetterImagine");
-  var cl18 = classNameFactory("void-imagine-");
-  var settings8 = definePluginSettings({
-    hideDefaultPreviews: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide the community image grid and templates on the Imagine home page.",
-      default: true
-    },
-    noAutoplay: {
-      type: 3 /* BOOLEAN */,
-      description: "Stop video thumbnails from autoplaying.",
-      default: true
-    },
-    playOnHover: {
-      type: 3 /* BOOLEAN */,
-      description: "Play video thumbnails when hovered.",
-      default: true
-    },
-    hideModerated: {
-      type: 3 /* BOOLEAN */,
-      description: "Hide moderated images and videos that cannot be interacted with.",
-      default: true
-    },
-    pauseWhenHidden: {
-      type: 3 /* BOOLEAN */,
-      description: "Pause any playing video thumbnails when the tab loses focus.",
-      default: true
-    },
-    persistFilters: {
-      type: 3 /* BOOLEAN */,
-      description: "Remember Favorites filter + sort across reloads.",
-      default: true
-    },
-    smartFilenames: {
-      type: 3 /* BOOLEAN */,
-      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
-      default: true
-    },
-    bypassPaywall: {
-      type: 3 /* BOOLEAN */,
-      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
-      default: false
-    },
-    ctrlClickSelect: {
-      type: 3 /* BOOLEAN */,
-      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
-      default: true
-    }
-  });
-  function buildFilename(post, isVideo) {
-    if (!settings8.store.smartFilenames || !post)
-      return null;
-    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
-    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
-    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
-    const id = post.id?.slice(0, 8) ?? "";
-    const ext = isVideo ? "mp4" : "png";
-    const parts = [date, slug, id].filter(Boolean);
-    if (!parts.length)
-      return null;
-    return `${parts.join("_")}.${ext}`;
-  }
-  var FILTER_MAP = {
-    image: "MEDIA_POST_TYPE_IMAGE",
-    video: "MEDIA_POST_TYPE_VIDEO"
-  };
-  var DATE_LABELS = {
-    all: "Any time",
-    today: "Today",
-    week: "This week",
-    month: "This month"
-  };
-  var SORT_LABELS = {
-    newest: "Newest first",
-    oldest: "Oldest first",
-    "prompt-az": "Prompt A → Z",
-    "prompt-za": "Prompt Z → A",
-    random: "Shuffle"
-  };
-  var SORT_KEYS = Object.keys(SORT_LABELS);
-  var DAY_MS = 86400000;
-  var DATE_CUTOFFS = {
-    all: 0,
-    today: DAY_MS,
-    week: 7 * DAY_MS,
-    month: 30 * DAY_MS
-  };
-  var STORAGE_KEY2 = "void-imagine-filters";
-  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
-  function loadFilters() {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY2);
-      if (!raw)
-        return DEFAULT_FILTERS;
-      const parsed = JSON.parse(raw);
-      return {
-        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
-        search: typeof parsed.search === "string" ? parsed.search : "",
-        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
-        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
-      };
-    } catch {
-      return DEFAULT_FILTERS;
-    }
-  }
-  var initial = loadFilters();
-  var currentFilter = initial.filter;
-  var currentSearch = initial.search;
-  var currentDate = initial.date;
-  var currentSort = initial.sort;
-  var randomSeed = Date.now();
-  var filterStore = createExternalStore();
-  function persist() {
-    if (!settings8.store.persistFilters)
-      return;
-    try {
-      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
-    } catch {}
-  }
-  function setFilter(f) {
-    currentFilter = f;
-    filterStore.notify();
-    persist();
-  }
-  var setSearch = debounce((s) => {
-    currentSearch = s;
-    filterStore.notify();
-    persist();
-  }, 200);
-  function setDate(d) {
-    currentDate = d;
-    filterStore.notify();
-    persist();
-  }
-  function setSort(s) {
-    if (s === "random" && currentSort === "random")
-      randomSeed = Date.now();
-    currentSort = s;
-    filterStore.notify();
-    persist();
-  }
-  function resetFilters() {
-    currentFilter = "all";
-    currentSearch = "";
-    currentDate = "all";
-    currentSort = "newest";
-    filterStore.notify();
-    persist();
-  }
-  function hasActiveFilters() {
-    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
-  }
-  function isModerated(p) {
-    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
-  }
-  var haystackCache = new WeakMap;
-  var tsCache = new WeakMap;
-  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
-  function getHaystack(p) {
-    let h = haystackCache.get(p);
-    if (h === undefined) {
-      h = `${p.prompt ?? ""}
-${p.originalPrompt ?? ""}`.toLowerCase();
-      haystackCache.set(p, h);
-    }
-    return h;
-  }
-  function getTs(p) {
-    let t = tsCache.get(p);
-    if (t === undefined) {
-      t = new Date(p.createTime).getTime() || 0;
-      tsCache.set(p, t);
-    }
-    return t;
-  }
-  function matchesFilters(p, target, q, cutoff, hideModerated) {
-    if (!p)
-      return false;
-    if (hideModerated && isModerated(p))
-      return false;
-    if (target && p.mediaType !== target)
-      return false;
-    if (cutoff && getTs(p) < cutoff)
-      return false;
-    if (q && !getHaystack(p).includes(q))
-      return false;
-    return true;
-  }
-  var cacheKey = null;
-  var cacheList = null;
-  var cacheResult = [];
-  function filterItems(items) {
-    const { hideModerated } = settings8.store;
-    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
-    if (cacheList === items && cacheKey === key)
-      return cacheResult;
-    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
-    let out = items;
-    if (needsFilter) {
-      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
-      const q = currentSearch.toLowerCase();
-      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
-      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
-    }
-    cacheList = items;
-    cacheKey = key;
-    cacheResult = currentSort === "newest" ? out : sortItems(out);
-    return cacheResult;
-  }
-  function mulberry32(seed) {
-    let a = seed;
-    return () => {
-      a |= 0;
-      a = a + 1831565813 | 0;
-      let t = Math.imul(a ^ a >>> 15, 1 | a);
-      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-  function sortItems(items) {
-    if (items.length < 2)
-      return items;
-    const arr = [...items];
-    switch (currentSort) {
-      case "oldest":
-        return arr.toSorted((a, b) => getTs(a) - getTs(b));
-      case "prompt-az":
-        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
-      case "prompt-za":
-        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
-      case "random": {
-        const rand = mulberry32(randomSeed);
-        for (let i = arr.length - 1;i > 0; i--) {
-          const j = Math.floor(rand() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      }
-      default:
-        return arr;
-    }
-  }
-  var pending = new WeakMap;
-  function pauseVideo(video) {
-    const promise = pending.get(video);
-    pending.delete(video);
-    if (promise) {
-      promise.then(() => {
-        if (pending.has(video))
-          return;
-        video.pause();
-        video.currentTime = 0;
-      }).catch((e) => logger17.warn("Failed to pause video:", e));
-    } else {
-      video.pause();
-      video.currentTime = 0;
-    }
-  }
-  var onMouseEnter = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pending.set(video, video.play().catch((e) => logger17.error("Failed to play video", e)));
-  };
-  var onMouseLeave = (e) => {
-    const video = e.currentTarget.querySelector("video");
-    if (video)
-      pauseVideo(video);
-  };
-  function useFilteredFavorites() {
-    const list = MediaStore.useMediaStore((s) => s.favoritesList);
-    useExternalStore(filterStore);
-    return filterItems(list);
-  }
-  function mediaState() {
-    return MediaStore.useMediaStore.getState();
-  }
-  function selectVisible() {
-    const state = mediaState();
-    const list = state.favoritesList ?? [];
-    const visible = filterItems(list);
-    if (!visible.length)
-      return;
-    state.setMultiSelectItems(visible);
-    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
-  }
-  function deselectAll() {
-    const state = mediaState();
-    state.clearMultiSelect?.();
-  }
-  function selectedPosts() {
-    const state = mediaState();
-    const ids = Object.keys(state.multiSelectIds ?? {});
-    return ids.map((id) => state.byId[id]).filter((p) => !!p);
-  }
-  async function copyLines(lines, label) {
-    if (!lines.length) {
-      Toaster.toast.info(`Selected items have no ${label}s.`);
-      return;
-    }
-    try {
-      await copyToClipboard(lines.join(`
-`));
-      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
-    } catch (e) {
-      logger17.error(`Failed to copy ${label}s`, e);
-      Toaster.toast.error(`Failed to copy ${label}s.`);
-    }
-  }
-  async function copySelectedPrompts() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
-  }
-  async function copySelectedUrls() {
-    const posts = selectedPosts();
-    if (!posts.length) {
-      Toaster.toast.info("No items selected.");
-      return;
-    }
-    const { videoByMediaId } = mediaState();
-    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
-    await copyLines(urls, "URL");
-  }
-  async function bulkUpscaleSelected() {
-    const state = mediaState();
-    const ids = Object.keys(state.multiSelectIds ?? {});
-    let upscaled = 0;
-    let alreadyHd = 0;
-    let inProgress = 0;
-    for (const id of ids) {
-      const videos = state.videoByMediaId[id];
-      if (!videos?.length)
-        continue;
-      for (const video of videos) {
-        if (video.hdMediaUrl) {
-          alreadyHd++;
-          continue;
-        }
-        if (video.upscalingInProgress) {
-          inProgress++;
-          continue;
-        }
-        try {
-          await state.upscaleVideo(id, video.id);
-          upscaled++;
-        } catch (e) {
-          logger17.error("Failed to upscale video:", id, video.id, e);
-        }
-      }
-    }
-    if (upscaled)
-      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
-    else if (alreadyHd)
-      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
-    else if (inProgress)
-      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
-    else
-      Toaster.toast.info("No videos to upscale.");
-  }
-  function FilterButtons() {
-    useExternalStore(filterStore);
-    const [searchInput, setSearchInput] = useState(currentSearch);
-    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
-    const sortActive = currentSort !== "newest";
-    const lastSync = useRef(currentSearch);
-    if (lastSync.current !== currentSearch) {
-      lastSync.current = currentSearch;
-      setSearchInput(currentSearch);
-    }
-    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
-      value: currentDate,
-      onValueChange: (v) => setDate(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: cl18("date-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: d,
-      value: d
-    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
-      value: currentSort,
-      onValueChange: (v) => setSort(v)
-    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
-      className: sortActive ? cl18("sort-select", "sort-active") : cl18("sort-select")
-    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
-      key: s,
-      value: s
-    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      placeholder: "Search...",
-      value: searchInput,
-      onChange: (e) => {
-        setSearchInput(e.target.value);
-        setSearch(e.target.value);
-      },
-      className: cl18("search")
-    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
-      key: f,
-      variant: currentFilter === f ? "primary" : "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: currentFilter !== f ? cl18("chip") : undefined,
-      onClick: () => setFilter(currentFilter === f ? "all" : f)
-    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "pill",
-      className: cl18("chip"),
-      onClick: resetFilters
-    }, "Clear"));
-  }
-  function UpscaleItem() {
-    const [open, setOpen] = useState(false);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: () => setOpen(true)
-    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
-      className: "size-4 me-2"
-    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open,
-      onOpenChange: setOpen,
-      title: "Upscale selected videos",
-      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
-      confirmText: "Upscale",
-      onConfirm: bulkUpscaleSelected
-    }));
-  }
-  function CopyActions() {
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedPrompts
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: copySelectedUrls
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      className: "size-4 me-2"
-    }), "Copy URLs"));
-  }
-  function isImaginePage() {
-    const page = RoutingStore.useRoutingStore.getState().route?.page;
-    return page === "imagine" || page === "imagine-favorites";
-  }
-  function isFavoritesPage() {
-    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
-  }
-  function isTypingTarget(t) {
-    if (!(t instanceof HTMLElement))
-      return false;
-    if (t.isContentEditable)
-      return true;
-    const tag = t.tagName;
-    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-  }
-  function onKeyDown(e) {
-    if (!isImaginePage())
-      return;
-    if (e.ctrlKey || e.metaKey || e.altKey)
-      return;
-    if (isTypingTarget(e.target))
-      return;
-    if (e.key === "i" || e.key === "I") {
-      setFilter(currentFilter === "image" ? "all" : "image");
-      e.preventDefault();
-    } else if (e.key === "v" || e.key === "V") {
-      setFilter(currentFilter === "video" ? "all" : "video");
-      e.preventDefault();
-    } else if (e.key === "r" || e.key === "R") {
-      resetFilters();
-      e.preventDefault();
-    } else if (e.key === "A") {
-      if (isFavoritesPage()) {
-        deselectAll();
-        e.preventDefault();
-      }
-    } else if (e.key === "a") {
-      if (isFavoritesPage()) {
-        selectVisible();
-        e.preventDefault();
-      }
-    } else if (e.key === "c" || e.key === "C") {
-      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
-        copySelectedPrompts();
-        e.preventDefault();
-      }
-    }
-  }
-  function onVisibilityChange() {
-    if (!settings8.store.pauseWhenHidden)
-      return;
-    if (document.visibilityState !== "hidden")
-      return;
-    for (const video of document.querySelectorAll("video")) {
-      if (!video.paused)
-        video.pause();
-    }
-  }
-  var abortCtrl = null;
-  var betterImagine_default = definePlugin({
-    name: "BetterImagine",
-    icon: ImagesIcon,
-    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
-    authors: [Devs.Prism],
-    tags: ["ui"],
-    settings: settings8,
-    _hideDefault: () => settings8.store.hideDefaultPreviews,
-    _NullGrid: () => null,
-    _autoPlay: () => !settings8.store.noAutoplay,
-    _bypassPaywall: () => settings8.store.bypassPaywall,
-    _ctrlClickSelect: () => settings8.store.ctrlClickSelect,
-    _hoverProps: () => settings8.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
-    _useFilteredFavorites: useFilteredFavorites,
-    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
-    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
-    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
-    _buildFilename: buildFilename,
-    start() {
-      if (abortCtrl)
-        return;
-      abortCtrl = new AbortController;
-      const { signal } = abortCtrl;
-      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
-      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
-    },
-    stop() {
-      abortCtrl?.abort();
-      abortCtrl = null;
-    },
-    patches: [
-      {
-        find: "image_feed_opened",
-        group: true,
-        replacement: [
-          {
-            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
-            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
-          },
-          {
-            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
-            replace: "=$self._useFilteredFavorites()"
-          }
-        ]
-      },
-      {
-        find: "image_feed_image_selected",
-        group: true,
-        replacement: [
-          {
-            match: /autoPlay:!0/g,
-            replace: "autoPlay:$self._autoPlay()"
-          },
-          {
-            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
-            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          },
-          {
-            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
-            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
-          }
-        ]
-      },
-      {
-        find: 'imagine-folder.all","All"',
-        replacement: {
-          match: /"imagine-folder\.all","All"\)\}\)/,
-          replace: "$&,$self._renderFilterButtons({})"
-        }
-      },
-      {
-        find: "imagine-templates.section-title",
-        all: true,
-        noWarn: true,
-        replacement: {
-          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
-          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
-        }
-      },
-      {
-        find: '"imagine-set-resolution"',
-        all: true,
-        replacement: {
-          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
-          replace: "if(!$self._bypassPaywall())$&"
-        }
-      },
-      {
-        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
-        group: true,
-        replacement: [
-          {
-            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
-            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
-          },
-          {
-            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
-            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
-          }
-        ]
-      }
-    ]
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/messageTimestamps/styles.css
-  registerStyle("messageTimestamps", `.void-timestamp {
-    margin-bottom: 0.125rem;
-}
-
-@media print {
-    .void-timestamp {
-        display: none;
-    }
-}
-`);
-
-  // src/plugins/messageTimestamps/time.ts
-  var FRESH_MS = 2 * 60 * 1000;
-  var BORROW_MS = 1000;
-  var MIN_MS = Date.UTC(2020, 0, 1);
-  var MAX_SKEW_MS = 24 * 60 * 60 * 1000;
-  var TIME_KEYS = ["thinkingStartTime", "createTime", "create_time", "createdAt", "created_at"];
-  function isFresh(ms, now = Date.now()) {
-    return Math.abs(now - ms) < FRESH_MS;
-  }
-  function inRange(ms, now = Date.now()) {
-    return Number.isFinite(ms) && ms >= MIN_MS && ms <= now + MAX_SKEW_MS;
-  }
-  function fromUnixish(n, now = Date.now()) {
-    if (!Number.isFinite(n) || n <= 0)
-      return null;
-    const ms = n < 1000000000000 ? n * 1000 : n;
-    return inRange(ms, now) ? Math.round(ms) : null;
-  }
-  function parseTime(value, now = Date.now()) {
-    if (value == null || value === "")
-      return null;
-    if (typeof value === "number")
-      return fromUnixish(value, now);
-    if (typeof value === "bigint")
-      return fromUnixish(Number(value), now);
-    if (value instanceof Date) {
-      const t = value.getTime();
-      return Number.isNaN(t) || !inRange(t, now) ? null : t;
-    }
-    if (typeof value === "string") {
-      const s = value.trim();
-      if (!s)
-        return null;
-      if (/^\d+(\.\d+)?$/.test(s))
-        return fromUnixish(Number(s), now);
-      const t = Date.parse(s);
-      return Number.isNaN(t) || !inRange(t, now) ? null : t;
-    }
-    if (typeof value !== "object")
-      return null;
-    const rec = value;
-    if (rec.seconds != null) {
-      const sec = typeof rec.seconds === "string" ? Number(rec.seconds) : Number(rec.seconds);
-      const nanos = Number(rec.nanos) || 0;
-      if (!Number.isFinite(sec))
-        return null;
-      const ms = sec * 1000 + Math.floor(nanos / 1e6);
-      return inRange(ms, now) ? Math.round(ms) : null;
-    }
-    if (rec.$date != null) {
-      const date = rec.$date;
-      if (date && typeof date === "object" && "$numberLong" in date) {
-        return parseTime(date.$numberLong, now);
-      }
-      return parseTime(date, now);
-    }
-    if (rec.$numberLong != null)
-      return parseTime(rec.$numberLong, now);
-    return parseTime(rec.createTime ?? rec.create_time ?? rec.createdAt ?? rec.created_at, now);
-  }
-  function uuidTime(id, now = Date.now()) {
-    if (typeof id !== "string")
-      return null;
-    const compact = id.trim().replaceAll("-", "").toLowerCase();
-    if (compact.length !== 32)
-      return null;
-    if (compact.charAt(12) !== "7")
-      return null;
-    const variant = parseInt(compact.charAt(16), 16);
-    if (!Number.isFinite(variant) || (variant & 12) !== 8)
-      return null;
-    const ms = parseInt(compact.slice(0, 12), 16);
-    return inRange(ms, now) ? ms : null;
-  }
-  function asRecord(value) {
-    return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
-  }
-  function recordId(record) {
-    const { responseId, _id } = record;
-    if (typeof responseId === "string" && responseId)
-      return responseId;
-    return typeof _id === "string" ? _id : "";
-  }
-  function isHumanSender(sender) {
-    if (typeof sender !== "string")
-      return false;
-    const normalized = sender.toLowerCase();
-    return normalized === "human" || normalized === "user";
-  }
-  function isOptimisticState(state) {
-    if (typeof state !== "string")
-      return false;
-    const normalized = state.toLowerCase();
-    return normalized === "optimistic" || normalized === "streaming";
-  }
-  function pickTimes(record, now = Date.now()) {
-    const out = [];
-    const seen = new Set;
-    const add = (value) => {
-      const ms = parseTime(value, now);
-      if (ms == null || seen.has(ms))
-        return;
-      seen.add(ms);
-      out.push(ms);
-    };
-    for (const key of TIME_KEYS)
-      add(record[key]);
-    const meta = asRecord(record.metadata);
-    if (meta) {
-      for (const key of TIME_KEYS)
-        add(meta[key]);
-    }
-    return out;
-  }
-  function oldestTrusted(values, now = Date.now()) {
-    let best = null;
-    for (const ms of values) {
-      if (ms == null || isFresh(ms, now))
-        continue;
-      if (best == null || ms < best)
-        best = ms;
-    }
-    return best;
-  }
-  function chooseTime(opts) {
-    const now = opts.now ?? Date.now();
-    const trusted = oldestTrusted([opts.stored, ...opts.fieldTimes, opts.uuid], now);
-    if (trusted != null)
-      return trusted;
-    return opts.stored ?? opts.fieldTimes[0] ?? opts.uuid ?? null;
-  }
-  function trustedTime(opts) {
-    const now = opts.now ?? Date.now();
-    return oldestTrusted([opts.stored ?? null, ...opts.fieldTimes, opts.uuid], now);
-  }
-  function shouldKeepStored(prev, incoming, now = Date.now()) {
-    if (incoming === prev)
-      return true;
-    if (isFresh(incoming, now) && incoming >= prev)
-      return true;
-    if (!isFresh(prev, now) && incoming > prev)
-      return true;
-    return false;
-  }
-  function preferHumanTime(own, borrowed) {
-    if (borrowed == null)
-      return own;
-    if (own == null || own > borrowed)
-      return borrowed;
-    return own;
-  }
-  function textKey(value) {
-    if (typeof value !== "string")
-      return "";
-    const s = value.trim();
-    if (!s)
-      return "";
-    const slice = s.slice(0, 240);
-    let h = 5381;
-    for (let i = 0;i < slice.length; i++)
-      h = Math.imul(h, 33) ^ slice.charCodeAt(i);
-    return (h >>> 0).toString(36);
-  }
-  function stampOf(rec, now) {
-    const id = recordId(rec);
-    const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(id, now), now });
-    return ms == null ? null : ms - BORROW_MS;
-  }
-  function nextNonHuman(records, from) {
-    for (let i = from;i < records.length; i++) {
-      if (!isHumanSender(records[i].sender))
-        return records[i];
-    }
-    return null;
-  }
-  function childTime(id, records, now = Date.now()) {
-    if (!id)
-      return null;
-    for (const rec of records) {
-      if (rec.parentResponseId !== id || isHumanSender(rec.sender))
-        continue;
-      const ms = parseTime(rec.thinkingStartTime, now);
-      if (ms != null)
-        return ms - BORROW_MS;
-    }
-    return null;
-  }
-  function authoritativeTime(rec, records, now = Date.now()) {
-    if (isHumanSender(rec.sender))
-      return childTime(recordId(rec), records, now);
-    return parseTime(rec.thinkingStartTime, now);
-  }
-  function neighborTime(id, records, now = Date.now()) {
-    if (!id)
-      return null;
-    let next = null;
-    for (let i = 0;i < records.length; i++) {
-      const rec = records[i];
-      const recId = recordId(rec);
-      if (rec.parentResponseId === id && !isHumanSender(rec.sender)) {
-        const ms = stampOf(rec, now);
-        if (ms != null)
-          return ms;
-      }
-      if (recId === id && next == null)
-        next = nextNonHuman(records, i + 1);
-    }
-    if (!next)
-      return null;
-    return stampOf(next, now);
-  }
-  function childTimeFromNodes(id, nodes, byId, now = Date.now()) {
-    if (!id || !nodes.length)
-      return null;
-    let nextId = "";
-    for (let i = 0;i < nodes.length; i++) {
-      const node = nodes[i];
-      const recId = recordId(node);
-      if (node.parentResponseId === id && !isHumanSender(node.sender)) {
-        const rec = byId[recId] ?? node;
-        const ms = stampOf(rec, now);
-        if (ms != null)
-          return ms;
-      }
-      if (recId === id && !nextId)
-        nextId = recordId(nextNonHuman(nodes, i + 1) ?? {});
-    }
-    if (!nextId)
-      return null;
-    const rec = byId[nextId] ?? nodes.find((n) => recordId(n) === nextId);
-    return rec && !isHumanSender(rec.sender) ? stampOf(rec, now) : null;
-  }
-  function shouldPersistStamp(sender, ms, stored, now = Date.now(), state) {
-    if (stored != null)
-      return !shouldKeepStored(stored, ms, now);
-    if (isHumanSender(sender) && isFresh(ms, now))
-      return isOptimisticState(state);
-    return true;
-  }
-  function harvestResponses(value, now = Date.now()) {
-    const records = [];
-    collectRecords(value, 0, records, new Set);
-    const out = [];
-    const seen = new Set;
-    for (const rec of records) {
-      const id = recordId(rec);
-      if (!id || seen.has(id))
-        continue;
-      const authoritative = authoritativeTime(rec, records, now);
-      if (authoritative != null) {
-        seen.add(id);
-        out.push({ id, ms: authoritative, rec, authoritative: true });
-        continue;
-      }
-      const uuid = uuidTime(id, now);
-      const { sender, state } = rec;
-      const human = isHumanSender(sender);
-      const fieldTimes = human && !isOptimisticState(state) ? [] : pickTimes(rec, now);
-      let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
-      if (human) {
-        if (isOptimisticState(state)) {
-          if (ms == null)
-            continue;
-        } else {
-          ms = preferHumanTime(ms, neighborTime(id, records, now));
-          if (ms != null && isFresh(ms, now))
-            ms = null;
-        }
-      }
-      if (ms == null)
-        continue;
-      seen.add(id);
-      out.push({ id, ms, rec, authoritative: false });
-    }
-    return out;
-  }
-  function collectRecords(value, depth, out, seen) {
-    if (value == null || depth > 8)
-      return;
-    if (typeof value !== "object")
-      return;
-    if (seen.has(value))
-      return;
-    seen.add(value);
-    if (Array.isArray(value)) {
-      for (const item of value)
-        collectRecords(item, depth + 1, out, seen);
-      return;
-    }
-    const rec = value;
-    if (recordId(rec))
-      out.push(rec);
-    for (const child of Object.values(rec))
-      collectRecords(child, depth + 1, out, seen);
-  }
-
-  // src/plugins/messageTimestamps/index.tsx
-  var logger18 = new Logger("MessageTimestamps");
-  var STAMP_MAX = 5000;
-  var RESPONSE_URL = /\/(?:load-responses|share_links|response-node)(?:\/|\?|$)/i;
-  var settings9 = definePluginSettings({
-    showDate: {
-      type: 3 /* BOOLEAN */,
-      description: "Show the full date for messages older than today.",
-      default: true
-    },
-    hideOwnMessages: {
-      type: 3 /* BOOLEAN */,
-      default: false,
-      description: "Hide timestamps on your own messages."
-    }
-  }).withPrivateSettings();
-  var tick = createExternalStore();
-  var cache = null;
-  var origFetch = null;
-  var origXhrOpen = null;
-  var origXhrSend = null;
-  var origList = null;
-  var hookedWindow = null;
-  var xhrMeta = new WeakMap;
-  function pageWindow2() {
-    return typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-  }
-  function stamps() {
-    if (cache)
-      return cache;
-    cache = new Map;
-    const raw = settings9.plain.stamps;
-    if (raw && typeof raw === "object") {
-      for (const [id, ms] of Object.entries(raw)) {
-        if (typeof ms === "number" && Number.isFinite(ms))
-          cache.set(id, ms);
-      }
-    }
-    return cache;
-  }
-  function persistNow() {
-    const next = {};
-    for (const [id, ms] of stamps())
-      next[id] = ms;
-    settings9.store.stamps = next;
-  }
-  var persist2 = debounce(persistNow, 400);
-  function remember(id, ms, sender, state, force = false) {
-    if (!id)
-      return false;
-    const map = stamps();
-    const prev = map.get(id) ?? null;
-    if (!force && !shouldPersistStamp(sender, ms, prev, Date.now(), state))
-      return false;
-    if (map.has(id))
-      map.delete(id);
-    map.set(id, ms);
-    while (map.size > STAMP_MAX) {
-      const oldest = map.keys().next().value;
-      if (oldest == null)
-        break;
-      map.delete(oldest);
-    }
-    persist2();
-    return prev !== ms;
-  }
-  function conversationIdOf(id, rec) {
-    if (typeof rec.conversationId === "string")
-      return rec.conversationId;
-    try {
-      const { byConversationId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
-        if (list?.some((r) => r.responseId === id))
-          return cid;
-      }
-      for (const [cid, nodes] of Object.entries(nodesByConversationId ?? {})) {
-        if (nodes?.some((n) => n.responseId === id))
-          return cid;
-      }
-    } catch (e) {
-      logger18.debug("conversation id lookup failed", e);
-    }
-    return "";
-  }
-  function userKeys(rec, id) {
-    const keys = [];
-    if (id)
-      keys.push(`u:${id}`);
-    const { parentResponseId } = rec;
-    if (typeof parentResponseId === "string" && parentResponseId)
-      keys.push(`u:p:${parentResponseId}`);
-    const text = typeof rec.message === "string" && rec.message ? rec.message : typeof rec.query === "string" ? rec.query : "";
-    const fp = textKey(text);
-    if (fp) {
-      const cid = conversationIdOf(id, rec);
-      keys.push(cid ? `u:t:${cid}:${fp}` : `u:t:${fp}`);
-    }
-    return keys;
-  }
-  function gatewayRecords(cid) {
-    const out = [];
-    try {
-      const { conversations } = MessageStore.useMessageStore.getState();
-      const slices = cid ? [conversations?.[cid]] : Object.values(conversations ?? {});
-      for (const slice of slices) {
-        for (const { status, content } of Object.values(slice?.nodes ?? {})) {
-          if (!content)
-            continue;
-          const { responseId, sender, parentResponseId, createTime, thinkingStartTime, state } = content;
-          out.push({
-            responseId,
-            sender,
-            parentResponseId,
-            thinkingStartTime,
-            createTime: status === "complete" ? undefined : createTime,
-            state: status === "ack-pending" ? "optimistic" : state
-          });
-        }
-      }
-    } catch (e) {
-      logger18.debug("message store unavailable", e);
-    }
-    return out;
-  }
-  function gatewaySettled(cid, id) {
-    if (!cid)
-      return false;
-    try {
-      return MessageStore.useMessageStore.getState().conversations?.[cid]?.nodes?.[id]?.status === "complete";
-    } catch (e) {
-      logger18.debug("message store unavailable", e);
-      return false;
-    }
-  }
-  function extraKeys(rec, id) {
-    const keys = [];
-    if (id)
-      keys.push(`h:${id}`);
-    const { parentResponseId } = rec;
-    if (typeof parentResponseId === "string" && parentResponseId)
-      keys.push(`h:${parentResponseId}`);
-    try {
-      const { byConversationId } = ResponseStore.useResponseStore.getState();
-      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
-        const index = list?.findIndex((r) => r.responseId === id) ?? -1;
-        if (index < 0)
-          continue;
-        keys.push(`h:${cid}:${index}`);
-        break;
-      }
-    } catch (e) {
-      logger18.debug("stable key lookup failed", e);
-    }
-    return keys;
-  }
-  function storedMs(id, rec, user) {
-    const map = stamps();
-    const keys = user ? userKeys(rec, id) : [id, ...extraKeys(rec, id)];
-    for (const key of keys) {
-      const ms = map.get(key);
-      if (ms != null)
-        return ms;
-    }
-    return null;
-  }
-  function rememberKeys(id, rec, ms, sender, user, force = false) {
-    const { state } = rec;
-    let changed = false;
-    if (user) {
-      for (const key of userKeys(rec, id)) {
-        if (remember(key, ms, "human", state, force))
-          changed = true;
-      }
-      return changed;
-    }
-    if (remember(id, ms, sender, state, force))
-      changed = true;
-    for (const key of extraKeys(rec, id)) {
-      if (remember(key, ms, sender, state, force))
-        changed = true;
-    }
-    return changed;
-  }
-  function storeRecords(id) {
-    try {
-      const { byId, byConversationId } = ResponseStore.useResponseStore.getState();
-      for (const list of Object.values(byConversationId ?? {})) {
-        if (list?.some((r) => r.responseId === id))
-          return list;
-      }
-      return Object.values(byId ?? {});
-    } catch (e) {
-      logger18.debug("response store unavailable", e);
-      return [];
-    }
-  }
-  function borrowedMs(id, cid) {
-    if (cid) {
-      const ms = neighborTime(id, gatewayRecords(cid));
-      if (ms != null)
-        return ms;
-    }
-    try {
-      const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-      const lookup = byId;
-      for (const nodes of Object.values(nodesByConversationId ?? {})) {
-        const ms = childTimeFromNodes(id, nodes ?? [], lookup);
-        if (ms != null)
-          return ms;
-      }
-      const records = [
-        ...storeRecords(id),
-        ...Object.values(lookup).filter((r) => r != null)
-      ];
-      return neighborTime(id, records) ?? conversationCreateTime(id);
-    } catch (e) {
-      logger18.debug("node neighbor lookup failed", e);
-    }
-    return neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
-  }
-  function conversationCreateTime(id) {
-    try {
-      const { byConversationId } = ResponseStore.useResponseStore.getState();
-      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
-        const first = list?.find((r) => isHumanSender(r.sender));
-        if (first?.responseId !== id)
-          continue;
-        const conv = ConversationStore.useConversationStore.getState().byId?.[cid];
-        const ms = parseTime(conv?.createTime);
-        return ms != null && !isFresh(ms) ? ms : null;
-      }
-    } catch (e) {
-      logger18.debug("conversation time lookup failed", e);
-    }
-    return null;
-  }
-  function fullRecord(id, rec) {
-    if (!id)
-      return rec;
-    try {
-      const hit = asRecord(ResponseStore.useResponseStore.getState().byId?.[id]);
-      if (hit)
-        return { ...rec, ...hit };
-    } catch (e) {
-      logger18.debug("byId lookup failed", e);
-    }
-    return rec;
-  }
-  function resolveMs(response, isUser) {
-    const rec = asRecord(response);
-    if (!rec)
-      return null;
-    const id = recordId(rec);
-    const full = fullRecord(id, rec);
-    const human = isUser === true || isHumanSender(full.sender);
-    const sender = human ? "human" : full.sender;
-    const cid = id ? conversationIdOf(id, full) : "";
-    let authoritative = null;
-    if (id)
-      authoritative = human ? childTime(id, [...gatewayRecords(cid), ...storeRecords(id)]) : parseTime(full.thinkingStartTime);
-    if (authoritative != null) {
-      rememberKeys(id, full, authoritative, sender, human, true);
-      return authoritative;
-    }
-    const stored = id ? storedMs(id, full, human) : null;
-    const fieldTimes = human && !isOptimisticState(full.state) || gatewaySettled(cid, id) ? [] : pickTimes(full);
-    let ms = chooseTime({
-      fieldTimes,
-      stored,
-      uuid: uuidTime(id)
-    });
-    if (human && id)
-      ms = preferHumanTime(ms, borrowedMs(id, cid));
-    if (id && ms != null)
-      rememberKeys(id, full, ms, sender, human);
-    return ms;
-  }
-  function ingest(value) {
-    let changed = false;
-    for (const { id, ms, rec, authoritative } of harvestResponses(value)) {
-      const human = isHumanSender(rec.sender);
-      if (rememberKeys(id, rec, ms, rec.sender, human, authoritative))
-        changed = true;
-    }
-    if (changed)
-      tick.notify();
-  }
-  function requestUrl(input) {
-    if (typeof input === "string")
-      return input;
-    if (input instanceof URL)
-      return input.href;
-    try {
-      return input.url;
-    } catch {
-      return "";
-    }
-  }
-  function hookFetch() {
-    if (origFetch)
-      return;
-    const w = pageWindow2();
-    origFetch = w.fetch;
-    hookedWindow = w;
-    w.fetch = function voidMessageTimestampsFetch(input, init) {
-      const url = requestUrl(input);
-      const promise = origFetch.call(w, input, init);
-      if (!RESPONSE_URL.test(url))
-        return promise;
-      return promise.then((res) => {
-        try {
-          res.clone().json().then(ingest, () => {});
-        } catch (e) {
-          logger18.debug("fetch ingest failed", e);
-        }
-        return res;
-      });
-    };
-  }
-  function unhookFetch() {
-    if (!origFetch || !hookedWindow)
-      return;
-    hookedWindow.fetch = origFetch;
-    origFetch = null;
-    hookedWindow = null;
-  }
-  function ingestXhr(xhr) {
-    if (xhr.status < 200 || xhr.status >= 300)
-      return;
-    const { responseType } = xhr;
-    if (responseType === "json") {
-      ingest(xhr.response);
-      return;
-    }
-    if (responseType !== "" && responseType !== "text")
-      return;
-    const text = xhr.responseText;
-    if (!text)
-      return;
-    ingest(JSON.parse(text));
-  }
-  function hookXhr() {
-    if (origXhrOpen)
-      return;
-    const XHR = pageWindow2().XMLHttpRequest;
-    origXhrOpen = XHR.prototype.open;
-    origXhrSend = XHR.prototype.send;
-    XHR.prototype.open = function voidMessageTimestampsOpen(method, url, ...rest) {
-      try {
-        xhrMeta.set(this, requestUrl(url));
-      } catch (e) {
-        logger18.debug("xhr open failed", e);
-      }
-      return origXhrOpen.call(this, method, url, ...rest);
-    };
-    XHR.prototype.send = function voidMessageTimestampsSend(body) {
-      const url = xhrMeta.get(this) ?? "";
-      if (RESPONSE_URL.test(url)) {
-        this.addEventListener("load", () => {
-          try {
-            ingestXhr(this);
-          } catch (e) {
-            logger18.debug("xhr ingest failed", e);
-          }
-        }, { once: true });
-      }
-      return origXhrSend.call(this, body);
-    };
-  }
-  function unhookXhr() {
-    if (!origXhrOpen || !origXhrSend)
-      return;
-    const XHR = pageWindow2().XMLHttpRequest;
-    XHR.prototype.open = origXhrOpen;
-    XHR.prototype.send = origXhrSend;
-    origXhrOpen = null;
-    origXhrSend = null;
-  }
-  function hookListResponses() {
-    if (origList)
-      return;
-    try {
-      const { chatApi } = ApiClients;
-      origList = chatApi.chatListResponses;
-      chatApi.chatListResponses = function voidMessageTimestampsList(a) {
-        return origList.call(chatApi, a).then((data) => {
-          ingest(data);
-          return data;
-        });
-      };
-    } catch (e) {
-      origList = null;
-      logger18.debug("chatListResponses wrap skipped", e);
-    }
-  }
-  function unhookListResponses() {
-    if (!origList)
-      return;
-    try {
-      ApiClients.chatApi.chatListResponses = origList;
-    } catch (e) {
-      logger18.debug("chatListResponses unwrap skipped", e);
-    }
-    origList = null;
-  }
-  function formatTimestamp(ms, showDate) {
-    const date = new Date(ms);
-    const now = new Date;
-    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
-    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (!showDate || today)
-      return time;
-    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
-  }
-  var messageTimestamps_default = definePlugin({
-    name: "MessageTimestamps",
-    icon: ClockIcon,
-    description: "Shows timestamps on chat messages.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings9,
-    start() {
-      try {
-        hookFetch();
-        hookXhr();
-        hookListResponses();
-      } catch (e) {
-        logger18.warn("Failed to hook network", e);
-      }
-    },
-    stop() {
-      unhookFetch();
-      unhookXhr();
-      unhookListResponses();
-      persistNow();
-    },
-    zustand: {
-      ResponseStore: {
-        selector: (s) => {
-          let n = 0;
-          for (const list of Object.values(s.nodesByConversationId ?? {}))
-            n += list?.length ?? 0;
-          return `${Object.keys(s.byId ?? {}).length}:${n}`;
-        },
-        handler() {
-          try {
-            const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-            ingest({
-              responses: Object.values(byId ?? {}),
-              nodes: Object.values(nodesByConversationId ?? {}).flat()
-            });
-          } catch (e) {
-            logger18.debug("store ingest failed", e);
-          }
-        }
-      },
-      MessageStore: {
-        selector: (s) => {
-          let n = 0;
-          for (const slice of Object.values(s.conversations ?? {}))
-            n += Object.keys(slice?.nodes ?? {}).length;
-          return n;
-        },
-        handler() {
-          ingest({ responses: gatewayRecords("") });
-        }
-      }
-    },
-    _renderTimestamp: ErrorBoundary.wrap(({ response, isUser }) => {
-      useExternalStore(tick);
-      const human = isUser === true || isHumanSender(response.sender);
-      if (settings9.store.hideOwnMessages && human)
-        return null;
-      const ms = resolveMs(response, isUser);
-      if (ms == null)
-        return null;
-      return /* @__PURE__ */ React.createElement(Text2, {
-        as: "span",
-        size: "xs",
-        color: "muted",
-        className: "void-timestamp"
-      }, formatTimestamp(ms, settings9.store.showDate));
-    }),
-    patches: [
-      {
-        find: "response-family:handleEditSave",
-        all: true,
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:(\i),isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._renderTimestamp({response:$2,isUser:$1}),$&"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/autoRetry/index.ts
-  var logger19 = new Logger("AutoRetry");
-  var CONTENT_MODERATED = "grok:content-moderated";
-  var settings10 = definePluginSettings({
-    retryModeration: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry content moderation errors.",
-      default: true
-    },
-    retryNetwork: {
-      type: 3 /* BOOLEAN */,
-      description: "Retry network and stream errors.",
-      default: true
-    },
-    maxRetries: {
-      type: 1 /* NUMBER */,
-      description: "Maximum consecutive retries per conversation.",
-      default: 3
-    },
-    delay: {
-      type: 1 /* NUMBER */,
-      description: "Seconds to wait before retrying.",
-      default: 2
-    }
-  });
-  var retryCounts = new Map;
-  var pendingTimer = null;
-  function clearPending() {
-    if (pendingTimer != null) {
-      clearTimeout(pendingTimer);
-      pendingTimer = null;
-    }
-  }
-  function isModeration(response) {
-    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
-  }
-  function shouldRetry(response) {
-    if (isModeration(response))
-      return settings10.store.retryModeration;
-    return settings10.store.retryNetwork;
-  }
-  function retry(responseId, conversationId, response) {
-    const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings10.store.maxRetries;
-    if (count > max) {
-      showToast("Max retries reached.", 2 /* ERROR */);
-      retryCounts.delete(conversationId);
-      return;
-    }
-    retryCounts.set(conversationId, count);
-    const delaySec = settings10.store.delay;
-    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
-    logger19.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
-    clearPending();
-    pendingTimer = setTimeout(() => {
-      pendingTimer = null;
-      const state = ChatPageStore.useChatPageStore.getState();
-      if (state.streamedMessageId)
-        return;
-      state.sendResponse({
-        message: "",
-        parentResponseId: responseId,
-        conversationId,
-        fileAttachmentIds: response.fileAttachments,
-        setOpimisticUserResponse: false,
-        setUserResponse: false,
-        enableRetries: true
-      });
-    }, delaySec * 1000);
-  }
-  function onStreamEnd({ responseId }) {
-    const response = ResponseStore.useResponseStore.getState().byId[responseId];
-    if (!response || response.state !== "error") {
-      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
-      if (convId)
-        retryCounts.delete(convId);
-      return;
-    }
-    if (!shouldRetry(response))
-      return;
-    const { conversationId } = ChatPageStore.useChatPageStore.getState();
-    if (!conversationId)
-      return;
-    retry(responseId, conversationId, response);
-  }
-  var autoRetry_default = definePlugin({
-    name: "AutoRetry",
-    icon: RotateCcwIcon,
-    description: "Automatically retry failed messages on moderation or network errors.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings10,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      retryCounts.clear();
-      clearPending();
-    },
-    stop() {
-      clearPending();
-      retryCounts.clear();
-    },
-    events: {
-      streamEnd: onStreamEnd
-    }
-  });
-
-  // src/plugins/userQuotes/index.ts
-  var STYLE_NAME3 = "userQuotes";
+  // src/plugins/noGrokBot/index.ts
+  var STYLE_NAME3 = "noGrokBot";
   var CSS2 = `
-[data-testid="user-message"] blockquote:not(.twitter-tweet) {
-    border-inline-start-color: hsl(var(--fg-tertiary)) !important;
-    border-inline-start-width: 0.125rem !important;
-    border-inline-start-style: solid !important;
-    padding-inline-start: 0.75rem !important;
+#grok-bot-nav-button,
+div:has(> #grok-bot-nav-button) {
+    display: none !important;
+}
+#promo-portal [aria-label*="Grok Bot"] {
+    display: none !important;
 }
 `;
-  var userQuotes_default = definePlugin({
-    name: "UserQuotes",
-    icon: TextQuoteIcon,
-    description: "Show a visible left bar on quoted lines in your own chat bubbles.",
+  var noGrokBot_default = definePlugin({
+    name: "NoGrokBot",
+    icon: BotOffIcon,
+    description: "Hide the top-right Grok Bot promo button.",
     authors: [Devs.p],
-    tags: ["chat", "ui"],
+    tags: ["ui"],
     enabledByDefault: true,
     start() {
       registerStyle(STYLE_NAME3, CSS2);
@@ -9448,3520 +7599,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // voidpp-css:/tmp/VoidPP/src/plugins/cloneChats/styles.css
-  registerStyle("cloneChats", `.void-clone-icon {
-    margin-inline-end: 0.5rem;
-}
-`);
-
-  // src/plugins/cloneChats/index.tsx
-  var logger20 = new Logger("CloneChats");
-  async function cloneChat(conversationId) {
-    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
-    if (!lastResponseId)
-      throw new Error("No responses found in conversation.");
-    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
-      conversationId,
-      body: { responseId: lastResponseId, allowIndexing: false }
-    });
-    if (!shareLinkId)
-      throw new Error("Failed to create share link.");
-    try {
-      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
-      if (conversation?.conversationId) {
-        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
-      }
-    } finally {
-      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
-    }
-  }
-  function CloneItem({ conversationId }) {
-    const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => cloneChat(conversationId).catch((e) => logger20.error("Failed to clone chat:", e)),
-      disabled: streaming
-    }, /* @__PURE__ */ React.createElement(CopyIcon, {
-      size: 16,
-      className: "void-clone-icon"
-    }), "Clone");
-  }
-  var cloneChats_default = definePlugin({
-    name: "CloneChats",
-    icon: CopyIcon,
-    description: "Clone conversations from the context-menu.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    contextMenuItems: {
-      conversation: {
-        label: "Clone",
-        render: ErrorBoundary.wrap(CloneItem)
-      }
-    }
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/streamerMode/styles.css
-  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
-
-/* Sidebar avatar */
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
-html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
-    filter: none;
-}
-
-/* Sidebar username */
-html.void-streamer-sidebar-name .void-sidebar-info {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
-    filter: none;
-}
-
-/* Account tab avatar (inside settings dialog) */
-html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
-    filter: none;
-}
-
-/* Account tab username */
-html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
-    filter: none;
-}
-
-/* Account tab email */
-html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
-    filter: none;
-}
-
-/* Account tab birth year */
-html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
-    filter: none;
-}
-
-/* Conversation titles in sidebar (pinned + recent buckets) */
-html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
-    filter: none;
-}
-
-/* Project names in sidebar */
-html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
-    filter: blur(6px);
-    transition: filter 0.2s ease;
-}
-
-html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
-    filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
-    html.void-streamer-sidebar-name .void-sidebar-info,
-    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
-    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
-    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
-    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
-    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
-    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
-}
-`);
-
-  // src/plugins/streamerMode/index.ts
-  var CSS_CLASSES = {
-    sidebarAvatar: "void-streamer-sidebar-avatar",
-    sidebarName: "void-streamer-sidebar-name",
-    accountAvatar: "void-streamer-account-avatar",
-    accountName: "void-streamer-account-name",
-    accountEmail: "void-streamer-account-email",
-    accountAge: "void-streamer-account-age",
-    projects: "void-streamer-projects",
-    conversations: "void-streamer-conversations"
-  };
-  var settings11 = definePluginSettings({
-    sidebarAvatar: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your avatar in the sidebar.",
-      default: true
-    },
-    sidebarName: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your username in the sidebar.",
-      default: true
-    },
-    accountAvatar: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your avatar in the account settings tab.",
-      default: true
-    },
-    accountName: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your name in the account settings tab.",
-      default: true
-    },
-    accountEmail: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your email in the account settings tab.",
-      default: true
-    },
-    accountAge: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur your birth year in the account settings tab.",
-      default: true
-    },
-    projects: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur project names in the sidebar.",
-      default: true
-    },
-    conversations: {
-      type: 3 /* BOOLEAN */,
-      description: "Blur conversation titles in the sidebar.",
-      default: true
-    }
-  });
-  function syncClasses() {
-    const { classList } = document.documentElement;
-    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings11.store[key]);
-    }
-  }
-  var streamerMode_default = definePlugin({
-    name: "StreamerMode",
-    icon: EyeOffIcon,
-    description: "Blurs personal information for privacy while streaming.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    settings: settings11,
-    start: syncClasses,
-    onSettingsChange: syncClasses,
-    stop() {
-      const { classList } = document.documentElement;
-      for (const cls of Object.values(CSS_CLASSES)) {
-        classList.remove(cls);
-      }
-    }
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/inputHistory/styles.css
-  registerStyle("inputHistory", `.void-ih-hud {
-    contain: content;
-    position: fixed;
-    z-index: 2147483646;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.5rem;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-secondary));
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.2;
-    pointer-events: none;
-    opacity: 0;
-    transform: translate(-50%, -100%);
-    transition: opacity 0.12s ease;
-}
-
-.void-ih-hud-on {
-    opacity: 1;
-}
-
-.void-ih-panel {
-    min-width: 0;
-}
-
-.void-ih-head {
-    min-width: 0;
-}
-
-.void-ih-search {
-    width: 100%;
-}
-
-.void-ih-empty {
-    margin: 0;
-    color: hsl(var(--fg-tertiary));
-}
-
-.void-ih-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    overflow: auto;
-    max-height: min(22rem, 45vh);
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border-l2) / 80%) transparent;
-}
-
-.void-ih-item {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid transparent;
-    border-radius: 0.75rem;
-    background: hsl(var(--surface-l1) / 72%);
-}
-
-.void-ih-item:hover {
-    background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 45%);
-}
-
-.void-ih-item-on {
-    align-items: start;
-    background: hsl(var(--surface-l2));
-    border-color: hsl(var(--border-l2) / 60%);
-}
-
-.void-ih-item:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ih-main {
-    min-width: 0;
-    cursor: pointer;
-}
-
-.void-ih-body {
-    display: block;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    color: hsl(var(--fg-primary));
-    font-size: 0.8125rem;
-    line-height: 1.45;
-}
-
-.void-ih-clamp {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-}
-
-.void-ih-item-on .void-ih-body {
-    max-height: 12rem;
-    overflow: auto;
-    scrollbar-width: thin;
-}
-
-.void-ih-side {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.void-ih-item-on .void-ih-side {
-    align-items: flex-start;
-    padding-top: 0.125rem;
-}
-
-.void-ih-lines {
-    min-width: 1.5rem;
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-tertiary));
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.3;
-    text-align: center;
-}
-
-.void-ih-actions {
-    display: flex;
-    gap: 0.125rem;
-    padding: 0.125rem;
-    border-radius: 0.5rem;
-    background: hsl(var(--surface-l2) / 90%);
-}
-
-.void-ih-actions :is(button) {
-    width: 2.25rem;
-    height: 2.25rem;
-    min-width: 2.25rem;
-    min-height: 2.25rem;
-}
-
-.void-ih-item-on .void-ih-actions,
-.void-ih-item:hover .void-ih-actions {
-    background: hsl(var(--surface-l1));
-}
-
-.void-ih-pager {
-    min-width: 0;
-}
-
-.void-ih-page {
-    min-width: 3.5rem;
-    color: hsl(var(--fg-secondary));
-    font-size: 0.8125rem;
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-ih-hud {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/inputHistory/index.tsx
-  var logger21 = new Logger("InputHistory");
-  var cl19 = classNameFactory("void-ih-");
-  var EDITOR_SEL = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
-  var ZWSP = /\u200B/g;
-  var MAX_MIN = 10;
-  var MAX_MAX = 500;
-  var MAX_DEFAULT = 100;
-  var HUD_GAP_PX = 8;
-  var APPLY_QUIET_MS = 120;
-  var CAPTURE_DEDUPE_MS = 2000;
-  var PAGE_SIZE = 10;
-  var settings12 = definePluginSettings({
-    maxEntries: {
-      type: 5 /* SLIDER */,
-      description: "Maximum stored prompts.",
-      min: MAX_MIN,
-      max: MAX_MAX,
-      default: MAX_DEFAULT
-    },
-    history: {
-      type: 6 /* COMPONENT */,
-      component: HistoryPanel
-    }
-  }).withPrivateSettings();
-  var recentAt = new Map;
-  var cursor = 0;
-  var draft = "";
-  var recalling = false;
-  var applying = false;
-  var composing = false;
-  var applyGen = 0;
-  var keys = null;
-  var applyTimer;
-  var applyEl = null;
-  var applyAtStart = true;
-  function getEntries() {
-    const raw = settings12.plain.entries;
-    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
-  }
-  function cap(entries) {
-    const max = clamp(settings12.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
-    return entries.length > max ? entries.slice(entries.length - max) : entries;
-  }
-  function setEntries(entries) {
-    settings12.store.entries = entries;
-  }
-  function normalize(text) {
-    return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
-  }
-  function imeEvent(e) {
-    if (composing)
-      return true;
-    if (e instanceof InputEvent && e.isComposing)
-      return true;
-    if (e instanceof KeyboardEvent && (e.isComposing || e.keyCode === 229))
-      return true;
-    return false;
-  }
-  function invalidateApply() {
-    applyGen++;
-    applying = false;
-    applyEl = null;
-    clearTimeout(applyTimer);
-    applyTimer = undefined;
-  }
-  function resetBrowse(length) {
-    invalidateApply();
-    cursor = length;
-    draft = "";
-    recalling = false;
-    hideHud();
-  }
-  function chatEditor(t) {
-    if (t instanceof Text)
-      return t.parentElement?.closest(EDITOR_SEL) ?? null;
-    if (t instanceof Element)
-      return t.closest(EDITOR_SEL) ?? null;
-    return null;
-  }
-  function editorText(el) {
-    const blocks = el.querySelectorAll(":scope > *");
-    const raw = blocks.length ? Array.from(blocks, (b) => b.textContent ?? "").join(`
-`) : el.innerText ?? el.textContent ?? "";
-    return normalize(raw);
-  }
-  function spanHeight(range) {
-    const rects = range.getClientRects();
-    let top = Infinity;
-    let bottom = -Infinity;
-    for (const r of rects) {
-      if (r.height === 0 && r.width === 0)
-        continue;
-      if (r.top < top)
-        top = r.top;
-      if (r.bottom > bottom)
-        bottom = r.bottom;
-    }
-    if (top === Infinity)
-      return range.getBoundingClientRect().height;
-    return bottom - top;
-  }
-  function caretOnEdge(el) {
-    const sel = window.getSelection();
-    if (!sel?.rangeCount || !sel.isCollapsed)
-      return { first: false, last: false };
-    const caret = sel.getRangeAt(0);
-    if (!el.contains(caret.startContainer))
-      return { first: false, last: false };
-    if (!el.innerText?.trim())
-      return { first: true, last: true };
-    const before = document.createRange();
-    before.selectNodeContents(el);
-    before.setEnd(caret.startContainer, caret.startOffset);
-    const after = document.createRange();
-    after.selectNodeContents(el);
-    after.setStart(caret.startContainer, caret.startOffset);
-    const { lineHeight, fontSize } = getComputedStyle(el);
-    const lh = parseFloat(lineHeight);
-    const fs = parseFloat(fontSize) || 16;
-    const budget = (lh > 0 ? lh : fs * 1.5) * 1.5;
-    return {
-      first: spanHeight(before) <= budget,
-      last: spanHeight(after) <= budget
-    };
-  }
-  function matchesRecall(el) {
-    if (!recalling)
-      return false;
-    const list = getEntries();
-    const expected = cursor < list.length ? list[cursor] : draft;
-    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
-  }
-  function dropRecall(el) {
-    invalidateApply();
-    cursor = getEntries().length;
-    draft = editorText(el);
-    recalling = false;
-    hideHud();
-  }
-  function placeCaret(el, atStart) {
-    if (composing)
-      return;
-    try {
-      const view = el.pmViewDesc?.view;
-      if (view) {
-        if (view.composing)
-          return;
-        const Sel = view.state.selection.constructor;
-        const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
-        view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
-        return;
-      }
-    } catch (err) {
-      logger21.debug("placeCaret pm failed:", err);
-    }
-    const native = window.getSelection();
-    if (!native)
-      return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(atStart);
-    native.removeAllRanges();
-    native.addRange(range);
-  }
-  function scheduleApplyEnd(gen) {
-    clearTimeout(applyTimer);
-    applyTimer = setTimeout(() => {
-      if (gen !== applyGen)
-        return;
-      applying = false;
-      const el = applyEl;
-      applyEl = null;
-      if (!el || composing)
-        return;
-      if (!recalling)
-        return;
-      if (!matchesRecall(el))
-        dropRecall(el);
-      else
-        placeCaret(el, applyAtStart);
-    }, APPLY_QUIET_MS);
-  }
-  function setEditorText(el, text, atStart) {
-    el.focus();
-    const sel = window.getSelection();
-    if (!sel)
-      return;
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    sel.removeAllRanges();
-    sel.addRange(range);
-    applying = true;
-    applyEl = el;
-    applyAtStart = atStart;
-    const gen = ++applyGen;
-    try {
-      if (!text)
-        document.execCommand("delete");
-      else
-        document.execCommand("insertText", false, text);
-    } catch (err) {
-      logger21.debug("insertText failed:", err);
-    }
-    placeCaret(el, atStart);
-    scheduleApplyEnd(gen);
-  }
-  function hudEl() {
-    let el = document.querySelector(`.${cl19("hud")}`);
-    if (el)
-      return el;
-    el = document.createElement("div");
-    el.className = cl19("hud");
-    el.setAttribute("aria-live", "polite");
-    document.body.appendChild(el);
-    return el;
-  }
-  function hideHud() {
-    document.querySelector(`.${cl19("hud")}`)?.classList.remove(cl19("hud-on"));
-  }
-  function showHud(label, editor) {
-    const bar = editor.closest(".query-bar");
-    if (!bar)
-      return;
-    const el = hudEl();
-    el.textContent = label;
-    requestAnimationFrame(() => {
-      const r = bar.getBoundingClientRect();
-      el.style.left = `${r.left + r.width / 2}px`;
-      el.style.top = `${r.top - HUD_GAP_PX}px`;
-      el.classList.add(cl19("hud-on"));
-    });
-  }
-  function pushEntry(text) {
-    const value = normalize(text);
-    if (!value)
-      return;
-    const now = Date.now();
-    const prev = recentAt.get(value);
-    if (prev != null && now - prev < CAPTURE_DEDUPE_MS)
-      return;
-    recentAt.set(value, now);
-    const list = getEntries();
-    if (list[list.length - 1] === value) {
-      resetBrowse(list.length);
-      return;
-    }
-    const next = cap([...list, value]);
-    setEntries(next);
-    resetBrowse(next.length);
-  }
-  function cycle(older, el) {
-    const list = getEntries();
-    if (!list.length && older)
-      return;
-    if (cursor >= list.length) {
-      draft = editorText(el);
-      cursor = list.length;
-    }
-    const next = older ? cursor - 1 : cursor + 1;
-    if (next < 0 || next > list.length)
-      return;
-    cursor = next;
-    recalling = true;
-    setEditorText(el, next === list.length ? draft : list[next], older);
-    if (next < list.length)
-      showHud(`${next + 1} / ${list.length}`, el);
-    else
-      hideHud();
-  }
-  function onKeyDown2(e) {
-    if (imeEvent(e))
-      return;
-    if (e.ctrlKey || e.metaKey)
-      return;
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    if (applying && e.key !== "ArrowUp" && e.key !== "ArrowDown")
-      invalidateApply();
-    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
-      dropRecall(el);
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return;
-    }
-    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
-      pushEntry(editorText(el));
-      return;
-    }
-    if (e.key !== "ArrowUp" && e.key !== "ArrowDown")
-      return;
-    if (e.shiftKey)
-      return;
-    const older = e.key === "ArrowUp";
-    const force = e.altKey;
-    const list = getEntries();
-    if (!force) {
-      const edge = caretOnEdge(el);
-      if (older && !edge.first || !older && !edge.last)
-        return;
-    }
-    if (older && (!list.length || cursor <= 0))
-      return;
-    if (!older && cursor >= list.length)
-      return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    cycle(older, el);
-  }
-  function onPointerDown(e) {
-    if (!recalling)
-      return;
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    dropRecall(el);
-  }
-  function onCompositionStart(e) {
-    if (!chatEditor(e.target))
-      return;
-    composing = true;
-    invalidateApply();
-  }
-  function onCompositionEnd(e) {
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    composing = false;
-    if (recalling && !matchesRecall(el))
-      dropRecall(el);
-  }
-  function onInput(e) {
-    const el = chatEditor(e.target);
-    if (!el)
-      return;
-    if (imeEvent(e)) {
-      if (applying)
-        invalidateApply();
-      return;
-    }
-    const recalled = matchesRecall(el);
-    if (applying && recalled)
-      return;
-    if (recalling && !recalled)
-      dropRecall(el);
-  }
-  function onSubmit(e) {
-    const form = e.target;
-    if (!(form instanceof HTMLFormElement))
-      return;
-    const editor = form.querySelector(EDITOR_SEL);
-    if (editor instanceof HTMLElement)
-      pushEntry(editorText(editor));
-  }
-  function onClick(e) {
-    const t = e.target;
-    if (!(t instanceof Element))
-      return;
-    const ctrl = t.closest("button, [role='button']");
-    if (!ctrl)
-      return;
-    const bar = ctrl.closest(".query-bar");
-    if (!bar || ctrl.closest("[data-query-bar-mode-select]"))
-      return;
-    const label = (ctrl.getAttribute("aria-label") ?? "").toLowerCase();
-    const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
-    if (!submit && !label.includes("send") && !label.includes("submit"))
-      return;
-    const editor = bar.querySelector(EDITOR_SEL);
-    if (editor instanceof HTMLElement)
-      pushEntry(editorText(editor));
-  }
-  function removeEntry(index) {
-    const list = getEntries();
-    if (index < 0 || index >= list.length)
-      return;
-    const next = list.filter((_, i) => i !== index);
-    setEntries(next);
-    resetBrowse(next.length);
-  }
-  function HistoryPanel() {
-    const { entries } = settings12.use(["entries"]);
-    const list = entries ?? [];
-    const [query, setQuery] = useState("");
-    const [page, setPage] = useState(0);
-    const [openId, setOpenId] = useState(null);
-    const [confirm, setConfirm] = useState(false);
-    const needle = query.trim().toLowerCase();
-    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).reverse();
-    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
-    const current = Math.min(page, pageCount - 1);
-    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.65rem",
-      className: cl19("panel")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      className: cl19("head"),
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "0.75rem"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      disabled: !list.length,
-      onClick: () => setConfirm(true)
-    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      placeholder: "Search prompts",
-      value: query,
-      onChange: (e) => {
-        setQuery(e.target.value);
-        setPage(0);
-      },
-      className: cl19("search")
-    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl19("empty")
-    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
-      className: cl19("empty")
-    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
-      className: cl19("list")
-    }, slice.map((row) => {
-      const lines = row.text.split(`
-`).length;
-      const expanded = openId === row.index;
-      return /* @__PURE__ */ React.createElement("div", {
-        key: row.index,
-        className: cl19("item", expanded && "item-on")
-      }, /* @__PURE__ */ React.createElement("div", {
-        className: cl19("main"),
-        role: "button",
-        tabIndex: 0,
-        onClick: () => setOpenId(expanded ? null : row.index),
-        onKeyDown: (e) => {
-          if (e.key !== "Enter" && e.key !== " ")
-            return;
-          e.preventDefault();
-          setOpenId(expanded ? null : row.index);
-        }
-      }, /* @__PURE__ */ React.createElement("span", {
-        className: cl19("body", !expanded && "clamp")
-      }, row.text)), /* @__PURE__ */ React.createElement("div", {
-        className: cl19("side")
-      }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
-        className: cl19("lines")
-      }, lines), /* @__PURE__ */ React.createElement("div", {
-        className: cl19("actions")
-      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "sm",
-        shape: "square",
-        tooltipContent: "Copy",
-        "aria-label": "Copy",
-        onClick: () => {
-          copyToClipboard(row.text).catch((err) => logger21.error("copy failed:", err));
-        }
-      }, /* @__PURE__ */ React.createElement(CopyIcon, {
-        size: 18
-      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-        variant: "tertiary",
-        size: "sm",
-        shape: "square",
-        tooltipContent: "Delete",
-        "aria-label": "Delete",
-        onClick: () => {
-          if (openId === row.index)
-            setOpenId(null);
-          removeEntry(row.index);
-        }
-      }, /* @__PURE__ */ React.createElement(Trash2Icon, {
-        size: 18
-      })))));
-    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
-      className: cl19("pager"),
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "0.5rem"
-    }, /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "square",
-      "aria-label": "Previous page",
-      disabled: current <= 0,
-      onClick: () => setPage(current - 1)
-    }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
-      size: 18
-    })), /* @__PURE__ */ React.createElement("span", {
-      className: cl19("page")
-    }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
-      variant: "tertiary",
-      size: "sm",
-      shape: "square",
-      "aria-label": "Next page",
-      disabled: current >= pageCount - 1,
-      onClick: () => setPage(current + 1)
-    }, /* @__PURE__ */ React.createElement(ChevronRightIcon, {
-      size: 18
-    }))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open: confirm,
-      onOpenChange: setConfirm,
-      title: "Clear input history",
-      description: "Delete all stored prompts? This cannot be undone.",
-      confirmText: "Clear",
-      danger: true,
-      onConfirm: () => {
-        setEntries([]);
-        resetBrowse(0);
-        setOpenId(null);
-        setQuery("");
-        setPage(0);
-      }
-    }));
-  }
-  var inputHistory_default = definePlugin({
-    name: "InputHistory",
-    icon: HistoryIcon,
-    description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
-    authors: [Devs.p],
-    tags: ["chat"],
-    enabledByDefault: true,
-    settings: settings12,
-    managedStyle: "inputHistory",
-    cleanupSelectors: [".void-ih-hud"],
-    start() {
-      if (keys)
-        return;
-      cursor = getEntries().length;
-      recalling = false;
-      composing = false;
-      invalidateApply();
-      keys = new AbortController;
-      const { signal } = keys;
-      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
-      document.addEventListener("input", onInput, { capture: true, signal });
-      document.addEventListener("compositionstart", onCompositionStart, { capture: true, signal });
-      document.addEventListener("compositionend", onCompositionEnd, { capture: true, signal });
-      document.addEventListener("submit", onSubmit, { capture: true, signal });
-      document.addEventListener("click", onClick, { capture: true, signal });
-      document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
-    },
-    stop() {
-      keys?.abort();
-      keys = null;
-      hideHud();
-      recentAt.clear();
-      composing = false;
-      recalling = false;
-      invalidateApply();
-    },
-    onSettingsChange() {
-      const current = getEntries();
-      const next = cap(current);
-      if (next.length !== current.length)
-        setEntries(next);
-      if (cursor > next.length)
-        cursor = next.length;
-    }
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/downloadTTS/styles.css
-  registerStyle("downloadTTS", `.void-download-tts-spinner {
-    pointer-events: none;
-}
-`);
-
-  // src/plugins/downloadTTS/index.tsx
-  var cl20 = classNameFactory("void-download-tts-");
-  var logger22 = new Logger("DownloadTTS");
-  async function fetchAndDownload() {
-    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
-    if (!currentStreamId)
-      return;
-    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
-    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
-    if (voiceId)
-      url += `?voiceId=${encodeURIComponent(voiceId)}`;
-    const res = await fetch(url);
-    if (!res.ok)
-      throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
-    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
-  }
-  function DownloadButton() {
-    const [loading, onClick] = useAsyncAction(async () => {
-      try {
-        await fetchAndDownload();
-      } catch (e) {
-        logger22.error("Failed to download TTS audio:", e);
-      }
-    });
-    return /* @__PURE__ */ React.createElement(Button, {
-      "aria-label": "Download audio",
-      onClick,
-      disabled: loading,
-      size: "md",
-      shape: "square",
-      variant: "tertiary"
-    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
-      size: "sm",
-      className: cl20("spinner")
-    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 16
-    }));
-  }
-  var downloadTTS_default = definePlugin({
-    name: "DownloadTTS",
-    icon: Volume2Icon,
-    description: "Add a download button to the TTS playback controls.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    patches: [{
-      find: 'tts-controls.stop.label","Stop"',
-      all: true,
-      replacement: {
-        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
-        replace: "$1,$self._renderDownloadButton()]"
-      }
-    }],
-    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/recentTopics/styles.css
-  registerStyle("recentTopics", `.void-rt-root,
-.void-rt-root:popover-open {
-    isolation: isolate;
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 2147483647 !important;
-    display: block !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    max-width: none !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    border: none !important;
-    background: transparent !important;
-    color: inherit;
-    pointer-events: auto !important;
-}
-
-.void-rt-root::backdrop {
-    background: transparent;
-}
-
-html.void-rt-open [data-sidebar="sidebar"],
-html.void-rt-open [data-sidebar="gap"] {
-    z-index: 0 !important;
-}
-
-.void-rt-panel,
-.void-rt-card,
-.void-rt-meta,
-.void-rt-name,
-.void-rt-host,
-.void-rt-empty {
-    font-family: inherit;
-    letter-spacing: inherit;
-}
-
-.void-rt-panel,
-.void-rt-panel * {
-    box-sizing: border-box;
-}
-
-.void-rt-panel {
-    --void-rt-accent: hsl(var(--fg-primary));
-    --void-rt-card-width: clamp(136px, calc((100vw - 68px) / 5), 204px);
-    --void-rt-gap: 8px;
-    --void-rt-padding-panel: 12px;
-    --void-rt-padding-card: 8px;
-    --void-rt-border-card: 1px;
-    --void-rt-radius-panel: 16px;
-    --void-rt-radius-card: calc(var(--void-rt-radius-panel) - var(--void-rt-padding-panel));
-    --void-rt-radius-thumb: calc(var(--void-rt-radius-card) - var(--void-rt-padding-card) - var(--void-rt-border-card));
-    --void-rt-radius-icon: 8px;
-    --void-rt-radius-title-icon: 8px;
-    --void-rt-meta-inline-padding: 4px;
-    --void-rt-motion-card: 180ms cubic-bezier(0.22, 1, 0.36, 1);
-    --void-rt-motion-cover: 220ms cubic-bezier(0.22, 1, 0.36, 1);
-    --void-rt-thumb-stroke-inset: -0.5px;
-    --void-rt-thumb-stroke-radius-offset: 0.5px;
-    --void-rt-thumb-stroke-color: hsl(var(--border-l2));
-    --void-rt-title-icon-size: 16px;
-    --void-rt-title-icon-gap: 4px;
-
-    all: unset;
-    color-scheme: inherit;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate3d(-50%, -50%, 0);
-    transform-origin: center center;
-    z-index: 1;
-    display: block;
-    width: fit-content;
-    max-width: calc(100vw - 24px);
-    overflow: auto hidden;
-    scrollbar-width: none;
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l2));
-    border: 1px solid hsl(var(--border-l1));
-    border-radius: var(--void-rt-radius-panel);
-    box-shadow: 0 4px 16px hsl(var(--black) / 12%);
-    padding: var(--void-rt-padding-panel);
-    pointer-events: auto;
-    opacity: 0;
-    transition: opacity 90ms ease;
-    will-change: opacity;
-}
-
-.void-rt-panel::-webkit-scrollbar {
-    display: none;
-}
-
-.void-rt-panel[data-visible="true"] {
-    opacity: 1;
-}
-
-.void-rt-list {
-    display: grid;
-    grid-template-columns: repeat(var(--void-rt-count, 5), var(--void-rt-card-width));
-    gap: var(--void-rt-gap);
-    width: max-content;
-    max-width: 100%;
-    padding: 2px;
-}
-
-.void-rt-card {
-    all: unset;
-    box-sizing: border-box;
-    width: var(--void-rt-card-width);
-    min-width: var(--void-rt-card-width);
-    max-width: var(--void-rt-card-width);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border-radius: var(--void-rt-radius-card);
-    border: var(--void-rt-border-card) solid transparent;
-    outline: 0;
-    background: transparent;
-    padding: var(--void-rt-padding-card);
-    color: hsl(var(--fg-primary));
-    cursor: pointer;
-    box-shadow: none;
-    transition:
-        border-color 140ms ease,
-        box-shadow var(--void-rt-motion-card);
-}
-
-.void-rt-card[data-active="true"] {
-    z-index: 1;
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 82%, hsl(var(--border-l2)));
-    background: transparent;
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 55%, transparent);
-}
-
-.void-rt-card:focus-visible {
-    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 88%, hsl(var(--border-l2)));
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 60%, transparent);
-}
-
-.void-rt-thumb {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    border-radius: var(--void-rt-radius-thumb);
-    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, hsl(var(--surface-l1)));
-}
-
-.void-rt-thumb::after {
-    content: "";
-    position: absolute;
-    inset: var(--void-rt-thumb-stroke-inset);
-    z-index: 2;
-    border-radius: calc(var(--void-rt-radius-thumb) + var(--void-rt-thumb-stroke-radius-offset));
-    box-sizing: border-box;
-    border: 1px solid var(--void-rt-thumb-stroke-color);
-    box-shadow: none;
-    pointer-events: none;
-}
-
-.void-rt-shot {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-    user-select: none;
-}
-
-.void-rt-shot,
-.void-rt-shot * {
-    pointer-events: none !important;
-    scrollbar-width: none;
-}
-
-.void-rt-thumb:has(.void-rt-shot) .void-rt-fallback {
-    display: none;
-}
-
-.void-rt-cover {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    object-position: top center;
-}
-
-.void-rt-mark {
-    display: none !important;
-}
-
-.void-rt-page {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 8px;
-    overflow: hidden;
-    padding: 8px 12px 12px;
-    background: hsl(var(--surface-l1));
-    color: hsl(var(--fg-primary));
-    font-family: inherit;
-}
-
-.void-rt-page-line {
-    display: -webkit-box;
-    align-self: flex-start;
-    width: fit-content;
-    max-width: 94%;
-    overflow: hidden;
-    color: hsl(var(--fg-secondary));
-    font-size: 11px;
-    font-weight: 400;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-    /* stylelint-disable-next-line property-no-vendor-prefix */
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-}
-
-.void-rt-page-line-user,
-.void-rt-page-line[data-role="user"] {
-    align-self: flex-end;
-    width: fit-content;
-    max-width: 78%;
-    padding: 6px 8px;
-    border-radius: 12px 12px 4px 12px;
-    background: hsl(var(--surface-l2));
-    color: hsl(var(--fg-primary));
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-}
-
-.void-rt-page-line[data-role="assistant"] {
-    align-self: flex-start;
-    padding: 0;
-    border-radius: 0;
-    background: none;
-    color: hsl(var(--fg-secondary));
-}
-
-.void-rt-fallback {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.void-rt-favicon {
-    width: 38px;
-    height: 38px;
-    border-radius: var(--void-rt-radius-icon);
-    object-fit: cover;
-    display: block;
-}
-
-.void-rt-favicon[data-broken="true"],
-.void-rt-title-favicon[data-broken="true"] {
-    visibility: hidden;
-}
-
-.void-rt-meta {
-    min-width: 0;
-    display: grid;
-    gap: 4px;
-    padding: 0 var(--void-rt-meta-inline-padding);
-}
-
-.void-rt-name-row {
-    min-width: 0;
-}
-
-.void-rt-title-favicon {
-    display: none;
-}
-
-.void-rt-name {
-    min-width: 0;
-    display: block;
-    overflow: hidden;
-    color: hsl(var(--fg-primary));
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.16;
-    letter-spacing: inherit;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.void-rt-host {
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    overflow: hidden;
-    color: hsl(var(--fg-secondary));
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.18;
-}
-
-.void-rt-folder {
-    width: 12px;
-    height: 12px;
-    flex: 0 0 12px;
-    display: block;
-}
-
-.void-rt-host-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.void-rt-empty {
-    min-width: min(22rem, calc(100vw - 3rem));
-    padding: 16px 20px;
-    color: hsl(var(--fg-primary));
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.4;
-}
-
-.void-rt-panel[data-theme="dark"] {
-    color-scheme: dark;
-}
-`);
-
-  // src/plugins/recentTopics/index.tsx
-  var logger23 = new Logger("RecentTopics");
-  var cl21 = classNameFactory("void-rt-");
-  var HOME_KEY = "home";
-  var HOME_SEP = "home:";
-  var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
-  var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
-  var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
-  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation|see all(?: chats| conversations)?|show all(?: chats| conversations)?|view all(?: chats| conversations)?|all chats|all conversations|查看全部|显示全部|查看所有|全部会话|所有对话)$/i;
-  var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
-  var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
-  var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
-  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
-  var settings13 = definePluginSettings({
-    maxRecent: {
-      type: 4 /* SELECT */,
-      description: "How many recently opened conversations to show.",
-      options: COUNT_OPTIONS
-    },
-    includeHome: {
-      type: 3 /* BOOLEAN */,
-      description: "Include new-chat home pages in the switcher.",
-      default: true
-    }
-  }).withPrivateSettings();
-  var thumbs = new Map;
-  var wsNames = {};
-  var open2 = false;
-  var selected = 0;
-  var held = false;
-  var ctrlHeld = false;
-  var keys2 = null;
-  var host = null;
-  var paintedKey = "";
-  var sidebarSnap = null;
-  var pendingWs = new Set;
-  function isSkipLabel(name) {
-    const t = name.replaceAll(/\s+/g, " ").trim();
-    if (!t)
-      return false;
-    SKIP_LABEL.lastIndex = 0;
-    return SKIP_LABEL.test(t);
-  }
-  function usableName(name) {
-    const t = name.replaceAll(/\s+/g, " ").trim();
-    return t && !isSkipLabel(t) ? t : "";
-  }
-  function unique(ids) {
-    const seen = new Set;
-    const out = [];
-    for (const id of ids) {
-      if (seen.has(id))
-        continue;
-      seen.add(id);
-      out.push(id);
-    }
-    return out;
-  }
-  function readVisits() {
-    return settings13.plain.visits ?? [];
-  }
-  function maxCount() {
-    const n = Number(settings13.store.maxRecent);
-    return Number.isFinite(n) && n > 0 ? n : 5;
-  }
-  function capVisits(ids) {
-    const allowHome = settings13.store.includeHome;
-    return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
-  }
-  function pruneRecord(source, ids) {
-    const keep = {};
-    if (!source)
-      return keep;
-    for (const id of ids) {
-      if (source[id])
-        keep[id] = source[id];
-    }
-    return keep;
-  }
-  function sameList(a, b) {
-    return a.length === b.length && a.every((id, i) => id === b[i]);
-  }
-  function sameRecord(a, b) {
-    const src = a ?? {};
-    const keys = Object.keys(b);
-    if (Object.keys(src).length !== keys.length)
-      return false;
-    return keys.every((k) => src[k] === b[k]);
-  }
-  function assignRecord(key, next) {
-    if (sameRecord(settings13.plain[key], next))
-      return false;
-    settings13.store[key] = next;
-    return true;
-  }
-  var writing = false;
-  function writeVisits(next) {
-    if (writing)
-      return;
-    writing = true;
-    try {
-      const visits = capVisits(next);
-      const rawWs = pruneRecord(settings13.plain.workspaceByConv, visits);
-      const workspaceByConv = {};
-      for (const [id, value] of Object.entries(rawWs)) {
-        const ws = asWorkspaceId(value);
-        if (ws)
-          workspaceByConv[id] = ws;
-      }
-      const pages = pruneRecord(settings13.plain.pages, visits);
-      const usedWs = new Set(Object.values(workspaceByConv));
-      for (const id of visits) {
-        const ws = workspaceFromHomeId(id);
-        if (!ws)
-          continue;
-        usedWs.add(ws);
-        workspaceByConv[id] = ws;
-      }
-      const keepProjects = {};
-      for (const [id, name] of Object.entries(settings13.plain.projectNames ?? {})) {
-        const n = usableName(name);
-        if (usedWs.has(id) && n)
-          keepProjects[id] = n;
-      }
-      let changed = false;
-      if (!sameList(readVisits(), visits)) {
-        settings13.store.visits = visits;
-        changed = true;
-      }
-      if (assignRecord("titles", pruneRecord(settings13.plain.titles, visits)))
-        changed = true;
-      if (assignRecord("workspaceByConv", workspaceByConv))
-        changed = true;
-      if (assignRecord("pages", pages))
-        changed = true;
-      if (assignRecord("projectNames", keepProjects))
-        changed = true;
-      if (changed && open2)
-        paint();
-    } finally {
-      writing = false;
-    }
-  }
-  function rememberTitle(id, title) {
-    const t = title?.trim();
-    if (!id || isHomeId(id) || !t)
-      return;
-    const prev = settings13.plain.titles ?? {};
-    if (prev[id] === t)
-      return;
-    settings13.store.titles = { ...prev, [id]: t };
-  }
-  function isHomeId(id) {
-    return id === HOME_KEY || id.startsWith(HOME_SEP);
-  }
-  function homeId(workspaceId) {
-    const ws = asWorkspaceId(workspaceId);
-    return ws ? HOME_SEP + ws : HOME_KEY;
-  }
-  function workspaceFromHomeId(id) {
-    return id.startsWith(HOME_SEP) ? asWorkspaceId(id.slice(HOME_SEP.length)) : "";
-  }
-  function routeConvId(route) {
-    if (!route)
-      return null;
-    if (route.conversationId)
-      return route.conversationId;
-    if (typeof route.chat === "string" && route.chat)
-      return route.chat;
-    if (route.page === "main")
-      return HOME_KEY;
-    if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
-      return homeId(route.workspaceId);
-    return null;
-  }
-  function projectIdFromUrl() {
-    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
-    return m?.[1] ?? "";
-  }
-  function chatIdFromUrl() {
-    try {
-      const u = new URL(location.href);
-      const q = u.searchParams.get("chat");
-      if (q)
-        return q;
-      return u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] ?? "";
-    } catch {
-      return "";
-    }
-  }
-  var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
-  function asWorkspaceId(value) {
-    if (typeof value === "string") {
-      const s = value.trim();
-      return WS_ID.test(s) ? s : "";
-    }
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        const id = asWorkspaceId(item);
-        if (id)
-          return id;
-      }
-      return "";
-    }
-    if (value && typeof value === "object") {
-      const rec = value;
-      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
-    }
-    return "";
-  }
-  function hrefFor(id, workspaceId) {
-    if (isHomeId(id)) {
-      const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceId);
-      return ws ? `/project/${ws}` : "/";
-    }
-    const ws = asWorkspaceId(workspaceId);
-    if (!id)
-      return ws ? `/project/${ws}` : "/";
-    if (ws)
-      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
-    return `/c/${encodeURIComponent(id)}`;
-  }
-  function hrefParts(href) {
-    if (!href)
-      return { ws: "", chat: "" };
-    try {
-      const u = new URL(href, location.origin);
-      const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
-      const chat = u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
-      return { ws, chat };
-    } catch {
-      return { ws: "", chat: "" };
-    }
-  }
-  function currentVisit() {
-    const urlChat = chatIdFromUrl();
-    if (urlChat)
-      return urlChat;
-    try {
-      const { conversationId, optimisticConversationId } = ChatPageStore.useChatPageStore.getState();
-      if (conversationId)
-        return conversationId;
-      if (optimisticConversationId)
-        return optimisticConversationId;
-    } catch (e) {
-      logger23.debug("ChatPageStore unavailable:", e);
-    }
-    try {
-      const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
-      if (fromRoute != null)
-        return fromRoute;
-    } catch (e) {
-      logger23.debug("RoutingStore unavailable:", e);
-    }
-    const ws = projectIdFromUrl();
-    return ws ? homeId(ws) : null;
-  }
-  function idsFromHistory() {
-    try {
-      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      const ids = [];
-      const add = (r) => {
-        const id = routeConvId(r);
-        if (id != null)
-          ids.push(id);
-      };
-      add(route);
-      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
-        add(historyStack[i]);
-      return unique(ids);
-    } catch (e) {
-      logger23.debug("historyStack unavailable:", e);
-      return [];
-    }
-  }
-  function pageTitle() {
-    const raw = document.title.replace(TITLE_TAIL, "").trim();
-    if (!raw || /^grok$/i.test(raw))
-      return "";
-    return raw;
-  }
-  function lookup(id) {
-    try {
-      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
-      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
-    } catch (e) {
-      logger23.debug("Conversation lookup failed:", e);
-      return;
-    }
-  }
-  function titleOf(id) {
-    if (!id || isHomeId(id))
-      return "New chat";
-    const conv = lookup(id);
-    if (conv?.title?.trim())
-      return conv.title.trim();
-    const cached = settings13.plain.titles?.[id];
-    if (cached)
-      return cached;
-    if (id === currentVisit())
-      return pageTitle() || "Untitled";
-    return "Untitled";
-  }
-  function liveWorkspaceId() {
-    try {
-      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
-      if (pid)
-        return pid;
-    } catch {}
-    try {
-      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
-      const id = asWorkspaceId(workspaceId);
-      if (id)
-        return id;
-    } catch {}
-    return asWorkspaceId(projectIdFromUrl());
-  }
-  function workspaceFromHistory(id) {
-    try {
-      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
-      if (routeConvId(route) === id) {
-        const ws = asWorkspaceId(route.workspaceId);
-        if (ws)
-          return ws;
-      }
-      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
-        const r = historyStack[i];
-        if (routeConvId(r) === id) {
-          const ws = asWorkspaceId(r?.workspaceId);
-          if (ws)
-            return ws;
-        }
-      }
-    } catch {}
-    return "";
-  }
-  function convWorkspaceId(id) {
-    try {
-      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
-      const fromResolver = asWorkspaceId(resolved);
-      if (fromResolver)
-        return fromResolver;
-      const conv = byId[id] ?? byIdWithWorkspaces[id];
-      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-    } catch (e) {
-      logger23.debug("convWorkspaceId failed:", e);
-      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
-    }
-  }
-  function workspaceFromDom(id) {
-    if (!id)
-      return "";
-    try {
-      for (const a of document.querySelectorAll("a[href]")) {
-        const href = a.getAttribute("href");
-        if (!href || !href.includes(id))
-          continue;
-        const { ws, chat } = hrefParts(href);
-        if (chat === id && ws)
-          return ws;
-      }
-    } catch {}
-    return "";
-  }
-  function shortOwnText(el) {
-    const parts = [];
-    for (const n of el.childNodes) {
-      if (n.nodeType === Node.TEXT_NODE) {
-        parts.push(n.textContent ?? "");
-        continue;
-      }
-      if (!(n instanceof HTMLElement))
-        continue;
-      if (n.matches("svg, a[href]"))
-        continue;
-      const nestedHref = n.getAttribute("href") ?? "";
-      if (nestedHref.includes("chat=") || nestedHref.includes("/c/"))
-        continue;
-      if (n.querySelector("a[href*='chat='], a[href*='/c/']"))
-        continue;
-      const t = (n.textContent ?? "").replaceAll(/\s+/g, " ").trim();
-      if (t.length > 0 && t.length <= 64)
-        parts.push(t);
-    }
-    const out = parts.join(" ").replaceAll(/\s+/g, " ").trim();
-    return out.length >= 2 && out.length <= 64 ? out : "";
-  }
-  function folderLabel(el) {
-    if (!el.querySelector("svg"))
-      return "";
-    return usableName(shortOwnText(el));
-  }
-  function projectNameFromAncestors(el) {
-    const sidebar = el.closest("[data-sidebar=sidebar]");
-    let cur = el.parentElement;
-    while (cur && cur !== sidebar) {
-      let sib = cur;
-      while (sib) {
-        const name = folderLabel(sib);
-        if (name)
-          return name;
-        sib = sib.previousElementSibling;
-      }
-      cur = cur.parentElement;
-    }
-    return "";
-  }
-  function invalidateSidebar() {
-    sidebarSnap = null;
-  }
-  function sidebarIndex() {
-    const empty = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
-    const sidebar = document.querySelector("[data-sidebar=sidebar]");
-    if (!sidebar)
-      return empty;
-    const key = `${sidebar.childElementCount}:${(sidebar.textContent ?? "").length}`;
-    if (sidebarSnap?.key === key)
-      return sidebarSnap.index;
-    const index = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
-    let currentName = "";
-    const assignConv = (chat, ws, name) => {
-      if (!chat || !ws)
-        return;
-      index.wsByConv[chat] = ws;
-      const label = usableName(name || currentName || index.nameByWs[ws] || "");
-      if (label) {
-        index.nameByWs[ws] = label;
-        index.nameByConv[chat] = label;
-      }
-    };
-    for (const el of sidebar.querySelectorAll("a[href], button, [role='button']")) {
-      const { ws, chat } = hrefParts(el.getAttribute("href"));
-      if (chat) {
-        assignConv(chat, ws, currentName);
-        if (ws && !index.nameByConv[chat]) {
-          const up = usableName(projectNameFromAncestors(el));
-          if (up) {
-            index.nameByConv[chat] = up;
-            index.nameByWs[ws] ??= up;
-            currentName ||= up;
-          }
-        }
-        continue;
-      }
-      const label = shortOwnText(el) || folderLabel(el);
-      if (isSkipLabel(label) && !ws) {
-        currentName = "";
-        continue;
-      }
-      if (ws) {
-        const n = usableName(label);
-        if (n) {
-          currentName = n;
-          index.nameByWs[ws] = n;
-        } else if (isSkipLabel(label)) {
-          currentName = index.nameByWs[ws] || "";
-        }
-        continue;
-      }
-      const folder = folderLabel(el);
-      if (folder)
-        currentName = folder;
-    }
-    sidebarSnap = { key, index };
-    return index;
-  }
-  function workspaceFetchedEmpty(id) {
-    try {
-      const { byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
-      return !!byIdWithWorkspaces[id] && !convWorkspaceId(id);
-    } catch {
-      return false;
-    }
-  }
-  function routeWorkspaceFor(id) {
-    if (id === chatIdFromUrl())
-      return asWorkspaceId(projectIdFromUrl());
-    try {
-      const { route } = RoutingStore.useRoutingStore.getState();
-      const chat = route.conversationId || (typeof route.chat === "string" ? route.chat : "");
-      if (chat === id)
-        return asWorkspaceId(route.workspaceId);
-    } catch {}
-    return "";
-  }
-  function dropWorkspace(id) {
-    const prev = settings13.plain.workspaceByConv ?? {};
-    if (!prev[id])
-      return;
-    const next = { ...prev };
-    delete next[id];
-    settings13.store.workspaceByConv = next;
-  }
-  function workspaceOf(id) {
-    if (!id)
-      return "";
-    if (isHomeId(id)) {
-      const fromKey = workspaceFromHomeId(id);
-      if (fromKey)
-        return fromKey;
-      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings13.plain.workspaceByConv?.[id]);
-    }
-    const fromConv = convWorkspaceId(id);
-    if (fromConv)
-      return fromConv;
-    if (workspaceFetchedEmpty(id))
-      return "";
-    const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
-    if (fromSidebar)
-      return fromSidebar;
-    const cached = asWorkspaceId(settings13.plain.workspaceByConv?.[id]);
-    if (cached)
-      return cached;
-    const fromHist = workspaceFromHistory(id);
-    if (fromHist)
-      return fromHist;
-    if (id === currentVisit())
-      return routeWorkspaceFor(id);
-    return "";
-  }
-  function readOpenProjectName() {
-    const idx = sidebarIndex();
-    const live = liveWorkspaceId();
-    if (live) {
-      const n = usableName(idx.nameByWs[live]);
-      if (n)
-        return n;
-    }
-    const current = currentVisit();
-    const ws = current ? workspaceOf(current) : "";
-    if (!current || !ws)
-      return "";
-    return usableName(idx.nameByConv[current] || idx.nameByWs[ws]);
-  }
-  function projectNameOf(id) {
-    if (!id)
-      return "";
-    const ws = workspaceOf(id);
-    if (!ws)
-      return "";
-    const idx = sidebarIndex();
-    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings13.plain.projectNames?.[ws] || "");
-    if (!named)
-      return "";
-    const live = liveWorkspaceId();
-    const liveName = readOpenProjectName();
-    if (live && ws !== live && liveName && named === liveName)
-      return "";
-    return named;
-  }
-  function rememberProject(id) {
-    if (!id)
-      return;
-    const ws = workspaceOf(id);
-    if (!ws)
-      return;
-    const prevWs = settings13.plain.workspaceByConv ?? {};
-    if (prevWs[id] !== ws)
-      settings13.store.workspaceByConv = { ...prevWs, [id]: ws };
-    const idx = sidebarIndex();
-    const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
-    const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
-    const name = usableName(sidebarName || wsNames[ws] || liveName || settings13.plain.projectNames?.[ws] || "");
-    if (!name)
-      return;
-    wsNames[ws] = name;
-    const prevNames = settings13.plain.projectNames ?? {};
-    if (prevNames[ws] !== name)
-      settings13.store.projectNames = { ...prevNames, [ws]: name };
-  }
-  function reconcileSidebarCache() {
-    const idx = sidebarIndex();
-    const prevWs = { ...settings13.plain.workspaceByConv };
-    const prevNames = { ...settings13.plain.projectNames };
-    let wsChanged = false;
-    let namesChanged = false;
-    for (const [conv, ws] of Object.entries(idx.wsByConv)) {
-      if (prevWs[conv] !== ws) {
-        prevWs[conv] = ws;
-        wsChanged = true;
-      }
-    }
-    for (const [ws, name] of Object.entries(idx.nameByWs)) {
-      const n = usableName(name);
-      if (!n)
-        continue;
-      wsNames[ws] = n;
-      if (prevNames[ws] !== n) {
-        prevNames[ws] = n;
-        namesChanged = true;
-      }
-    }
-    for (const [ws, name] of Object.entries(prevNames)) {
-      if (usableName(name))
-        continue;
-      delete prevNames[ws];
-      delete wsNames[ws];
-      namesChanged = true;
-    }
-    if (wsChanged)
-      settings13.store.workspaceByConv = prevWs;
-    if (namesChanged)
-      settings13.store.projectNames = prevNames;
-  }
-  function requestWorkspace(id) {
-    if (!id || isHomeId(id) || pendingWs.has(id))
-      return;
-    if (convWorkspaceId(id))
-      return;
-    if (workspaceFetchedEmpty(id)) {
-      dropWorkspace(id);
-      return;
-    }
-    if (sidebarIndex().wsByConv[id])
-      return;
-    pendingWs.add(id);
-    try {
-      const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-      const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-      if (!fetchConv) {
-        pendingWs.delete(id);
-        return;
-      }
-      fetchConv(id).then((conv) => {
-        const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
-        if (!ws) {
-          dropWorkspace(id);
-          if (open2)
-            paint();
-          return;
-        }
-        const prev = settings13.plain.workspaceByConv ?? {};
-        if (prev[id] !== ws)
-          settings13.store.workspaceByConv = { ...prev, [id]: ws };
-        const live = liveWorkspaceId();
-        const liveName = usableName(readOpenProjectName());
-        const names = settings13.plain.projectNames ?? {};
-        if (live && ws !== live && liveName && names[ws] === liveName) {
-          const next = { ...names };
-          delete next[ws];
-          settings13.store.projectNames = next;
-          delete wsNames[ws];
-        }
-        if (open2)
-          paint();
-      }).catch((e) => logger23.debug("workspace fetch failed:", e)).finally(() => {
-        pendingWs.delete(id);
-      });
-    } catch {
-      pendingWs.delete(id);
-    }
-  }
-  function chatPane() {
-    const main = document.querySelector("main");
-    if (!main)
-      return null;
-    let best = null;
-    let bestScore = 0;
-    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
-      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
-        continue;
-      const r = n.getBoundingClientRect();
-      if (r.width < 240 || r.height < 120)
-        continue;
-      const score = r.width * r.height;
-      if (score > bestScore) {
-        best = n;
-        bestScore = score;
-      }
-    }
-    return best;
-  }
-  function messageList(pane) {
-    let node = pane;
-    for (let i = 0;i < 8; i++) {
-      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
-      if (kids.length === 1 && kids[0].children.length > 1) {
-        node = kids[0];
-        continue;
-      }
-      break;
-    }
-    return node;
-  }
-  function chromeOff(el) {
-    const clone = el.cloneNode(true);
-    clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach((n) => n.remove());
-    return clone;
-  }
-  function userBubble(root) {
-    const tagged = root.querySelector("[data-void-rt-role='user'], .void-rt-user-msg");
-    if (tagged)
-      return tagged;
-    const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
-    if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className))
-      cands.unshift(root);
-    if (!cands.length)
-      return null;
-    const inner = cands.filter((el) => !cands.some((other) => other !== el && el.contains(other)));
-    inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
-    return inner[0] ?? null;
-  }
-  function extractTurn(kid) {
-    const bubble = userBubble(kid);
-    const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
-    const rest = chromeOff(kid);
-    if (bubble && bubble !== kid) {
-      rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach((n) => n.remove());
-    }
-    let asstText = scrubText(rest.innerText ?? "");
-    if (userText && asstText.includes(userText))
-      asstText = scrubText(asstText.replace(userText, " "));
-    const lines = [];
-    if (userText)
-      lines.push({ role: "user", text: userText });
-    if (asstText && asstText !== userText)
-      lines.push({ role: "assistant", text: asstText });
-    return lines;
-  }
-  function extractMarks(root) {
-    const marks = [...root.querySelectorAll(".void-rt-mark")];
-    if (!marks.length)
-      return [];
-    const out = [];
-    for (const m of marks) {
-      const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
-      const text = scrubText(m.textContent ?? "");
-      if (text)
-        out.push({ role, text });
-    }
-    return lastRound(out);
-  }
-  function extractLines(pane) {
-    const fromMarks = extractMarks(pane);
-    if (fromMarks.length)
-      return fromMarks;
-    const source = messageList(pane);
-    const kids = [...source.children].filter((c) => c instanceof HTMLElement);
-    const out = [];
-    for (const kid of kids)
-      out.push(...extractTurn(kid));
-    return lastRound(out);
-  }
-  function scrubText(raw) {
-    let t = raw.replaceAll(/\s+/g, " ").trim();
-    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
-    t = t.replaceAll(/\s+/g, " ").trim();
-    if (!t || SKIP_NOISE.test(t))
-      return "";
-    return t;
-  }
-  function plainText(md) {
-    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
-    return scrubText(t);
-  }
-  function clipLine(text, max) {
-    const t = scrubText(text);
-    if (t.length <= max)
-      return t;
-    return `${t.slice(0, Math.max(1, max - 1))}…`;
-  }
-  function lastRound(lines) {
-    const cleaned = lines.map((line) => ({ role: line.role, text: scrubText(line.text) })).filter((line) => !!line.text);
-    if (!cleaned.length)
-      return [];
-    let asst = -1;
-    let user = -1;
-    for (let i = cleaned.length - 1;i >= 0; i--) {
-      if (asst < 0 && cleaned[i].role === "assistant")
-        asst = i;
-      if (user < 0 && cleaned[i].role === "user")
-        user = i;
-      if (asst >= 0 && user >= 0)
-        break;
-    }
-    const pick = user >= 0 && asst >= 0 && user < asst ? [cleaned[user], cleaned[asst]] : user >= 0 && (asst < 0 || user > asst) ? [cleaned[user]] : asst >= 0 ? [cleaned[asst]] : cleaned.slice(-1);
-    return pick.map((line) => ({
-      role: line.role,
-      text: clipLine(line.text, line.role === "user" ? 72 : 140)
-    }));
-  }
-  function pickUserText(query, message) {
-    const q = plainText(query);
-    const m = plainText(message);
-    if (q && m) {
-      if (m.startsWith(q) && m.length > q.length)
-        return q;
-      return q.length <= m.length ? q : m;
-    }
-    return q || m;
-  }
-  function walkThread(startId) {
-    if (!startId)
-      return [];
-    try {
-      const { byId } = ResponseStore.useResponseStore.getState();
-      const out = [];
-      const seen = new Set;
-      let id = startId;
-      while (id && !seen.has(id) && out.length < 50) {
-        seen.add(id);
-        const r = byId[id];
-        if (!r)
-          break;
-        out.unshift(r);
-        id = r.parentResponseId;
-      }
-      return out;
-    } catch {
-      return [];
-    }
-  }
-  function responsesOf(id) {
-    const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-    const nodes = nodesByConversationId[id] ?? [];
-    if (nodes.length) {
-      const list = nodes.map((n) => byId[n.responseId]).filter((r) => !!r);
-      if (list.length)
-        return list;
-      const walked = walkThread(nodes.at(-1)?.responseId);
-      if (walked.length)
-        return walked;
-    }
-    const cached = byConversationId[id];
-    if (cached?.length)
-      return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
-    try {
-      const chat = ChatPageStore.useChatPageStore.getState();
-      if (chat.conversationId === id) {
-        return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
-      }
-    } catch {}
-    return [];
-  }
-  function responsesToLines(list) {
-    const out = [];
-    for (const r of list) {
-      if (!r || r.isControl)
-        continue;
-      const sender = String(r.sender ?? "").toLowerCase();
-      const human = sender === "human" || sender === "user";
-      if (human) {
-        const text = pickUserText(r.query || "", r.message || "");
-        if (text)
-          out.push({ role: "user", text });
-        continue;
-      }
-      const query = pickUserText(r.query || "", "");
-      let message = plainText(r.message || "");
-      if (query && message.startsWith(query) && message.length > query.length) {
-        message = scrubText(message.slice(query.length));
-      }
-      if (query && out.at(-1)?.text !== query)
-        out.push({ role: "user", text: query });
-      if (message && message !== query)
-        out.push({ role: "assistant", text: message });
-    }
-    return lastRound(out);
-  }
-  function linesFromStore(id) {
-    if (!id)
-      return [];
-    try {
-      return responsesToLines(responsesOf(id));
-    } catch (e) {
-      logger23.debug("ResponseStore snapshot failed:", e);
-      return [];
-    }
-  }
-  function betterLines(store, dom) {
-    const pair = (lines) => lines.some((l) => l.role === "user") && lines.some((l) => l.role === "assistant");
-    if (pair(store))
-      return store;
-    if (pair(dom))
-      return dom;
-    return store.length ? store : dom;
-  }
-  function parseSnap(raw) {
-    if (!raw)
-      return null;
-    try {
-      const parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
-        return null;
-      return {
-        title: typeof parsed.title === "string" ? parsed.title : "",
-        theme: parsed.theme === "light" ? "light" : "dark",
-        lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"))
-      };
-    } catch {
-      return null;
-    }
-  }
-  function snapOf(id) {
-    return thumbs.get(id) ?? parseSnap(settings13.plain.pages?.[id]);
-  }
-  function rememberPage(id, snap) {
-    const json = JSON.stringify(snap);
-    const prev = settings13.plain.pages ?? {};
-    if (prev[id] === json)
-      return;
-    settings13.store.pages = { ...prev, [id]: json };
-  }
-  function applyLineStyle(el, role, theme) {
-    el.style.display = "-webkit-box";
-    el.style.webkitBoxOrient = "vertical";
-    el.style.overflow = "hidden";
-    el.style.width = "fit-content";
-    el.style.overflowWrap = "anywhere";
-    el.style.fontSize = "11px";
-    el.style.lineHeight = "1.35";
-    if (role === "user") {
-      el.style.alignSelf = "flex-end";
-      el.style.maxWidth = "78%";
-      el.style.padding = "6px 9px";
-      el.style.borderRadius = "14px 14px 4px 14px";
-      el.style.background = theme === "light" ? "#e8e6e0" : "#2f2f2f";
-      el.style.color = theme === "light" ? "#171717" : "#fff";
-      el.style.webkitLineClamp = "2";
-    } else {
-      el.style.alignSelf = "flex-start";
-      el.style.maxWidth = "94%";
-      el.style.padding = "0";
-      el.style.background = "transparent";
-      el.style.color = theme === "light" ? "#3f3f3f" : "#c4c4c4";
-      el.style.webkitLineClamp = "4";
-    }
-  }
-  function buildPageShot(snap) {
-    const page = node("span", cl21("page"));
-    page.dataset.theme = snap.theme;
-    for (const line of lastRound(snap.lines)) {
-      const el = node("span", cl21("page-line", line.role === "user" && "page-line-user"), line.text);
-      el.dataset.role = line.role;
-      applyLineStyle(el, line.role, snap.theme);
-      page.append(el);
-    }
-    return page;
-  }
-  function captureId(id) {
-    if (!id)
-      return;
-    const fromStore = linesFromStore(id);
-    let fromDom = [];
-    if (id === currentVisit()) {
-      const pane = chatPane();
-      if (pane)
-        fromDom = extractLines(pane);
-    }
-    const lines = betterLines(fromStore, fromDom);
-    if (!lines.length)
-      return;
-    const snap = {
-      title: titleOf(id),
-      theme: detectTheme(),
-      lines: lastRound(lines)
-    };
-    thumbs.set(id, snap);
-    rememberPage(id, snap);
-  }
-  var capturing = false;
-  function captureCurrent() {
-    if (capturing || open2)
-      return;
-    capturing = true;
-    try {
-      const current = currentVisit();
-      if (current)
-        captureId(current);
-      for (const id of capVisits(readVisits())) {
-        if (id && id !== current)
-          captureId(id);
-      }
-    } catch (e) {
-      logger23.debug("snapshot failed:", e);
-    } finally {
-      capturing = false;
-    }
-  }
-  function scheduleCapture() {
-    if (open2)
-      return;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!open2)
-          captureCurrent();
-      });
-    });
-  }
-  function bump(id) {
-    if (!id)
-      return;
-    if (isHomeId(id) && !settings13.store.includeHome)
-      return;
-    writeVisits(capVisits([id, ...readVisits()]));
-    if (isHomeId(id)) {
-      if (shouldRememberProject(id))
-        rememberProject(id);
-      return;
-    }
-    const conv = lookup(id);
-    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
-    if (shouldRememberProject(id))
-      rememberProject(id);
-  }
-  function shouldRememberProject(id) {
-    if (!id || workspaceFetchedEmpty(id))
-      return false;
-    return !!workspaceOf(id);
-  }
-  function hydrate() {
-    invalidateSidebar();
-    const current = currentVisit();
-    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
-    writeVisits(capVisits(merged));
-    reconcileSidebarCache();
-    if (current) {
-      rememberTitle(current, lookup(current)?.title || pageTitle());
-      if (shouldRememberProject(current))
-        rememberProject(current);
-    }
-    for (const id of capVisits(readVisits())) {
-      if (id)
-        requestWorkspace(id);
-    }
-  }
-  function topics() {
-    return capVisits(readVisits()).map((id) => ({
-      id,
-      title: titleOf(id),
-      project: projectNameOf(id)
-    }));
-  }
-  function parseHref(href) {
-    try {
-      const u = new URL(href, location.origin);
-      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
-      if (parsed?.page && parsed.page !== "unknown")
-        return parsed;
-    } catch (e) {
-      logger23.debug("urlToRoute failed:", e);
-    }
-    return null;
-  }
-  function applyChatPage(id, workspaceId) {
-    try {
-      const chat = ChatPageStore.useChatPageStore.getState();
-      chat.setConversationId(id || undefined);
-      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
-    } catch (e) {
-      logger23.debug("ChatPageStore update failed:", e);
-    }
-  }
-  function navigateTo(id) {
-    try {
-      const routing = RoutingStore.useRoutingStore.getState();
-      const { route } = routing;
-      const teamId = route.teamId ?? null;
-      if (isHomeId(id) || !id) {
-        const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceOf(id));
-        const hereWs = asWorkspaceId(route.workspaceId) || projectIdFromUrl();
-        const hereChat = route.conversationId || chatIdFromUrl();
-        if (!ws) {
-          if (!hereChat && (route.page === "main" || !hereWs))
-            return;
-          routing.push({ page: "main", teamId });
-          applyChatPage("");
-          return;
-        }
-        if (!hereChat && hereWs === ws)
-          return;
-        routing.push({ page: "workspace", workspaceId: ws, tab: "conversations", teamId });
-        applyChatPage("", ws);
-        return;
-      }
-      const workspaceId = workspaceOf(id);
-      const href = hrefFor(id, workspaceId);
-      const parsed = parseHref(href);
-      const dest = workspaceId ? {
-        page: "workspace",
-        workspaceId,
-        tab: "conversations",
-        conversationId: id,
-        teamId
-      } : {
-        page: "chat",
-        conversationId: id,
-        temporary: lookup(id)?.temporary ?? false,
-        teamId
-      };
-      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
-        dest.page = "workspace";
-        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
-        dest.conversationId = parsed.conversationId || id;
-        dest.tab = parsed.tab || "conversations";
-        if (parsed.filePath)
-          dest.filePath = parsed.filePath;
-      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
-        dest.page = "chat";
-        dest.conversationId = parsed.conversationId;
-        dest.temporary = parsed.temporary ?? dest.temporary;
-      }
-      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
-        dest.page = "chat";
-        dest.conversationId = id;
-        delete dest.workspaceId;
-        delete dest.tab;
-      }
-      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
-        return;
-      routing.push(dest);
-      applyChatPage(id, asWorkspaceId(dest.workspaceId));
-      if (dest.page !== "workspace") {
-        try {
-          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
-          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
-          fetchConv?.(id).then((conv) => {
-            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
-            if (!ws)
-              return;
-            const now = RoutingStore.useRoutingStore.getState();
-            if (routeConvId(now.route) !== id)
-              return;
-            now.replace({
-              page: "workspace",
-              workspaceId: ws,
-              tab: "conversations",
-              conversationId: id,
-              teamId
-            });
-            applyChatPage(id, ws);
-            rememberProject(id);
-          }).catch((e) => logger23.debug("workspace resolve failed:", e));
-        } catch (e) {
-          logger23.debug("workspace fetch skipped:", e);
-        }
-      }
-    } catch (e) {
-      logger23.error("Failed to navigate:", e);
-      try {
-        location.assign(hrefFor(id, workspaceOf(id) || undefined));
-      } catch (navErr) {
-        logger23.error("Fallback navigation failed:", navErr);
-      }
-    }
-  }
-  function isTrigger(e) {
-    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
-      return true;
-    return TRIGGER_KEYS.has(e.key);
-  }
-  function isCtrlKey(e) {
-    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
-  }
-  function begin(reverse, fromHold) {
-    held = fromHold;
-    open2 = false;
-    captureCurrent();
-    open2 = true;
-    selected = 0;
-    try {
-      hydrate();
-      const current = currentVisit();
-      if (current != null)
-        bump(current);
-      if (topics().length > 1)
-        selected = reverse ? topics().length - 1 : 1;
-    } catch (e) {
-      logger23.error("Failed to open switcher:", e);
-    }
-    paint();
-  }
-  function cycle2(reverse) {
-    const { length } = topics();
-    if (!length)
-      return;
-    selected = (selected + (reverse ? -1 : 1) + length) % length;
-    paint();
-  }
-  function commit() {
-    if (!open2)
-      return;
-    const target = topics()[selected];
-    open2 = false;
-    held = false;
-    paint();
-    if (target)
-      navigateTo(target.id);
-  }
-  function cancel() {
-    if (!open2)
-      return;
-    open2 = false;
-    held = false;
-    paint();
-  }
-  function onKeyDown3(e) {
-    if (isCtrlKey(e)) {
-      ctrlHeld = true;
-      return;
-    }
-    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
-    if (combo) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      try {
-        if (open2)
-          cycle2(e.shiftKey);
-        else
-          begin(e.shiftKey, true);
-      } catch (err) {
-        logger23.error("Hotkey failed:", err);
-      }
-      return;
-    }
-    if (!open2)
-      return;
-    if (e.key === "Escape") {
-      e.preventDefault();
-      cancel();
-      return;
-    }
-    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
-      e.preventDefault();
-      cycle2(e.shiftKey);
-    }
-  }
-  function onKeyUp(e) {
-    if (!isCtrlKey(e))
-      return;
-    ctrlHeld = false;
-    if (open2 && held)
-      commit();
-  }
-  function onBeforeInput(e) {
-    if (!ctrlHeld && !open2)
-      return;
-    const { data } = e;
-    if (data && TRIGGER_KEYS.has(data))
-      e.preventDefault();
-  }
-  function onWindowBlur() {
-    ctrlHeld = false;
-  }
-  function onVisibility() {
-    if (document.hidden) {
-      ctrlHeld = false;
-      cancel();
-    }
-  }
-  function pick(index) {
-    selected = index;
-    commit();
-  }
-  function node(tag, className, text) {
-    const el = document.createElement(tag);
-    if (className)
-      el.className = className;
-    if (text)
-      el.textContent = text;
-    return el;
-  }
-  function fillShot(box, id) {
-    const snap = snapOf(id);
-    if (!snap) {
-      const fallback = node("span", cl21("fallback"));
-      fallback.append(faviconImg(cl21("favicon")));
-      box.append(fallback);
-      return;
-    }
-    const shot = node("span", cl21("shot"));
-    shot.append(buildPageShot(snap));
-    box.append(shot);
-  }
-  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
-  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
-  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
-  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH}" fill="#050505"/><path d="${GROK_MARK_P1}" fill="#FCFCFC"/><path d="${GROK_MARK_P2}" fill="#FCFCFC"/></svg>`)}`;
-  var ACCENTS = [
-    "rgb(37, 99, 235)",
-    "rgb(14, 165, 233)",
-    "rgb(20, 184, 166)",
-    "rgb(249, 115, 22)",
-    "rgb(100, 116, 139)"
-  ];
-  function accentOf(id) {
-    if (!id)
-      return ACCENTS[4];
-    let hash = 0;
-    for (let i = 0;i < id.length; i++)
-      hash = hash * 31 + id.charCodeAt(i) >>> 0;
-    return ACCENTS[hash % ACCENTS.length];
-  }
-  function detectTheme() {
-    const html = document.documentElement;
-    const { body } = document;
-    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
-    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
-      return "dark";
-    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
-      return "light";
-    try {
-      const bg = getComputedStyle(body || html).backgroundColor;
-      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
-      if (m) {
-        const r = Number(m[1]) / 255;
-        const g = Number(m[2]) / 255;
-        const b = Number(m[3]) / 255;
-        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-        return lum < 0.42 ? "dark" : "light";
-      }
-    } catch {}
-    const scheme = getComputedStyle(html).colorScheme;
-    if (scheme.includes("light") && !scheme.includes("dark"))
-      return "light";
-    return "dark";
-  }
-  function grokFaviconSrc() {
-    try {
-      if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
-        const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
-        const href = link?.href;
-        if (href && !href.startsWith("data:"))
-          return href;
-        return `${location.origin}/images/favicon.svg`;
-      }
-    } catch {}
-    return GROK_ICON_DATA;
-  }
-  function faviconImg(className) {
-    const img = document.createElement("img");
-    img.className = className;
-    img.alt = "";
-    img.draggable = false;
-    img.src = grokFaviconSrc();
-    img.addEventListener("error", () => {
-      if (img.src === GROK_ICON_DATA) {
-        img.dataset.broken = "true";
-        return;
-      }
-      img.src = GROK_ICON_DATA;
-    });
-    return img;
-  }
-  function folderIcon() {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", cl21("folder"));
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", "currentColor");
-    svg.setAttribute("stroke-width", "2");
-    svg.setAttribute("stroke-linecap", "round");
-    svg.setAttribute("stroke-linejoin", "round");
-    svg.setAttribute("aria-hidden", "true");
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
-    svg.append(path);
-    return svg;
-  }
-  function applyTheme(panel) {
-    const theme = detectTheme();
-    panel.setAttribute("data-theme", theme);
-    panel.style.colorScheme = theme;
-  }
-  function buildHost() {
-    const root = node("div", cl21("root"));
-    root.id = "void-rt-host";
-    root.setAttribute("role", "presentation");
-    root.addEventListener("click", cancel);
-    const panel = node("div", cl21("panel"));
-    panel.setAttribute("role", "listbox");
-    panel.setAttribute("aria-label", "Recent conversations");
-    panel.addEventListener("click", (e) => e.stopPropagation());
-    panel.append(node("div", cl21("list")));
-    root.append(panel);
-    return root;
-  }
-  function renderList(items) {
-    if (!host)
-      return;
-    const panel = host.querySelector(`.${cl21("panel")}`);
-    if (!panel)
-      return;
-    let list = panel.querySelector(`.${cl21("list")}`);
-    if (!list) {
-      panel.replaceChildren();
-      list = node("div", cl21("list"));
-      panel.append(list);
-    }
-    list.replaceChildren();
-    items.forEach((topic, i) => {
-      const btn = node("button", cl21("card"));
-      btn.type = "button";
-      btn.tabIndex = -1;
-      btn.setAttribute("role", "option");
-      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
-      btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
-      btn.addEventListener("pointerenter", () => {
-        if (selected === i)
-          return;
-        selected = i;
-        syncActive();
-      });
-      btn.addEventListener("focus", () => {
-        if (selected === i)
-          return;
-        selected = i;
-        syncActive();
-      });
-      btn.addEventListener("click", () => pick(i));
-      const shot = node("span", cl21("thumb"));
-      shot.setAttribute("aria-hidden", "true");
-      fillShot(shot, topic.id);
-      const meta = node("span", cl21("meta"));
-      meta.append(node("span", cl21("name"), topic.title));
-      if (topic.project) {
-        const proj = node("span", cl21("host"));
-        proj.append(folderIcon(), node("span", cl21("host-name"), topic.project));
-        meta.append(proj);
-      }
-      btn.append(shot, meta);
-      list.append(btn);
-    });
-  }
-  function syncActive() {
-    if (!host)
-      return;
-    const cards = host.querySelectorAll(`.${cl21("card")}`);
-    cards.forEach((card, i) => {
-      const on = i === selected;
-      card.setAttribute("data-active", on ? "true" : "false");
-      card.setAttribute("aria-selected", on ? "true" : "false");
-      card.tabIndex = on ? 0 : -1;
-      if (on)
-        card.setAttribute("aria-current", "true");
-      else
-        card.removeAttribute("aria-current");
-    });
-    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
-  }
-  function paint() {
-    document.documentElement.classList.toggle("void-rt-open", open2);
-    if (!open2) {
-      detachHost();
-      return;
-    }
-    const items = topics();
-    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
-    if (!host) {
-      host = buildHost();
-      mountOverlay(host);
-    }
-    const panel = host.querySelector(`.${cl21("panel")}`);
-    if (!panel)
-      return;
-    applyTheme(panel);
-    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
-    if (!items.length) {
-      if (paintedKey !== "__empty__") {
-        panel.replaceChildren(node("div", cl21("empty"), "Open a few chats, then hold Ctrl+` to switch."));
-        paintedKey = "__empty__";
-      }
-      requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-      return;
-    }
-    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl21("list")}`)) {
-      panel.replaceChildren(node("div", cl21("list")));
-      paintedKey = "";
-    }
-    if (paintedKey !== key) {
-      renderList(items);
-      paintedKey = key;
-    }
-    syncActive();
-    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
-  }
-  function detachHost() {
-    document.documentElement.classList.remove("void-rt-open");
-    paintedKey = "";
-    if (host) {
-      try {
-        host.hidePopover();
-      } catch {}
-      host.remove();
-      host = null;
-    }
-    document.getElementById("void-rt-host")?.remove();
-    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
-      const p = el;
-      try {
-        p.hidePopover?.();
-      } catch {}
-      try {
-        p.close?.();
-      } catch {}
-      el.remove();
-    });
-  }
-  function mountOverlay(root) {
-    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
-    document.documentElement.append(root);
-    document.documentElement.classList.add("void-rt-open");
-    if (typeof root.showPopover !== "function")
-      return;
-    root.setAttribute("popover", "manual");
-    try {
-      root.showPopover();
-    } catch {
-      root.removeAttribute("popover");
-    }
-  }
-  var recentTopics_default = definePlugin({
-    name: "RecentTopics",
-    icon: LayoutGridIcon,
-    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings13,
-    managedStyle: "recentTopics",
-    _mark({ response }) {
-      try {
-        if (!response || response.isControl)
-          return null;
-        const sender = String(response.sender ?? "").toLowerCase();
-        const human = sender === "human" || sender === "user";
-        const text = human ? pickUserText(response.query || "", response.message || "") : plainText(response.message || "");
-        if (!text)
-          return null;
-        return React.createElement("span", {
-          className: "void-rt-mark",
-          "data-role": human ? "user" : "assistant",
-          hidden: true
-        }, text);
-      } catch {
-        return null;
-      }
-    },
-    patches: [
-      {
-        find: "response-family:handleEditSave",
-        all: true,
-        replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._mark({response:$1}),$&"
-        }
-      }
-    ],
-    start() {
-      detachHost();
-      open2 = false;
-      held = false;
-      ctrlHeld = false;
-      try {
-        hydrate();
-        const current = currentVisit();
-        if (current != null)
-          bump(current);
-        scheduleCapture();
-      } catch (e) {
-        logger23.error("Hydrate failed:", e);
-      }
-      if (!keys2) {
-        keys2 = new AbortController;
-        const { signal } = keys2;
-        window.addEventListener("keydown", onKeyDown3, { capture: true, signal });
-        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
-        window.addEventListener("blur", onWindowBlur, { signal });
-        document.addEventListener("visibilitychange", onVisibility, { signal });
-        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
-      }
-    },
-    stop() {
-      keys2?.abort();
-      keys2 = null;
-      open2 = false;
-      held = false;
-      ctrlHeld = false;
-      thumbs.clear();
-      detachHost();
-    },
-    onSettingsChange() {
-      try {
-        writeVisits(capVisits(readVisits()));
-      } catch (e) {
-        logger23.error("Settings update failed:", e);
-      }
-    },
-    zustand: {
-      RoutingStore: {
-        selector: (s) => routeConvId(s.route),
-        handler(id) {
-          if (open2)
-            return;
-          const current = currentVisit();
-          if (current == null)
-            return;
-          if (id && isHomeId(current) && !isHomeId(id))
-            return;
-          bump(current);
-          scheduleCapture();
-        }
-      },
-      ChatPageStore: {
-        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
-        handler() {
-          if (open2)
-            return;
-          const id = currentVisit();
-          if (id == null)
-            return;
-          bump(id);
-          scheduleCapture();
-        }
-      },
-      ResponseStore: {
-        selector: (s) => {
-          const id = currentVisit();
-          if (!id || isHomeId(id))
-            return "";
-          const list = s.byConversationId[id];
-          const last = list?.[list.length - 1];
-          return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
-        },
-        handler() {
-          if (open2)
-            return;
-          scheduleCapture();
-        }
-      }
-    }
-  });
-
-  // src/plugins/betterLinks/index.tsx
-  var DEFAULT_LINK = "#4a9eff";
-  var DEFAULT_VISITED = "#9b59b6";
-  var STYLE_NAME4 = "better-links-dynamic";
-  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
-  function isValidHex(c) {
-    return /^#[0-9a-fA-F]{6}$/.test(c);
-  }
-  function getColor(key, fallback) {
-    const val = settings14.store[key];
-    return val && isValidHex(val) ? val : fallback;
-  }
-  function applyColors() {
-    const link = getColor("linkColor", DEFAULT_LINK);
-    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings14.store.enableVisitedColor) {
-      const visited = getColor("visitedColor", DEFAULT_VISITED);
-      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
-    }
-    registerStyle(STYLE_NAME4, css);
-  }
-  function ColorRow({ settingKey, title, description, fallback }) {
-    settings14.use([settingKey]);
-    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
-      value: getColor(settingKey, fallback),
-      onChange: (v) => {
-        settings14.store[settingKey] = v;
-        applyColors();
-      },
-      title,
-      description
-    });
-  }
-  var settings14 = definePluginSettings({
-    linkifyDomains: {
-      type: 3 /* BOOLEAN */,
-      description: "Detect bare domains in messages and make them clickable.",
-      default: true
-    },
-    enableVisitedColor: {
-      type: 3 /* BOOLEAN */,
-      description: "Apply a different color to links you already visited.",
-      default: false,
-      onChange: applyColors
-    },
-    linkColor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorRow, {
-        settingKey: "linkColor",
-        title: "Link color",
-        description: "Colorize links in messages.",
-        fallback: DEFAULT_LINK
-      })
-    },
-    visitedColor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(ColorRow, {
-        settingKey: "visitedColor",
-        title: "Visited color",
-        description: "Colorize links you already visited.",
-        fallback: DEFAULT_VISITED
-      })
-    }
-  }).withPrivateSettings();
-  var betterLinks_default = definePlugin({
-    name: "BetterLinks",
-    icon: LinkIcon,
-    description: "Colorize links and detect bare domains in chat messages.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings14,
-    patches: [
-      {
-        find: "chat-markdown:a:link",
-        all: true,
-        replacement: {
-          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
-          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
-        }
-      },
-      {
-        find: "chat-markdown-load-third-party",
-        replacement: {
-          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
-          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
-        }
-      }
-    ],
-    _remarkLinkify() {
-      const { store } = settings14;
-      return (tree) => {
-        try {
-          if (!store.linkifyDomains)
-            return;
-          const walk = (node) => {
-            if (!node.children)
-              return;
-            const out = [];
-            let changed = false;
-            for (const child of node.children) {
-              if (child.type !== "text") {
-                walk(child);
-                out.push(child);
-                continue;
-              }
-              DOMAIN_RE.lastIndex = 0;
-              if (!DOMAIN_RE.test(child.value)) {
-                out.push(child);
-                continue;
-              }
-              DOMAIN_RE.lastIndex = 0;
-              let last = 0;
-              let m;
-              while ((m = DOMAIN_RE.exec(child.value)) != null) {
-                if (m.index > last)
-                  out.push({ type: "text", value: child.value.slice(last, m.index) });
-                out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
-                last = m.index + m[0].length;
-              }
-              if (last < child.value.length)
-                out.push({ type: "text", value: child.value.slice(last) });
-              changed = true;
-            }
-            if (changed)
-              node.children = out;
-          };
-          walk(tree);
-        } catch {
-          return tree;
-        }
-      };
-    },
-    start() {
-      settings14.store.linkColor ??= DEFAULT_LINK;
-      settings14.store.visitedColor ??= DEFAULT_VISITED;
-      applyColors();
-      enableStyle(STYLE_NAME4);
-    },
-    stop() {
-      disableStyle(STYLE_NAME4);
-    }
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/customInstructions/styles.css
-  registerStyle("customInstructions", `.void-ci-root {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.void-ci-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-}
-
-.void-ci-card {
-    position: relative;
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 0.625rem;
-    border-radius: 1rem;
-    padding: 0.625rem 0.75rem;
-    height: 3.25rem;
-    color: hsl(var(--fg-primary));
-    background: hsl(var(--surface-l1));
-    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
-    cursor: pointer;
-}
-
-.void-ci-card:hover {
-    background: var(--button-ghost-hover, rgb(255 255 255 / 8%));
-}
-
-.void-ci-card-add {
-    justify-content: center;
-    box-shadow: none;
-    border: 1px dashed hsl(var(--border-l1));
-}
-
-.void-ci-avatar {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.void-ci-card-name {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-    flex: 1;
-    gap: 0.125rem;
-}
-
-.void-ci-card-name>* {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-}
-
-.void-ci-card-actions {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-end: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.125rem;
-    opacity: 0;
-    transition: opacity 0.15s;
-}
-
-.void-ci-card:hover .void-ci-card-actions {
-    opacity: 1;
-}
-
-.void-ci-card:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ci-editor {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.void-ci-label {
-    padding-inline: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: hsl(var(--fg-primary));
-}
-
-.void-ci-input {
-    width: 100%;
-}
-
-.void-ci-textarea-wrap {
-    border: 1px solid hsl(var(--border-l2));
-    border-radius: 0.75rem;
-}
-
-.void-ci-textarea-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
-}
-
-.void-ci-textarea-wrap-error {
-    border-color: hsl(var(--fg-danger));
-}
-
-.void-ci-textarea {
-    width: 100%;
-    min-height: 7.5rem;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.75rem;
-    color: hsl(var(--fg-primary));
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.void-ci-textarea:focus {
-    outline: none;
-}
-
-.void-ci-editor-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-inline: 0.25rem;
-}
-
-.void-ci-error-text {
-    color: hsl(var(--fg-danger));
-}
-
-.void-ci-trigger {
-    gap: 0.5rem;
-}
-
-.void-ci-menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .void-ci-card-actions {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/customInstructions/index.tsx
-  var cl22 = classNameFactory("void-ci-");
-  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
-  var CheckIcon = findExportedComponentLazy("CheckIcon");
-  var BookIcon = findExportedComponentLazy("BookIcon");
-  var PenIcon = findExportedComponentLazy("PenIcon");
-  var TrashIcon = findExportedComponentLazy("TrashIcon");
-  var PlusIcon = findExportedComponentLazy("PlusIcon");
-  var MAX_LENGTH = 4000;
-  var settings15 = definePluginSettings({
-    editor: {
-      type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
-    }
-  }).withPrivateSettings();
-  function getPresets() {
-    return settings15.plain.presets ?? [];
-  }
-  function setPresets(presets) {
-    settings15.store.presets = presets;
-  }
-  function getAssignments() {
-    return settings15.plain.assignments ?? {};
-  }
-  function PresetCard({ preset, onEdit, onDelete }) {
-    return /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl22("card"),
-      onClick: onEdit
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl22("avatar")
-    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
-      seed: preset.id,
-      size: 32
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl22("card-name")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium"
-    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
-      className: cl22("card-actions")
-    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Edit",
-      onClick: (e) => {
-        e.stopPropagation();
-        onEdit();
-      }
-    }, /* @__PURE__ */ React.createElement(PenIcon, {
-      className: "size-3.5 text-secondary"
-    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
-      variant: "tertiary",
-      size: "xs",
-      shape: "square",
-      tooltipContent: "Delete",
-      onClick: (e) => {
-        e.stopPropagation();
-        onDelete();
-      }
-    }, /* @__PURE__ */ React.createElement(TrashIcon, {
-      className: "size-3.5 text-secondary"
-    }))));
-  }
-  function PresetEditor({ preset, onUpdate, onClose }) {
-    const overLimit = preset.prompt.length > MAX_LENGTH;
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl22("editor")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      className: cl22("label")
-    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
-      type: "text",
-      className: cl22("input"),
-      placeholder: "Preset name",
-      value: preset.name,
-      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
-      autoComplete: "off"
-    }), /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      className: cl22("label")
-    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
-      className: cl22("textarea-wrap", { "textarea-wrap-error": overLimit })
-    }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl22("textarea"),
-      placeholder: "How should Grok behave?",
-      value: preset.prompt,
-      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
-    })), /* @__PURE__ */ React.createElement("div", {
-      className: cl22("editor-footer")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "xs",
-      color: overLimit ? undefined : "muted",
-      className: overLimit ? cl22("error-text") : undefined
-    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
-      variant: "secondary",
-      size: "sm",
-      shape: "rectangle",
-      onClick: onClose
-    }, "Done")));
-  }
-  function PresetsEditor() {
-    const presets = settings15.use(["presets"]).presets ?? [];
-    const [editingId, setEditingId] = useState(null);
-    const updatePreset = useCallback((updated) => {
-      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
-    }, []);
-    const deletePreset = useCallback((id) => {
-      setPresets(getPresets().filter((p) => p.id !== id));
-      const a = { ...getAssignments() };
-      for (const [k, v] of Object.entries(a)) {
-        if (v === id)
-          delete a[k];
-      }
-      settings15.store.assignments = a;
-      setEditingId((prev) => prev === id ? null : prev);
-    }, []);
-    const addPreset = useCallback(() => {
-      const id = randomId();
-      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
-      setEditingId(id);
-    }, []);
-    const editing = presets.find((p) => p.id === editingId);
-    return /* @__PURE__ */ React.createElement("div", {
-      className: cl22("root")
-    }, /* @__PURE__ */ React.createElement("div", {
-      className: cl22("grid")
-    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
-      key: p.id,
-      preset: p,
-      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
-      onDelete: () => deletePreset(p.id)
-    })), /* @__PURE__ */ React.createElement("div", {
-      role: "button",
-      className: cl22("card", "card-add"),
-      onClick: addPreset
-    }, /* @__PURE__ */ React.createElement(PlusIcon, {
-      className: "size-4 text-secondary"
-    }), /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm",
-      weight: "medium",
-      color: "muted"
-    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
-      preset: editing,
-      onUpdate: updatePreset,
-      onClose: () => setEditingId(null)
-    }));
-  }
-  function InstructionsMenu({ conversationId }) {
-    const presets = settings15.use(["presets"]).presets ?? [];
-    const assignments = settings15.use(["assignments"]).assignments ?? {};
-    const activePresetId = assignments[conversationId];
-    const assign = useCallback((presetId) => {
-      const a = { ...getAssignments() };
-      if (presetId)
-        a[conversationId] = presetId;
-      else
-        delete a[conversationId];
-      settings15.store.assignments = a;
-    }, [conversationId]);
-    if (!presets.length)
-      return null;
-    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      className: cl22("trigger")
-    }, /* @__PURE__ */ React.createElement(BookIcon, {
-      size: 16
-    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
-      onSelect: () => assign(),
-      className: cl22("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
-      key: p.id,
-      onSelect: () => assign(p.id),
-      className: cl22("menu-item")
-    }, /* @__PURE__ */ React.createElement(Text2, {
-      size: "sm"
-    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
-      className: "size-3.5 shrink-0"
-    })))));
-  }
-  var customInstructions_default = definePlugin({
-    name: "CustomInstructions",
-    icon: ScrollTextIcon,
-    description: "Create instruction presets and assign them to conversations.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    settings: settings15,
-    contextMenuItems: {
-      conversation: {
-        label: "Instructions",
-        render: ErrorBoundary.wrap(InstructionsMenu)
-      }
-    },
-    _getPrompt() {
-      const { conversationId } = ChatPageStore.useChatPageStore.getState();
-      if (!conversationId)
-        return;
-      const presetId = getAssignments()[conversationId];
-      if (!presetId)
-        return;
-      const preset = getPresets().find((p) => p.id === presetId);
-      return preset?.prompt?.trim() || undefined;
-    },
-    patches: [
-      {
-        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
-        all: true,
-        replacement: {
-          match: /customInstructions:(\i)\.customInstructions/g,
-          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
-        }
-      }
-    ]
-  });
-
   // src/plugins/responseNotification/done1.ts
   var DEFAULT_CHIME = "data:audio/mpeg;base64,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";
 
   // src/plugins/responseNotification/index.ts
-  var logger24 = new Logger("ResponseNotification");
+  var logger16 = new Logger("ResponseNotification");
   var LIVE_STATES = new Set(["streaming", "optimistic", "reconnecting"]);
   var RETRY_MS = 80;
   var SAMPLE_VOLUME = 0.5;
@@ -12970,12 +7612,12 @@ html.void-rt-open [data-sidebar="gap"] {
       size: "sm",
       variant: "secondary",
       onClick() {
-        markGestured();
+        onUserGesture();
         playSound();
       }
     }, "Play preview"));
   }
-  var settings16 = definePluginSettings({
+  var settings7 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -13016,13 +7658,15 @@ html.void-rt-open [data-sidebar="gap"] {
       audioCtx = new AudioContext;
       return audioCtx;
     } catch (e) {
-      logger24.debug("AudioContext unavailable:", e);
+      logger16.debug("AudioContext unavailable:", e);
       audioCtx = null;
       return null;
     }
   }
-  function markGestured() {
+  function onUserGesture() {
     userGestured = true;
+    if (settings7.store.browserNotification && Notification.permission === "default")
+      Notification.requestPermission();
     const ctx = getCtx();
     if (!ctx)
       return;
@@ -13061,22 +7705,22 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function playUrl(ctx, url) {
     loadBuffer(ctx, url).then((buf) => playBuffer(ctx, buf), (err) => {
-      logger24.info("sample play failed:", err);
+      logger16.info("sample play failed:", err);
       if (url !== DEFAULT_CHIME)
-        loadBuffer(ctx, DEFAULT_CHIME).then((buf) => playBuffer(ctx, buf), (e) => logger24.info("default chime failed:", e));
+        loadBuffer(ctx, DEFAULT_CHIME).then((buf) => playBuffer(ctx, buf), (e) => logger16.info("default chime failed:", e));
     });
   }
   function playSound() {
     if (!userGestured) {
-      logger24.info("sound skipped, no user gesture yet");
+      logger16.info("sound skipped, no user gesture yet");
       return;
     }
     const ctx = getCtx();
     if (!ctx)
       return;
-    const url = settings16.store.soundUrl?.trim() || DEFAULT_CHIME;
+    const url = settings7.store.soundUrl?.trim() || DEFAULT_CHIME;
     if (ctx.state === "suspended")
-      ctx.resume().then(() => playUrl(ctx, url), () => logger24.info("AudioContext resume failed"));
+      ctx.resume().then(() => playUrl(ctx, url), () => logger16.info("AudioContext resume failed"));
     else
       playUrl(ctx, url);
   }
@@ -13087,17 +7731,15 @@ html.void-rt-open [data-sidebar="gap"] {
     return !!response?.state && LIVE_STATES.has(response.state);
   }
   function shouldNotify(response) {
-    if (!response || isErrorResponse(response) || isLiveResponse(response))
-      return false;
-    return true;
+    return !isErrorResponse(response) && !isLiveResponse(response);
   }
   function notify(responseId, state) {
-    logger24.info("notify", responseId, state ?? "unset", "permission", Notification.permission);
-    if (settings16.store.onlyWhenHidden && document.visibilityState === "visible")
+    logger16.info("notify", responseId, state ?? "unset", "permission", Notification.permission);
+    if (settings7.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings16.store.sound)
+    if (settings7.store.sound)
       playSound();
-    if (settings16.store.browserNotification)
+    if (settings7.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   function notifyOnce(responseId, state) {
@@ -13118,8 +7760,8 @@ html.void-rt-open [data-sidebar="gap"] {
         notifyOnce(id, cur[id]?.state);
     }
   }
-  function onStreamEnd2({ responseId }) {
-    logger24.info("streamEnd", responseId);
+  function onStreamEnd({ responseId }) {
+    logger16.info("streamEnd", responseId);
     if (retryTimer)
       clearTimeout(retryTimer);
     const attempt = (retried) => {
@@ -13127,25 +7769,21 @@ html.void-rt-open [data-sidebar="gap"] {
       try {
         response = ResponseStore.useResponseStore.getState().byId[responseId];
       } catch (e) {
-        logger24.info("ResponseStore unavailable:", e);
+        logger16.info("ResponseStore unavailable:", e);
       }
       if (shouldNotify(response)) {
-        notifyOnce(responseId, response?.state);
+        notifyOnce(responseId, response?.state ?? "gateway");
         return;
       }
       if (isErrorResponse(response)) {
-        logger24.info("skip error", responseId);
+        logger16.info("skip error", responseId);
         return;
       }
-      if (!retried && (!response || isLiveResponse(response))) {
+      if (!retried) {
         retryTimer = setTimeout(() => attempt(true), RETRY_MS);
         return;
       }
-      if (!response) {
-        notifyOnce(responseId, "missing");
-        return;
-      }
-      logger24.info("skip", responseId, response.state ?? "unset");
+      logger16.info("skip", responseId, response?.state ?? "unset");
     };
     attempt(false);
   }
@@ -13155,7 +7793,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings16,
+    settings: settings7,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -13163,7 +7801,7 @@ html.void-rt-open [data-sidebar="gap"] {
       gestureCtrl = new AbortController;
       const { signal } = gestureCtrl;
       for (const evt of ["pointerdown", "keydown", "touchstart"]) {
-        addEventListener(evt, markGestured, { capture: true, passive: true, signal });
+        addEventListener(evt, onUserGesture, { capture: true, passive: true, signal });
       }
     },
     stop() {
@@ -13179,7 +7817,7 @@ html.void-rt-open [data-sidebar="gap"] {
       audioCtx = null;
     },
     events: {
-      streamEnd: onStreamEnd2
+      streamEnd: onStreamEnd
     },
     zustand: {
       ResponseStore: {
@@ -13188,393 +7826,67 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // src/plugins/incognito/index.ts
-  var store2 = () => SettingsStore.useSettingsStore.getState();
-  var unsubscribe = null;
-  function enforce() {
-    if (!store2().isIncognito)
-      store2().setIsIncognito(true);
-  }
-  var incognito_default = definePlugin({
-    name: "Incognito",
-    icon: GhostFilledIcon,
-    description: "Force private chat mode for new conversations.",
-    authors: [Devs.Prism],
-    tags: ["privacy"],
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start() {
-      enforce();
-      unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce);
+  // src/plugins/noSidebarIdentity/index.ts
+  var STYLE_NAME4 = "noSidebarIdentity";
+  var FOOTER = '[data-sidebar="footer"]';
+  var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
+  var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
+  var MENU_EMAIL = '[role="menu"] [class*="max-w-[400px]"].truncate';
+  var settings8 = definePluginSettings({
+    hideUsername: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the username next to the sidebar avatar.",
+      default: true
     },
-    stop() {
-      unsubscribe?.();
-      unsubscribe = null;
-      store2().setIsIncognito(false);
+    hideEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the email next to the sidebar avatar and at the top of the account menu.",
+      default: true
     }
   });
-
-  // src/plugins/noSidebarPlugins/index.tsx
-  var PluginsDialogStore = findByPropsLazy("usePluginsDialogStore");
-  function PluginsIcon(props = {}) {
-    const Comp = findExportedComponent("ConnectorsIcon") ?? GrokConnectorsIcon;
-    return /* @__PURE__ */ React.createElement(Comp, {
-      ...props
-    });
+  function apply() {
+    const rules = [];
+    if (settings8.store.hideUsername) {
+      rules.push(`${STACK}>:first-child{display:none!important}`);
+      rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
+    }
+    if (settings8.store.hideEmail) {
+      rules.push(`${STACK}>:nth-child(2){display:none!important}`);
+      rules.push(`${MENU_EMAIL}{display:none!important}`);
+    }
+    if (settings8.store.hideUsername && settings8.store.hideEmail) {
+      rules.push(`${TEXT_WRAP}{display:none!important}`);
+      rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
+    }
+    registerStyle(STYLE_NAME4, rules.join(`
+`));
   }
-  function openPlugins() {
-    PluginsDialogStore.usePluginsDialogStore.getState().setOpen(true);
-  }
-  function PluginsItem() {
-    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
-      onSelect: openPlugins
-    }, /* @__PURE__ */ React.createElement(PluginsIcon, {
-      className: "void-settings-menu-icon"
-    }), "Plugins");
-  }
-  var WrappedPluginsItem = ErrorBoundary.wrap(PluginsItem);
-  var noSidebarPlugins_default = definePlugin({
-    name: "NoSidebarPlugins",
-    icon: PluginsIcon,
-    description: "Move the sidebar Plugins button into the avatar menu.",
+  var noSidebarIdentity_default = definePlugin({
+    name: "NoSidebarIdentity",
+    icon: UserRoundXIcon,
+    description: "Hide username and/or email in the Grok sidebar and account menu. Avatar stays clickable.",
     authors: [Devs.p],
-    tags: ["ui"],
+    tags: ["ui", "privacy"],
     enabledByDefault: true,
-    _renderItem: () => createElement(WrappedPluginsItem),
+    settings: settings8,
     patches: [
       {
-        find: "usePluginsDialogStore.getState().setOpen(!0)",
-        replacement: {
-          match: /(\(0,\i\.jsx\)\(\i\.AppSidebarItem,\{icon:.{0,80}?onClick:\(\)=>\{"skills-and-connectors")/,
-          replace: "false&&$1"
-        }
-      },
-      {
-        find: 'ENABLE_GROK_WEB_PLUGIN_MARKETPLACE)&&{id:"skills-and-connectors"',
-        replacement: {
-          match: /ENABLE_GROK_WEB_PLUGIN_MARKETPLACE\)&&\{id:"skills-and-connectors"/,
-          replace: 'ENABLE_GROK_WEB_PLUGIN_MARKETPLACE)&&!1&&{id:"skills-and-connectors"'
-        }
-      },
-      {
-        find: '"user-dropdown.help"',
-        replacement: {
-          match: /(?=\(0,\i\.jsxs\)\(\i\.DropdownMenuSub,\{children:\[\(0,\i\.jsxs\)\(\i\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help")/,
-          replace: "$self._renderItem(),"
-        }
-      }
-    ]
-  });
-
-  // src/plugins/noRightPanel/index.ts
-  function isRightOpen(s) {
-    return s.sidePanelContent?.type === "rightPanel";
-  }
-  function enforce2() {
-    const state = ChatPageStore.useChatPageStore.getState();
-    if (isRightOpen(state))
-      state.closeSidePanelExplicitly();
-  }
-  var noRightPanel_default = definePlugin({
-    name: "NoRightPanel",
-    icon: PanelRightCloseIcon,
-    description: "Keep Grok's right panel closed.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    startAt: "TurbopackReady" /* TurbopackReady */,
-    start: enforce2,
-    zustand: {
-      ChatPageStore: {
-        selector: isRightOpen,
-        handler(open) {
-          if (open)
-            enforce2();
-        }
-      }
-    },
-    patches: [
-      {
-        find: "willRestoreRightPanelByIntent",
-        replacement: {
-          match: /willRestoreRightPanelByIntent=\i=>\{/,
-          replace: "willRestoreRightPanelByIntent=()=>{return!1;"
-        }
-      },
-      {
-        find: '"computePreviewAutoOpen"',
-        replacement: {
-          match: /&&(\i)\(\{source:"auto"\}\)/,
-          replace: '&&!1&&$1({source:"auto"})'
-        }
-      }
-    ]
-  });
-
-  // src/plugins/composerOpacity/index.ts
-  var STYLE_NAME5 = "composerOpacity";
-  var SHELL = ".query-bar";
-  var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
-  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
-  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
-  var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
-  var settings17 = definePluginSettings({
-    opacity: {
-      type: 5 /* SLIDER */,
-      description: "Background opacity of the chat input. 100 is fully opaque.",
-      min: 0,
-      max: 100,
-      default: 100
-    },
-    blur: {
-      type: 5 /* SLIDER */,
-      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
-      min: 0,
-      max: 40,
-      default: 16
-    }
-  });
-  function apply2() {
-    const pct = clamp(settings17.store.opacity, 0, 100);
-    const blur = clamp(settings17.store.blur, 0, 40);
-    const alpha = pct / 100;
-    const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
-    registerStyle(STYLE_NAME5, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
-  }
-  var composerOpacity_default = definePlugin({
-    name: "ComposerOpacity",
-    icon: BlendIcon,
-    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
-    authors: [Devs.p],
-    tags: ["ui", "chat"],
-    enabledByDefault: true,
-    settings: settings17,
-    start: apply2,
-    onSettingsChange: apply2,
-    stop() {
-      unregisterStyle(STYLE_NAME5);
-    }
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/exportChat/styles.css
-  registerStyle("exportChat", `.void-export-icon {
-    margin-inline-end: 0.5rem;
-}
-`);
-
-  // src/plugins/exportChat/index.tsx
-  var logger25 = new Logger("ExportChat");
-  function buildExportMessage(r) {
-    return {
-      id: r.responseId,
-      sender: r.sender,
-      message: r.message,
-      query: r.query,
-      createTime: r.createTime,
-      model: r.requestMetadata?.model ?? r.model,
-      ...r.thinkingTrace && { thinkingTrace: r.thinkingTrace },
-      ...r.webSearchResults?.length && { webSearchResults: r.webSearchResults },
-      ...r.generatedImageUrls?.length && { generatedImageUrls: r.generatedImageUrls },
-      ...r.fileAttachments?.length && { fileAttachments: r.fileAttachments },
-      ...r.steps?.length && { steps: r.steps }
-    };
-  }
-  function formatTs(ts) {
-    return ts ? new Date(ts).toLocaleString() : "";
-  }
-  function sender(s) {
-    return s.toLowerCase() === "human" ? "You" : "Grok";
-  }
-  function toMarkdown(title, messages) {
-    const lines = [`# ${title}`, ""];
-    for (const m of messages) {
-      const ts = formatTs(m.createTime);
-      lines.push(`## ${sender(m.sender)}${ts ? ` — ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
-      if (m.thinkingTrace)
-        lines.push("<details><summary>Thinking</summary>", "", m.thinkingTrace, "", "</details>", "");
-      const mdText = m.query || m.message;
-      if (mdText)
-        lines.push(mdText, "");
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls)
-          lines.push(`![image](${url})`);
-        lines.push("");
-      }
-      if (m.webSearchResults?.length) {
-        lines.push("**Web search results:**", "");
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (url)
-            lines.push(`- [${t ?? url}](${url})`);
-        }
-        lines.push("");
-      }
-      lines.push("---", "");
-    }
-    return lines.join(`
-`);
-  }
-  function toPlainText(title, messages) {
-    const lines = [title, "=".repeat(title.length), ""];
-    for (const m of messages) {
-      const ts = formatTs(m.createTime);
-      lines.push(`[${sender(m.sender)}]${ts ? ` ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
-      if (m.thinkingTrace)
-        lines.push("[Thinking]", m.thinkingTrace, "");
-      const txtText = m.query || m.message;
-      if (txtText)
-        lines.push(txtText, "");
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls)
-          lines.push(`  ${url}`);
-        lines.push("");
-      }
-      if (m.webSearchResults?.length) {
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (url)
-            lines.push(`  ${t ?? ""} - ${url}`);
-        }
-        lines.push("");
-      }
-      lines.push("-".repeat(40), "");
-    }
-    return lines.join(`
-`);
-  }
-  var HTML_HEAD = [
-    '<!DOCTYPE html><html><head><meta charset="utf-8">',
-    "<style>",
-    "body{font-family:system-ui,sans-serif;max-width:50rem;margin:2rem auto;padding:0 1rem;background:#0d0d0d;color:#e0e0e0}",
-    ".m{margin:1.5rem 0;padding:1rem;border-radius:.5rem;border:1px solid #222}",
-    ".h{background:#1a1a2e}.g{background:#111}",
-    ".s{font-weight:600;margin-bottom:.5rem;color:#aaa}.t{font-size:.8rem;color:#666}",
-    ".th{margin:.5rem 0;padding:.5rem;background:#1a1a1a;border-left:3px solid #444;font-size:.9rem;color:#999}",
-    "a{color:#6ea8fe}",
-    "</style></head><body>"
-  ].join(`
-`);
-  function toHtml(title, messages) {
-    const p = [HTML_HEAD, `<h1>${escapeHtml(title)}</h1>`];
-    for (const m of messages) {
-      const cls = m.sender.toLowerCase() === "human" ? "h" : "g";
-      const ts = formatTs(m.createTime);
-      p.push(`<div class="m ${cls}"><div class="s">${sender(m.sender)} <span class="t">${ts ? escapeHtml(ts) : ""}${m.model ? ` · ${escapeHtml(m.model)}` : ""}</span></div>`);
-      if (m.thinkingTrace)
-        p.push(`<details><summary>Thinking</summary><div class="th">${escapeHtml(m.thinkingTrace)}</div></details>`);
-      const text = m.query || m.message;
-      if (text)
-        p.push(`<div>${escapeHtml(text).replaceAll(`
-`, "<br>")}</div>`);
-      if (m.generatedImageUrls?.length) {
-        for (const url of m.generatedImageUrls) {
-          const safe = safeUrl(url);
-          if (safe)
-            p.push(`<img src="${escapeHtml(safe, true)}" style="max-width:100%;margin:.5rem 0">`);
-        }
-      }
-      if (m.webSearchResults?.length) {
-        p.push("<ul>");
-        for (const r of m.webSearchResults) {
-          const { title: t, url } = r;
-          if (!url)
-            continue;
-          const safe = safeUrl(url);
-          if (safe)
-            p.push(`<li><a href="${escapeHtml(safe, true)}" rel="noopener noreferrer">${escapeHtml(t ?? safe)}</a></li>`);
-          else
-            p.push(`<li>${escapeHtml(t ?? url)}</li>`);
-        }
-        p.push("</ul>");
-      }
-      p.push("</div>");
-    }
-    p.push("</body></html>");
-    return p.join(`
-`);
-  }
-  var FORMATS = [
-    { fmt: "json", label: "JSON" },
-    { fmt: "md", label: "Markdown" },
-    { fmt: "txt", label: "Plain Text" },
-    { fmt: "html", label: "HTML" }
-  ];
-  async function exportChat(conversationId, format) {
-    const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
-    if (!responses?.length)
-      return;
-    const conversation = ConversationStore.useConversationStore.getState().byId[conversationId];
-    const title = conversation?.title ?? "Untitled Chat";
-    const messages = responses.map(buildExportMessage);
-    const filename = sanitizeFilename(title, "chat");
-    let content;
-    let mime;
-    switch (format) {
-      case "json":
-        content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
-        mime = "application/json";
-        break;
-      case "md":
-        content = toMarkdown(title, messages);
-        mime = "text/markdown";
-        break;
-      case "txt":
-        content = toPlainText(title, messages);
-        mime = "text/plain";
-        break;
-      case "html":
-        content = toHtml(title, messages);
-        mime = "text/html";
-        break;
-    }
-    await FileUtils.downloadBlob(new Blob([content], { type: mime }), `${filename}.${format}`);
-  }
-  function ExportMenu({ conversationId }) {
-    const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
-      disabled: streaming
-    }, /* @__PURE__ */ React.createElement(DownloadIcon, {
-      size: 16,
-      className: "void-export-icon"
-    }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
-      key: fmt,
-      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger25.error("Failed to export chat", e))
-    }, label))));
-  }
-  var exportChat_default = definePlugin({
-    name: "ExportChat",
-    icon: FileDownIcon,
-    description: "Export conversations in multiple formats from the right-click menu.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    contextMenuItems: {
-      conversation: {
-        label: "Export",
-        render: ErrorBoundary.wrap(ExportMenu)
-      }
-    }
-  });
-
-  // src/plugins/autoCollapse/index.ts
-  var autoCollapse_default = definePlugin({
-    name: "AutoCollapse",
-    icon: ChevronsDownUpIcon,
-    description: "Automatically collapse code blocks in responses.",
-    authors: [Devs.Prism],
-    tags: ["chat"],
-    _collapse: () => true,
-    patches: [
-      {
-        find: ["isInitiallyCollapsed", "showRunCode"],
+        find: '"max-w-[400px] truncate"',
         all: true,
         replacement: {
-          match: /isInitiallyCollapsed:(\i)=!1/g,
-          replace: "isInitiallyCollapsed:$1=$self._collapse()"
+          match: /WD_REFRESH&&(\i)\.user\.email&&/,
+          replace: "WD_REFRESH&&!$self.settings.store.hideEmail&&$1.user.email&&"
         }
       }
-    ]
+    ],
+    start: apply,
+    onSettingsChange: apply,
+    stop() {
+      unregisterStyle(STYLE_NAME4);
+    }
   });
 
-  // voidpp-css:/tmp/VoidPP/src/plugins/usageDisplay/styles.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -13793,6 +8105,24 @@ button:has(.void-ud-trigger > .void-ud-label) {
     width: 100%;
 }
 `);
+
+  // src/turbopack/common/plan.ts
+  var PLAN_NAMES = {
+    SUBSCRIPTION_TIER_X_BASIC: "X Basic",
+    SUBSCRIPTION_TIER_X_PREMIUM: "X Premium",
+    SUBSCRIPTION_TIER_X_PREMIUM_PLUS: "X Premium+",
+    SUBSCRIPTION_TIER_SUPER_GROK_LITE: "SuperGrok Lite",
+    SUBSCRIPTION_TIER_GROK_PRO: "SuperGrok",
+    SUBSCRIPTION_TIER_SUPER_GROK_PRO: "SuperGrok Pro"
+  };
+  var X_SUB_NAMES = {
+    PremiumPlus: "SuperGrok",
+    Premium: "X Premium",
+    Basic: "X Basic"
+  };
+  function getPlanName(bestSubscription, xSubscriptionType) {
+    return (bestSubscription ? PLAN_NAMES[bestSubscription] : undefined) ?? (xSubscriptionType ? X_SUB_NAMES[xSubscriptionType] : undefined) ?? "Free";
+  }
 
   // src/plugins/usageDisplay/credits.ts
   var CREDITS_CONFIG_PATH = "/grok_api_v2.GrokBuildBilling/GetGrokCreditsConfig";
@@ -14188,8 +8518,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var CHART_WINDOW = 7;
   var CHART_SCALE_MIN = 20;
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-  var DAY_MS2 = 86400000;
-  var logger26 = new Logger("UsageDisplay");
+  var DAY_MS = 86400000;
+  var logger17 = new Logger("UsageDisplay");
   function isRecord2(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
   }
@@ -14245,7 +8575,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      logger26.debug("Failed to read usage stats", error);
+      logger17.debug("Failed to read usage stats", error);
       return memory.get(key) ?? null;
     }
   }
@@ -14257,7 +8587,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       localStorage.setItem(key, value);
     } catch (error) {
-      logger26.debug("Failed to persist usage stats", error);
+      logger17.debug("Failed to persist usage stats", error);
       memory.set(key, value);
     }
   }
@@ -14269,7 +8599,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      logger26.debug("Failed to clear usage stats", error);
+      logger17.debug("Failed to clear usage stats", error);
       memory.delete(key);
     }
   }
@@ -14289,7 +8619,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }
       return { version: STATS_VERSION, userId, days };
     } catch (error) {
-      logger26.debug("Failed to read usage stats", error);
+      logger17.debug("Failed to read usage stats", error);
       return emptyStore(userId);
     }
   }
@@ -14416,7 +8746,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function pruneDays(days, retainDays, now) {
     const keep = clamp(Math.floor(retainDays), RETAIN_MIN, RETAIN_MAX);
-    const cutoff = localDateKey(startOfLocalDay(now) - (keep - 1) * DAY_MS2);
+    const cutoff = localDateKey(startOfLocalDay(now) - (keep - 1) * DAY_MS);
     const out = {};
     for (const [date, rec] of Object.entries(days)) {
       if (date >= cutoff)
@@ -14473,9 +8803,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
 
   // src/plugins/usageDisplay/index.tsx
-  var logger27 = new Logger("UsageDisplay");
-  var cl23 = classNameFactory("void-ud-");
-  var settings18 = definePluginSettings({
+  var logger18 = new Logger("UsageDisplay");
+  var cl17 = classNameFactory("void-ud-");
+  var settings9 = definePluginSettings({
     usageStats: {
       type: 3 /* BOOLEAN */,
       description: "Record daily usage. Hover shows today after a delay; click opens history.",
@@ -14515,7 +8845,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var LOCAL_ACCOUNT = "local";
   var BOT_POOL = ":bot";
   var BotsStore = findByPropsLazy("useBotsStore");
-  var store3 = createExternalStore();
+  var store2 = createExternalStore();
   var state = {
     loading: false,
     lastFetchAt: 0,
@@ -14562,7 +8892,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     state.usage = stored;
     state.lastUpdatedAt = stored ? Date.now() : 0;
     state.lastFetchAt = 0;
-    store3.notify();
+    store2.notify();
   }
   function syncAccount() {
     const userId = currentPoolId();
@@ -14576,7 +8906,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       await hook.getState().refreshUsage();
       return normalizeBotUsage(hook.getState().usage);
     } catch (error) {
-      logger27.warn("Failed to fetch Grok Bot usage", error);
+      logger18.warn("Failed to fetch Grok Bot usage", error);
       return null;
     }
   }
@@ -14590,12 +8920,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     SettingsStore3.markAsChanged();
   }
   function snapshotToday() {
-    if (!settings18.store.usageStats)
+    if (!settings9.store.usageStats)
       return;
     syncAccount();
     if (!state.userId)
       return;
-    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings18.store.retainDays));
+    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings9.store.retainDays));
   }
   async function refresh(reason = "manual") {
     if (refreshPromise)
@@ -14606,7 +8936,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const poolId = currentPoolId();
     state.loading = true;
     state.lastFetchAt = Date.now();
-    store3.notify();
+    store2.notify();
     refreshPromise = (async () => {
       try {
         if (poolId.endsWith(BOT_POOL)) {
@@ -14624,7 +8954,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         }
         const pageUsage = readNativeUsage();
         const remote = await fetchOfficialUsage().then((usage) => ({ ok: true, usage })).catch((error) => {
-          logger27.warn("Failed to fetch official usage", error);
+          logger18.warn("Failed to fetch official usage", error);
           return { ok: false };
         });
         if (currentPoolId() !== poolId)
@@ -14641,18 +8971,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
       } finally {
         state.loading = false;
         refreshPromise = null;
-        store3.notify();
+        store2.notify();
         if (currentPoolId() !== poolId)
           queueMicrotask(() => void refresh("route"));
       }
     })();
     return refreshPromise;
   }
-  function onVisibility2() {
+  function onVisibility() {
     if (!document.hidden && Date.now() - state.lastFetchAt > STALE_MS)
       refresh("visible");
   }
-  function onStreamEnd3() {
+  function onStreamEnd2() {
     refresh("stream");
   }
   function readPlan() {
@@ -14695,25 +9025,25 @@ button:has(.void-ud-trigger > .void-ud-label) {
       width: RING_SIZE,
       height: RING_SIZE,
       viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
-      className: classes(cl23("ring"), cl23(`ring-${tone}`))
+      className: classes(cl17("ring"), cl17(`ring-${tone}`))
     }, /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl23("ring-track")
+      className: cl17("ring-track")
     }), /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
-      className: cl23("ring-fill"),
+      className: cl17("ring-fill"),
       strokeDasharray: RING_CIRCUMFERENCE,
       strokeDashoffset: RING_CIRCUMFERENCE * (1 - fraction),
       transform: `rotate(-90 ${RING_CENTER} ${RING_CENTER})`
     }));
   }
   function ButtonIcon() {
-    useExternalStore(store3);
-    const { showPercent } = settings18.use(["showPercent"]);
+    useExternalStore(store2);
+    const { showPercent } = settings9.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -14725,19 +9055,19 @@ button:has(.void-ud-trigger > .void-ud-label) {
         if (!document.hidden)
           refresh("poll");
       }, AUTO_REFRESH_MS);
-      document.addEventListener("visibilitychange", onVisibility2);
+      document.addEventListener("visibilitychange", onVisibility);
       return () => {
         window.clearInterval(id);
-        document.removeEventListener("visibilitychange", onVisibility2);
+        document.removeEventListener("visibilitychange", onVisibility);
       };
     }, []);
     return /* @__PURE__ */ React.createElement("span", {
-      className: classes(cl23("trigger"), label == null && cl23("icon-only"))
+      className: classes(cl17("trigger"), label == null && cl17("icon-only"))
     }, /* @__PURE__ */ React.createElement(ProgressRing, {
       percent: isFree ? null : percent,
       tone: isFree ? "waiting" : tone
     }), label != null && /* @__PURE__ */ React.createElement("span", {
-      className: cl23("label")
+      className: cl17("label")
     }, label));
   }
   function WeekBlock({ isFree, percent, resetAt, loading, labeled }) {
@@ -14752,14 +9082,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl23("week")
+      className: cl17("week")
     }, labeled && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, isBotPage() ? "Grok Bot" : "Week"), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl23("used")
+      className: cl17("used")
     }, usedLabel(isFree, percent, loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
@@ -14771,19 +9101,19 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
-      className: cl23("today")
+      className: cl17("today")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Today"), !isFree && /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
-      className: cl23("used")
+      className: cl17("used")
     }, formatDelta(delta ?? (percent != null ? 0 : null)), " of weekly quota"));
   }
   function UsagePanel() {
-    useExternalStore(store3);
-    const { usageStats, hoverStatsDelay } = settings18.use(["usageStats", "hoverStatsDelay"]);
+    useExternalStore(store2);
+    const { usageStats, hoverStatsDelay } = settings9.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
     const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
@@ -14807,12 +9137,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
       if (!showToday)
         return;
       snapshotToday();
-      store3.notify();
+      store2.notify();
     }, [showToday, percent]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 8,
-      className: cl23("panel")
+      className: cl17("panel")
     }, showToday && /* @__PURE__ */ React.createElement(TodayBlock, {
       isFree,
       percent
@@ -14825,12 +9155,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function StatsToggle() {
-    const { usageStats } = settings18.use(["usageStats"]);
+    const { usageStats } = settings9.use(["usageStats"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem",
-      className: cl23("toggle")
+      className: cl17("toggle")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -14843,8 +9173,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: !!usageStats,
       onCheckedChange: (value) => {
-        settings18.store.usageStats = value;
-        store3.notify();
+        settings9.store.usageStats = value;
+        store2.notify();
         if (value)
           refresh("manual");
       }
@@ -14857,25 +9187,25 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "flex-start",
       gap: "0.5rem",
-      className: cl23("formula")
+      className: cl17("formula")
     }, terms.map((term, i) => /* @__PURE__ */ React.createElement(React.Fragment, {
       key: term.label
     }, i > 0 && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl23("formula-op-col")
+      className: cl17("formula-op-col")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl23("formula-op")
+      className: cl17("formula-op")
     }, ops[i - 1]), /* @__PURE__ */ React.createElement("span", {
-      className: cl23("formula-op")
+      className: cl17("formula-op")
     }, ops[i - 1])), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
-      className: cl23("formula-term")
+      className: cl17("formula-term")
     }, /* @__PURE__ */ React.createElement("span", {
-      className: cl23("formula-label")
+      className: cl17("formula-label")
     }, term.label), /* @__PURE__ */ React.createElement("span", {
-      className: cl23("formula-value")
+      className: cl17("formula-value")
     }, term.value)))));
   }
   function DayFormula({ rec, today }) {
@@ -14903,7 +9233,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       }), caption != null && /* @__PURE__ */ React.createElement(Text2, {
         size: "xs",
         color: "muted",
-        className: cl23("formula-caption")
+        className: cl17("formula-caption")
       }, caption));
     }
     return /* @__PURE__ */ React.createElement(Formula, {
@@ -14928,7 +9258,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.35rem",
-      className: cl23("repair")
+      className: cl17("repair")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
@@ -14942,7 +9272,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       step: 0.1,
       value: draft,
       onChange: (e) => setDraft(e.target.value),
-      className: cl23("repair-input"),
+      className: cl17("repair-input"),
       "aria-label": "Weekly percent before reset"
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
@@ -14952,14 +9282,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onClick: () => {
         if (pre == null)
           return;
-        writeDay(userId, repairWipedReset(rec, dayStart, pre, Date.now()), retainDaysOf(settings18.store.retainDays));
-        store3.notify();
+        writeDay(userId, repairWipedReset(rec, dayStart, pre, Date.now()), retainDaysOf(settings9.store.retainDays));
+        store2.notify();
       }
     }, "Repair")));
   }
   function StatsModal({ onClose }) {
-    useExternalStore(store3);
-    const { usageStats } = settings18.use(["usageStats"]);
+    useExternalStore(store2);
+    const { usageStats } = settings9.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
     const todayKey = localDateKey(Date.now());
     const bars = days.length ? fillChartDays(days) : [];
@@ -14973,7 +9303,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         node.scrollLeft = node.scrollWidth;
     }, [bars.length]);
     useEffect(() => {
-      chartRef.current?.querySelector(`.${cl23("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
+      chartRef.current?.querySelector(`.${cl17("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
     }, [selected]);
     return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: "Usage by date",
@@ -14983,10 +9313,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, /* @__PURE__ */ React.createElement(StatsToggle, null), !usageStats ? /* @__PURE__ */ React.createElement(Paragraph, null, "Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.") : days.length === 0 ? /* @__PURE__ */ React.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
-      className: cl23("history")
+      className: cl17("history")
     }, /* @__PURE__ */ React.createElement(Flex, {
       ref: chartRef,
-      className: cl23("chart"),
+      className: cl17("chart"),
       alignItems: "stretch",
       gap: "0.35rem",
       tabIndex: 0,
@@ -15015,22 +9345,22 @@ button:has(.void-ud-trigger > .void-ud-label) {
         role: "option",
         "aria-selected": on,
         "aria-label": `${rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}, ${formatDelta(delta)}`,
-        className: classes(cl23("bar"), on && cl23("bar-on"), empty && cl23("bar-empty")),
+        className: classes(cl17("bar"), on && cl17("bar-on"), empty && cl17("bar-empty")),
         onClick: () => setSelected(rec.date)
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl23("bar-value")
+        className: cl17("bar-value")
       }, empty ? " " : formatPercent(delta)), /* @__PURE__ */ React.createElement("span", {
-        className: cl23("bar-track")
+        className: cl17("bar-track")
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl23("bar-fill"),
+        className: cl17("bar-fill"),
         style: { height: `${pct}%` }
       })), /* @__PURE__ */ React.createElement("span", {
-        className: cl23("bar-label")
+        className: cl17("bar-label")
       }, rec.date === todayKey ? "Today" : formatDayNumber(rec.date)));
     })), active != null && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.35rem",
-      className: cl23("detail")
+      className: cl17("detail")
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold"
@@ -15044,8 +9374,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }))));
   }
   function ClearStats() {
-    useExternalStore(store3);
-    const [open, setOpen] = useState(false);
+    useExternalStore(store2);
+    const [open2, setOpen] = useState(false);
     const userId = state.userId || currentPoolId();
     const days = userId ? listDays(userId) : [];
     return /* @__PURE__ */ React.createElement(Flex, {
@@ -15058,7 +9388,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       disabled: !days.length,
       onClick: () => setOpen(true)
     }, "Clear usage history"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
-      open,
+      open: open2,
       onOpenChange: setOpen,
       title: "Clear usage history",
       description: "Delete all locally recorded daily usage? This cannot be undone.",
@@ -15067,7 +9397,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onConfirm: () => {
         if (userId)
           clearStats(userId);
-        store3.notify();
+        store2.notify();
       }
     }));
   }
@@ -15095,7 +9425,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings18,
+    settings: settings9,
     start() {
       migrateUsageStats();
       try {
@@ -15106,7 +9436,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
           refresh("route");
         });
       } catch (error) {
-        logger27.warn("RoutingStore subscribe failed", error);
+        logger18.warn("RoutingStore subscribe failed", error);
       }
     },
     stop() {
@@ -15115,42 +9445,15 @@ button:has(.void-ud-trigger > .void-ud-label) {
     },
     chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
     events: {
-      streamEnd: onStreamEnd3
+      streamEnd: onStreamEnd2
     },
     onSettingsChange() {
-      if (settings18.store.usageStats)
+      if (settings9.store.usageStats)
         refresh("manual");
     }
   });
 
-  // src/plugins/widerChat/index.ts
-  var STYLE_NAME6 = "widerChat";
-  var settings19 = definePluginSettings({
-    width: {
-      type: 1 /* NUMBER */,
-      description: "Maximum chat width in rem.",
-      default: 64
-    }
-  });
-  function applyWidth() {
-    const w = settings19.store.width;
-    registerStyle(STYLE_NAME6, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
-  }
-  var widerChat_default = definePlugin({
-    name: "WiderChat",
-    icon: UnfoldHorizontalIcon,
-    description: "Adjustable chat width for big monitors.",
-    authors: [Devs.Prism],
-    tags: ["chat", "ui"],
-    settings: settings19,
-    start: applyWidth,
-    onSettingsChange: applyWidth,
-    stop() {
-      unregisterStyle(STYLE_NAME6);
-    }
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/settingsFlyout/styles.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/settingsFlyout/styles.css
   registerStyle("settingsFlyout", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -15252,8 +9555,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }));
 
   // src/plugins/settingsFlyout/index.tsx
-  var cl24 = classNameFactory("void-sf-");
-  var settings20 = definePluginSettings({
+  var cl18 = classNameFactory("void-sf-");
+  var settings10 = definePluginSettings({
     showOpenSettings: {
       type: 3 /* BOOLEAN */,
       description: 'Show "Open Settings" (last used tab).',
@@ -15333,16 +9636,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
     { id: "voidpp_css_tab", name: "Quick CSS", setting: "css", icon: BracesIcon }
   ];
   function openTab(tab, onOpen, event) {
-    const store = SettingsDialogStore.useSettingsDialogStore.getState();
+    const store3 = SettingsDialogStore.useSettingsDialogStore.getState();
     if (tab) {
-      store.setTab(tab);
-      store.setOpen(true);
+      store3.setTab(tab);
+      store3.setOpen(true);
       return;
     }
     try {
       onOpen?.(event);
     } catch {}
-    store.setOpen(true);
+    store3.setOpen(true);
   }
   function tabItems(tabs) {
     return tabs.map((t) => {
@@ -15351,7 +9654,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         key: t.id,
         onSelect: () => openTab(t.id)
       }, /* @__PURE__ */ React.createElement(Icon, {
-        className: cl24("menu-icon")
+        className: cl18("menu-icon")
       }), t.name);
     });
   }
@@ -15361,11 +9664,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "secondary",
-      className: cl24("group")
+      className: cl18("group")
     }, "Void++"), tabItems(tabs));
   }
   function SettingsMenu({ onOpen }) {
-    const cfg = settings20.use([
+    const cfg = settings10.use([
       "showOpenSettings",
       "voidppPosition",
       "plugins",
@@ -15385,13 +9688,13 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const voidppFirst = cfg.voidppPosition !== "below";
     const hasBoth = grokTabs.length > 0 && voidppTabs.length > 0;
     return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl24("menu-icon")
+      className: cl18("menu-icon")
     }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
-      className: cl24("menu")
+      className: cl18("menu")
     }, showOpen && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: (e) => openTab(undefined, onOpen, e)
     }, /* @__PURE__ */ React.createElement(CogIcon, {
-      className: cl24("menu-icon")
+      className: cl18("menu-icon")
     }), "Open Settings"), showOpen && (voidppTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidppFirst && /* @__PURE__ */ React.createElement(VoidPPSection, {
       tabs: voidppTabs
     }), voidppFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidppFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), !voidppFirst && /* @__PURE__ */ React.createElement(VoidPPSection, {
@@ -15407,7 +9710,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     tags: ["ui", "settings"],
     enabledByDefault: true,
     requiresRestart: true,
-    settings: settings20,
+    settings: settings10,
     start() {
       migratePluginSetting("SettingsFlyout", "voidppPosition", "voidPosition");
     },
@@ -15423,8 +9726,232 @@ button:has(.void-ud-trigger > .void-ud-label) {
     ]
   });
 
+  // src/plugins/userQuotes/index.ts
+  var STYLE_NAME5 = "userQuotes";
+  var CSS3 = `
+[data-testid="user-message"] blockquote:not(.twitter-tweet) {
+    border-inline-start-color: hsl(var(--fg-tertiary)) !important;
+    border-inline-start-width: 0.125rem !important;
+    border-inline-start-style: solid !important;
+    padding-inline-start: 0.75rem !important;
+}
+`;
+  var userQuotes_default = definePlugin({
+    name: "UserQuotes",
+    icon: TextQuoteIcon,
+    description: "Show a visible left bar on quoted lines in your own chat bubbles.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    start() {
+      registerStyle(STYLE_NAME5, CSS3);
+    },
+    stop() {
+      unregisterStyle(STYLE_NAME5);
+    }
+  });
+
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/exportChat/styles.css
+  registerStyle("exportChat", `.void-export-icon {
+    margin-inline-end: 0.5rem;
+}
+`);
+
+  // src/plugins/exportChat/index.tsx
+  var logger19 = new Logger("ExportChat");
+  function buildExportMessage(r) {
+    return {
+      id: r.responseId,
+      sender: r.sender,
+      message: r.message,
+      query: r.query,
+      createTime: r.createTime,
+      model: r.requestMetadata?.model ?? r.model,
+      ...r.thinkingTrace && { thinkingTrace: r.thinkingTrace },
+      ...r.webSearchResults?.length && { webSearchResults: r.webSearchResults },
+      ...r.generatedImageUrls?.length && { generatedImageUrls: r.generatedImageUrls },
+      ...r.fileAttachments?.length && { fileAttachments: r.fileAttachments },
+      ...r.steps?.length && { steps: r.steps }
+    };
+  }
+  function formatTs(ts) {
+    return ts ? new Date(ts).toLocaleString() : "";
+  }
+  function sender(s) {
+    return s.toLowerCase() === "human" ? "You" : "Grok";
+  }
+  function toMarkdown(title, messages) {
+    const lines = [`# ${title}`, ""];
+    for (const m of messages) {
+      const ts = formatTs(m.createTime);
+      lines.push(`## ${sender(m.sender)}${ts ? ` — ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
+      if (m.thinkingTrace)
+        lines.push("<details><summary>Thinking</summary>", "", m.thinkingTrace, "", "</details>", "");
+      const mdText = m.query || m.message;
+      if (mdText)
+        lines.push(mdText, "");
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls)
+          lines.push(`![image](${url})`);
+        lines.push("");
+      }
+      if (m.webSearchResults?.length) {
+        lines.push("**Web search results:**", "");
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (url)
+            lines.push(`- [${t ?? url}](${url})`);
+        }
+        lines.push("");
+      }
+      lines.push("---", "");
+    }
+    return lines.join(`
+`);
+  }
+  function toPlainText(title, messages) {
+    const lines = [title, "=".repeat(title.length), ""];
+    for (const m of messages) {
+      const ts = formatTs(m.createTime);
+      lines.push(`[${sender(m.sender)}]${ts ? ` ${ts}` : ""}${m.model ? ` (${m.model})` : ""}`, "");
+      if (m.thinkingTrace)
+        lines.push("[Thinking]", m.thinkingTrace, "");
+      const txtText = m.query || m.message;
+      if (txtText)
+        lines.push(txtText, "");
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls)
+          lines.push(`  ${url}`);
+        lines.push("");
+      }
+      if (m.webSearchResults?.length) {
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (url)
+            lines.push(`  ${t ?? ""} - ${url}`);
+        }
+        lines.push("");
+      }
+      lines.push("-".repeat(40), "");
+    }
+    return lines.join(`
+`);
+  }
+  var HTML_HEAD = [
+    '<!DOCTYPE html><html><head><meta charset="utf-8">',
+    "<style>",
+    "body{font-family:system-ui,sans-serif;max-width:50rem;margin:2rem auto;padding:0 1rem;background:#0d0d0d;color:#e0e0e0}",
+    ".m{margin:1.5rem 0;padding:1rem;border-radius:.5rem;border:1px solid #222}",
+    ".h{background:#1a1a2e}.g{background:#111}",
+    ".s{font-weight:600;margin-bottom:.5rem;color:#aaa}.t{font-size:.8rem;color:#666}",
+    ".th{margin:.5rem 0;padding:.5rem;background:#1a1a1a;border-left:3px solid #444;font-size:.9rem;color:#999}",
+    "a{color:#6ea8fe}",
+    "</style></head><body>"
+  ].join(`
+`);
+  function toHtml(title, messages) {
+    const p = [HTML_HEAD, `<h1>${escapeHtml(title)}</h1>`];
+    for (const m of messages) {
+      const cls = m.sender.toLowerCase() === "human" ? "h" : "g";
+      const ts = formatTs(m.createTime);
+      p.push(`<div class="m ${cls}"><div class="s">${sender(m.sender)} <span class="t">${ts ? escapeHtml(ts) : ""}${m.model ? ` · ${escapeHtml(m.model)}` : ""}</span></div>`);
+      if (m.thinkingTrace)
+        p.push(`<details><summary>Thinking</summary><div class="th">${escapeHtml(m.thinkingTrace)}</div></details>`);
+      const text = m.query || m.message;
+      if (text)
+        p.push(`<div>${escapeHtml(text).replaceAll(`
+`, "<br>")}</div>`);
+      if (m.generatedImageUrls?.length) {
+        for (const url of m.generatedImageUrls) {
+          const safe = safeUrl(url);
+          if (safe)
+            p.push(`<img src="${escapeHtml(safe, true)}" style="max-width:100%;margin:.5rem 0">`);
+        }
+      }
+      if (m.webSearchResults?.length) {
+        p.push("<ul>");
+        for (const r of m.webSearchResults) {
+          const { title: t, url } = r;
+          if (!url)
+            continue;
+          const safe = safeUrl(url);
+          if (safe)
+            p.push(`<li><a href="${escapeHtml(safe, true)}" rel="noopener noreferrer">${escapeHtml(t ?? safe)}</a></li>`);
+          else
+            p.push(`<li>${escapeHtml(t ?? url)}</li>`);
+        }
+        p.push("</ul>");
+      }
+      p.push("</div>");
+    }
+    p.push("</body></html>");
+    return p.join(`
+`);
+  }
+  var FORMATS = [
+    { fmt: "json", label: "JSON" },
+    { fmt: "md", label: "Markdown" },
+    { fmt: "txt", label: "Plain Text" },
+    { fmt: "html", label: "HTML" }
+  ];
+  async function exportChat(conversationId, format) {
+    const { responses } = await ApiClients.chatApi.chatListResponses({ conversationId }) ?? {};
+    if (!responses?.length)
+      return;
+    const conversation = ConversationStore.useConversationStore.getState().byId[conversationId];
+    const title = conversation?.title ?? "Untitled Chat";
+    const messages = responses.map(buildExportMessage);
+    const filename = sanitizeFilename(title, "chat");
+    let content;
+    let mime;
+    switch (format) {
+      case "json":
+        content = JSON.stringify({ conversationId, title, exportedAt: new Date().toISOString(), messages }, null, 2);
+        mime = "application/json";
+        break;
+      case "md":
+        content = toMarkdown(title, messages);
+        mime = "text/markdown";
+        break;
+      case "txt":
+        content = toPlainText(title, messages);
+        mime = "text/plain";
+        break;
+      case "html":
+        content = toHtml(title, messages);
+        mime = "text/html";
+        break;
+    }
+    await FileUtils.downloadBlob(new Blob([content], { type: mime }), `${filename}.${format}`);
+  }
+  function ExportMenu({ conversationId }) {
+    const streaming = useIsStreaming(conversationId);
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
+      disabled: streaming
+    }, /* @__PURE__ */ React.createElement(DownloadIcon, {
+      size: 16,
+      className: "void-export-icon"
+    }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
+      key: fmt,
+      onSelect: () => exportChat(conversationId, fmt).catch((e) => logger19.error("Failed to export chat", e))
+    }, label))));
+  }
+  var exportChat_default = definePlugin({
+    name: "ExportChat",
+    icon: FileDownIcon,
+    description: "Export conversations in multiple formats from the right-click menu.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    contextMenuItems: {
+      conversation: {
+        label: "Export",
+        render: ErrorBoundary.wrap(ExportMenu)
+      }
+    }
+  });
+
   // src/plugins/chatStateFavicons/detect.ts
-  var EDITOR_SEL2 = '.tiptap.ProseMirror[contenteditable="true"]';
+  var EDITOR_SEL = '.tiptap.ProseMirror[contenteditable="true"]';
   var STOP_SELECTORS = [
     'button[aria-label="Stop model response"]',
     'button[aria-label*="Stop"]',
@@ -15450,7 +9977,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return /stop|停止/i.test(label) || /\bstop\b/i.test(text) || text.includes("停止");
   }
   function getActiveEditor() {
-    const list = Array.from(document.querySelectorAll(EDITOR_SEL2));
+    const list = Array.from(document.querySelectorAll(EDITOR_SEL));
     return list.find(isVisible) ?? list[0] ?? null;
   }
   function getComposerRoot() {
@@ -15544,9 +10071,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var HOLE_IDLE = "#050505";
   var MARK_FILL = "#FCFCFC";
   var GROK_MARK_PATH = "M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815";
-  var GROK_BG_PATH2 = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
-  var GROK_MARK_P12 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
-  var GROK_MARK_P22 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var GROK_BG_PATH = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P1 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P2 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
   var ORIGINAL_EMOJI = {
     rotate: "\uD83D\uDD04",
     done: "✔️",
@@ -15560,8 +10087,8 @@ button:has(.void-ud-trigger > .void-ud-label) {
     return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${emoji}</text></svg>`)}`;
   }
   function toSvgData(inner, viewBox = "0 0 64 64") {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="64" height="64">${inner}</svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg2)}`;
   }
   function grokMarkSvg() {
     return [
@@ -15573,9 +10100,9 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function officialGrokSvg(markColor, bgColor) {
     return [
-      `<path d="${GROK_BG_PATH2}" fill="${bgColor}"/>`,
-      `<path d="${GROK_MARK_P12}" fill="${markColor}"/>`,
-      `<path d="${GROK_MARK_P22}" fill="${markColor}"/>`
+      `<path d="${GROK_BG_PATH}" fill="${bgColor}"/>`,
+      `<path d="${GROK_MARK_P1}" fill="${markColor}"/>`,
+      `<path d="${GROK_MARK_P2}" fill="${markColor}"/>`
     ].join("");
   }
   function badgeGlyph(kind) {
@@ -15637,10 +10164,10 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
 
   // src/plugins/chatStateFavicons/index.ts
-  var logger28 = new Logger("ChatStateFavicons");
+  var logger20 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var settings21 = definePluginSettings({
+  var settings11 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
       description: "How the Grok mark is overlaid with chat state.",
@@ -15667,7 +10194,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var raf = 0;
   var started2 = false;
   function currentStyle() {
-    const value = settings21.store.style;
+    const value = settings11.store.style;
     return isIconStyle(value) ? value : "badge";
   }
   function captureOfficial() {
@@ -15734,7 +10261,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       const { byId } = ResponseStore.useResponseStore.getState();
       return liveResponse(page.streamedMessageId, byId) || liveResponse(page.lastMessageId, byId);
     } catch (e) {
-      logger28.debug("stream stores unavailable:", e);
+      logger20.debug("stream stores unavailable:", e);
       return false;
     }
   }
@@ -15749,14 +10276,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
       if (route.conversationId)
         return String(route.conversationId);
     } catch (e) {
-      logger28.debug("RoutingStore unavailable:", e);
+      logger20.debug("RoutingStore unavailable:", e);
     }
     try {
       const id = ChatPageStore.useChatPageStore.getState().conversationId;
       if (id)
         return id;
     } catch (e) {
-      logger28.debug("ChatPageStore unavailable:", e);
+      logger20.debug("ChatPageStore unavailable:", e);
     }
     return conversationToken();
   }
@@ -15803,7 +10330,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       const response = byId[id];
       return response?.state === "error" || response?.error != null;
     } catch (e) {
-      logger28.debug("ResponseStore unavailable:", e);
+      logger20.debug("ResponseStore unavailable:", e);
       return false;
     }
   }
@@ -15908,7 +10435,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function nodeInEditor(node) {
     const el = node instanceof Element ? node : node?.parentElement;
-    return !!el?.closest(EDITOR_SEL2);
+    return !!el?.closest(EDITOR_SEL);
   }
   function mutationsAreEditorOnly(list) {
     if (!list.length)
@@ -15960,12 +10487,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
       evaluateState();
     });
   }
-  function onStreamEnd4({ responseId }) {
+  function onStreamEnd3({ responseId }) {
     try {
       const response = ResponseStore.useResponseStore.getState().byId[responseId];
       lastWasError = response?.state === "error" || response?.error != null;
     } catch (e) {
-      logger28.debug("ResponseStore unavailable:", e);
+      logger20.debug("ResponseStore unavailable:", e);
     }
   }
   function startFaviconGuard() {
@@ -16040,11 +10567,11 @@ button:has(.void-ud-trigger > .void-ud-label) {
         });
       }
     } catch (e) {
-      logger28.debug("RoutingStore subscribe failed:", e);
+      logger20.debug("RoutingStore subscribe failed:", e);
       try {
         unsubRoute2 = RoutingStore.useRoutingStore.subscribe(() => scheduleEvaluate());
       } catch (err) {
-        logger28.debug("RoutingStore full subscribe failed:", err);
+        logger20.debug("RoutingStore full subscribe failed:", err);
       }
     }
     try {
@@ -16057,7 +10584,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
         });
       }
     } catch (e) {
-      logger28.debug("ChatPageStore subscribe failed:", e);
+      logger20.debug("ChatPageStore subscribe failed:", e);
     }
   }
   function restoreOfficial() {
@@ -16080,7 +10607,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings21,
+    settings: settings11,
     startAt: "TurbopackReady" /* TurbopackReady */,
     cleanupSelectors: [`#${ICON_ID}`],
     start() {
@@ -16128,61 +10655,670 @@ button:has(.void-ud-trigger > .void-ud-label) {
     },
     onSettingsChange: rebuildIcons,
     events: {
-      streamEnd: onStreamEnd4
+      streamEnd: onStreamEnd3
     }
   });
 
-  // src/plugins/noDictation/index.ts
-  var STYLE_NAME7 = "noDictation";
-  var REFINEMENT_MARK = "void-no-dictation-refinement";
-  var BUTTON_CSS = `
-button[aria-label="Dictation"]:not([role="dialog"] *),
-button[aria-label^="Dictation ("]:not([role="dialog"] *),
-div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
-div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
-    display: none !important;
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterImagine/styles.css
+  registerStyle("betterImagine", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-imagine-chip {
+    background: hsl(var(--surface-l1));
 }
-`;
-  var REFINEMENT_CSS = `.${REFINEMENT_MARK}{display:none!important}`;
-  var settings22 = definePluginSettings({
-    hideDictationRefinement: {
+
+.void-imagine-chip:hover {
+    background: hsl(var(--surface-l2));
+}
+
+.void-imagine-search {
+    width: 10rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+}
+
+.void-imagine-date-select,
+.void-imagine-sort-select {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-secondary));
+    border: none;
+}
+
+.void-imagine-sort-active {
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+}
+`);
+
+  // src/plugins/betterImagine/index.tsx
+  var logger21 = new Logger("BetterImagine");
+  var cl19 = classNameFactory("void-imagine-");
+  var settings12 = definePluginSettings({
+    hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
-      description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
+      description: "Hide the community image grid and templates on the Imagine home page.",
+      default: true
+    },
+    noAutoplay: {
+      type: 3 /* BOOLEAN */,
+      description: "Stop video thumbnails from autoplaying.",
+      default: true
+    },
+    playOnHover: {
+      type: 3 /* BOOLEAN */,
+      description: "Play video thumbnails when hovered.",
+      default: true
+    },
+    hideModerated: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide moderated images and videos that cannot be interacted with.",
+      default: true
+    },
+    pauseWhenHidden: {
+      type: 3 /* BOOLEAN */,
+      description: "Pause any playing video thumbnails when the tab loses focus.",
+      default: true
+    },
+    persistFilters: {
+      type: 3 /* BOOLEAN */,
+      description: "Remember Favorites filter + sort across reloads.",
+      default: true
+    },
+    smartFilenames: {
+      type: 3 /* BOOLEAN */,
+      description: "Rename downloads to YYYY-MM-DD_prompt-slug_id.ext.",
+      default: true
+    },
+    bypassPaywall: {
+      type: 3 /* BOOLEAN */,
+      description: "Skip the upsell dialog when picking 720p / 10s / video extend. The setting is applied locally; the server still enforces your subscription on generation.",
+      default: false
+    },
+    ctrlClickSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Ctrl/Cmd-click an image to add it to the multi-select.",
       default: true
     }
   });
-  function apply3() {
-    const rules = [BUTTON_CSS];
-    if (settings22.store.hideDictationRefinement)
-      rules.push(REFINEMENT_CSS);
-    registerStyle(STYLE_NAME7, rules.join(`
-`));
+  function buildFilename(post, isVideo) {
+    if (!settings12.store.smartFilenames || !post)
+      return null;
+    const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
+    const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
+    const date = post.createTime ? new Date(post.createTime).toISOString().slice(0, 10) : "";
+    const id = post.id?.slice(0, 8) ?? "";
+    const ext = isVideo ? "mp4" : "png";
+    const parts = [date, slug, id].filter(Boolean);
+    if (!parts.length)
+      return null;
+    return `${parts.join("_")}.${ext}`;
   }
-  var noDictation_default = definePlugin({
-    name: "NoDictation",
-    icon: MicOffIcon,
-    description: "Hide the Dictation (voice input) button from the chat input bar, and optionally Dictation Refinement in Settings.",
-    authors: [Devs.p],
-    tags: ["chat", "ui"],
-    enabledByDefault: true,
-    settings: settings22,
-    patches: [
-      {
-        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
-        replacement: {
-          match: /DISABLE_VOICE_MODE&&\(0,(\i)\.jsxs\)\(\i\.Fragment,\{/,
-          replace: `DISABLE_VOICE_MODE&&(0,$1.jsxs)("div",{className:"${REFINEMENT_MARK}",style:{display:"contents"},`
+  var FILTER_MAP = {
+    image: "MEDIA_POST_TYPE_IMAGE",
+    video: "MEDIA_POST_TYPE_VIDEO"
+  };
+  var DATE_LABELS = {
+    all: "Any time",
+    today: "Today",
+    week: "This week",
+    month: "This month"
+  };
+  var SORT_LABELS = {
+    newest: "Newest first",
+    oldest: "Oldest first",
+    "prompt-az": "Prompt A → Z",
+    "prompt-za": "Prompt Z → A",
+    random: "Shuffle"
+  };
+  var SORT_KEYS = Object.keys(SORT_LABELS);
+  var DAY_MS2 = 86400000;
+  var DATE_CUTOFFS = {
+    all: 0,
+    today: DAY_MS2,
+    week: 7 * DAY_MS2,
+    month: 30 * DAY_MS2
+  };
+  var STORAGE_KEY2 = "void-imagine-filters";
+  var DEFAULT_FILTERS = { filter: "all", search: "", date: "all", sort: "newest" };
+  function loadFilters() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY2);
+      if (!raw)
+        return DEFAULT_FILTERS;
+      const parsed = JSON.parse(raw);
+      return {
+        filter: ["all", "image", "video"].includes(parsed.filter) ? parsed.filter : "all",
+        search: typeof parsed.search === "string" ? parsed.search : "",
+        date: Object.keys(DATE_LABELS).includes(parsed.date) ? parsed.date : "all",
+        sort: SORT_KEYS.includes(parsed.sort) ? parsed.sort : "newest"
+      };
+    } catch {
+      return DEFAULT_FILTERS;
+    }
+  }
+  var initial = loadFilters();
+  var currentFilter = initial.filter;
+  var currentSearch = initial.search;
+  var currentDate = initial.date;
+  var currentSort = initial.sort;
+  var randomSeed = Date.now();
+  var filterStore = createExternalStore();
+  function persist() {
+    if (!settings12.store.persistFilters)
+      return;
+    try {
+      sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
+    } catch {}
+  }
+  function setFilter(f) {
+    currentFilter = f;
+    filterStore.notify();
+    persist();
+  }
+  var setSearch = debounce((s) => {
+    currentSearch = s;
+    filterStore.notify();
+    persist();
+  }, 200);
+  function setDate(d) {
+    currentDate = d;
+    filterStore.notify();
+    persist();
+  }
+  function setSort(s) {
+    if (s === "random" && currentSort === "random")
+      randomSeed = Date.now();
+    currentSort = s;
+    filterStore.notify();
+    persist();
+  }
+  function resetFilters() {
+    currentFilter = "all";
+    currentSearch = "";
+    currentDate = "all";
+    currentSort = "newest";
+    filterStore.notify();
+    persist();
+  }
+  function hasActiveFilters() {
+    return currentFilter !== "all" || currentSearch.length > 0 || currentDate !== "all";
+  }
+  function isModerated(p) {
+    return !!(p.moderated || p.isModerated) && !p.mediaUrl;
+  }
+  var haystackCache = new WeakMap;
+  var tsCache = new WeakMap;
+  var promptCollator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+  function getHaystack(p) {
+    let h = haystackCache.get(p);
+    if (h === undefined) {
+      h = `${p.prompt ?? ""}
+${p.originalPrompt ?? ""}`.toLowerCase();
+      haystackCache.set(p, h);
+    }
+    return h;
+  }
+  function getTs(p) {
+    let t = tsCache.get(p);
+    if (t === undefined) {
+      t = new Date(p.createTime).getTime() || 0;
+      tsCache.set(p, t);
+    }
+    return t;
+  }
+  function matchesFilters(p, target, q, cutoff, hideModerated) {
+    if (!p)
+      return false;
+    if (hideModerated && isModerated(p))
+      return false;
+    if (target && p.mediaType !== target)
+      return false;
+    if (cutoff && getTs(p) < cutoff)
+      return false;
+    if (q && !getHaystack(p).includes(q))
+      return false;
+    return true;
+  }
+  var cacheKey = null;
+  var cacheList = null;
+  var cacheResult = [];
+  function filterItems(items) {
+    const { hideModerated } = settings12.store;
+    const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
+    if (cacheList === items && cacheKey === key)
+      return cacheResult;
+    const needsFilter = currentFilter !== "all" || currentSearch || currentDate !== "all" || hideModerated;
+    let out = items;
+    if (needsFilter) {
+      const target = currentFilter !== "all" ? FILTER_MAP[currentFilter] : null;
+      const q = currentSearch.toLowerCase();
+      const cutoff = DATE_CUTOFFS[currentDate] ? Date.now() - DATE_CUTOFFS[currentDate] : 0;
+      out = items.filter((p) => matchesFilters(p, target, q, cutoff, hideModerated));
+    }
+    cacheList = items;
+    cacheKey = key;
+    cacheResult = currentSort === "newest" ? out : sortItems(out);
+    return cacheResult;
+  }
+  function mulberry32(seed) {
+    let a = seed;
+    return () => {
+      a |= 0;
+      a = a + 1831565813 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function sortItems(items) {
+    if (items.length < 2)
+      return items;
+    const arr = [...items];
+    switch (currentSort) {
+      case "oldest":
+        return arr.toSorted((a, b) => getTs(a) - getTs(b));
+      case "prompt-az":
+        return arr.toSorted((a, b) => promptCollator.compare(a.prompt ?? "", b.prompt ?? ""));
+      case "prompt-za":
+        return arr.toSorted((a, b) => promptCollator.compare(b.prompt ?? "", a.prompt ?? ""));
+      case "random": {
+        const rand = mulberry32(randomSeed);
+        for (let i = arr.length - 1;i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+      default:
+        return arr;
+    }
+  }
+  var pending = new WeakMap;
+  function pauseVideo(video) {
+    const promise = pending.get(video);
+    pending.delete(video);
+    if (promise) {
+      promise.then(() => {
+        if (pending.has(video))
+          return;
+        video.pause();
+        video.currentTime = 0;
+      }).catch((e) => logger21.warn("Failed to pause video:", e));
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }
+  var onMouseEnter = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pending.set(video, video.play().catch((e2) => logger21.error("Failed to play video", e2)));
+  };
+  var onMouseLeave = (e) => {
+    const video = e.currentTarget.querySelector("video");
+    if (video)
+      pauseVideo(video);
+  };
+  function useFilteredFavorites() {
+    const list = MediaStore.useMediaStore((s) => s.favoritesList);
+    useExternalStore(filterStore);
+    return filterItems(list);
+  }
+  function mediaState() {
+    return MediaStore.useMediaStore.getState();
+  }
+  function selectVisible() {
+    const state2 = mediaState();
+    const list = state2.favoritesList ?? [];
+    const visible = filterItems(list);
+    if (!visible.length)
+      return;
+    state2.setMultiSelectItems(visible);
+    Toaster.toast.success(`Selected ${pluralize(visible.length, "item")}.`);
+  }
+  function deselectAll() {
+    const state2 = mediaState();
+    state2.clearMultiSelect?.();
+  }
+  function selectedPosts() {
+    const state2 = mediaState();
+    const ids = Object.keys(state2.multiSelectIds ?? {});
+    return ids.map((id) => state2.byId[id]).filter((p) => !!p);
+  }
+  async function copyLines(lines, label) {
+    if (!lines.length) {
+      Toaster.toast.info(`Selected items have no ${label}s.`);
+      return;
+    }
+    try {
+      await copyToClipboard(lines.join(`
+`));
+      Toaster.toast.success(`Copied ${pluralize(lines.length, label)} to clipboard.`);
+    } catch (e) {
+      logger21.error(`Failed to copy ${label}s`, e);
+      Toaster.toast.error(`Failed to copy ${label}s.`);
+    }
+  }
+  async function copySelectedPrompts() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    await copyLines(posts.map((p) => (p.prompt ?? p.originalPrompt ?? "").trim()).filter(Boolean), "prompt");
+  }
+  async function copySelectedUrls() {
+    const posts = selectedPosts();
+    if (!posts.length) {
+      Toaster.toast.info("No items selected.");
+      return;
+    }
+    const { videoByMediaId } = mediaState();
+    const urls = posts.map((p) => videoByMediaId[p.id]?.find((v) => v.hdMediaUrl)?.hdMediaUrl ?? p.mediaUrl).filter((u) => !!u);
+    await copyLines(urls, "URL");
+  }
+  async function bulkUpscaleSelected() {
+    const state2 = mediaState();
+    const ids = Object.keys(state2.multiSelectIds ?? {});
+    let upscaled = 0;
+    let alreadyHd = 0;
+    let inProgress = 0;
+    for (const id of ids) {
+      const videos = state2.videoByMediaId[id];
+      if (!videos?.length)
+        continue;
+      for (const video of videos) {
+        if (video.hdMediaUrl) {
+          alreadyHd++;
+          continue;
+        }
+        if (video.upscalingInProgress) {
+          inProgress++;
+          continue;
+        }
+        try {
+          await state2.upscaleVideo(id, video.id);
+          upscaled++;
+        } catch (e) {
+          logger21.error("Failed to upscale video:", id, video.id, e);
         }
       }
-    ],
-    start: apply3,
-    onSettingsChange: apply3,
-    stop() {
-      unregisterStyle(STYLE_NAME7);
     }
+    if (upscaled)
+      Toaster.toast.success(`Upscaling ${pluralize(upscaled, "video")}.`);
+    else if (alreadyHd)
+      Toaster.toast.info(`${pluralize(alreadyHd, "video")} already in HD.`);
+    else if (inProgress)
+      Toaster.toast.info(`${pluralize(inProgress, "video")} already upscaling.`);
+    else
+      Toaster.toast.info("No videos to upscale.");
+  }
+  function FilterButtons() {
+    useExternalStore(filterStore);
+    const [searchInput, setSearchInput] = useState(currentSearch);
+    const showClear = hasActiveFilters() || currentSort !== "newest" || searchInput.length > 0;
+    const sortActive = currentSort !== "newest";
+    const lastSync = useRef(currentSearch);
+    if (lastSync.current !== currentSearch) {
+      lastSync.current = currentSearch;
+      setSearchInput(currentSearch);
+    }
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
+      value: currentDate,
+      onValueChange: (v) => setDate(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: cl19("date-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: d,
+      value: d
+    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
+      value: currentSort,
+      onValueChange: (v) => setSort(v)
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
+      className: sortActive ? cl19("sort-select", "sort-active") : cl19("sort-select")
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
+      key: s,
+      value: s
+    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "Search...",
+      value: searchInput,
+      onChange: (e) => {
+        setSearchInput(e.target.value);
+        setSearch(e.target.value);
+      },
+      className: cl19("search")
+    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
+      key: f,
+      variant: currentFilter === f ? "primary" : "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: currentFilter !== f ? cl19("chip") : undefined,
+      onClick: () => setFilter(currentFilter === f ? "all" : f)
+    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "pill",
+      className: cl19("chip"),
+      onClick: resetFilters
+    }, "Clear"));
+  }
+  function UpscaleItem() {
+    const [open2, setOpen] = useState(false);
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: () => setOpen(true)
+    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
+      className: "size-4 me-2"
+    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: open2,
+      onOpenChange: setOpen,
+      title: "Upscale selected videos",
+      description: "Start HD upscaling for the selected videos. Already-HD and in-progress videos will be skipped.",
+      confirmText: "Upscale",
+      onConfirm: bulkUpscaleSelected
+    }));
+  }
+  function CopyActions() {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: copySelectedPrompts
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: copySelectedUrls
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      className: "size-4 me-2"
+    }), "Copy URLs"));
+  }
+  function isImaginePage() {
+    const page = RoutingStore.useRoutingStore.getState().route?.page;
+    return page === "imagine" || page === "imagine-favorites";
+  }
+  function isFavoritesPage() {
+    return RoutingStore.useRoutingStore.getState().route?.page === "imagine-favorites";
+  }
+  function isTypingTarget(t) {
+    if (!(t instanceof HTMLElement))
+      return false;
+    if (t.isContentEditable)
+      return true;
+    const tag = t.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+  }
+  function onKeyDown(e) {
+    if (!isImaginePage())
+      return;
+    if (e.ctrlKey || e.metaKey || e.altKey)
+      return;
+    if (isTypingTarget(e.target))
+      return;
+    if (e.key === "i" || e.key === "I") {
+      setFilter(currentFilter === "image" ? "all" : "image");
+      e.preventDefault();
+    } else if (e.key === "v" || e.key === "V") {
+      setFilter(currentFilter === "video" ? "all" : "video");
+      e.preventDefault();
+    } else if (e.key === "r" || e.key === "R") {
+      resetFilters();
+      e.preventDefault();
+    } else if (e.key === "A") {
+      if (isFavoritesPage()) {
+        deselectAll();
+        e.preventDefault();
+      }
+    } else if (e.key === "a") {
+      if (isFavoritesPage()) {
+        selectVisible();
+        e.preventDefault();
+      }
+    } else if (e.key === "c" || e.key === "C") {
+      if (isFavoritesPage() && Object.keys(mediaState().multiSelectIds ?? {}).length) {
+        copySelectedPrompts();
+        e.preventDefault();
+      }
+    }
+  }
+  function onVisibilityChange() {
+    if (!settings12.store.pauseWhenHidden)
+      return;
+    if (document.visibilityState !== "hidden")
+      return;
+    for (const video of document.querySelectorAll("video")) {
+      if (!video.paused)
+        video.pause();
+    }
+  }
+  var abortCtrl = null;
+  var betterImagine_default = definePlugin({
+    name: "BetterImagine",
+    icon: ImagesIcon,
+    description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    settings: settings12,
+    _hideDefault: () => settings12.store.hideDefaultPreviews,
+    _NullGrid: () => null,
+    _autoPlay: () => !settings12.store.noAutoplay,
+    _bypassPaywall: () => settings12.store.bypassPaywall,
+    _ctrlClickSelect: () => settings12.store.ctrlClickSelect,
+    _hoverProps: () => settings12.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _useFilteredFavorites: useFilteredFavorites,
+    _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
+    _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
+    _renderCopyActions: ErrorBoundary.wrap(CopyActions, null),
+    _buildFilename: buildFilename,
+    start() {
+      if (abortCtrl)
+        return;
+      abortCtrl = new AbortController;
+      const { signal } = abortCtrl;
+      document.addEventListener("keydown", onKeyDown, { capture: true, signal });
+      document.addEventListener("visibilitychange", onVisibilityChange, { signal });
+    },
+    stop() {
+      abortCtrl?.abort();
+      abortCtrl = null;
+    },
+    patches: [
+      {
+        find: "image_feed_opened",
+        group: true,
+        replacement: [
+          {
+            match: /\(0,(\i\.jsx)\)\((\i),\{containerRef:(\i),variant:(\i),width:/,
+            replace: '(0,$1)($self._hideDefault()&&"favorites"!==$4?$self._NullGrid:$2,{containerRef:$3,variant:$4,width:'
+          },
+          {
+            match: /=\(0,\i\.useMediaStore\)\(\i=>\i\.favoritesList\)/,
+            replace: "=$self._useFilteredFavorites()"
+          }
+        ]
+      },
+      {
+        find: "image_feed_image_selected",
+        group: true,
+        replacement: [
+          {
+            match: /autoPlay:!0/g,
+            replace: "autoPlay:$self._autoPlay()"
+          },
+          {
+            match: /\.updateShiftPreview\(null\)\)\},onClick:/,
+            replace: ".updateShiftPreview(null))},...$self._hoverProps(),onClick:"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=let \i=\{imagine:"home-grid")/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          },
+          {
+            match: /if\(([^)]{1,40})\)return void (\i)\((\i)\);(?=if\(!\i\)return;\i\.useMediaStore\.getState\(\)\.clearMultiSelect)/,
+            replace: "if($1||($self._ctrlClickSelect()&&($3.ctrlKey||$3.metaKey)))return void $2($3);"
+          }
+        ]
+      },
+      {
+        find: 'imagine-folder.all","All"',
+        replacement: {
+          match: /"imagine-folder\.all","All"\)\}\)/,
+          replace: "$&,$self._renderFilterButtons({})"
+        }
+      },
+      {
+        find: "imagine-templates.section-title",
+        all: true,
+        noWarn: true,
+        replacement: {
+          match: /\?(\i)\.play\(\)\.catch\(\i\):\1\.pause\(\)/,
+          replace: "&&$self._autoPlay()?$1.play().catch(()=>{}):$1.pause()"
+        }
+      },
+      {
+        find: '"imagine-set-resolution"',
+        all: true,
+        replacement: {
+          match: /return void \i\.useUpsellStore\.getState\(\)\.openUpsell\(\{entrypointKey:"imagine-[\w-]+"\}\)/g,
+          replace: "if(!$self._bypassPaywall())$&"
+        }
+      },
+      {
+        find: ["imagine-multiselect.add-to-tag", 'DropdownMenuContent,{align:"end",sideOffset:8,children:[(0,'],
+        group: true,
+        replacement: [
+          {
+            match: /(?<=\.DropdownMenuContent,\{align:"end",sideOffset:8,children:\[)/,
+            replace: "$self._renderUpscaleItem(),$self._renderCopyActions(),"
+          },
+          {
+            match: /`imagine-\$\{(\i)\.slice\(0,8\)\}\.\$\{(\i)\?"mp4":"png"\}`/,
+            replace: '($self._buildFilename(e.byId[$1],$2)||`imagine-${$1.slice(0,8)}.${$2?"mp4":"png"}`)'
+          }
+        ]
+      }
+    ]
   });
 
-  // voidpp-css:/tmp/VoidPP/src/plugins/betterFiles/styles.css
+  // src/plugins/consoleJanitor/index.ts
+  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
+  var consoleJanitor_default = definePlugin({
+    name: "ConsoleJanitor",
+    icon: TerminalIcon,
+    description: "Silences noisy warnings and info logs in the browser console.",
+    authors: [Devs.Prism],
+    patches: [
+      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
+      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
+      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
+      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
+      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
+    ]
+  });
+
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -16205,9 +11341,9 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 `);
 
   // src/plugins/betterFiles/index.tsx
-  var logger29 = new Logger("BetterFiles");
+  var logger22 = new Logger("BetterFiles");
   var LibraryAssets = findByPropsLazy("deleteLibraryAsset", "useLibraryAssets");
-  var selection2 = createSelectionStore();
+  var selection = createSelectionStore();
   var assetsById = new Map;
   function fileId(item) {
     if (item?.kind !== "file")
@@ -16220,7 +11356,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       return null;
     assetsById.set(id, item.asset);
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
-      selection: selection2,
+      selection,
       id
     });
   }
@@ -16231,7 +11367,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       try {
         await deleteLibraryAsset(asset);
       } catch (e) {
-        logger29.error("Failed to delete asset", id, e);
+        logger22.error("Failed to delete asset", id, e);
       }
       assetsById.delete(id);
     }
@@ -16242,12 +11378,12 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       if (id && item.asset && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         e.stopPropagation();
-        if (selection2.has(id)) {
-          selection2.toggle(id);
+        if (selection.has(id)) {
+          selection.toggle(id);
           assetsById.delete(id);
         } else {
           assetsById.set(id, item.asset);
-          selection2.toggle(id);
+          selection.toggle(id);
         }
         return;
       }
@@ -16262,16 +11398,16 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     tags: ["ui"],
     managedStyle: "betterFiles",
     start() {
-      selection2.clear();
+      selection.clear();
       assetsById.clear();
     },
     stop() {
-      selection2.clear();
+      selection.clear();
       assetsById.clear();
     },
     _renderFileCheckbox: ErrorBoundary.wrap(FileCheckbox, null),
     _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
-      selection: selection2,
+      selection,
       noun: "file",
       title: "Delete files",
       onDelete: deleteAssets
@@ -16306,9 +11442,60 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/cloneChats/styles.css
+  registerStyle("cloneChats", `.void-clone-icon {
+    margin-inline-end: 0.5rem;
+}
+`);
+
+  // src/plugins/cloneChats/index.tsx
+  var logger23 = new Logger("CloneChats");
+  async function cloneChat(conversationId) {
+    const lastResponseId = ResponseStore.useResponseStore.getState().nodesByConversationId[conversationId]?.at(-1)?.responseId;
+    if (!lastResponseId)
+      throw new Error("No responses found in conversation.");
+    const { shareLinkId } = await ApiClients.chatApi.chatShareConversation({
+      conversationId,
+      body: { responseId: lastResponseId, allowIndexing: false }
+    });
+    if (!shareLinkId)
+      throw new Error("Failed to create share link.");
+    try {
+      const { conversation } = await ApiClients.chatApi.chatCloneConversation({ shareLinkId, body: {} });
+      if (conversation?.conversationId) {
+        RoutingStore.useRoutingStore.getState().push({ page: "chat", conversationId: conversation.conversationId });
+      }
+    } finally {
+      ApiClients.chatApi.chatDeleteShareLink({ shareLinkId }).catch(() => {});
+    }
+  }
+  function CloneItem({ conversationId }) {
+    const streaming = useIsStreaming(conversationId);
+    return /* @__PURE__ */ React.createElement(MenuItem, {
+      onSelect: () => cloneChat(conversationId).catch((e) => logger23.error("Failed to clone chat:", e)),
+      disabled: streaming
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
+      size: 16,
+      className: "void-clone-icon"
+    }), "Clone");
+  }
+  var cloneChats_default = definePlugin({
+    name: "CloneChats",
+    icon: CopyIcon,
+    description: "Clone conversations from the context-menu.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    contextMenuItems: {
+      conversation: {
+        label: "Clone",
+        render: ErrorBoundary.wrap(CloneItem)
+      }
+    }
+  });
+
   // src/plugins/noShareLink/index.ts
-  var STYLE_NAME8 = "noShareLink";
-  var settings23 = definePluginSettings({
+  var STYLE_NAME6 = "noShareLink";
+  var settings13 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
       description: "Inside a project: hide the top-right Share Project button.",
@@ -16320,15 +11507,15 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       default: true
     }
   });
-  function apply4() {
+  function apply2() {
     const rules = [];
-    if (settings23.store.hideShareProject) {
+    if (settings13.store.hideShareProject) {
       rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
-    if (settings23.store.hideCreateShareLink) {
+    if (settings13.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
-    registerStyle(STYLE_NAME8, rules.join(`
+    registerStyle(STYLE_NAME6, rules.join(`
 `));
   }
   var noShareLink_default = definePlugin({
@@ -16338,15 +11525,15 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings23,
-    start: apply4,
-    onSettingsChange: apply4,
+    settings: settings13,
+    start: apply2,
+    onSettingsChange: apply2,
     stop() {
-      unregisterStyle(STYLE_NAME8);
+      unregisterStyle(STYLE_NAME6);
     }
   });
 
-  // voidpp-css:/tmp/VoidPP/src/plugins/chatListStatus/styles.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/chatListStatus/styles.css
   registerStyle("chatListStatus", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -16420,7 +11607,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 `);
 
   // src/plugins/chatListStatus/index.ts
-  var logger30 = new Logger("ChatListStatus");
+  var logger24 = new Logger("ChatListStatus");
   var MARK = "void-cls";
   var LIVE = new Set(["streaming", "optimistic", "reconnecting", "in_progress", "in-progress"]);
   var DEAD = new Set(["closed", "error", "done", "completed", "complete", "cancelled", "canceled", "aborted", "idle", "success", "worked", "failed"]);
@@ -16501,12 +11688,12 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       return true;
     if (isLiveBag(r.steps) || isLiveBag(r.toolResponses) || isLiveBag(r.fastToolResponse) || isLiveBag(r.metadata))
       return true;
-    const state = r.state ?? "";
-    if (!state)
+    const state2 = r.state ?? "";
+    if (!state2)
       return false;
-    if (LIVE.has(state))
+    if (LIVE.has(state2))
       return true;
-    return !DEAD.has(state.toLowerCase());
+    return !DEAD.has(state2.toLowerCase());
   }
   function isErrorResponse2(r) {
     return !!r && (r.state === "error" || r.error != null);
@@ -16546,14 +11733,14 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       addId(ids, page.conversationId);
       addId(ids, page.optimisticConversationId);
     } catch (e) {
-      logger30.debug("page ids unavailable:", e);
+      logger24.debug("page ids unavailable:", e);
     }
     try {
       const { route } = RoutingStore.useRoutingStore.getState();
       addId(ids, route.conversationId);
       addId(ids, route.chat);
     } catch (e) {
-      logger30.debug("route chat ids unavailable:", e);
+      logger24.debug("route chat ids unavailable:", e);
     }
     try {
       const url = new URL(location.href);
@@ -16561,7 +11748,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       addId(ids, url.searchParams.get("conversationId"));
       addId(ids, url.pathname.match(PATH_CHAT)?.[1]);
     } catch (e) {
-      logger30.debug("url chat ids unavailable:", e);
+      logger24.debug("url chat ids unavailable:", e);
     }
     return ids;
   }
@@ -16570,12 +11757,12 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     try {
       addId(ids, RoutingStore.useRoutingStore.getState().route.agentId);
     } catch (e) {
-      logger30.debug("route agent id unavailable:", e);
+      logger24.debug("route agent id unavailable:", e);
     }
     try {
       addId(ids, new URL(location.href).pathname.match(PATH_BOT)?.[1]);
     } catch (e) {
-      logger30.debug("url agent id unavailable:", e);
+      logger24.debug("url agent id unavailable:", e);
     }
     return ids;
   }
@@ -16591,14 +11778,14 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     if (conversation.state === "open" || isLiveBag(conversation.taskResult))
       ids.add(conversation.conversationId);
   }
-  function looksExtraStore(name, state) {
+  function looksExtraStore(name, state2) {
     if (EXTRA_HINT.test(name))
       return true;
-    const keys = Object.keys(state);
+    const keys = Object.keys(state2);
     if (keys.some((key) => EXTRA_HINT.test(key)))
       return true;
     let n = 0;
-    for (const child of Object.values(state)) {
+    for (const child of Object.values(state2)) {
       if (++n > 8)
         break;
       if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).slice(0, 16).some((key) => EXTRA_HINT.test(key)))
@@ -16616,20 +11803,20 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       const val = mod[key];
       if (!isZustandStore(val) || extraSeen.has(val))
         continue;
-      let state;
+      let state2;
       try {
-        state = val.getState();
+        state2 = val.getState();
       } catch {
         continue;
       }
-      if (!state || typeof state !== "object")
+      if (!state2 || typeof state2 !== "object")
         continue;
-      if (!looksExtraStore(key, state))
+      if (!looksExtraStore(key, state2))
         continue;
       extraSeen.add(val);
       extraStores.push(val);
       extraUnsubs.push(val.subscribe(() => schedule()));
-      logger30.info("extra store", key);
+      logger24.info("extra store", key);
     }
   }
   function attachExtraStores() {
@@ -16661,17 +11848,17 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     });
   }
   function extraLiveIds(ids) {
-    for (const store of extraStores) {
-      let state;
+    for (const store3 of extraStores) {
+      let state2;
       try {
-        state = store.getState();
+        state2 = store3.getState();
       } catch {
         continue;
       }
-      if (!isLiveBag(state))
+      if (!isLiveBag(state2))
         continue;
       const found = new Set;
-      collectConvIds(state, found);
+      collectConvIds(state2, found);
       if (found.size) {
         for (const id of found)
           ids.add(id);
@@ -16688,8 +11875,8 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
         if (turn && isConvId(id))
           ids.add(id);
       }
-      for (const [id, pending] of Object.entries(s.pendingSendsByAgentId ?? {})) {
-        if (!isConvId(id) || !Array.isArray(pending) || !pending.some((send) => send && !send.failed))
+      for (const [id, pending2] of Object.entries(s.pendingSendsByAgentId ?? {})) {
+        if (!isConvId(id) || !Array.isArray(pending2) || !pending2.some((send) => send && !send.failed))
           continue;
         ids.add(id);
       }
@@ -16698,7 +11885,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
           ids.add(agent.agentId);
       }
     } catch (e) {
-      logger30.debug("bots store unavailable:", e);
+      logger24.debug("bots store unavailable:", e);
     }
   }
   function liveIds() {
@@ -16722,7 +11909,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
           ids.add(id);
       }
     } catch (e) {
-      logger30.debug("stream stores unavailable:", e);
+      logger24.debug("stream stores unavailable:", e);
     }
     try {
       const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
@@ -16733,7 +11920,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       for (const conversation of Object.values(byIdWithWorkspaces ?? {}))
         considerConversation(ids, conversation);
     } catch (e) {
-      logger30.debug("conversation store unavailable:", e);
+      logger24.debug("conversation store unavailable:", e);
     }
     extraLiveIds(ids);
     botLiveIds(ids);
@@ -16756,14 +11943,14 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
         return isErrorResponse2(byId[page.lastMessageId]);
       }
     } catch (e) {
-      logger30.debug("error lookup failed:", e);
+      logger24.debug("error lookup failed:", e);
     }
     try {
-      const pending = BotsStore2.useBotsStore.getState().pendingSendsByAgentId?.[id];
-      if (Array.isArray(pending) && pending.some((send) => send?.failed))
+      const pending2 = BotsStore2.useBotsStore.getState().pendingSendsByAgentId?.[id];
+      if (Array.isArray(pending2) && pending2.some((send) => send?.failed))
         return true;
     } catch (e) {
-      logger30.debug("bot error lookup failed:", e);
+      logger24.debug("bot error lookup failed:", e);
     }
     return false;
   }
@@ -16772,9 +11959,9 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     const opened = new Set(currentIds());
     for (const id of live)
       marks.set(id, "streaming");
-    for (const [id, kind] of marks) {
-      let next = kind;
-      if (kind === "streaming" && !live.has(id)) {
+    for (const [id, kind2] of marks) {
+      let next = kind2;
+      if (kind2 === "streaming" && !live.has(id)) {
         next = errorOf(id) ? "error" : "done";
         marks.set(id, next);
       }
@@ -16791,11 +11978,11 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       }
       return currentIds()[0] ?? "";
     } catch (e) {
-      logger30.debug("conv lookup failed:", e);
+      logger24.debug("conv lookup failed:", e);
       return "";
     }
   }
-  function onStreamEnd5({ responseId }) {
+  function onStreamEnd4({ responseId }) {
     const cid = convOfResponse(responseId);
     if (!cid)
       return;
@@ -16812,7 +11999,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       const response = ResponseStore.useResponseStore.getState().byId[responseId];
       marks.set(cid, isErrorResponse2(response) ? "error" : "done");
     } catch (e) {
-      logger30.debug("streamEnd failed:", e);
+      logger24.debug("streamEnd failed:", e);
       marks.set(cid, "done");
     }
     schedule();
@@ -16856,19 +12043,19 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     return href.includes("chat=") || href.includes("/project/");
   }
   function spinSvg() {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", "currentColor");
-    svg.setAttribute("stroke-width", "2.5");
-    svg.setAttribute("stroke-linecap", "round");
-    svg.setAttribute("aria-hidden", "true");
+    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg2.setAttribute("viewBox", "0 0 24 24");
+    svg2.setAttribute("fill", "none");
+    svg2.setAttribute("stroke", "currentColor");
+    svg2.setAttribute("stroke-width", "2.5");
+    svg2.setAttribute("stroke-linecap", "round");
+    svg2.setAttribute("aria-hidden", "true");
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", SPIN_PATH);
-    svg.append(path);
-    return svg;
+    svg2.append(path);
+    return svg2;
   }
-  function ensureMark(btn, kind) {
+  function ensureMark(btn, kind2) {
     btn.toggleAttribute("data-void-cls-nest", isNestedHost(btn));
     let mark = btn.querySelector(`:scope > .${MARK}`);
     if (!mark) {
@@ -16877,11 +12064,11 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       mark.setAttribute("aria-hidden", "true");
       btn.prepend(mark);
     }
-    if (mark.dataset.kind === kind && (kind !== "streaming" || mark.querySelector("svg")))
+    if (mark.dataset.kind === kind2 && (kind2 !== "streaming" || mark.querySelector("svg")))
       return;
-    mark.dataset.kind = kind;
+    mark.dataset.kind = kind2;
     mark.replaceChildren();
-    if (kind === "streaming")
+    if (kind2 === "streaming")
       mark.append(spinSvg());
   }
   function clearMark(btn) {
@@ -16904,7 +12091,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
     return null;
   }
-  function paint2() {
+  function paint() {
     if (!started3)
       return;
     refreshMarks();
@@ -16923,9 +12110,9 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
         }
         usedIds.add(id);
         rowById.set(id, host);
-        const kind = marks.get(id);
-        if (kind)
-          ensureMark(host, kind);
+        const kind2 = marks.get(id);
+        if (kind2)
+          ensureMark(host, kind2);
         else
           clearMark(host);
       }
@@ -16934,7 +12121,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       if (!el.isConnected || !usedIds.has(id))
         rowById.delete(id);
     }
-    for (const [id, kind] of marks) {
+    for (const [id, kind2] of marks) {
       if (rowById.get(id)?.isConnected)
         continue;
       for (const root of roots()) {
@@ -16942,13 +12129,13 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
         if (!host)
           continue;
         rowById.set(id, host);
-        ensureMark(host, kind);
+        ensureMark(host, kind2);
         break;
       }
     }
-    const live = [...marks].filter(([, kind]) => kind === "streaming").map(([id]) => id);
+    const live = [...marks].filter(([, kind2]) => kind2 === "streaming").map(([id]) => id);
     if (live.length && !rowById.size)
-      logger30.info("live ids with no rows", live);
+      logger24.info("live ids with no rows", live);
   }
   function schedule() {
     if (!started3 || raf2)
@@ -16956,7 +12143,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     raf2 = requestAnimationFrame(() => {
       raf2 = 0;
       if (started3)
-        paint2();
+        paint();
     });
   }
   function ownMutation(list) {
@@ -17030,7 +12217,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       try {
         botsOff = BotsStore2.useBotsStore.subscribe(() => schedule());
       } catch (e) {
-        logger30.debug("bots store subscribe failed:", e);
+        logger24.debug("bots store subscribe failed:", e);
       }
       observe();
       schedule();
@@ -17063,7 +12250,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       rowById.clear();
     },
     events: {
-      streamEnd: onStreamEnd5
+      streamEnd: onStreamEnd4
     },
     zustand: {
       ChatPageStore: {
@@ -17082,6 +12269,169 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
         selector: routeKey,
         handler: schedule
       }
+    }
+  });
+
+  // src/plugins/autoCollapse/index.ts
+  var autoCollapse_default = definePlugin({
+    name: "AutoCollapse",
+    icon: ChevronsDownUpIcon,
+    description: "Automatically collapse code blocks in responses.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    _collapse: () => true,
+    patches: [
+      {
+        find: ["isInitiallyCollapsed", "showRunCode"],
+        all: true,
+        replacement: {
+          match: /isInitiallyCollapsed:(\i)=!1/g,
+          replace: "isInitiallyCollapsed:$1=$self._collapse()"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/betterLinks/index.tsx
+  var DEFAULT_LINK = "#4a9eff";
+  var DEFAULT_VISITED = "#9b59b6";
+  var STYLE_NAME7 = "better-links-dynamic";
+  var DOMAIN_RE = /(?<![a-zA-Z0-9@/:.#])(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.(?:com|org|net|io|dev|app|co|ai|gov|edu|me|xyz|gg|tv|cc|so|is|info|tech|pro|site|store|cloud|online|icu|top|be|ly|sh|to|fm|am|us|uk|ca|de|fr|es|it|nl|jp|cn|ru|br|au|in|eu)(?:\/[^\s<>"'`)\]},]*)?/g;
+  function isValidHex(c) {
+    return /^#[0-9a-fA-F]{6}$/.test(c);
+  }
+  function getColor(key, fallback) {
+    const val = settings14.store[key];
+    return val && isValidHex(val) ? val : fallback;
+  }
+  function applyColors() {
+    const link = getColor("linkColor", DEFAULT_LINK);
+    let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
+    if (settings14.store.enableVisitedColor) {
+      const visited = getColor("visitedColor", DEFAULT_VISITED);
+      css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
+    }
+    registerStyle(STYLE_NAME7, css);
+  }
+  function ColorRow2({ settingKey, title, description, fallback }) {
+    settings14.use([settingKey]);
+    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
+      value: getColor(settingKey, fallback),
+      onChange: (v) => {
+        settings14.store[settingKey] = v;
+        applyColors();
+      },
+      title,
+      description
+    });
+  }
+  var settings14 = definePluginSettings({
+    linkifyDomains: {
+      type: 3 /* BOOLEAN */,
+      description: "Detect bare domains in messages and make them clickable.",
+      default: true
+    },
+    enableVisitedColor: {
+      type: 3 /* BOOLEAN */,
+      description: "Apply a different color to links you already visited.",
+      default: false,
+      onChange: applyColors
+    },
+    linkColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
+        settingKey: "linkColor",
+        title: "Link color",
+        description: "Colorize links in messages.",
+        fallback: DEFAULT_LINK
+      })
+    },
+    visitedColor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(ColorRow2, {
+        settingKey: "visitedColor",
+        title: "Visited color",
+        description: "Colorize links you already visited.",
+        fallback: DEFAULT_VISITED
+      })
+    }
+  }).withPrivateSettings();
+  var betterLinks_default = definePlugin({
+    name: "BetterLinks",
+    icon: LinkIcon,
+    description: "Colorize links and detect bare domains in chat messages.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings14,
+    patches: [
+      {
+        find: "chat-markdown:a:link",
+        all: true,
+        replacement: {
+          match: /target:"_blank",rel:"noopener noreferrer nofollow",onClick:/,
+          replace: 'target:"_blank",rel:"noopener noreferrer nofollow",className:"void-colored-link",onClick:'
+        }
+      },
+      {
+        find: "chat-markdown-load-third-party",
+        replacement: {
+          match: /singleDollarTextMath:!1\}\],([^\]]{0,200})\]/,
+          replace: "singleDollarTextMath:!1}],$1,$self._remarkLinkify]"
+        }
+      }
+    ],
+    _remarkLinkify() {
+      const { store: store3 } = settings14;
+      return (tree) => {
+        try {
+          if (!store3.linkifyDomains)
+            return;
+          const walk = (node) => {
+            if (!node.children)
+              return;
+            const out = [];
+            let changed = false;
+            for (const child of node.children) {
+              if (child.type !== "text") {
+                walk(child);
+                out.push(child);
+                continue;
+              }
+              DOMAIN_RE.lastIndex = 0;
+              if (!DOMAIN_RE.test(child.value)) {
+                out.push(child);
+                continue;
+              }
+              DOMAIN_RE.lastIndex = 0;
+              let last = 0;
+              let m;
+              while ((m = DOMAIN_RE.exec(child.value)) != null) {
+                if (m.index > last)
+                  out.push({ type: "text", value: child.value.slice(last, m.index) });
+                out.push({ type: "link", url: "https://" + m[0], children: [{ type: "text", value: m[0] }] });
+                last = m.index + m[0].length;
+              }
+              if (last < child.value.length)
+                out.push({ type: "text", value: child.value.slice(last) });
+              changed = true;
+            }
+            if (changed)
+              node.children = out;
+          };
+          walk(tree);
+        } catch {
+          return tree;
+        }
+      };
+    },
+    start() {
+      settings14.store.linkColor ??= DEFAULT_LINK;
+      settings14.store.visitedColor ??= DEFAULT_VISITED;
+      applyColors();
+      enableStyle(STYLE_NAME7);
+    },
+    stop() {
+      disableStyle(STYLE_NAME7);
     }
   });
 
@@ -17116,7 +12466,113 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // voidpp-css:/tmp/VoidPP/src/plugins/compactModeSelect/styles.css
+  // src/plugins/autoRetry/index.ts
+  var logger25 = new Logger("AutoRetry");
+  var CONTENT_MODERATED = "grok:content-moderated";
+  var settings15 = definePluginSettings({
+    retryModeration: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry content moderation errors.",
+      default: true
+    },
+    retryNetwork: {
+      type: 3 /* BOOLEAN */,
+      description: "Retry network and stream errors.",
+      default: true
+    },
+    maxRetries: {
+      type: 1 /* NUMBER */,
+      description: "Maximum consecutive retries per conversation.",
+      default: 3
+    },
+    delay: {
+      type: 1 /* NUMBER */,
+      description: "Seconds to wait before retrying.",
+      default: 2
+    }
+  });
+  var retryCounts = new Map;
+  var pendingTimer = null;
+  function clearPending() {
+    if (pendingTimer != null) {
+      clearTimeout(pendingTimer);
+      pendingTimer = null;
+    }
+  }
+  function isModeration(response) {
+    return String(response.error?.message ?? "").includes(CONTENT_MODERATED);
+  }
+  function shouldRetry(response) {
+    if (isModeration(response))
+      return settings15.store.retryModeration;
+    return settings15.store.retryNetwork;
+  }
+  function retry(responseId, conversationId, response) {
+    const count = (retryCounts.get(conversationId) ?? 0) + 1;
+    const max = settings15.store.maxRetries;
+    if (count > max) {
+      showToast("Max retries reached.", 2 /* ERROR */);
+      retryCounts.delete(conversationId);
+      return;
+    }
+    retryCounts.set(conversationId, count);
+    const delaySec = settings15.store.delay;
+    showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
+    logger25.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
+    clearPending();
+    pendingTimer = setTimeout(() => {
+      pendingTimer = null;
+      const state2 = ChatPageStore.useChatPageStore.getState();
+      if (state2.streamedMessageId)
+        return;
+      state2.sendResponse({
+        message: "",
+        parentResponseId: responseId,
+        conversationId,
+        fileAttachmentIds: response.fileAttachments,
+        setOpimisticUserResponse: false,
+        setUserResponse: false,
+        enableRetries: true
+      });
+    }, delaySec * 1000);
+  }
+  function onStreamEnd5({ responseId }) {
+    const response = ResponseStore.useResponseStore.getState().byId[responseId];
+    if (!response || response.state !== "error") {
+      const convId = ChatPageStore.useChatPageStore.getState().conversationId;
+      if (convId)
+        retryCounts.delete(convId);
+      return;
+    }
+    if (!shouldRetry(response))
+      return;
+    const { conversationId } = ChatPageStore.useChatPageStore.getState();
+    if (!conversationId)
+      return;
+    retry(responseId, conversationId, response);
+  }
+  var autoRetry_default = definePlugin({
+    name: "AutoRetry",
+    icon: RotateCcwIcon,
+    description: "Automatically retry failed messages on moderation or network errors.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings15,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      retryCounts.clear();
+      clearPending();
+    },
+    stop() {
+      clearPending();
+      retryCounts.clear();
+    },
+    events: {
+      streamEnd: onStreamEnd5
+    }
+  });
+
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/compactModeSelect/styles.css
   registerStyle("compactModeSelect", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -17283,8 +12739,8 @@ html.void-cms-picked .void-cms-ghost {
 `);
 
   // src/plugins/compactModeSelect/index.tsx
-  var logger31 = new Logger("CompactModeSelect");
-  var cl25 = classNameFactory("void-cms-");
+  var logger26 = new Logger("CompactModeSelect");
+  var cl20 = classNameFactory("void-cms-");
   var MODES = [
     { id: "auto", pin: "pinAuto", label: "Auto", Icon: AutoModeIcon },
     { id: "fast", pin: "pinFast", label: "Fast", Icon: FastModeIcon },
@@ -17311,7 +12767,7 @@ html.void-cms-picked .void-cms-ghost {
   var PICK_MS = 900;
   var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
   var GHOST_STYLE = { opacity: "0", visibility: "hidden" };
-  var settings24 = definePluginSettings({
+  var settings16 = definePluginSettings({
     pinList: {
       type: 6 /* COMPONENT */,
       description: "Toggle pins and drag to set chip order.",
@@ -17374,7 +12830,7 @@ html.void-cms-picked .void-cms-ghost {
   var cloakWatch = null;
   function uncloak() {
     for (const host of ghosts) {
-      host.classList.remove(cl25("ghost"));
+      host.classList.remove(cl20("ghost"));
       host.style.removeProperty("opacity");
       host.style.removeProperty("visibility");
       host.style.removeProperty("pointer-events");
@@ -17461,10 +12917,10 @@ html.void-cms-picked .void-cms-ghost {
     return next;
   }
   function setOrder(ids) {
-    settings24.store.pinOrder = ids.join(",");
+    settings16.store.pinOrder = ids.join(",");
   }
   function setPinned(pin, on) {
-    settings24.store[pin] = on;
+    settings16.store[pin] = on;
   }
   function itemText(el) {
     return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
@@ -17499,7 +12955,7 @@ html.void-cms-picked .void-cms-ghost {
     const host = ghostHost(menu.root);
     if (ghosts.has(host))
       return;
-    host.classList.add(cl25("ghost"));
+    host.classList.add(cl20("ghost"));
     host.style.setProperty("opacity", GHOST_STYLE.opacity, "important");
     host.style.setProperty("visibility", GHOST_STYLE.visibility, "important");
     ghosts.add(host);
@@ -17510,12 +12966,12 @@ html.void-cms-picked .void-cms-ghost {
       host.style.setProperty("pointer-events", "none", "important");
   }
   function modeMenu() {
-    for (const root of document.querySelectorAll(MENU_ROOT_SEL)) {
-      if (!(root instanceof HTMLElement))
+    for (const root2 of document.querySelectorAll(MENU_ROOT_SEL)) {
+      if (!(root2 instanceof HTMLElement))
         continue;
-      const items = [...root.querySelectorAll(ITEM_SEL)];
+      const items = [...root2.querySelectorAll(ITEM_SEL)];
       if (isModeMenu(items))
-        return { root, items };
+        return { root: root2, items };
     }
     const loose = [...document.querySelectorAll(ITEM_SEL)].filter((el) => MODES.some((m) => matchItem(el, m.id)));
     if (loose.length < 2)
@@ -17580,14 +13036,14 @@ html.void-cms-picked .void-cms-ghost {
     el.removeAttribute("class");
   }
   function normalizeSvg(src) {
-    const svg = src.cloneNode(true);
-    svg.setAttribute("width", "18");
-    svg.setAttribute("height", "18");
-    svg.setAttribute("aria-hidden", "true");
-    svg.querySelectorAll("script").forEach((n) => n.remove());
-    paintCurrent(svg);
-    svg.querySelectorAll("*").forEach(paintCurrent);
-    return svg.outerHTML;
+    const svg2 = src.cloneNode(true);
+    svg2.setAttribute("width", "18");
+    svg2.setAttribute("height", "18");
+    svg2.setAttribute("aria-hidden", "true");
+    svg2.querySelectorAll("script").forEach((n) => n.remove());
+    paintCurrent(svg2);
+    svg2.querySelectorAll("*").forEach(paintCurrent);
+    return svg2.outerHTML;
   }
   function stashGlyphs(items) {
     let added = false;
@@ -17595,10 +13051,10 @@ html.void-cms-picked .void-cms-ghost {
       const mode = MODES.find((m) => matchItem(item, m.id));
       if (!mode || harvested.has(mode.id))
         continue;
-      const svg = item.querySelector("svg");
-      if (!(svg instanceof SVGSVGElement))
+      const svg2 = item.querySelector("svg");
+      if (!(svg2 instanceof SVGSVGElement))
         continue;
-      harvested.set(mode.id, normalizeSvg(svg));
+      harvested.set(mode.id, normalizeSvg(svg2));
       added = true;
     }
     if (added)
@@ -17627,7 +13083,7 @@ html.void-cms-picked .void-cms-ghost {
       lockGhosts();
       await waitForGone();
     } catch (e) {
-      logger31.warn("Failed to harvest mode icons:", e);
+      logger26.warn("Failed to harvest mode icons:", e);
     } finally {
       setPicking(false);
       harvesting = false;
@@ -17643,21 +13099,21 @@ html.void-cms-picked .void-cms-ghost {
       if (!menu) {
         const trigger = nativeTrigger();
         if (!trigger) {
-          logger31.warn("Native mode selector not found");
+          logger26.warn("Native mode selector not found");
           return;
         }
         clickEl(trigger);
         menu = await waitForMenu();
       }
       if (!menu) {
-        logger31.warn("Native mode item not found:", id);
+        logger26.warn("Native mode item not found:", id);
         return;
       }
       cloak(menu);
       stashGlyphs(menu.items);
       const item = menu.items.find((el) => matchItem(el, id));
       if (!item) {
-        logger31.warn("Native mode item not found:", id);
+        logger26.warn("Native mode item not found:", id);
         const trigger = nativeTrigger();
         if (modeMenu() && trigger)
           clickEl(trigger);
@@ -17669,7 +13125,7 @@ html.void-cms-picked .void-cms-ghost {
       lockGhosts();
       await waitForGone();
     } catch (e) {
-      logger31.warn("Failed to select mode:", e);
+      logger26.warn("Failed to select mode:", e);
     } finally {
       setPicking(false);
     }
@@ -17689,7 +13145,7 @@ html.void-cms-picked .void-cms-ghost {
   function PinGlyph({ id, Icon, label, showLabels }) {
     const html = useNativeGlyph(id);
     const glyph = html ? /* @__PURE__ */ React.createElement("span", {
-      className: cl25("glyph"),
+      className: cl20("glyph"),
       dangerouslySetInnerHTML: { __html: html }
     }) : /* @__PURE__ */ React.createElement(Icon, {
       size: 18
@@ -17697,7 +13153,7 @@ html.void-cms-picked .void-cms-ghost {
     if (!showLabels)
       return glyph;
     return /* @__PURE__ */ React.createElement(React.Fragment, null, glyph, /* @__PURE__ */ React.createElement("span", {
-      className: cl25("label")
+      className: cl20("label")
     }, label));
   }
   function preventDragOver(e) {
@@ -17705,7 +13161,7 @@ html.void-cms-picked .void-cms-ghost {
     e.dataTransfer.dropEffect = "move";
   }
   function PinOrderEditor() {
-    const cfg = settings24.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
+    const cfg = settings16.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
     const ids = parseOrder(cfg.pinOrder);
     const [dragId, setDragId] = React.useState(null);
     const onDragStart = (id) => (e) => {
@@ -17722,27 +13178,27 @@ html.void-cms-picked .void-cms-ghost {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
-      className: cl25("order")
+      className: cl20("order")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Pinned modes"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Toggle pins and drag to set chip order.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl25("order-list"),
+      className: cl20("order-list"),
       role: "list"
     }, ids.map((id, i) => {
       const m = MODE_BY_ID[id];
       return /* @__PURE__ */ React.createElement("div", {
         key: m.id,
         role: "listitem",
-        className: classes(cl25("order-row"), dragId === m.id && cl25("dragging")),
+        className: classes(cl20("order-row"), dragId === m.id && cl20("dragging")),
         onDragOver: preventDragOver,
         onDrop: onDrop(m.id)
       }, /* @__PURE__ */ React.createElement(Flex, {
         alignItems: "center",
         gap: "0.5rem",
-        className: cl25("order-main")
+        className: cl20("order-main")
       }, /* @__PURE__ */ React.createElement("span", {
-        className: cl25("grip"),
+        className: cl20("grip"),
         draggable: true,
         onDragStart: onDragStart(m.id),
         onDragEnd: () => setDragId(null),
@@ -17751,7 +13207,7 @@ html.void-cms-picked .void-cms-ghost {
         size: 16
       })), /* @__PURE__ */ React.createElement(m.Icon, {
         size: 16,
-        className: cl25("order-icon")
+        className: cl20("order-icon")
       }), /* @__PURE__ */ React.createElement(SettingsTitle, null, m.label)), /* @__PURE__ */ React.createElement(Flex, {
         alignItems: "center",
         gap: "0.25rem"
@@ -17782,7 +13238,7 @@ html.void-cms-picked .void-cms-ghost {
     })));
   }
   function PinnedModes() {
-    const cfg = settings24.use([...SETTING_KEYS]);
+    const cfg = settings16.use([...SETTING_KEYS]);
     const page = RoutingStore.useRoutingStore((s) => s.route.page);
     const selectedModeId = ModesStore.useModesStore((s) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s) => s.modes);
@@ -17801,7 +13257,7 @@ html.void-cms-picked .void-cms-ghost {
       selectMode(id);
     };
     return /* @__PURE__ */ React.createElement("div", {
-      className: classes(cl25("pins"), hideNative && cl25("hide-native"))
+      className: classes(cl20("pins"), hideNative && cl20("hide-native"))
     }, items.map((m) => /* @__PURE__ */ React.createElement(ChatBarButton, {
       key: m.id,
       size: "sm",
@@ -17813,7 +13269,7 @@ html.void-cms-picked .void-cms-ghost {
       }),
       tooltip: hideTip ? undefined : m.label,
       onClick: onPin(m.id),
-      className: classes(cl25("pin"), selectedModeId === m.id && cl25("on"), showLabels && cl25("labeled")),
+      className: classes(cl20("pin"), selectedModeId === m.id && cl20("on"), showLabels && cl20("labeled")),
       "aria-label": m.label
     })));
   }
@@ -17824,7 +13280,7 @@ html.void-cms-picked .void-cms-ghost {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings24,
+    settings: settings16,
     managedStyle: "compactModeSelect",
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
@@ -17857,20 +13313,1515 @@ html.void-cms-picked .void-cms-ghost {
     ]
   });
 
-  // src/plugins/consoleJanitor/index.ts
-  var warnNoop = { match: /console\.warn\(\i\)/, replace: "void 0" };
-  var consoleJanitor_default = definePlugin({
-    name: "ConsoleJanitor",
-    icon: TerminalIcon,
-    description: "Silences noisy warnings and info logs in the browser console.",
-    authors: [Devs.Prism],
+  // src/plugins/noRightPanel/index.ts
+  function isRightOpen(s) {
+    return s.sidePanelContent?.type === "rightPanel";
+  }
+  function enforce() {
+    const state2 = ChatPageStore.useChatPageStore.getState();
+    if (isRightOpen(state2))
+      state2.closeSidePanelExplicitly();
+  }
+  var noRightPanel_default = definePlugin({
+    name: "NoRightPanel",
+    icon: PanelRightCloseIcon,
+    description: "Keep Grok's right panel closed.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start: enforce,
+    zustand: {
+      ChatPageStore: {
+        selector: isRightOpen,
+        handler(open2) {
+          if (open2)
+            enforce();
+        }
+      }
+    },
     patches: [
-      { find: "x.ai/careers", replacement: { match: /console\.info\("[^"]{0,3000}"\)/, replace: "void 0" } },
-      { find: "useDrawerContext must be used within a Drawer.Root", all: true, replacement: warnNoop },
-      { find: "DialogDescriptionWarning", all: true, replacement: warnNoop },
-      { find: "window.PressureObserver", replacement: { match: /if\(!window\.PressureObserver\)return/, replace: "return" } },
-      { find: "NO_I18NEXT_INSTANCE", all: true, replacement: { match: /console\.warn\(\.\.\.\i\)/, replace: "void 0" } }
+      {
+        find: "willRestoreRightPanelByIntent",
+        replacement: {
+          match: /willRestoreRightPanelByIntent=\i=>\{/,
+          replace: "willRestoreRightPanelByIntent=()=>{return!1;"
+        }
+      },
+      {
+        find: '"computePreviewAutoOpen"',
+        replacement: {
+          match: /&&(\i)\(\{source:"auto"\}\)/,
+          replace: '&&!1&&$1({source:"auto"})'
+        }
+      }
     ]
+  });
+
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/inputHistory/styles.css
+  registerStyle("inputHistory", `.void-ih-hud {
+    contain: content;
+    position: fixed;
+    z-index: 2147483646;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.5rem;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-secondary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.12s ease;
+}
+
+.void-ih-hud-on {
+    opacity: 1;
+}
+
+.void-ih-panel {
+    min-width: 0;
+}
+
+.void-ih-head {
+    min-width: 0;
+}
+
+.void-ih-search {
+    width: 100%;
+}
+
+.void-ih-empty {
+    margin: 0;
+    color: hsl(var(--fg-tertiary));
+}
+
+.void-ih-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow: auto;
+    max-height: min(22rem, 45vh);
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-l2) / 80%) transparent;
+}
+
+.void-ih-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    background: hsl(var(--surface-l1) / 72%);
+}
+
+.void-ih-item:hover {
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 45%);
+}
+
+.void-ih-item-on {
+    align-items: start;
+    background: hsl(var(--surface-l2));
+    border-color: hsl(var(--border-l2) / 60%);
+}
+
+.void-ih-item:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ih-main {
+    min-width: 0;
+    cursor: pointer;
+}
+
+.void-ih-body {
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: hsl(var(--fg-primary));
+    font-size: 0.8125rem;
+    line-height: 1.45;
+}
+
+.void-ih-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.void-ih-item-on .void-ih-body {
+    max-height: 12rem;
+    overflow: auto;
+    scrollbar-width: thin;
+}
+
+.void-ih-side {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.void-ih-item-on .void-ih-side {
+    align-items: flex-start;
+    padding-top: 0.125rem;
+}
+
+.void-ih-lines {
+    min-width: 1.5rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-tertiary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.void-ih-actions {
+    display: flex;
+    gap: 0.125rem;
+    padding: 0.125rem;
+    border-radius: 0.5rem;
+    background: hsl(var(--surface-l2) / 90%);
+}
+
+.void-ih-actions :is(button) {
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+}
+
+.void-ih-item-on .void-ih-actions,
+.void-ih-item:hover .void-ih-actions {
+    background: hsl(var(--surface-l1));
+}
+
+.void-ih-pager {
+    min-width: 0;
+}
+
+.void-ih-page {
+    min-width: 3.5rem;
+    color: hsl(var(--fg-secondary));
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-ih-hud {
+        transition: none;
+    }
+}
+`);
+
+  // src/plugins/inputHistory/index.tsx
+  var logger27 = new Logger("InputHistory");
+  var cl21 = classNameFactory("void-ih-");
+  var EDITOR_SEL2 = '.query-bar .tiptap.ProseMirror[contenteditable="true"]';
+  var ZWSP = /\u200B/g;
+  var MAX_MIN = 10;
+  var MAX_MAX = 500;
+  var MAX_DEFAULT = 100;
+  var HUD_GAP_PX = 8;
+  var APPLY_QUIET_MS = 120;
+  var CAPTURE_DEDUPE_MS = 2000;
+  var PAGE_SIZE = 10;
+  var settings17 = definePluginSettings({
+    maxEntries: {
+      type: 5 /* SLIDER */,
+      description: "Maximum stored prompts.",
+      min: MAX_MIN,
+      max: MAX_MAX,
+      default: MAX_DEFAULT
+    },
+    history: {
+      type: 6 /* COMPONENT */,
+      component: HistoryPanel
+    }
+  }).withPrivateSettings();
+  var recentAt = new Map;
+  var cursor = 0;
+  var draft = "";
+  var recalling = false;
+  var applying = false;
+  var composing = false;
+  var applyGen = 0;
+  var keys = null;
+  var applyTimer;
+  var applyEl = null;
+  var applyAtStart = true;
+  function getEntries() {
+    const raw = settings17.plain.entries;
+    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
+  }
+  function cap(entries) {
+    const max = clamp(settings17.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
+    return entries.length > max ? entries.slice(entries.length - max) : entries;
+  }
+  function setEntries(entries) {
+    settings17.store.entries = entries;
+  }
+  function normalize(text) {
+    return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
+  }
+  function imeEvent(e) {
+    if (composing)
+      return true;
+    if (e instanceof InputEvent && e.isComposing)
+      return true;
+    if (e instanceof KeyboardEvent && (e.isComposing || e.keyCode === 229))
+      return true;
+    return false;
+  }
+  function invalidateApply() {
+    applyGen++;
+    applying = false;
+    applyEl = null;
+    clearTimeout(applyTimer);
+    applyTimer = undefined;
+  }
+  function resetBrowse(length) {
+    invalidateApply();
+    cursor = length;
+    draft = "";
+    recalling = false;
+    hideHud();
+  }
+  function chatEditor(t) {
+    if (t instanceof Text)
+      return t.parentElement?.closest(EDITOR_SEL2) ?? null;
+    if (t instanceof Element)
+      return t.closest(EDITOR_SEL2) ?? null;
+    return null;
+  }
+  function editorText(el) {
+    const blocks = el.querySelectorAll(":scope > *");
+    const raw = blocks.length ? Array.from(blocks, (b) => b.textContent ?? "").join(`
+`) : el.innerText ?? el.textContent ?? "";
+    return normalize(raw);
+  }
+  function spanHeight(range) {
+    const rects = range.getClientRects();
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (const r of rects) {
+      if (r.height === 0 && r.width === 0)
+        continue;
+      if (r.top < top)
+        top = r.top;
+      if (r.bottom > bottom)
+        bottom = r.bottom;
+    }
+    if (top === Infinity)
+      return range.getBoundingClientRect().height;
+    return bottom - top;
+  }
+  function caretOnEdge(el) {
+    const sel = window.getSelection();
+    if (!sel?.rangeCount || !sel.isCollapsed)
+      return { first: false, last: false };
+    const caret = sel.getRangeAt(0);
+    if (!el.contains(caret.startContainer))
+      return { first: false, last: false };
+    if (!el.innerText?.trim())
+      return { first: true, last: true };
+    const before = document.createRange();
+    before.selectNodeContents(el);
+    before.setEnd(caret.startContainer, caret.startOffset);
+    const after = document.createRange();
+    after.selectNodeContents(el);
+    after.setStart(caret.startContainer, caret.startOffset);
+    const { lineHeight, fontSize } = getComputedStyle(el);
+    const lh = parseFloat(lineHeight);
+    const fs = parseFloat(fontSize) || 16;
+    const budget = (lh > 0 ? lh : fs * 1.5) * 1.5;
+    return {
+      first: spanHeight(before) <= budget,
+      last: spanHeight(after) <= budget
+    };
+  }
+  function matchesRecall(el) {
+    if (!recalling)
+      return false;
+    const list = getEntries();
+    const expected = cursor < list.length ? list[cursor] : draft;
+    return editorText(el) === expected || normalize(el.innerText ?? "") === expected;
+  }
+  function dropRecall(el) {
+    invalidateApply();
+    cursor = getEntries().length;
+    draft = editorText(el);
+    recalling = false;
+    hideHud();
+  }
+  function placeCaret(el, atStart) {
+    if (composing)
+      return;
+    try {
+      const view = el.pmViewDesc?.view;
+      if (view) {
+        if (view.composing)
+          return;
+        const Sel = view.state.selection.constructor;
+        const pmSel = atStart ? Sel.atStart(view.state.doc) : Sel.atEnd(view.state.doc);
+        view.dispatch(view.state.tr.setSelection(pmSel).scrollIntoView());
+        return;
+      }
+    } catch (err) {
+      logger27.debug("placeCaret pm failed:", err);
+    }
+    const native = window.getSelection();
+    if (!native)
+      return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(atStart);
+    native.removeAllRanges();
+    native.addRange(range);
+  }
+  function scheduleApplyEnd(gen) {
+    clearTimeout(applyTimer);
+    applyTimer = setTimeout(() => {
+      if (gen !== applyGen)
+        return;
+      applying = false;
+      const el = applyEl;
+      applyEl = null;
+      if (!el || composing)
+        return;
+      if (!recalling)
+        return;
+      if (!matchesRecall(el))
+        dropRecall(el);
+      else
+        placeCaret(el, applyAtStart);
+    }, APPLY_QUIET_MS);
+  }
+  function setEditorText(el, text, atStart) {
+    el.focus();
+    const sel = window.getSelection();
+    if (!sel)
+      return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    applying = true;
+    applyEl = el;
+    applyAtStart = atStart;
+    const gen = ++applyGen;
+    try {
+      if (!text)
+        document.execCommand("delete");
+      else
+        document.execCommand("insertText", false, text);
+    } catch (err) {
+      logger27.debug("insertText failed:", err);
+    }
+    placeCaret(el, atStart);
+    scheduleApplyEnd(gen);
+  }
+  function hudEl() {
+    let el = document.querySelector(`.${cl21("hud")}`);
+    if (el)
+      return el;
+    el = document.createElement("div");
+    el.className = cl21("hud");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+    return el;
+  }
+  function hideHud() {
+    document.querySelector(`.${cl21("hud")}`)?.classList.remove(cl21("hud-on"));
+  }
+  function showHud(label, editor) {
+    const bar = editor.closest(".query-bar");
+    if (!bar)
+      return;
+    const el = hudEl();
+    el.textContent = label;
+    requestAnimationFrame(() => {
+      const r = bar.getBoundingClientRect();
+      el.style.left = `${r.left + r.width / 2}px`;
+      el.style.top = `${r.top - HUD_GAP_PX}px`;
+      el.classList.add(cl21("hud-on"));
+    });
+  }
+  function pushEntry(text) {
+    const value = normalize(text);
+    if (!value)
+      return;
+    const now = Date.now();
+    const prev = recentAt.get(value);
+    if (prev != null && now - prev < CAPTURE_DEDUPE_MS)
+      return;
+    recentAt.set(value, now);
+    const list = getEntries();
+    if (list[list.length - 1] === value) {
+      resetBrowse(list.length);
+      return;
+    }
+    const next = cap([...list, value]);
+    setEntries(next);
+    resetBrowse(next.length);
+  }
+  function cycle(older, el) {
+    const list = getEntries();
+    if (!list.length && older)
+      return;
+    if (cursor >= list.length) {
+      draft = editorText(el);
+      cursor = list.length;
+    }
+    const next = older ? cursor - 1 : cursor + 1;
+    if (next < 0 || next > list.length)
+      return;
+    cursor = next;
+    recalling = true;
+    setEditorText(el, next === list.length ? draft : list[next], older);
+    if (next < list.length)
+      showHud(`${next + 1} / ${list.length}`, el);
+    else
+      hideHud();
+  }
+  function onKeyDown2(e) {
+    if (imeEvent(e))
+      return;
+    if (e.ctrlKey || e.metaKey)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    if (applying && e.key !== "ArrowUp" && e.key !== "ArrowDown")
+      invalidateApply();
+    if (e.key === "Escape" && recalling && !e.altKey && !e.shiftKey) {
+      dropRecall(el);
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
+      pushEntry(editorText(el));
+      return;
+    }
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown")
+      return;
+    if (e.shiftKey)
+      return;
+    const older = e.key === "ArrowUp";
+    const force = e.altKey;
+    const list = getEntries();
+    if (!force) {
+      const edge = caretOnEdge(el);
+      if (older && !edge.first || !older && !edge.last)
+        return;
+    }
+    if (older && (!list.length || cursor <= 0))
+      return;
+    if (!older && cursor >= list.length)
+      return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    cycle(older, el);
+  }
+  function onPointerDown(e) {
+    if (!recalling)
+      return;
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    dropRecall(el);
+  }
+  function onCompositionStart(e) {
+    if (!chatEditor(e.target))
+      return;
+    composing = true;
+    invalidateApply();
+  }
+  function onCompositionEnd(e) {
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    composing = false;
+    if (recalling && !matchesRecall(el))
+      dropRecall(el);
+  }
+  function onInput(e) {
+    const el = chatEditor(e.target);
+    if (!el)
+      return;
+    if (imeEvent(e)) {
+      if (applying)
+        invalidateApply();
+      return;
+    }
+    const recalled = matchesRecall(el);
+    if (applying && recalled)
+      return;
+    if (recalling && !recalled)
+      dropRecall(el);
+  }
+  function onSubmit(e) {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement))
+      return;
+    const editor = form.querySelector(EDITOR_SEL2);
+    if (editor instanceof HTMLElement)
+      pushEntry(editorText(editor));
+  }
+  function onClick(e) {
+    const t = e.target;
+    if (!(t instanceof Element))
+      return;
+    const ctrl = t.closest("button, [role='button']");
+    if (!ctrl)
+      return;
+    const bar = ctrl.closest(".query-bar");
+    if (!bar || ctrl.closest("[data-query-bar-mode-select]"))
+      return;
+    const label = (ctrl.getAttribute("aria-label") ?? "").toLowerCase();
+    const submit = ctrl instanceof HTMLButtonElement && ctrl.type === "submit";
+    if (!submit && !label.includes("send") && !label.includes("submit"))
+      return;
+    const editor = bar.querySelector(EDITOR_SEL2);
+    if (editor instanceof HTMLElement)
+      pushEntry(editorText(editor));
+  }
+  function removeEntry(index) {
+    const list = getEntries();
+    if (index < 0 || index >= list.length)
+      return;
+    const next = list.filter((_, i) => i !== index);
+    setEntries(next);
+    resetBrowse(next.length);
+  }
+  function HistoryPanel() {
+    const { entries } = settings17.use(["entries"]);
+    const list = entries ?? [];
+    const [query, setQuery] = useState("");
+    const [page, setPage] = useState(0);
+    const [openId, setOpenId] = useState(null);
+    const [confirm, setConfirm] = useState(false);
+    const needle = query.trim().toLowerCase();
+    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).toReversed();
+    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+    const current = Math.min(page, pageCount - 1);
+    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
+    return /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      gap: "0.65rem",
+      className: cl21("panel")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      className: cl21("head"),
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      disabled: !list.length,
+      onClick: () => setConfirm(true)
+    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      placeholder: "Search prompts",
+      value: query,
+      onChange: (e) => {
+        setQuery(e.target.value);
+        setPage(0);
+      },
+      className: cl21("search")
+    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
+      className: cl21("empty")
+    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
+      className: cl21("empty")
+    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
+      className: cl21("list")
+    }, slice.map((row) => {
+      const lines = row.text.split(`
+`).length;
+      const expanded = openId === row.index;
+      return /* @__PURE__ */ React.createElement("div", {
+        key: row.index,
+        className: cl21("item", expanded && "item-on")
+      }, /* @__PURE__ */ React.createElement("div", {
+        className: cl21("main"),
+        role: "button",
+        tabIndex: 0,
+        onClick: () => setOpenId(expanded ? null : row.index),
+        onKeyDown: (e) => {
+          if (e.key !== "Enter" && e.key !== " ")
+            return;
+          e.preventDefault();
+          setOpenId(expanded ? null : row.index);
+        }
+      }, /* @__PURE__ */ React.createElement("span", {
+        className: cl21("body", !expanded && "clamp")
+      }, row.text)), /* @__PURE__ */ React.createElement("div", {
+        className: cl21("side")
+      }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
+        className: cl21("lines")
+      }, lines), /* @__PURE__ */ React.createElement("div", {
+        className: cl21("actions")
+      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "sm",
+        shape: "square",
+        tooltipContent: "Copy",
+        "aria-label": "Copy",
+        onClick: () => {
+          copyToClipboard(row.text).catch((err) => logger27.error("copy failed:", err));
+        }
+      }, /* @__PURE__ */ React.createElement(CopyIcon, {
+        size: 18
+      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+        variant: "tertiary",
+        size: "sm",
+        shape: "square",
+        tooltipContent: "Delete",
+        "aria-label": "Delete",
+        onClick: () => {
+          if (openId === row.index)
+            setOpenId(null);
+          removeEntry(row.index);
+        }
+      }, /* @__PURE__ */ React.createElement(Trash2Icon, {
+        size: 18
+      })))));
+    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
+      className: cl21("pager"),
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Previous page",
+      disabled: current <= 0,
+      onClick: () => setPage(current - 1)
+    }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
+      size: 18
+    })), /* @__PURE__ */ React.createElement("span", {
+      className: cl21("page")
+    }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
+      variant: "tertiary",
+      size: "sm",
+      shape: "square",
+      "aria-label": "Next page",
+      disabled: current >= pageCount - 1,
+      onClick: () => setPage(current + 1)
+    }, /* @__PURE__ */ React.createElement(ChevronRightIcon, {
+      size: 18
+    }))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+      open: confirm,
+      onOpenChange: setConfirm,
+      title: "Clear input history",
+      description: "Delete all stored prompts? This cannot be undone.",
+      confirmText: "Clear",
+      danger: true,
+      onConfirm: () => {
+        setEntries([]);
+        resetBrowse(0);
+        setOpenId(null);
+        setQuery("");
+        setPage(0);
+      }
+    }));
+  }
+  var inputHistory_default = definePlugin({
+    name: "InputHistory",
+    icon: HistoryIcon,
+    description: "Recall previous chat prompts with Arrow Up and Arrow Down, like a shell.",
+    authors: [Devs.p],
+    tags: ["chat"],
+    enabledByDefault: true,
+    settings: settings17,
+    managedStyle: "inputHistory",
+    cleanupSelectors: [".void-ih-hud"],
+    start() {
+      if (keys)
+        return;
+      cursor = getEntries().length;
+      recalling = false;
+      composing = false;
+      invalidateApply();
+      keys = new AbortController;
+      const { signal } = keys;
+      document.addEventListener("keydown", onKeyDown2, { capture: true, signal });
+      document.addEventListener("input", onInput, { capture: true, signal });
+      document.addEventListener("compositionstart", onCompositionStart, { capture: true, signal });
+      document.addEventListener("compositionend", onCompositionEnd, { capture: true, signal });
+      document.addEventListener("submit", onSubmit, { capture: true, signal });
+      document.addEventListener("click", onClick, { capture: true, signal });
+      document.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
+    },
+    stop() {
+      keys?.abort();
+      keys = null;
+      hideHud();
+      recentAt.clear();
+      composing = false;
+      recalling = false;
+      invalidateApply();
+    },
+    onSettingsChange() {
+      const current = getEntries();
+      const next = cap(current);
+      if (next.length !== current.length)
+        setEntries(next);
+      if (cursor > next.length)
+        cursor = next.length;
+    }
+  });
+
+  // src/plugins/noSidebarPlugins/index.tsx
+  var PluginsDialogStore = findByPropsLazy("usePluginsDialogStore");
+  function PluginsIcon(props = {}) {
+    const Comp = findExportedComponent("ConnectorsIcon") ?? GrokConnectorsIcon;
+    return /* @__PURE__ */ React.createElement(Comp, {
+      ...props
+    });
+  }
+  function openPlugins() {
+    PluginsDialogStore.usePluginsDialogStore.getState().setOpen(true);
+  }
+  function PluginsItem() {
+    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
+      onSelect: openPlugins
+    }, /* @__PURE__ */ React.createElement(PluginsIcon, {
+      className: "void-settings-menu-icon"
+    }), "Plugins");
+  }
+  var WrappedPluginsItem = ErrorBoundary.wrap(PluginsItem);
+  var noSidebarPlugins_default = definePlugin({
+    name: "NoSidebarPlugins",
+    icon: PluginsIcon,
+    description: "Move the sidebar Plugins button into the avatar menu.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    _renderItem: () => createElement(WrappedPluginsItem),
+    patches: [
+      {
+        find: "usePluginsDialogStore.getState().setOpen(!0)",
+        replacement: {
+          match: /(\(0,\i\.jsx\)\(\i\.AppSidebarItem,\{icon:.{0,80}?onClick:\(\)=>\{"skills-and-connectors")/,
+          replace: "false&&$1"
+        }
+      },
+      {
+        find: 'ENABLE_GROK_WEB_PLUGIN_MARKETPLACE)&&{id:"skills-and-connectors"',
+        replacement: {
+          match: /ENABLE_GROK_WEB_PLUGIN_MARKETPLACE\)&&\{id:"skills-and-connectors"/,
+          replace: 'ENABLE_GROK_WEB_PLUGIN_MARKETPLACE)&&!1&&{id:"skills-and-connectors"'
+        }
+      },
+      {
+        find: '"user-dropdown.help"',
+        replacement: {
+          match: /(?=\(0,\i\.jsxs\)\(\i\.DropdownMenuSub,\{children:\[\(0,\i\.jsxs\)\(\i\.DropdownMenuSubTrigger,\{(?:\i:\i,)*children:\[.{0,100}"user-dropdown\.help")/,
+          replace: "$self._renderItem(),"
+        }
+      }
+    ]
+  });
+
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/downloadTTS/styles.css
+  registerStyle("downloadTTS", `.void-download-tts-spinner {
+    pointer-events: none;
+}
+`);
+
+  // src/plugins/downloadTTS/index.tsx
+  var cl22 = classNameFactory("void-download-tts-");
+  var logger28 = new Logger("DownloadTTS");
+  async function fetchAndDownload() {
+    const { currentStreamId } = TextToSpeechStore.useTextToSpeechStore.getState();
+    if (!currentStreamId)
+      return;
+    const voiceId = ChatPageStore.useChatPageStore.getState().voiceId;
+    let url = `/http/app-chat/read-response-audio-file/${currentStreamId}`;
+    if (voiceId)
+      url += `?voiceId=${encodeURIComponent(voiceId)}`;
+    const res = await fetch(url);
+    if (!res.ok)
+      throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    await FileUtils.downloadBlob(blob, `tts-${currentStreamId.slice(0, 8)}.wav`);
+  }
+  function DownloadButton() {
+    const [loading, onClick2] = useAsyncAction(async () => {
+      try {
+        await fetchAndDownload();
+      } catch (e) {
+        logger28.error("Failed to download TTS audio:", e);
+      }
+    });
+    return /* @__PURE__ */ React.createElement(Button, {
+      "aria-label": "Download audio",
+      onClick: onClick2,
+      disabled: loading,
+      size: "md",
+      shape: "square",
+      variant: "tertiary"
+    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
+      size: "sm",
+      className: cl22("spinner")
+    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
+      size: 16
+    }));
+  }
+  var downloadTTS_default = definePlugin({
+    name: "DownloadTTS",
+    icon: Volume2Icon,
+    description: "Add a download button to the TTS playback controls.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    patches: [{
+      find: 'tts-controls.stop.label","Stop"',
+      all: true,
+      replacement: {
+        match: /("tts-controls\.stop\.label","Stop"\).{0,600}?,children:\[(?:\i,){1,8}\i)\]/,
+        replace: "$1,$self._renderDownloadButton()]"
+      }
+    }],
+    _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
+  });
+
+  // src/plugins/incognito/index.ts
+  var store3 = () => SettingsStore.useSettingsStore.getState();
+  var unsubscribe = null;
+  function enforce2() {
+    if (!store3().isIncognito)
+      store3().setIsIncognito(true);
+  }
+  var incognito_default = definePlugin({
+    name: "Incognito",
+    icon: GhostFilledIcon,
+    description: "Force private chat mode for new conversations.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    startAt: "TurbopackReady" /* TurbopackReady */,
+    start() {
+      enforce2();
+      unsubscribe = SettingsStore.useSettingsStore.subscribe(enforce2);
+    },
+    stop() {
+      unsubscribe?.();
+      unsubscribe = null;
+      store3().setIsIncognito(false);
+    }
+  });
+
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/streamerMode/styles.css
+  registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
+
+/* Sidebar avatar */
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]:hover>div,
+html.void-streamer-sidebar-avatar .void-sidebar-card:hover button[data-state]>div {
+    filter: none;
+}
+
+/* Sidebar username */
+html.void-streamer-sidebar-name .void-sidebar-info {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-sidebar-name .void-sidebar-card:hover .void-sidebar-info {
+    filter: none;
+}
+
+/* Account tab avatar (inside settings dialog) */
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-avatar [role="dialog"] .w-12.h-12:hover img {
+    filter: none;
+}
+
+/* Account tab username */
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-sm.font-medium {
+    filter: none;
+}
+
+/* Account tab email */
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm:hover>.text-secondary.truncate {
+    filter: none;
+}
+
+/* Account tab birth year */
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal:hover {
+    filter: none;
+}
+
+/* Conversation titles in sidebar (pinned + recent buckets) */
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]:hover>span {
+    filter: none;
+}
+
+/* Project names in sidebar */
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>span {
+    filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.void-streamer-sidebar-avatar [data-sidebar="footer"] button[data-state]>div,
+    html.void-streamer-sidebar-name .void-sidebar-info,
+    html.void-streamer-account-avatar [role="dialog"] .w-12.h-12 img,
+    html.void-streamer-account-name [role="dialog"] .p-1.min-w-0.text-sm>.text-sm.font-medium,
+    html.void-streamer-account-email [role="dialog"] .p-1.min-w-0.text-sm>.text-secondary.truncate,
+    html.void-streamer-account-age [role="dialog"] .text-fg-secondary.font-normal,
+    html.void-streamer-conversations [data-sidebar="content"] a[href*="/c/"]>span,
+    html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]>span { transition: none; }
+}
+`);
+
+  // src/plugins/streamerMode/index.ts
+  var CSS_CLASSES = {
+    sidebarAvatar: "void-streamer-sidebar-avatar",
+    sidebarName: "void-streamer-sidebar-name",
+    accountAvatar: "void-streamer-account-avatar",
+    accountName: "void-streamer-account-name",
+    accountEmail: "void-streamer-account-email",
+    accountAge: "void-streamer-account-age",
+    projects: "void-streamer-projects",
+    conversations: "void-streamer-conversations"
+  };
+  var settings18 = definePluginSettings({
+    sidebarAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the sidebar.",
+      default: true
+    },
+    sidebarName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your username in the sidebar.",
+      default: true
+    },
+    accountAvatar: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your avatar in the account settings tab.",
+      default: true
+    },
+    accountName: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your name in the account settings tab.",
+      default: true
+    },
+    accountEmail: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your email in the account settings tab.",
+      default: true
+    },
+    accountAge: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur your birth year in the account settings tab.",
+      default: true
+    },
+    projects: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur project names in the sidebar.",
+      default: true
+    },
+    conversations: {
+      type: 3 /* BOOLEAN */,
+      description: "Blur conversation titles in the sidebar.",
+      default: true
+    }
+  });
+  function syncClasses() {
+    const { classList } = document.documentElement;
+    for (const [key, cls] of Object.entries(CSS_CLASSES)) {
+      classList.toggle(cls, !!settings18.store[key]);
+    }
+  }
+  var streamerMode_default = definePlugin({
+    name: "StreamerMode",
+    icon: EyeOffIcon,
+    description: "Blurs personal information for privacy while streaming.",
+    authors: [Devs.Prism],
+    tags: ["privacy"],
+    settings: settings18,
+    start: syncClasses,
+    onSettingsChange: syncClasses,
+    stop() {
+      const { classList } = document.documentElement;
+      for (const cls of Object.values(CSS_CLASSES)) {
+        classList.remove(cls);
+      }
+    }
+  });
+
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/customInstructions/styles.css
+  registerStyle("customInstructions", `.void-ci-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.void-ci-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.void-ci-card {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: 1rem;
+    padding: 0.625rem 0.75rem;
+    height: 3.25rem;
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l1));
+    box-shadow: inset 0 0 0 1px hsl(var(--border-l1));
+    cursor: pointer;
+}
+
+.void-ci-card:hover {
+    background: var(--button-ghost-hover, rgb(255 255 255 / 8%));
+}
+
+.void-ci-card-add {
+    justify-content: center;
+    box-shadow: none;
+    border: 1px dashed hsl(var(--border-l1));
+}
+
+.void-ci-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.void-ci-card-name {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    flex: 1;
+    gap: 0.125rem;
+}
+
+.void-ci-card-name>* {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.void-ci-card-actions {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.void-ci-card:hover .void-ci-card-actions {
+    opacity: 1;
+}
+
+.void-ci-card:focus-visible {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ci-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.void-ci-label {
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--fg-primary));
+}
+
+.void-ci-input {
+    width: 100%;
+}
+
+.void-ci-textarea-wrap {
+    border: 1px solid hsl(var(--border-l2));
+    border-radius: 0.75rem;
+}
+
+.void-ci-textarea-wrap:focus-within {
+    outline: 2px solid hsl(var(--fg-primary));
+    outline-offset: 2px;
+}
+
+.void-ci-textarea-wrap-error {
+    border-color: hsl(var(--fg-danger));
+}
+
+.void-ci-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.75rem;
+    color: hsl(var(--fg-primary));
+    font-size: 0.875rem;
+    resize: vertical;
+}
+
+.void-ci-textarea:focus {
+    outline: none;
+}
+
+.void-ci-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 0.25rem;
+}
+
+.void-ci-error-text {
+    color: hsl(var(--fg-danger));
+}
+
+.void-ci-trigger {
+    gap: 0.5rem;
+}
+
+.void-ci-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-ci-card-actions {
+        transition: none;
+    }
+}
+`);
+
+  // src/plugins/customInstructions/index.tsx
+  var cl23 = classNameFactory("void-ci-");
+  var PixelAvatarModule = findByPropsLazy("PixelAvatar");
+  var CheckIcon = findExportedComponentLazy("CheckIcon");
+  var BookIcon = findExportedComponentLazy("BookIcon");
+  var PenIcon = findExportedComponentLazy("PenIcon");
+  var TrashIcon = findExportedComponentLazy("TrashIcon");
+  var PlusIcon = findExportedComponentLazy("PlusIcon");
+  var MAX_LENGTH = 4000;
+  var settings19 = definePluginSettings({
+    editor: {
+      type: 6 /* COMPONENT */,
+      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
+    }
+  }).withPrivateSettings();
+  function getPresets() {
+    return settings19.plain.presets ?? [];
+  }
+  function setPresets(presets) {
+    settings19.store.presets = presets;
+  }
+  function getAssignments() {
+    return settings19.plain.assignments ?? {};
+  }
+  function PresetCard({ preset, onEdit, onDelete }) {
+    return /* @__PURE__ */ React.createElement("div", {
+      role: "button",
+      className: cl23("card"),
+      onClick: onEdit
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl23("avatar")
+    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
+      seed: preset.id,
+      size: 32
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl23("card-name")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium"
+    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
+      className: cl23("card-actions")
+    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Edit",
+      onClick: (e) => {
+        e.stopPropagation();
+        onEdit();
+      }
+    }, /* @__PURE__ */ React.createElement(PenIcon, {
+      className: "size-3.5 text-secondary"
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
+      variant: "tertiary",
+      size: "xs",
+      shape: "square",
+      tooltipContent: "Delete",
+      onClick: (e) => {
+        e.stopPropagation();
+        onDelete();
+      }
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
+      className: "size-3.5 text-secondary"
+    }))));
+  }
+  function PresetEditor({ preset, onUpdate, onClose }) {
+    const overLimit = preset.prompt.length > MAX_LENGTH;
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl23("editor")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      className: cl23("label")
+    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
+      type: "text",
+      className: cl23("input"),
+      placeholder: "Preset name",
+      value: preset.name,
+      onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
+      autoComplete: "off"
+    }), /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      className: cl23("label")
+    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
+      className: cl23("textarea-wrap", { "textarea-wrap-error": overLimit })
+    }, /* @__PURE__ */ React.createElement(Textarea, {
+      className: cl23("textarea"),
+      placeholder: "How should Grok behave?",
+      value: preset.prompt,
+      onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
+    })), /* @__PURE__ */ React.createElement("div", {
+      className: cl23("editor-footer")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "xs",
+      color: overLimit ? undefined : "muted",
+      className: overLimit ? cl23("error-text") : undefined
+    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "sm",
+      shape: "rectangle",
+      onClick: onClose
+    }, "Done")));
+  }
+  function PresetsEditor() {
+    const presets = settings19.use(["presets"]).presets ?? [];
+    const [editingId, setEditingId] = useState(null);
+    const updatePreset = useCallback((updated) => {
+      setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
+    }, []);
+    const deletePreset = useCallback((id) => {
+      setPresets(getPresets().filter((p) => p.id !== id));
+      const a = { ...getAssignments() };
+      for (const [k, v] of Object.entries(a)) {
+        if (v === id)
+          delete a[k];
+      }
+      settings19.store.assignments = a;
+      setEditingId((prev) => prev === id ? null : prev);
+    }, []);
+    const addPreset = useCallback(() => {
+      const id = randomId();
+      setPresets([...getPresets(), { id, name: "", prompt: "" }]);
+      setEditingId(id);
+    }, []);
+    const editing = presets.find((p) => p.id === editingId);
+    return /* @__PURE__ */ React.createElement("div", {
+      className: cl23("root")
+    }, /* @__PURE__ */ React.createElement("div", {
+      className: cl23("grid")
+    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
+      key: p.id,
+      preset: p,
+      onEdit: () => setEditingId(editingId === p.id ? null : p.id),
+      onDelete: () => deletePreset(p.id)
+    })), /* @__PURE__ */ React.createElement("div", {
+      role: "button",
+      className: cl23("card", "card-add"),
+      onClick: addPreset
+    }, /* @__PURE__ */ React.createElement(PlusIcon, {
+      className: "size-4 text-secondary"
+    }), /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm",
+      weight: "medium",
+      color: "muted"
+    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
+      preset: editing,
+      onUpdate: updatePreset,
+      onClose: () => setEditingId(null)
+    }));
+  }
+  function InstructionsMenu({ conversationId }) {
+    const presets = settings19.use(["presets"]).presets ?? [];
+    const assignments = settings19.use(["assignments"]).assignments ?? {};
+    const activePresetId = assignments[conversationId];
+    const assign = useCallback((presetId) => {
+      const a = { ...getAssignments() };
+      if (presetId)
+        a[conversationId] = presetId;
+      else
+        delete a[conversationId];
+      settings19.store.assignments = a;
+    }, [conversationId]);
+    if (!presets.length)
+      return null;
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
+      className: cl23("trigger")
+    }, /* @__PURE__ */ React.createElement(BookIcon, {
+      size: 16
+    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
+      onSelect: () => assign(),
+      className: cl23("menu-item")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm"
+    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
+      key: p.id,
+      onSelect: () => assign(p.id),
+      className: cl23("menu-item")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      size: "sm"
+    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
+      className: "size-3.5 shrink-0"
+    })))));
+  }
+  var customInstructions_default = definePlugin({
+    name: "CustomInstructions",
+    icon: ScrollTextIcon,
+    description: "Create instruction presets and assign them to conversations.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings19,
+    contextMenuItems: {
+      conversation: {
+        label: "Instructions",
+        render: ErrorBoundary.wrap(InstructionsMenu)
+      }
+    },
+    _getPrompt() {
+      const { conversationId } = ChatPageStore.useChatPageStore.getState();
+      if (!conversationId)
+        return;
+      const presetId = getAssignments()[conversationId];
+      if (!presetId)
+        return;
+      const preset = getPresets().find((p) => p.id === presetId);
+      return preset?.prompt?.trim() || undefined;
+    },
+    patches: [
+      {
+        find: ["customInstructions:e.customInstructions,customPersonality:e.customPersonality"],
+        all: true,
+        replacement: {
+          match: /customInstructions:(\i)\.customInstructions/g,
+          replace: "customInstructions:$1.customInstructions||$self._getPrompt()"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/noDictation/index.ts
+  var STYLE_NAME8 = "noDictation";
+  var REFINEMENT_MARK = "void-no-dictation-refinement";
+  var BUTTON_CSS = `
+button[aria-label="Dictation"]:not([role="dialog"] *),
+button[aria-label^="Dictation ("]:not([role="dialog"] *),
+div:has(> button[aria-label="Dictation"]):not([role="dialog"] *),
+div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
+    display: none !important;
+}
+`;
+  var REFINEMENT_CSS = `.${REFINEMENT_MARK}{display:none!important}`;
+  var settings20 = definePluginSettings({
+    hideDictationRefinement: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
+      default: true
+    }
+  });
+  function apply3() {
+    const rules = [BUTTON_CSS];
+    if (settings20.store.hideDictationRefinement)
+      rules.push(REFINEMENT_CSS);
+    registerStyle(STYLE_NAME8, rules.join(`
+`));
+  }
+  var noDictation_default = definePlugin({
+    name: "NoDictation",
+    icon: MicOffIcon,
+    description: "Hide the Dictation (voice input) button from the chat input bar, and optionally Dictation Refinement in Settings.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings20,
+    patches: [
+      {
+        find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
+        replacement: {
+          match: /DISABLE_VOICE_MODE&&\(0,(\i)\.jsxs\)\(\i\.Fragment,\{/,
+          replace: `DISABLE_VOICE_MODE&&(0,$1.jsxs)("div",{className:"${REFINEMENT_MARK}",style:{display:"contents"},`
+        }
+      }
+    ],
+    start: apply3,
+    onSettingsChange: apply3,
+    stop() {
+      unregisterStyle(STYLE_NAME8);
+    }
   });
 
   // src/plugins/oneko/index.ts
@@ -17895,94 +14846,234 @@ html.void-cms-picked .void-cms-ghost {
     }
   });
 
-  // src/plugins/starry/index.tsx
-  var DEFAULT_COLOR = "#ffffff";
-  var StarsBackground = findExportedComponentLazy("StarsBackground");
-  function hexToRgb(hex) {
-    const m = /^#([0-9a-fA-F]{6})$/.exec(hex);
-    if (!m)
-      return [255, 255, 255];
-    const n = parseInt(m[1], 16);
-    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/betterSidebar/styles.css
+  registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
+.group.peer [data-sidebar="content"] > .grow {
+    cursor: default !important;
+}
+
+.group.peer [data-sidebar="sidebar"] + div::after {
+    background-color: transparent !important;
+}
+
+.void-sidebar-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    min-width: 0;
+    flex: 1;
+}
+
+.void-sidebar-card:hover {
+    background-color: hsl(var(--surface-l2));
+}
+
+.void-sidebar-card button[data-state] {
+    pointer-events: none;
+    background-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.void-sidebar-info {
+    min-width: 0;
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-sidebar-card { transition: none; }
+}
+
+.void-sidebar-name,
+.void-sidebar-plan {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+.group\\/sidebar-menu-item:hover .void-sel-wrap {
+    display: inline-flex;
+}
+`);
+
+  // src/plugins/betterSidebar/index.tsx
+  var logger29 = new Logger("BetterSidebar");
+  var cl24 = classNameFactory("void-sidebar-");
+  var settings21 = definePluginSettings({
+    clickToToggle: {
+      type: 3 /* BOOLEAN */,
+      description: "Click anywhere on the sidebar to toggle it.",
+      default: true
+    },
+    defaultCollapsed: {
+      type: 3 /* BOOLEAN */,
+      description: "Start with the sidebar collapsed on page load.",
+      default: false
+    },
+    batchSelect: {
+      type: 3 /* BOOLEAN */,
+      description: "Show checkboxes on conversations for bulk selection and deletion.",
+      default: true
+    }
+  });
+  function UserCard({ AvatarMenu }) {
+    const { open: open2 } = SidebarComponents.useSidebar();
+    const { user } = SessionStore.useSession();
+    const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
+    const cardRef = useRef(null);
+    if (!open2 || !user)
+      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
+    const forward = (e, type) => {
+      if (!e.isTrusted)
+        return;
+      cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
+    };
+    return /* @__PURE__ */ React.createElement("div", {
+      ref: cardRef,
+      className: cl24("card"),
+      onPointerDown: (e) => forward(e, "pointerdown"),
+      onPointerUp: (e) => forward(e, "pointerup")
+    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
+      flexDirection: "column",
+      justifyContent: "center",
+      gap: "0",
+      className: cl24("info")
+    }, /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      size: "sm",
+      weight: "medium",
+      className: cl24("name")
+    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
+      as: "span",
+      size: "xs",
+      color: "secondary",
+      className: cl24("plan")
+    }, getPlanName(bestSubscription, user.xSubscriptionType))));
   }
-  function ColorRow2() {
-    const { starColor } = settings25.use(["starColor"]);
-    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
-      value: starColor,
-      onChange: (v) => {
-        settings25.store.starColor = v;
-      },
-      title: "Star color",
-      description: "Color of the twinkling stars."
+  var selection2 = createSelectionStore();
+  var CONVERSATION_PAGE = "chat";
+  var isConversationRoute = (route) => route?.page === CONVERSATION_PAGE;
+  async function deleteConversations(ids) {
+    const currentConvId = ChatPageStore.useChatPageStore.getState().conversationId;
+    if (currentConvId && ids.includes(currentConvId)) {
+      ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
+    }
+    const { fetchSoftDeleteConversation } = ConversationStore.useConversationStore.getState();
+    await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger29.error("Failed to delete", id, e))));
+  }
+  function SelectCheckbox({ id, route }) {
+    const enabled = settings21.use(["batchSelect"]).batchSelect;
+    if (!enabled || !id || !isConversationRoute(route))
+      return null;
+    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
+      selection: selection2,
+      id
     });
   }
-  function StarryBackground() {
-    const { starColor } = settings25.use(["starColor"]);
-    return /* @__PURE__ */ React.createElement("div", {
-      "aria-hidden": true,
-      className: "fixed inset-0 -z-10 pointer-events-none"
-    }, /* @__PURE__ */ React.createElement(StarsBackground, {
-      starColor: hexToRgb(starColor)
-    }));
-  }
-  var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings25 = definePluginSettings({
-    starColor: {
-      type: 6 /* COMPONENT */,
-      default: DEFAULT_COLOR,
-      component: ColorRow2
-    }
-  }).withPrivateSettings();
-  var starry_default = definePlugin({
-    name: "Starry",
-    icon: SparklesIcon,
-    description: "Adds Grok's native twinkling starry background to the main page.",
+  var WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
+  var betterSidebar_default = definePlugin({
+    name: "BetterSidebar",
+    icon: PanelLeftIcon,
+    description: "Various sidebar improvements.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings25,
-    _StarryBg() {
-      return /* @__PURE__ */ React.createElement(WrappedStarry, {
-        key: "void-starry-bg"
-      });
+    settings: settings21,
+    managedStyle: "betterSidebar",
+    _UserCard: ErrorBoundary.wrap(UserCard),
+    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
+      selection: selection2,
+      noun: "conversation",
+      title: "Delete conversations",
+      onDelete: deleteConversations
+    }), null),
+    _wrapCheckbox(item, id, route) {
+      return createElement(Fragment, null, createElement(WrappedCheckbox, { id, route }), item);
+    },
+    _wrapSidebarClick(onClick2, id, route) {
+      return (e) => {
+        if (id && settings21.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          e.stopPropagation();
+          selection2.toggle(id);
+          return;
+        }
+        onClick2?.(e);
+      };
+    },
+    _defaultOpen() {
+      return !settings21.store.defaultCollapsed;
+    },
+    _onSidebarClick() {
+      if (!settings21.store.clickToToggle)
+        return;
+      return (e) => {
+        const target = e.target;
+        if (target.closest("button,a,input,[role=button],[data-sidebar=trigger],[data-sidebar=footer]"))
+          return;
+        e.currentTarget.closest("[data-state]")?.querySelector("[data-sidebar=trigger]")?.click();
+      };
+    },
+    start() {
+      selection2.clear();
+    },
+    stop() {
+      selection2.clear();
     },
     patches: [
       {
-        find: '"chat-page")',
+        find: "AvatarDropdownMenu,{expanded:",
         replacement: {
-          match: /(children:\[)((?:\i,){2,8}\i\]\},"chat-page"\))/,
-          replace: "$1$self._StarryBg(),$2"
+          match: /\(0,(\i)\.jsx\)\((\i)\.AvatarDropdownMenu,\{/,
+          replace: "(0,$1.jsx)($self._UserCard,{AvatarMenu:$2.AvatarDropdownMenu,"
+        }
+      },
+      {
+        find: "useSidebar must be used within a SidebarProvider",
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /\{defaultOpen:(\i),open:/,
+            replace: "{defaultOpen:$1=$self._defaultOpen(),open:"
+          },
+          {
+            match: /data-sidebar":"sidebar",className:/,
+            replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:'
+          }
+        ]
+      },
+      {
+        find: '"Editing actions","Editing actions"',
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /=(\(0,\i\.jsx\)\(\i,\{title:\i,editing:\i,[^}]{0,80}?validationErrorMessage:\i[^}]{0,40}?\}\))/,
+            replace: "=$self._wrapCheckbox($1,arguments[0].id,arguments[0].route)"
+          },
+          {
+            match: /\((\i),\{route:(\i),onClick:(\i),(.{0,40}?className:)/,
+            replace: "($1,{route:$2,onClick:$self._wrapSidebarClick($3,arguments[0].id,$2),$4"
+          }
+        ]
+      },
+      {
+        find: '"sidebar-expand","Expand"',
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
+          replace: "$self._renderActionBar(),$&"
         }
       }
     ]
   });
 
-  // src/plugins/noGrokBot/index.ts
-  var STYLE_NAME9 = "noGrokBot";
-  var CSS3 = `
-#grok-bot-nav-button,
-div:has(> #grok-bot-nav-button) {
-    display: none !important;
-}
-#promo-portal [aria-label*="Grok Bot"] {
-    display: none !important;
-}
-`;
-  var noGrokBot_default = definePlugin({
-    name: "NoGrokBot",
-    icon: BotOffIcon,
-    description: "Hide the top-right Grok Bot promo button.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    start() {
-      registerStyle(STYLE_NAME9, CSS3);
-    },
-    stop() {
-      unregisterStyle(STYLE_NAME9);
-    }
-  });
-
-  // voidpp-css:/tmp/VoidPP/src/plugins/placeholder/styles.css
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -18015,7 +15106,7 @@ div:has(> #grok-bot-nav-button) {
 `);
 
   // src/plugins/placeholder/index.tsx
-  var cl26 = classNameFactory("void-ph-");
+  var cl25 = classNameFactory("void-ph-");
   var DEFAULT_PHRASES = [
     "What do you want to know?",
     "How can I help you today?",
@@ -18026,7 +15117,7 @@ div:has(> #grok-bot-nav-button) {
     return String(raw ?? "").split(`
 `).map((s) => s.trim()).filter(Boolean);
   }
-  var settings26 = definePluginSettings({
+  var settings22 = definePluginSettings({
     phrases: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_PHRASES,
@@ -18034,11 +15125,11 @@ div:has(> #grok-bot-nav-button) {
     }
   }).withPrivateSettings();
   function PhrasesEditor() {
-    const { phrases } = settings26.use(["phrases"]);
+    const { phrases } = settings22.use(["phrases"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
-      className: cl26("root")
+      className: cl25("root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
@@ -18046,12 +15137,12 @@ div:has(> #grok-bot-nav-button) {
       size: "sm",
       weight: "medium"
     }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
-      className: cl26("textarea-wrap")
+      className: cl25("textarea-wrap")
     }, /* @__PURE__ */ React.createElement(Textarea, {
-      className: cl26("textarea"),
+      className: cl25("textarea"),
       value: phrases ?? DEFAULT_PHRASES,
       onChange: (e) => {
-        settings26.store.phrases = e.target.value;
+        settings22.store.phrases = e.target.value;
       },
       placeholder: DEFAULT_PHRASES
     })));
@@ -18062,9 +15153,9 @@ div:has(> #grok-bot-nav-button) {
     description: "Replace the rotating chat and Grok Bot input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],
-    settings: settings26,
+    settings: settings22,
     _phrases() {
-      const lines = parsePhrases(settings26.store.phrases ?? DEFAULT_PHRASES);
+      const lines = parsePhrases(settings22.store.phrases ?? DEFAULT_PHRASES);
       return lines.length ? lines : null;
     },
     _inputPlaceholder(value) {
@@ -18091,11 +15182,2934 @@ div:has(> #grok-bot-nav-button) {
     ]
   });
 
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/messageTimestamps/styles.css
+  registerStyle("messageTimestamps", `.void-timestamp {
+    margin-bottom: 0.125rem;
+}
+
+@media print {
+    .void-timestamp {
+        display: none;
+    }
+}
+`);
+
+  // src/plugins/messageTimestamps/time.ts
+  var FRESH_MS = 2 * 60 * 1000;
+  var BORROW_MS = 1000;
+  var MIN_MS = Date.UTC(2020, 0, 1);
+  var MAX_SKEW_MS = 24 * 60 * 60 * 1000;
+  var TIME_KEYS = ["thinkingStartTime", "createTime", "create_time", "createdAt", "created_at"];
+  function isFresh(ms, now = Date.now()) {
+    return Math.abs(now - ms) < FRESH_MS;
+  }
+  function inRange(ms, now = Date.now()) {
+    return Number.isFinite(ms) && ms >= MIN_MS && ms <= now + MAX_SKEW_MS;
+  }
+  function fromUnixish(n, now = Date.now()) {
+    if (!Number.isFinite(n) || n <= 0)
+      return null;
+    const ms = n < 1000000000000 ? n * 1000 : n;
+    return inRange(ms, now) ? Math.round(ms) : null;
+  }
+  function parseTime(value, now = Date.now()) {
+    if (value == null || value === "")
+      return null;
+    if (typeof value === "number")
+      return fromUnixish(value, now);
+    if (typeof value === "bigint")
+      return fromUnixish(Number(value), now);
+    if (value instanceof Date) {
+      const t = value.getTime();
+      return Number.isNaN(t) || !inRange(t, now) ? null : t;
+    }
+    if (typeof value === "string") {
+      const s = value.trim();
+      if (!s)
+        return null;
+      if (/^\d+(\.\d+)?$/.test(s))
+        return fromUnixish(Number(s), now);
+      const t = Date.parse(s);
+      return Number.isNaN(t) || !inRange(t, now) ? null : t;
+    }
+    if (typeof value !== "object")
+      return null;
+    const rec = value;
+    if (rec.seconds != null) {
+      const sec = typeof rec.seconds === "string" ? Number(rec.seconds) : Number(rec.seconds);
+      const nanos = Number(rec.nanos) || 0;
+      if (!Number.isFinite(sec))
+        return null;
+      const ms = sec * 1000 + Math.floor(nanos / 1e6);
+      return inRange(ms, now) ? Math.round(ms) : null;
+    }
+    if (rec.$date != null) {
+      const date = rec.$date;
+      if (date && typeof date === "object" && "$numberLong" in date) {
+        return parseTime(date.$numberLong, now);
+      }
+      return parseTime(date, now);
+    }
+    if (rec.$numberLong != null)
+      return parseTime(rec.$numberLong, now);
+    return parseTime(rec.createTime ?? rec.create_time ?? rec.createdAt ?? rec.created_at, now);
+  }
+  function uuidTime(id, now = Date.now()) {
+    if (typeof id !== "string")
+      return null;
+    const compact = id.trim().replaceAll("-", "").toLowerCase();
+    if (compact.length !== 32)
+      return null;
+    if (compact.charAt(12) !== "7")
+      return null;
+    const variant = parseInt(compact.charAt(16), 16);
+    if (!Number.isFinite(variant) || (variant & 12) !== 8)
+      return null;
+    const ms = parseInt(compact.slice(0, 12), 16);
+    return inRange(ms, now) ? ms : null;
+  }
+  function asRecord(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
+  }
+  function recordId(record) {
+    const { responseId, _id } = record;
+    if (typeof responseId === "string" && responseId)
+      return responseId;
+    return typeof _id === "string" ? _id : "";
+  }
+  function isHumanSender(sender2) {
+    if (typeof sender2 !== "string")
+      return false;
+    const normalized = sender2.toLowerCase();
+    return normalized === "human" || normalized === "user";
+  }
+  function isOptimisticState(state2) {
+    if (typeof state2 !== "string")
+      return false;
+    const normalized = state2.toLowerCase();
+    return normalized === "optimistic" || normalized === "streaming";
+  }
+  function pickTimes(record, now = Date.now()) {
+    const out = [];
+    const seen = new Set;
+    const add = (value) => {
+      const ms = parseTime(value, now);
+      if (ms == null || seen.has(ms))
+        return;
+      seen.add(ms);
+      out.push(ms);
+    };
+    for (const key of TIME_KEYS)
+      add(record[key]);
+    const meta = asRecord(record.metadata);
+    if (meta) {
+      for (const key of TIME_KEYS)
+        add(meta[key]);
+    }
+    return out;
+  }
+  function oldestTrusted(values, now = Date.now()) {
+    let best = null;
+    for (const ms of values) {
+      if (ms == null || isFresh(ms, now))
+        continue;
+      if (best == null || ms < best)
+        best = ms;
+    }
+    return best;
+  }
+  function chooseTime(opts) {
+    const now = opts.now ?? Date.now();
+    const trusted = oldestTrusted([opts.stored, ...opts.fieldTimes, opts.uuid], now);
+    if (trusted != null)
+      return trusted;
+    return opts.stored ?? opts.fieldTimes[0] ?? opts.uuid ?? null;
+  }
+  function trustedTime(opts) {
+    const now = opts.now ?? Date.now();
+    return oldestTrusted([opts.stored ?? null, ...opts.fieldTimes, opts.uuid], now);
+  }
+  function shouldKeepStored(prev, incoming, now = Date.now()) {
+    if (incoming === prev)
+      return true;
+    if (isFresh(incoming, now) && incoming >= prev)
+      return true;
+    if (!isFresh(prev, now) && incoming > prev)
+      return true;
+    return false;
+  }
+  function preferHumanTime(own, borrowed) {
+    if (borrowed == null)
+      return own;
+    if (own == null || own > borrowed)
+      return borrowed;
+    return own;
+  }
+  function textKey(value) {
+    if (typeof value !== "string")
+      return "";
+    const s = value.trim();
+    if (!s)
+      return "";
+    const slice = s.slice(0, 240);
+    let h = 5381;
+    for (let i = 0;i < slice.length; i++)
+      h = Math.imul(h, 33) ^ slice.charCodeAt(i);
+    return (h >>> 0).toString(36);
+  }
+  function stampOf(rec, now) {
+    const id = recordId(rec);
+    const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(id, now), now });
+    return ms == null ? null : ms - BORROW_MS;
+  }
+  function nextNonHuman(records, from) {
+    for (let i = from;i < records.length; i++) {
+      if (!isHumanSender(records[i].sender))
+        return records[i];
+    }
+    return null;
+  }
+  function childTime(id, records, now = Date.now()) {
+    if (!id)
+      return null;
+    for (const rec of records) {
+      if (rec.parentResponseId !== id || isHumanSender(rec.sender))
+        continue;
+      const ms = parseTime(rec.thinkingStartTime, now);
+      if (ms != null)
+        return ms - BORROW_MS;
+    }
+    return null;
+  }
+  function authoritativeTime(rec, records, now = Date.now()) {
+    if (isHumanSender(rec.sender))
+      return childTime(recordId(rec), records, now);
+    return parseTime(rec.thinkingStartTime, now);
+  }
+  function neighborTime(id, records, now = Date.now()) {
+    if (!id)
+      return null;
+    let next = null;
+    for (let i = 0;i < records.length; i++) {
+      const rec = records[i];
+      const recId = recordId(rec);
+      if (rec.parentResponseId === id && !isHumanSender(rec.sender)) {
+        const ms = stampOf(rec, now);
+        if (ms != null)
+          return ms;
+      }
+      if (recId === id && next == null)
+        next = nextNonHuman(records, i + 1);
+    }
+    if (!next)
+      return null;
+    return stampOf(next, now);
+  }
+  function childTimeFromNodes(id, nodes, byId, now = Date.now()) {
+    if (!id || !nodes.length)
+      return null;
+    let nextId2 = "";
+    for (let i = 0;i < nodes.length; i++) {
+      const node = nodes[i];
+      const recId = recordId(node);
+      if (node.parentResponseId === id && !isHumanSender(node.sender)) {
+        const rec2 = byId[recId] ?? node;
+        const ms = stampOf(rec2, now);
+        if (ms != null)
+          return ms;
+      }
+      if (recId === id && !nextId2)
+        nextId2 = recordId(nextNonHuman(nodes, i + 1) ?? {});
+    }
+    if (!nextId2)
+      return null;
+    const rec = byId[nextId2] ?? nodes.find((n) => recordId(n) === nextId2);
+    return rec && !isHumanSender(rec.sender) ? stampOf(rec, now) : null;
+  }
+  function shouldPersistStamp(sender2, ms, stored, now = Date.now(), state2) {
+    if (stored != null)
+      return !shouldKeepStored(stored, ms, now);
+    if (isHumanSender(sender2) && isFresh(ms, now))
+      return isOptimisticState(state2);
+    return true;
+  }
+  function harvestResponses(value, now = Date.now()) {
+    const records = [];
+    collectRecords(value, 0, records, new Set);
+    const out = [];
+    const seen = new Set;
+    for (const rec of records) {
+      const id = recordId(rec);
+      if (!id || seen.has(id))
+        continue;
+      const authoritative = authoritativeTime(rec, records, now);
+      if (authoritative != null) {
+        seen.add(id);
+        out.push({ id, ms: authoritative, rec, authoritative: true });
+        continue;
+      }
+      const uuid = uuidTime(id, now);
+      const { sender: sender2, state: state2 } = rec;
+      const human = isHumanSender(sender2);
+      const fieldTimes = human && !isOptimisticState(state2) ? [] : pickTimes(rec, now);
+      let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
+      if (human) {
+        if (isOptimisticState(state2)) {
+          if (ms == null)
+            continue;
+        } else {
+          ms = preferHumanTime(ms, neighborTime(id, records, now));
+          if (ms != null && isFresh(ms, now))
+            ms = null;
+        }
+      }
+      if (ms == null)
+        continue;
+      seen.add(id);
+      out.push({ id, ms, rec, authoritative: false });
+    }
+    return out;
+  }
+  function collectRecords(value, depth, out, seen) {
+    if (value == null || depth > 8)
+      return;
+    if (typeof value !== "object")
+      return;
+    if (seen.has(value))
+      return;
+    seen.add(value);
+    if (Array.isArray(value)) {
+      for (const item of value)
+        collectRecords(item, depth + 1, out, seen);
+      return;
+    }
+    const rec = value;
+    if (recordId(rec))
+      out.push(rec);
+    for (const child of Object.values(rec))
+      collectRecords(child, depth + 1, out, seen);
+  }
+
+  // src/plugins/messageTimestamps/index.tsx
+  var logger30 = new Logger("MessageTimestamps");
+  var STAMP_MAX = 5000;
+  var RESPONSE_URL = /\/(?:load-responses|share_links|response-node)(?:\/|\?|$)/i;
+  var settings23 = definePluginSettings({
+    showDate: {
+      type: 3 /* BOOLEAN */,
+      description: "Show the full date for messages older than today.",
+      default: true
+    },
+    hideOwnMessages: {
+      type: 3 /* BOOLEAN */,
+      default: false,
+      description: "Hide timestamps on your own messages."
+    }
+  }).withPrivateSettings();
+  var tick = createExternalStore();
+  var cache = null;
+  var origFetch = null;
+  var origXhrOpen = null;
+  var origXhrSend = null;
+  var origList = null;
+  var hookedWindow = null;
+  var xhrMeta = new WeakMap;
+  function pageWindow2() {
+    return typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+  }
+  function stamps() {
+    if (cache)
+      return cache;
+    cache = new Map;
+    const raw = settings23.plain.stamps;
+    if (raw && typeof raw === "object") {
+      for (const [id, ms] of Object.entries(raw)) {
+        if (typeof ms === "number" && Number.isFinite(ms))
+          cache.set(id, ms);
+      }
+    }
+    return cache;
+  }
+  function persistNow() {
+    const next = {};
+    for (const [id, ms] of stamps())
+      next[id] = ms;
+    settings23.store.stamps = next;
+  }
+  var persist2 = debounce(persistNow, 400);
+  function remember(id, ms, sender2, state2, force = false) {
+    if (!id)
+      return false;
+    const map = stamps();
+    const prev = map.get(id) ?? null;
+    if (!force && !shouldPersistStamp(sender2, ms, prev, Date.now(), state2))
+      return false;
+    if (map.has(id))
+      map.delete(id);
+    map.set(id, ms);
+    while (map.size > STAMP_MAX) {
+      const oldest = map.keys().next().value;
+      if (oldest == null)
+        break;
+      map.delete(oldest);
+    }
+    persist2();
+    return prev !== ms;
+  }
+  function conversationIdOf(id, rec) {
+    if (typeof rec.conversationId === "string")
+      return rec.conversationId;
+    try {
+      const { byConversationId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        if (list?.some((r) => r.responseId === id))
+          return cid;
+      }
+      for (const [cid, nodes] of Object.entries(nodesByConversationId ?? {})) {
+        if (nodes?.some((n) => n.responseId === id))
+          return cid;
+      }
+    } catch (e) {
+      logger30.debug("conversation id lookup failed", e);
+    }
+    return "";
+  }
+  function userKeys(rec, id) {
+    const keys2 = [];
+    if (id)
+      keys2.push(`u:${id}`);
+    const { parentResponseId } = rec;
+    if (typeof parentResponseId === "string" && parentResponseId)
+      keys2.push(`u:p:${parentResponseId}`);
+    const text = typeof rec.message === "string" && rec.message ? rec.message : typeof rec.query === "string" ? rec.query : "";
+    const fp = textKey(text);
+    if (fp) {
+      const cid = conversationIdOf(id, rec);
+      keys2.push(cid ? `u:t:${cid}:${fp}` : `u:t:${fp}`);
+    }
+    return keys2;
+  }
+  function gatewayRecords(cid) {
+    const out = [];
+    try {
+      const { conversations } = MessageStore.useMessageStore.getState();
+      const slices = cid ? [conversations?.[cid]] : Object.values(conversations ?? {});
+      for (const slice of slices) {
+        for (const { status, content } of Object.values(slice?.nodes ?? {})) {
+          if (!content)
+            continue;
+          const { responseId, sender: sender2, parentResponseId, createTime, thinkingStartTime, state: state2 } = content;
+          out.push({
+            responseId,
+            sender: sender2,
+            parentResponseId,
+            thinkingStartTime,
+            createTime: status === "complete" ? undefined : createTime,
+            state: status === "ack-pending" ? "optimistic" : state2
+          });
+        }
+      }
+    } catch (e) {
+      logger30.debug("message store unavailable", e);
+    }
+    return out;
+  }
+  function gatewaySettled(cid, id) {
+    if (!cid)
+      return false;
+    try {
+      return MessageStore.useMessageStore.getState().conversations?.[cid]?.nodes?.[id]?.status === "complete";
+    } catch (e) {
+      logger30.debug("message store unavailable", e);
+      return false;
+    }
+  }
+  function extraKeys(rec, id) {
+    const keys2 = [];
+    if (id)
+      keys2.push(`h:${id}`);
+    const { parentResponseId } = rec;
+    if (typeof parentResponseId === "string" && parentResponseId)
+      keys2.push(`h:${parentResponseId}`);
+    try {
+      const { byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        const index = list?.findIndex((r) => r.responseId === id) ?? -1;
+        if (index < 0)
+          continue;
+        keys2.push(`h:${cid}:${index}`);
+        break;
+      }
+    } catch (e) {
+      logger30.debug("stable key lookup failed", e);
+    }
+    return keys2;
+  }
+  function storedMs(id, rec, user) {
+    const map = stamps();
+    const keys2 = user ? userKeys(rec, id) : [id, ...extraKeys(rec, id)];
+    for (const key of keys2) {
+      const ms = map.get(key);
+      if (ms != null)
+        return ms;
+    }
+    return null;
+  }
+  function rememberKeys(id, rec, ms, sender2, user, force = false) {
+    const { state: state2 } = rec;
+    let changed = false;
+    if (user) {
+      for (const key of userKeys(rec, id)) {
+        if (remember(key, ms, "human", state2, force))
+          changed = true;
+      }
+      return changed;
+    }
+    if (remember(id, ms, sender2, state2, force))
+      changed = true;
+    for (const key of extraKeys(rec, id)) {
+      if (remember(key, ms, sender2, state2, force))
+        changed = true;
+    }
+    return changed;
+  }
+  function storeRecords(id) {
+    try {
+      const { byId, byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const list of Object.values(byConversationId ?? {})) {
+        if (list?.some((r) => r.responseId === id))
+          return list;
+      }
+      return Object.values(byId ?? {});
+    } catch (e) {
+      logger30.debug("response store unavailable", e);
+      return [];
+    }
+  }
+  function borrowedMs(id, cid) {
+    if (cid) {
+      const ms = neighborTime(id, gatewayRecords(cid));
+      if (ms != null)
+        return ms;
+    }
+    try {
+      const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+      const lookup = byId;
+      for (const nodes of Object.values(nodesByConversationId ?? {})) {
+        const ms = childTimeFromNodes(id, nodes ?? [], lookup);
+        if (ms != null)
+          return ms;
+      }
+      const records = [
+        ...storeRecords(id),
+        ...Object.values(lookup).filter((r) => r != null)
+      ];
+      return neighborTime(id, records) ?? conversationCreateTime(id);
+    } catch (e) {
+      logger30.debug("node neighbor lookup failed", e);
+    }
+    return neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
+  }
+  function conversationCreateTime(id) {
+    try {
+      const { byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        const first = list?.find((r) => isHumanSender(r.sender));
+        if (first?.responseId !== id)
+          continue;
+        const conv = ConversationStore.useConversationStore.getState().byId?.[cid];
+        const ms = parseTime(conv?.createTime);
+        return ms != null && !isFresh(ms) ? ms : null;
+      }
+    } catch (e) {
+      logger30.debug("conversation time lookup failed", e);
+    }
+    return null;
+  }
+  function fullRecord(id, rec) {
+    if (!id)
+      return rec;
+    try {
+      const hit = asRecord(ResponseStore.useResponseStore.getState().byId?.[id]);
+      if (hit)
+        return { ...rec, ...hit };
+    } catch (e) {
+      logger30.debug("byId lookup failed", e);
+    }
+    return rec;
+  }
+  function resolveMs(response, isUser) {
+    const rec = asRecord(response);
+    if (!rec)
+      return null;
+    const id = recordId(rec);
+    const full = fullRecord(id, rec);
+    const human = isUser === true || isHumanSender(full.sender);
+    const sender2 = human ? "human" : full.sender;
+    const cid = id ? conversationIdOf(id, full) : "";
+    let authoritative = null;
+    if (id)
+      authoritative = human ? childTime(id, [...gatewayRecords(cid), ...storeRecords(id)]) : parseTime(full.thinkingStartTime);
+    if (authoritative != null) {
+      rememberKeys(id, full, authoritative, sender2, human, true);
+      return authoritative;
+    }
+    const stored = id ? storedMs(id, full, human) : null;
+    const fieldTimes = human && !isOptimisticState(full.state) || gatewaySettled(cid, id) ? [] : pickTimes(full);
+    let ms = chooseTime({
+      fieldTimes,
+      stored,
+      uuid: uuidTime(id)
+    });
+    if (human && id)
+      ms = preferHumanTime(ms, borrowedMs(id, cid));
+    if (id && ms != null)
+      rememberKeys(id, full, ms, sender2, human);
+    return ms;
+  }
+  function ingest(value) {
+    let changed = false;
+    for (const { id, ms, rec, authoritative } of harvestResponses(value)) {
+      const human = isHumanSender(rec.sender);
+      if (rememberKeys(id, rec, ms, rec.sender, human, authoritative))
+        changed = true;
+    }
+    if (changed)
+      tick.notify();
+  }
+  function requestUrl(input) {
+    if (typeof input === "string")
+      return input;
+    if (input instanceof URL)
+      return input.href;
+    try {
+      return input.url;
+    } catch {
+      return "";
+    }
+  }
+  function hookFetch() {
+    if (origFetch)
+      return;
+    const w = pageWindow2();
+    origFetch = w.fetch;
+    hookedWindow = w;
+    w.fetch = function voidMessageTimestampsFetch(input, init) {
+      const url = requestUrl(input);
+      const promise = origFetch.call(w, input, init);
+      if (!RESPONSE_URL.test(url))
+        return promise;
+      return promise.then((res) => {
+        try {
+          res.clone().json().then(ingest, () => {});
+        } catch (e) {
+          logger30.debug("fetch ingest failed", e);
+        }
+        return res;
+      });
+    };
+  }
+  function unhookFetch() {
+    if (!origFetch || !hookedWindow)
+      return;
+    hookedWindow.fetch = origFetch;
+    origFetch = null;
+    hookedWindow = null;
+  }
+  function ingestXhr(xhr) {
+    if (xhr.status < 200 || xhr.status >= 300)
+      return;
+    const { responseType } = xhr;
+    if (responseType === "json") {
+      ingest(xhr.response);
+      return;
+    }
+    if (responseType !== "" && responseType !== "text")
+      return;
+    const text = xhr.responseText;
+    if (!text)
+      return;
+    ingest(JSON.parse(text));
+  }
+  function hookXhr() {
+    if (origXhrOpen)
+      return;
+    const XHR = pageWindow2().XMLHttpRequest;
+    origXhrOpen = XHR.prototype.open;
+    origXhrSend = XHR.prototype.send;
+    XHR.prototype.open = function voidMessageTimestampsOpen(method, url, ...rest) {
+      try {
+        xhrMeta.set(this, requestUrl(url));
+      } catch (e) {
+        logger30.debug("xhr open failed", e);
+      }
+      return origXhrOpen.call(this, method, url, ...rest);
+    };
+    XHR.prototype.send = function voidMessageTimestampsSend(body) {
+      const url = xhrMeta.get(this) ?? "";
+      if (RESPONSE_URL.test(url)) {
+        this.addEventListener("load", () => {
+          try {
+            ingestXhr(this);
+          } catch (e) {
+            logger30.debug("xhr ingest failed", e);
+          }
+        }, { once: true });
+      }
+      return origXhrSend.call(this, body);
+    };
+  }
+  function unhookXhr() {
+    if (!origXhrOpen || !origXhrSend)
+      return;
+    const XHR = pageWindow2().XMLHttpRequest;
+    XHR.prototype.open = origXhrOpen;
+    XHR.prototype.send = origXhrSend;
+    origXhrOpen = null;
+    origXhrSend = null;
+  }
+  function hookListResponses() {
+    if (origList)
+      return;
+    try {
+      const { chatApi } = ApiClients;
+      origList = chatApi.chatListResponses;
+      chatApi.chatListResponses = function voidMessageTimestampsList(a) {
+        return origList.call(chatApi, a).then((data) => {
+          ingest(data);
+          return data;
+        });
+      };
+    } catch (e) {
+      origList = null;
+      logger30.debug("chatListResponses wrap skipped", e);
+    }
+  }
+  function unhookListResponses() {
+    if (!origList)
+      return;
+    try {
+      ApiClients.chatApi.chatListResponses = origList;
+    } catch (e) {
+      logger30.debug("chatListResponses unwrap skipped", e);
+    }
+    origList = null;
+  }
+  function formatTimestamp(ms, showDate) {
+    const date = new Date(ms);
+    const now = new Date;
+    const today = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (!showDate || today)
+      return time;
+    return date.toLocaleDateString([], { month: "short", day: "numeric" }) + " " + time;
+  }
+  var messageTimestamps_default = definePlugin({
+    name: "MessageTimestamps",
+    icon: ClockIcon,
+    description: "Shows timestamps on chat messages.",
+    authors: [Devs.Prism],
+    tags: ["chat"],
+    settings: settings23,
+    start() {
+      try {
+        hookFetch();
+        hookXhr();
+        hookListResponses();
+      } catch (e) {
+        logger30.warn("Failed to hook network", e);
+      }
+    },
+    stop() {
+      unhookFetch();
+      unhookXhr();
+      unhookListResponses();
+      persistNow();
+    },
+    zustand: {
+      ResponseStore: {
+        selector: (s) => {
+          let n = 0;
+          for (const list of Object.values(s.nodesByConversationId ?? {}))
+            n += list?.length ?? 0;
+          return `${Object.keys(s.byId ?? {}).length}:${n}`;
+        },
+        handler() {
+          try {
+            const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+            ingest({
+              responses: Object.values(byId ?? {}),
+              nodes: Object.values(nodesByConversationId ?? {}).flat()
+            });
+          } catch (e) {
+            logger30.debug("store ingest failed", e);
+          }
+        }
+      },
+      MessageStore: {
+        selector: (s) => {
+          let n = 0;
+          for (const slice of Object.values(s.conversations ?? {}))
+            n += Object.keys(slice?.nodes ?? {}).length;
+          return n;
+        },
+        handler() {
+          ingest({ responses: gatewayRecords("") });
+        }
+      }
+    },
+    _renderTimestamp: ErrorBoundary.wrap(({ response, isUser }) => {
+      useExternalStore(tick);
+      const human = isUser === true || isHumanSender(response.sender);
+      if (settings23.store.hideOwnMessages && human)
+        return null;
+      const ms = resolveMs(response, isUser);
+      if (ms == null)
+        return null;
+      return /* @__PURE__ */ React.createElement(Text2, {
+        as: "span",
+        size: "xs",
+        color: "muted",
+        className: "void-timestamp"
+      }, formatTimestamp(ms, settings23.store.showDate));
+    }),
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:(\i),isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._renderTimestamp({response:$2,isUser:$1}),$&"
+        }
+      }
+    ]
+  });
+
+  // src/plugins/cleaner/index.ts
+  var settings24 = definePluginSettings({
+    hideUpgradePlan: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade plan button in the user menu.",
+      default: true
+    },
+    hideUpsellCard: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upsell card banner.",
+      default: true
+    },
+    hideUpsellSmall: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the small SuperGrok upsell banner.",
+      default: true
+    },
+    hideModelUpsell: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide the upgrade prompt in the model selector.",
+      default: true
+    },
+    hideInaccessibleModels: {
+      type: 3 /* BOOLEAN */,
+      description: "Hide locked/inaccessible models in the model selector.",
+      default: true
+    },
+    hideNotificationBanner: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Get notified when Grok finishes answering" banner.',
+      default: true
+    },
+    hideConnectX: {
+      type: 3 /* BOOLEAN */,
+      description: 'Hide the "Connect your \uD835\uDD4F account" upsell popout.',
+      default: true
+    }
+  });
+  var hideComponentPatch = (name, setting, all = true) => ({
+    find: `"${name}",0,`,
+    all,
+    replacement: {
+      match: new RegExp(`"${name}",0,`),
+      replace: `"${name}",0,$self.settings.store.${setting}?()=>null:`
+    }
+  });
+  var cleaner_default = definePlugin({
+    name: "Cleaner",
+    icon: BrushCleaningIcon,
+    description: "Hides upgrade nags and upsell banners.",
+    authors: [Devs.Prism],
+    tags: ["ui"],
+    enabledByDefault: true,
+    settings: settings24,
+    patches: [
+      {
+        find: '"user-dropdown.upgrade","Upgrade plan"',
+        all: true,
+        replacement: {
+          match: /,(\i)(?=\?null:.{0,160}"user-dropdown\.upgrade")/,
+          replace: ",$self.settings.store.hideUpgradePlan||$1"
+        }
+      },
+      {
+        find: "UPSELL_CARD_PRIORITY)",
+        all: true,
+        replacement: {
+          match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
+          replace: "$1&&!$self.settings.store.hideUpsellCard"
+        }
+      },
+      hideComponentPatch("UpsellSuperGrokSmall", "hideUpsellSmall"),
+      hideComponentPatch("UpsellButton", "hideUpsellSmall", false),
+      {
+        find: "connect-x-upsell-dismissed",
+        replacement: {
+          match: /\.ENABLE_X_INTEGRATION&&(\i\.SHOW_CONNECT_X_UPSELL)/,
+          replace: ".ENABLE_X_INTEGRATION&&!$self.settings.store.hideConnectX&&$1"
+        }
+      },
+      hideComponentPatch("BrowserNotificationBanner", "hideNotificationBanner"),
+      {
+        find: ["mode-select.search-placeholder", "UPSELL_MODEL_SELECT_PRIORITY"],
+        all: true,
+        group: true,
+        replacement: [
+          {
+            match: /UPSELL_MODEL_SELECT_PRIORITY\),.{0,200}?if\(/,
+            replace: "$&$self.settings.store.hideModelUpsell||"
+          },
+          {
+            match: /upgradePrimaryModes:(\i),unavailablePrimaryModes:(\i)\}/,
+            replace: "upgradePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$1,unavailablePrimaryModes:$self.settings.store.hideInaccessibleModels?[]:$2}"
+          }
+        ]
+      }
+    ]
+  });
+
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/plugins/recentTopics/styles.css
+  registerStyle("recentTopics", `.void-rt-root,
+.void-rt-root:popover-open {
+    isolation: isolate;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    background: transparent !important;
+    color: inherit;
+    pointer-events: auto !important;
+}
+
+.void-rt-root::backdrop {
+    background: transparent;
+}
+
+html.void-rt-open [data-sidebar="sidebar"],
+html.void-rt-open [data-sidebar="gap"] {
+    z-index: 0 !important;
+}
+
+.void-rt-panel,
+.void-rt-card,
+.void-rt-meta,
+.void-rt-name,
+.void-rt-host,
+.void-rt-empty {
+    font-family: inherit;
+    letter-spacing: inherit;
+}
+
+.void-rt-panel,
+.void-rt-panel * {
+    box-sizing: border-box;
+}
+
+.void-rt-panel {
+    --void-rt-accent: hsl(var(--fg-primary));
+    --void-rt-card-width: clamp(136px, calc((100vw - 68px) / 5), 204px);
+    --void-rt-gap: 8px;
+    --void-rt-padding-panel: 12px;
+    --void-rt-padding-card: 8px;
+    --void-rt-border-card: 1px;
+    --void-rt-radius-panel: 16px;
+    --void-rt-radius-card: calc(var(--void-rt-radius-panel) - var(--void-rt-padding-panel));
+    --void-rt-radius-thumb: calc(var(--void-rt-radius-card) - var(--void-rt-padding-card) - var(--void-rt-border-card));
+    --void-rt-radius-icon: 8px;
+    --void-rt-radius-title-icon: 8px;
+    --void-rt-meta-inline-padding: 4px;
+    --void-rt-motion-card: 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    --void-rt-motion-cover: 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    --void-rt-thumb-stroke-inset: -0.5px;
+    --void-rt-thumb-stroke-radius-offset: 0.5px;
+    --void-rt-thumb-stroke-color: hsl(var(--border-l2));
+    --void-rt-title-icon-size: 16px;
+    --void-rt-title-icon-gap: 4px;
+
+    all: unset;
+    color-scheme: inherit;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    transform-origin: center center;
+    z-index: 1;
+    display: block;
+    width: fit-content;
+    max-width: calc(100vw - 24px);
+    overflow: auto hidden;
+    scrollbar-width: none;
+    color: hsl(var(--fg-primary));
+    background: hsl(var(--surface-l2));
+    border: 1px solid hsl(var(--border-l1));
+    border-radius: var(--void-rt-radius-panel);
+    box-shadow: 0 4px 16px hsl(var(--black) / 12%);
+    padding: var(--void-rt-padding-panel);
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity 90ms ease;
+    will-change: opacity;
+}
+
+.void-rt-panel::-webkit-scrollbar {
+    display: none;
+}
+
+.void-rt-panel[data-visible="true"] {
+    opacity: 1;
+}
+
+.void-rt-list {
+    display: grid;
+    grid-template-columns: repeat(var(--void-rt-count, 5), var(--void-rt-card-width));
+    gap: var(--void-rt-gap);
+    width: max-content;
+    max-width: 100%;
+    padding: 2px;
+}
+
+.void-rt-card {
+    all: unset;
+    box-sizing: border-box;
+    width: var(--void-rt-card-width);
+    min-width: var(--void-rt-card-width);
+    max-width: var(--void-rt-card-width);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: var(--void-rt-radius-card);
+    border: var(--void-rt-border-card) solid transparent;
+    outline: 0;
+    background: transparent;
+    padding: var(--void-rt-padding-card);
+    color: hsl(var(--fg-primary));
+    cursor: pointer;
+    box-shadow: none;
+    transition:
+        border-color 140ms ease,
+        box-shadow var(--void-rt-motion-card);
+}
+
+.void-rt-card[data-active="true"] {
+    z-index: 1;
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 82%, hsl(var(--border-l2)));
+    background: transparent;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 55%, transparent);
+}
+
+.void-rt-card:focus-visible {
+    border-color: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 88%, hsl(var(--border-l2)));
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 60%, transparent);
+}
+
+.void-rt-thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--void-rt-radius-thumb);
+    background: color-mix(in srgb, var(--void-rt-card-accent, var(--void-rt-accent)) 14%, hsl(var(--surface-l1)));
+}
+
+.void-rt-thumb::after {
+    content: "";
+    position: absolute;
+    inset: var(--void-rt-thumb-stroke-inset);
+    z-index: 2;
+    border-radius: calc(var(--void-rt-radius-thumb) + var(--void-rt-thumb-stroke-radius-offset));
+    box-sizing: border-box;
+    border: 1px solid var(--void-rt-thumb-stroke-color);
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.void-rt-shot {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+}
+
+.void-rt-shot,
+.void-rt-shot * {
+    pointer-events: none !important;
+    scrollbar-width: none;
+}
+
+.void-rt-thumb:has(.void-rt-shot) .void-rt-fallback {
+    display: none;
+}
+
+.void-rt-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: top center;
+}
+
+.void-rt-mark {
+    display: none !important;
+}
+
+.void-rt-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    overflow: hidden;
+    padding: 8px 12px 12px;
+    background: hsl(var(--surface-l1));
+    color: hsl(var(--fg-primary));
+    font-family: inherit;
+}
+
+.void-rt-page-line {
+    display: -webkit-box;
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 94%;
+    overflow: hidden;
+    color: hsl(var(--fg-secondary));
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+}
+
+.void-rt-page-line-user,
+.void-rt-page-line[data-role="user"] {
+    align-self: flex-end;
+    width: fit-content;
+    max-width: 78%;
+    padding: 6px 8px;
+    border-radius: 12px 12px 4px 12px;
+    background: hsl(var(--surface-l2));
+    color: hsl(var(--fg-primary));
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.void-rt-page-line[data-role="assistant"] {
+    align-self: flex-start;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    color: hsl(var(--fg-secondary));
+}
+
+.void-rt-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.void-rt-favicon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--void-rt-radius-icon);
+    object-fit: cover;
+    display: block;
+}
+
+.void-rt-favicon[data-broken="true"],
+.void-rt-title-favicon[data-broken="true"] {
+    visibility: hidden;
+}
+
+.void-rt-meta {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+    padding: 0 var(--void-rt-meta-inline-padding);
+}
+
+.void-rt-name-row {
+    min-width: 0;
+}
+
+.void-rt-title-favicon {
+    display: none;
+}
+
+.void-rt-name {
+    min-width: 0;
+    display: block;
+    overflow: hidden;
+    color: hsl(var(--fg-primary));
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.16;
+    letter-spacing: inherit;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-rt-host {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    color: hsl(var(--fg-secondary));
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.18;
+}
+
+.void-rt-folder {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 12px;
+    display: block;
+}
+
+.void-rt-host-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.void-rt-empty {
+    min-width: min(22rem, calc(100vw - 3rem));
+    padding: 16px 20px;
+    color: hsl(var(--fg-primary));
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.void-rt-panel[data-theme="dark"] {
+    color-scheme: dark;
+}
+`);
+
+  // src/plugins/recentTopics/index.tsx
+  var logger31 = new Logger("RecentTopics");
+  var cl26 = classNameFactory("void-rt-");
+  var HOME_KEY = "home";
+  var HOME_SEP = "home:";
+  var TRIGGER_CODES = new Set(["Backquote", "IntlBackslash"]);
+  var TRIGGER_KEYS = new Set(["`", "~", "·", "｀", "～", "Dead", "Process"]);
+  var TITLE_TAIL = /\s*[·|—–-]\s*Grok.*$/i;
+  var SKIP_LABEL = /^(more|history|today|yesterday|projects|new chat|new conversation|see all(?: chats| conversations)?|show all(?: chats| conversations)?|view all(?: chats| conversations)?|all chats|all conversations|查看全部|显示全部|查看所有|全部会话|所有对话)$/i;
+  var SKIP_NOISE = /^(copy|share|retry|edit|more|thinking|analyzing|searching|continue from here|what can i help with\??)$/i;
+  var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
+  var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
+  var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
+  var settings25 = definePluginSettings({
+    maxRecent: {
+      type: 4 /* SELECT */,
+      description: "How many recently opened conversations to show.",
+      options: COUNT_OPTIONS
+    },
+    includeHome: {
+      type: 3 /* BOOLEAN */,
+      description: "Include new-chat home pages in the switcher.",
+      default: true
+    }
+  }).withPrivateSettings();
+  var thumbs = new Map;
+  var wsNames = {};
+  var open2 = false;
+  var selected = 0;
+  var held = false;
+  var ctrlHeld = false;
+  var keys2 = null;
+  var host = null;
+  var paintedKey = "";
+  var sidebarSnap = null;
+  var pendingWs = new Set;
+  function isSkipLabel(name) {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    if (!t)
+      return false;
+    SKIP_LABEL.lastIndex = 0;
+    return SKIP_LABEL.test(t);
+  }
+  function usableName(name) {
+    const t = name.replaceAll(/\s+/g, " ").trim();
+    return t && !isSkipLabel(t) ? t : "";
+  }
+  function unique(ids) {
+    const seen = new Set;
+    const out = [];
+    for (const id of ids) {
+      if (seen.has(id))
+        continue;
+      seen.add(id);
+      out.push(id);
+    }
+    return out;
+  }
+  function readVisits() {
+    return settings25.plain.visits ?? [];
+  }
+  function maxCount() {
+    const n = Number(settings25.store.maxRecent);
+    return Number.isFinite(n) && n > 0 ? n : 5;
+  }
+  function capVisits(ids) {
+    const allowHome = settings25.store.includeHome;
+    return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
+  }
+  function pruneRecord(source, ids) {
+    const keep = {};
+    if (!source)
+      return keep;
+    for (const id of ids) {
+      if (source[id])
+        keep[id] = source[id];
+    }
+    return keep;
+  }
+  function sameList(a, b) {
+    return a.length === b.length && a.every((id, i) => id === b[i]);
+  }
+  function sameRecord(a, b) {
+    const src = a ?? {};
+    const keys3 = Object.keys(b);
+    if (Object.keys(src).length !== keys3.length)
+      return false;
+    return keys3.every((k) => src[k] === b[k]);
+  }
+  function assignRecord(key, next) {
+    if (sameRecord(settings25.plain[key], next))
+      return false;
+    settings25.store[key] = next;
+    return true;
+  }
+  var writing = false;
+  function writeVisits(next) {
+    if (writing)
+      return;
+    writing = true;
+    try {
+      const visits = capVisits(next);
+      const rawWs = pruneRecord(settings25.plain.workspaceByConv, visits);
+      const workspaceByConv = {};
+      for (const [id, value] of Object.entries(rawWs)) {
+        const ws = asWorkspaceId(value);
+        if (ws)
+          workspaceByConv[id] = ws;
+      }
+      const pages = pruneRecord(settings25.plain.pages, visits);
+      const usedWs = new Set(Object.values(workspaceByConv));
+      for (const id of visits) {
+        const ws = workspaceFromHomeId(id);
+        if (!ws)
+          continue;
+        usedWs.add(ws);
+        workspaceByConv[id] = ws;
+      }
+      const keepProjects = {};
+      for (const [id, name] of Object.entries(settings25.plain.projectNames ?? {})) {
+        const n = usableName(name);
+        if (usedWs.has(id) && n)
+          keepProjects[id] = n;
+      }
+      let changed = false;
+      if (!sameList(readVisits(), visits)) {
+        settings25.store.visits = visits;
+        changed = true;
+      }
+      if (assignRecord("titles", pruneRecord(settings25.plain.titles, visits)))
+        changed = true;
+      if (assignRecord("workspaceByConv", workspaceByConv))
+        changed = true;
+      if (assignRecord("pages", pages))
+        changed = true;
+      if (assignRecord("projectNames", keepProjects))
+        changed = true;
+      if (changed && open2)
+        paint2();
+    } finally {
+      writing = false;
+    }
+  }
+  function rememberTitle(id, title) {
+    const t = title?.trim();
+    if (!id || isHomeId(id) || !t)
+      return;
+    const prev = settings25.plain.titles ?? {};
+    if (prev[id] === t)
+      return;
+    settings25.store.titles = { ...prev, [id]: t };
+  }
+  function isHomeId(id) {
+    return id === HOME_KEY || id.startsWith(HOME_SEP);
+  }
+  function homeId(workspaceId) {
+    const ws = asWorkspaceId(workspaceId);
+    return ws ? HOME_SEP + ws : HOME_KEY;
+  }
+  function workspaceFromHomeId(id) {
+    return id.startsWith(HOME_SEP) ? asWorkspaceId(id.slice(HOME_SEP.length)) : "";
+  }
+  function routeConvId(route) {
+    if (!route)
+      return null;
+    if (route.conversationId)
+      return route.conversationId;
+    if (typeof route.chat === "string" && route.chat)
+      return route.chat;
+    if (route.page === "main")
+      return HOME_KEY;
+    if (route.page === "workspace" && asWorkspaceId(route.workspaceId) && !route.conversationId)
+      return homeId(route.workspaceId);
+    return null;
+  }
+  function projectIdFromUrl() {
+    const m = location.pathname.match(/^\/project\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) ?? location.pathname.match(/^\/project\/(deepsearch)(?:\/|$)/i);
+    return m?.[1] ?? "";
+  }
+  function chatIdFromUrl() {
+    try {
+      const u = new URL(location.href);
+      const q = u.searchParams.get("chat");
+      if (q)
+        return q;
+      return u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] ?? "";
+    } catch {
+      return "";
+    }
+  }
+  var WS_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|deepsearch)$/i;
+  function asWorkspaceId(value) {
+    if (typeof value === "string") {
+      const s = value.trim();
+      return WS_ID.test(s) ? s : "";
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const id = asWorkspaceId(item);
+        if (id)
+          return id;
+      }
+      return "";
+    }
+    if (value && typeof value === "object") {
+      const rec = value;
+      return asWorkspaceId(rec.workspaceId ?? rec.id ?? rec.projectId);
+    }
+    return "";
+  }
+  function hrefFor(id, workspaceId) {
+    if (isHomeId(id)) {
+      const ws2 = workspaceFromHomeId(id) || asWorkspaceId(workspaceId);
+      return ws2 ? `/project/${ws2}` : "/";
+    }
+    const ws = asWorkspaceId(workspaceId);
+    if (!id)
+      return ws ? `/project/${ws}` : "/";
+    if (ws)
+      return `/project/${ws}?chat=${encodeURIComponent(id)}`;
+    return `/c/${encodeURIComponent(id)}`;
+  }
+  function hrefParts(href) {
+    if (!href)
+      return { ws: "", chat: "" };
+    try {
+      const u = new URL(href, location.origin);
+      const ws = asWorkspaceId(u.pathname.match(/^\/project\/([^/?#]+)/i)?.[1]);
+      const chat = u.searchParams.get("chat") || u.pathname.match(/^\/c\/([^/?#]+)/i)?.[1] || "";
+      return { ws, chat };
+    } catch {
+      return { ws: "", chat: "" };
+    }
+  }
+  function currentVisit() {
+    const urlChat = chatIdFromUrl();
+    if (urlChat)
+      return urlChat;
+    try {
+      const { conversationId, optimisticConversationId } = ChatPageStore.useChatPageStore.getState();
+      if (conversationId)
+        return conversationId;
+      if (optimisticConversationId)
+        return optimisticConversationId;
+    } catch (e) {
+      logger31.debug("ChatPageStore unavailable:", e);
+    }
+    try {
+      const fromRoute = routeConvId(RoutingStore.useRoutingStore.getState().route);
+      if (fromRoute != null)
+        return fromRoute;
+    } catch (e) {
+      logger31.debug("RoutingStore unavailable:", e);
+    }
+    const ws = projectIdFromUrl();
+    return ws ? homeId(ws) : null;
+  }
+  function idsFromHistory() {
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      const ids = [];
+      const add = (r) => {
+        const id = routeConvId(r);
+        if (id != null)
+          ids.push(id);
+      };
+      add(route);
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--)
+        add(historyStack[i]);
+      return unique(ids);
+    } catch (e) {
+      logger31.debug("historyStack unavailable:", e);
+      return [];
+    }
+  }
+  function pageTitle() {
+    const raw = document.title.replace(TITLE_TAIL, "").trim();
+    if (!raw || /^grok$/i.test(raw))
+      return "";
+    return raw;
+  }
+  function lookup(id) {
+    try {
+      const { byId, byIdWithWorkspaces, list } = ConversationStore.useConversationStore.getState();
+      return byId[id] ?? byIdWithWorkspaces[id] ?? list.find((c) => c.conversationId === id);
+    } catch (e) {
+      logger31.debug("Conversation lookup failed:", e);
+      return;
+    }
+  }
+  function titleOf(id) {
+    if (!id || isHomeId(id))
+      return "New chat";
+    const conv = lookup(id);
+    if (conv?.title?.trim())
+      return conv.title.trim();
+    const cached = settings25.plain.titles?.[id];
+    if (cached)
+      return cached;
+    if (id === currentVisit())
+      return pageTitle() || "Untitled";
+    return "Untitled";
+  }
+  function liveWorkspaceId() {
+    try {
+      const pid = asWorkspaceId(ChatPageStore.useChatPageStore.getState().projectId);
+      if (pid)
+        return pid;
+    } catch {}
+    try {
+      const { workspaceId } = RoutingStore.useRoutingStore.getState().route;
+      const id = asWorkspaceId(workspaceId);
+      if (id)
+        return id;
+    } catch {}
+    return asWorkspaceId(projectIdFromUrl());
+  }
+  function workspaceFromHistory(id) {
+    try {
+      const { route, historyStack } = RoutingStore.useRoutingStore.getState();
+      if (routeConvId(route) === id) {
+        const ws = asWorkspaceId(route.workspaceId);
+        if (ws)
+          return ws;
+      }
+      for (let i = (historyStack?.length ?? 0) - 1;i >= 0; i--) {
+        const r = historyStack[i];
+        if (routeConvId(r) === id) {
+          const ws = asWorkspaceId(r?.workspaceId);
+          if (ws)
+            return ws;
+        }
+      }
+    } catch {}
+    return "";
+  }
+  function convWorkspaceId(id) {
+    try {
+      const { byId, byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      const resolved = ConversationStore.resolveConversationProjectWorkspaceId?.(byId[id], byIdWithWorkspaces[id]);
+      const fromResolver = asWorkspaceId(resolved);
+      if (fromResolver)
+        return fromResolver;
+      const conv = byId[id] ?? byIdWithWorkspaces[id];
+      return asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+    } catch (e) {
+      logger31.debug("convWorkspaceId failed:", e);
+      return asWorkspaceId(lookup(id)?.workspaceId) || asWorkspaceId(lookup(id)?.workspaces);
+    }
+  }
+  function workspaceFromDom(id) {
+    if (!id)
+      return "";
+    try {
+      for (const a of document.querySelectorAll("a[href]")) {
+        const href = a.getAttribute("href");
+        if (!href || !href.includes(id))
+          continue;
+        const { ws, chat } = hrefParts(href);
+        if (chat === id && ws)
+          return ws;
+      }
+    } catch {}
+    return "";
+  }
+  function shortOwnText(el) {
+    const parts = [];
+    for (const n of el.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) {
+        parts.push(n.textContent ?? "");
+        continue;
+      }
+      if (!(n instanceof HTMLElement))
+        continue;
+      if (n.matches("svg, a[href]"))
+        continue;
+      const nestedHref = n.getAttribute("href") ?? "";
+      if (nestedHref.includes("chat=") || nestedHref.includes("/c/"))
+        continue;
+      if (n.querySelector("a[href*='chat='], a[href*='/c/']"))
+        continue;
+      const t = (n.textContent ?? "").replaceAll(/\s+/g, " ").trim();
+      if (t.length > 0 && t.length <= 64)
+        parts.push(t);
+    }
+    const out = parts.join(" ").replaceAll(/\s+/g, " ").trim();
+    return out.length >= 2 && out.length <= 64 ? out : "";
+  }
+  function folderLabel(el) {
+    if (!el.querySelector("svg"))
+      return "";
+    return usableName(shortOwnText(el));
+  }
+  function projectNameFromAncestors(el) {
+    const sidebar = el.closest("[data-sidebar=sidebar]");
+    let cur = el.parentElement;
+    while (cur && cur !== sidebar) {
+      let sib = cur;
+      while (sib) {
+        const name = folderLabel(sib);
+        if (name)
+          return name;
+        sib = sib.previousElementSibling;
+      }
+      cur = cur.parentElement;
+    }
+    return "";
+  }
+  function invalidateSidebar() {
+    sidebarSnap = null;
+  }
+  function sidebarIndex() {
+    const empty = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar)
+      return empty;
+    const key = `${sidebar.childElementCount}:${(sidebar.textContent ?? "").length}`;
+    if (sidebarSnap?.key === key)
+      return sidebarSnap.index;
+    const index = { wsByConv: {}, nameByWs: {}, nameByConv: {} };
+    let currentName = "";
+    const assignConv = (chat, ws, name) => {
+      if (!chat || !ws)
+        return;
+      index.wsByConv[chat] = ws;
+      const label = usableName(name || currentName || index.nameByWs[ws] || "");
+      if (label) {
+        index.nameByWs[ws] = label;
+        index.nameByConv[chat] = label;
+      }
+    };
+    for (const el of sidebar.querySelectorAll("a[href], button, [role='button']")) {
+      const { ws, chat } = hrefParts(el.getAttribute("href"));
+      if (chat) {
+        assignConv(chat, ws, currentName);
+        if (ws && !index.nameByConv[chat]) {
+          const up = usableName(projectNameFromAncestors(el));
+          if (up) {
+            index.nameByConv[chat] = up;
+            index.nameByWs[ws] ??= up;
+            currentName ||= up;
+          }
+        }
+        continue;
+      }
+      const label = shortOwnText(el) || folderLabel(el);
+      if (isSkipLabel(label) && !ws) {
+        currentName = "";
+        continue;
+      }
+      if (ws) {
+        const n = usableName(label);
+        if (n) {
+          currentName = n;
+          index.nameByWs[ws] = n;
+        } else if (isSkipLabel(label)) {
+          currentName = index.nameByWs[ws] || "";
+        }
+        continue;
+      }
+      const folder = folderLabel(el);
+      if (folder)
+        currentName = folder;
+    }
+    sidebarSnap = { key, index };
+    return index;
+  }
+  function workspaceFetchedEmpty(id) {
+    try {
+      const { byIdWithWorkspaces } = ConversationStore.useConversationStore.getState();
+      return !!byIdWithWorkspaces[id] && !convWorkspaceId(id);
+    } catch {
+      return false;
+    }
+  }
+  function routeWorkspaceFor(id) {
+    if (id === chatIdFromUrl())
+      return asWorkspaceId(projectIdFromUrl());
+    try {
+      const { route } = RoutingStore.useRoutingStore.getState();
+      const chat = route.conversationId || (typeof route.chat === "string" ? route.chat : "");
+      if (chat === id)
+        return asWorkspaceId(route.workspaceId);
+    } catch {}
+    return "";
+  }
+  function dropWorkspace(id) {
+    const prev = settings25.plain.workspaceByConv ?? {};
+    if (!prev[id])
+      return;
+    const next = { ...prev };
+    delete next[id];
+    settings25.store.workspaceByConv = next;
+  }
+  function workspaceOf(id) {
+    if (!id)
+      return "";
+    if (isHomeId(id)) {
+      const fromKey = workspaceFromHomeId(id);
+      if (fromKey)
+        return fromKey;
+      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings25.plain.workspaceByConv?.[id]);
+    }
+    const fromConv = convWorkspaceId(id);
+    if (fromConv)
+      return fromConv;
+    if (workspaceFetchedEmpty(id))
+      return "";
+    const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
+    if (fromSidebar)
+      return fromSidebar;
+    const cached = asWorkspaceId(settings25.plain.workspaceByConv?.[id]);
+    if (cached)
+      return cached;
+    const fromHist = workspaceFromHistory(id);
+    if (fromHist)
+      return fromHist;
+    if (id === currentVisit())
+      return routeWorkspaceFor(id);
+    return "";
+  }
+  function readOpenProjectName() {
+    const idx = sidebarIndex();
+    const live = liveWorkspaceId();
+    if (live) {
+      const n = usableName(idx.nameByWs[live]);
+      if (n)
+        return n;
+    }
+    const current = currentVisit();
+    const ws = current ? workspaceOf(current) : "";
+    if (!current || !ws)
+      return "";
+    return usableName(idx.nameByConv[current] || idx.nameByWs[ws]);
+  }
+  function projectNameOf(id) {
+    if (!id)
+      return "";
+    const ws = workspaceOf(id);
+    if (!ws)
+      return "";
+    const idx = sidebarIndex();
+    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings25.plain.projectNames?.[ws] || "");
+    if (!named)
+      return "";
+    const live = liveWorkspaceId();
+    const liveName = readOpenProjectName();
+    if (live && ws !== live && liveName && named === liveName)
+      return "";
+    return named;
+  }
+  function rememberProject(id) {
+    if (!id)
+      return;
+    const ws = workspaceOf(id);
+    if (!ws)
+      return;
+    const prevWs = settings25.plain.workspaceByConv ?? {};
+    if (prevWs[id] !== ws)
+      settings25.store.workspaceByConv = { ...prevWs, [id]: ws };
+    const idx = sidebarIndex();
+    const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
+    const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
+    const name = usableName(sidebarName || wsNames[ws] || liveName || settings25.plain.projectNames?.[ws] || "");
+    if (!name)
+      return;
+    wsNames[ws] = name;
+    const prevNames = settings25.plain.projectNames ?? {};
+    if (prevNames[ws] !== name)
+      settings25.store.projectNames = { ...prevNames, [ws]: name };
+  }
+  function reconcileSidebarCache() {
+    const idx = sidebarIndex();
+    const prevWs = { ...settings25.plain.workspaceByConv };
+    const prevNames = { ...settings25.plain.projectNames };
+    let wsChanged = false;
+    let namesChanged = false;
+    for (const [conv, ws] of Object.entries(idx.wsByConv)) {
+      if (prevWs[conv] !== ws) {
+        prevWs[conv] = ws;
+        wsChanged = true;
+      }
+    }
+    for (const [ws, name] of Object.entries(idx.nameByWs)) {
+      const n = usableName(name);
+      if (!n)
+        continue;
+      wsNames[ws] = n;
+      if (prevNames[ws] !== n) {
+        prevNames[ws] = n;
+        namesChanged = true;
+      }
+    }
+    for (const [ws, name] of Object.entries(prevNames)) {
+      if (usableName(name))
+        continue;
+      delete prevNames[ws];
+      delete wsNames[ws];
+      namesChanged = true;
+    }
+    if (wsChanged)
+      settings25.store.workspaceByConv = prevWs;
+    if (namesChanged)
+      settings25.store.projectNames = prevNames;
+  }
+  function requestWorkspace(id) {
+    if (!id || isHomeId(id) || pendingWs.has(id))
+      return;
+    if (convWorkspaceId(id))
+      return;
+    if (workspaceFetchedEmpty(id)) {
+      dropWorkspace(id);
+      return;
+    }
+    if (sidebarIndex().wsByConv[id])
+      return;
+    pendingWs.add(id);
+    try {
+      const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+      const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+      if (!fetchConv) {
+        pendingWs.delete(id);
+        return;
+      }
+      fetchConv(id).then((conv) => {
+        const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || asWorkspaceId(conv?.workspaceId) || asWorkspaceId(conv?.workspaces);
+        if (!ws) {
+          dropWorkspace(id);
+          if (open2)
+            paint2();
+          return;
+        }
+        const prev = settings25.plain.workspaceByConv ?? {};
+        if (prev[id] !== ws)
+          settings25.store.workspaceByConv = { ...prev, [id]: ws };
+        const live = liveWorkspaceId();
+        const liveName = usableName(readOpenProjectName());
+        const names = settings25.plain.projectNames ?? {};
+        if (live && ws !== live && liveName && names[ws] === liveName) {
+          const next = { ...names };
+          delete next[ws];
+          settings25.store.projectNames = next;
+          delete wsNames[ws];
+        }
+        if (open2)
+          paint2();
+      }).catch((e) => logger31.debug("workspace fetch failed:", e)).finally(() => {
+        pendingWs.delete(id);
+      });
+    } catch {
+      pendingWs.delete(id);
+    }
+  }
+  function chatPane() {
+    const main = document.querySelector("main");
+    if (!main)
+      return null;
+    let best = null;
+    let bestScore = 0;
+    for (const n of main.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']")) {
+      if (n.closest("[data-sidebar], .void-rt-root, #void-rt-host"))
+        continue;
+      const r = n.getBoundingClientRect();
+      if (r.width < 240 || r.height < 120)
+        continue;
+      const score = r.width * r.height;
+      if (score > bestScore) {
+        best = n;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+  function messageList(pane) {
+    let node = pane;
+    for (let i = 0;i < 8; i++) {
+      const kids = [...node.children].filter((c) => c instanceof HTMLElement);
+      if (kids.length === 1 && kids[0].children.length > 1) {
+        node = kids[0];
+        continue;
+      }
+      break;
+    }
+    return node;
+  }
+  function chromeOff(el) {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll("button, .void-timestamp, time, nav, svg, [class*='timestamp']").forEach((n) => n.remove());
+    return clone;
+  }
+  function userBubble(root) {
+    const tagged = root.querySelector("[data-void-rt-role='user'], .void-rt-user-msg");
+    if (tagged)
+      return tagged;
+    const cands = [...root.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto'], [class*='ms-auto'], [class*='items-end']")];
+    if (/justify-end|self-end|ml-auto|ms-auto|items-end/.test(root.className))
+      cands.unshift(root);
+    if (!cands.length)
+      return null;
+    const inner = cands.filter((el) => !cands.some((other) => other !== el && el.contains(other)));
+    inner.sort((a, b) => (a.innerText?.length ?? 0) - (b.innerText?.length ?? 0));
+    return inner[0] ?? null;
+  }
+  function extractTurn(kid) {
+    const bubble = userBubble(kid);
+    const userText = bubble ? scrubText(chromeOff(bubble).innerText ?? "") : "";
+    const rest = chromeOff(kid);
+    if (bubble && bubble !== kid) {
+      rest.querySelectorAll("[class*='justify-end'], [class*='self-end'], [class*='ml-auto']").forEach((n) => n.remove());
+    }
+    let asstText = scrubText(rest.innerText ?? "");
+    if (userText && asstText.includes(userText))
+      asstText = scrubText(asstText.replace(userText, " "));
+    const lines = [];
+    if (userText)
+      lines.push({ role: "user", text: userText });
+    if (asstText && asstText !== userText)
+      lines.push({ role: "assistant", text: asstText });
+    return lines;
+  }
+  function extractMarks(root) {
+    const marks2 = [...root.querySelectorAll(".void-rt-mark")];
+    if (!marks2.length)
+      return [];
+    const out = [];
+    for (const m of marks2) {
+      const role = m.getAttribute("data-role") === "user" ? "user" : "assistant";
+      const text = scrubText(m.textContent ?? "");
+      if (text)
+        out.push({ role, text });
+    }
+    return lastRound(out);
+  }
+  function extractLines(pane) {
+    const fromMarks = extractMarks(pane);
+    if (fromMarks.length)
+      return fromMarks;
+    const source = messageList(pane);
+    const kids = [...source.children].filter((c) => c instanceof HTMLElement);
+    const out = [];
+    for (const kid of kids)
+      out.push(...extractTurn(kid));
+    return lastRound(out);
+  }
+  function scrubText(raw) {
+    let t = raw.replaceAll(/\s+/g, " ").trim();
+    t = t.replace(TIME_TOKEN, " ").replace(STATUS_TOKEN, " ");
+    t = t.replaceAll(/\s+/g, " ").trim();
+    if (!t || SKIP_NOISE.test(t))
+      return "";
+    return t;
+  }
+  function plainText(md) {
+    const t = md.replaceAll(/```[\s\S]*?```/g, " ").replaceAll(/`([^`]+)`/g, "$1").replaceAll(/!\[[^\]]*\]\([^)]*\)/g, " ").replaceAll(/\[([^\]]+)\]\([^)]*\)/g, "$1").replaceAll(/^#{1,6}\s+/gm, "").replaceAll(/[*_~]{1,3}/g, "").replaceAll(/^>\s+/gm, "");
+    return scrubText(t);
+  }
+  function clipLine(text, max) {
+    const t = scrubText(text);
+    if (t.length <= max)
+      return t;
+    return `${t.slice(0, Math.max(1, max - 1))}…`;
+  }
+  function lastRound(lines) {
+    const cleaned = lines.map((line) => ({ role: line.role, text: scrubText(line.text) })).filter((line) => !!line.text);
+    if (!cleaned.length)
+      return [];
+    let asst = -1;
+    let user = -1;
+    for (let i = cleaned.length - 1;i >= 0; i--) {
+      if (asst < 0 && cleaned[i].role === "assistant")
+        asst = i;
+      if (user < 0 && cleaned[i].role === "user")
+        user = i;
+      if (asst >= 0 && user >= 0)
+        break;
+    }
+    const pick = user >= 0 && asst >= 0 && user < asst ? [cleaned[user], cleaned[asst]] : user >= 0 && (asst < 0 || user > asst) ? [cleaned[user]] : asst >= 0 ? [cleaned[asst]] : cleaned.slice(-1);
+    return pick.map((line) => ({
+      role: line.role,
+      text: clipLine(line.text, line.role === "user" ? 72 : 140)
+    }));
+  }
+  function pickUserText(query, message) {
+    const q = plainText(query);
+    const m = plainText(message);
+    if (q && m) {
+      if (m.startsWith(q) && m.length > q.length)
+        return q;
+      return q.length <= m.length ? q : m;
+    }
+    return q || m;
+  }
+  function walkThread(startId) {
+    if (!startId)
+      return [];
+    try {
+      const { byId } = ResponseStore.useResponseStore.getState();
+      const out = [];
+      const seen = new Set;
+      let id = startId;
+      while (id && !seen.has(id) && out.length < 50) {
+        seen.add(id);
+        const r = byId[id];
+        if (!r)
+          break;
+        out.unshift(r);
+        id = r.parentResponseId;
+      }
+      return out;
+    } catch {
+      return [];
+    }
+  }
+  function responsesOf(id) {
+    const { byConversationId, byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+    const nodes = nodesByConversationId[id] ?? [];
+    if (nodes.length) {
+      const list = nodes.map((n) => byId[n.responseId]).filter((r) => !!r);
+      if (list.length)
+        return list;
+      const walked = walkThread(nodes.at(-1)?.responseId);
+      if (walked.length)
+        return walked;
+    }
+    const cached = byConversationId[id];
+    if (cached?.length)
+      return [...cached].toSorted((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      if (chat.conversationId === id) {
+        return walkThread(chat.lastMessageId ?? chat.streamedMessageId ?? chat.optimisticMessageId);
+      }
+    } catch {}
+    return [];
+  }
+  function responsesToLines(list) {
+    const out = [];
+    for (const r of list) {
+      if (!r || r.isControl)
+        continue;
+      const sender2 = String(r.sender ?? "").toLowerCase();
+      const human = sender2 === "human" || sender2 === "user";
+      if (human) {
+        const text = pickUserText(r.query || "", r.message || "");
+        if (text)
+          out.push({ role: "user", text });
+        continue;
+      }
+      const query = pickUserText(r.query || "", "");
+      let message = plainText(r.message || "");
+      if (query && message.startsWith(query) && message.length > query.length) {
+        message = scrubText(message.slice(query.length));
+      }
+      if (query && out.at(-1)?.text !== query)
+        out.push({ role: "user", text: query });
+      if (message && message !== query)
+        out.push({ role: "assistant", text: message });
+    }
+    return lastRound(out);
+  }
+  function linesFromStore(id) {
+    if (!id)
+      return [];
+    try {
+      return responsesToLines(responsesOf(id));
+    } catch (e) {
+      logger31.debug("ResponseStore snapshot failed:", e);
+      return [];
+    }
+  }
+  function betterLines(store4, dom) {
+    const pair = (lines) => lines.some((l) => l.role === "user") && lines.some((l) => l.role === "assistant");
+    if (pair(store4))
+      return store4;
+    if (pair(dom))
+      return dom;
+    return store4.length ? store4 : dom;
+  }
+  function parseSnap(raw) {
+    if (!raw)
+      return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length)
+        return null;
+      return {
+        title: typeof parsed.title === "string" ? parsed.title : "",
+        theme: parsed.theme === "light" ? "light" : "dark",
+        lines: lastRound(parsed.lines.filter((line) => !!line && (line.role === "user" || line.role === "assistant") && typeof line.text === "string"))
+      };
+    } catch {
+      return null;
+    }
+  }
+  function snapOf(id) {
+    return thumbs.get(id) ?? parseSnap(settings25.plain.pages?.[id]);
+  }
+  function rememberPage(id, snap) {
+    const json = JSON.stringify(snap);
+    const prev = settings25.plain.pages ?? {};
+    if (prev[id] === json)
+      return;
+    settings25.store.pages = { ...prev, [id]: json };
+  }
+  function applyLineStyle(el, role, theme) {
+    el.style.display = "-webkit-box";
+    el.style.webkitBoxOrient = "vertical";
+    el.style.overflow = "hidden";
+    el.style.width = "fit-content";
+    el.style.overflowWrap = "anywhere";
+    el.style.fontSize = "11px";
+    el.style.lineHeight = "1.35";
+    if (role === "user") {
+      el.style.alignSelf = "flex-end";
+      el.style.maxWidth = "78%";
+      el.style.padding = "6px 9px";
+      el.style.borderRadius = "14px 14px 4px 14px";
+      el.style.background = theme === "light" ? "#e8e6e0" : "#2f2f2f";
+      el.style.color = theme === "light" ? "#171717" : "#fff";
+      el.style.webkitLineClamp = "2";
+    } else {
+      el.style.alignSelf = "flex-start";
+      el.style.maxWidth = "94%";
+      el.style.padding = "0";
+      el.style.background = "transparent";
+      el.style.color = theme === "light" ? "#3f3f3f" : "#c4c4c4";
+      el.style.webkitLineClamp = "4";
+    }
+  }
+  function buildPageShot(snap) {
+    const page = node("span", cl26("page"));
+    page.dataset.theme = snap.theme;
+    for (const line of lastRound(snap.lines)) {
+      const el = node("span", cl26("page-line", line.role === "user" && "page-line-user"), line.text);
+      el.dataset.role = line.role;
+      applyLineStyle(el, line.role, snap.theme);
+      page.append(el);
+    }
+    return page;
+  }
+  function captureId(id) {
+    if (!id)
+      return;
+    const fromStore = linesFromStore(id);
+    let fromDom = [];
+    if (id === currentVisit()) {
+      const pane = chatPane();
+      if (pane)
+        fromDom = extractLines(pane);
+    }
+    const lines = betterLines(fromStore, fromDom);
+    if (!lines.length)
+      return;
+    const snap = {
+      title: titleOf(id),
+      theme: detectTheme(),
+      lines: lastRound(lines)
+    };
+    thumbs.set(id, snap);
+    rememberPage(id, snap);
+  }
+  var capturing = false;
+  function captureCurrent() {
+    if (capturing || open2)
+      return;
+    capturing = true;
+    try {
+      const current = currentVisit();
+      if (current)
+        captureId(current);
+      for (const id of capVisits(readVisits())) {
+        if (id && id !== current)
+          captureId(id);
+      }
+    } catch (e) {
+      logger31.debug("snapshot failed:", e);
+    } finally {
+      capturing = false;
+    }
+  }
+  function scheduleCapture() {
+    if (open2)
+      return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!open2)
+          captureCurrent();
+      });
+    });
+  }
+  function bump(id) {
+    if (!id)
+      return;
+    if (isHomeId(id) && !settings25.store.includeHome)
+      return;
+    writeVisits(capVisits([id, ...readVisits()]));
+    if (isHomeId(id)) {
+      if (shouldRememberProject(id))
+        rememberProject(id);
+      return;
+    }
+    const conv = lookup(id);
+    rememberTitle(id, conv?.title || (id === currentVisit() ? pageTitle() : undefined));
+    if (shouldRememberProject(id))
+      rememberProject(id);
+  }
+  function shouldRememberProject(id) {
+    if (!id || workspaceFetchedEmpty(id))
+      return false;
+    return !!workspaceOf(id);
+  }
+  function hydrate() {
+    invalidateSidebar();
+    const current = currentVisit();
+    const merged = current == null ? [...idsFromHistory(), ...readVisits()] : [current, ...idsFromHistory(), ...readVisits()];
+    writeVisits(capVisits(merged));
+    reconcileSidebarCache();
+    if (current) {
+      rememberTitle(current, lookup(current)?.title || pageTitle());
+      if (shouldRememberProject(current))
+        rememberProject(current);
+    }
+    for (const id of capVisits(readVisits())) {
+      if (id)
+        requestWorkspace(id);
+    }
+  }
+  function topics() {
+    return capVisits(readVisits()).map((id) => ({
+      id,
+      title: titleOf(id),
+      project: projectNameOf(id)
+    }));
+  }
+  function parseHref(href) {
+    try {
+      const u = new URL(href, location.origin);
+      const parsed = RoutingStore.urlToRoute(u.pathname, new URLSearchParams(u.search), u.hash.replace(/^#/, ""));
+      if (parsed?.page && parsed.page !== "unknown")
+        return parsed;
+    } catch (e) {
+      logger31.debug("urlToRoute failed:", e);
+    }
+    return null;
+  }
+  function applyChatPage(id, workspaceId) {
+    try {
+      const chat = ChatPageStore.useChatPageStore.getState();
+      chat.setConversationId(id || undefined);
+      chat.setProjectId(asWorkspaceId(workspaceId) || undefined);
+    } catch (e) {
+      logger31.debug("ChatPageStore update failed:", e);
+    }
+  }
+  function navigateTo(id) {
+    try {
+      const routing = RoutingStore.useRoutingStore.getState();
+      const { route } = routing;
+      const teamId = route.teamId ?? null;
+      if (isHomeId(id) || !id) {
+        const ws = workspaceFromHomeId(id) || asWorkspaceId(workspaceOf(id));
+        const hereWs = asWorkspaceId(route.workspaceId) || projectIdFromUrl();
+        const hereChat = route.conversationId || chatIdFromUrl();
+        if (!ws) {
+          if (!hereChat && (route.page === "main" || !hereWs))
+            return;
+          routing.push({ page: "main", teamId });
+          applyChatPage("");
+          return;
+        }
+        if (!hereChat && hereWs === ws)
+          return;
+        routing.push({ page: "workspace", workspaceId: ws, tab: "conversations", teamId });
+        applyChatPage("", ws);
+        return;
+      }
+      const workspaceId = workspaceOf(id);
+      const href = hrefFor(id, workspaceId);
+      const parsed = parseHref(href);
+      const dest = workspaceId ? {
+        page: "workspace",
+        workspaceId,
+        tab: "conversations",
+        conversationId: id,
+        teamId
+      } : {
+        page: "chat",
+        conversationId: id,
+        temporary: lookup(id)?.temporary ?? false,
+        teamId
+      };
+      if (parsed?.page === "workspace" && asWorkspaceId(parsed.workspaceId)) {
+        dest.page = "workspace";
+        dest.workspaceId = asWorkspaceId(parsed.workspaceId);
+        dest.conversationId = parsed.conversationId || id;
+        dest.tab = parsed.tab || "conversations";
+        if (parsed.filePath)
+          dest.filePath = parsed.filePath;
+      } else if (parsed?.page === "chat" && parsed.conversationId && !workspaceId) {
+        dest.page = "chat";
+        dest.conversationId = parsed.conversationId;
+        dest.temporary = parsed.temporary ?? dest.temporary;
+      }
+      if (dest.page === "workspaces" || dest.page === "workspace" && !asWorkspaceId(dest.workspaceId)) {
+        dest.page = "chat";
+        dest.conversationId = id;
+        delete dest.workspaceId;
+        delete dest.tab;
+      }
+      if (routeConvId(route) === dest.conversationId && (asWorkspaceId(route.workspaceId) || "") === (asWorkspaceId(dest.workspaceId) || "") && route.page === dest.page)
+        return;
+      routing.push(dest);
+      applyChatPage(id, asWorkspaceId(dest.workspaceId));
+      if (dest.page !== "workspace") {
+        try {
+          const { fetchGetConversationWithWorkspaces, fetchGetConversation } = ConversationStore.useConversationStore.getState();
+          const fetchConv = fetchGetConversationWithWorkspaces ?? fetchGetConversation;
+          fetchConv?.(id).then((conv) => {
+            const ws = asWorkspaceId(ConversationStore.resolveConversationProjectWorkspaceId?.(conv)) || convWorkspaceId(id);
+            if (!ws)
+              return;
+            const now = RoutingStore.useRoutingStore.getState();
+            if (routeConvId(now.route) !== id)
+              return;
+            now.replace({
+              page: "workspace",
+              workspaceId: ws,
+              tab: "conversations",
+              conversationId: id,
+              teamId
+            });
+            applyChatPage(id, ws);
+            rememberProject(id);
+          }).catch((e) => logger31.debug("workspace resolve failed:", e));
+        } catch (e) {
+          logger31.debug("workspace fetch skipped:", e);
+        }
+      }
+    } catch (e) {
+      logger31.error("Failed to navigate:", e);
+      try {
+        location.assign(hrefFor(id, workspaceOf(id) || undefined));
+      } catch (navErr) {
+        logger31.error("Fallback navigation failed:", navErr);
+      }
+    }
+  }
+  function isTrigger(e) {
+    if (TRIGGER_CODES.has(e.code) || e.keyCode === 192)
+      return true;
+    return TRIGGER_KEYS.has(e.key);
+  }
+  function isCtrlKey(e) {
+    return e.key === "Control" || e.code === "ControlLeft" || e.code === "ControlRight";
+  }
+  function begin(reverse, fromHold) {
+    held = fromHold;
+    open2 = false;
+    captureCurrent();
+    open2 = true;
+    selected = 0;
+    try {
+      hydrate();
+      const current = currentVisit();
+      if (current != null)
+        bump(current);
+      if (topics().length > 1)
+        selected = reverse ? topics().length - 1 : 1;
+    } catch (e) {
+      logger31.error("Failed to open switcher:", e);
+    }
+    paint2();
+  }
+  function cycle2(reverse) {
+    const { length } = topics();
+    if (!length)
+      return;
+    selected = (selected + (reverse ? -1 : 1) + length) % length;
+    paint2();
+  }
+  function commit() {
+    if (!open2)
+      return;
+    const target = topics()[selected];
+    open2 = false;
+    held = false;
+    paint2();
+    if (target)
+      navigateTo(target.id);
+  }
+  function cancel() {
+    if (!open2)
+      return;
+    open2 = false;
+    held = false;
+    paint2();
+  }
+  function onKeyDown3(e) {
+    if (isCtrlKey(e)) {
+      ctrlHeld = true;
+      return;
+    }
+    const combo = (e.ctrlKey || ctrlHeld) && !e.altKey && !e.metaKey && isTrigger(e) && !e.repeat;
+    if (combo) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      try {
+        if (open2)
+          cycle2(e.shiftKey);
+        else
+          begin(e.shiftKey, true);
+      } catch (err) {
+        logger31.error("Hotkey failed:", err);
+      }
+      return;
+    }
+    if (!open2)
+      return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancel();
+      return;
+    }
+    if (e.key === "Tab" && (e.ctrlKey || ctrlHeld)) {
+      e.preventDefault();
+      cycle2(e.shiftKey);
+    }
+  }
+  function onKeyUp(e) {
+    if (!isCtrlKey(e))
+      return;
+    ctrlHeld = false;
+    if (open2 && held)
+      commit();
+  }
+  function onBeforeInput(e) {
+    if (!ctrlHeld && !open2)
+      return;
+    const { data } = e;
+    if (data && TRIGGER_KEYS.has(data))
+      e.preventDefault();
+  }
+  function onWindowBlur() {
+    ctrlHeld = false;
+  }
+  function onVisibility2() {
+    if (document.hidden) {
+      ctrlHeld = false;
+      cancel();
+    }
+  }
+  function pick(index) {
+    selected = index;
+    commit();
+  }
+  function node(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className)
+      el.className = className;
+    if (text)
+      el.textContent = text;
+    return el;
+  }
+  function fillShot(box, id) {
+    const snap = snapOf(id);
+    if (!snap) {
+      const fallback = node("span", cl26("fallback"));
+      fallback.append(faviconImg(cl26("favicon")));
+      box.append(fallback);
+      return;
+    }
+    const shot = node("span", cl26("shot"));
+    shot.append(buildPageShot(snap));
+    box.append(shot);
+  }
+  var GROK_BG_PATH2 = "M0 256C0 166.392 0 121.587 17.439 87.3615C32.7787 57.2556 57.2556 32.7787 87.3615 17.439C121.587 0 166.392 0 256 0C345.608 0 390.413 0 424.638 17.439C454.744 32.7787 479.221 57.2556 494.561 87.3615C512 121.587 512 166.392 512 256C512 345.608 512 390.413 494.561 424.638C479.221 454.744 454.744 479.221 424.638 494.561C390.413 512 345.608 512 256 512C166.392 512 121.587 512 87.3615 494.561C57.2556 479.221 32.7787 454.744 17.439 424.638C0 390.413 0 345.608 0 256Z";
+  var GROK_MARK_P12 = "M210.484 312.759L343.465 210.383C349.984 205.364 359.302 207.322 362.408 215.117C378.758 256.231 371.454 305.64 338.925 339.563C306.397 373.487 261.137 380.927 219.768 363.983L174.577 385.803C239.394 432.008 318.104 420.581 367.289 369.251C406.303 328.564 418.386 273.104 407.088 223.091L407.19 223.198C390.807 149.726 411.218 120.359 453.03 60.3072C454.02 58.8833 455.01 57.4595 456 56L400.978 113.382V113.204L210.45 312.794";
+  var GROK_MARK_P22 = "M183.042 337.641C136.519 291.294 144.54 219.567 184.236 178.203C213.59 147.59 261.683 135.096 303.666 153.464L348.755 131.75C340.632 125.627 330.221 119.042 318.275 114.414C264.277 91.2407 199.63 102.774 155.735 148.516C113.513 192.549 100.236 260.254 123.036 318.027C140.069 361.206 112.148 391.748 84.0229 422.575C74.0561 433.503 64.0553 444.431 56 456L183.007 337.677";
+  var GROK_ICON_DATA = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="${GROK_BG_PATH2}" fill="#050505"/><path d="${GROK_MARK_P12}" fill="#FCFCFC"/><path d="${GROK_MARK_P22}" fill="#FCFCFC"/></svg>`)}`;
+  var ACCENTS = [
+    "rgb(37, 99, 235)",
+    "rgb(14, 165, 233)",
+    "rgb(20, 184, 166)",
+    "rgb(249, 115, 22)",
+    "rgb(100, 116, 139)"
+  ];
+  function accentOf(id) {
+    if (!id)
+      return ACCENTS[4];
+    let hash = 0;
+    for (let i = 0;i < id.length; i++)
+      hash = hash * 31 + id.charCodeAt(i) >>> 0;
+    return ACCENTS[hash % ACCENTS.length];
+  }
+  function detectTheme() {
+    const html = document.documentElement;
+    const { body } = document;
+    const tokens = `${html.className} ${body?.className ?? ""} ${html.getAttribute("data-theme") ?? ""} ${html.getAttribute("data-color-scheme") ?? ""}`.toLowerCase();
+    if (/(^|[\s_-])(dark|night)([\s_-]|$)/.test(tokens) || html.classList.contains("dark") || html.getAttribute("dark") != null)
+      return "dark";
+    if (/(^|[\s_-])(light|day)([\s_-]|$)/.test(tokens) || html.classList.contains("light"))
+      return "light";
+    try {
+      const bg = getComputedStyle(body || html).backgroundColor;
+      const m = bg.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+      if (m) {
+        const r = Number(m[1]) / 255;
+        const g = Number(m[2]) / 255;
+        const b = Number(m[3]) / 255;
+        const lin = [r, g, b].map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+        const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+        return lum < 0.42 ? "dark" : "light";
+      }
+    } catch {}
+    const scheme = getComputedStyle(html).colorScheme;
+    if (scheme.includes("light") && !scheme.includes("dark"))
+      return "light";
+    return "dark";
+  }
+  function grokFaviconSrc() {
+    try {
+      if (/\.grok\.com$|^grok\.com$/.test(location.hostname)) {
+        const link = document.querySelector('link[rel*="icon"]:not(#void-chat-state-favicon)');
+        const href = link?.href;
+        if (href && !href.startsWith("data:"))
+          return href;
+        return `${location.origin}/images/favicon.svg`;
+      }
+    } catch {}
+    return GROK_ICON_DATA;
+  }
+  function faviconImg(className) {
+    const img = document.createElement("img");
+    img.className = className;
+    img.alt = "";
+    img.draggable = false;
+    img.src = grokFaviconSrc();
+    img.addEventListener("error", () => {
+      if (img.src === GROK_ICON_DATA) {
+        img.dataset.broken = "true";
+        return;
+      }
+      img.src = GROK_ICON_DATA;
+    });
+    return img;
+  }
+  function folderIcon() {
+    const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg2.setAttribute("class", cl26("folder"));
+    svg2.setAttribute("viewBox", "0 0 24 24");
+    svg2.setAttribute("fill", "none");
+    svg2.setAttribute("stroke", "currentColor");
+    svg2.setAttribute("stroke-width", "2");
+    svg2.setAttribute("stroke-linecap", "round");
+    svg2.setAttribute("stroke-linejoin", "round");
+    svg2.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z");
+    svg2.append(path);
+    return svg2;
+  }
+  function applyTheme(panel) {
+    const theme = detectTheme();
+    panel.setAttribute("data-theme", theme);
+    panel.style.colorScheme = theme;
+  }
+  function buildHost() {
+    const root = node("div", cl26("root"));
+    root.id = "void-rt-host";
+    root.setAttribute("role", "presentation");
+    root.addEventListener("click", cancel);
+    const panel = node("div", cl26("panel"));
+    panel.setAttribute("role", "listbox");
+    panel.setAttribute("aria-label", "Recent conversations");
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    panel.append(node("div", cl26("list")));
+    root.append(panel);
+    return root;
+  }
+  function renderList(items) {
+    if (!host)
+      return;
+    const panel = host.querySelector(`.${cl26("panel")}`);
+    if (!panel)
+      return;
+    let list = panel.querySelector(`.${cl26("list")}`);
+    if (!list) {
+      panel.replaceChildren();
+      list = node("div", cl26("list"));
+      panel.append(list);
+    }
+    list.replaceChildren();
+    items.forEach((topic, i) => {
+      const btn = node("button", cl26("card"));
+      btn.type = "button";
+      btn.tabIndex = -1;
+      btn.setAttribute("role", "option");
+      btn.setAttribute("aria-label", topic.project ? `${topic.title}, ${topic.project}` : topic.title);
+      btn.style.setProperty("--void-rt-card-accent", accentOf(topic.id));
+      btn.addEventListener("pointerenter", () => {
+        if (selected === i)
+          return;
+        selected = i;
+        syncActive();
+      });
+      btn.addEventListener("focus", () => {
+        if (selected === i)
+          return;
+        selected = i;
+        syncActive();
+      });
+      btn.addEventListener("click", () => pick(i));
+      const shot = node("span", cl26("thumb"));
+      shot.setAttribute("aria-hidden", "true");
+      fillShot(shot, topic.id);
+      const meta = node("span", cl26("meta"));
+      meta.append(node("span", cl26("name"), topic.title));
+      if (topic.project) {
+        const proj = node("span", cl26("host"));
+        proj.append(folderIcon(), node("span", cl26("host-name"), topic.project));
+        meta.append(proj);
+      }
+      btn.append(shot, meta);
+      list.append(btn);
+    });
+  }
+  function syncActive() {
+    if (!host)
+      return;
+    const cards = host.querySelectorAll(`.${cl26("card")}`);
+    cards.forEach((card, i) => {
+      const on = i === selected;
+      card.setAttribute("data-active", on ? "true" : "false");
+      card.setAttribute("aria-selected", on ? "true" : "false");
+      card.tabIndex = on ? 0 : -1;
+      if (on)
+        card.setAttribute("aria-current", "true");
+      else
+        card.removeAttribute("aria-current");
+    });
+    cards[selected]?.scrollIntoView({ inline: "nearest", block: "nearest" });
+  }
+  function paint2() {
+    document.documentElement.classList.toggle("void-rt-open", open2);
+    if (!open2) {
+      detachHost();
+      return;
+    }
+    const items = topics();
+    const key = items.map((t) => `${t.id}\x00${t.title}\x00${t.project}`).join("|") || "__empty__";
+    if (!host) {
+      host = buildHost();
+      mountOverlay(host);
+    }
+    const panel = host.querySelector(`.${cl26("panel")}`);
+    if (!panel)
+      return;
+    applyTheme(panel);
+    panel.style.setProperty("--void-rt-count", String(Math.max(1, items.length)));
+    if (!items.length) {
+      if (paintedKey !== "__empty__") {
+        panel.replaceChildren(node("div", cl26("empty"), "Open a few chats, then hold Ctrl+` to switch."));
+        paintedKey = "__empty__";
+      }
+      requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+      return;
+    }
+    if (paintedKey === "__empty__" || !panel.querySelector(`.${cl26("list")}`)) {
+      panel.replaceChildren(node("div", cl26("list")));
+      paintedKey = "";
+    }
+    if (paintedKey !== key) {
+      renderList(items);
+      paintedKey = key;
+    }
+    syncActive();
+    requestAnimationFrame(() => panel.setAttribute("data-visible", "true"));
+  }
+  function detachHost() {
+    document.documentElement.classList.remove("void-rt-open");
+    paintedKey = "";
+    if (host) {
+      try {
+        host.hidePopover();
+      } catch {}
+      host.remove();
+      host = null;
+    }
+    document.getElementById("void-rt-host")?.remove();
+    document.querySelectorAll("dialog.void-rt-root, [popover].void-rt-root").forEach((el) => {
+      const p = el;
+      try {
+        p.hidePopover?.();
+      } catch {}
+      try {
+        p.close?.();
+      } catch {}
+      el.remove();
+    });
+  }
+  function mountOverlay(root) {
+    root.style.cssText = "position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:none;overflow:hidden;z-index:2147483647;display:block;background:transparent;pointer-events:auto;";
+    document.documentElement.append(root);
+    document.documentElement.classList.add("void-rt-open");
+    if (typeof root.showPopover !== "function")
+      return;
+    root.setAttribute("popover", "manual");
+    try {
+      root.showPopover();
+    } catch {
+      root.removeAttribute("popover");
+    }
+  }
+  var recentTopics_default = definePlugin({
+    name: "RecentTopics",
+    icon: LayoutGridIcon,
+    description: "Switch recently opened conversations with Ctrl+` like Arc's tab switcher.",
+    authors: [Devs.p],
+    tags: ["chat", "ui"],
+    enabledByDefault: true,
+    settings: settings25,
+    managedStyle: "recentTopics",
+    _mark({ response }) {
+      try {
+        if (!response || response.isControl)
+          return null;
+        const sender2 = String(response.sender ?? "").toLowerCase();
+        const human = sender2 === "human" || sender2 === "user";
+        const text = human ? pickUserText(response.query || "", response.message || "") : plainText(response.message || "");
+        if (!text)
+          return null;
+        return React.createElement("span", {
+          className: "void-rt-mark",
+          "data-role": human ? "user" : "assistant",
+          hidden: true
+        }, text);
+      } catch {
+        return null;
+      }
+    },
+    patches: [
+      {
+        find: "response-family:handleEditSave",
+        all: true,
+        replacement: {
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._mark({response:$1}),$&"
+        }
+      }
+    ],
+    start() {
+      detachHost();
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      try {
+        hydrate();
+        const current = currentVisit();
+        if (current != null)
+          bump(current);
+        scheduleCapture();
+      } catch (e) {
+        logger31.error("Hydrate failed:", e);
+      }
+      if (!keys2) {
+        keys2 = new AbortController;
+        const { signal } = keys2;
+        window.addEventListener("keydown", onKeyDown3, { capture: true, signal });
+        window.addEventListener("keyup", onKeyUp, { capture: true, signal });
+        window.addEventListener("blur", onWindowBlur, { signal });
+        document.addEventListener("visibilitychange", onVisibility2, { signal });
+        document.addEventListener("beforeinput", onBeforeInput, { capture: true, signal });
+      }
+    },
+    stop() {
+      keys2?.abort();
+      keys2 = null;
+      open2 = false;
+      held = false;
+      ctrlHeld = false;
+      thumbs.clear();
+      detachHost();
+    },
+    onSettingsChange() {
+      try {
+        writeVisits(capVisits(readVisits()));
+      } catch (e) {
+        logger31.error("Settings update failed:", e);
+      }
+    },
+    zustand: {
+      RoutingStore: {
+        selector: (s) => routeConvId(s.route),
+        handler(id) {
+          if (open2)
+            return;
+          const current = currentVisit();
+          if (current == null)
+            return;
+          if (id && isHomeId(current) && !isHomeId(id))
+            return;
+          bump(current);
+          scheduleCapture();
+        }
+      },
+      ChatPageStore: {
+        selector: (s) => `${s.conversationId ?? ""}|${s.projectId ?? ""}`,
+        handler() {
+          if (open2)
+            return;
+          const id = currentVisit();
+          if (id == null)
+            return;
+          bump(id);
+          scheduleCapture();
+        }
+      },
+      ResponseStore: {
+        selector: (s) => {
+          const id = currentVisit();
+          if (!id || isHomeId(id))
+            return "";
+          const list = s.byConversationId[id];
+          const last = list?.[list.length - 1];
+          return last ? `${last.responseId}:${last.message?.length ?? 0}` : "";
+        },
+        handler() {
+          if (open2)
+            return;
+          scheduleCapture();
+        }
+      }
+    }
+  });
+
+  // src/plugins/composerOpacity/index.ts
+  var STYLE_NAME9 = "composerOpacity";
+  var SHELL = ".query-bar";
+  var FRAME = "form:has(.query-bar),form:has(.query-bar)>:first-child";
+  var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
+  var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
+  var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
+  var settings26 = definePluginSettings({
+    opacity: {
+      type: 5 /* SLIDER */,
+      description: "Background opacity of the chat input. 100 is fully opaque.",
+      min: 0,
+      max: 100,
+      default: 100
+    },
+    blur: {
+      type: 5 /* SLIDER */,
+      description: "Backdrop blur in pixels. Helps when opacity is below 100.",
+      min: 0,
+      max: 40,
+      default: 16
+    }
+  });
+  function apply4() {
+    const pct = clamp(settings26.store.opacity, 0, 100);
+    const blur = clamp(settings26.store.blur, 0, 40);
+    const alpha = pct / 100;
+    const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
+    registerStyle(STYLE_NAME9, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
+  }
+  var composerOpacity_default = definePlugin({
+    name: "ComposerOpacity",
+    icon: BlendIcon,
+    description: "Customizable chat input background opacity so content behind the bar cannot show through.",
+    authors: [Devs.p],
+    tags: ["ui", "chat"],
+    enabledByDefault: true,
+    settings: settings26,
+    start: apply4,
+    onSettingsChange: apply4,
+    stop() {
+      unregisterStyle(STYLE_NAME9);
+    }
+  });
+
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [cleaner_default.name]: cleaner_default, [betterSidebar_default.name]: betterSidebar_default, [betterImagine_default.name]: betterImagine_default, [messageTimestamps_default.name]: messageTimestamps_default, [autoRetry_default.name]: autoRetry_default, [userQuotes_default.name]: userQuotes_default, [cloneChats_default.name]: cloneChats_default, [streamerMode_default.name]: streamerMode_default, [inputHistory_default.name]: inputHistory_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterLinks_default.name]: betterLinks_default, [experiments_default.name]: experiments_default, [customInstructions_default.name]: customInstructions_default, [responseNotification_default.name]: responseNotification_default, [incognito_default.name]: incognito_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [noRightPanel_default.name]: noRightPanel_default, [composerOpacity_default.name]: composerOpacity_default, [exportChat_default.name]: exportChat_default, [autoCollapse_default.name]: autoCollapse_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default, [settingsFlyout_default.name]: settingsFlyout_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [noDictation_default.name]: noDictation_default, [betterFiles_default.name]: betterFiles_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [stableComposer_default.name]: stableComposer_default, [compactModeSelect_default.name]: compactModeSelect_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [noGrokBot_default.name]: noGrokBot_default, [placeholder_default.name]: placeholder_default };
-  // voidpp-css:/tmp/VoidPP/src/api/Notices.css
+  var __plugins_default = { [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [starry_default.name]: starry_default, [widerChat_default.name]: widerChat_default, [noGrokBot_default.name]: noGrokBot_default, [responseNotification_default.name]: responseNotification_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [usageDisplay_default.name]: usageDisplay_default, [settingsFlyout_default.name]: settingsFlyout_default, [userQuotes_default.name]: userQuotes_default, [exportChat_default.name]: exportChat_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [betterImagine_default.name]: betterImagine_default, [consoleJanitor_default.name]: consoleJanitor_default, [experiments_default.name]: experiments_default, [betterFiles_default.name]: betterFiles_default, [cloneChats_default.name]: cloneChats_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [autoCollapse_default.name]: autoCollapse_default, [betterLinks_default.name]: betterLinks_default, [stableComposer_default.name]: stableComposer_default, [autoRetry_default.name]: autoRetry_default, [compactModeSelect_default.name]: compactModeSelect_default, [noRightPanel_default.name]: noRightPanel_default, [inputHistory_default.name]: inputHistory_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [downloadTTS_default.name]: downloadTTS_default, [incognito_default.name]: incognito_default, [streamerMode_default.name]: streamerMode_default, [customInstructions_default.name]: customInstructions_default, [noDictation_default.name]: noDictation_default, [oneko_default.name]: oneko_default, [betterSidebar_default.name]: betterSidebar_default, [placeholder_default.name]: placeholder_default, [messageTimestamps_default.name]: messageTimestamps_default, [themedScrollbar_default.name]: themedScrollbar_default, [cleaner_default.name]: cleaner_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [recentTopics_default.name]: recentTopics_default, [composerOpacity_default.name]: composerOpacity_default };
+  // voidpp-css:/Users/zhutaiyu/Downloads/Cursor Workspace/Void Fork/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
@@ -18159,11 +18173,11 @@ div:has(> #grok-bot-nav-button) {
 
   // src/api/Notices.tsx
   var NoticeType;
-  ((NoticeType) => {
-    NoticeType["INFO"] = "info";
-    NoticeType["WARNING"] = "warning";
-    NoticeType["ERROR"] = "error";
-    NoticeType["SUCCESS"] = "success";
+  ((NoticeType2) => {
+    NoticeType2["INFO"] = "info";
+    NoticeType2["WARNING"] = "warning";
+    NoticeType2["ERROR"] = "error";
+    NoticeType2["SUCCESS"] = "success";
   })(NoticeType ||= {});
   var cl27 = classNameFactory("void-notice-");
   var ICONS = {
@@ -18226,145 +18240,145 @@ div:has(> #grok-bot-nav-button) {
   // src/turbopack/common/index.ts
   var exports_common = {};
   __export(exports_common, {
-    Accordion: () => Accordion,
-    AccordionContent: () => AccordionContent,
-    AccordionItem: () => AccordionItem,
-    AccordionTrigger: () => AccordionTrigger,
-    AlertDialog: () => AlertDialog,
-    AlertDialogAction: () => AlertDialogAction,
-    AlertDialogCancel: () => AlertDialogCancel,
-    AlertDialogContent: () => AlertDialogContent,
-    AlertDialogDescription: () => AlertDialogDescription,
-    AlertDialogFooter: () => AlertDialogFooter,
-    AlertDialogHeader: () => AlertDialogHeader,
-    AlertDialogTitle: () => AlertDialogTitle,
-    AlertDialogTrigger: () => AlertDialogTrigger,
-    AnimatePresence: () => AnimatePresence,
-    ApiClients: () => ApiClients,
-    Avatar: () => Avatar,
-    Badge: () => Badge,
-    Button: () => Button,
-    ButtonWithPopover: () => ButtonWithPopover,
-    ButtonWithTooltip: () => ButtonWithTooltip,
-    ButtonWithTooltipOptimized: () => ButtonWithTooltipOptimized,
-    Card: () => Card,
-    CardContent: () => CardContent,
-    CardHeader: () => CardHeader,
-    CardTitle: () => CardTitle,
-    ChatPageStore: () => ChatPageStore,
-    Checkbox: () => Checkbox,
-    ClassNames: () => ClassNames,
-    Command: () => Command,
-    CommandEmpty: () => CommandEmpty,
-    CommandGroup: () => CommandGroup,
-    CommandInput: () => CommandInput,
-    CommandItem: () => CommandItem,
-    CommandList: () => CommandList,
-    ConversationStore: () => ConversationStore,
-    Dialog: () => Dialog,
-    DialogClose: () => DialogClose,
-    DialogContent: () => DialogContent,
-    DialogDescription: () => DialogDescription,
-    DialogFooter: () => DialogFooter,
-    DialogHeader: () => DialogHeader,
-    DialogOverlay: () => DialogOverlay,
-    DialogPortal: () => DialogPortal,
-    DialogTitle: () => DialogTitle,
-    DialogTrigger: () => DialogTrigger,
-    Drawer: () => Drawer,
-    DrawerContent: () => DrawerContent,
-    DrawerDescription: () => DrawerDescription,
-    DrawerFooter: () => DrawerFooter,
-    DrawerHeader: () => DrawerHeader,
-    DrawerTitle: () => DrawerTitle,
-    DrawerTrigger: () => DrawerTrigger,
-    DropdownMenu: () => DropdownMenu,
-    DropdownMenuCheckboxItem: () => DropdownMenuCheckboxItem,
-    DropdownMenuContent: () => DropdownMenuContent,
-    DropdownMenuItem: () => DropdownMenuItem,
-    DropdownMenuPortal: () => DropdownMenuPortal,
-    DropdownMenuRadioGroup: () => DropdownMenuRadioGroup,
-    DropdownMenuRadioItem: () => DropdownMenuRadioItem,
-    DropdownMenuSeparator: () => DropdownMenuSeparator,
-    DropdownMenuSub: () => DropdownMenuSub,
-    DropdownMenuSubContent: () => DropdownMenuSubContent,
-    DropdownMenuSubTrigger: () => DropdownMenuSubTrigger,
-    DropdownMenuTrigger: () => DropdownMenuTrigger,
-    FeatureStore: () => FeatureStore,
-    FileUtils: () => FileUtils,
-    FilesPageStore: () => FilesPageStore,
-    Fragment: () => Fragment,
-    HoverCard: () => HoverCard,
-    HoverCardContent: () => HoverCardContent,
-    HoverCardTrigger: () => HoverCardTrigger,
-    Input: () => Input,
-    Label: () => Label,
-    LazyComponent: () => LazyComponent,
-    MediaStore: () => MediaStore,
-    MessageStore: () => MessageStore,
-    ModesStore: () => ModesStore,
-    MotionDiv: () => MotionDiv,
-    Popover: () => Popover,
-    PopoverArrow: () => PopoverArrow,
-    PopoverContent: () => PopoverContent,
-    PopoverTrigger: () => PopoverTrigger,
-    Portal: () => Portal,
-    React: () => React,
-    ResponseStore: () => ResponseStore,
-    ResponsiveDialog: () => ResponsiveDialog,
-    RoutingStore: () => RoutingStore,
-    Select: () => Select,
-    SelectContent: () => SelectContent,
-    SelectItem: () => SelectItem,
-    SelectTrigger: () => SelectTrigger,
-    SelectValue: () => SelectValue,
-    Separator: () => Separator,
-    SessionStore: () => SessionStore,
-    SettingsDescription: () => SettingsDescription,
-    SettingsDialogStore: () => SettingsDialogStore,
-    SettingsRow: () => SettingsRow,
-    SettingsStore: () => SettingsStore,
-    SettingsTitle: () => SettingsTitle,
-    SidebarComponents: () => SidebarComponents,
-    Skeleton: () => Skeleton,
-    Slider: () => Slider,
-    Spinner: () => Spinner,
-    SubscriptionsStore: () => SubscriptionsStore,
-    Switch: () => Switch,
-    Table: () => Table,
-    TableBody: () => TableBody,
-    TableCell: () => TableCell,
-    TableHead: () => TableHead,
-    TableHeader: () => TableHeader,
-    TableRow: () => TableRow,
-    Tabs: () => Tabs,
-    TabsContent: () => TabsContent,
-    TabsList: () => TabsList,
-    TabsTrigger: () => TabsTrigger,
-    TextToSpeechStore: () => TextToSpeechStore,
-    Textarea: () => Textarea,
-    Toaster: () => Toaster,
-    ToggleGroup: () => ToggleGroup,
-    ToggleGroupItem: () => ToggleGroupItem,
-    Tooltip: () => Tooltip,
-    TooltipContent: () => TooltipContent,
-    TooltipProvider: () => TooltipProvider,
-    TooltipTrigger: () => TooltipTrigger,
-    createElement: () => createElement,
-    onceReady: () => onceReady,
-    useCallback: () => useCallback,
-    useContext: () => useContext,
-    useDeferredValue: () => useDeferredValue,
-    useEffect: () => useEffect,
-    useId: () => useId,
-    useLayoutEffect: () => useLayoutEffect,
-    useMemo: () => useMemo,
-    useReducedMotion: () => useReducedMotion,
-    useReducer: () => useReducer,
-    useRef: () => useRef,
-    useState: () => useState,
+    useTransition: () => useTransition,
     useSyncExternalStore: () => useSyncExternalStore,
-    useTransition: () => useTransition
+    useState: () => useState,
+    useRef: () => useRef,
+    useReducer: () => useReducer,
+    useReducedMotion: () => useReducedMotion,
+    useMemo: () => useMemo,
+    useLayoutEffect: () => useLayoutEffect,
+    useId: () => useId,
+    useEffect: () => useEffect,
+    useDeferredValue: () => useDeferredValue,
+    useContext: () => useContext,
+    useCallback: () => useCallback,
+    onceReady: () => onceReady,
+    createElement: () => createElement,
+    TooltipTrigger: () => TooltipTrigger,
+    TooltipProvider: () => TooltipProvider,
+    TooltipContent: () => TooltipContent,
+    Tooltip: () => Tooltip,
+    ToggleGroupItem: () => ToggleGroupItem,
+    ToggleGroup: () => ToggleGroup,
+    Toaster: () => Toaster,
+    Textarea: () => Textarea,
+    TextToSpeechStore: () => TextToSpeechStore,
+    TabsTrigger: () => TabsTrigger,
+    TabsList: () => TabsList,
+    TabsContent: () => TabsContent,
+    Tabs: () => Tabs,
+    TableRow: () => TableRow,
+    TableHeader: () => TableHeader,
+    TableHead: () => TableHead,
+    TableCell: () => TableCell,
+    TableBody: () => TableBody,
+    Table: () => Table,
+    Switch: () => Switch,
+    SubscriptionsStore: () => SubscriptionsStore,
+    Spinner: () => Spinner,
+    Slider: () => Slider,
+    Skeleton: () => Skeleton,
+    SidebarComponents: () => SidebarComponents,
+    SettingsTitle: () => SettingsTitle,
+    SettingsStore: () => SettingsStore,
+    SettingsRow: () => SettingsRow,
+    SettingsDialogStore: () => SettingsDialogStore,
+    SettingsDescription: () => SettingsDescription,
+    SessionStore: () => SessionStore,
+    Separator: () => Separator,
+    SelectValue: () => SelectValue,
+    SelectTrigger: () => SelectTrigger,
+    SelectItem: () => SelectItem,
+    SelectContent: () => SelectContent,
+    Select: () => Select,
+    RoutingStore: () => RoutingStore,
+    ResponsiveDialog: () => ResponsiveDialog,
+    ResponseStore: () => ResponseStore,
+    React: () => React,
+    Portal: () => Portal,
+    PopoverTrigger: () => PopoverTrigger,
+    PopoverContent: () => PopoverContent,
+    PopoverArrow: () => PopoverArrow,
+    Popover: () => Popover,
+    MotionDiv: () => MotionDiv,
+    ModesStore: () => ModesStore,
+    MessageStore: () => MessageStore,
+    MediaStore: () => MediaStore,
+    LazyComponent: () => LazyComponent,
+    Label: () => Label,
+    Input: () => Input,
+    HoverCardTrigger: () => HoverCardTrigger,
+    HoverCardContent: () => HoverCardContent,
+    HoverCard: () => HoverCard,
+    Fragment: () => Fragment,
+    FilesPageStore: () => FilesPageStore,
+    FileUtils: () => FileUtils,
+    FeatureStore: () => FeatureStore,
+    DropdownMenuTrigger: () => DropdownMenuTrigger,
+    DropdownMenuSubTrigger: () => DropdownMenuSubTrigger,
+    DropdownMenuSubContent: () => DropdownMenuSubContent,
+    DropdownMenuSub: () => DropdownMenuSub,
+    DropdownMenuSeparator: () => DropdownMenuSeparator,
+    DropdownMenuRadioItem: () => DropdownMenuRadioItem,
+    DropdownMenuRadioGroup: () => DropdownMenuRadioGroup,
+    DropdownMenuPortal: () => DropdownMenuPortal,
+    DropdownMenuItem: () => DropdownMenuItem,
+    DropdownMenuContent: () => DropdownMenuContent,
+    DropdownMenuCheckboxItem: () => DropdownMenuCheckboxItem,
+    DropdownMenu: () => DropdownMenu,
+    DrawerTrigger: () => DrawerTrigger,
+    DrawerTitle: () => DrawerTitle,
+    DrawerHeader: () => DrawerHeader,
+    DrawerFooter: () => DrawerFooter,
+    DrawerDescription: () => DrawerDescription,
+    DrawerContent: () => DrawerContent,
+    Drawer: () => Drawer,
+    DialogTrigger: () => DialogTrigger,
+    DialogTitle: () => DialogTitle,
+    DialogPortal: () => DialogPortal,
+    DialogOverlay: () => DialogOverlay,
+    DialogHeader: () => DialogHeader,
+    DialogFooter: () => DialogFooter,
+    DialogDescription: () => DialogDescription,
+    DialogContent: () => DialogContent,
+    DialogClose: () => DialogClose,
+    Dialog: () => Dialog,
+    ConversationStore: () => ConversationStore,
+    CommandList: () => CommandList,
+    CommandItem: () => CommandItem,
+    CommandInput: () => CommandInput,
+    CommandGroup: () => CommandGroup,
+    CommandEmpty: () => CommandEmpty,
+    Command: () => Command,
+    ClassNames: () => ClassNames,
+    Checkbox: () => Checkbox,
+    ChatPageStore: () => ChatPageStore,
+    CardTitle: () => CardTitle,
+    CardHeader: () => CardHeader,
+    CardContent: () => CardContent,
+    Card: () => Card,
+    ButtonWithTooltipOptimized: () => ButtonWithTooltipOptimized,
+    ButtonWithTooltip: () => ButtonWithTooltip,
+    ButtonWithPopover: () => ButtonWithPopover,
+    Button: () => Button,
+    Badge: () => Badge,
+    Avatar: () => Avatar,
+    ApiClients: () => ApiClients,
+    AnimatePresence: () => AnimatePresence,
+    AlertDialogTrigger: () => AlertDialogTrigger,
+    AlertDialogTitle: () => AlertDialogTitle,
+    AlertDialogHeader: () => AlertDialogHeader,
+    AlertDialogFooter: () => AlertDialogFooter,
+    AlertDialogDescription: () => AlertDialogDescription,
+    AlertDialogContent: () => AlertDialogContent,
+    AlertDialogCancel: () => AlertDialogCancel,
+    AlertDialogAction: () => AlertDialogAction,
+    AlertDialog: () => AlertDialog,
+    AccordionTrigger: () => AccordionTrigger,
+    AccordionItem: () => AccordionItem,
+    AccordionContent: () => AccordionContent,
+    Accordion: () => Accordion
   });
 
   // src/VoidPP.ts

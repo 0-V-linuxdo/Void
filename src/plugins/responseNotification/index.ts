@@ -34,7 +34,7 @@ function PreviewSound() {
                 size: "sm",
                 variant: "secondary",
                 onClick() {
-                    markGestured();
+                    onUserGesture();
                     playSound();
                 },
             },
@@ -91,8 +91,9 @@ function getCtx(): AudioContext | null {
     }
 }
 
-function markGestured() {
+function onUserGesture() {
     userGestured = true;
+    if (settings.store.browserNotification && Notification.permission === "default") void Notification.requestPermission();
     const ctx = getCtx();
     if (!ctx) return;
     const warm = () => { void loadBuffer(ctx, DEFAULT_CHIME); };
@@ -159,8 +160,7 @@ function isLiveResponse(response: { state?: string } | undefined) {
 }
 
 function shouldNotify(response: { state?: string; error?: unknown } | undefined) {
-    if (!response || isErrorResponse(response) || isLiveResponse(response)) return false;
-    return true;
+    return !isErrorResponse(response) && !isLiveResponse(response);
 }
 
 function notify(responseId: string, state: string | undefined) {
@@ -197,22 +197,18 @@ function onStreamEnd({ responseId }: VoidPPEventMap["streamEnd"]) {
             logger.info("ResponseStore unavailable:", e);
         }
         if (shouldNotify(response)) {
-            notifyOnce(responseId, response?.state);
+            notifyOnce(responseId, response?.state ?? "gateway");
             return;
         }
         if (isErrorResponse(response)) {
             logger.info("skip error", responseId);
             return;
         }
-        if (!retried && (!response || isLiveResponse(response))) {
+        if (!retried) {
             retryTimer = setTimeout(() => attempt(true), RETRY_MS);
             return;
         }
-        if (!response) {
-            notifyOnce(responseId, "missing");
-            return;
-        }
-        logger.info("skip", responseId, response.state ?? "unset");
+        logger.info("skip", responseId, response?.state ?? "unset");
     };
     attempt(false);
 }
@@ -231,7 +227,7 @@ export default definePlugin({
         gestureCtrl = new AbortController();
         const { signal } = gestureCtrl;
         for (const evt of ["pointerdown", "keydown", "touchstart"] as const) {
-            addEventListener(evt, markGestured, { capture: true, passive: true, signal });
+            addEventListener(evt, onUserGesture, { capture: true, passive: true, signal });
         }
     },
 
