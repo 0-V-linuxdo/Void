@@ -16,7 +16,7 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 
 | Feature | Default | What it does |
 | --- | --- | --- |
-| <img src="https://api.iconify.design/lucide/brush-cleaning.svg?color=%238b949e" width="16" height="16" alt=""> Cleaner default-on | On | Upstream plugin; Void++ turns it on by default. Hides upgrade nags, the home banner, the composer SuperGrok chip, and locked models. |
+| <img src="https://api.iconify.design/lucide/brush-cleaning.svg?color=%238b949e" width="16" height="16" alt=""> Cleaner | On | Upstream plugin; Void++ turns it on by default. Hides upgrade nags, the home banner, the composer SuperGrok chip, and locked models. |
 | <img src="https://api.iconify.design/lucide/history.svg?color=%238b949e" width="16" height="16" alt=""> InputHistory | On | Recall previous chat prompts with Arrow Up and Arrow Down, like a shell. |
 | <img src="https://api.iconify.design/lucide/bot-off.svg?color=%238b949e" width="16" height="16" alt=""> NoGrokBot | On | Hide the top-right Grok Bot promo button. |
 | <img src="https://api.iconify.design/lucide/user-round-x.svg?color=%238b949e" width="16" height="16" alt=""> NoSidebarIdentity | On | Hide username and/or email in the Grok sidebar and account menu (separate toggles). Avatar stays so the account menu still opens. |
@@ -62,4 +62,4 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 
 | Feature | Default | What it does |
 | --- | --- | --- |
-| <img src="https://api.iconify.design/lucide/gauge.svg?color=%238b949e" width="16" height="16" alt=""> RateLimitDisplay | — | Dropped after Grok credit rules changed; the old per-mode rate-limit readout no longer works. Weekly usage now lives in UsageDisplay.
+| <img src="https://api.iconify.design/lucide/gauge.svg?color=%238b949e" width="16" height="16" alt=""> RateLimitDisplay | — | Dropped after Grok credit rules changed; the old per-mode rate-limit readout no longer works. Weekly usage now lives in UsageDisplay. |

@@ -16,7 +16,7 @@
 
 | 功能 | 默认 | 说明 |
 | --- | --- | --- |
-| <img src="https://api.iconify.design/lucide/brush-cleaning.svg?color=%238b949e" width="16" height="16" alt=""> Cleaner 默认开启 | 开 | 上游已有该插件；Void++ 改为默认打开。隐藏升级提示、首页横幅、输入栏 SuperGrok 标记，以及锁定模型。 |
+| <img src="https://api.iconify.design/lucide/brush-cleaning.svg?color=%238b949e" width="16" height="16" alt=""> Cleaner | 开 | 上游已有该插件；Void++ 改为默认打开。隐藏升级提示、首页横幅、输入栏 SuperGrok 标记，以及锁定模型。 |
 | <img src="https://api.iconify.design/lucide/history.svg?color=%238b949e" width="16" height="16" alt=""> InputHistory | 开 | 在输入框用 ↑ / ↓ 翻看历史提示词，类似终端。 |
 | <img src="https://api.iconify.design/lucide/bot-off.svg?color=%238b949e" width="16" height="16" alt=""> NoGrokBot | 开 | 隐藏右上角 Grok Bot 推广按钮。 |
 | <img src="https://api.iconify.design/lucide/user-round-x.svg?color=%238b949e" width="16" height="16" alt=""> NoSidebarIdentity | 开 | 分开开关，隐藏侧栏和账号菜单里的用户名 / 邮箱。头像保留，账号菜单仍可打开。 |
