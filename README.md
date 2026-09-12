@@ -25,12 +25,11 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 | <img src="https://api.iconify.design/lucide/mic-off.svg?color=%238b949e" width="16" height="16" alt=""> NoDictation | On | Hide the Dictation (voice input) button from the chat input bar. Optional toggle hides Dictation Refinement in Settings → Behavior. |
 | <img src="https://api.iconify.design/lucide/circle-gauge.svg?color=%238b949e" width="16" height="16" alt=""> UsageDisplay | On | Shows official weekly SuperGrok usage in the chat bar. Optional daily stats (`usageStats`, off by default): hover week first, then today; click opens per-day history. |
 | <img src="https://api.iconify.design/lucide/text-cursor-input.svg?color=%238b949e" width="16" height="16" alt=""> Placeholder | Off | Replace the rotating chat input placeholder. |
-| <img src="https://api.iconify.design/lucide/scroll-text.svg?color=%238b949e" width="16" height="16" alt=""> ThemedScrollbar | On | Project pane scrollbar follows Grok’s light and dark theme. |
+| <img src="https://api.iconify.design/lucide/frame.svg?color=%238b949e" width="16" height="16" alt=""> BetterCanvas | On | Keep the right panel closed (including auto-open and restore) and theme the project pane scrollbar. |
 | <img src="https://api.iconify.design/lucide/blend.svg?color=%238b949e" width="16" height="16" alt=""> ComposerOpacity | On | Customizable chat input background opacity and blur. |
 | <img src="https://api.iconify.design/lucide/layout-grid.svg?color=%238b949e" width="16" height="16" alt=""> RecentTopics | On | Switch recently opened chats with Ctrl+` (glass cards, project name, last Q&A preview). |
 | <img src="https://api.iconify.design/lucide/minimize-2.svg?color=%238b949e" width="16" height="16" alt=""> CompactModeSelect | On | Keep the chat input model selector as an icon at every width. |
 | <img src="https://api.iconify.design/lucide/text-quote.svg?color=%238b949e" width="16" height="16" alt=""> UserQuotes | On | Keep quoted lines in your own bubbles marked with a visible left bar after markdown hides `>`. |
-| <img src="https://api.iconify.design/lucide/panel-right-close.svg?color=%238b949e" width="16" height="16" alt=""> NoRightPanel | On | Keep Grok's right panel closed, including auto-open and restore when switching chats. |
 | <img src="https://api.iconify.design/lucide/blocks.svg?color=%238b949e" width="16" height="16" alt=""> NoSidebarPlugins | On | Move the sidebar Plugins button into the avatar menu (next to Void++ / Help). |
 | <img src="https://api.iconify.design/lucide/panel-left.svg?color=%238b949e" width="16" height="16" alt=""> BetterSidebar | On | Sidebar improvements: section-header action hover, New chat plus on Chats, Bots/Projects default collapsed, and Chats default expanded (`titleRowHover`, `chatsPlus`, `botsDefaultCollapsed`, `chatsDefaultExpanded`, `projectsDefaultCollapsed`). |
 
@@ -64,3 +63,5 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 | --- | --- | --- |
 | <img src="https://api.iconify.design/lucide/gauge.svg?color=%238b949e" width="16" height="16" alt=""> RateLimitDisplay | — | Dropped after Grok credit rules changed; the old per-mode rate-limit readout no longer works. Weekly usage now lives in UsageDisplay. |
 | <img src="https://api.iconify.design/lucide/plus.svg?color=%238b949e" width="16" height="16" alt=""> SidebarHeaderHover | — | Merged into BetterSidebar (`titleRowHover`, `chatsPlus`). |
+| <img src="https://api.iconify.design/lucide/scroll-text.svg?color=%238b949e" width="16" height="16" alt=""> ThemedScrollbar | — | Merged into BetterCanvas. |
+| <img src="https://api.iconify.design/lucide/panel-right-close.svg?color=%238b949e" width="16" height="16" alt=""> NoRightPanel | — | Merged into BetterCanvas. |

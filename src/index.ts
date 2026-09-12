@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { bootstrapPreviewFrame, isGrokPreviewFrame } from "./plugins/themedScrollbar";
+import { bootstrapPreviewFrame, isGrokPreviewFrame } from "./plugins/betterCanvas";
 import * as VoidPP from "./VoidPP";
 
 const target = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;

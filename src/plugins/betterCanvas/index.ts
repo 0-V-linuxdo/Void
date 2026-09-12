@@ -4,15 +4,17 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { ScrollTextIcon } from "@components/icons";
+import { FrameIcon } from "@components/icons";
+import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
+import { ChatPageStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
-import definePlugin from "@utils/types";
+import definePlugin, { StartAt } from "@utils/types";
 
-const STYLE_NAME = "themedScrollbar";
-const FRAME_STYLE_ID = "void-themed-scrollbar";
-const MSG = "void-themed-scrollbar";
-const MSG_HELLO = "void-themed-scrollbar-hello";
+const STYLE_NAME = "betterCanvas";
+const FRAME_STYLE_ID = "void-better-canvas";
+const MSG = "void-better-canvas";
+const MSG_HELLO = "void-better-canvas-hello";
 
 const SCROLLER = '[class*="pane-card"] :is([class*="overflow-auto"],[class*="overflow-y-auto"],[class*="overflow-scroll"],[class*="overflow-y-scroll"])';
 const IFRAME_SEL = 'iframe[title="Preview"], [class*="pane-card"] iframe';
@@ -75,7 +77,7 @@ function frameCss(dark: boolean) {
         + `html::-webkit-scrollbar-thumb:hover,body::-webkit-scrollbar-thumb:hover{background-color:${hover}!important}`;
 }
 
-export function applyToDocument(doc: Document, dark: boolean) {
+function applyToDocument(doc: Document, dark: boolean) {
     let el = doc.getElementById(FRAME_STYLE_ID) as HTMLStyleElement | null;
     if (!el) {
         el = doc.createElement("style");
@@ -158,19 +160,56 @@ function stopParent() {
     themeObs = null;
 }
 
+function isRightOpen(s: ChatPageStoreState) {
+    return s.sidePanelContent?.type === "rightPanel";
+}
+
+function enforce() {
+    const state = ChatPageStore.useChatPageStore.getState();
+    if (isRightOpen(state)) state.closeSidePanelExplicitly();
+}
+
 export default definePlugin({
-    name: "ThemedScrollbar",
-    icon: ScrollTextIcon,
-    description: "Makes the project pane scrollbar follow Grok's dark and light theme.",
+    name: "BetterCanvas",
+    icon: FrameIcon,
+    description: "Keep the right panel closed and theme the project pane scrollbar.",
     authors: [Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
+    startAt: StartAt.TurbopackReady,
 
     start() {
         startParent();
+        enforce();
     },
 
     stop() {
         stopParent();
     },
+
+    zustand: {
+        ChatPageStore: {
+            selector: isRightOpen,
+            handler(open: boolean) {
+                if (open) enforce();
+            },
+        },
+    },
+
+    patches: [
+        {
+            find: "willRestoreRightPanelByIntent",
+            replacement: {
+                match: /willRestoreRightPanelByIntent=\i=>\{/,
+                replace: "willRestoreRightPanelByIntent=()=>{return!1;",
+            },
+        },
+        {
+            find: '"computePreviewAutoOpen"',
+            replacement: {
+                match: /&&(\i)\(\{source:"auto"\}\)/,
+                replace: "&&!1&&$1({source:\"auto\"})",
+            },
+        },
+    ],
 });

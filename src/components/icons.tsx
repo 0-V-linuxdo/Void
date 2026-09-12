@@ -414,11 +414,12 @@ export const PanelLeftIcon = (props: IconProps = {}) =>
         <path d="M9 3v18" />,
     );
 
-export const PanelRightCloseIcon = (props: IconProps = {}) =>
+export const FrameIcon = (props: IconProps = {}) =>
     svg(props,
-        <rect width="18" height="18" x="3" y="3" rx="2" />,
-        <path d="M15 3v18" />,
-        <path d="m10 15-3-3 3-3" />,
+        <line x1="22" x2="2" y1="6" y2="6" />,
+        <line x1="22" x2="2" y1="18" y2="18" />,
+        <line x1="6" x2="6" y1="2" y2="22" />,
+        <line x1="18" x2="18" y1="2" y2="22" />,
     );
 
 export const ScrollTextIcon = (props: IconProps = {}) =>
