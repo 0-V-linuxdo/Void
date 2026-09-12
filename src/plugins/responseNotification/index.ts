@@ -15,10 +15,13 @@ import { Logger } from "@utils/Logger";
 import { sendBrowserNotification } from "@utils/misc";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 
+import { DEFAULT_CHIME } from "./done1";
+
 const logger = new Logger("ResponseNotification");
 
 const LIVE_STATES = new Set(["streaming", "optimistic", "reconnecting"]);
 const RETRY_MS = 80;
+const SAMPLE_VOLUME = 0.5;
 const CHIME_LOW = 523.25;
 const CHIME_HIGH = 659.25;
 const CHIME_GAIN = 0.18;
@@ -27,7 +30,7 @@ function PreviewSound() {
     return createElement(
         Flex,
         { flexDirection: "column", gap: "0.5rem" },
-        createElement(Paragraph, null, "Preview the default Cursor-style chime."),
+        createElement(Paragraph, null, "Preview the notification sound."),
         createElement(
             Button,
             {
@@ -35,7 +38,7 @@ function PreviewSound() {
                 variant: "secondary",
                 onClick() {
                     markGestured();
-                    playChime();
+                    playSound();
                 },
             },
             "Play preview",
@@ -51,7 +54,7 @@ const settings = definePluginSettings({
     },
     soundUrl: {
         type: OptionType.STRING,
-        description: "Custom sound URL. Leave empty for the Cursor-style chime.",
+        description: "Custom sound URL. Leave empty for the default done chime.",
         default: "",
         placeholder: "https://example.com/sound.mp3",
     },
@@ -121,19 +124,18 @@ function playChime() {
     else start();
 }
 
+function playSample(url: string) {
+    const audio = new Audio(url);
+    audio.volume = SAMPLE_VOLUME;
+    audio.play().catch(() => playChime());
+}
+
 function playSound() {
     if (!userGestured) {
         logger.debug("sound skipped, no user gesture yet");
         return;
     }
-    const url = settings.store.soundUrl?.trim();
-    if (url) {
-        const audio = new Audio(url);
-        audio.volume = 0.3;
-        audio.play().catch(() => playChime());
-    } else {
-        playChime();
-    }
+    playSample(settings.store.soundUrl?.trim() || DEFAULT_CHIME);
 }
 
 function isErrorResponse(response: { state?: string; error?: unknown } | undefined) {
