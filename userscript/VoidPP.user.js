@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.22] v1.0.0
+// @version      [20260912.23] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.22] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.23] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -5823,10 +5823,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
 }
 
+.void-setting-slider:focus,
+.void-setting-slider:focus-visible {
+    outline: none;
+}
+
 .void-setting-slider-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
     border-radius: 0.5rem;
+    box-shadow: inset 0 0 0 2px hsl(var(--fg-primary));
 }
 
 .void-setting-slider-value {
@@ -7193,9 +7197,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.22] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"e7378c8"}`
-    }, `(${"e7378c8"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.23] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"ca63ef5"}`
+    }, `(${"ca63ef5"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -11241,8 +11245,13 @@ html.void-cms-picked .void-cms-ghost {
 }
 
 .void-ci-card:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px hsl(var(--fg-primary));
+}
+
+.void-ci-card-add:focus-visible {
+    box-shadow: none;
+    border-color: hsl(var(--fg-primary));
 }
 
 .void-ci-editor {
@@ -11908,14 +11917,18 @@ html.void-cms-picked .void-cms-ghost {
     border-color: hsl(var(--border-l2) / 60%);
 }
 
-.void-ih-item:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
+.void-ih-item:focus-within {
+    border-color: hsl(var(--fg-primary));
+    box-shadow: inset 0 0 0 1px hsl(var(--fg-primary));
 }
 
 .void-ih-main {
     min-width: 0;
     cursor: pointer;
+}
+
+.void-ih-main:focus-visible {
+    outline: none;
 }
 
 .void-ih-body {

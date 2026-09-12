@@ -72,8 +72,13 @@
 }
 
 .void-ci-card:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px hsl(var(--fg-primary));
+}
+
+.void-ci-card-add:focus-visible {
+    box-shadow: none;
+    border-color: hsl(var(--fg-primary));
 }
 
 .void-ci-editor {

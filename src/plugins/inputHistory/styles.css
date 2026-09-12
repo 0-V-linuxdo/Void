@@ -70,14 +70,18 @@
     border-color: hsl(var(--border-l2) / 60%);
 }
 
-.void-ih-item:focus-visible {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
+.void-ih-item:focus-within {
+    border-color: hsl(var(--fg-primary));
+    box-shadow: inset 0 0 0 1px hsl(var(--fg-primary));
 }
 
 .void-ih-main {
     min-width: 0;
     cursor: pointer;
+}
+
+.void-ih-main:focus-visible {
+    outline: none;
 }
 
 .void-ih-body {
