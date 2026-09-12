@@ -8,7 +8,7 @@ export const FRESH_MS = 2 * 60 * 1000;
 export const BORROW_MS = 1000;
 const MIN_MS = Date.UTC(2020, 0, 1);
 const MAX_SKEW_MS = 24 * 60 * 60 * 1000;
-const TIME_KEYS = ["createTime", "create_time", "createdAt", "created_at", "thinkingStartTime"] as const;
+const TIME_KEYS = ["thinkingStartTime", "createTime", "create_time", "createdAt", "created_at"] as const;
 
 export function isFresh(ms: number, now = Date.now()): boolean {
     return Math.abs(now - ms) < FRESH_MS;
@@ -90,6 +90,12 @@ export function isHumanSender(sender: unknown): boolean {
     return normalized === "human" || normalized === "user";
 }
 
+export function isOptimisticState(state: unknown): boolean {
+    if (typeof state !== "string") return false;
+    const normalized = state.toLowerCase();
+    return normalized === "optimistic" || normalized === "streaming";
+}
+
 export function pickTimes(record: Record<string, unknown>, now = Date.now()): number[] {
     const out: number[] = [];
     const seen = new Set<number>();
@@ -107,6 +113,15 @@ export function pickTimes(record: Record<string, unknown>, now = Date.now()): nu
     return out;
 }
 
+export function oldestTrusted(values: Array<number | null | undefined>, now = Date.now()): number | null {
+    let best: number | null = null;
+    for (const ms of values) {
+        if (ms == null || isFresh(ms, now)) continue;
+        if (best == null || ms < best) best = ms;
+    }
+    return best;
+}
+
 export function chooseTime(opts: {
     fieldTimes: number[];
     stored: number | null;
@@ -114,16 +129,9 @@ export function chooseTime(opts: {
     now?: number;
 }): number | null {
     const now = opts.now ?? Date.now();
-    const { stored } = opts;
-    const { uuid } = opts;
-    const { fieldTimes } = opts;
-
-    if (stored != null && !isFresh(stored, now)) return stored;
-    const trustedField = fieldTimes.find(ms => !isFresh(ms, now));
-    if (trustedField != null) return trustedField;
-    if (uuid != null && !isFresh(uuid, now)) return uuid;
-
-    return stored ?? fieldTimes[0] ?? uuid ?? null;
+    const trusted = oldestTrusted([opts.stored, ...opts.fieldTimes, opts.uuid], now);
+    if (trusted != null) return trusted;
+    return opts.stored ?? opts.fieldTimes[0] ?? opts.uuid ?? null;
 }
 
 export function trustedTime(opts: {
@@ -133,12 +141,7 @@ export function trustedTime(opts: {
     now?: number;
 }): number | null {
     const now = opts.now ?? Date.now();
-    const stored = opts.stored ?? null;
-    if (stored != null && !isFresh(stored, now)) return stored;
-    const trustedField = opts.fieldTimes.find(ms => !isFresh(ms, now));
-    if (trustedField != null) return trustedField;
-    if (opts.uuid != null && !isFresh(opts.uuid, now)) return opts.uuid;
-    return null;
+    return oldestTrusted([opts.stored ?? null, ...opts.fieldTimes, opts.uuid], now);
 }
 
 export function shouldKeepStored(prev: number, incoming: number, now = Date.now()): boolean {
@@ -148,31 +151,85 @@ export function shouldKeepStored(prev: number, incoming: number, now = Date.now(
     return false;
 }
 
+export function preferHumanTime(own: number | null, borrowed: number | null): number | null {
+    if (borrowed == null) return own;
+    if (own == null || own > borrowed) return borrowed;
+    return own;
+}
+
+export function textKey(value: unknown): string {
+    if (typeof value !== "string") return "";
+    const s = value.trim();
+    if (!s) return "";
+    const slice = s.slice(0, 240);
+    let h = 5381;
+    for (let i = 0; i < slice.length; i++) h = Math.imul(h, 33) ^ slice.charCodeAt(i);
+    return (h >>> 0).toString(36);
+}
+
+function stampOf(rec: Record<string, unknown>, now: number): number | null {
+    const id = recordId(rec);
+    const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(id, now), now });
+    return ms == null ? null : ms - BORROW_MS;
+}
+
 export function neighborTime(id: string, records: Array<Record<string, unknown>>, now = Date.now()): number | null {
     if (!id) return null;
     let next: Record<string, unknown> | null = null;
     for (let i = 0; i < records.length; i++) {
         const rec = records[i];
         const recId = recordId(rec);
-        if (rec.parentResponseId === id) {
-            const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(recId, now), now });
-            if (ms != null) return ms - BORROW_MS;
+        if (rec.parentResponseId === id && !isHumanSender(rec.sender)) {
+            const ms = stampOf(rec, now);
+            if (ms != null) return ms;
         }
         if (recId === id && i + 1 < records.length) next = records[i + 1];
     }
-    if (!next) return null;
-    const ms = trustedTime({ fieldTimes: pickTimes(next, now), uuid: uuidTime(recordId(next), now), now });
-    return ms == null ? null : ms - BORROW_MS;
+    if (!next || isHumanSender(next.sender)) return null;
+    return stampOf(next, now);
 }
 
-export function shouldPersistStamp(sender: unknown, ms: number, stored: number | null, now = Date.now()): boolean {
+export function childTimeFromNodes(
+    id: string,
+    nodes: Array<Record<string, unknown>>,
+    byId: Record<string, Record<string, unknown> | undefined>,
+    now = Date.now(),
+): number | null {
+    if (!id || !nodes.length) return null;
+    let nextId = "";
+    for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        const recId = recordId(node);
+        if (node.parentResponseId === id && !isHumanSender(node.sender)) {
+            const rec = byId[recId] ?? node;
+            const ms = stampOf(rec, now);
+            if (ms != null) return ms;
+        }
+        if (recId === id && i + 1 < nodes.length) nextId = recordId(nodes[i + 1]);
+    }
+    if (!nextId) return null;
+    const nextNode = nodes.find(n => recordId(n) === nextId);
+    if (nextNode && isHumanSender(nextNode.sender)) return null;
+    const rec = byId[nextId] ?? nextNode;
+    return rec ? stampOf(rec, now) : null;
+}
+
+export function shouldPersistStamp(
+    sender: unknown,
+    ms: number,
+    stored: number | null,
+    now = Date.now(),
+    state?: unknown,
+): boolean {
     if (stored != null) return !shouldKeepStored(stored, ms, now);
-    return !(isHumanSender(sender) && isFresh(ms, now));
+    if (isHumanSender(sender) && isFresh(ms, now)) return isOptimisticState(state);
+    return true;
 }
 
 export interface HarvestedTime {
     id: string;
     ms: number;
+    rec: Record<string, unknown>;
 }
 
 export function harvestResponses(value: unknown, now = Date.now()): HarvestedTime[] {
@@ -186,14 +243,18 @@ export function harvestResponses(value: unknown, now = Date.now()): HarvestedTim
         const fieldTimes = pickTimes(rec, now);
         const uuid = uuidTime(id, now);
         let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
-        const { sender } = rec;
-        if (ms != null && isFresh(ms, now) && isHumanSender(sender)) {
-            const borrowed = neighborTime(id, records, now);
-            ms = borrowed != null && !isFresh(borrowed, now) ? borrowed : null;
+        const { sender, state } = rec;
+        if (isHumanSender(sender)) {
+            if (isOptimisticState(state)) {
+                if (ms == null) continue;
+            } else {
+                ms = preferHumanTime(ms, neighborTime(id, records, now));
+                if (ms != null && isFresh(ms, now)) ms = null;
+            }
         }
         if (ms == null) continue;
         seen.add(id);
-        out.push({ id, ms });
+        out.push({ id, ms, rec });
     }
     return out;
 }

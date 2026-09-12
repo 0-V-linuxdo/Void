@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.11] v1.0.0
+// @version      [20260912.12] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.11] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.12] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7150,9 +7150,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.11] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"4a874f5"}`
-    }, `(${"4a874f5"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.12] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"6020909"}`
+    }, `(${"6020909"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -8525,7 +8525,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var BORROW_MS = 1000;
   var MIN_MS = Date.UTC(2020, 0, 1);
   var MAX_SKEW_MS = 24 * 60 * 60 * 1000;
-  var TIME_KEYS = ["createTime", "create_time", "createdAt", "created_at", "thinkingStartTime"];
+  var TIME_KEYS = ["thinkingStartTime", "createTime", "create_time", "createdAt", "created_at"];
   function isFresh(ms, now = Date.now()) {
     return Math.abs(now - ms) < FRESH_MS;
   }
@@ -8609,6 +8609,12 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const normalized = sender.toLowerCase();
     return normalized === "human" || normalized === "user";
   }
+  function isOptimisticState(state) {
+    if (typeof state !== "string")
+      return false;
+    const normalized = state.toLowerCase();
+    return normalized === "optimistic" || normalized === "streaming";
+  }
   function pickTimes(record, now = Date.now()) {
     const out = [];
     const seen = new Set;
@@ -8628,31 +8634,26 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
     return out;
   }
+  function oldestTrusted(values, now = Date.now()) {
+    let best = null;
+    for (const ms of values) {
+      if (ms == null || isFresh(ms, now))
+        continue;
+      if (best == null || ms < best)
+        best = ms;
+    }
+    return best;
+  }
   function chooseTime(opts) {
     const now = opts.now ?? Date.now();
-    const { stored } = opts;
-    const { uuid } = opts;
-    const { fieldTimes } = opts;
-    if (stored != null && !isFresh(stored, now))
-      return stored;
-    const trustedField = fieldTimes.find((ms) => !isFresh(ms, now));
-    if (trustedField != null)
-      return trustedField;
-    if (uuid != null && !isFresh(uuid, now))
-      return uuid;
-    return stored ?? fieldTimes[0] ?? uuid ?? null;
+    const trusted = oldestTrusted([opts.stored, ...opts.fieldTimes, opts.uuid], now);
+    if (trusted != null)
+      return trusted;
+    return opts.stored ?? opts.fieldTimes[0] ?? opts.uuid ?? null;
   }
   function trustedTime(opts) {
     const now = opts.now ?? Date.now();
-    const stored = opts.stored ?? null;
-    if (stored != null && !isFresh(stored, now))
-      return stored;
-    const trustedField = opts.fieldTimes.find((ms) => !isFresh(ms, now));
-    if (trustedField != null)
-      return trustedField;
-    if (opts.uuid != null && !isFresh(opts.uuid, now))
-      return opts.uuid;
-    return null;
+    return oldestTrusted([opts.stored ?? null, ...opts.fieldTimes, opts.uuid], now);
   }
   function shouldKeepStored(prev, incoming, now = Date.now()) {
     if (incoming === prev)
@@ -8663,6 +8664,30 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return true;
     return false;
   }
+  function preferHumanTime(own, borrowed) {
+    if (borrowed == null)
+      return own;
+    if (own == null || own > borrowed)
+      return borrowed;
+    return own;
+  }
+  function textKey(value) {
+    if (typeof value !== "string")
+      return "";
+    const s = value.trim();
+    if (!s)
+      return "";
+    const slice = s.slice(0, 240);
+    let h = 5381;
+    for (let i = 0;i < slice.length; i++)
+      h = Math.imul(h, 33) ^ slice.charCodeAt(i);
+    return (h >>> 0).toString(36);
+  }
+  function stampOf(rec, now) {
+    const id = recordId(rec);
+    const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(id, now), now });
+    return ms == null ? null : ms - BORROW_MS;
+  }
   function neighborTime(id, records, now = Date.now()) {
     if (!id)
       return null;
@@ -8670,23 +8695,48 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     for (let i = 0;i < records.length; i++) {
       const rec = records[i];
       const recId = recordId(rec);
-      if (rec.parentResponseId === id) {
-        const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(recId, now), now });
+      if (rec.parentResponseId === id && !isHumanSender(rec.sender)) {
+        const ms = stampOf(rec, now);
         if (ms != null)
-          return ms - BORROW_MS;
+          return ms;
       }
       if (recId === id && i + 1 < records.length)
         next = records[i + 1];
     }
-    if (!next)
+    if (!next || isHumanSender(next.sender))
       return null;
-    const ms = trustedTime({ fieldTimes: pickTimes(next, now), uuid: uuidTime(recordId(next), now), now });
-    return ms == null ? null : ms - BORROW_MS;
+    return stampOf(next, now);
   }
-  function shouldPersistStamp(sender, ms, stored, now = Date.now()) {
+  function childTimeFromNodes(id, nodes, byId, now = Date.now()) {
+    if (!id || !nodes.length)
+      return null;
+    let nextId = "";
+    for (let i = 0;i < nodes.length; i++) {
+      const node = nodes[i];
+      const recId = recordId(node);
+      if (node.parentResponseId === id && !isHumanSender(node.sender)) {
+        const rec = byId[recId] ?? node;
+        const ms = stampOf(rec, now);
+        if (ms != null)
+          return ms;
+      }
+      if (recId === id && i + 1 < nodes.length)
+        nextId = recordId(nodes[i + 1]);
+    }
+    if (!nextId)
+      return null;
+    const nextNode = nodes.find((n) => recordId(n) === nextId);
+    if (nextNode && isHumanSender(nextNode.sender))
+      return null;
+    const rec = byId[nextId] ?? nextNode;
+    return rec ? stampOf(rec, now) : null;
+  }
+  function shouldPersistStamp(sender, ms, stored, now = Date.now(), state) {
     if (stored != null)
       return !shouldKeepStored(stored, ms, now);
-    return !(isHumanSender(sender) && isFresh(ms, now));
+    if (isHumanSender(sender) && isFresh(ms, now))
+      return isOptimisticState(state);
+    return true;
   }
   function harvestResponses(value, now = Date.now()) {
     const records = [];
@@ -8700,15 +8750,21 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       const fieldTimes = pickTimes(rec, now);
       const uuid = uuidTime(id, now);
       let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
-      const { sender } = rec;
-      if (ms != null && isFresh(ms, now) && isHumanSender(sender)) {
-        const borrowed = neighborTime(id, records, now);
-        ms = borrowed != null && !isFresh(borrowed, now) ? borrowed : null;
+      const { sender, state } = rec;
+      if (isHumanSender(sender)) {
+        if (isOptimisticState(state)) {
+          if (ms == null)
+            continue;
+        } else {
+          ms = preferHumanTime(ms, neighborTime(id, records, now));
+          if (ms != null && isFresh(ms, now))
+            ms = null;
+        }
       }
       if (ms == null)
         continue;
       seen.add(id);
-      out.push({ id, ms });
+      out.push({ id, ms, rec });
     }
     return out;
   }
@@ -8779,12 +8835,12 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     settings9.store.stamps = next;
   }
   var persist2 = debounce(persistNow, 400);
-  function remember(id, ms, sender) {
+  function remember(id, ms, sender, state) {
     if (!id)
       return false;
     const map = stamps();
     const prev = map.get(id) ?? null;
-    if (!shouldPersistStamp(sender, ms, prev))
+    if (!shouldPersistStamp(sender, ms, prev, Date.now(), state))
       return false;
     if (map.has(id))
       map.delete(id);
@@ -8798,8 +8854,41 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     persist2();
     return prev !== ms;
   }
+  function conversationIdOf(id) {
+    try {
+      const { byConversationId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        if (list?.some((r) => r.responseId === id))
+          return cid;
+      }
+      for (const [cid, nodes] of Object.entries(nodesByConversationId ?? {})) {
+        if (nodes?.some((n) => n.responseId === id))
+          return cid;
+      }
+    } catch (e) {
+      logger18.debug("conversation id lookup failed", e);
+    }
+    return "";
+  }
+  function userKeys(rec, id) {
+    const keys = [];
+    if (id)
+      keys.push(`u:${id}`);
+    const { parentResponseId } = rec;
+    if (typeof parentResponseId === "string" && parentResponseId)
+      keys.push(`u:p:${parentResponseId}`);
+    const text = typeof rec.message === "string" && rec.message ? rec.message : typeof rec.query === "string" ? rec.query : "";
+    const fp = textKey(text);
+    if (fp) {
+      const cid = conversationIdOf(id);
+      keys.push(cid ? `u:t:${cid}:${fp}` : `u:t:${fp}`);
+    }
+    return keys;
+  }
   function extraKeys(rec, id) {
     const keys = [];
+    if (id)
+      keys.push(`h:${id}`);
     const { parentResponseId } = rec;
     if (typeof parentResponseId === "string" && parentResponseId)
       keys.push(`h:${parentResponseId}`);
@@ -8817,22 +8906,30 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
     return keys;
   }
-  function storedMs(id, rec) {
+  function storedMs(id, rec, user) {
     const map = stamps();
-    const direct = map.get(id);
-    if (direct != null)
-      return direct;
-    for (const key of extraKeys(rec, id)) {
+    const keys = user ? userKeys(rec, id) : [id, ...extraKeys(rec, id)];
+    for (const key of keys) {
       const ms = map.get(key);
       if (ms != null)
         return ms;
     }
     return null;
   }
-  function rememberKeys(id, rec, ms, sender) {
-    let changed = remember(id, ms, sender);
+  function rememberKeys(id, rec, ms, sender, user) {
+    const { state } = rec;
+    let changed = false;
+    if (user) {
+      for (const key of userKeys(rec, id)) {
+        if (remember(key, ms, "human", state))
+          changed = true;
+      }
+      return changed;
+    }
+    if (remember(id, ms, sender, state))
+      changed = true;
     for (const key of extraKeys(rec, id)) {
-      if (remember(key, ms, sender))
+      if (remember(key, ms, sender, state))
         changed = true;
     }
     return changed;
@@ -8850,6 +8947,20 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return [];
     }
   }
+  function borrowedMs(id) {
+    try {
+      const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+      const lookup = byId;
+      for (const nodes of Object.values(nodesByConversationId ?? {})) {
+        const ms = childTimeFromNodes(id, nodes ?? [], lookup);
+        if (ms != null)
+          return ms;
+      }
+    } catch (e) {
+      logger18.debug("node neighbor lookup failed", e);
+    }
+    return neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
+  }
   function conversationCreateTime(id) {
     try {
       const { byConversationId } = ResponseStore.useResponseStore.getState();
@@ -8866,31 +8977,42 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
     return null;
   }
-  function resolveMs(response) {
+  function fullRecord(id, rec) {
+    if (!id)
+      return rec;
+    try {
+      const hit = asRecord(ResponseStore.useResponseStore.getState().byId?.[id]);
+      if (hit)
+        return { ...rec, ...hit };
+    } catch (e) {
+      logger18.debug("byId lookup failed", e);
+    }
+    return rec;
+  }
+  function resolveMs(response, isUser) {
     const rec = asRecord(response);
     if (!rec)
       return null;
     const id = recordId(rec);
-    const { sender } = rec;
-    const stored = id ? storedMs(id, rec) : null;
+    const full = fullRecord(id, rec);
+    const human = isUser === true || isHumanSender(full.sender);
+    const stored = id ? storedMs(id, full, human) : null;
     let ms = chooseTime({
-      fieldTimes: pickTimes(rec),
+      fieldTimes: pickTimes(full),
       stored,
       uuid: uuidTime(id)
     });
-    if (id && isHumanSender(sender) && (ms == null || isFresh(ms))) {
-      const borrowed = neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
-      if (borrowed != null && !isFresh(borrowed))
-        ms = borrowed;
-    }
+    if (human && id)
+      ms = preferHumanTime(ms, borrowedMs(id));
     if (id && ms != null)
-      rememberKeys(id, rec, ms, sender);
+      rememberKeys(id, full, ms, human ? "human" : full.sender, human);
     return ms;
   }
   function ingest(value) {
     let changed = false;
-    for (const { id, ms } of harvestResponses(value)) {
-      if (remember(id, ms))
+    for (const { id, ms, rec } of harvestResponses(value)) {
+      const human = isHumanSender(rec.sender);
+      if (rememberKeys(id, rec, ms, rec.sender, human))
         changed = true;
     }
     if (changed)
@@ -9049,15 +9171,25 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       ResponseStore: {
         selector: (s) => s.byId,
         handler(byId) {
-          ingest({ responses: Object.values(byId ?? {}) });
+          try {
+            const { nodesByConversationId } = ResponseStore.useResponseStore.getState();
+            ingest({
+              responses: Object.values(byId ?? {}),
+              nodes: Object.values(nodesByConversationId ?? {}).flat()
+            });
+          } catch (e) {
+            logger18.debug("store ingest failed", e);
+            ingest({ responses: Object.values(byId ?? {}) });
+          }
         }
       }
     },
-    _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
+    _renderTimestamp: ErrorBoundary.wrap(({ response, isUser }) => {
       useExternalStore(tick);
-      if (settings9.store.hideOwnMessages && response.sender === "human")
+      const human = isUser === true || isHumanSender(response.sender);
+      if (settings9.store.hideOwnMessages && human)
         return null;
-      const ms = resolveMs(response);
+      const ms = resolveMs(response, isUser);
       if (ms == null)
         return null;
       return /* @__PURE__ */ React.createElement(Text2, {
@@ -9072,8 +9204,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         find: "response-family:handleEditSave",
         all: true,
         replacement: {
-          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-          replace: "$self._renderTimestamp({response:$1}),$&"
+          match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:(\i),isIncognito:\i,responseId:(\i)\.responseId/,
+          replace: "$self._renderTimestamp({response:$2,isUser:$1}),$&"
         }
       }
     ]

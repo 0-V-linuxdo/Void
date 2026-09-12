@@ -8,27 +8,37 @@ import { describe, expect, test } from "bun:test";
 
 import {
     BORROW_MS,
+    childTimeFromNodes,
     chooseTime,
     FRESH_MS,
     harvestResponses,
     isHumanSender,
+    isOptimisticState,
     neighborTime,
     parseTime,
+    preferHumanTime,
     recordId,
     shouldKeepStored,
     shouldPersistStamp,
+    textKey,
     uuidTime,
 } from "./time";
 
 const NOW = Date.UTC(2026, 8, 12, 4, 0, 0);
 const HOUR_AGO = NOW - 60 * 60 * 1000;
+const HALF_HOUR_AGO = NOW - 31 * 60 * 1000;
 const ISO_HOUR_AGO = new Date(HOUR_AGO).toISOString();
 const ISO_NOW = new Date(NOW).toISOString();
+const ISO_RELOAD = new Date(HALF_HOUR_AGO).toISOString();
 const HUMAN_V4 = "550e8400-e29b-41d4-a716-446655440000";
 
 function v7(ms: number): string {
     const hex = ms.toString(16).padStart(12, "0");
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-7000-8000-0123456789ab`;
+}
+
+function ids(hits: Array<{ id: string; ms: number }>) {
+    return hits.map(({ id, ms }) => ({ id, ms }));
 }
 
 describe("parseTime", () => {
@@ -83,6 +93,23 @@ describe("recordId and isHumanSender", () => {
         expect(isHumanSender("human")).toBe(true);
         expect(isHumanSender("USER")).toBe(true);
         expect(isHumanSender("assistant")).toBe(false);
+    });
+});
+
+describe("isOptimisticState", () => {
+    test("accepts optimistic and streaming", () => {
+        expect(isOptimisticState("optimistic")).toBe(true);
+        expect(isOptimisticState("streaming")).toBe(true);
+        expect(isOptimisticState("closed")).toBe(false);
+    });
+});
+
+describe("textKey", () => {
+    test("is stable for the same text", () => {
+        expect(textKey("完成落地")).toBe(textKey("完成落地"));
+        expect(textKey("完成落地")).not.toBe(textKey("前置任务"));
+        expect(textKey("  x  ")).toBe(textKey("x"));
+        expect(textKey("")).toBe("");
     });
 });
 
@@ -141,6 +168,23 @@ describe("chooseTime", () => {
             now: NOW,
         })).toBeNull();
     });
+
+    test("prefers thinkingStartTime over an aged hydration createTime", () => {
+        expect(chooseTime({
+            fieldTimes: [HALF_HOUR_AGO, HOUR_AGO],
+            stored: HALF_HOUR_AGO,
+            uuid: HOUR_AGO,
+            now: NOW,
+        })).toBe(HOUR_AGO);
+    });
+});
+
+describe("preferHumanTime", () => {
+    test("replaces an own stamp that is newer than the child", () => {
+        expect(preferHumanTime(HALF_HOUR_AGO, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - BORROW_MS);
+        expect(preferHumanTime(HOUR_AGO - 5_000, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - 5_000);
+        expect(preferHumanTime(null, HOUR_AGO)).toBe(HOUR_AGO);
+    });
 });
 
 describe("shouldKeepStored", () => {
@@ -155,15 +199,22 @@ describe("shouldKeepStored", () => {
 });
 
 describe("shouldPersistStamp", () => {
-    test("does not persist a first-seen fresh human stamp", () => {
+    test("persists a live optimistic human send", () => {
+        expect(shouldPersistStamp("human", NOW, null, NOW, "optimistic")).toBe(true);
+        expect(shouldPersistStamp("human", NOW, null, NOW, "streaming")).toBe(true);
+    });
+
+    test("does not persist a first-seen fresh closed human stamp", () => {
+        expect(shouldPersistStamp("human", NOW, null, NOW, "closed")).toBe(false);
         expect(shouldPersistStamp("human", NOW, null, NOW)).toBe(false);
         expect(shouldPersistStamp("assistant", NOW, null, NOW)).toBe(true);
-        expect(shouldPersistStamp("human", HOUR_AGO, null, NOW)).toBe(true);
+        expect(shouldPersistStamp("human", HOUR_AGO, null, NOW, "closed")).toBe(true);
     });
 
     test("overwrites a poisoned now with a trusted older stamp", () => {
         expect(shouldPersistStamp("human", HOUR_AGO, NOW, NOW)).toBe(true);
         expect(shouldPersistStamp("human", NOW, HOUR_AGO, NOW)).toBe(false);
+        expect(shouldPersistStamp("human", HOUR_AGO, HALF_HOUR_AGO, NOW)).toBe(true);
     });
 });
 
@@ -191,6 +242,31 @@ describe("neighborTime", () => {
     });
 });
 
+describe("childTimeFromNodes", () => {
+    test("uses parentResponseId on the node, not children[]", () => {
+        const child = v7(HOUR_AGO);
+        const byId = {
+            [child]: { responseId: child, sender: "assistant", thinkingStartTime: ISO_HOUR_AGO },
+        };
+        expect(childTimeFromNodes(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human" },
+            { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4 },
+        ], byId, NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
+    test("falls back to the next node in response-node order", () => {
+        const child = v7(HOUR_AGO);
+        const byId = {
+            [HUMAN_V4]: { responseId: HUMAN_V4, sender: "human", createTime: ISO_RELOAD },
+            [child]: { responseId: child, sender: "assistant", thinkingStartTime: ISO_HOUR_AGO },
+        };
+        expect(childTimeFromNodes(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human" },
+            { responseId: child, sender: "assistant" },
+        ], byId, NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+});
+
 describe("harvestResponses", () => {
     test("walks load-responses payloads", () => {
         const hits = harvestResponses({
@@ -199,7 +275,7 @@ describe("harvestResponses", () => {
                 { responseId: "b", create_time: { seconds: HOUR_AGO / 1000, nanos: 0 } },
             ],
         }, NOW);
-        expect(hits).toEqual([
+        expect(ids(hits)).toEqual([
             { id: "a", ms: HOUR_AGO },
             { id: "b", ms: HOUR_AGO },
         ]);
@@ -209,7 +285,7 @@ describe("harvestResponses", () => {
         const hits = harvestResponses({
             responses: [{ _id: "legacy", createTime: ISO_HOUR_AGO }],
         }, NOW);
-        expect(hits).toEqual([{ id: "legacy", ms: HOUR_AGO }]);
+        expect(ids(hits)).toEqual([{ id: "legacy", ms: HOUR_AGO }]);
     });
 
     test("borrows assistant time for a human row rewritten to now", () => {
@@ -220,17 +296,37 @@ describe("harvestResponses", () => {
                 { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_NOW, thinkingStartTime: ISO_HOUR_AGO },
             ],
         }, NOW);
-        expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
-        expect(hits).toContainEqual({ id: child, ms: HOUR_AGO });
+        expect(ids(hits)).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
+        expect(ids(hits)).toContainEqual({ id: child, ms: HOUR_AGO });
     });
 
-    test("omits a fresh human with no trusted neighbor", () => {
+    test("emits a live optimistic human send", () => {
         const hits = harvestResponses({
             responses: [
-                { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
+                { responseId: HUMAN_V4, sender: "human", state: "optimistic", createTime: ISO_NOW },
             ],
         }, NOW);
-        expect(hits).toEqual([]);
+        expect(ids(hits)).toEqual([{ id: HUMAN_V4, ms: NOW }]);
+    });
+
+    test("omits a fresh closed human with no trusted neighbor", () => {
+        const hits = harvestResponses({
+            responses: [
+                { responseId: HUMAN_V4, sender: "human", state: "closed", createTime: ISO_NOW },
+            ],
+        }, NOW);
+        expect(ids(hits)).toEqual([]);
+    });
+
+    test("replaces an aged hydration stamp with the child", () => {
+        const child = v7(HOUR_AGO);
+        const hits = harvestResponses({
+            responses: [
+                { responseId: HUMAN_V4, sender: "human", state: "closed", createTime: ISO_RELOAD },
+                { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4, thinkingStartTime: ISO_HOUR_AGO },
+            ],
+        }, NOW);
+        expect(ids(hits)).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
     });
 });
 
