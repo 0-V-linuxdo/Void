@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.30] v1.0.0
+// @version      [20260912.32] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.30] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.32] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -3592,7 +3592,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/ColorSettingRow.css
+  // voidpp-css:/workspace/VoidPP/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -3631,7 +3631,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/ConfirmDialog.css
+  // voidpp-css:/workspace/VoidPP/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3880,7 +3880,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/ErrorCard.css
+  // voidpp-css:/workspace/VoidPP/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3993,7 +3993,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/SelectionUI.css
+  // voidpp-css:/workspace/VoidPP/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -4733,7 +4733,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/_core/settings/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -5006,7 +5006,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/tabs/CustomCSSTab.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -5018,7 +5018,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/CssEditor.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -5290,7 +5290,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/shared.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5365,7 +5365,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/tabs/PluginsTab.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5406,7 +5406,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/PluginCard.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5457,7 +5457,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/BaseCard.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5730,7 +5730,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     });
   }
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/tabs/PluginDialog.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5756,7 +5756,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/SettingField.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -6362,7 +6362,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/tabs/ThemesTab.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6385,7 +6385,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/ThemeCard.css
+  // voidpp-css:/workspace/VoidPP/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6663,7 +6663,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/experiments/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -7041,7 +7041,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/pluginsFlyout/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -7183,9 +7183,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.30] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"f9b7de4"}`
-    }, `(${"f9b7de4"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.32] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"ce706c1"}`
+    }, `(${"ce706c1"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7653,7 +7653,63 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/betterSidebar/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/betterSidebar/headerHover.css
+  registerStyle("headerHover", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* stylelint-disable no-descending-specificity */
+
+@media (width >= 48rem) {
+    [data-sidebar="sidebar"] [data-void-bots-plus],
+    [data-sidebar="sidebar"] .void-bots-plus,
+    [data-sidebar="sidebar"] button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-void-chats-plus],
+    [data-sidebar="sidebar"] .void-chats-plus,
+    [data-sidebar="sidebar"] button[aria-label="Add project"],
+    [data-sidebar="sidebar"] button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
+        opacity: 0 !important;
+        transition: opacity 0.15s ease;
+    }
+
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-bots-plus],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-bots-plus,
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-chats-plus],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-chats-plus,
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="Add project"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) > :first-child :is(button, [role="button"]):not([aria-expanded]),
+    [data-sidebar="sidebar"] :has(> :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus)):is(:hover, :focus-within) > :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus),
+    [data-sidebar="sidebar"] [data-void-bots-plus]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] .void-bots-plus:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="New bot"]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] [data-void-chats-plus]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] .void-chats-plus:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="Add project"]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="All projects"]:is(:hover, :focus-visible, [data-state="open"]) {
+        opacity: 1 !important;
+    }
+}
+
+@media (width >= 48rem) and (prefers-reduced-motion: reduce) {
+    [data-sidebar="sidebar"] [data-void-bots-plus],
+    [data-sidebar="sidebar"] .void-bots-plus,
+    [data-sidebar="sidebar"] button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-void-chats-plus],
+    [data-sidebar="sidebar"] .void-chats-plus,
+    [data-sidebar="sidebar"] button[aria-label="Add project"],
+    [data-sidebar="sidebar"] button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
+        transition: none;
+    }
+}
+`);
+
+  // voidpp-css:/workspace/VoidPP/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -7745,8 +7801,61 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       type: 3 /* BOOLEAN */,
       description: "Show checkboxes on conversations for bulk selection and deletion.",
       default: true
+    },
+    titleRowHover: {
+      type: 3 /* BOOLEAN */,
+      description: "Show Bots, Chats, and Projects header actions only when hovering that section, like the expand chevron.",
+      default: true
+    },
+    chatsPlus: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a plus on the Chats header that starts a new chat.",
+      default: true
     }
   });
+  migrateSettingsToPlugin("BetterSidebar", "SidebarHeaderHover", "titleRowHover", "chatsPlus");
+  migrateSettingsToPlugin("BetterSidebar", "BotsPlusHover", "titleRowHover", "chatsPlus");
+  var BTN_CLASS = "void-chats-plus flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary hover:bg-button-ghost-hover hover:text-primary focus:outline-none focus-visible:bg-button-ghost-hover";
+  function applyHeaderHover() {
+    if (settings7.store.titleRowHover)
+      enableStyle("headerHover");
+    else
+      disableStyle("headerHover");
+  }
+  function newChat(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const native = document.querySelector('[data-testid="new-chat"]');
+    if (native) {
+      native.click();
+      return;
+    }
+    const { route, push } = RoutingStore.useRoutingStore.getState();
+    const teamId = route.teamId ?? null;
+    const { workspaceId } = route;
+    if (workspaceId) {
+      push({ page: "workspace", workspaceId, tab: "conversations", teamId });
+      const chat = ChatPageStore.useChatPageStore.getState();
+      chat.setProjectId(workspaceId);
+      chat.setConversationId(undefined);
+      return;
+    }
+    ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
+    push({ page: "main", teamId });
+  }
+  var ChatsPlus = ErrorBoundary.wrap(function ChatsPlusButton() {
+    if (!settings7.use(["chatsPlus"]).chatsPlus)
+      return null;
+    return /* @__PURE__ */ React.createElement("button", {
+      type: "button",
+      className: BTN_CLASS,
+      "aria-label": "New chat",
+      "data-void-chats-plus": "",
+      onClick: newChat
+    }, /* @__PURE__ */ React.createElement(PlusIcon, {
+      size: 14
+    }));
+  }, null);
   function UserCard({ AvatarMenu }) {
     const { open } = SidebarComponents.useSidebar();
     const { user } = SessionStore.useSession();
@@ -7805,11 +7914,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var betterSidebar_default = definePlugin({
     name: "BetterSidebar",
     icon: PanelLeftIcon,
-    description: "Various sidebar improvements.",
-    authors: [Devs.Prism],
+    description: "Sidebar improvements, including header-action hover and a New chat plus on Chats.",
+    authors: [Devs.Prism, Devs.p],
     tags: ["ui"],
+    enabledByDefault: true,
     settings: settings7,
     managedStyle: "betterSidebar",
+    _ChatsPlus: () => createElement(ChatsPlus),
     _UserCard: ErrorBoundary.wrap(UserCard),
     _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
       selection,
@@ -7846,9 +7957,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     start() {
       selection.clear();
+      applyHeaderHover();
     },
+    onSettingsChange: applyHeaderHover,
     stop() {
       selection.clear();
+      disableStyle("headerHover");
     },
     patches: [
       {
@@ -7894,11 +8008,31 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
           match: /\(0,\i\.jsx\)\(\i\.SidebarSectionTitle,\{title:\i\("sidebar-history"/,
           replace: "$self._renderActionBar(),$&"
         }
+      },
+      {
+        find: '"sidebar.new-bot-btn.aria-label","New bot"',
+        replacement: [
+          {
+            match: /(\i)\("flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary","hover:bg-button-ghost-hover hover:text-primary","focus:outline-none focus-visible:bg-button-ghost-hover"\)/,
+            replace: '$1("flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary void-bots-plus","hover:bg-button-ghost-hover hover:text-primary","focus:outline-none focus-visible:bg-button-ghost-hover")'
+          },
+          {
+            match: /("button",\{type:"button","aria-label":\i,className:\i,onClick:\i)/,
+            replace: '$&,"data-void-bots-plus":""'
+          }
+        ]
+      },
+      {
+        find: '"sidebar-chats","Chats"',
+        replacement: {
+          match: /(\i\("sidebar-chats","Chats"\):\i\("sidebar-history","History"\),collapsed:\i,onToggle:\(\)=>\i\(\i\))/,
+          replace: "$1,action:$self._ChatsPlus()"
+        }
       }
     ]
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/betterImagine/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -8541,7 +8675,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/messageTimestamps/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -9475,7 +9609,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/cloneChats/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -9526,7 +9660,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/streamerMode/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -9698,7 +9832,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/inputHistory/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -10431,7 +10565,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/downloadTTS/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -10493,7 +10627,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/recentTopics/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -12612,7 +12746,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/customInstructions/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -13252,153 +13386,6 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/sidebarHeaderHover/styles.css
-  registerStyle("sidebarHeaderHover", `/*
- * Void++, a modification for grok.com
- * Copyright (c) 2026 Void++ Contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-/* stylelint-disable no-descending-specificity */
-
-@media (width >= 48rem) {
-    [data-sidebar="sidebar"] [data-void-bots-plus],
-    [data-sidebar="sidebar"] .void-bots-plus,
-    [data-sidebar="sidebar"] button[aria-label="New bot"],
-    [data-sidebar="sidebar"] [data-void-chats-plus],
-    [data-sidebar="sidebar"] .void-chats-plus,
-    [data-sidebar="sidebar"] button[aria-label="Add project"],
-    [data-sidebar="sidebar"] button[aria-label="All projects"],
-    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
-        opacity: 0 !important;
-        transition: opacity 0.15s ease;
-    }
-
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-bots-plus],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-bots-plus,
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="New bot"],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-chats-plus],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-chats-plus,
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="Add project"],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="All projects"],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) > :first-child :is(button, [role="button"]):not([aria-expanded]),
-    [data-sidebar="sidebar"] :has(> :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus)):is(:hover, :focus-within) > :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus),
-    [data-sidebar="sidebar"] [data-void-bots-plus]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] .void-bots-plus:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] button[aria-label="New bot"]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] [data-void-chats-plus]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] .void-chats-plus:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] button[aria-label="Add project"]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] button[aria-label="All projects"]:is(:hover, :focus-visible, [data-state="open"]) {
-        opacity: 1 !important;
-    }
-}
-
-@media (width >= 48rem) and (prefers-reduced-motion: reduce) {
-    [data-sidebar="sidebar"] [data-void-bots-plus],
-    [data-sidebar="sidebar"] .void-bots-plus,
-    [data-sidebar="sidebar"] button[aria-label="New bot"],
-    [data-sidebar="sidebar"] [data-void-chats-plus],
-    [data-sidebar="sidebar"] .void-chats-plus,
-    [data-sidebar="sidebar"] button[aria-label="Add project"],
-    [data-sidebar="sidebar"] button[aria-label="All projects"],
-    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/sidebarHeaderHover/index.tsx
-  var BTN_CLASS = "void-chats-plus flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary hover:bg-button-ghost-hover hover:text-primary focus:outline-none focus-visible:bg-button-ghost-hover";
-  var settings17 = definePluginSettings({
-    titleRowHover: {
-      type: 3 /* BOOLEAN */,
-      description: "Show Bots, Chats, and Projects header actions only when hovering that section, like the expand chevron.",
-      default: true
-    },
-    chatsPlus: {
-      type: 3 /* BOOLEAN */,
-      description: "Show a plus on the Chats header that starts a new chat.",
-      default: true
-    }
-  });
-  function apply2() {
-    if (settings17.store.titleRowHover)
-      enableStyle("sidebarHeaderHover");
-    else
-      disableStyle("sidebarHeaderHover");
-  }
-  function newChat(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const native = document.querySelector('[data-testid="new-chat"]');
-    if (native) {
-      native.click();
-      return;
-    }
-    const { route, push } = RoutingStore.useRoutingStore.getState();
-    const teamId = route.teamId ?? null;
-    const workspaceId = route.workspaceId;
-    if (workspaceId) {
-      push({ page: "workspace", workspaceId, tab: "conversations", teamId });
-      const chat = ChatPageStore.useChatPageStore.getState();
-      chat.setProjectId(workspaceId);
-      chat.setConversationId(undefined);
-      return;
-    }
-    ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
-    push({ page: "main", teamId });
-  }
-  var ChatsPlus = ErrorBoundary.wrap(function ChatsPlusButton() {
-    if (!settings17.use(["chatsPlus"]).chatsPlus)
-      return null;
-    return createElement("button", {
-      type: "button",
-      className: BTN_CLASS,
-      "aria-label": "New chat",
-      "data-void-chats-plus": "",
-      onClick: newChat
-    }, createElement(PlusIcon, { size: 14 }));
-  }, null);
-  var sidebarHeaderHover_default = definePlugin({
-    name: "SidebarHeaderHover",
-    icon: PlusIcon,
-    description: "Show Bots, Chats, and Projects header actions on section hover, and add a New chat plus on Chats.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    managedStyle: "sidebarHeaderHover",
-    settings: settings17,
-    _ChatsPlus: () => createElement(ChatsPlus),
-    patches: [
-      {
-        find: '"sidebar.new-bot-btn.aria-label","New bot"',
-        replacement: [
-          {
-            match: /(\i)\("flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary","hover:bg-button-ghost-hover hover:text-primary","focus:outline-none focus-visible:bg-button-ghost-hover"\)/,
-            replace: '$1("flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary void-bots-plus","hover:bg-button-ghost-hover hover:text-primary","focus:outline-none focus-visible:bg-button-ghost-hover")'
-          },
-          {
-            match: /("button",\{type:"button","aria-label":\i,className:\i,onClick:\i)/,
-            replace: '$&,"data-void-bots-plus":""'
-          }
-        ]
-      },
-      {
-        find: '"sidebar-chats","Chats"',
-        replacement: {
-          match: /(\i\("sidebar-chats","Chats"\):\i\("sidebar-history","History"\),collapsed:\i,onToggle:\(\)=>\i\(\i\))/,
-          replace: "$1,action:$self._ChatsPlus()"
-        }
-      }
-    ],
-    start: apply2,
-    onSettingsChange: apply2,
-    stop() {
-      disableStyle("sidebarHeaderHover");
-    }
-  });
-
   // src/plugins/noSidebarPlugins/index.tsx
   var PluginsDialogStore = findByPropsLazy("usePluginsDialogStore");
   function PluginsIcon(props = {}) {
@@ -13503,7 +13490,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
   var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
   var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
-  var settings18 = definePluginSettings({
+  var settings17 = definePluginSettings({
     opacity: {
       type: 5 /* SLIDER */,
       description: "Background opacity of the chat input. 100 is fully opaque.",
@@ -13519,9 +13506,9 @@ html.void-rt-open [data-sidebar="gap"] {
       default: 16
     }
   });
-  function apply3() {
-    const pct = clamp(settings18.store.opacity, 0, 100);
-    const blur = clamp(settings18.store.blur, 0, 40);
+  function apply2() {
+    const pct = clamp(settings17.store.opacity, 0, 100);
+    const blur = clamp(settings17.store.blur, 0, 40);
     const alpha = pct / 100;
     const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
     registerStyle(STYLE_NAME5, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
@@ -13533,15 +13520,15 @@ html.void-rt-open [data-sidebar="gap"] {
     authors: [Devs.p],
     tags: ["ui", "chat"],
     enabledByDefault: true,
-    settings: settings18,
-    start: apply3,
-    onSettingsChange: apply3,
+    settings: settings17,
+    start: apply2,
+    onSettingsChange: apply2,
     stop() {
       unregisterStyle(STYLE_NAME5);
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/exportChat/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -13760,7 +13747,7 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/usageDisplay/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -14661,7 +14648,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // src/plugins/usageDisplay/index.tsx
   var logger27 = new Logger("UsageDisplay");
   var cl23 = classNameFactory("void-ud-");
-  var settings19 = definePluginSettings({
+  var settings18 = definePluginSettings({
     usageStats: {
       type: 3 /* BOOLEAN */,
       description: "Record daily usage. Hover shows today after a delay; click opens history.",
@@ -14776,12 +14763,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     SettingsStore3.markAsChanged();
   }
   function snapshotToday() {
-    if (!settings19.store.usageStats)
+    if (!settings18.store.usageStats)
       return;
     syncAccount();
     if (!state.userId)
       return;
-    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings19.store.retainDays));
+    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings18.store.retainDays));
   }
   async function refresh(reason = "manual") {
     if (refreshPromise)
@@ -14899,7 +14886,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function ButtonIcon() {
     useExternalStore(store3);
-    const { showPercent } = settings19.use(["showPercent"]);
+    const { showPercent } = settings18.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -14969,7 +14956,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function UsagePanel() {
     useExternalStore(store3);
-    const { usageStats, hoverStatsDelay } = settings19.use(["usageStats", "hoverStatsDelay"]);
+    const { usageStats, hoverStatsDelay } = settings18.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
     const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
@@ -15011,7 +14998,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function StatsToggle() {
-    const { usageStats } = settings19.use(["usageStats"]);
+    const { usageStats } = settings18.use(["usageStats"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
@@ -15029,7 +15016,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: !!usageStats,
       onCheckedChange: (value) => {
-        settings19.store.usageStats = value;
+        settings18.store.usageStats = value;
         store3.notify();
         if (value)
           refresh("manual");
@@ -15138,14 +15125,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onClick: () => {
         if (pre == null)
           return;
-        writeDay(userId, repairWipedReset(rec, dayStart, pre, Date.now()), retainDaysOf(settings19.store.retainDays));
+        writeDay(userId, repairWipedReset(rec, dayStart, pre, Date.now()), retainDaysOf(settings18.store.retainDays));
         store3.notify();
       }
     }, "Repair")));
   }
   function StatsModal({ onClose }) {
     useExternalStore(store3);
-    const { usageStats } = settings19.use(["usageStats"]);
+    const { usageStats } = settings18.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
     const todayKey = localDateKey(Date.now());
     const bars = days.length ? fillChartDays(days) : [];
@@ -15281,7 +15268,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings19,
+    settings: settings18,
     start() {
       migrateUsageStats();
       try {
@@ -15304,14 +15291,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
       streamEnd: onStreamEnd3
     },
     onSettingsChange() {
-      if (settings19.store.usageStats)
+      if (settings18.store.usageStats)
         refresh("manual");
     }
   });
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME6 = "widerChat";
-  var settings20 = definePluginSettings({
+  var settings19 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem.",
@@ -15319,7 +15306,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
   function applyWidth() {
-    const w = settings20.store.width;
+    const w = settings19.store.width;
     registerStyle(STYLE_NAME6, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
@@ -15328,7 +15315,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
     tags: ["chat", "ui"],
-    settings: settings20,
+    settings: settings19,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
@@ -15336,7 +15323,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/settingsFlyout/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/settingsFlyout/styles.css
   registerStyle("settingsFlyout", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -15439,7 +15426,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
   // src/plugins/settingsFlyout/index.tsx
   var cl24 = classNameFactory("void-sf-");
-  var settings21 = definePluginSettings({
+  var settings20 = definePluginSettings({
     showOpenSettings: {
       type: 3 /* BOOLEAN */,
       description: 'Show "Open Settings" (last used tab).',
@@ -15551,7 +15538,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Void++"), tabItems(tabs));
   }
   function SettingsMenu({ onOpen }) {
-    const cfg = settings21.use([
+    const cfg = settings20.use([
       "showOpenSettings",
       "voidppPosition",
       "plugins",
@@ -15593,7 +15580,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     tags: ["ui", "settings"],
     enabledByDefault: true,
     requiresRestart: true,
-    settings: settings21,
+    settings: settings20,
     start() {
       migratePluginSetting("SettingsFlyout", "voidppPosition", "voidPosition");
     },
@@ -15826,7 +15813,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var logger28 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var settings22 = definePluginSettings({
+  var settings21 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
       description: "How the Grok mark is overlaid with chat state.",
@@ -15853,7 +15840,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var raf = 0;
   var started2 = false;
   function currentStyle() {
-    const value = settings22.store.style;
+    const value = settings21.store.style;
     return isIconStyle(value) ? value : "badge";
   }
   function captureOfficial() {
@@ -16266,7 +16253,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings22,
+    settings: settings21,
     startAt: "TurbopackReady" /* TurbopackReady */,
     cleanupSelectors: [`#${ICON_ID}`],
     start() {
@@ -16330,16 +16317,16 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 }
 `;
   var REFINEMENT_CSS = `.${REFINEMENT_MARK}{display:none!important}`;
-  var settings23 = definePluginSettings({
+  var settings22 = definePluginSettings({
     hideDictationRefinement: {
       type: 3 /* BOOLEAN */,
       description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
       default: true
     }
   });
-  function apply4() {
+  function apply3() {
     const rules = [BUTTON_CSS];
-    if (settings23.store.hideDictationRefinement)
+    if (settings22.store.hideDictationRefinement)
       rules.push(REFINEMENT_CSS);
     registerStyle(STYLE_NAME7, rules.join(`
 `));
@@ -16351,7 +16338,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings23,
+    settings: settings22,
     patches: [
       {
         find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
@@ -16361,14 +16348,14 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
         }
       }
     ],
-    start: apply4,
-    onSettingsChange: apply4,
+    start: apply3,
+    onSettingsChange: apply3,
     stop() {
       unregisterStyle(STYLE_NAME7);
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/betterFiles/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -16494,7 +16481,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 
   // src/plugins/noShareLink/index.ts
   var STYLE_NAME8 = "noShareLink";
-  var settings24 = definePluginSettings({
+  var settings23 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
       description: "Inside a project: hide the top-right Share Project button.",
@@ -16506,12 +16493,12 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       default: true
     }
   });
-  function apply5() {
+  function apply4() {
     const rules = [];
-    if (settings24.store.hideShareProject) {
+    if (settings23.store.hideShareProject) {
       rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
-    if (settings24.store.hideCreateShareLink) {
+    if (settings23.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
     registerStyle(STYLE_NAME8, rules.join(`
@@ -16524,15 +16511,15 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings24,
-    start: apply5,
-    onSettingsChange: apply5,
+    settings: settings23,
+    start: apply4,
+    onSettingsChange: apply4,
     stop() {
       unregisterStyle(STYLE_NAME8);
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/chatListStatus/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/chatListStatus/styles.css
   registerStyle("chatListStatus", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -17302,7 +17289,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/compactModeSelect/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/compactModeSelect/styles.css
   registerStyle("compactModeSelect", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -17497,7 +17484,7 @@ html.void-cms-picked .void-cms-ghost {
   var PICK_MS = 900;
   var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
   var GHOST_STYLE = { opacity: "0", visibility: "hidden" };
-  var settings25 = definePluginSettings({
+  var settings24 = definePluginSettings({
     pinList: {
       type: 6 /* COMPONENT */,
       description: "Toggle pins and drag to set chip order.",
@@ -17647,10 +17634,10 @@ html.void-cms-picked .void-cms-ghost {
     return next;
   }
   function setOrder(ids) {
-    settings25.store.pinOrder = ids.join(",");
+    settings24.store.pinOrder = ids.join(",");
   }
   function setPinned(pin, on) {
-    settings25.store[pin] = on;
+    settings24.store[pin] = on;
   }
   function itemText(el) {
     return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
@@ -17891,7 +17878,7 @@ html.void-cms-picked .void-cms-ghost {
     e.dataTransfer.dropEffect = "move";
   }
   function PinOrderEditor() {
-    const cfg = settings25.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
+    const cfg = settings24.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
     const ids = parseOrder(cfg.pinOrder);
     const [dragId, setDragId] = React.useState(null);
     const onDragStart = (id) => (e) => {
@@ -17968,7 +17955,7 @@ html.void-cms-picked .void-cms-ghost {
     })));
   }
   function PinnedModes() {
-    const cfg = settings25.use([...SETTING_KEYS]);
+    const cfg = settings24.use([...SETTING_KEYS]);
     const page = RoutingStore.useRoutingStore((s) => s.route.page);
     const selectedModeId = ModesStore.useModesStore((s) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s) => s.modes);
@@ -18010,7 +17997,7 @@ html.void-cms-picked .void-cms-ghost {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings25,
+    settings: settings24,
     managedStyle: "compactModeSelect",
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
@@ -18092,18 +18079,18 @@ html.void-cms-picked .void-cms-ghost {
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorRow2() {
-    const { starColor } = settings26.use(["starColor"]);
+    const { starColor } = settings25.use(["starColor"]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
-        settings26.store.starColor = v;
+        settings25.store.starColor = v;
       },
       title: "Star color",
       description: "Color of the twinkling stars."
     });
   }
   function StarryBackground() {
-    const { starColor } = settings26.use(["starColor"]);
+    const { starColor } = settings25.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -18112,7 +18099,7 @@ html.void-cms-picked .void-cms-ghost {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings26 = definePluginSettings({
+  var settings25 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_COLOR,
@@ -18125,7 +18112,7 @@ html.void-cms-picked .void-cms-ghost {
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings26,
+    settings: settings25,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -18168,7 +18155,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/placeholder/styles.css
+  // voidpp-css:/workspace/VoidPP/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: layout;
 }
@@ -18214,7 +18201,7 @@ div:has(> #grok-bot-nav-button) {
     return String(raw ?? "").split(`
 `).map((s) => s.trim()).filter(Boolean);
   }
-  var settings27 = definePluginSettings({
+  var settings26 = definePluginSettings({
     phrases: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_PHRASES,
@@ -18222,7 +18209,7 @@ div:has(> #grok-bot-nav-button) {
     }
   }).withPrivateSettings();
   function PhrasesEditor() {
-    const { phrases } = settings27.use(["phrases"]);
+    const { phrases } = settings26.use(["phrases"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
@@ -18239,7 +18226,7 @@ div:has(> #grok-bot-nav-button) {
       className: cl26("textarea"),
       value: phrases ?? DEFAULT_PHRASES,
       onChange: (e) => {
-        settings27.store.phrases = e.target.value;
+        settings26.store.phrases = e.target.value;
       },
       placeholder: DEFAULT_PHRASES
     })));
@@ -18250,9 +18237,9 @@ div:has(> #grok-bot-nav-button) {
     description: "Replace the rotating chat and Grok Bot input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],
-    settings: settings27,
+    settings: settings26,
     _phrases() {
-      const lines = parsePhrases(settings27.store.phrases ?? DEFAULT_PHRASES);
+      const lines = parsePhrases(settings26.store.phrases ?? DEFAULT_PHRASES);
       return lines.length ? lines : null;
     },
     _inputPlaceholder(value) {
@@ -18282,8 +18269,8 @@ div:has(> #grok-bot-nav-button) {
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [cleaner_default.name]: cleaner_default, [betterSidebar_default.name]: betterSidebar_default, [betterImagine_default.name]: betterImagine_default, [messageTimestamps_default.name]: messageTimestamps_default, [autoRetry_default.name]: autoRetry_default, [userQuotes_default.name]: userQuotes_default, [cloneChats_default.name]: cloneChats_default, [streamerMode_default.name]: streamerMode_default, [inputHistory_default.name]: inputHistory_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterLinks_default.name]: betterLinks_default, [experiments_default.name]: experiments_default, [customInstructions_default.name]: customInstructions_default, [responseNotification_default.name]: responseNotification_default, [incognito_default.name]: incognito_default, [sidebarHeaderHover_default.name]: sidebarHeaderHover_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [noRightPanel_default.name]: noRightPanel_default, [composerOpacity_default.name]: composerOpacity_default, [exportChat_default.name]: exportChat_default, [autoCollapse_default.name]: autoCollapse_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default, [settingsFlyout_default.name]: settingsFlyout_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [noDictation_default.name]: noDictation_default, [betterFiles_default.name]: betterFiles_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [stableComposer_default.name]: stableComposer_default, [compactModeSelect_default.name]: compactModeSelect_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [noGrokBot_default.name]: noGrokBot_default, [placeholder_default.name]: placeholder_default };
-  // voidpp-css:/workspace/artifacts/Void-src/src/api/Notices.css
+  var __plugins_default = { [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [cleaner_default.name]: cleaner_default, [betterSidebar_default.name]: betterSidebar_default, [betterImagine_default.name]: betterImagine_default, [messageTimestamps_default.name]: messageTimestamps_default, [autoRetry_default.name]: autoRetry_default, [userQuotes_default.name]: userQuotes_default, [cloneChats_default.name]: cloneChats_default, [streamerMode_default.name]: streamerMode_default, [inputHistory_default.name]: inputHistory_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterLinks_default.name]: betterLinks_default, [experiments_default.name]: experiments_default, [customInstructions_default.name]: customInstructions_default, [responseNotification_default.name]: responseNotification_default, [incognito_default.name]: incognito_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [noRightPanel_default.name]: noRightPanel_default, [composerOpacity_default.name]: composerOpacity_default, [exportChat_default.name]: exportChat_default, [autoCollapse_default.name]: autoCollapse_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default, [settingsFlyout_default.name]: settingsFlyout_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [noDictation_default.name]: noDictation_default, [betterFiles_default.name]: betterFiles_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [stableComposer_default.name]: stableComposer_default, [compactModeSelect_default.name]: compactModeSelect_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [noGrokBot_default.name]: noGrokBot_default, [placeholder_default.name]: placeholder_default };
+  // voidpp-css:/workspace/VoidPP/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;

@@ -32,7 +32,7 @@
 | <img src="https://api.iconify.design/lucide/text-quote.svg?color=%238b949e" width="16" height="16" alt=""> UserQuotes | 开 | 自己气泡里的引用行画出可见左竖条，避免 `>` 被 markdown 吃掉后看起来像消失。 |
 | <img src="https://api.iconify.design/lucide/panel-right-close.svg?color=%238b949e" width="16" height="16" alt=""> NoRightPanel | 开 | 保持 Grok 右侧栏关闭，包括自动打开和切会话时的恢复。 |
 | <img src="https://api.iconify.design/lucide/blocks.svg?color=%238b949e" width="16" height="16" alt=""> NoSidebarPlugins | 开 | 把侧栏 Plugins 按钮挪到头像折叠菜单（Void++ / Help 旁边）。 |
-| <img src="https://api.iconify.design/lucide/plus.svg?color=%238b949e" width="16" height="16" alt=""> SidebarHeaderHover | 开 | 侧栏 Bots / Chats / Projects 标题按钮仅在悬停该分组时显示；Chats 标题右侧增加 New chat 加号（独立开关）。 |
+| <img src="https://api.iconify.design/lucide/panel-left.svg?color=%238b949e" width="16" height="16" alt=""> BetterSidebar | 开 | 侧栏增强：分组标题按钮仅在悬停该分组时显示，Chats 标题增加 New chat 加号（`titleRowHover`、`chatsPlus`）。 |
 
 #### 设置 UI
 
@@ -63,3 +63,4 @@
 | 功能 | 默认 | 说明 |
 | --- | --- | --- |
 | <img src="https://api.iconify.design/lucide/gauge.svg?color=%238b949e" width="16" height="16" alt=""> RateLimitDisplay | — | Grok 积分规则变更后，旧的按模式速率读数失效，已移除。周用量改由 UsageDisplay 承担。 |
+| <img src="https://api.iconify.design/lucide/plus.svg?color=%238b949e" width="16" height="16" alt=""> SidebarHeaderHover | — | 已并入 BetterSidebar（`titleRowHover`、`chatsPlus`）。 |

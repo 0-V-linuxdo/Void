@@ -11,8 +11,8 @@ import { definePluginSettings, migrateSettingsToPlugin } from "@api/Settings";
 import { SelectionActionBar, SelectionCheckbox } from "@components";
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
-import { Text } from "@components/Text";
 import { PanelLeftIcon, PlusIcon } from "@components/icons";
+import { Text } from "@components/Text";
 import { SidebarComponents } from "@turbopack/common/components";
 import { getPlanName } from "@turbopack/common/plan";
 import { createElement, Fragment, React, useRef } from "@turbopack/common/react";
@@ -75,7 +75,7 @@ function newChat(event: ReactMouseEvent) {
     }
     const { route, push } = RoutingStore.useRoutingStore.getState();
     const teamId = route.teamId ?? null;
-    const workspaceId = route.workspaceId;
+    const { workspaceId } = route;
     if (workspaceId) {
         push({ page: "workspace", workspaceId, tab: "conversations", teamId });
         const chat = ChatPageStore.useChatPageStore.getState();
@@ -233,7 +233,7 @@ export default definePlugin({
                     replace: "{defaultOpen:$1=$self._defaultOpen(),open:",
                 },
                 {
-                    match: /data-sidebar": "sidebar",className:/,
+                    match: /data-sidebar":"sidebar",className:/,
                     replace: 'data-sidebar":"sidebar",onClick:$self._onSidebarClick(),className:',
                 },
             ],
