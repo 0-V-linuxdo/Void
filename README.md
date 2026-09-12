@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This branch is a frozen snapshot of upstream [Void](https://github.com/imjustprism/Void). The Void++ product line lives on [`voidpp`](https://github.com/0-V-linuxdo/VoidPP/tree/voidpp). Install from [`userscript/VoidPP.user.js`](https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/VoidPP.user.js).
+
 # Void
 
 [![License](https://img.shields.io/github/license/imjustprism/Void?style=flat-square)](LICENSE)
