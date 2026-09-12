@@ -84,8 +84,8 @@ export default definePlugin({
             find: "data-query-bar-mode-select",
             all: true,
             replacement: {
-                match: /placeholder:(\i)(?=,onFrontPage)/,
-                replace: "placeholder:$self._inputPlaceholder($1)",
+                match: /("query-bar\.voice-connecting-placeholder","Connecting…"\):)(\i)(?=,isLoading)/,
+                replace: "$1$self._inputPlaceholder($2)",
             },
         },
     ],
