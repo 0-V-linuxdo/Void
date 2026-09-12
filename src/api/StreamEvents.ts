@@ -15,11 +15,10 @@ export function initStreamEvents(): void {
     started = true;
 
     waitFor<ChatPageStoreModule>(filters.byProps("useChatPageStore"), mod => {
-        mod.useChatPageStore.subscribe(
-            s => s.streamedMessageId,
-            (current, prev) => {
-                if (!current && prev) dispatch("streamEnd", { responseId: prev });
-            },
-        );
+        mod.useChatPageStore.subscribe((state, prev) => {
+            const current = state.streamedMessageId;
+            const previous = prev?.streamedMessageId;
+            if (!current && previous) dispatch("streamEnd", { responseId: previous });
+        });
     });
 }
