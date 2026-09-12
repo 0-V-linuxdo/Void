@@ -28,6 +28,7 @@ export type GrokPage =
     | "user-feature-controls-static"
     | "vibe"
     | "build"
+    | "bot"
     | "manage-connectors"
     | "playground"
     | "clear-cache"

@@ -57,7 +57,7 @@ function PhrasesEditor() {
 export default definePlugin({
     name: "Placeholder",
     icon: TextCursorInputIcon,
-    description: "Replace the rotating chat input placeholder.",
+    description: "Replace the rotating chat and Grok Bot input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],
     settings,
@@ -67,12 +67,25 @@ export default definePlugin({
         return lines.length ? lines : null;
     },
 
+    _inputPlaceholder(value: unknown) {
+        if (typeof value !== "string") return value;
+        return this._phrases() ?? value;
+    },
+
     patches: [
         {
             find: 'query-bar-placeholder.whats-on-your-mind","What\'s on your mind?"',
             replacement: {
                 match: /("query-bar-placeholder\.whats-on-your-mind","What's on your mind\?"\)\],\[\i,\i,\i,\i\]\),)(\i)=(\i\(\)),(\i)=(\i)\.map\(\2\)/,
                 replace: "$1$2=$3,$4=($self._phrases()??$5).map($2)",
+            },
+        },
+        {
+            find: "data-query-bar-mode-select",
+            all: true,
+            replacement: {
+                match: /placeholder:(\i)(?=,onFrontPage)/,
+                replace: "placeholder:$self._inputPlaceholder($1)",
             },
         },
     ],

@@ -16,7 +16,8 @@ import { VoidPPDialogShell } from "@components/settings/tabs/VoidPPDialogShell";
 import type { GrokSubscription } from "@grok-types";
 import { getPlanName } from "@turbopack/common/plan";
 import { React, useEffect, useRef, useState } from "@turbopack/common/react";
-import { SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
+import { RoutingStore, SessionStore, SubscriptionsStore } from "@turbopack/common/stores";
+import { findByPropsLazy } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -31,6 +32,7 @@ import {
     formatPercent,
     mergeNativeUsage,
     type NativeUsage,
+    normalizeBotUsage,
     persistUsage,
     readNativeUsage,
     readStoredUsage,
@@ -105,6 +107,9 @@ const RING_RADIUS = 7;
 const RING_CENTER = RING_SIZE / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 const LOCAL_ACCOUNT = "local";
+const BOT_POOL = ":bot";
+
+const BotsStore = findByPropsLazy("useBotsStore");
 
 const store = createExternalStore();
 
@@ -125,6 +130,15 @@ const state: UsageState = {
 };
 
 let refreshPromise: Promise<boolean> | null = null;
+let unsubRoute: (() => void) | null = null;
+
+function isBotPage(): boolean {
+    try {
+        return RoutingStore.useRoutingStore.getState().route?.page === "bot";
+    } catch {
+        return false;
+    }
+}
 
 function sessionUser() {
     try {
@@ -143,6 +157,12 @@ function currentUserId(): string {
     return user?.userId || user?.xUserId || LOCAL_ACCOUNT;
 }
 
+function currentPoolId(): string {
+    const userId = currentUserId();
+    if (!userId) return "";
+    return isBotPage() ? `${userId}${BOT_POOL}` : userId;
+}
+
 function loadMemory(userId: string) {
     if (!userId || userId === state.userId) return;
     const stored = readStoredUsage(userId);
@@ -154,9 +174,20 @@ function loadMemory(userId: string) {
 }
 
 function syncAccount() {
-    const userId = currentUserId();
+    const userId = currentPoolId();
     if (!userId) return;
     loadMemory(userId);
+}
+
+async function fetchBotUsage(): Promise<NativeUsage | null> {
+    try {
+        const hook = BotsStore.useBotsStore;
+        await hook.getState().refreshUsage();
+        return normalizeBotUsage(hook.getState().usage);
+    } catch (error) {
+        logger.warn("Failed to fetch Grok Bot usage", error);
+        return null;
+    }
 }
 
 function migrateUsageStats() {
@@ -184,12 +215,24 @@ async function refresh(reason = "manual"): Promise<boolean> {
     if (reason === "poll" && Date.now() - state.lastFetchAt < STALE_MS) return false;
 
     syncAccount();
+    const poolId = currentPoolId();
     state.loading = true;
     state.lastFetchAt = Date.now();
     store.notify();
 
     refreshPromise = (async () => {
         try {
+            if (poolId.endsWith(BOT_POOL)) {
+                const usage = await fetchBotUsage();
+                if (currentPoolId() !== poolId) return false;
+                if (usage) {
+                    state.usage = usage;
+                    state.lastUpdatedAt = Date.now();
+                }
+                if (state.userId) persistUsage(state.userId, state.usage, state.lastUpdatedAt);
+                snapshotToday();
+                return Boolean(state.usage);
+            }
             const pageUsage = readNativeUsage();
             const remote = await fetchOfficialUsage()
                 .then(usage => ({ ok: true as const, usage }))
@@ -197,6 +240,7 @@ async function refresh(reason = "manual"): Promise<boolean> {
                     logger.warn("Failed to fetch official usage", error);
                     return { ok: false as const };
                 });
+            if (currentPoolId() !== poolId) return false;
             const merged = mergeNativeUsage(state.usage, remote.ok ? remote.usage : null, pageUsage);
             if (merged) state.usage = merged;
             if (state.usage || pageUsage) state.lastUpdatedAt = Date.now();
@@ -207,6 +251,7 @@ async function refresh(reason = "manual"): Promise<boolean> {
             state.loading = false;
             refreshPromise = null;
             store.notify();
+            if (currentPoolId() !== poolId) queueMicrotask(() => void refresh("route"));
         }
     })();
 
@@ -222,6 +267,7 @@ function onStreamEnd() {
 }
 
 function readPlan() {
+    if (isBotPage()) return false;
     let bestSubscription: GrokSubscription["tier"];
     try {
         bestSubscription = SubscriptionsStore.useSubscriptionsStore.getState().bestSubscription;
@@ -317,7 +363,7 @@ function WeekBlock({ isFree, percent, resetAt, loading, labeled }: {
 
     return (
         <Flex flexDirection="column" gap={2} className={cl("week")}>
-            {labeled && <Text size="xs" color="muted">Week</Text>}
+            {labeled && <Text size="xs" color="muted">{isBotPage() ? "Grok Bot" : "Week"}</Text>}
             <Text size="sm" weight="semibold" className={cl("used")}>{usedLabel(isFree, percent, loading)}</Text>
             {resetAt != null && <Text size="xs" color="muted">Resets in {formatResetCountdown(left)}</Text>}
         </Flex>
@@ -611,7 +657,7 @@ function StatsModal({ onClose }: ModalProps) {
 function ClearStats() {
     useExternalStore(store);
     const [open, setOpen] = useState(false);
-    const userId = state.userId || currentUserId();
+    const userId = state.userId || currentPoolId();
     const days = userId ? listDays(userId) : [];
 
     return (
@@ -657,7 +703,7 @@ const BUTTON_BASE = {
 export default definePlugin({
     name: "UsageDisplay",
     icon: CircleGaugeIcon,
-    description: "Shows official weekly SuperGrok usage in the chat bar, with optional daily stats.",
+    description: "Shows weekly SuperGrok or Grok Bot usage in the chat bar, with optional daily stats.",
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
@@ -665,6 +711,20 @@ export default definePlugin({
 
     start() {
         migrateUsageStats();
+        try {
+            unsubRoute = RoutingStore.useRoutingStore.subscribe(s => s.route.page, (page, prev) => {
+                if (page === prev) return;
+                syncAccount();
+                void refresh("route");
+            });
+        } catch (error) {
+            logger.warn("RoutingStore subscribe failed", error);
+        }
+    },
+
+    stop() {
+        unsubRoute?.();
+        unsubRoute = null;
     },
 
     chatBarButton: { ...BUTTON_BASE, tooltip: () => <SafeUsagePanel /> },

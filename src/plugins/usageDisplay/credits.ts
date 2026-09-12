@@ -9,6 +9,7 @@ import { clamp } from "@utils/misc";
 export const CREDITS_CONFIG_PATH = "/grok_api_v2.GrokBuildBilling/GetGrokCreditsConfig";
 export const OFFICIAL_USAGE_PATH = "/?_s=usage";
 export const REQUEST_TIMEOUT_MS = 12_000;
+export const BOT_WEEKLY_LABEL = "Weekly Grok Bot Limit";
 const WEEKLY_LIMIT_RE = /Weekly SuperGrok.{0,24}Limit|每周.{0,24}SuperGrok.{0,24}(?:Limit|限额)/i;
 
 export interface UsageCategory {
@@ -248,6 +249,22 @@ export function normalizeNativeUsage(value: unknown): NativeUsage | null {
             resetText,
             resetAt,
             categories,
+        },
+    };
+}
+
+export function normalizeBotUsage(value: unknown): NativeUsage | null {
+    if (!isRecord(value)) return null;
+    const usedPercent = finiteNumber(value.usagePercent);
+    if (usedPercent === null) return null;
+    const resetAt = finiteNumber(value.nextResetAtMs);
+    return {
+        weekly: {
+            label: BOT_WEEKLY_LABEL,
+            usedPercent: clamp(Math.round(usedPercent), 0, 100),
+            resetText: resetAt == null ? "" : formatResetTime(resetAt / 1000),
+            resetAt,
+            categories: [],
         },
     };
 }

@@ -13,6 +13,8 @@ export interface GrokRoute {
     page: GrokPage;
     /** Active conversation ID when on a chat page. */
     conversationId?: string | null;
+    /** Bot agent ID when on a Grok Bot page. */
+    agentId?: string;
     /** Whether this is a temporary/ephemeral route (e.g. incognito). */
     temporary?: boolean;
     /** Whether voice mode is active for this route. */

@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from "bun:test";
 
-import { decodeCreditsConfig, formatPercent, readNativeUsage } from "./credits";
+import { decodeCreditsConfig, formatPercent, normalizeBotUsage, readNativeUsage } from "./credits";
 
 function encodeVarint(value: number): number[] {
     const bytes: number[] = [];
@@ -73,5 +73,23 @@ describe("readNativeUsage", () => {
 describe("formatPercent", () => {
     test("formats zero", () => {
         expect(formatPercent(0)).toBe("0%");
+    });
+});
+
+describe("normalizeBotUsage", () => {
+    test("maps usagePercent and nextResetAtMs", () => {
+        const usage = normalizeBotUsage({
+            usagePercent: 14.799767,
+            nextResetAtMs: 1_789_330_762_805,
+        });
+        expect(usage?.weekly.label).toBe("Weekly Grok Bot Limit");
+        expect(usage?.weekly.usedPercent).toBe(15);
+        expect(usage?.weekly.resetAt).toBe(1_789_330_762_805);
+        expect(usage?.weekly.resetText.length).toBeGreaterThan(0);
+    });
+
+    test("rejects missing percent", () => {
+        expect(normalizeBotUsage({ nextResetAtMs: 1 })).toBeNull();
+        expect(normalizeBotUsage(null)).toBeNull();
     });
 });

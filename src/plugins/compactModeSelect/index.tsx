@@ -11,8 +11,9 @@ import { ButtonWithTooltip, ChatBarButton, Flex, SettingsDescription, SettingsTi
 import { ErrorBoundary } from "@components/ErrorBoundary";
 import { AutoModeIcon, BuildModeIcon, ChevronDownIcon, ChevronUpIcon, ConnectedAppsIcon, FastModeIcon, GripVerticalIcon, LightbulbIcon, Minimize2Icon } from "@components/icons";
 import type { ModesStoreState } from "@grok-types/stores/ModesStore";
+import type { RoutingStoreState } from "@grok-types/stores/RoutingStore";
 import { React } from "@turbopack/common/react";
-import { ModesStore } from "@turbopack/common/stores";
+import { ModesStore, RoutingStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { classes, classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
@@ -541,6 +542,7 @@ function PinOrderEditor() {
 
 function PinnedModes() {
     const cfg = settings.use([...SETTING_KEYS]);
+    const page = RoutingStore.useRoutingStore((s: RoutingStoreState) => s.route.page);
     const selectedModeId = ModesStore.useModesStore((s: ModesStoreState) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s: ModesStoreState) => s.modes);
     const hideTip = useTipLock();
@@ -548,7 +550,7 @@ function PinnedModes() {
     const items = parseOrder(cfg.pinOrder)
         .map(id => MODE_BY_ID[id])
         .filter(m => cfg[m.pin] && (m.id === "build" || !knownCatalog.length || knownCatalog.some(c => c.id === m.id)));
-    if (!items.length) return null;
+    if (page === "bot" || !items.length) return null;
 
     const { showLabels } = cfg;
     const allCovered = knownCatalog.length > 0 && knownCatalog.every(c => cfg[PIN_BY_ID[c.id]]);
