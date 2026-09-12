@@ -14,16 +14,20 @@ import {
     isHumanSender,
     neighborTime,
     parseTime,
+    preferHumanTime,
     recordId,
     shouldKeepStored,
     shouldPersistStamp,
+    stampFromRecords,
     uuidTime,
 } from "./time";
 
 const NOW = Date.UTC(2026, 8, 12, 4, 0, 0);
 const HOUR_AGO = NOW - 60 * 60 * 1000;
+const HALF_HOUR_AGO = NOW - 31 * 60 * 1000;
 const ISO_HOUR_AGO = new Date(HOUR_AGO).toISOString();
 const ISO_NOW = new Date(NOW).toISOString();
+const ISO_RELOAD = new Date(HALF_HOUR_AGO).toISOString();
 const HUMAN_V4 = "550e8400-e29b-41d4-a716-446655440000";
 
 function v7(ms: number): string {
@@ -141,6 +145,32 @@ describe("chooseTime", () => {
             now: NOW,
         })).toBeNull();
     });
+
+    test("treats a 31-minute-old hydration stamp as trusted without a neighbor", () => {
+        expect(chooseTime({
+            fieldTimes: [HALF_HOUR_AGO],
+            stored: null,
+            uuid: null,
+            now: NOW,
+        })).toBe(HALF_HOUR_AGO);
+    });
+});
+
+describe("preferHumanTime", () => {
+    test("replaces an own stamp that is newer than the child", () => {
+        expect(preferHumanTime(NOW, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - BORROW_MS);
+        expect(preferHumanTime(HALF_HOUR_AGO, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
+    test("keeps an own stamp that is older than the child", () => {
+        expect(preferHumanTime(HOUR_AGO - 5_000, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - 5_000);
+    });
+
+    test("falls back to whichever side exists", () => {
+        expect(preferHumanTime(null, HOUR_AGO)).toBe(HOUR_AGO);
+        expect(preferHumanTime(HOUR_AGO, null)).toBe(HOUR_AGO);
+        expect(preferHumanTime(null, null)).toBeNull();
+    });
 });
 
 describe("shouldKeepStored", () => {
@@ -151,6 +181,10 @@ describe("shouldKeepStored", () => {
 
     test("accepts an older server stamp over a fresh optimistic one", () => {
         expect(shouldKeepStored(NOW, HOUR_AGO, NOW)).toBe(false);
+    });
+
+    test("overwrites an aged hydration stamp with a trusted older neighbor", () => {
+        expect(shouldKeepStored(HALF_HOUR_AGO, HOUR_AGO, NOW)).toBe(false);
     });
 });
 
@@ -164,6 +198,7 @@ describe("shouldPersistStamp", () => {
     test("overwrites a poisoned now with a trusted older stamp", () => {
         expect(shouldPersistStamp("human", HOUR_AGO, NOW, NOW)).toBe(true);
         expect(shouldPersistStamp("human", NOW, HOUR_AGO, NOW)).toBe(false);
+        expect(shouldPersistStamp("human", HOUR_AGO, HALF_HOUR_AGO, NOW)).toBe(true);
     });
 });
 
@@ -183,11 +218,29 @@ describe("neighborTime", () => {
         ], NOW)).toBe(HOUR_AGO - BORROW_MS);
     });
 
+    test("walks node children ids when parentResponseId is missing", () => {
+        const child = v7(HOUR_AGO);
+        expect(neighborTime(HUMAN_V4, [
+            { responseId: child, sender: "assistant", thinkingStartTime: ISO_HOUR_AGO },
+            { responseId: HUMAN_V4, sender: "human", createTime: ISO_RELOAD },
+            { responseId: HUMAN_V4, children: [child] },
+        ], NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
     test("ignores a fresh-only neighbor", () => {
         expect(neighborTime(HUMAN_V4, [
             { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
             { responseId: "child", sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_NOW },
         ], NOW)).toBeNull();
+    });
+});
+
+describe("stampFromRecords", () => {
+    test("uses the first trusted child", () => {
+        expect(stampFromRecords([
+            { responseId: "fresh", createTime: ISO_NOW },
+            { responseId: v7(HOUR_AGO), thinkingStartTime: ISO_HOUR_AGO },
+        ], NOW)).toBe(HOUR_AGO - BORROW_MS);
     });
 });
 
@@ -222,6 +275,29 @@ describe("harvestResponses", () => {
         }, NOW);
         expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
         expect(hits).toContainEqual({ id: child, ms: HOUR_AGO });
+    });
+
+    test("replaces an aged hydration stamp with the child", () => {
+        const child = v7(HOUR_AGO);
+        const hits = harvestResponses({
+            responses: [
+                { responseId: HUMAN_V4, sender: "human", createTime: ISO_RELOAD },
+                { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4, thinkingStartTime: ISO_HOUR_AGO },
+            ],
+        }, NOW);
+        expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
+    });
+
+    test("walks nodesByConversationId children when order is reversed", () => {
+        const child = v7(HOUR_AGO);
+        const hits = harvestResponses({
+            responses: [
+                { responseId: child, sender: "assistant", thinkingStartTime: ISO_HOUR_AGO },
+                { responseId: HUMAN_V4, sender: "human", createTime: ISO_RELOAD },
+            ],
+            nodes: [{ responseId: HUMAN_V4, children: [child] }],
+        }, NOW);
+        expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
     });
 
     test("omits a fresh human with no trusted neighbor", () => {

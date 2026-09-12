@@ -148,21 +148,61 @@ export function shouldKeepStored(prev: number, incoming: number, now = Date.now(
     return false;
 }
 
+export function stampFromRecords(records: Array<Record<string, unknown>>, now = Date.now()): number | null {
+    for (const rec of records) {
+        const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(recordId(rec), now), now });
+        if (ms != null) return ms - BORROW_MS;
+    }
+    return null;
+}
+
+export function preferHumanTime(own: number | null, borrowed: number | null): number | null {
+    if (borrowed == null) return own;
+    if (own == null || own > borrowed) return borrowed;
+    return own;
+}
+
+function childIdsOf(rec: Record<string, unknown>): string[] {
+    const { children } = rec;
+    if (!Array.isArray(children)) return [];
+    const ids: string[] = [];
+    for (const kid of children) {
+        if (typeof kid === "string" && kid) {
+            ids.push(kid);
+            continue;
+        }
+        const child = asRecord(kid);
+        const id = child ? recordId(child) : "";
+        if (id) ids.push(id);
+    }
+    return ids;
+}
+
 export function neighborTime(id: string, records: Array<Record<string, unknown>>, now = Date.now()): number | null {
     if (!id) return null;
     let next: Record<string, unknown> | null = null;
+    const childIds = new Set<string>();
     for (let i = 0; i < records.length; i++) {
         const rec = records[i];
         const recId = recordId(rec);
         if (rec.parentResponseId === id) {
-            const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(recId, now), now });
-            if (ms != null) return ms - BORROW_MS;
+            const ms = stampFromRecords([rec], now);
+            if (ms != null) return ms;
         }
-        if (recId === id && i + 1 < records.length) next = records[i + 1];
+        if (recId !== id) continue;
+        if (i + 1 < records.length) next = records[i + 1];
+        for (const childId of childIdsOf(rec)) childIds.add(childId);
     }
-    if (!next) return null;
-    const ms = trustedTime({ fieldTimes: pickTimes(next, now), uuid: uuidTime(recordId(next), now), now });
-    return ms == null ? null : ms - BORROW_MS;
+    if (childIds.size) {
+        const children: Record<string, unknown>[] = [];
+        for (const rec of records) {
+            if (childIds.has(recordId(rec))) children.push(rec);
+        }
+        const ms = stampFromRecords(children, now);
+        if (ms != null) return ms;
+    }
+    if (!next || isHumanSender(next.sender)) return null;
+    return stampFromRecords([next], now);
 }
 
 export function shouldPersistStamp(sender: unknown, ms: number, stored: number | null, now = Date.now()): boolean {
@@ -187,9 +227,9 @@ export function harvestResponses(value: unknown, now = Date.now()): HarvestedTim
         const uuid = uuidTime(id, now);
         let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
         const { sender } = rec;
-        if (ms != null && isFresh(ms, now) && isHumanSender(sender)) {
-            const borrowed = neighborTime(id, records, now);
-            ms = borrowed != null && !isFresh(borrowed, now) ? borrowed : null;
+        if (isHumanSender(sender)) {
+            ms = preferHumanTime(ms, neighborTime(id, records, now));
+            if (ms != null && isFresh(ms, now)) ms = null;
         }
         if (ms == null) continue;
         seen.add(id);

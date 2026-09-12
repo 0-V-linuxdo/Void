@@ -30,8 +30,10 @@ import {
     neighborTime,
     parseTime,
     pickTimes,
+    preferHumanTime,
     recordId,
     shouldPersistStamp,
+    stampFromRecords,
     uuidTime,
 } from "./time";
 
@@ -103,6 +105,7 @@ function remember(id: string, ms: number, sender?: unknown): boolean {
 
 function extraKeys(rec: Record<string, unknown>, id: string): string[] {
     const keys: string[] = [];
+    if (id) keys.push(`h:${id}`);
     const { parentResponseId } = rec;
     if (typeof parentResponseId === "string" && parentResponseId) keys.push(`h:${parentResponseId}`);
     try {
@@ -151,6 +154,53 @@ function storeRecords(id: string): Record<string, unknown>[] {
     }
 }
 
+function graphChildRecords(id: string): Record<string, unknown>[] {
+    try {
+        const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
+        const out: Record<string, unknown>[] = [];
+        for (const nodes of Object.values(nodesByConversationId ?? {})) {
+            for (const node of nodes ?? []) {
+                if (node.responseId !== id) continue;
+                for (const childId of node.children ?? []) {
+                    const rec = asRecord(byId?.[childId]);
+                    if (rec) out.push(rec);
+                }
+            }
+        }
+        return out;
+    } catch (e) {
+        logger.debug("node children lookup failed", e);
+        return [];
+    }
+}
+
+function queryChildRecords(rec: Record<string, unknown>): Record<string, unknown>[] {
+    const text = typeof rec.message === "string" && rec.message
+        ? rec.message
+        : typeof rec.query === "string" ? rec.query : "";
+    if (!text) return [];
+    try {
+        const { byId } = ResponseStore.useResponseStore.getState();
+        const out: Record<string, unknown>[] = [];
+        for (const row of Object.values(byId ?? {})) {
+            const { sender, query } = row;
+            if (isHumanSender(sender)) continue;
+            if (query === text) out.push(row as unknown as Record<string, unknown>);
+        }
+        return out;
+    } catch (e) {
+        logger.debug("query child lookup failed", e);
+        return [];
+    }
+}
+
+function borrowedMs(id: string, rec: Record<string, unknown>): number | null {
+    return stampFromRecords(graphChildRecords(id))
+        ?? neighborTime(id, storeRecords(id))
+        ?? stampFromRecords(queryChildRecords(rec))
+        ?? conversationCreateTime(id);
+}
+
 function conversationCreateTime(id: string): number | null {
     try {
         const { byConversationId } = ResponseStore.useResponseStore.getState();
@@ -167,22 +217,19 @@ function conversationCreateTime(id: string): number | null {
     return null;
 }
 
-function resolveMs(response: GrokResponse): number | null {
+function resolveMs(response: GrokResponse, isUser?: boolean): number | null {
     const rec = asRecord(response);
     if (!rec) return null;
     const id = recordId(rec);
-    const { sender } = rec;
+    const human = isUser === true || isHumanSender(rec.sender);
     const stored = id ? storedMs(id, rec) : null;
     let ms = chooseTime({
         fieldTimes: pickTimes(rec),
         stored,
         uuid: uuidTime(id),
     });
-    if (id && isHumanSender(sender) && (ms == null || isFresh(ms))) {
-        const borrowed = neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
-        if (borrowed != null && !isFresh(borrowed)) ms = borrowed;
-    }
-    if (id && ms != null) rememberKeys(id, rec, ms, sender);
+    if (human && id) ms = preferHumanTime(ms, borrowedMs(id, rec));
+    if (id && ms != null) rememberKeys(id, rec, ms, human ? "human" : rec.sender);
     return ms;
 }
 
@@ -346,15 +393,25 @@ export default definePlugin({
         ResponseStore: {
             selector: (s: ResponseStoreState) => s.byId,
             handler(byId: ResponseStoreState["byId"]) {
-                ingest({ responses: Object.values(byId ?? {}) });
+                try {
+                    const { nodesByConversationId } = ResponseStore.useResponseStore.getState();
+                    ingest({
+                        responses: Object.values(byId ?? {}),
+                        nodes: Object.values(nodesByConversationId ?? {}).flat(),
+                    });
+                } catch (e) {
+                    logger.debug("store ingest failed", e);
+                    ingest({ responses: Object.values(byId ?? {}) });
+                }
             },
         },
     },
 
-    _renderTimestamp: ErrorBoundary.wrap(({ response }: { response: GrokResponse }) => {
+    _renderTimestamp: ErrorBoundary.wrap(({ response, isUser }: { response: GrokResponse; isUser?: boolean }) => {
         useExternalStore(tick);
-        if (settings.store.hideOwnMessages && response.sender === "human") return null;
-        const ms = resolveMs(response);
+        const human = isUser === true || isHumanSender(response.sender);
+        if (settings.store.hideOwnMessages && human) return null;
+        const ms = resolveMs(response, isUser);
         if (ms == null) return null;
         return (
             <Text as="span" size="xs" color="muted" className="void-timestamp">
@@ -368,8 +425,8 @@ export default definePlugin({
             find: "response-family:handleEditSave",
             all: true,
             replacement: {
-                match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:\i,isIncognito:\i,responseId:(\i)\.responseId/,
-                replace: "$self._renderTimestamp({response:$1}),$&",
+                match: /\(0,\i\.jsx\)\(\i\.MessageBubble,\{isUser:(\i),isIncognito:\i,responseId:(\i)\.responseId/,
+                replace: "$self._renderTimestamp({response:$2,isUser:$1}),$&",
             },
         },
     ],
