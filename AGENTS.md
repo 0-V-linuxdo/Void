@@ -6,11 +6,19 @@ Follow `.rules`. Extra constraint for this fork:
 
 Working line is `voidpp` only. The `Void++` branch is retired — do not recreate or fast-forward it. `upstream-main` is the frozen upstream snapshot; do not treat it as a publish line.
 
+Canonical install / update URL (both `@downloadURL` and `@updateURL`):
+
+`https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp/userscript/VoidPP.user.js`
+
+Do not use jsDelivr, `main`, `Void++`, or `userscript/Void.user.js` as the update link. Tampermonkey follows whatever `@updateURL` is already baked into the installed copy.
+
 Before any push to `voidpp`:
 
 1. Run `bun run build` so `userscript/VoidPP.user.js` is regenerated.
 2. Commit that userscript with the matching source. Do not push source-only.
-3. Confirm the userscript header `// @version` matches `VERSION_DATE` in `build.ts`. Tampermonkey only reads that header — bumping `build.ts` alone leaves the bundle stale (source `.20` / userscript `.19`) and Check for updates will not fire.
+3. Confirm the userscript header:
+   - `// @version` matches `VERSION_DATE` in `build.ts`. Tampermonkey only reads that header — bumping `build.ts` alone leaves the bundle stale (source `.20` / userscript `.19`) and Check for updates will not fire.
+   - `@downloadURL` and `@updateURL` are exactly the canonical raw URL above.
 4. Install and update URLs are `userscript/VoidPP.user.js`.
 5. Purge jsDelivr for the canonical file only:
    `curl -s https://purge.jsdelivr.net/gh/0-V-linuxdo/VoidPP@heads/voidpp/userscript/VoidPP.user.js`
