@@ -69,7 +69,7 @@ export default definePlugin({
 
     _inputPlaceholder(value: unknown) {
         if (typeof value !== "string") return value;
-        return this._phrases() ?? value;
+        return this._phrases()?.[0] ?? value;
     },
 
     patches: [
