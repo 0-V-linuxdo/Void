@@ -12,7 +12,7 @@ import { createElement } from "@turbopack/common/react";
 import { ResponseStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
-import { sendBrowserNotification } from "@utils/misc";
+import { fetchExternal, sendBrowserNotification } from "@utils/misc";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 
 import { DEFAULT_CHIME } from "./done1";
@@ -22,9 +22,6 @@ const logger = new Logger("ResponseNotification");
 const LIVE_STATES = new Set(["streaming", "optimistic", "reconnecting"]);
 const RETRY_MS = 80;
 const SAMPLE_VOLUME = 0.5;
-const CHIME_LOW = 523.25;
-const CHIME_HIGH = 659.25;
-const CHIME_GAIN = 0.18;
 
 function PreviewSound() {
     return createElement(
@@ -79,6 +76,7 @@ let userGestured = false;
 let gestureCtrl: AbortController | null = null;
 let audioCtx: AudioContext | null = null;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
+const buffers = new Map<string, AudioBuffer>();
 
 function getCtx(): AudioContext | null {
     if (audioCtx && audioCtx.state !== "closed") return audioCtx;
@@ -95,39 +93,48 @@ function getCtx(): AudioContext | null {
 function markGestured() {
     userGestured = true;
     const ctx = getCtx();
-    if (ctx?.state === "suspended") void ctx.resume();
-}
-
-function tone(ctx: AudioContext, freq: number, when: number, dur: number) {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = freq;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(CHIME_GAIN, when);
-    gain.gain.exponentialRampToValueAtTime(0.001, when + dur);
-    osc.start(when);
-    osc.stop(when + dur);
-}
-
-function playChime() {
-    if (!userGestured) return;
-    const ctx = getCtx();
     if (!ctx) return;
-    const start = () => {
-        const t = ctx.currentTime;
-        tone(ctx, CHIME_LOW, t, 0.12);
-        tone(ctx, CHIME_HIGH, t + 0.09, 0.2);
-    };
-    if (ctx.state === "suspended") void ctx.resume().then(start, () => logger.debug("AudioContext resume failed"));
-    else start();
+    const warm = () => { void loadBuffer(ctx, DEFAULT_CHIME); };
+    if (ctx.state === "suspended") void ctx.resume().then(warm);
+    else warm();
 }
 
-function playSample(url: string) {
-    const audio = new Audio(url);
-    audio.volume = SAMPLE_VOLUME;
-    audio.play().catch(() => playChime());
+function dataUriToBuffer(uri: string): ArrayBuffer {
+    const bin = atob(uri.slice(uri.indexOf(",") + 1));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+}
+
+async function loadBuffer(ctx: AudioContext, url: string): Promise<AudioBuffer> {
+    const cached = buffers.get(url);
+    if (cached) return cached;
+    const raw = url.startsWith("data:")
+        ? dataUriToBuffer(url)
+        : await (await fetchExternal(url)).arrayBuffer();
+    const buf = await ctx.decodeAudioData(raw.slice(0));
+    buffers.set(url, buf);
+    return buf;
+}
+
+function playBuffer(ctx: AudioContext, buf: AudioBuffer) {
+    const src = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    src.buffer = buf;
+    gain.gain.value = SAMPLE_VOLUME;
+    src.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+}
+
+function playUrl(ctx: AudioContext, url: string) {
+    void loadBuffer(ctx, url).then(
+        buf => playBuffer(ctx, buf),
+        err => {
+            logger.debug("sample play failed:", err);
+            if (url !== DEFAULT_CHIME) void loadBuffer(ctx, DEFAULT_CHIME).then(buf => playBuffer(ctx, buf), e => logger.debug("default chime failed:", e));
+        },
+    );
 }
 
 function playSound() {
@@ -135,7 +142,11 @@ function playSound() {
         logger.debug("sound skipped, no user gesture yet");
         return;
     }
-    playSample(settings.store.soundUrl?.trim() || DEFAULT_CHIME);
+    const ctx = getCtx();
+    if (!ctx) return;
+    const url = settings.store.soundUrl?.trim() || DEFAULT_CHIME;
+    if (ctx.state === "suspended") void ctx.resume().then(() => playUrl(ctx, url), () => logger.debug("AudioContext resume failed"));
+    else playUrl(ctx, url);
 }
 
 function isErrorResponse(response: { state?: string; error?: unknown } | undefined) {
@@ -211,6 +222,7 @@ export default definePlugin({
         retryTimer = undefined;
         gestureCtrl?.abort();
         gestureCtrl = null;
+        buffers.clear();
         if (audioCtx && audioCtx.state !== "closed") void audioCtx.close();
         audioCtx = null;
     },

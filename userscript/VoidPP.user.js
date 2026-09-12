@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.18] v1.0.0
+// @version      [20260912.19] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.18] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.19] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7154,9 +7154,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.18] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"8540c30"}`
-    }, `(${"8540c30"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.19] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"e5fa9f9"}`
+    }, `(${"e5fa9f9"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -12963,9 +12963,6 @@ html.void-rt-open [data-sidebar="gap"] {
   var LIVE_STATES = new Set(["streaming", "optimistic", "reconnecting"]);
   var RETRY_MS = 80;
   var SAMPLE_VOLUME = 0.5;
-  var CHIME_LOW = 523.25;
-  var CHIME_HIGH = 659.25;
-  var CHIME_GAIN = 0.18;
   function PreviewSound() {
     return createElement(Flex, { flexDirection: "column", gap: "0.5rem" }, createElement(Paragraph, null, "Preview the notification sound."), createElement(Button, {
       size: "sm",
@@ -13008,6 +13005,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var gestureCtrl = null;
   var audioCtx = null;
   var retryTimer;
+  var buffers = new Map;
   function getCtx() {
     if (audioCtx && audioCtx.state !== "closed")
       return audioCtx;
@@ -13023,48 +13021,61 @@ html.void-rt-open [data-sidebar="gap"] {
   function markGestured() {
     userGestured = true;
     const ctx = getCtx();
-    if (ctx?.state === "suspended")
-      ctx.resume();
-  }
-  function tone(ctx, freq, when, dur) {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = freq;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(CHIME_GAIN, when);
-    gain.gain.exponentialRampToValueAtTime(0.001, when + dur);
-    osc.start(when);
-    osc.stop(when + dur);
-  }
-  function playChime() {
-    if (!userGestured)
-      return;
-    const ctx = getCtx();
     if (!ctx)
       return;
-    const start = () => {
-      const t = ctx.currentTime;
-      tone(ctx, CHIME_LOW, t, 0.12);
-      tone(ctx, CHIME_HIGH, t + 0.09, 0.2);
+    const warm = () => {
+      loadBuffer(ctx, DEFAULT_CHIME);
     };
     if (ctx.state === "suspended")
-      ctx.resume().then(start, () => logger24.debug("AudioContext resume failed"));
+      ctx.resume().then(warm);
     else
-      start();
+      warm();
   }
-  function playSample(url) {
-    const audio = new Audio(url);
-    audio.volume = SAMPLE_VOLUME;
-    audio.play().catch(() => playChime());
+  function dataUriToBuffer(uri) {
+    const bin = atob(uri.slice(uri.indexOf(",") + 1));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0;i < bin.length; i++)
+      bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+  }
+  async function loadBuffer(ctx, url) {
+    const cached = buffers.get(url);
+    if (cached)
+      return cached;
+    const raw = url.startsWith("data:") ? dataUriToBuffer(url) : await (await fetchExternal(url)).arrayBuffer();
+    const buf = await ctx.decodeAudioData(raw.slice(0));
+    buffers.set(url, buf);
+    return buf;
+  }
+  function playBuffer(ctx, buf) {
+    const src = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    src.buffer = buf;
+    gain.gain.value = SAMPLE_VOLUME;
+    src.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+  }
+  function playUrl(ctx, url) {
+    loadBuffer(ctx, url).then((buf) => playBuffer(ctx, buf), (err) => {
+      logger24.debug("sample play failed:", err);
+      if (url !== DEFAULT_CHIME)
+        loadBuffer(ctx, DEFAULT_CHIME).then((buf) => playBuffer(ctx, buf), (e) => logger24.debug("default chime failed:", e));
+    });
   }
   function playSound() {
     if (!userGestured) {
       logger24.debug("sound skipped, no user gesture yet");
       return;
     }
-    playSample(settings16.store.soundUrl?.trim() || DEFAULT_CHIME);
+    const ctx = getCtx();
+    if (!ctx)
+      return;
+    const url = settings16.store.soundUrl?.trim() || DEFAULT_CHIME;
+    if (ctx.state === "suspended")
+      ctx.resume().then(() => playUrl(ctx, url), () => logger24.debug("AudioContext resume failed"));
+    else
+      playUrl(ctx, url);
   }
   function isErrorResponse(response) {
     return response?.state === "error" || response?.error != null;
@@ -13139,6 +13150,7 @@ html.void-rt-open [data-sidebar="gap"] {
       retryTimer = undefined;
       gestureCtrl?.abort();
       gestureCtrl = null;
+      buffers.clear();
       if (audioCtx && audioCtx.state !== "closed")
         audioCtx.close();
       audioCtx = null;
