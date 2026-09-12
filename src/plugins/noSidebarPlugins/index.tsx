@@ -5,14 +5,19 @@
  */
 
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { LayoutGridIcon } from "@components/icons";
+import { GrokConnectorsIcon, type IconProps } from "@components/icons";
 import { DropdownMenuItem } from "@turbopack/common/components";
 import { createElement, React } from "@turbopack/common/react";
-import { findByPropsLazy } from "@turbopack/turbopack";
+import { findByPropsLazy, findExportedComponent } from "@turbopack/turbopack";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 const PluginsDialogStore = findByPropsLazy("usePluginsDialogStore");
+
+function PluginsIcon(props: IconProps = {}) {
+    const Comp = findExportedComponent("ConnectorsIcon") ?? GrokConnectorsIcon;
+    return <Comp {...props} />;
+}
 
 function openPlugins() {
     PluginsDialogStore.usePluginsDialogStore.getState().setOpen(true);
@@ -21,7 +26,7 @@ function openPlugins() {
 function PluginsItem() {
     return (
         <DropdownMenuItem onSelect={openPlugins}>
-            <LayoutGridIcon className="void-settings-menu-icon" />
+            <PluginsIcon className="void-settings-menu-icon" />
             Plugins
         </DropdownMenuItem>
     );
@@ -31,7 +36,7 @@ const WrappedPluginsItem = ErrorBoundary.wrap(PluginsItem);
 
 export default definePlugin({
     name: "NoSidebarPlugins",
-    icon: LayoutGridIcon,
+    icon: PluginsIcon,
     description: "Move the sidebar Plugins button into the avatar menu.",
     authors: [Devs.p],
     tags: ["ui"],
