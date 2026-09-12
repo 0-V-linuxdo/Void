@@ -5,14 +5,12 @@ assets/*
 assets/logos/*
 !assets/logos/app-icon/
 assets/logos/app-icon/*
-!assets/logos/app-icon/void-icon-256.png
 !assets/logos/app-icon/voidpp-256.png
-!assets/logos/app-icon/void-plus-256.png
-!assets/logos/app-icon/void-plus-r256.png
-!assets/logos/app-icon/void-icon.svg
+!assets/logos/app-icon/voidpp-icon-256.png
+!assets/logos/app-icon/voidpp-icon.svg
 *.log
 *.tsbuildinfo
 .DS_Store
 .claude
-.void-cache
+.voidpp-cache
 .env

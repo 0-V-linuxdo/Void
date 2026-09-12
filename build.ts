@@ -14,7 +14,7 @@ const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/VoidPP";
 const SCRIPT_CDN = "https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp";
-const VERSION_DATE = "20260912.2";
+const VERSION_DATE = "20260912.5";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
@@ -126,13 +126,13 @@ function pluginsPlugin(isExt: boolean): import("bun").BunPlugin {
 
 function cssPlugin(): import("bun").BunPlugin {
     return {
-        name: "void-css",
+        name: "voidpp-css",
         setup(build) {
             build.onResolve({ filter: /\.css$/ }, args => ({
                 path: resolve(args.resolveDir, args.path),
-                namespace: "void-css",
+                namespace: "voidpp-css",
             }));
-            build.onLoad({ filter: /.*/, namespace: "void-css" }, async args => {
+            build.onLoad({ filter: /.*/, namespace: "voidpp-css" }, async args => {
                 const css = await Bun.file(args.path).text();
                 const file = basename(args.path, ".css");
                 const dir = basename(dirname(args.path));

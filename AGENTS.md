@@ -4,7 +4,7 @@ Follow `.rules`. Extra constraint for this fork:
 
 ## Push
 
-Working line is `voidpp` only. The `Void++` branch is retired — do not recreate or fast-forward it.
+Working line is `voidpp` only. The `Void++` branch is retired — do not recreate or fast-forward it. `upstream-main` is the frozen upstream snapshot; do not treat it as a publish line.
 
 Before any push to `voidpp`:
 

@@ -9,7 +9,7 @@ import { resolve } from "path";
 
 import { skipBalanced, skipToTopLevelComma } from "./ast";
 
-const CACHE_DIR = ".void-cache";
+const CACHE_DIR = ".voidpp-cache";
 const CHUNK_RE = /(?:\/_next\/)?static\/chunks\/[^"'\s)`<>]+\.js/g;
 const BUILD_ID_RE = /"buildId":"([^"]+)"/;
 

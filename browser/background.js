@@ -32,10 +32,10 @@ function patchCsp(csp) {
     return [...directives.entries()].map(([k, v]) => v ? `${k} ${v}` : k).join("; ");
 }
 
-const VOID_ALLOWED_TARGET_HOSTS = new Set(["grok.com", "x.ai", "accounts.x.ai"]);
-const VOID_SENDER_HOSTS = new Set(["grok.com"]);
-const VOID_PARTITION_SITES = ["https://grok.com"];
-const VOID_ALLOWED_COOKIE_DOMAINS = ["grok.com", "x.ai"];
+const VOIDPP_ALLOWED_TARGET_HOSTS = new Set(["grok.com", "x.ai", "accounts.x.ai"]);
+const VOIDPP_SENDER_HOSTS = new Set(["grok.com"]);
+const VOIDPP_PARTITION_SITES = ["https://grok.com"];
+const VOIDPP_ALLOWED_COOKIE_DOMAINS = ["grok.com", "x.ai"];
 
 function isAllowedHost(hostname, set) {
     return typeof hostname === "string" && set.has(hostname);
@@ -45,7 +45,7 @@ function isAllowedSender(url) {
     try {
         const { protocol, hostname } = new URL(url);
         if (protocol !== "https:") return false;
-        return isAllowedHost(hostname, VOID_SENDER_HOSTS);
+        return isAllowedHost(hostname, VOIDPP_SENDER_HOSTS);
     } catch {
         return false;
     }
@@ -56,7 +56,7 @@ function isAllowedTargetUrl(url) {
     try {
         const { protocol, hostname } = new URL(url);
         if (protocol !== "https:") return false;
-        return isAllowedHost(hostname, VOID_ALLOWED_TARGET_HOSTS);
+        return isAllowedHost(hostname, VOIDPP_ALLOWED_TARGET_HOSTS);
     } catch {
         return false;
     }
@@ -65,7 +65,7 @@ function isAllowedTargetUrl(url) {
 function isAllowedCookieDomain(domain) {
     if (typeof domain !== "string" || !domain) return false;
     const bare = domain.replace(/^\./, "");
-    return VOID_ALLOWED_COOKIE_DOMAINS.some(h => bare === h || bare.endsWith("." + h));
+    return VOIDPP_ALLOWED_COOKIE_DOMAINS.some(h => bare === h || bare.endsWith("." + h));
 }
 
 function sanitizeSameSite(v) {
@@ -76,7 +76,7 @@ function sanitizePartitionKey(pk) {
     if (!pk || typeof pk !== "object") return undefined;
     const top = pk.topLevelSite;
     if (typeof top !== "string") return undefined;
-    if (!VOID_PARTITION_SITES.includes(top)) return undefined;
+    if (!VOIDPP_PARTITION_SITES.includes(top)) return undefined;
     return { topLevelSite: top };
 }
 
@@ -102,7 +102,7 @@ function cookieKey(c) {
 
 async function listCookiesAllPartitions(url, storeOpt) {
     const queries = [callCookies("getAll", { url, ...storeOpt }).catch(() => [])];
-    for (const topLevelSite of VOID_PARTITION_SITES) {
+    for (const topLevelSite of VOIDPP_PARTITION_SITES) {
         queries.push(callCookies("getAll", { url, partitionKey: { topLevelSite }, ...storeOpt }).catch(() => []));
     }
     const results = await Promise.all(queries);
@@ -138,7 +138,7 @@ function buildSetDetails(cookie, url, storeOpt) {
     return details;
 }
 
-async function voidCookieOp(op, payload, storeId) {
+async function voidppCookieOp(op, payload, storeId) {
     const storeOpt = storeId ? { storeId } : {};
     if (!payload || typeof payload !== "object") throw new Error("invalid payload");
     const url = payload.url;
@@ -163,7 +163,7 @@ browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return;
     }
     const storeId = sender.tab?.cookieStoreId;
-    voidCookieOp(msg.op, msg.payload, storeId)
+    voidppCookieOp(msg.op, msg.payload, storeId)
         .then(result => sendResponse({ ok: true, result }))
         .catch(err => sendResponse({ ok: false, error: String(err?.message ?? err) }));
     return true;
