@@ -43,6 +43,11 @@ const settings = definePluginSettings({
         description: "Start with the Bots section collapsed on page load.",
         default: true,
     },
+    chatsDefaultExpanded: {
+        type: OptionType.BOOLEAN,
+        description: "Start with the Chats section expanded on page load.",
+        default: true,
+    },
     batchSelect: {
         type: OptionType.BOOLEAN,
         description: "Show checkboxes on conversations for bulk selection and deletion.",
@@ -66,9 +71,13 @@ migrateSettingsToPlugin("BetterSidebar", "BotsPlusHover", "titleRowHover", "chat
 const BTN_CLASS = "void-chats-plus flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary hover:bg-button-ghost-hover hover:text-primary focus:outline-none focus-visible:bg-button-ghost-hover";
 
 const BOTS_PLUS_SEL = "[data-sidebar=sidebar] :is([data-void-bots-plus], .void-bots-plus)";
+const CHATS_PLUS_SEL = "[data-sidebar=sidebar] :is([data-void-chats-plus], .void-chats-plus)";
+const CHATS_COLLAPSED_KEY = "sidebar-history-collapsed";
 
 let botsCollapseObserver: MutationObserver | null = null;
 let botsCollapseTimer: ReturnType<typeof setTimeout> | null = null;
+let chatsExpandObserver: MutationObserver | null = null;
+let chatsExpandTimer: ReturnType<typeof setTimeout> | null = null;
 
 function applyHeaderHover() {
     if (settings.store.titleRowHover) enableStyle("headerHover");
@@ -116,6 +125,72 @@ function startBotsCollapse() {
     botsCollapseTimer = setTimeout(() => {
         done = true;
         stopBotsCollapse();
+    }, 10_000);
+}
+
+function resetChatsCollapsedStorage() {
+    if (!settings.store.chatsDefaultExpanded) return;
+    try {
+        localStorage.removeItem(CHATS_COLLAPSED_KEY);
+    } catch {}
+}
+
+function chatsGroup() {
+    const plus = document.querySelector(CHATS_PLUS_SEL);
+    if (plus) return plus.closest("[data-sidebar=group]");
+
+    const sidebar = document.querySelector("[data-sidebar=sidebar]");
+    if (!sidebar) return null;
+    for (const btn of sidebar.querySelectorAll<HTMLElement>("button[aria-expanded]")) {
+        const label = (btn.getAttribute("aria-label") ?? "").trim();
+        if (label === "Chats" || label === "History") return btn.closest("[data-sidebar=group]");
+    }
+
+    const bots = document.querySelector(BOTS_PLUS_SEL)?.closest("[data-sidebar=group]");
+    const next = bots?.nextElementSibling;
+    return next?.matches("[data-sidebar=group]") ? next : null;
+}
+
+function expandChatsSection() {
+    const group = chatsGroup();
+    if (!group) return false;
+    const collapsed = group.querySelector<HTMLElement>("button[aria-expanded=false]");
+    if (!collapsed) return true;
+    collapsed.click();
+    return true;
+}
+
+function stopChatsExpand() {
+    chatsExpandObserver?.disconnect();
+    chatsExpandObserver = null;
+    if (chatsExpandTimer != null) {
+        clearTimeout(chatsExpandTimer);
+        chatsExpandTimer = null;
+    }
+}
+
+function startChatsExpand() {
+    stopChatsExpand();
+    if (!settings.store.chatsDefaultExpanded) return;
+    resetChatsCollapsedStorage();
+
+    let done = false;
+    const tick = () => {
+        if (done) return;
+        if (expandChatsSection()) {
+            done = true;
+            stopChatsExpand();
+        }
+    };
+
+    tick();
+    if (done) return;
+
+    chatsExpandObserver = new MutationObserver(tick);
+    chatsExpandObserver.observe(document.documentElement, { childList: true, subtree: true });
+    chatsExpandTimer = setTimeout(() => {
+        done = true;
+        stopChatsExpand();
     }, 10_000);
 }
 
@@ -215,7 +290,7 @@ const WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
 export default definePlugin({
     name: "BetterSidebar",
     icon: PanelLeftIcon,
-    description: "Sidebar improvements, including header-action hover, a New chat plus on Chats, and Bots default collapsed.",
+    description: "Sidebar improvements, including header-action hover, Bots default collapsed, and Chats default expanded.",
     authors: [Devs.Prism, Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
@@ -251,6 +326,11 @@ export default definePlugin({
         return settings.store.botsDefaultCollapsed;
     },
 
+    _chatsCollapsedInit() {
+        resetChatsCollapsedStorage();
+        return false;
+    },
+
     _onSidebarClick() {
         if (!settings.store.clickToToggle) return;
         return (e: MouseEvent) => {
@@ -264,7 +344,9 @@ export default definePlugin({
     start() {
         selection.clear();
         applyHeaderHover();
+        resetChatsCollapsedStorage();
         startBotsCollapse();
+        startChatsExpand();
     },
 
     onSettingsChange: applyHeaderHover,
@@ -273,6 +355,7 @@ export default definePlugin({
         selection.clear();
         disableStyle("headerHover");
         stopBotsCollapse();
+        stopChatsExpand();
     },
 
     patches: [
@@ -345,6 +428,13 @@ export default definePlugin({
             replacement: {
                 match: /\(0,(\i)\.useState\)\(!1\)(?=,\[.{0,30}\]=\(0,\1\.useState\)\(!1\),.{0,48}\.COLLAPSED_BOT_LIMIT)/,
                 replace: "(0,$1.useState)($self._botsDefaultCollapsed())",
+            },
+        },
+        {
+            find: "sidebar-history-collapsed",
+            replacement: {
+                match: /useLocalStorage\)\("sidebar-history-collapsed",!1,!1\)/,
+                replace: "useLocalStorage)(\"sidebar-history-collapsed\",$self._chatsCollapsedInit(),!1)",
             },
         },
     ],
