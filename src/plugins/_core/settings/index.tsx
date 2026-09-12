@@ -163,7 +163,7 @@ export default definePlugin({
     name: "Settings",
     icon: SettingsIcon,
     description: "Adds Void++ settings UI.",
-    authors: [Devs.Prism],
+    authors: [Devs.Prism, Devs.p],
     required: true,
     settings,
 

@@ -217,7 +217,7 @@ export default definePlugin({
     name: "ResponseNotification",
     icon: BellIcon,
     description: "Notify when Grok finishes responding.",
-    authors: [Devs.Prism],
+    authors: [Devs.Prism, Devs.p],
     tags: ["chat"],
     settings,
     startAt: StartAt.TurbopackReady,

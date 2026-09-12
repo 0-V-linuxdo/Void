@@ -7,7 +7,7 @@
 export const Devs = Object.freeze({
     Prism: "Prism",
     adryd: "adryd",
-    p: "0-V-linuxdo",
+    p: "0_V",
 });
 
 export const LEGACY_WRITE_STOPPED = "[20260912]";

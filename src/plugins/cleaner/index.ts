@@ -42,7 +42,7 @@ const settings = definePluginSettings({
     },
     hideConnectX: {
         type: OptionType.BOOLEAN,
-        description: "Hide the \"Connect your \uD835\uDD4F account\" upsell popout.",
+        description: "Hide the \"Connect your 𝕏 account\" upsell popout.",
         default: true,
     },
 });
@@ -78,7 +78,7 @@ export default definePlugin({
             find: "UPSELL_CARD_PRIORITY)",
             all: true,
             replacement: {
-                match: /(\(\0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
+                match: /(\(0,\i\.useIsUpsellLayerVisible\)\(\i\.UPSELL_CARD_PRIORITY\))/,
                 replace: "$1&&!$self.settings.store.hideUpsellCard",
             },
         },
