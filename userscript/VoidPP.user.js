@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.16] v1.0.0
+// @version      [20260912.17] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.16] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.17] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -1540,7 +1540,7 @@ ${sourceUrl}`;
   }
 
   // src/turbopack/common/react.tsx
-  var React2;
+  var React;
   var useState;
   var useEffect;
   var useLayoutEffect;
@@ -1560,14 +1560,14 @@ ${sourceUrl}`;
   });
   waitFor(filters.byProps("useState", "createElement"), (mod) => {
     const m = mod;
-    React2 = m;
+    React = m;
     ({ useState, useEffect, useLayoutEffect, useMemo, useRef, useReducer, useCallback, useContext, useId, useTransition, useDeferredValue, useSyncExternalStore, createElement } = m);
     setCreateElement(m.createElement);
   });
   var Fragment = Symbol.for("react.fragment");
 
   // src/components/icons.tsx
-  var svg = (props, ...children) => /* @__PURE__ */ React2.createElement("svg", {
+  var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
     width: props.width ?? props.size ?? "1em",
     height: props.height ?? props.size ?? "1em",
     viewBox: "0 0 24 24",
@@ -1579,7 +1579,7 @@ ${sourceUrl}`;
     className: props.className,
     "aria-hidden": "true"
   }, children);
-  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React2.createElement("svg", {
+  var filledSvg = (props, viewBox, ...children) => /* @__PURE__ */ React.createElement("svg", {
     width: props.width ?? props.size ?? "1em",
     height: props.height ?? props.size ?? "1em",
     viewBox,
@@ -1587,641 +1587,641 @@ ${sourceUrl}`;
     className: props.className,
     "aria-hidden": "true"
   }, children);
-  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var BracesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"
   }));
-  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
+  var CopyIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
     x: "3",
     y: "8",
     width: "13",
     height: "13",
     rx: "4",
     stroke: "currentColor"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M13 2.00004L12.8842 2.00002C12.0666 1.99982 11.5094 1.99968 11.0246 2.09611C9.92585 2.31466 8.95982 2.88816 8.25008 3.69274C7.90896 4.07944 7.62676 4.51983 7.41722 5.00004H9.76392C10.189 4.52493 10.7628 4.18736 11.4147 4.05768C11.6802 4.00488 12.0228 4.00004 13 4.00004H14.6C15.7366 4.00004 16.5289 4.00081 17.1458 4.05121C17.7509 4.10066 18.0986 4.19283 18.362 4.32702C18.9265 4.61464 19.3854 5.07358 19.673 5.63807C19.8072 5.90142 19.8994 6.24911 19.9488 6.85428C19.9992 7.47112 20 8.26343 20 9.40004V11C20 11.9773 19.9952 12.3199 19.9424 12.5853C19.8127 13.2373 19.4748 13.8114 19 14.2361V16.5829C20.4795 15.9374 21.5804 14.602 21.9039 12.9755C22.0004 12.4907 22.0002 11.9334 22 11.1158L22 11V9.40004V9.35725C22 8.27346 22 7.3993 21.9422 6.69141C21.8826 5.96256 21.7568 5.32238 21.455 4.73008C20.9757 3.78927 20.2108 3.02437 19.27 2.545C18.6777 2.24322 18.0375 2.1174 17.3086 2.05785C16.6007 2.00002 15.7266 2.00003 14.6428 2.00004L14.6 2.00004H13Z",
     fill: "currentColor"
   }));
-  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ChromiumIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M10.88 21.94 15.46 14"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M21.17 8H12"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M3.95 6.06 8.54 14"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "4"
   }));
-  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
+  var CircleAlertIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React2.createElement("line", {
+  }), /* @__PURE__ */ React.createElement("line", {
     x1: "12",
     x2: "12",
     y1: "8",
     y2: "12"
-  }), /* @__PURE__ */ React2.createElement("line", {
+  }), /* @__PURE__ */ React.createElement("line", {
     x1: "12",
     x2: "12.01",
     y1: "16",
     y2: "16"
   }));
-  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "13.5",
     cy: "6.5",
     r: ".5",
     fill: "currentColor"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "17.5",
     cy: "10.5",
     r: ".5",
     fill: "currentColor"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "6.5",
     cy: "12.5",
     r: ".5",
     fill: "currentColor"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "8.5",
     cy: "7.5",
     r: ".5",
     fill: "currentColor"
   }));
-  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var Trash2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M10 11v6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M14 11v6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M3 6h18"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
   }));
-  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var TestTubeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01a2.83 2.83 0 0 1 0-4L17 3"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m16 2 6 6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 16H4"
   }));
-  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var DownloadIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-  }), /* @__PURE__ */ React2.createElement("polyline", {
+  }), /* @__PURE__ */ React.createElement("polyline", {
     points: "7 10 12 15 17 10"
-  }), /* @__PURE__ */ React2.createElement("line", {
+  }), /* @__PURE__ */ React.createElement("line", {
     x1: "12",
     x2: "12",
     y1: "15",
     y2: "3"
   }));
-  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var UnplugIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m19 5 3-3"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m2 22 3-3"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M7.5 13.5 10 11"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M10.5 16.5 13 14"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z"
   }));
-  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React2.createElement("path", {
+  var Cross2Icon = (props = {}) => filledSvg(props, "0 0 15 15", /* @__PURE__ */ React.createElement("path", {
     d: "M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z",
     fill: "currentColor",
     fillRule: "evenodd",
     clipRule: "evenodd"
   }));
-  var GripVerticalIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
+  var GripVerticalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
     cx: "9",
     cy: "12",
     r: "1"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "9",
     cy: "5",
     r: "1"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "9",
     cy: "19",
     r: "1"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "15",
     cy: "12",
     r: "1"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "15",
     cy: "5",
     r: "1"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "15",
     cy: "19",
     r: "1"
   }));
-  var PinIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var PinIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 17v5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
   }));
-  var PinFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var PinFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 17v5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
   }));
-  var StarIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var StarIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
   }));
-  var StarFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var StarFilledIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
   }));
-  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React2.createElement("path", {
+  var GhostFilledIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12 3C9.86974 3 8.36758 3.44687 7.30331 4.30861C6.24544 5.16518 5.77303 6.31294 5.44931 7.34656C5.34315 7.68552 5.24989 8.01119 5.16061 8.32293C4.67184 10.0297 4.3026 11.3191 2.59045 12.0877L2 12.3528V13C2 13.5638 2.1227 14.0439 2.36548 14.4568C2.59992 14.8555 2.9079 15.1234 3.14945 15.3133C3.24924 15.3917 3.33688 15.4587 3.41432 15.5178L3.41445 15.5179C3.75134 15.7753 3.89523 15.8852 4.00625 16.153C4.02083 16.1882 4.05258 16.3202 4.01681 16.6105C3.98277 16.8867 3.89932 17.2176 3.78078 17.5898C3.67031 17.9367 3.54072 18.2855 3.41195 18.6321L3.38617 18.7015C3.25634 19.0512 3.11722 19.4276 3.03341 19.7437L2.70025 21H7.87689L12 22.0308L16.1231 21H21.3378L20.9591 19.7169C20.8577 19.3732 20.7296 19.016 20.6096 18.6814L20.6 18.6547C20.4736 18.302 20.3539 17.9667 20.2541 17.6336C20.0498 16.9516 19.971 16.4061 20.0567 15.9647C20.0994 15.7444 20.1593 15.7043 20.6831 15.3528L20.697 15.3435C20.9367 15.1826 21.2889 14.9346 21.5621 14.5365C21.8517 14.1145 22 13.6069 22 13V12.3528L21.4095 12.0877C19.6974 11.3191 19.3282 10.0297 18.8394 8.32294L18.8392 8.32236C18.75 8.01083 18.6568 7.68526 18.5507 7.34656C18.227 6.31294 17.7546 5.16518 16.6967 4.30861C15.6324 3.44687 14.1303 3 12 3ZM11 10.625C11 11.7986 10.3284 12.75 9.5 12.75C8.67157 12.75 8 11.7986 8 10.625C8 9.4514 8.67157 8.5 9.5 8.5C10.3284 8.5 11 9.4514 11 10.625ZM14.5 12.75C15.3284 12.75 16 11.7986 16 10.625C16 9.4514 15.3284 8.5 14.5 8.5C13.6716 8.5 13 9.4514 13 10.625C13 11.7986 13.6716 12.75 14.5 12.75Z"
   }));
-  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var TriangleAlert = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 9v4"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 17h.01"
   }));
-  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ScalingIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M14 15H9v-5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M16 3h5v5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M21 3 9 15"
   }));
-  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var PencilIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m15 5 4 4"
   }));
-  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
+  var GlobeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M2 12h20"
   }));
-  var CircleXIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
+  var CircleXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m15 9-6 6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m9 9 6 6"
   }));
-  var CircleCheckIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
+  var CircleCheckIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m9 12 2 2 4-4"
   }));
-  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var FolderIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
   }));
-  var CircleGaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var CircleGaugeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M15.6 2.7a10 10 0 1 0 5.7 5.7"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M13.4 10.6 19 5"
   }));
-  var LoaderCircleIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var LoaderCircleIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M21 12a9 9 0 1 1-6.219-8.56"
   }));
-  var ChevronsDownUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ChevronsDownUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m7 20 5-5 5 5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m7 4 5 5 5-5"
   }));
-  var RotateCcwIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var RotateCcwIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M3 3v5h5"
   }));
-  var AppWindowIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
+  var AppWindowIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
     x: "2",
     y: "4",
     width: "20",
     height: "16",
     rx: "2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M10 4v4"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M2 8h20"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M6 4v4"
   }));
-  var BrushCleaningIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var BrushCleaningIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m16 22-1-4"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m8 22 1-4"
   }));
-  var BlendIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
+  var BlendIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
     cx: "9",
     cy: "9",
     r: "7"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "15",
     cy: "15",
     r: "7"
   }));
-  var TerminalIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("polyline", {
+  var TerminalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("polyline", {
     points: "4 17 10 11 4 5"
-  }), /* @__PURE__ */ React2.createElement("line", {
+  }), /* @__PURE__ */ React.createElement("line", {
     x1: "12",
     x2: "20",
     y1: "19",
     y2: "19"
   }));
-  var MicOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("line", {
+  var MicOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("line", {
     x1: "2",
     x2: "22",
     y1: "2",
     y2: "22"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M5 10v2a7 7 0 0 0 12 5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M15 9.34V5a3 3 0 0 0-5.68-1.33"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9 9v3a3 3 0 0 0 5.12 2.12"
-  }), /* @__PURE__ */ React2.createElement("line", {
+  }), /* @__PURE__ */ React.createElement("line", {
     x1: "12",
     x2: "12",
     y1: "19",
     y2: "22"
   }));
-  var BotOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var BotOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M13.67 8H18a2 2 0 0 1 2 2v4.33"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M2 14h2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M20 14h2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M22 22 2 2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M8 8H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 1.414-.586"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9 13v2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9.67 4H12v2.33"
   }));
-  var Link2OffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var Link2OffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M9 17H7A5 5 0 0 1 7 7"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M15 7h2a5 5 0 0 1 4 8"
-  }), /* @__PURE__ */ React2.createElement("line", {
+  }), /* @__PURE__ */ React.createElement("line", {
     x1: "8",
     x2: "12",
     y1: "12",
     y2: "12"
-  }), /* @__PURE__ */ React2.createElement("line", {
+  }), /* @__PURE__ */ React.createElement("line", {
     x1: "2",
     x2: "22",
     y1: "2",
     y2: "22"
   }));
-  var UserRoundXIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var UserRoundXIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M2 21a8 8 0 0 1 11.873-7"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "10",
     cy: "8",
     r: "5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m17 17 5 5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m22 17-5 5"
   }));
-  var CatIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var CatIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M8 14v.5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M16 14v.5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M11.25 16.25h1.5L12 17l-.75-.75Z"
   }));
-  var BellIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var BellIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M10.268 21a2 2 0 0 0 3.464 0"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"
   }));
-  var EyeOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var EyeOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M14.084 14.158a3 3 0 0 1-4.242-4.242"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m2 2 20 20"
   }));
-  var UnfoldHorizontalIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var UnfoldHorizontalIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M16 12h6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M8 12H2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 2v2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 8v2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 14v2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 20v2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m19 15 3-3-3-3"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m5 9-3 3 3 3"
   }));
-  var FilesIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var FilesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M20 7h-3a2 2 0 0 1-2-2V2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"
   }));
-  var ImagesIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ImagesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M18 22H4a2 2 0 0 1-2-2V6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "8",
     r: "2"
-  }), /* @__PURE__ */ React2.createElement("rect", {
+  }), /* @__PURE__ */ React.createElement("rect", {
     width: "16",
     height: "16",
     x: "6",
     y: "2",
     rx: "2"
   }));
-  var LinkIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var LinkIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
   }));
-  var PanelLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
+  var PanelLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
     width: "18",
     height: "18",
     x: "3",
     y: "3",
     rx: "2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9 3v18"
   }));
-  var PanelRightCloseIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
+  var PanelRightCloseIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
     width: "18",
     height: "18",
     x: "3",
     y: "3",
     rx: "2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M15 3v18"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m10 15-3-3 3-3"
   }));
-  var ScrollTextIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ScrollTextIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M15 12h-5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M15 8h-5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M19 17V5a2 2 0 0 0-2-2H4"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"
   }));
-  var Volume2Icon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var Volume2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M16 9a5 5 0 0 1 0 6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M19.364 18.364a9 9 0 0 0 0-12.728"
   }));
-  var FileDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var FileDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M14 2v4a2 2 0 0 0 2 2h4"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 18v-6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m9 15 3 3 3-3"
   }));
-  var ChevronLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ChevronLeftIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m15 18-6-6 6-6"
   }));
-  var ChevronRightIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ChevronRightIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m9 18 6-6-6-6"
   }));
-  var ChevronUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ChevronUpIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m18 15-6-6-6 6"
   }));
-  var ChevronDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ChevronDownIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m6 9 6 6 6-6"
   }));
-  var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var HistoryIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M3 3v5h5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M12 7v5l4 2"
   }));
-  var ClockIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("circle", {
+  var ClockIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "10"
-  }), /* @__PURE__ */ React2.createElement("polyline", {
+  }), /* @__PURE__ */ React.createElement("polyline", {
     points: "12 6 12 12 16 14"
   }));
-  var TextCursorInputIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var TextCursorInputIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 20h-1a2 2 0 0 1-2-2 2 2 0 0 1-2 2H6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M13 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-7"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M5 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h1"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M6 4h1a2 2 0 0 1 2 2 2 2 0 0 1 2-2h1"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9 6v12"
   }));
-  var LayoutGridIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
+  var LayoutGridIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
     width: "7",
     height: "7",
     x: "3",
     y: "3",
     rx: "1"
-  }), /* @__PURE__ */ React2.createElement("rect", {
+  }), /* @__PURE__ */ React.createElement("rect", {
     width: "7",
     height: "7",
     x: "14",
     y: "3",
     rx: "1"
-  }), /* @__PURE__ */ React2.createElement("rect", {
+  }), /* @__PURE__ */ React.createElement("rect", {
     width: "7",
     height: "7",
     x: "14",
     y: "14",
     rx: "1"
-  }), /* @__PURE__ */ React2.createElement("rect", {
+  }), /* @__PURE__ */ React.createElement("rect", {
     width: "7",
     height: "7",
     x: "3",
     y: "14",
     rx: "1"
   }));
-  var GrokConnectorsIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React2.createElement("path", {
+  var GrokConnectorsIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12 12H19V16C19 16.6836 19.0011 17.2566 18.9629 17.7236C18.9238 18.2023 18.8382 18.6571 18.6182 19.0889C18.2826 19.7474 17.7474 20.2826 17.0889 20.6182C16.6571 20.8382 16.2023 20.9238 15.7236 20.9629C15.2566 21.0011 14.6836 21 14 21H8C7.31644 21 6.74342 21.0011 6.27637 20.9629C5.79772 20.9238 5.34294 20.8382 4.91114 20.6182C4.25262 20.2826 3.71739 19.7474 3.38184 19.0889C3.16183 18.6571 3.07623 18.2023 3.03711 17.7236C2.99895 17.2566 3 16.6836 3 16V10C3 9.31644 2.99895 8.74342 3.03711 8.27637C3.07623 7.79772 3.16182 7.34294 3.38184 6.91114C3.71739 6.25262 4.25262 5.71739 4.91114 5.38184C5.34294 5.16182 5.79772 5.07623 6.27637 5.03711C6.74342 4.99895 7.31644 5 8 5H12V12ZM5 16C5 16.7165 5.00032 17.1938 5.03028 17.5605C5.05924 17.9151 5.11072 18.0777 5.16309 18.1807C5.3069 18.4629 5.5371 18.6931 5.81934 18.8369C5.92228 18.8893 6.0849 18.9408 6.43946 18.9697C6.80616 18.9997 7.28347 19 8 19H10V14H5V16ZM12 19H14C14.7165 19 15.1938 18.9997 15.5605 18.9697C15.9151 18.9408 16.0777 18.8893 16.1807 18.8369C16.4629 18.6931 16.6931 18.4629 16.8369 18.1807C16.8893 18.0777 16.9408 17.9151 16.9697 17.5605C16.9997 17.1938 17 16.7165 17 16V14H12V19ZM8 7C7.28347 7 6.80616 7.00032 6.43946 7.03028C6.0849 7.05924 5.92228 7.11072 5.81934 7.16309C5.5371 7.3069 5.3069 7.5371 5.16309 7.81934C5.11072 7.92228 5.05924 8.0849 5.03028 8.43946C5.00032 8.80616 5 9.28347 5 10V12H10V7H8Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M17 2C17.6836 2 18.2566 1.99895 18.7236 2.03711C19.2023 2.07623 19.6571 2.16183 20.0889 2.38184C20.7474 2.71739 21.2826 3.25262 21.6182 3.91114C21.8382 4.34294 21.9238 4.79772 21.9629 5.27637C22.0011 5.74342 22 6.31644 22 7V10H14V2H17ZM16 8H20V7C20 6.28347 19.9997 5.80616 19.9697 5.43946C19.9408 5.0849 19.8893 4.92228 19.8369 4.81934C19.6931 4.5371 19.4629 4.3069 19.1807 4.16309C19.0777 4.11072 18.9151 4.05924 18.5605 4.03028C18.1938 4.00032 17.7165 4 17 4H16V8Z"
   }));
-  var ConnectedAppsIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("rect", {
+  var ConnectedAppsIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("rect", {
     x: "4",
     y: "4",
     width: "5",
     height: "5"
-  }), /* @__PURE__ */ React2.createElement("rect", {
+  }), /* @__PURE__ */ React.createElement("rect", {
     x: "15",
     y: "4",
     width: "5",
     height: "5"
-  }), /* @__PURE__ */ React2.createElement("rect", {
+  }), /* @__PURE__ */ React.createElement("rect", {
     x: "15",
     y: "15",
     width: "5",
     height: "5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M11 18H10C7.79086 18 6 16.2091 6 14V13"
   }));
-  var AutoModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var AutoModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     strokeLinecap: "square",
     d: "M6.5 12.5L11.5 17.5M6.5 12.5L11.8349 6.83172C13.5356 5.02464 15.9071 4 18.3887 4H20V5.61135C20 8.09292 18.9754 10.4644 17.1683 12.1651L11.5 17.5M6.5 12.5L2 11L5.12132 7.87868C5.68393 7.31607 6.44699 7 7.24264 7H11M11.5 17.5L13 22L16.1213 18.8787C16.6839 18.3161 17 17.553 17 16.7574V13"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M4.5 16.5C4.5 16.5 4 18 4 20C6 20 7.5 19.5 7.5 19.5"
   }));
-  var FastModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var FastModeIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M5 14.25L14 4L13 9.75H19L10 20L11 14.25H5Z"
   }));
-  var BuildModeIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React2.createElement("path", {
+  var BuildModeIcon = (props = {}) => filledSvg(props, "0 0 24 24", /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     d: "M6.55273 4.60517C9.30778 1.96643 12.7289 1.47144 16.748 2.49872L19.1709 3.11787L16.9883 4.34052C16.0286 4.87786 15.0421 5.85039 14.5645 6.87763C14.3308 7.38043 14.2396 7.85117 14.2852 8.26728C14.3289 8.6664 14.5051 9.08437 14.9307 9.50068L20.5068 14.9548C22.0873 16.3103 22.1844 18.7292 20.707 20.2067C19.2281 21.6857 16.8059 21.5867 15.4512 20.0017C15.4468 19.9971 15.4413 19.9919 15.4355 19.986C15.4119 19.9617 15.3773 19.9252 15.332 19.8786C15.2412 19.7851 15.1086 19.6485 14.9424 19.4772C14.6098 19.1346 14.1405 18.653 13.5977 18.0944C12.5116 16.9769 11.1275 15.5535 9.93457 14.3317C9.65277 14.0434 9.32401 13.9826 9.07031 14.0456C8.82894 14.1056 8.57482 14.2967 8.46875 14.7136L8.40137 14.9802L6.5 16.8815L1.08594 11.4675L3.08594 9.46747H3.5C3.84716 9.46747 3.9785 9.37185 4.0752 9.26728C4.22615 9.1039 4.36795 8.82197 4.55371 8.30732C4.8865 7.38517 5.29734 5.80772 6.55273 4.60517ZM11.668 13.2448C12.789 14.3937 14.0363 15.6752 15.0322 16.6999C15.5754 17.2588 16.0441 17.7419 16.377 18.0847C16.5432 18.2559 16.6757 18.3924 16.7666 18.486C16.812 18.5328 16.8474 18.569 16.8711 18.5935C16.8826 18.6053 16.8914 18.6146 16.8975 18.6208C16.9004 18.6238 16.9028 18.627 16.9043 18.6286L16.9062 18.6296L16.9072 18.6306L16.9336 18.6579L16.957 18.6862C17.5529 19.4013 18.6348 19.4509 19.293 18.7927C19.951 18.1345 19.9016 17.0526 19.1865 16.4567L19.1562 16.4313L19.1279 16.404L13.7598 11.153L11.668 13.2448ZM14.1406 4.05244C11.6131 3.80062 9.61076 4.44487 7.93555 6.04951C7.10476 6.84532 6.84901 7.83879 6.43457 8.98701C6.24676 9.5073 5.99495 10.1367 5.54395 10.6247C5.12935 11.0732 4.597 11.349 3.94531 11.4352L3.91406 11.4675L6.5 14.0534L6.61914 13.9333C6.95792 12.978 7.6995 12.326 8.58789 12.1052C9.04163 11.9924 9.51491 11.9981 9.96875 12.1159L12.5625 9.52216C12.4239 9.18685 12.3357 8.83958 12.2969 8.48505C12.2019 7.6178 12.4054 6.77723 12.751 6.03388C13.0875 5.31006 13.578 4.63529 14.1406 4.05244Z"
   }));
-  var LightbulbIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var LightbulbIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9 18h6"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M10 22h4"
   }));
-  var SparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var SparklesIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M20 3v4"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M22 5h-4"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M4 17v2"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M5 18H3"
   }));
-  var ShieldOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ShieldOffIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m2 2 20 20"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M5 5a1 1 0 0 0-1 1v7c0 5 3.5 7.5 7.67 8.94a1 1 0 0 0 .67.01c2.35-.82 4.48-1.97 5.9-3.71"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M9.309 3.652A12.252 12.252 0 0 0 11.24 2.28a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1v7a9.784 9.784 0 0 1-.08 1.264"
   }));
-  var SettingsIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var SettingsIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "12",
     cy: "12",
     r: "3"
   }));
-  var Settings2Icon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var Settings2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M20 7h-9"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M14 17H5"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "17",
     cy: "17",
     r: "3"
-  }), /* @__PURE__ */ React2.createElement("circle", {
+  }), /* @__PURE__ */ React.createElement("circle", {
     cx: "7",
     cy: "7",
     r: "3"
   }));
-  var ListFilterIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var ListFilterIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M3 6h18"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M7 12h10"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M10 18h4"
   }));
-  var Minimize2Icon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var Minimize2Icon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "m14 10 7-7"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M20 10h-6V4"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "m3 21 7-7"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M4 14h6v6"
   }));
-  var TextQuoteIcon = (props = {}) => svg(props, /* @__PURE__ */ React2.createElement("path", {
+  var TextQuoteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M17 6H3"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M21 12H8"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M21 18H8"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     d: "M3 12v6"
   }));
-  var VoidPPIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React2.createElement("path", {
+  var VoidPPIcon = (props = {}) => svg({ ...props, strokeWidth: props.strokeWidth ?? 2.15 }, /* @__PURE__ */ React.createElement("path", {
     d: "M2.2 7.4 L8.4 20.2 L13.03 11.30"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     stroke: "none",
     d: "M13.985 11.792 L14.045 11.678 L14.104 11.567 L14.163 11.458 L14.222 11.352 L14.280 11.249 L14.338 11.148 L14.395 11.049 L14.452 10.953 L14.508 10.859 L14.563 10.768 L14.618 10.679 L14.673 10.592 L14.727 10.508 L14.781 10.426 L14.834 10.347 L14.887 10.270 L14.939 10.195 L14.992 10.122 L15.044 10.052 L15.095 9.984 L15.147 9.918 L15.198 9.855 L15.249 9.794 L15.300 9.735 L15.351 9.678 L15.402 9.623 L15.452 9.571 L15.503 9.521 L15.554 9.473 L15.606 9.427 L15.657 9.384 L15.709 9.342 L15.760 9.303 L15.813 9.267 L15.865 9.232 L15.918 9.200 L15.972 9.170 L16.026 9.142 L16.081 9.117 L16.136 9.094 L16.191 9.074 L16.248 9.056 L16.305 9.041 L16.363 9.028 L16.421 9.018 L16.480 9.011 L16.540 9.006 L16.600 9.005 L23.700 9.005 L23.700 7.555 L16.600 7.555 L16.494 7.556 L16.388 7.560 L16.282 7.566 L16.177 7.574 L16.071 7.585 L15.966 7.598 L15.860 7.615 L15.755 7.634 L15.650 7.655 L15.545 7.680 L15.440 7.707 L15.336 7.737 L15.231 7.771 L15.127 7.807 L15.024 7.846 L14.921 7.888 L14.818 7.933 L14.716 7.981 L14.614 8.032 L14.513 8.086 L14.413 8.144 L14.313 8.204 L14.214 8.267 L14.116 8.334 L14.018 8.403 L13.922 8.475 L13.826 8.550 L13.731 8.629 L13.638 8.710 L13.545 8.794 L13.453 8.882 L13.363 8.972 L13.273 9.065 L13.185 9.161 L13.098 9.260 L13.012 9.361 L12.927 9.466 L12.844 9.573 L12.762 9.684 L12.681 9.797 L12.601 9.913 L12.522 10.031 L12.445 10.153 L12.369 10.277 L12.294 10.404 L12.221 10.533 L12.149 10.666 L12.077 10.800 Z"
-  }), /* @__PURE__ */ React2.createElement("g", {
+  }), /* @__PURE__ */ React.createElement("g", {
     fill: "currentColor",
     stroke: "none"
-  }, /* @__PURE__ */ React2.createElement("rect", {
+  }, /* @__PURE__ */ React.createElement("rect", {
     x: "16.775",
     y: "5.78",
     width: "1.45",
     height: "5.0"
-  }), /* @__PURE__ */ React2.createElement("rect", {
+  }), /* @__PURE__ */ React.createElement("rect", {
     x: "20.475",
     y: "5.78",
     width: "1.45",
@@ -3587,7 +3587,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/ColorSettingRow.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -3608,25 +3608,25 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/components/ColorSettingRow.tsx
   var cl = classNameFactory("void-color-picker-");
   function ColorSettingRow({ value, onChange, title, description }) {
-    return /* @__PURE__ */ React2.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Flex, {
         alignItems: "center",
         gap: "0.5rem"
-      }, /* @__PURE__ */ React2.createElement("input", {
+      }, /* @__PURE__ */ React.createElement("input", {
         type: "color",
         className: cl("input"),
         value,
         onChange: (e) => onChange(e.target.value)
-      }), /* @__PURE__ */ React2.createElement(Text2, {
+      }), /* @__PURE__ */ React.createElement(Text2, {
         size: "sm",
         color: "muted"
       }, value))
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, title), /* @__PURE__ */ React2.createElement(SettingsDescription, null, description)));
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/ConfirmDialog.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3644,15 +3644,15 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var cl2 = classNameFactory("void-settings-");
   var captured = {};
   function FallbackTitle({ children, className }) {
-    return React2.createElement("div", { className: classes(cl2("title"), className) }, children);
+    return React.createElement("div", { className: classes(cl2("title"), className) }, children);
   }
   function FallbackDescription({ children }) {
-    return React2.createElement("div", { className: cl2("description") }, children);
+    return React.createElement("div", { className: cl2("description") }, children);
   }
   function FallbackRow({ children, action, hidden, className }) {
     if (hidden)
       return null;
-    return React2.createElement("div", { className: classes(cl2("row"), className) }, React2.createElement("div", { className: cl2("row-body") }, children), action ?? null);
+    return React.createElement("div", { className: classes(cl2("row"), className) }, React.createElement("div", { className: cl2("row-body") }, children), action ?? null);
   }
   var fallbacks = {
     SettingsTitle: FallbackTitle,
@@ -3662,9 +3662,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function setSettingsPrimitive(name, component) {
     captured[name] = component;
   }
-  var SettingsTitle = (props) => React2.createElement(captured.SettingsTitle ?? fallbacks.SettingsTitle, props);
-  var SettingsDescription = (props) => React2.createElement(captured.SettingsDescription ?? fallbacks.SettingsDescription, props);
-  var SettingsRow = (props) => React2.createElement(captured.SettingsRow ?? fallbacks.SettingsRow, props);
+  var SettingsTitle = (props) => React.createElement(captured.SettingsTitle ?? fallbacks.SettingsTitle, props);
+  var SettingsDescription = (props) => React.createElement(captured.SettingsDescription ?? fallbacks.SettingsDescription, props);
+  var SettingsRow = (props) => React.createElement(captured.SettingsRow ?? fallbacks.SettingsRow, props);
 
   // src/turbopack/common/components.ts
   function createModuleLazy(...filterProps) {
@@ -3814,19 +3814,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/components/ConfirmDialog.tsx
   function ConfirmDialog({ open, onOpenChange, title, description, confirmText = "Confirm", cancelText = "Cancel", danger, onConfirm }) {
-    return /* @__PURE__ */ React2.createElement(AlertDialog, {
+    return /* @__PURE__ */ React.createElement(AlertDialog, {
       open,
       onOpenChange
-    }, /* @__PURE__ */ React2.createElement(AlertDialogContent, {
+    }, /* @__PURE__ */ React.createElement(AlertDialogContent, {
       className: "void-confirm-dialog"
-    }, /* @__PURE__ */ React2.createElement(AlertDialogHeader, null, /* @__PURE__ */ React2.createElement(AlertDialogTitle, null, title), /* @__PURE__ */ React2.createElement(AlertDialogDescription, null, description)), /* @__PURE__ */ React2.createElement(AlertDialogFooter, null, /* @__PURE__ */ React2.createElement(AlertDialogCancel, {
+    }, /* @__PURE__ */ React.createElement(AlertDialogHeader, null, /* @__PURE__ */ React.createElement(AlertDialogTitle, null, title), /* @__PURE__ */ React.createElement(AlertDialogDescription, null, description)), /* @__PURE__ */ React.createElement(AlertDialogFooter, null, /* @__PURE__ */ React.createElement(AlertDialogCancel, {
       asChild: true
-    }, /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm"
-    }, cancelText)), /* @__PURE__ */ React2.createElement(AlertDialogAction, {
+    }, cancelText)), /* @__PURE__ */ React.createElement(AlertDialogAction, {
       asChild: true
-    }, /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Button, {
       variant: danger ? "danger" : "primary",
       size: "sm",
       onClick: onConfirm
@@ -3837,7 +3837,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function getErrorBoundaryClass() {
     if (ErrorBoundaryClass)
       return ErrorBoundaryClass;
-    ErrorBoundaryClass = class VoidPPErrorBoundary extends React2.Component {
+    ErrorBoundaryClass = class VoidPPErrorBoundary extends React.Component {
       constructor(props) {
         super(props);
         this.state = { hasError: false };
@@ -3858,16 +3858,16 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function ErrorBoundaryWrapper(props) {
     const Cls = getErrorBoundaryClass();
-    return /* @__PURE__ */ React2.createElement(Cls, {
+    return /* @__PURE__ */ React.createElement(Cls, {
       ...props
     });
   }
   var ErrorBoundary = ErrorBoundaryWrapper;
   Object.defineProperty(ErrorBoundary, "wrap", {
     value(Component, fallback = null) {
-      const Wrapped = (props) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
+      const Wrapped = (props) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
         fallback
-      }, /* @__PURE__ */ React2.createElement(Component, {
+      }, /* @__PURE__ */ React.createElement(Component, {
         ...props
       }));
       Object.defineProperty(Wrapped, "name", { value: `ErrorBoundary(${Component.displayName ?? Component.name ?? "Unknown"})` });
@@ -3875,7 +3875,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/ErrorCard.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -3906,7 +3906,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var cl3 = classNameFactory("void-error-card-");
   // src/components/Flex.tsx
   function Flex({ flexDirection, gap = "1em", justifyContent, alignItems, flexWrap, children, style, ref, ...restProps }) {
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       ref,
       style: {
         display: "flex",
@@ -3922,7 +3922,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   // src/components/Grid.tsx
   function Grid({ columns, rows, gap = "0.75rem", justifyItems, alignItems, children, style, ...restProps }) {
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       style: {
         display: "grid",
         gridTemplateColumns: columns,
@@ -3970,7 +3970,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/components/Paragraph.tsx
   function Paragraph({ color = "secondary", className, children, ...props }) {
-    return /* @__PURE__ */ React2.createElement(Text2, {
+    return /* @__PURE__ */ React.createElement(Text2, {
       as: "p",
       size: "xs",
       color,
@@ -3979,16 +3979,16 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, children);
   }
   function SectionHeader({ title, description, className }) {
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
       className: ClassNames.cn("max-w-sm min-w-0", className)
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
-    }, title), description && /* @__PURE__ */ React2.createElement(Paragraph, null, description));
+    }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/SelectionUI.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -4035,13 +4035,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var cl4 = classNameFactory("void-sel-");
   function SelectionCheckbox({ selection, id }) {
     const checked = useSelectionHas(selection, id);
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       onClick: (e) => {
         e.stopPropagation();
         e.preventDefault();
       },
       className: cl4("wrap")
-    }, /* @__PURE__ */ React2.createElement(Checkbox, {
+    }, /* @__PURE__ */ React.createElement(Checkbox, {
       checked,
       onCheckedChange: () => selection.toggle(id),
       className: cl4("checkbox")
@@ -4057,23 +4057,23 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       selection.clear();
       await onDelete(ids);
     };
-    return /* @__PURE__ */ React2.createElement(Fragment, null, /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement("div", {
       className: cl4("action-bar")
-    }, /* @__PURE__ */ React2.createElement("span", {
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl4("count")
-    }, "Selected · ", count), /* @__PURE__ */ React2.createElement("div", {
+    }, "Selected · ", count), /* @__PURE__ */ React.createElement("div", {
       className: cl4("buttons")
-    }, /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
       shape: "pill",
       onClick: () => selection.clear()
-    }, "Cancel"), /* @__PURE__ */ React2.createElement(Button, {
+    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
       variant: "danger",
       size: "sm",
       shape: "pill",
       onClick: () => setOpen(true)
-    }, "Delete"))), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+    }, "Delete"))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open,
       onOpenChange: setOpen,
       title,
@@ -4105,7 +4105,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const cls = classes(active && "bg-button-ghost-hover", className);
     const label = ariaLabel ?? (typeof tooltip === "string" ? tooltip : undefined);
     if (popover) {
-      return /* @__PURE__ */ React2.createElement(ButtonWithPopover, {
+      return /* @__PURE__ */ React.createElement(ButtonWithPopover, {
         variant,
         size,
         shape,
@@ -4118,7 +4118,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         "aria-label": label
       }, icon);
     }
-    return /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+    return /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant,
       size,
       shape,
@@ -4164,7 +4164,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     buttons.delete(id);
   }
   function renderEntry(def) {
-    return /* @__PURE__ */ React2.createElement(ChatBarButton, {
+    return /* @__PURE__ */ React.createElement(ChatBarButton, {
       icon: resolveLazy(def.icon),
       tooltip: resolveLazy(def.tooltip),
       popover: resolveLazy(def.popover),
@@ -4185,7 +4185,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const entries = buttons.sorted().filter(([, def]) => (def.locations ?? ["chat"]).includes(location2));
     if (!entries.length)
       return null;
-    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, entries.map(([id, def]) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, entries.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: id
     }, renderEntry(def))));
   }
@@ -4193,13 +4193,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/api/ContextMenus.tsx
   var menuPrimitivesContext = null;
   function getMenuPrimitivesContext() {
-    return menuPrimitivesContext ??= React2.createContext(null);
+    return menuPrimitivesContext ??= React.createContext(null);
   }
   function makeMenuPrimitive(key, fallback) {
     return (props) => {
-      const ctx = React2.useContext(getMenuPrimitivesContext());
+      const ctx = React.useContext(getMenuPrimitivesContext());
       const C = ctx?.[key] ?? fallback;
-      return /* @__PURE__ */ React2.createElement(C, {
+      return /* @__PURE__ */ React.createElement(C, {
         ...props
       });
     };
@@ -4221,11 +4221,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function renderEntry2(def, ctx) {
     if (def.render) {
       const Render = def.render;
-      return /* @__PURE__ */ React2.createElement(Render, {
+      return /* @__PURE__ */ React.createElement(Render, {
         ...ctx
       });
     }
-    return /* @__PURE__ */ React2.createElement(MenuItem, {
+    return /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => def.onSelect?.(ctx)
     }, resolveLazy(def.icon), resolveLazy(def.label));
   }
@@ -4235,13 +4235,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     if (!registry.size)
       return null;
     const sorted = registry.sorted();
-    const content = /* @__PURE__ */ React2.createElement(React2.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
+    const content = /* @__PURE__ */ React.createElement(React.Fragment, null, sorted.map(([id, def]) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: id,
       fallback: null
     }, renderEntry2(def, ctx))));
     if (menu) {
       const Ctx = getMenuPrimitivesContext();
-      return /* @__PURE__ */ React2.createElement(Ctx.Provider, {
+      return /* @__PURE__ */ React.createElement(Ctx.Provider, {
         value: menu
       }, content);
     }
@@ -4727,7 +4727,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/_core/settings/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -5000,7 +5000,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   }
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/tabs/CustomCSSTab.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -5012,7 +5012,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/CssEditor.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -5210,13 +5210,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         ta.selectionEnd = pos;
       });
     }, [onChange]);
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       className: classes(cl5("wrap"), className)
-    }, /* @__PURE__ */ React2.createElement("pre", {
+    }, /* @__PURE__ */ React.createElement("pre", {
       ref: highlightRef,
       className: cl5("highlight"),
       "aria-hidden": "true"
-    }), /* @__PURE__ */ React2.createElement("textarea", {
+    }), /* @__PURE__ */ React.createElement("textarea", {
       className: cl5("input"),
       value,
       placeholder,
@@ -5263,28 +5263,28 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       setEnabled(checked);
       setCustomCSSEnabled(checked);
     };
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
       className: classes(cl6("root"), "void-tab-root")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       className: cl6("header")
-    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Quick CSS",
       description: "Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it."
-    }), /* @__PURE__ */ React2.createElement(Switch, {
+    }), /* @__PURE__ */ React.createElement(Switch, {
       checked: enabled,
       onCheckedChange: handleToggle
-    })), /* @__PURE__ */ React2.createElement(CssEditor, {
+    })), /* @__PURE__ */ React.createElement(CssEditor, {
       value: css,
       onChange: apply,
       disabled: !enabled
     }));
   }
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/shared.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5359,7 +5359,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/tabs/PluginsTab.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5400,7 +5400,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/PluginCard.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5451,7 +5451,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/BaseCard.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5557,64 +5557,64 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/components/settings/BaseCard.tsx
   var cl7 = classNameFactory("void-card-");
   function BaseCard({ className, name, nameClassName, icon, badges, description, controls, footer }) {
-    return /* @__PURE__ */ React2.createElement(Card, {
+    return /* @__PURE__ */ React.createElement(Card, {
       className: classes(cl7("root"), className)
-    }, /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement("div", {
       className: cl7("body")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement("div", {
       className: classes(cl7("name"), nameClassName)
-    }, icon != null && /* @__PURE__ */ React2.createElement("span", {
+    }, icon != null && /* @__PURE__ */ React.createElement("span", {
       className: cl7("icon")
-    }, icon), /* @__PURE__ */ React2.createElement(Tooltip, null, /* @__PURE__ */ React2.createElement(TooltipTrigger, {
+    }, icon), /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
-    }, /* @__PURE__ */ React2.createElement("span", {
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl7("title")
-    }, name)), /* @__PURE__ */ React2.createElement(TooltipContent, null, name)), badges), /* @__PURE__ */ React2.createElement(Flex, {
+    }, name)), /* @__PURE__ */ React.createElement(TooltipContent, null, name)), badges), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.375rem",
       className: cl7("controls")
-    }, controls)), description && /* @__PURE__ */ React2.createElement("div", {
+    }, controls)), description && /* @__PURE__ */ React.createElement("div", {
       className: cl7("desc")
-    }, description)), /* @__PURE__ */ React2.createElement("div", {
+    }, description)), /* @__PURE__ */ React.createElement("div", {
       className: cl7("separator")
-    }), /* @__PURE__ */ React2.createElement("div", {
+    }), /* @__PURE__ */ React.createElement("div", {
       className: cl7("footer")
     }, footer));
   }
 
   // src/components/settings/IconButton.tsx
   function IconButton({ icon: Icon, label, onClick, className }) {
-    return /* @__PURE__ */ React2.createElement(Button, {
+    return /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "xs",
       shape: "square",
       "aria-label": label,
       onClick,
       className
-    }, /* @__PURE__ */ React2.createElement(Icon, {
+    }, /* @__PURE__ */ React.createElement(Icon, {
       size: 14
     }));
   }
 
   // src/components/settings/pluginBadges.tsx
   function TooltipIcon({ icon: Icon, tooltip, className, as = "span" }) {
-    return /* @__PURE__ */ React2.createElement(Tooltip, null, /* @__PURE__ */ React2.createElement(TooltipTrigger, {
+    return /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
       asChild: true
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       as,
       className
-    }, /* @__PURE__ */ React2.createElement(Icon, null))), /* @__PURE__ */ React2.createElement(TooltipContent, null, tooltip));
+    }, /* @__PURE__ */ React.createElement(Icon, null))), /* @__PURE__ */ React.createElement(TooltipContent, null, tooltip));
   }
   var badges = [
     { key: "dev", icon: GhostFilledIcon, tooltip: "Dev Only" },
     { key: "chrome", icon: ChromiumIcon, tooltip: "Chromium Only" }
   ];
   function PluginBadges({ plugin, className }) {
-    return badges.filter((b) => plugin[b.key]).map((b) => /* @__PURE__ */ React2.createElement(TooltipIcon, {
+    return badges.filter((b) => plugin[b.key]).map((b) => /* @__PURE__ */ React.createElement(TooltipIcon, {
       key: b.key,
       icon: b.icon,
       tooltip: b.tooltip,
@@ -5673,58 +5673,58 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       forceUpdate();
       dispatch("pluginStar");
     };
-    return /* @__PURE__ */ React2.createElement(BaseCard, {
+    return /* @__PURE__ */ React.createElement(BaseCard, {
       className: classes(plugin.required && cl8("required"), crashed && cl8("crashed")),
       name,
-      icon: Icon ? /* @__PURE__ */ React2.createElement(Icon, {
+      icon: Icon ? /* @__PURE__ */ React.createElement(Icon, {
         size: 14
-      }) : /* @__PURE__ */ React2.createElement(UnplugIcon, {
+      }) : /* @__PURE__ */ React.createElement(UnplugIcon, {
         size: 14
       }),
-      badges: /* @__PURE__ */ React2.createElement(React2.Fragment, null, crashed && /* @__PURE__ */ React2.createElement(TooltipIcon, {
+      badges: /* @__PURE__ */ React.createElement(React.Fragment, null, crashed && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: TriangleAlert,
         tooltip: "This plugin failed to start",
         className: cl8("crashed-icon")
-      }), plugin.required && /* @__PURE__ */ React2.createElement(TooltipIcon, {
+      }), plugin.required && /* @__PURE__ */ React.createElement(TooltipIcon, {
         icon: CircleAlertIcon,
         tooltip: "This plugin is required for Void++ to work",
         className: cl8("required-icon")
-      }), /* @__PURE__ */ React2.createElement(PluginBadges, {
+      }), /* @__PURE__ */ React.createElement(PluginBadges, {
         plugin,
         className: cl8("badge")
-      }), isNewPlugin(name) && /* @__PURE__ */ React2.createElement(Badge, {
+      }), isNewPlugin(name) && /* @__PURE__ */ React.createElement(Badge, {
         variant: "accent"
       }, "New")),
       description: plugin.description,
-      controls: /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(IconButton, {
+      controls: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(IconButton, {
         icon: starred ? StarFilledIcon : StarIcon,
         label: starred ? "Remove from favorites" : "Add to favorites",
         className: classes(cl8("star"), starred && cl8("star-active")),
         onClick: handleStar
-      }), !plugin.required && /* @__PURE__ */ React2.createElement(IconButton, {
+      }), !plugin.required && /* @__PURE__ */ React.createElement(IconButton, {
         icon: pinned ? PinFilledIcon : PinIcon,
         label: pinned ? "Unpin from top" : "Pin to top",
         className: classes(cl8("pin"), pinned && cl8("pin-active")),
         onClick: handlePin
-      }), hasVisibleSettings(plugin) && /* @__PURE__ */ React2.createElement(Tooltip, null, /* @__PURE__ */ React2.createElement(TooltipTrigger, {
+      }), hasVisibleSettings(plugin) && /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
         asChild: true
-      }, /* @__PURE__ */ React2.createElement(IconButton, {
+      }, /* @__PURE__ */ React.createElement(IconButton, {
         icon: Settings2Icon,
         label: "config",
         className: cl8("settings"),
         onClick: () => onSettings(name)
-      })), /* @__PURE__ */ React2.createElement(TooltipContent, null, "config")), /* @__PURE__ */ React2.createElement(Switch, {
+      })), /* @__PURE__ */ React.createElement(TooltipContent, null, "config")), /* @__PURE__ */ React.createElement(Switch, {
         checked: enabled,
         disabled: plugin.required,
         onCheckedChange: handleToggle
       })),
-      footer: /* @__PURE__ */ React2.createElement("div", {
+      footer: /* @__PURE__ */ React.createElement("div", {
         className: "void-card-author"
       }, plugin.authors?.join(", ") || " ")
     });
   }
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/tabs/PluginDialog.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5750,7 +5750,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/SettingField.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -5846,28 +5846,28 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return [value, update];
   }
   function SettingLabel({ id, setting }) {
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, humanizeKey(id)), setting.description && /* @__PURE__ */ React2.createElement(SettingsDescription, null, setting.description));
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, humanizeKey(id)), setting.description && /* @__PURE__ */ React.createElement(SettingsDescription, null, setting.description));
   }
   function LabeledField({ id, setting, children }) {
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React2.createElement(SettingLabel, {
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
       id,
       setting
     }), children);
   }
   var BooleanField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React2.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React2.createElement(Switch, {
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Switch, {
         checked: !!value,
         onCheckedChange: update
       })
-    }, /* @__PURE__ */ React2.createElement(SettingLabel, {
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
       id,
       setting
     }));
@@ -5876,15 +5876,15 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const [value, update] = usePluginSetting(pluginName, id, setting);
     const { options } = setting;
     const valueMap = useMemo(() => new Map(options.map((o) => [String(o.value), o.value])), [options]);
-    return /* @__PURE__ */ React2.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React2.createElement(Select, {
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Select, {
         value: String(value ?? ""),
         onValueChange: (v) => update(valueMap.get(v) ?? v)
-      }, /* @__PURE__ */ React2.createElement(SelectTrigger, null, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React2.createElement(SelectItem, {
+      }, /* @__PURE__ */ React.createElement(SelectTrigger, null, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
         key: String(o.value),
         value: String(o.value)
       }, o.label))))
-    }, /* @__PURE__ */ React2.createElement(SettingLabel, {
+    }, /* @__PURE__ */ React.createElement(SettingLabel, {
       id,
       setting
     }));
@@ -5894,24 +5894,24 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const { min, max } = setting;
     const n = typeof value === "number" ? value : min;
     const pct = max === min ? 100 : (n - min) / (max - min) * 100;
-    return /* @__PURE__ */ React2.createElement(LabeledField, {
+    return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       gap: "0.75rem",
       className: cl9("slider-row")
-    }, /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement("div", {
       className: cl9("slider-wrap")
-    }, /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement("div", {
       className: cl9("slider-rail"),
       "aria-hidden": "true"
-    }, /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement("div", {
       className: cl9("slider-fill"),
       style: { width: `${pct}%` }
-    }), /* @__PURE__ */ React2.createElement("div", {
+    }), /* @__PURE__ */ React.createElement("div", {
       className: cl9("slider-thumb"),
       style: { left: `${pct}%` }
-    })), /* @__PURE__ */ React2.createElement("input", {
+    })), /* @__PURE__ */ React.createElement("input", {
       type: "range",
       min,
       max,
@@ -5926,7 +5926,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       "aria-valuemin": min,
       "aria-valuemax": max,
       "aria-valuenow": n
-    })), /* @__PURE__ */ React2.createElement(Text2, {
+    })), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       color: "secondary",
       className: cl9("slider-value")
@@ -5935,17 +5935,17 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var ComponentField = ({ setting, pluginName }) => {
     const [, update] = usePluginSetting(pluginName, "component", setting);
     const Comp = setting.component;
-    return /* @__PURE__ */ React2.createElement(Comp, {
+    return /* @__PURE__ */ React.createElement(Comp, {
       setValue: update,
       option: setting
     });
   };
   var NumberField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React2.createElement(LabeledField, {
+    return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
-    }, /* @__PURE__ */ React2.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "number",
       value: String(value ?? ""),
       onChange: (e) => {
@@ -5958,10 +5958,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   };
   var BigIntField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React2.createElement(LabeledField, {
+    return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
-    }, /* @__PURE__ */ React2.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       inputMode: "numeric",
       value: String(value ?? ""),
@@ -5978,10 +5978,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   };
   var StringField = ({ id, setting, pluginName }) => {
     const [value, update] = usePluginSetting(pluginName, id, setting);
-    return /* @__PURE__ */ React2.createElement(LabeledField, {
+    return /* @__PURE__ */ React.createElement(LabeledField, {
       id,
       setting
-    }, /* @__PURE__ */ React2.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       value: String(value ?? ""),
       onChange: (e) => update(e.target.value),
@@ -6003,7 +6003,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const Field = FIELD_MAP[setting.type];
     if (!Field)
       return null;
-    return /* @__PURE__ */ React2.createElement(Field, {
+    return /* @__PURE__ */ React.createElement(Field, {
       id,
       setting,
       pluginName
@@ -6012,46 +6012,46 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/components/settings/tabs/VoidPPDialogShell.tsx
   function VoidPPDialogShell({ title, subtitle, onClose, children, size = "md", nested }) {
-    return /* @__PURE__ */ React2.createElement(Dialog, {
+    return /* @__PURE__ */ React.createElement(Dialog, {
       open: true,
       onOpenChange: (v) => {
         if (!v)
           onClose();
       }
-    }, /* @__PURE__ */ React2.createElement(DialogContent, {
+    }, /* @__PURE__ */ React.createElement(DialogContent, {
       className: classes("void-dialog-content", `void-dialog-content-${size}`),
       overlayClassname: nested ? "void-dialog-overlay-nested" : undefined,
       ...subtitle ? {} : { "aria-describedby": undefined }
-    }, /* @__PURE__ */ React2.createElement(DialogClose, {
+    }, /* @__PURE__ */ React.createElement(DialogClose, {
       asChild: true
-    }, /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "square",
       "aria-label": "Close",
       className: "void-dialog-close"
-    }, /* @__PURE__ */ React2.createElement(Cross2Icon, null))), /* @__PURE__ */ React2.createElement(DialogHeader, {
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, null))), /* @__PURE__ */ React.createElement(DialogHeader, {
       className: "void-dialog-header"
-    }, /* @__PURE__ */ React2.createElement(DialogTitle, null, title), subtitle && /* @__PURE__ */ React2.createElement(DialogDescription, null, subtitle)), children));
+    }, /* @__PURE__ */ React.createElement(DialogTitle, null, title), subtitle && /* @__PURE__ */ React.createElement(DialogDescription, null, subtitle)), children));
   }
   function DialogField({ label, className, children }) {
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.25rem",
       className
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
     }, label), children);
   }
   function DialogActions({ className, onCancel, confirmLabel, onConfirm, confirmDisabled }) {
-    return /* @__PURE__ */ React2.createElement(DialogFooter, {
+    return /* @__PURE__ */ React.createElement(DialogFooter, {
       className: classes("void-dialog-footer", className)
-    }, /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       onClick: onCancel
-    }, "Cancel"), /* @__PURE__ */ React2.createElement(Button, {
+    }, "Cancel"), /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
       onClick: onConfirm,
@@ -6071,32 +6071,32 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       const entryKeys = new Set(entries.map(([key]) => key));
       Settings.plugins[plugin.name] = Object.fromEntries(Object.entries(current).filter(([k]) => !entryKeys.has(k)));
     }, [plugin.name, entries]);
-    return /* @__PURE__ */ React2.createElement(VoidPPDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: plugin.name,
       subtitle: plugin.description,
       onClose,
       nested: true
-    }, /* @__PURE__ */ React2.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React2.createElement(DialogField, {
+    }, /* @__PURE__ */ React.createElement(Separator, null), !!plugin.authors?.length && /* @__PURE__ */ React.createElement(DialogField, {
       label: "Authors"
-    }, /* @__PURE__ */ React2.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React2.createElement(DialogField, {
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, plugin.authors.join(", "))), /* @__PURE__ */ React.createElement(DialogField, {
       label: "Settings",
       className: cl10("settings")
-    }, entries.length ? /* @__PURE__ */ React2.createElement(Flex, {
+    }, entries.length ? /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
       className: cl10("settings-list")
-    }, entries.map(([key, setting]) => /* @__PURE__ */ React2.createElement(SettingField, {
+    }, entries.map(([key, setting]) => /* @__PURE__ */ React.createElement(SettingField, {
       key,
       id: key,
       setting,
       pluginName: plugin.name
-    }))) : /* @__PURE__ */ React2.createElement(Paragraph, null, "No configurable settings.")), !!entries.length && /* @__PURE__ */ React2.createElement(DialogFooter, {
+    }))) : /* @__PURE__ */ React.createElement(Paragraph, null, "No configurable settings.")), !!entries.length && /* @__PURE__ */ React.createElement(DialogFooter, {
       className: cl10("footer")
-    }, /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       onClick: () => setResetOpen(true)
-    }, "Reset")), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+    }, "Reset")), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: resetOpen,
       onOpenChange: setResetOpen,
       title: "Reset settings",
@@ -6109,21 +6109,21 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/components/settings/tabs/SearchFilterBar.tsx
   function SearchFilterBar({ placeholder, search, onSearchChange, filter, onFilterChange, options }) {
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React2.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder,
       value: search,
       onChange: (e) => onSearchChange(e.target.value),
       className: "void-search-bar-input"
-    }), /* @__PURE__ */ React2.createElement(Select, {
+    }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => onFilterChange(v)
-    }, /* @__PURE__ */ React2.createElement(SelectTrigger, {
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
       className: "void-search-bar-select"
-    }, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, options.map((o) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: o.value,
       value: o.value
     }, o.label)))));
@@ -6278,65 +6278,67 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       dismissedRef.current = true;
       setShowReload(false);
     }, []);
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
       className: "void-tab-root"
-    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Plugins",
       description: "Turn Void++ features on or off. Some require a reload to apply. Click the sliders icon to configure a plugin."
-    }), needsReload && !showReload && /* @__PURE__ */ React2.createElement(Flex, {
+    }), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       className: cl11("reload-banner")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       className: cl11("reload-text")
-    }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React2.createElement(Button, {
+    }, "Reload the page to apply plugin changes."), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       onClick: () => location.reload()
-    }, "Reload")), /* @__PURE__ */ React2.createElement(Flex, {
+    }, "Reload")), /* @__PURE__ */ React.createElement(Flex, {
       className: cl11("tabs"),
       gap: "0.125rem",
       flexWrap: "wrap"
-    }, visibleTabs.map((t) => /* @__PURE__ */ React2.createElement(Button, {
+    }, visibleTabs.map((t) => /* @__PURE__ */ React.createElement(Button, {
       key: t.id,
       variant: "tertiary",
       size: "sm",
       className: classes(cl11("tab"), category === t.id && cl11("tab-active")),
       onClick: () => setCategory(t.id)
-    }, t.label))), /* @__PURE__ */ React2.createElement(SearchFilterBar, {
+    }, t.label))), /* @__PURE__ */ React.createElement(SearchFilterBar, {
       placeholder: `Search ${tabUser.length + tabRequired.length} plugins...`,
       search,
       onSearchChange: setSearch,
       filter,
       onFilterChange: setFilter,
       options: FILTER_OPTIONS
-    }), filteredUser.length > 0 && /* @__PURE__ */ React2.createElement(Grid, {
+    }), filteredUser.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)"
-    }, filteredUser.map((n) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
+    }, filteredUser.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: n,
       fallback: null
-    }, /* @__PURE__ */ React2.createElement(PluginCard, {
+    }, /* @__PURE__ */ React.createElement(PluginCard, {
       name: n,
       onSettings: setDialogName,
       onReload
-    })))), filteredRequired.length > 0 && /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(Separator, null), /* @__PURE__ */ React2.createElement(Grid, {
+    })))), filteredRequired.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Separator, null), /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)"
-    }, filteredRequired.map((n) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
+    }, filteredRequired.map((n) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: n,
       fallback: null
-    }, /* @__PURE__ */ React2.createElement(PluginCard, {
+    }, /* @__PURE__ */ React.createElement(PluginCard, {
       name: n,
       onSettings: setDialogName,
       onReload
-    }))))), !hasResults && /* @__PURE__ */ React2.createElement(Paragraph, {
+    }))))), !hasResults && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
       className: "void-tab-empty"
-    }, emptyHint(search, category)), dialogPlugin && /* @__PURE__ */ React2.createElement(PluginDialog, {
+    }, emptyHint(search, category)), dialogPlugin && /* @__PURE__ */ React.createElement(ErrorBoundary, {
+      fallback: null
+    }, /* @__PURE__ */ React.createElement(PluginDialog, {
       plugin: dialogPlugin,
       onClose: () => setDialogName(null)
-    }), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+    })), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: showReload,
       onOpenChange: (v) => {
         if (!v)
@@ -6350,7 +6352,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }));
   }
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/tabs/ThemesTab.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6373,7 +6375,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `);
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/components/settings/ThemeCard.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6398,35 +6400,35 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       onToggle();
     };
     const SourceIcon = theme.local ? FolderIcon : GlobeIcon;
-    return /* @__PURE__ */ React2.createElement(BaseCard, {
+    return /* @__PURE__ */ React.createElement(BaseCard, {
       name: theme.name ?? theme.url,
       nameClassName: cl12("name"),
-      icon: /* @__PURE__ */ React2.createElement(PaletteIcon, {
+      icon: /* @__PURE__ */ React.createElement(PaletteIcon, {
         size: 14
       }),
       description: theme.description,
-      controls: /* @__PURE__ */ React2.createElement(React2.Fragment, null, theme.local ? /* @__PURE__ */ React2.createElement(IconButton, {
+      controls: /* @__PURE__ */ React.createElement(React.Fragment, null, theme.local ? /* @__PURE__ */ React.createElement(IconButton, {
         icon: PencilIcon,
         label: "Edit",
         onClick: onEdit
-      }) : /* @__PURE__ */ React2.createElement(IconButton, {
+      }) : /* @__PURE__ */ React.createElement(IconButton, {
         icon: CopyIcon,
         label: "Copy URL",
         onClick: () => {
           copyToClipboard(theme.url).catch((e) => logger13.error("Failed to copy URL:", e));
         }
-      }), /* @__PURE__ */ React2.createElement(IconButton, {
+      }), /* @__PURE__ */ React.createElement(IconButton, {
         icon: Trash2Icon,
         label: "Remove",
         onClick: () => onRemove(theme.url)
-      }), /* @__PURE__ */ React2.createElement(Switch, {
+      }), /* @__PURE__ */ React.createElement(Switch, {
         checked: theme.enabled,
         onCheckedChange: handleToggle
       })),
-      footer: /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(SourceIcon, {
+      footer: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SourceIcon, {
         size: 12,
         className: cl12("footer-icon")
-      }), /* @__PURE__ */ React2.createElement("div", {
+      }), /* @__PURE__ */ React.createElement("div", {
         className: "void-card-author"
       }, theme.author ?? " "))
     });
@@ -6462,14 +6464,14 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         setLoading(false);
       }
     };
-    return /* @__PURE__ */ React2.createElement(VoidPPDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: "Add Online Theme",
       onClose,
       size: "sm",
       nested: true
-    }, /* @__PURE__ */ React2.createElement(DialogField, {
+    }, /* @__PURE__ */ React.createElement(DialogField, {
       label: "URL"
-    }, /* @__PURE__ */ React2.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "https://raw.githubusercontent.com/...",
       value: url,
@@ -6481,10 +6483,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         if (e.key === "Enter")
           handleImport();
       }
-    })), error && /* @__PURE__ */ React2.createElement(Text2, {
+    })), error && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       className: cl13("add-error")
-    }, error), /* @__PURE__ */ React2.createElement(DialogActions, {
+    }, error), /* @__PURE__ */ React.createElement(DialogActions, {
       className: cl13("local-footer"),
       onCancel: onClose,
       confirmLabel: loading ? "Importing..." : "Import",
@@ -6510,30 +6512,30 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         setError(errorMessage(e));
       }
     };
-    return /* @__PURE__ */ React2.createElement(VoidPPDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: theme ? "Edit Local Theme" : "New Local Theme",
       onClose,
       size: "lg",
       nested: true
-    }, /* @__PURE__ */ React2.createElement(DialogField, {
+    }, /* @__PURE__ */ React.createElement(DialogField, {
       label: "Name"
-    }, /* @__PURE__ */ React2.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "My Theme",
       value: name,
       onChange: (e) => setName(e.target.value)
-    })), /* @__PURE__ */ React2.createElement(DialogField, {
+    })), /* @__PURE__ */ React.createElement(DialogField, {
       label: "CSS",
       className: cl13("local-css-field")
-    }, /* @__PURE__ */ React2.createElement(CssEditor, {
+    }, /* @__PURE__ */ React.createElement(CssEditor, {
       className: cl13("local-editor"),
       value: css,
       onChange: setCss,
       placeholder: "Paste your CSS here..."
-    })), error && /* @__PURE__ */ React2.createElement(Text2, {
+    })), error && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       className: cl13("add-error")
-    }, error), /* @__PURE__ */ React2.createElement(DialogActions, {
+    }, error), /* @__PURE__ */ React.createElement(DialogActions, {
       className: cl13("local-footer"),
       onCancel: onClose,
       confirmLabel: theme ? "Save" : "Create",
@@ -6573,48 +6575,48 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       setRemoveUrl(null);
       refreshThemes();
     };
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
       className: "void-tab-root"
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Online Themes",
       description: "Load themes from a URL. Re-fetched on every page load so updates apply automatically."
-    }), /* @__PURE__ */ React2.createElement(Button, {
+    }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "md",
       onClick: () => setOnlineDialogOpen(true)
-    }, "Manage")), /* @__PURE__ */ React2.createElement(Flex, {
+    }, "Manage")), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Local Themes",
       description: "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly."
-    }), /* @__PURE__ */ React2.createElement(Button, {
+    }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "md",
       onClick: () => {
         setEditingTheme(undefined);
         setLocalDialogOpen(true);
       }
-    }, "Manage")), /* @__PURE__ */ React2.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React2.createElement(SearchFilterBar, {
+    }, "Manage")), /* @__PURE__ */ React.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React.createElement(SearchFilterBar, {
       placeholder: `Search ${themes.length} themes...`,
       search,
       onSearchChange: setSearch,
       filter,
       onFilterChange: setFilter,
       options: FILTER_OPTIONS2
-    }), filtered.length > 0 && /* @__PURE__ */ React2.createElement(Grid, {
+    }), filtered.length > 0 && /* @__PURE__ */ React.createElement(Grid, {
       columns: "repeat(2, 1fr)"
-    }, filtered.map((t) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
+    }, filtered.map((t) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key: t.url,
       fallback: null
-    }, /* @__PURE__ */ React2.createElement(ThemeCard, {
+    }, /* @__PURE__ */ React.createElement(ThemeCard, {
       theme: t,
       onRemove: setRemoveUrl,
       onToggle: refreshThemes,
@@ -6622,10 +6624,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         setEditingTheme(t);
         setLocalDialogOpen(true);
       } : undefined
-    })))), themes.length > 0 && !filtered.length && /* @__PURE__ */ React2.createElement(Paragraph, {
+    })))), themes.length > 0 && !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
       className: "void-tab-empty"
-    }, "No themes match your search."), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+    }, "No themes match your search."), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: removeUrl != null,
       onOpenChange: (v) => {
         if (!v)
@@ -6637,10 +6639,10 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       cancelText: "Cancel",
       danger: true,
       onConfirm: handleRemove
-    }), onlineDialogOpen && /* @__PURE__ */ React2.createElement(OnlineThemeDialog, {
+    }), onlineDialogOpen && /* @__PURE__ */ React.createElement(OnlineThemeDialog, {
       onClose: () => setOnlineDialogOpen(false),
       onSave: refreshThemes
-    }), localDialogOpen && /* @__PURE__ */ React2.createElement(LocalThemeDialog, {
+    }), localDialogOpen && /* @__PURE__ */ React.createElement(LocalThemeDialog, {
       onClose: () => setLocalDialogOpen(false),
       theme: editingTheme,
       onSave: refreshThemes
@@ -6651,7 +6653,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/experiments/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -6859,21 +6861,21 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       else
         setOverride(flagKey, value);
     }, [flagKey]);
-    return /* @__PURE__ */ React2.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React2.createElement(Switch, {
+    return /* @__PURE__ */ React.createElement(SettingsRow, {
+      action: /* @__PURE__ */ React.createElement(Switch, {
         checked,
         onCheckedChange: handleToggle
       })
-    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React2.createElement(Badge, {
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, prettifyKey(flagKey), isNew && /* @__PURE__ */ React.createElement(Badge, {
       variant: "accent",
       className: cl14("badge")
-    }, "New"), decodedKey && /* @__PURE__ */ React2.createElement(Badge, {
+    }, "New"), decodedKey && /* @__PURE__ */ React.createElement(Badge, {
       className: cl14("badge")
-    }, "Encrypted"), isOverridden && /* @__PURE__ */ React2.createElement(Text2, {
+    }, "Encrypted"), isOverridden && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       as: "span",
       className: cl14("modified")
-    }, "(modified)")), /* @__PURE__ */ React2.createElement(SettingsDescription, null, decodedKey ?? flagKey));
+    }, "(modified)")), /* @__PURE__ */ React.createElement(SettingsDescription, null, decodedKey ?? flagKey));
   }
   function ExperimentsTab() {
     const [search, setSearch] = useState("");
@@ -6903,61 +6905,61 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const prefiltered = useMemo(() => booleanKeys.filter(filterFn), [booleanKeys, filterFn]);
     const filtered = useFiltered(prefiltered, search, getFlagSearchText);
     const overrideCount = Object.keys(overrides).length;
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem"
-    }, /* @__PURE__ */ React2.createElement(SectionHeader, {
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Experiments",
       description: "Toggle unreleased Grok features. These are experimental and may break. New flags are marked when they appear.",
       className: cl14("section")
-    }), /* @__PURE__ */ React2.createElement(Card, {
+    }), /* @__PURE__ */ React.createElement(Card, {
       variant: "ghost",
       className: cl14("warning")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       className: cl14("warning-text")
-    }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React2.createElement(Button, {
+    }, "Only enable flags you understand. Changing the wrong setting can break Grok or cause unexpected behavior."), overrideCount > 0 && /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       className: cl14("clear-btn"),
       onClick: () => FeatureStore.useFeatureStore.getState().clearAllOverrides()
-    }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React2.createElement(Flex, {
+    }, "Clear ", pluralize(overrideCount, "override")))), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem",
       className: cl14("section")
-    }, /* @__PURE__ */ React2.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       placeholder: `Search ${prefiltered.length} flags...`,
       value: search,
       onChange: (e) => setSearch(e.target.value),
       className: cl14("search-input")
-    }), /* @__PURE__ */ React2.createElement(Select, {
+    }), /* @__PURE__ */ React.createElement(Select, {
       value: filter,
       onValueChange: (v) => setFilter(v)
-    }, /* @__PURE__ */ React2.createElement(SelectTrigger, {
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
       className: cl14("filter-select")
-    }, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, /* @__PURE__ */ React.createElement(SelectItem, {
       value: "all"
-    }, "All"), /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, "All"), /* @__PURE__ */ React.createElement(SelectItem, {
       value: "enabled"
-    }, "Enabled"), /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, "Enabled"), /* @__PURE__ */ React.createElement(SelectItem, {
       value: "disabled"
-    }, "Disabled"), /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, "Disabled"), /* @__PURE__ */ React.createElement(SelectItem, {
       value: "new"
-    }, "New"), /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, "New"), /* @__PURE__ */ React.createElement(SelectItem, {
       value: "modified"
-    }, "Modified"), /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, "Modified"), /* @__PURE__ */ React.createElement(SelectItem, {
       value: "encrypted"
-    }, "Encrypted")))), filtered.map((key) => /* @__PURE__ */ React2.createElement(ErrorBoundary, {
+    }, "Encrypted")))), filtered.map((key) => /* @__PURE__ */ React.createElement(ErrorBoundary, {
       key,
       fallback: null
-    }, /* @__PURE__ */ React2.createElement(ExperimentRow, {
+    }, /* @__PURE__ */ React.createElement(ExperimentRow, {
       flagKey: key,
       isNew: isNewFlag(key)
-    }))), !filtered.length && /* @__PURE__ */ React2.createElement(Paragraph, {
+    }))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "muted",
       className: cl14("empty")
     }, search ? `No flags matching "${search}"` : `No ${filter} flags`));
@@ -7029,7 +7031,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/pluginsFlyout/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -7088,29 +7090,29 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function MenuPluginsEditor() {
     settings3.use(["menuPlugins"]);
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
       className: cl15("root")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React2.createElement(SettingsDescription, null, "Choose which plugins appear under Void++ → Plugins.")), /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Plugin menu"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Choose which plugins appear under Void++ → Plugins.")), /* @__PURE__ */ React.createElement("div", {
       className: cl15("list")
     }, listedPlugins().map((name) => {
       const Icon = plugins[name].icon ?? UnplugIcon;
-      return /* @__PURE__ */ React2.createElement(SettingsRow, {
+      return /* @__PURE__ */ React.createElement(SettingsRow, {
         key: name,
-        action: /* @__PURE__ */ React2.createElement(Switch, {
+        action: /* @__PURE__ */ React.createElement(Switch, {
           checked: isShownInPluginMenu(name),
           onCheckedChange: (v) => setShownInPluginMenu(name, v)
         })
-      }, /* @__PURE__ */ React2.createElement(Flex, {
+      }, /* @__PURE__ */ React.createElement(Flex, {
         alignItems: "center",
         gap: "0.5rem"
-      }, /* @__PURE__ */ React2.createElement(Icon, {
+      }, /* @__PURE__ */ React.createElement(Icon, {
         className: cl15("icon")
-      }), /* @__PURE__ */ React2.createElement(SettingsTitle, null, name)));
+      }), /* @__PURE__ */ React.createElement(SettingsTitle, null, name)));
     })));
   }
   var pluginsFlyout_default = definePlugin({
@@ -7143,43 +7145,43 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function getVisibleTabs() {
     return allTabs.filter((t) => !t.plugin || isPluginEnabled(t.plugin));
   }
-  var Dot = () => /* @__PURE__ */ React2.createElement(Text2, {
+  var Dot = () => /* @__PURE__ */ React.createElement(Text2, {
     as: "span",
     color: "secondary"
   }, "•");
   function VersionLink({ href, children }) {
-    return /* @__PURE__ */ React2.createElement("a", {
+    return /* @__PURE__ */ React.createElement("a", {
       href,
       target: "_blank",
       rel: "noreferrer",
       className: cl16("version-link")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
     }, children));
   }
   function VersionInfo() {
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
       className: cl16("version")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
-    }, /* @__PURE__ */ React2.createElement(VersionLink, {
+    }, /* @__PURE__ */ React.createElement(VersionLink, {
       href: "https://github.com/0-V-linuxdo/VoidPP"
-    }, "Void++"), /* @__PURE__ */ React2.createElement(Dot, null), /* @__PURE__ */ React2.createElement(Text2, {
+    }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.16] v1.0.0"), /* @__PURE__ */ React2.createElement(Dot, null), /* @__PURE__ */ React2.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"20ae29b"}`
-    }, `(${"20ae29b"})`)), /* @__PURE__ */ React2.createElement(Flex, {
+    }, "[20260912.17] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"4cca5c3"}`
+    }, `(${"4cca5c3"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "Production"), /* @__PURE__ */ React2.createElement(Dot, null), /* @__PURE__ */ React2.createElement(Text2, {
+    }, "Production"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
     }, "Userscript")));
@@ -7200,26 +7202,26 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const menuPlugins = usePluginMenu();
     if (!showVoidPPMenu)
       return null;
-    return /* @__PURE__ */ React2.createElement(DropdownMenuSub, null, /* @__PURE__ */ React2.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React2.createElement(VoidPPIcon, {
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(VoidPPIcon, {
       className: cl16("menu-icon")
-    }), "Void++"), /* @__PURE__ */ React2.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React2.createElement(DropdownMenuSub, null, /* @__PURE__ */ React2.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React2.createElement(UnplugIcon, {
+    }), "Void++"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, null, menuPlugins.length > 0 && /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(UnplugIcon, {
       className: cl16("menu-icon")
-    }), "Plugins"), /* @__PURE__ */ React2.createElement(DropdownMenuSubContent, {
+    }), "Plugins"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
       className: cl16("plugin-menu")
     }, menuPlugins.map((name) => {
       const Icon = plugins[name].icon ?? UnplugIcon;
-      return /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: name,
         onSelect: () => openPluginSettings(name)
-      }, /* @__PURE__ */ React2.createElement(Icon, {
+      }, /* @__PURE__ */ React.createElement(Icon, {
         className: cl16("menu-icon")
       }), name);
     }))), getVisibleTabs().filter((t) => t.id !== PLUGINS_TAB_ID).map((t) => {
       const Icon = t.icon;
-      return /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
         onSelect: () => openSettingsTab(t.id)
-      }, /* @__PURE__ */ React2.createElement(Icon, {
+      }, /* @__PURE__ */ React.createElement(Icon, {
         className: cl16("menu-icon")
       }), t.name);
     })));
@@ -7252,7 +7254,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return tab.defaultLabel || tab.i18nKey || tab.id;
     },
     _renderVersion() {
-      return /* @__PURE__ */ React2.createElement(VersionInfo, {
+      return /* @__PURE__ */ React.createElement(VersionInfo, {
         key: "voidpp-version"
       });
     },
@@ -7356,7 +7358,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     useExternalStore(store);
     if (!modalStack.length)
       return null;
-    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, modalStack.map((entry) => /* @__PURE__ */ React2.createElement(ModalInstance, {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, modalStack.map((entry) => /* @__PURE__ */ React.createElement(ModalInstance, {
       key: entry.key,
       entry
     })));
@@ -7364,12 +7366,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 
   // src/plugins/_api/chatBarButtons/index.tsx
   function Buttons() {
-    return /* @__PURE__ */ React2.createElement(Fragment, null, /* @__PURE__ */ React2.createElement(VoidPPChatBarButtons, {
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(VoidPPChatBarButtons, {
       location: "chat"
-    }), /* @__PURE__ */ React2.createElement(ModalContainer, null));
+    }), /* @__PURE__ */ React.createElement(ModalContainer, null));
   }
   function ImagineButtons() {
-    return /* @__PURE__ */ React2.createElement(VoidPPChatBarButtons, {
+    return /* @__PURE__ */ React.createElement(VoidPPChatBarButtons, {
       location: "imagine"
     });
   }
@@ -7414,7 +7416,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     required: true,
     hidden: true,
     renderItems(location2, ctx, menu) {
-      return /* @__PURE__ */ React2.createElement(ErrorBoundary, null, /* @__PURE__ */ React2.createElement(VoidPPContextMenuItems, {
+      return /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VoidPPContextMenuItems, {
         location: location2,
         menu,
         ...ctx
@@ -7589,7 +7591,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/betterFiles/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -7626,7 +7628,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     if (!id || !item.asset)
       return null;
     assetsById.set(id, item.asset);
-    return /* @__PURE__ */ React2.createElement(SelectionCheckbox, {
+    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
       selection,
       id
     });
@@ -7677,7 +7679,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       assetsById.clear();
     },
     _renderFileCheckbox: ErrorBoundary.wrap(FileCheckbox, null),
-    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React2.createElement(SelectionActionBar, {
+    _renderFileActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
       selection,
       noun: "file",
       title: "Delete files",
@@ -7713,7 +7715,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/betterImagine/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -8123,23 +8125,23 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       lastSync.current = currentSearch;
       setSearchInput(currentSearch);
     }
-    return /* @__PURE__ */ React2.createElement(Fragment, null, /* @__PURE__ */ React2.createElement(Select, {
+    return /* @__PURE__ */ React.createElement(Fragment, null, /* @__PURE__ */ React.createElement(Select, {
       value: currentDate,
       onValueChange: (v) => setDate(v)
-    }, /* @__PURE__ */ React2.createElement(SelectTrigger, {
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
       className: cl17("date-select")
-    }, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, Object.keys(DATE_LABELS).map((d) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: d,
       value: d
-    }, DATE_LABELS[d])))), /* @__PURE__ */ React2.createElement(Select, {
+    }, DATE_LABELS[d])))), /* @__PURE__ */ React.createElement(Select, {
       value: currentSort,
       onValueChange: (v) => setSort(v)
-    }, /* @__PURE__ */ React2.createElement(SelectTrigger, {
+    }, /* @__PURE__ */ React.createElement(SelectTrigger, {
       className: sortActive ? cl17("sort-select", "sort-active") : cl17("sort-select")
-    }, /* @__PURE__ */ React2.createElement(SelectValue, null)), /* @__PURE__ */ React2.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React2.createElement(SelectItem, {
+    }, /* @__PURE__ */ React.createElement(SelectValue, null)), /* @__PURE__ */ React.createElement(SelectContent, null, SORT_KEYS.map((s) => /* @__PURE__ */ React.createElement(SelectItem, {
       key: s,
       value: s
-    }, SORT_LABELS[s])))), /* @__PURE__ */ React2.createElement(Input, {
+    }, SORT_LABELS[s])))), /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "Search...",
       value: searchInput,
@@ -8148,14 +8150,14 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         setSearch(e.target.value);
       },
       className: cl17("search")
-    }), ["image", "video"].map((f) => /* @__PURE__ */ React2.createElement(Button, {
+    }), ["image", "video"].map((f) => /* @__PURE__ */ React.createElement(Button, {
       key: f,
       variant: currentFilter === f ? "primary" : "tertiary",
       size: "sm",
       shape: "pill",
       className: currentFilter !== f ? cl17("chip") : undefined,
       onClick: () => setFilter(currentFilter === f ? "all" : f)
-    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React2.createElement(Button, {
+    }, f === "image" ? "Images" : "Videos")), showClear && /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "pill",
@@ -8165,11 +8167,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function UpscaleItem() {
     const [open, setOpen] = useState(false);
-    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: () => setOpen(true)
-    }, /* @__PURE__ */ React2.createElement(ScalingIcon, {
+    }, /* @__PURE__ */ React.createElement(ScalingIcon, {
       className: "size-4 me-2"
-    }), "Upscale videos"), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+    }), "Upscale videos"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open,
       onOpenChange: setOpen,
       title: "Upscale selected videos",
@@ -8179,13 +8181,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }));
   }
   function CopyActions() {
-    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: copySelectedPrompts
-    }, /* @__PURE__ */ React2.createElement(CopyIcon, {
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
       className: "size-4 me-2"
-    }), "Copy prompts"), /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+    }), "Copy prompts"), /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: copySelectedUrls
-    }, /* @__PURE__ */ React2.createElement(CopyIcon, {
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
       className: "size-4 me-2"
     }), "Copy URLs"));
   }
@@ -8379,7 +8381,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function ColorRow({ settingKey, title, description, fallback }) {
     settings7.use([settingKey]);
-    return /* @__PURE__ */ React2.createElement(ColorSettingRow, {
+    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
         settings7.store[settingKey] = v;
@@ -8403,7 +8405,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     },
     linkColor: {
       type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React2.createElement(ColorRow, {
+      component: () => /* @__PURE__ */ React.createElement(ColorRow, {
         settingKey: "linkColor",
         title: "Link color",
         description: "Colorize links in messages.",
@@ -8412,7 +8414,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     },
     visitedColor: {
       type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React2.createElement(ColorRow, {
+      component: () => /* @__PURE__ */ React.createElement(ColorRow, {
         settingKey: "visitedColor",
         title: "Visited color",
         description: "Colorize links you already visited.",
@@ -8499,7 +8501,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/betterSidebar/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -8599,28 +8601,28 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const bestSubscription = SubscriptionsStore.useSubscriptionsStore((s) => s.bestSubscription);
     const cardRef = useRef(null);
     if (!open || !user)
-      return /* @__PURE__ */ React2.createElement(AvatarMenu, null);
+      return /* @__PURE__ */ React.createElement(AvatarMenu, null);
     const forward = (e, type) => {
       if (!e.isTrusted)
         return;
       cardRef.current?.querySelector("button[data-state]")?.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, pointerType: "mouse" }));
     };
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       ref: cardRef,
       className: cl18("card"),
       onPointerDown: (e) => forward(e, "pointerdown"),
       onPointerUp: (e) => forward(e, "pointerup")
-    }, /* @__PURE__ */ React2.createElement(AvatarMenu, null), /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(AvatarMenu, null), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       justifyContent: "center",
       gap: "0",
       className: cl18("info")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       size: "sm",
       weight: "medium",
       className: cl18("name")
-    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React2.createElement(Text2, {
+    }, user.givenName ?? user.email?.split("@")[0] ?? "User"), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       size: "xs",
       color: "secondary",
@@ -8642,7 +8644,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const enabled = settings8.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
-    return /* @__PURE__ */ React2.createElement(SelectionCheckbox, {
+    return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
       selection: selection2,
       id
     });
@@ -8657,7 +8659,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     settings: settings8,
     managedStyle: "betterSidebar",
     _UserCard: ErrorBoundary.wrap(UserCard),
-    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React2.createElement(SelectionActionBar, {
+    _renderActionBar: ErrorBoundary.wrap(() => /* @__PURE__ */ React.createElement(SelectionActionBar, {
       selection: selection2,
       noun: "conversation",
       title: "Delete conversations",
@@ -8744,7 +8746,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/chatListStatus/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/chatListStatus/styles.css
   registerStyle("chatListStatus", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -10291,7 +10293,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/cloneChats/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -10320,10 +10322,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function CloneItem({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React2.createElement(MenuItem, {
+    return /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => cloneChat(conversationId).catch((e) => logger22.error("Failed to clone chat:", e)),
       disabled: streaming
-    }, /* @__PURE__ */ React2.createElement(CopyIcon, {
+    }, /* @__PURE__ */ React.createElement(CopyIcon, {
       size: 16,
       className: "void-clone-icon"
     }), "Clone");
@@ -10342,7 +10344,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/compactModeSelect/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/compactModeSelect/styles.css
   registerStyle("compactModeSelect", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -10639,7 +10641,7 @@ html.void-cms-picked .void-cms-ghost {
     return tipLock;
   }
   function useTipLock() {
-    return React2.useSyncExternalStore(subscribeTips, getTipLock, getTipLock);
+    return React.useSyncExternalStore(subscribeTips, getTipLock, getTipLock);
   }
   function setPicking(on) {
     picking = on;
@@ -10901,8 +10903,8 @@ html.void-cms-picked .void-cms-ghost {
     }
   }
   function useNativeGlyph(id) {
-    const [, bump] = React2.useState(0);
-    React2.useEffect(() => {
+    const [, bump] = React.useState(0);
+    React.useEffect(() => {
       const onHarvest = () => bump((n) => n + 1);
       harvestListeners.add(onHarvest);
       harvestIcons();
@@ -10914,15 +10916,15 @@ html.void-cms-picked .void-cms-ghost {
   }
   function PinGlyph({ id, Icon, label, showLabels }) {
     const html = useNativeGlyph(id);
-    const glyph = html ? /* @__PURE__ */ React2.createElement("span", {
+    const glyph = html ? /* @__PURE__ */ React.createElement("span", {
       className: cl19("glyph"),
       dangerouslySetInnerHTML: { __html: html }
-    }) : /* @__PURE__ */ React2.createElement(Icon, {
+    }) : /* @__PURE__ */ React.createElement(Icon, {
       size: 18
     });
     if (!showLabels)
       return glyph;
-    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, glyph, /* @__PURE__ */ React2.createElement("span", {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, glyph, /* @__PURE__ */ React.createElement("span", {
       className: cl19("label")
     }, label));
   }
@@ -10933,7 +10935,7 @@ html.void-cms-picked .void-cms-ghost {
   function PinOrderEditor() {
     const cfg = settings11.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
     const ids = parseOrder(cfg.pinOrder);
-    const [dragId, setDragId] = React2.useState(null);
+    const [dragId, setDragId] = React.useState(null);
     const onDragStart = (id) => (e) => {
       e.dataTransfer.setData("text/plain", id);
       e.dataTransfer.effectAllowed = "move";
@@ -10945,43 +10947,43 @@ html.void-cms-picked .void-cms-ghost {
       setOrder(reorder(ids, ids.indexOf(fromId), ids.indexOf(toId)));
       setDragId(null);
     };
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
       className: cl19("order")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React2.createElement(SettingsTitle, null, "Pinned modes"), /* @__PURE__ */ React2.createElement(SettingsDescription, null, "Toggle pins and drag to set chip order.")), /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Pinned modes"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Toggle pins and drag to set chip order.")), /* @__PURE__ */ React.createElement("div", {
       className: cl19("order-list"),
       role: "list"
     }, ids.map((id, i) => {
       const m = MODE_BY_ID[id];
-      return /* @__PURE__ */ React2.createElement("div", {
+      return /* @__PURE__ */ React.createElement("div", {
         key: m.id,
         role: "listitem",
         className: classes(cl19("order-row"), dragId === m.id && cl19("dragging")),
         onDragOver: preventDragOver,
         onDrop: onDrop(m.id)
-      }, /* @__PURE__ */ React2.createElement(Flex, {
+      }, /* @__PURE__ */ React.createElement(Flex, {
         alignItems: "center",
         gap: "0.5rem",
         className: cl19("order-main")
-      }, /* @__PURE__ */ React2.createElement("span", {
+      }, /* @__PURE__ */ React.createElement("span", {
         className: cl19("grip"),
         draggable: true,
         onDragStart: onDragStart(m.id),
         onDragEnd: () => setDragId(null),
         "aria-label": `Reorder ${m.label}`
-      }, /* @__PURE__ */ React2.createElement(GripVerticalIcon, {
+      }, /* @__PURE__ */ React.createElement(GripVerticalIcon, {
         size: 16
-      })), /* @__PURE__ */ React2.createElement(m.Icon, {
+      })), /* @__PURE__ */ React.createElement(m.Icon, {
         size: 16,
         className: cl19("order-icon")
-      }), /* @__PURE__ */ React2.createElement(SettingsTitle, null, m.label)), /* @__PURE__ */ React2.createElement(Flex, {
+      }), /* @__PURE__ */ React.createElement(SettingsTitle, null, m.label)), /* @__PURE__ */ React.createElement(Flex, {
         alignItems: "center",
         gap: "0.25rem"
-      }, /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
         size: "xs",
         shape: "square",
@@ -10989,9 +10991,9 @@ html.void-cms-picked .void-cms-ghost {
         "aria-label": `Move ${m.label} up`,
         disabled: i === 0,
         onClick: () => setOrder(reorder(ids, i, i - 1))
-      }, /* @__PURE__ */ React2.createElement(ChevronUpIcon, {
+      }, /* @__PURE__ */ React.createElement(ChevronUpIcon, {
         size: 14
-      })), /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
         size: "xs",
         shape: "square",
@@ -10999,9 +11001,9 @@ html.void-cms-picked .void-cms-ghost {
         "aria-label": `Move ${m.label} down`,
         disabled: i === ids.length - 1,
         onClick: () => setOrder(reorder(ids, i, i + 1))
-      }, /* @__PURE__ */ React2.createElement(ChevronDownIcon, {
+      }, /* @__PURE__ */ React.createElement(ChevronDownIcon, {
         size: 14
-      })), /* @__PURE__ */ React2.createElement(Switch, {
+      })), /* @__PURE__ */ React.createElement(Switch, {
         checked: !!cfg[m.pin],
         onCheckedChange: (on) => setPinned(m.pin, on)
       })));
@@ -11026,12 +11028,12 @@ html.void-cms-picked .void-cms-ghost {
       setTipLock(true);
       selectMode(id);
     };
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       className: classes(cl19("pins"), hideNative && cl19("hide-native"))
-    }, items.map((m) => /* @__PURE__ */ React2.createElement(ChatBarButton, {
+    }, items.map((m) => /* @__PURE__ */ React.createElement(ChatBarButton, {
       key: m.id,
       size: "sm",
-      icon: /* @__PURE__ */ React2.createElement(PinGlyph, {
+      icon: /* @__PURE__ */ React.createElement(PinGlyph, {
         id: m.id,
         Icon: m.Icon,
         label: m.label,
@@ -11144,7 +11146,7 @@ html.void-cms-picked .void-cms-ghost {
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/customInstructions/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -11311,7 +11313,7 @@ html.void-cms-picked .void-cms-ghost {
   var settings13 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
-      component: () => /* @__PURE__ */ React2.createElement(PresetsEditor, null)
+      component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
@@ -11324,23 +11326,23 @@ html.void-cms-picked .void-cms-ghost {
     return settings13.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       role: "button",
       className: cl20("card"),
       onClick: onEdit
-    }, /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement("div", {
       className: cl20("avatar")
-    }, /* @__PURE__ */ React2.createElement(PixelAvatarModule.PixelAvatar, {
+    }, /* @__PURE__ */ React.createElement(PixelAvatarModule.PixelAvatar, {
       seed: preset.id,
       size: 32
-    })), /* @__PURE__ */ React2.createElement("div", {
+    })), /* @__PURE__ */ React.createElement("div", {
       className: cl20("card-name")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
-    }, preset.name || "Untitled")), /* @__PURE__ */ React2.createElement("div", {
+    }, preset.name || "Untitled")), /* @__PURE__ */ React.createElement("div", {
       className: cl20("card-actions")
-    }, /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+    }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "tertiary",
       size: "xs",
       shape: "square",
@@ -11349,9 +11351,9 @@ html.void-cms-picked .void-cms-ghost {
         e.stopPropagation();
         onEdit();
       }
-    }, /* @__PURE__ */ React2.createElement(PenIcon, {
+    }, /* @__PURE__ */ React.createElement(PenIcon, {
       className: "size-3.5 text-secondary"
-    })), /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+    })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
       variant: "tertiary",
       size: "xs",
       shape: "square",
@@ -11360,43 +11362,43 @@ html.void-cms-picked .void-cms-ghost {
         e.stopPropagation();
         onDelete();
       }
-    }, /* @__PURE__ */ React2.createElement(TrashIcon, {
+    }, /* @__PURE__ */ React.createElement(TrashIcon, {
       className: "size-3.5 text-secondary"
     }))));
   }
   function PresetEditor({ preset, onUpdate, onClose }) {
     const overLimit = preset.prompt.length > MAX_LENGTH;
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       className: cl20("editor")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
       className: cl20("label")
-    }, "Name"), /* @__PURE__ */ React2.createElement(Input, {
+    }, "Name"), /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       className: cl20("input"),
       placeholder: "Preset name",
       value: preset.name,
       onChange: (e) => onUpdate({ ...preset, name: e.target.value }),
       autoComplete: "off"
-    }), /* @__PURE__ */ React2.createElement(Text2, {
+    }), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
       className: cl20("label")
-    }, "Instructions"), /* @__PURE__ */ React2.createElement("div", {
+    }, "Instructions"), /* @__PURE__ */ React.createElement("div", {
       className: cl20("textarea-wrap", { "textarea-wrap-error": overLimit })
-    }, /* @__PURE__ */ React2.createElement(Textarea, {
+    }, /* @__PURE__ */ React.createElement(Textarea, {
       className: cl20("textarea"),
       placeholder: "How should Grok behave?",
       value: preset.prompt,
       onChange: (e) => onUpdate({ ...preset, prompt: e.target.value })
-    })), /* @__PURE__ */ React2.createElement("div", {
+    })), /* @__PURE__ */ React.createElement("div", {
       className: cl20("editor-footer")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: overLimit ? undefined : "muted",
       className: overLimit ? cl20("error-text") : undefined
-    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React2.createElement(Button, {
+    }, preset.prompt.length, "/", MAX_LENGTH), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       shape: "rectangle",
@@ -11425,26 +11427,26 @@ html.void-cms-picked .void-cms-ghost {
       setEditingId(id);
     }, []);
     const editing = presets.find((p) => p.id === editingId);
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       className: cl20("root")
-    }, /* @__PURE__ */ React2.createElement("div", {
+    }, /* @__PURE__ */ React.createElement("div", {
       className: cl20("grid")
-    }, presets.map((p) => /* @__PURE__ */ React2.createElement(PresetCard, {
+    }, presets.map((p) => /* @__PURE__ */ React.createElement(PresetCard, {
       key: p.id,
       preset: p,
       onEdit: () => setEditingId(editingId === p.id ? null : p.id),
       onDelete: () => deletePreset(p.id)
-    })), /* @__PURE__ */ React2.createElement("div", {
+    })), /* @__PURE__ */ React.createElement("div", {
       role: "button",
       className: cl20("card", "card-add"),
       onClick: addPreset
-    }, /* @__PURE__ */ React2.createElement(PlusIcon, {
+    }, /* @__PURE__ */ React.createElement(PlusIcon, {
       className: "size-4 text-secondary"
-    }), /* @__PURE__ */ React2.createElement(Text2, {
+    }), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium",
       color: "muted"
-    }, "New"))), editing && /* @__PURE__ */ React2.createElement(PresetEditor, {
+    }, "New"))), editing && /* @__PURE__ */ React.createElement(PresetEditor, {
       preset: editing,
       onUpdate: updatePreset,
       onClose: () => setEditingId(null)
@@ -11464,24 +11466,24 @@ html.void-cms-picked .void-cms-ghost {
     }, [conversationId]);
     if (!presets.length)
       return null;
-    return /* @__PURE__ */ React2.createElement(MenuSub, null, /* @__PURE__ */ React2.createElement(MenuSubTrigger, {
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
       className: cl20("trigger")
-    }, /* @__PURE__ */ React2.createElement(BookIcon, {
+    }, /* @__PURE__ */ React.createElement(BookIcon, {
       size: 16
-    }), " Instructions"), /* @__PURE__ */ React2.createElement(MenuSubContent, null, /* @__PURE__ */ React2.createElement(MenuItem, {
+    }), " Instructions"), /* @__PURE__ */ React.createElement(MenuSubContent, null, /* @__PURE__ */ React.createElement(MenuItem, {
       onSelect: () => assign(),
       className: cl20("menu-item")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
-    }, "None"), !activePresetId && /* @__PURE__ */ React2.createElement(CheckIcon, {
+    }, "None"), !activePresetId && /* @__PURE__ */ React.createElement(CheckIcon, {
       className: "size-3.5 shrink-0"
-    })), presets.map((p) => /* @__PURE__ */ React2.createElement(MenuItem, {
+    })), presets.map((p) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: p.id,
       onSelect: () => assign(p.id),
       className: cl20("menu-item")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm"
-    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React2.createElement(CheckIcon, {
+    }, p.name || "Untitled"), activePresetId === p.id && /* @__PURE__ */ React.createElement(CheckIcon, {
       className: "size-3.5 shrink-0"
     })))));
   }
@@ -11520,7 +11522,7 @@ html.void-cms-picked .void-cms-ghost {
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/downloadTTS/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -11551,17 +11553,17 @@ html.void-cms-picked .void-cms-ghost {
         logger24.error("Failed to download TTS audio:", e);
       }
     });
-    return /* @__PURE__ */ React2.createElement(Button, {
+    return /* @__PURE__ */ React.createElement(Button, {
       "aria-label": "Download audio",
       onClick,
       disabled: loading,
       size: "md",
       shape: "square",
       variant: "tertiary"
-    }, loading ? /* @__PURE__ */ React2.createElement(Spinner, {
+    }, loading ? /* @__PURE__ */ React.createElement(Spinner, {
       size: "sm",
       className: cl21("spinner")
-    }) : /* @__PURE__ */ React2.createElement(DownloadIcon, {
+    }) : /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16
     }));
   }
@@ -11582,7 +11584,7 @@ html.void-cms-picked .void-cms-ghost {
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/exportChat/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -11757,12 +11759,12 @@ html.void-cms-picked .void-cms-ghost {
   }
   function ExportMenu({ conversationId }) {
     const streaming = useIsStreaming(conversationId);
-    return /* @__PURE__ */ React2.createElement(MenuSub, null, /* @__PURE__ */ React2.createElement(MenuSubTrigger, {
+    return /* @__PURE__ */ React.createElement(MenuSub, null, /* @__PURE__ */ React.createElement(MenuSubTrigger, {
       disabled: streaming
-    }, /* @__PURE__ */ React2.createElement(DownloadIcon, {
+    }, /* @__PURE__ */ React.createElement(DownloadIcon, {
       size: 16,
       className: "void-export-icon"
-    }), "Export"), /* @__PURE__ */ React2.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React2.createElement(MenuItem, {
+    }), "Export"), /* @__PURE__ */ React.createElement(MenuSubContent, null, FORMATS.map(({ fmt, label }) => /* @__PURE__ */ React.createElement(MenuItem, {
       key: fmt,
       onSelect: () => exportChat(conversationId, fmt).catch((e) => logger25.error("Failed to export chat", e))
     }, label))));
@@ -11806,7 +11808,7 @@ html.void-cms-picked .void-cms-ghost {
     }
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/inputHistory/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -12367,22 +12369,22 @@ html.void-cms-picked .void-cms-ghost {
     const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
     const current = Math.min(page, pageCount - 1);
     const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.65rem",
       className: cl22("panel")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       className: cl22("head"),
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem"
-    }, /* @__PURE__ */ React2.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       shape: "rectangle",
       disabled: !list.length,
       onClick: () => setConfirm(true)
-    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React2.createElement(Input, {
+    }, "Clear history")), list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "Search prompts",
       value: query,
@@ -12391,20 +12393,20 @@ html.void-cms-picked .void-cms-ghost {
         setPage(0);
       },
       className: cl22("search")
-    }), list.length === 0 && /* @__PURE__ */ React2.createElement(Paragraph, {
+    }), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
       className: cl22("empty")
-    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React2.createElement(Paragraph, {
+    }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
       className: cl22("empty")
-    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React2.createElement("div", {
+    }, "No matches."), slice.length > 0 && /* @__PURE__ */ React.createElement("div", {
       className: cl22("list")
     }, slice.map((row) => {
       const lines = row.text.split(`
 `).length;
       const expanded = openId === row.index;
-      return /* @__PURE__ */ React2.createElement("div", {
+      return /* @__PURE__ */ React.createElement("div", {
         key: row.index,
         className: cl22("item", expanded && "item-on")
-      }, /* @__PURE__ */ React2.createElement("div", {
+      }, /* @__PURE__ */ React.createElement("div", {
         className: cl22("main"),
         role: "button",
         tabIndex: 0,
@@ -12415,15 +12417,15 @@ html.void-cms-picked .void-cms-ghost {
           e.preventDefault();
           setOpenId(expanded ? null : row.index);
         }
-      }, /* @__PURE__ */ React2.createElement("span", {
+      }, /* @__PURE__ */ React.createElement("span", {
         className: cl22("body", !expanded && "clamp")
-      }, row.text)), /* @__PURE__ */ React2.createElement("div", {
+      }, row.text)), /* @__PURE__ */ React.createElement("div", {
         className: cl22("side")
-      }, lines > 1 && /* @__PURE__ */ React2.createElement("span", {
+      }, lines > 1 && /* @__PURE__ */ React.createElement("span", {
         className: cl22("lines")
-      }, lines), /* @__PURE__ */ React2.createElement("div", {
+      }, lines), /* @__PURE__ */ React.createElement("div", {
         className: cl22("actions")
-      }, /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+      }, /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
         size: "sm",
         shape: "square",
@@ -12432,9 +12434,9 @@ html.void-cms-picked .void-cms-ghost {
         onClick: () => {
           copyToClipboard(row.text).catch((err) => logger26.error("copy failed:", err));
         }
-      }, /* @__PURE__ */ React2.createElement(CopyIcon, {
+      }, /* @__PURE__ */ React.createElement(CopyIcon, {
         size: 18
-      })), /* @__PURE__ */ React2.createElement(ButtonWithTooltip, {
+      })), /* @__PURE__ */ React.createElement(ButtonWithTooltip, {
         variant: "tertiary",
         size: "sm",
         shape: "square",
@@ -12445,35 +12447,35 @@ html.void-cms-picked .void-cms-ghost {
             setOpenId(null);
           removeEntry(row.index);
         }
-      }, /* @__PURE__ */ React2.createElement(Trash2Icon, {
+      }, /* @__PURE__ */ React.createElement(Trash2Icon, {
         size: 18
       })))));
-    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React2.createElement(Flex, {
+    })), visible.length > PAGE_SIZE && /* @__PURE__ */ React.createElement(Flex, {
       className: cl22("pager"),
       alignItems: "center",
       justifyContent: "center",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "square",
       "aria-label": "Previous page",
       disabled: current <= 0,
       onClick: () => setPage(current - 1)
-    }, /* @__PURE__ */ React2.createElement(ChevronLeftIcon, {
+    }, /* @__PURE__ */ React.createElement(ChevronLeftIcon, {
       size: 18
-    })), /* @__PURE__ */ React2.createElement("span", {
+    })), /* @__PURE__ */ React.createElement("span", {
       className: cl22("page")
-    }, current + 1, " / ", pageCount), /* @__PURE__ */ React2.createElement(Button, {
+    }, current + 1, " / ", pageCount), /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "square",
       "aria-label": "Next page",
       disabled: current >= pageCount - 1,
       onClick: () => setPage(current + 1)
-    }, /* @__PURE__ */ React2.createElement(ChevronRightIcon, {
+    }, /* @__PURE__ */ React.createElement(ChevronRightIcon, {
       size: 18
-    }))), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+    }))), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: confirm,
       onOpenChange: setConfirm,
       title: "Clear input history",
@@ -12535,7 +12537,7 @@ html.void-cms-picked .void-cms-ghost {
     }
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/messageTimestamps/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -13319,7 +13321,7 @@ html.void-cms-picked .void-cms-ghost {
       const ms = resolveMs(response, isUser);
       if (ms == null)
         return null;
-      return /* @__PURE__ */ React2.createElement(Text2, {
+      return /* @__PURE__ */ React.createElement(Text2, {
         as: "span",
         size: "xs",
         color: "muted",
@@ -13563,7 +13565,7 @@ div:has(> #grok-bot-nav-button) {
   var PluginsDialogStore = findByPropsLazy("usePluginsDialogStore");
   function PluginsIcon(props = {}) {
     const Comp = findExportedComponent("ConnectorsIcon") ?? GrokConnectorsIcon;
-    return /* @__PURE__ */ React2.createElement(Comp, {
+    return /* @__PURE__ */ React.createElement(Comp, {
       ...props
     });
   }
@@ -13571,9 +13573,9 @@ div:has(> #grok-bot-nav-button) {
     PluginsDialogStore.usePluginsDialogStore.getState().setOpen(true);
   }
   function PluginsItem() {
-    return /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+    return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: openPlugins
-    }, /* @__PURE__ */ React2.createElement(PluginsIcon, {
+    }, /* @__PURE__ */ React.createElement(PluginsIcon, {
       className: "void-settings-menu-icon"
     }), "Plugins");
   }
@@ -13633,7 +13635,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/placeholder/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: content;
 }
@@ -13686,19 +13688,19 @@ div:has(> #grok-bot-nav-button) {
   }).withPrivateSettings();
   function PhrasesEditor() {
     const { phrases } = settings19.use(["phrases"]);
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
       className: cl23("root")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
-    }, "Phrases"), /* @__PURE__ */ React2.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React2.createElement("div", {
+    }, "Phrases"), /* @__PURE__ */ React.createElement(Paragraph, null, "One placeholder per line. Empty list uses Grok's defaults.")), /* @__PURE__ */ React.createElement("div", {
       className: cl23("textarea-wrap")
-    }, /* @__PURE__ */ React2.createElement(Textarea, {
+    }, /* @__PURE__ */ React.createElement(Textarea, {
       className: cl23("textarea"),
       value: phrases ?? DEFAULT_PHRASES,
       onChange: (e) => {
@@ -13742,7 +13744,7 @@ div:has(> #grok-bot-nav-button) {
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/recentTopics/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -15614,7 +15616,7 @@ html.void-rt-open [data-sidebar="gap"] {
         const text = human ? pickUserText(response.query || "", response.message || "") : plainText(response.message || "");
         if (!text)
           return null;
-        return React2.createElement("span", {
+        return React.createElement("span", {
           className: "void-rt-mark",
           "data-role": human ? "user" : "assistant",
           hidden: true
@@ -15718,13 +15720,23 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // src/plugins/responseNotification/index.tsx
+  // src/plugins/responseNotification/index.ts
   var logger29 = new Logger("ResponseNotification");
   var LIVE_STATES = new Set(["streaming", "optimistic", "reconnecting"]);
   var RETRY_MS = 80;
   var CHIME_LOW = 523.25;
   var CHIME_HIGH = 659.25;
   var CHIME_GAIN = 0.18;
+  function PreviewSound() {
+    return createElement(Flex, { flexDirection: "column", gap: "0.5rem" }, createElement(Paragraph, null, "Preview the default Cursor-style chime."), createElement(Button, {
+      size: "sm",
+      variant: "secondary",
+      onClick() {
+        markGestured();
+        playChime();
+      }
+    }, "Play preview"));
+  }
   var settings21 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
@@ -15739,6 +15751,7 @@ html.void-rt-open [data-sidebar="gap"] {
     },
     preview: {
       type: 6 /* COMPONENT */,
+      description: "Preview sound.",
       component: PreviewSound
     },
     browserNotification: {
@@ -15815,19 +15828,6 @@ html.void-rt-open [data-sidebar="gap"] {
     } else {
       playChime();
     }
-  }
-  function PreviewSound() {
-    return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0.35rem"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, "Preview the default Cursor-style chime."), /* @__PURE__ */ React.createElement(Button, {
-      size: "sm",
-      variant: "secondary",
-      onClick: () => {
-        markGestured();
-        playChime();
-      }
-    }, "Play preview"));
   }
   function isErrorResponse2(response) {
     return response?.state === "error" || response?.error != null;
@@ -15911,7 +15911,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/settingsFlyout/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/settingsFlyout/styles.css
   registerStyle("settingsFlyout", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -15940,7 +15940,7 @@ html.void-rt-open [data-sidebar="gap"] {
 
   // src/plugins/settingsFlyout/icons.tsx
   function grokSvg(props, ...children) {
-    return /* @__PURE__ */ React2.createElement("svg", {
+    return /* @__PURE__ */ React.createElement("svg", {
       width: props.width ?? props.size ?? 16,
       height: props.height ?? props.size ?? 16,
       viewBox: "0 0 24 24",
@@ -15950,62 +15950,62 @@ html.void-rt-open [data-sidebar="gap"] {
       "aria-hidden": "true"
     }, children);
   }
-  var CogIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+  var CogIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "m13.456 1.75.296.445c.832 1.247 1.198 1.654 1.558 1.818.321.146.82.172 2.242-.157l.54-.124 2.171 2.171-.124.54c-.328 1.423-.302 1.921-.156 2.243.164.36.57.726 1.817 1.557l.446.297v2.92l-.446.297c-1.247.831-1.653 1.198-1.817 1.558-.146.32-.172.82.156 2.242l.124.54-2.17 2.17-.54-.123c-1.423-.329-1.922-.303-2.243-.157-.36.164-.726.57-1.558 1.818l-.296.445h-2.92l-.297-.445c-.832-1.247-1.198-1.654-1.558-1.818-.321-.146-.82-.172-2.242.157l-.54.124-2.171-2.171.124-.54c.328-1.423.303-1.921.156-2.242-.164-.36-.57-.727-1.817-1.558l-.445-.297v-2.92l.445-.297c1.247-.831 1.653-1.198 1.817-1.557.147-.322.172-.82-.156-2.243l-.124-.54 2.17-2.17.541.123c1.422.329 1.92.303 2.242.157.36-.164.727-.57 1.558-1.818l.297-.445zm-1.853 2c-.637.93-1.249 1.699-2.092 2.083-.875.4-1.845.324-2.977.092l-.614.613c.232 1.132.308 2.102-.091 2.978-.385.842-1.153 1.454-2.083 2.09v.787c.93.636 1.698 1.248 2.083 2.091.399.876.323 1.845.091 2.977l.614.613c1.132-.232 2.102-.306 2.977.093.843.384 1.455 1.153 2.092 2.083h.785c.637-.93 1.249-1.699 2.092-2.083.875-.399 1.845-.325 2.976-.093l.614-.613c-.232-1.132-.306-2.101.093-2.977.384-.843 1.152-1.455 2.083-2.091v-.787c-.93-.636-1.7-1.248-2.083-2.09-.4-.876-.325-1.846-.093-2.978l-.614-.613c-1.131.232-2.1.307-2.976-.092-.843-.384-1.455-1.153-2.092-2.083zM14.001 12A2 2 0 1 0 10 12a2 2 0 0 0 4 0m2 0A4 4 0 1 1 8 12a4 4 0 0 1 8 0"
   }));
-  var PersonIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+  var PersonIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12 12.25C16.4183 12.25 20 15.8317 20 20.25V22H4V20.25C4 15.8317 7.58172 12.25 12 12.25ZM12 14.25C8.77005 14.25 6.13694 16.8022 6.00586 20H17.9941C17.8631 16.8022 15.23 14.25 12 14.25Z",
     fill: "currentColor"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12 2C14.4853 2 16.5 4.01472 16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2ZM12 4C10.6193 4 9.5 5.11929 9.5 6.5C9.5 7.88071 10.6193 9 12 9C13.3807 9 14.5 7.88071 14.5 6.5C14.5 5.11929 13.3807 4 12 4Z",
     fill: "currentColor"
   }));
-  var PaintIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+  var PaintIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M16.2637 3.19188C17.5328 2.03183 19.4908 2.07547 20.707 3.29149C21.9244 4.50883 21.967 6.46969 20.8037 7.73876L20.8027 7.73778L12.4814 16.9038C12.2753 19.4758 10.1251 21.4985 7.5 21.4985H2.5V16.4985C2.50025 13.8741 4.52251 11.7229 7.09375 11.5161L16.2637 3.19188ZM19.293 4.70653C18.8329 4.24643 18.0921 4.2299 17.6123 4.66942L17.6084 4.67333L9.58594 11.9546C10.67 12.453 11.5441 13.3277 12.043 14.4116L19.3262 6.39012L19.3291 6.3872C19.7688 5.90754 19.7529 5.16673 19.293 4.70653ZM4.5 19.4985H7.5C9.15685 19.4985 10.5 18.1554 10.5 16.4985C10.4997 14.8419 9.15669 13.4985 7.5 13.4985C5.84331 13.4985 4.50026 14.8419 4.5 16.4985V19.4985Z"
   }));
-  var VisitIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+  var VisitIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M21.5 14.5L19.2402 16.1201L22.0596 18.9404L19.9404 21.0596L17.1201 18.2402L15.5 20.5L13 12L21.5 14.5Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M18.5 2C20.433 2 22 3.567 22 5.5V11H20V5.5C20 4.67157 19.3284 4 18.5 4H5.5C4.67157 4 4 4.67157 4 5.5V16.5C4 17.3284 4.67157 18 5.5 18H12V20H5.5C3.567 20 2 18.433 2 16.5V5.5C2 3.567 3.567 2 5.5 2H18.5Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M10.4941 5.52441C10.7365 5.57269 10.9591 5.69148 11.1338 5.86621C11.3085 6.04094 11.4273 6.26352 11.4756 6.50586C11.5238 6.74833 11.4999 7.00011 11.4053 7.22852C11.3107 7.45691 11.1499 7.65171 10.9443 7.78906C10.7388 7.92641 10.4972 8 10.25 8C9.91848 8 9.60063 7.86821 9.36621 7.63379C9.13179 7.39937 9 7.08152 9 6.75C9 6.50277 9.07359 6.26123 9.21094 6.05566C9.34829 5.85012 9.54309 5.68933 9.77148 5.59473C9.99989 5.50012 10.2517 5.47618 10.4941 5.52441Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M6.75 5.5C7.08152 5.5 7.39937 5.63179 7.63379 5.86621C7.86821 6.10063 8 6.41848 8 6.75C8 6.99723 7.92641 7.23877 7.78906 7.44434C7.65171 7.64988 7.45691 7.81067 7.22852 7.90527C7.00011 7.99988 6.74833 8.02382 6.50586 7.97559C6.26352 7.92731 6.04094 7.80852 5.86621 7.63379C5.69148 7.45906 5.57269 7.23648 5.52441 6.99414C5.47618 6.75167 5.50012 6.49989 5.59473 6.27148C5.68933 6.04309 5.85012 5.84829 6.05566 5.71094C6.26123 5.57359 6.50277 5.5 6.75 5.5Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M13.75 5.5C14.0815 5.5 14.3994 5.63179 14.6338 5.86621C14.8682 6.10063 15 6.41848 15 6.75C15 6.99723 14.9264 7.23877 14.7891 7.44434C14.6517 7.64988 14.4569 7.81067 14.2285 7.90527C14.0001 7.99988 13.7483 8.02382 13.5059 7.97559C13.2635 7.92731 13.0409 7.80852 12.8662 7.63379C12.6915 7.45906 12.5727 7.23648 12.5244 6.99414C12.4762 6.75167 12.5001 6.49989 12.5947 6.27148C12.6893 6.04309 12.8501 5.84829 13.0557 5.71094C13.2612 5.57359 13.5028 5.5 13.75 5.5Z"
   }));
-  var SlidersIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+  var SlidersIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M21 7H10M14 17H3M20.25 17C20.25 18.6569 18.9069 20 17.25 20C15.5931 20 14.25 18.6569 14.25 17C14.25 15.3431 15.5931 14 17.25 14C18.9069 14 20.25 15.3431 20.25 17ZM9.75 7C9.75 8.65685 8.40685 10 6.75 10C5.09315 10 3.75 8.65685 3.75 7C3.75 5.34315 5.09315 4 6.75 4C8.40685 4 9.75 5.34315 9.75 7Z",
     stroke: "currentColor",
     strokeLinejoin: "round",
     strokeWidth: "2"
   }));
-  var PaymentsIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+  var PaymentsIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
     fill: "currentColor",
     d: "M12.9004 7.83984C13.0629 7.87413 13.2225 7.91676 13.376 7.96777C13.9053 8.14378 14.4688 8.45248 14.8301 8.95215L13.3711 10.0068C13.3148 9.92902 13.1447 9.78764 12.8086 9.67578C12.4889 9.56951 12.1071 9.52104 11.75 9.5459C11.3842 9.57147 11.1204 9.6686 10.9727 9.77734C10.6672 10.0025 10.7901 10.4692 11.0615 10.6533C11.3259 10.8325 11.7135 10.964 12.2734 11.1426C12.7633 11.2988 13.4271 11.5024 13.9502 11.8574C14.5404 12.2581 15.0008 12.8825 15.001 13.8027C15.001 14.6074 14.6157 15.2292 14.0645 15.6318C13.716 15.8862 13.3104 16.0473 12.9004 16.1426V17.5H11.1006V16.1924C10.8876 16.158 10.6783 16.1108 10.4785 16.0488C9.92674 15.8775 9.3358 15.5675 8.95996 15.0479L10.4189 13.9932C10.4778 14.0743 10.6555 14.2195 11.0117 14.3301C11.3503 14.4351 11.7577 14.4787 12.1426 14.4453C12.5359 14.411 12.8313 14.303 13.0029 14.1777C13.3128 13.9513 13.2321 13.5454 12.9395 13.3467C12.6751 13.1673 12.2868 13.0361 11.7266 12.8574C11.2368 12.7012 10.5739 12.4974 10.0508 12.1426C9.46027 11.7419 9.00013 11.1178 9 10.1973V10.1328C9 9.34586 9.36032 8.72911 9.9043 8.32812C10.2629 8.06395 10.6821 7.90612 11.1006 7.82129V6.5H12.9004V7.83984Z"
-  }), /* @__PURE__ */ React2.createElement("path", {
+  }), /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z",
     fill: "currentColor"
   }));
-  var LightningIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+  var LightningIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M5 14.25L14 4L13 9.75H19L10 20L11 14.25H5Z",
     stroke: "currentColor",
     strokeWidth: "2"
   }));
-  var DatabaseIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React2.createElement("path", {
+  var DatabaseIcon = (props = {}) => grokSvg(props, /* @__PURE__ */ React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M20.5 18C20.5 18.7778 20.1017 19.4178 19.5977 19.8945C19.0957 20.3692 18.423 20.7505 17.6748 21.0498C16.1726 21.6507 14.1657 22 12 22C9.83428 22 7.82743 21.6507 6.3252 21.0498C5.57697 20.7505 4.90428 20.3692 4.40234 19.8945C3.89825 19.4178 3.5 18.7778 3.5 18V5.5C3.5 4.71709 3.97721 4.13013 4.4707 3.74121C4.97543 3.34352 5.64416 3.02877 6.38086 2.7832C7.86497 2.28858 9.85158 2 12 2C14.1484 2 16.135 2.28858 17.6191 2.7832C18.3558 3.02877 19.0246 3.34352 19.5293 3.74121C20.0228 4.13013 20.5 4.71709 20.5 5.5V18ZM18.5 14.166C18.2396 14.3063 17.963 14.4345 17.6748 14.5498C16.1726 15.1507 14.1657 15.5 12 15.5C9.83428 15.5 7.82743 15.1507 6.3252 14.5498C6.03697 14.4345 5.76036 14.3063 5.5 14.166V18C5.5 18.0506 5.52142 18.2003 5.77637 18.4414C6.03343 18.6845 6.4595 18.9488 7.06836 19.1924C8.28059 19.6773 10.0236 20 12 20C13.9764 20 15.7194 19.6773 16.9316 19.1924C17.5405 18.9488 17.9666 18.6845 18.2236 18.4414C18.4786 18.2003 18.5 18.0506 18.5 18V14.166ZM5.5 11.5C5.5 11.5506 5.52142 11.7003 5.77637 11.9414C6.03343 12.1845 6.4595 12.4488 7.06836 12.6924C8.28059 13.1773 10.0236 13.5 12 13.5C13.9764 13.5 15.7194 13.1773 16.9316 12.6924C17.5405 12.4488 17.9666 12.1845 18.2236 11.9414C18.4786 11.7003 18.5 11.5506 18.5 11.5V7.86914C18.2226 7.99709 17.9273 8.11407 17.6191 8.2168C16.135 8.71142 14.1484 9 12 9C9.85158 9 7.86497 8.71142 6.38086 8.2168C6.07267 8.11407 5.77737 7.99709 5.5 7.86914V11.5ZM12 4C10.0065 4 8.24301 4.27056 7.0127 4.68066C6.39238 4.88745 5.96226 5.11212 5.70801 5.3125C5.59875 5.39864 5.5459 5.46254 5.51953 5.5C5.5459 5.53746 5.59875 5.60136 5.70801 5.6875C5.96226 5.88788 6.39238 6.11255 7.0127 6.31934C8.24301 6.72944 10.0065 7 12 7C13.9935 7 15.757 6.72944 16.9873 6.31934C17.6076 6.11255 18.0377 5.88788 18.292 5.6875C18.4008 5.60171 18.453 5.53752 18.4795 5.5C18.453 5.46248 18.4008 5.39829 18.292 5.3125C18.0377 5.11212 17.6076 4.88745 16.9873 4.68066C15.757 4.27056 13.9935 4 12 4Z",
@@ -16108,10 +16108,10 @@ html.void-rt-open [data-sidebar="gap"] {
   function tabItems(tabs) {
     return tabs.map((t) => {
       const Icon = t.icon;
-      return /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+      return /* @__PURE__ */ React.createElement(DropdownMenuItem, {
         key: t.id,
         onSelect: () => openTab(t.id)
-      }, /* @__PURE__ */ React2.createElement(Icon, {
+      }, /* @__PURE__ */ React.createElement(Icon, {
         className: cl25("menu-icon")
       }), t.name);
     });
@@ -16119,7 +16119,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function VoidPPSection({ tabs }) {
     if (tabs.length === 0)
       return null;
-    return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(Text2, {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "secondary",
       className: cl25("group")
@@ -16145,17 +16145,17 @@ html.void-rt-open [data-sidebar="gap"] {
     const showOpen = cfg.showOpenSettings || grokTabs.length === 0 && voidppTabs.length === 0;
     const voidppFirst = cfg.voidppPosition !== "below";
     const hasBoth = grokTabs.length > 0 && voidppTabs.length > 0;
-    return /* @__PURE__ */ React2.createElement(DropdownMenuSub, null, /* @__PURE__ */ React2.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React2.createElement(CogIcon, {
+    return /* @__PURE__ */ React.createElement(DropdownMenuSub, null, /* @__PURE__ */ React.createElement(DropdownMenuSubTrigger, null, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl25("menu-icon")
-    }), "Settings"), /* @__PURE__ */ React2.createElement(DropdownMenuSubContent, {
+    }), "Settings"), /* @__PURE__ */ React.createElement(DropdownMenuSubContent, {
       className: cl25("menu")
-    }, showOpen && /* @__PURE__ */ React2.createElement(DropdownMenuItem, {
+    }, showOpen && /* @__PURE__ */ React.createElement(DropdownMenuItem, {
       onSelect: (e) => openTab(undefined, onOpen, e)
-    }, /* @__PURE__ */ React2.createElement(CogIcon, {
+    }, /* @__PURE__ */ React.createElement(CogIcon, {
       className: cl25("menu-icon")
-    }), "Open Settings"), showOpen && (voidppTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React2.createElement(DropdownMenuSeparator, null), voidppFirst && /* @__PURE__ */ React2.createElement(VoidPPSection, {
+    }), "Open Settings"), showOpen && (voidppTabs.length > 0 || grokTabs.length > 0) && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), voidppFirst && /* @__PURE__ */ React.createElement(VoidPPSection, {
       tabs: voidppTabs
-    }), voidppFirst && hasBoth && /* @__PURE__ */ React2.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidppFirst && hasBoth && /* @__PURE__ */ React2.createElement(DropdownMenuSeparator, null), !voidppFirst && /* @__PURE__ */ React2.createElement(VoidPPSection, {
+    }), voidppFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), tabItems(grokTabs), !voidppFirst && hasBoth && /* @__PURE__ */ React.createElement(DropdownMenuSeparator, null), !voidppFirst && /* @__PURE__ */ React.createElement(VoidPPSection, {
       tabs: voidppTabs
     })));
   }
@@ -16227,7 +16227,7 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function ColorRow2() {
     const { starColor } = settings23.use(["starColor"]);
-    return /* @__PURE__ */ React2.createElement(ColorSettingRow, {
+    return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
         settings23.store.starColor = v;
@@ -16238,10 +16238,10 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function StarryBackground() {
     const { starColor } = settings23.use(["starColor"]);
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
-    }, /* @__PURE__ */ React2.createElement(StarsBackground, {
+    }, /* @__PURE__ */ React.createElement(StarsBackground, {
       starColor: hexToRgb(starColor)
     }));
   }
@@ -16261,7 +16261,7 @@ html.void-rt-open [data-sidebar="gap"] {
     tags: ["ui"],
     settings: settings23,
     _StarryBg() {
-      return /* @__PURE__ */ React2.createElement(WrappedStarry, {
+      return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
       });
     },
@@ -16276,7 +16276,7 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/streamerMode/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -16448,7 +16448,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/plugins/usageDisplay/styles.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -17565,17 +17565,17 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function ProgressRing({ percent, tone }) {
     const fraction = percent === null ? 0 : clamp(percent, 0, 100) / 100;
-    return /* @__PURE__ */ React2.createElement("svg", {
+    return /* @__PURE__ */ React.createElement("svg", {
       width: RING_SIZE,
       height: RING_SIZE,
       viewBox: `0 0 ${RING_SIZE} ${RING_SIZE}`,
       className: classes(cl26("ring"), cl26(`ring-${tone}`))
-    }, /* @__PURE__ */ React2.createElement("circle", {
+    }, /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
       className: cl26("ring-track")
-    }), /* @__PURE__ */ React2.createElement("circle", {
+    }), /* @__PURE__ */ React.createElement("circle", {
       cx: RING_CENTER,
       cy: RING_CENTER,
       r: RING_RADIUS,
@@ -17605,12 +17605,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
         document.removeEventListener("visibilitychange", onVisibility2);
       };
     }, []);
-    return /* @__PURE__ */ React2.createElement("span", {
+    return /* @__PURE__ */ React.createElement("span", {
       className: classes(cl26("trigger"), label == null && cl26("icon-only"))
-    }, /* @__PURE__ */ React2.createElement(ProgressRing, {
+    }, /* @__PURE__ */ React.createElement(ProgressRing, {
       percent: isFree ? null : percent,
       tone: isFree ? "waiting" : tone
-    }), label != null && /* @__PURE__ */ React2.createElement("span", {
+    }), label != null && /* @__PURE__ */ React.createElement("span", {
       className: cl26("label")
     }, label));
   }
@@ -17623,18 +17623,18 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return () => window.clearInterval(id);
     }, [resetAt]);
     const left = resetAt == null ? 0 : Math.max(0, Math.ceil((resetAt - now) / 1000));
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
       className: cl26("week")
-    }, labeled && /* @__PURE__ */ React2.createElement(Text2, {
+    }, labeled && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, isBotPage() ? "Grok Bot" : "Week"), /* @__PURE__ */ React2.createElement(Text2, {
+    }, isBotPage() ? "Grok Bot" : "Week"), /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
       className: cl26("used")
-    }, usedLabel(isFree, percent, loading)), resetAt != null && /* @__PURE__ */ React2.createElement(Text2, {
+    }, usedLabel(isFree, percent, loading)), resetAt != null && /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
     }, "Resets in ", formatResetCountdown(left)));
@@ -17642,14 +17642,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
   function TodayBlock({ isFree, percent }) {
     const today = state.userId ? readToday(state.userId) : null;
     const delta = today ? dayDelta(today) : null;
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 2,
       className: cl26("today")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, "Today"), !isFree && /* @__PURE__ */ React2.createElement(Text2, {
+    }, "Today"), !isFree && /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold",
       className: cl26("used")
@@ -17683,14 +17683,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
       snapshotToday();
       store3.notify();
     }, [showToday, percent]);
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: 8,
       className: cl26("panel")
-    }, showToday && /* @__PURE__ */ React2.createElement(TodayBlock, {
+    }, showToday && /* @__PURE__ */ React.createElement(TodayBlock, {
       isFree,
       percent
-    }), /* @__PURE__ */ React2.createElement(WeekBlock, {
+    }), /* @__PURE__ */ React.createElement(WeekBlock, {
       isFree,
       percent,
       resetAt,
@@ -17700,21 +17700,21 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function StatsToggle() {
     const { usageStats } = settings25.use(["usageStats"]);
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
       gap: "0.75rem",
       className: cl26("toggle")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0"
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
-    }, "Daily usage stats"), /* @__PURE__ */ React2.createElement(Text2, {
+    }, "Daily usage stats"), /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, "Record local daily usage on this device.")), /* @__PURE__ */ React2.createElement(Switch, {
+    }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: !!usageStats,
       onCheckedChange: (value) => {
         settings25.store.usageStats = value;
@@ -17728,27 +17728,27 @@ button:has(.void-ud-trigger > .void-ud-label) {
     terms,
     ops
   }) {
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "flex-start",
       gap: "0.5rem",
       className: cl26("formula")
-    }, terms.map((term, i) => /* @__PURE__ */ React2.createElement(React2.Fragment, {
+    }, terms.map((term, i) => /* @__PURE__ */ React.createElement(React.Fragment, {
       key: term.label
-    }, i > 0 && /* @__PURE__ */ React2.createElement(Flex, {
+    }, i > 0 && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
       className: cl26("formula-op-col")
-    }, /* @__PURE__ */ React2.createElement("span", {
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl26("formula-op")
-    }, ops[i - 1]), /* @__PURE__ */ React2.createElement("span", {
+    }, ops[i - 1]), /* @__PURE__ */ React.createElement("span", {
       className: cl26("formula-op")
-    }, ops[i - 1])), /* @__PURE__ */ React2.createElement(Flex, {
+    }, ops[i - 1])), /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       alignItems: "center",
       className: cl26("formula-term")
-    }, /* @__PURE__ */ React2.createElement("span", {
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl26("formula-label")
-    }, term.label), /* @__PURE__ */ React2.createElement("span", {
+    }, term.label), /* @__PURE__ */ React.createElement("span", {
       className: cl26("formula-value")
     }, term.value)))));
   }
@@ -17764,23 +17764,23 @@ button:has(.void-ud-trigger > .void-ud-label) {
           caption += `  +  ${formatPercent(rec.startPercent)} → ${formatPercent(rec.lastPercent)}`;
         }
       }
-      return /* @__PURE__ */ React2.createElement(Flex, {
+      return /* @__PURE__ */ React.createElement(Flex, {
         flexDirection: "column",
         gap: "0.25rem"
-      }, /* @__PURE__ */ React2.createElement(Formula, {
+      }, /* @__PURE__ */ React.createElement(Formula, {
         terms: [
           { label: "Before", value: formatPercent(accrued) },
           { label: "After", value: formatPercent(after) },
           { label: "Used", value: formatPercent(used) }
         ],
         ops: ["+", "="]
-      }), caption != null && /* @__PURE__ */ React2.createElement(Text2, {
+      }), caption != null && /* @__PURE__ */ React.createElement(Text2, {
         size: "xs",
         color: "muted",
         className: cl26("formula-caption")
       }, caption));
     }
-    return /* @__PURE__ */ React2.createElement(Formula, {
+    return /* @__PURE__ */ React.createElement(Formula, {
       terms: [
         { label: today ? "Current" : "Last", value: formatPercent(rec.lastPercent) },
         { label: "Start", value: formatPercent(rec.startPercent) },
@@ -17799,17 +17799,17 @@ button:has(.void-ud-trigger > .void-ud-label) {
       return null;
     const pre = finiteNumber(draft);
     const dayStart = hint ?? 0;
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.35rem",
       className: cl26("repair")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "xs",
       color: "muted"
-    }, "Week reset overwrote this day with 0%. Enter weekly usage just before the reset."), /* @__PURE__ */ React2.createElement(Flex, {
+    }, "Week reset overwrote this day with 0%. Enter weekly usage just before the reset."), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React2.createElement(Input, {
+    }, /* @__PURE__ */ React.createElement(Input, {
       type: "number",
       min: 0,
       max: 100,
@@ -17818,7 +17818,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onChange: (e) => setDraft(e.target.value),
       className: cl26("repair-input"),
       "aria-label": "Weekly percent before reset"
-    }), /* @__PURE__ */ React2.createElement(Button, {
+    }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       shape: "rectangle",
@@ -17849,16 +17849,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
     useEffect(() => {
       chartRef.current?.querySelector(`.${cl26("bar-on")}`)?.scrollIntoView({ inline: "nearest", block: "nearest" });
     }, [selected]);
-    return /* @__PURE__ */ React2.createElement(VoidPPDialogShell, {
+    return /* @__PURE__ */ React.createElement(VoidPPDialogShell, {
       title: "Usage by date",
       subtitle: "Stored on this device.",
       onClose,
       size: "sm"
-    }, /* @__PURE__ */ React2.createElement(StatsToggle, null), !usageStats ? /* @__PURE__ */ React2.createElement(Paragraph, null, "Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.") : days.length === 0 ? /* @__PURE__ */ React2.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(StatsToggle, null), !usageStats ? /* @__PURE__ */ React.createElement(Paragraph, null, "Turn on daily usage stats to keep a per-day log. Hover shows today after a delay.") : days.length === 0 ? /* @__PURE__ */ React.createElement(Paragraph, null, "No days recorded yet. Stats start from the moment you enable tracking.") : /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.75rem",
       className: cl26("history")
-    }, /* @__PURE__ */ React2.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
       ref: chartRef,
       className: cl26("chart"),
       alignItems: "stretch",
@@ -17880,7 +17880,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       const empty = delta == null;
       const on = rec.date === active?.date;
       const pct = empty || !scale ? 0 : clamp(delta / scale * 100, 0, 100);
-      return /* @__PURE__ */ React2.createElement(Button, {
+      return /* @__PURE__ */ React.createElement(Button, {
         key: rec.date,
         variant: "none",
         size: "none",
@@ -17891,27 +17891,27 @@ button:has(.void-ud-trigger > .void-ud-label) {
         "aria-label": `${rec.date === todayKey ? "Today" : formatDayLabel(rec.date)}, ${formatDelta(delta)}`,
         className: classes(cl26("bar"), on && cl26("bar-on"), empty && cl26("bar-empty")),
         onClick: () => setSelected(rec.date)
-      }, /* @__PURE__ */ React2.createElement("span", {
+      }, /* @__PURE__ */ React.createElement("span", {
         className: cl26("bar-value")
-      }, empty ? " " : formatPercent(delta)), /* @__PURE__ */ React2.createElement("span", {
+      }, empty ? " " : formatPercent(delta)), /* @__PURE__ */ React.createElement("span", {
         className: cl26("bar-track")
-      }, /* @__PURE__ */ React2.createElement("span", {
+      }, /* @__PURE__ */ React.createElement("span", {
         className: cl26("bar-fill"),
         style: { height: `${pct}%` }
-      })), /* @__PURE__ */ React2.createElement("span", {
+      })), /* @__PURE__ */ React.createElement("span", {
         className: cl26("bar-label")
       }, rec.date === todayKey ? "Today" : formatDayNumber(rec.date)));
-    })), active != null && /* @__PURE__ */ React2.createElement(Flex, {
+    })), active != null && /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.35rem",
       className: cl26("detail")
-    }, /* @__PURE__ */ React2.createElement(Text2, {
+    }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "semibold"
-    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React2.createElement(DayFormula, {
+    }, active.date === todayKey ? "Today" : formatDayLabel(active.date)), /* @__PURE__ */ React.createElement(DayFormula, {
       rec: active,
       today: active.date === todayKey
-    }), state.userId && /* @__PURE__ */ React2.createElement(RepairReset, {
+    }), state.userId && /* @__PURE__ */ React.createElement(RepairReset, {
       rec: active,
       prev: bars.find((d) => d.date === shiftDateKey(active.date, -1)) ?? null,
       userId: state.userId
@@ -17922,16 +17922,16 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const [open, setOpen] = useState(false);
     const userId = state.userId || currentPoolId();
     const days = userId ? listDays(userId) : [];
-    return /* @__PURE__ */ React2.createElement(Flex, {
+    return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem"
-    }, /* @__PURE__ */ React2.createElement(Paragraph, null, pluralize(days.length, "recorded day"), "."), /* @__PURE__ */ React2.createElement(Button, {
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, pluralize(days.length, "recorded day"), "."), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "sm",
       shape: "rectangle",
       disabled: !days.length,
       onClick: () => setOpen(true)
-    }, "Clear usage history"), /* @__PURE__ */ React2.createElement(ConfirmDialog, {
+    }, "Clear usage history"), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open,
       onOpenChange: setOpen,
       title: "Clear usage history",
@@ -17947,7 +17947,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function openHistory() {
     refresh("manual");
-    openModal((props) => /* @__PURE__ */ React2.createElement(SafeStatsModal, {
+    openModal((props) => /* @__PURE__ */ React.createElement(SafeStatsModal, {
       ...props
     }), { modalKey: "void-ud-stats" });
   }
@@ -17955,7 +17955,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   var SafeUsagePanel = ErrorBoundary.wrap(UsagePanel);
   var SafeStatsModal = ErrorBoundary.wrap(StatsModal);
   var BUTTON_BASE = {
-    icon: () => /* @__PURE__ */ React2.createElement(SafeButtonIcon, null),
+    icon: () => /* @__PURE__ */ React.createElement(SafeButtonIcon, null),
     onClick: () => openHistory(),
     order: 1,
     className: "text-fg-primary",
@@ -17987,7 +17987,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       unsubRoute2?.();
       unsubRoute2 = null;
     },
-    chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React2.createElement(SafeUsagePanel, null) },
+    chatBarButton: { ...BUTTON_BASE, tooltip: () => /* @__PURE__ */ React.createElement(SafeUsagePanel, null) },
     events: {
       streamEnd: onStreamEnd5
     },
@@ -18053,7 +18053,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
   var __plugins_default = { [fixChrome_default.name]: fixChrome_default, [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [autoCollapse_default.name]: autoCollapse_default, [autoRetry_default.name]: autoRetry_default, [betterFiles_default.name]: betterFiles_default, [betterImagine_default.name]: betterImagine_default, [betterLinks_default.name]: betterLinks_default, [betterSidebar_default.name]: betterSidebar_default, [chatListStatus_default.name]: chatListStatus_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [cleaner_default.name]: cleaner_default, [cloneChats_default.name]: cloneChats_default, [compactModeSelect_default.name]: compactModeSelect_default, [composerOpacity_default.name]: composerOpacity_default, [consoleJanitor_default.name]: consoleJanitor_default, [customInstructions_default.name]: customInstructions_default, [downloadTTS_default.name]: downloadTTS_default, [experiments_default.name]: experiments_default, [exportChat_default.name]: exportChat_default, [incognito_default.name]: incognito_default, [inputHistory_default.name]: inputHistory_default, [messageTimestamps_default.name]: messageTimestamps_default, [noDictation_default.name]: noDictation_default, [noGrokBot_default.name]: noGrokBot_default, [noRightPanel_default.name]: noRightPanel_default, [noShareLink_default.name]: noShareLink_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [oneko_default.name]: oneko_default, [placeholder_default.name]: placeholder_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [recentTopics_default.name]: recentTopics_default, [responseNotification_default.name]: responseNotification_default, [settingsFlyout_default.name]: settingsFlyout_default, [stableComposer_default.name]: stableComposer_default, [starry_default.name]: starry_default, [streamerMode_default.name]: streamerMode_default, [themedScrollbar_default.name]: themedScrollbar_default, [usageDisplay_default.name]: usageDisplay_default, [userQuotes_default.name]: userQuotes_default, [widerChat_default.name]: widerChat_default };
-  // voidpp-css:/home/workdir/artifacts/Void-src/src/api/Notices.css
+  // voidpp-css:/workspace/artifacts/Void-src/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;
@@ -18125,39 +18125,39 @@ button:has(.void-ud-trigger > .void-ud-label) {
   })(NoticeType ||= {});
   var cl27 = classNameFactory("void-notice-");
   var ICONS = {
-    ["info" /* INFO */]: () => /* @__PURE__ */ React2.createElement(CircleAlertIcon, {
+    ["info" /* INFO */]: () => /* @__PURE__ */ React.createElement(CircleAlertIcon, {
       size: 18
     }),
-    ["warning" /* WARNING */]: () => /* @__PURE__ */ React2.createElement(TriangleAlert, {
+    ["warning" /* WARNING */]: () => /* @__PURE__ */ React.createElement(TriangleAlert, {
       size: 18
     }),
-    ["error" /* ERROR */]: () => /* @__PURE__ */ React2.createElement(CircleXIcon, {
+    ["error" /* ERROR */]: () => /* @__PURE__ */ React.createElement(CircleXIcon, {
       size: 18
     }),
-    ["success" /* SUCCESS */]: () => /* @__PURE__ */ React2.createElement(CircleCheckIcon, {
+    ["success" /* SUCCESS */]: () => /* @__PURE__ */ React.createElement(CircleCheckIcon, {
       size: 18
     })
   };
   var activeNoticeId = null;
   function Notice({ message, type, action, onClose }) {
-    return /* @__PURE__ */ React2.createElement("div", {
+    return /* @__PURE__ */ React.createElement("div", {
       className: cl27("root")
-    }, /* @__PURE__ */ React2.createElement("span", {
+    }, /* @__PURE__ */ React.createElement("span", {
       className: cl27("icon")
-    }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React2.createElement("span", {
+    }, ICONS[type ?? "info" /* INFO */]()), /* @__PURE__ */ React.createElement("span", {
       className: cl27("message")
-    }, message), action && /* @__PURE__ */ React2.createElement(Button, {
+    }, message), action && /* @__PURE__ */ React.createElement(Button, {
       variant: "primary",
       size: "sm",
       shape: "pill",
       onClick: action.onClick
-    }, action.icon, action.label), /* @__PURE__ */ React2.createElement(Button, {
+    }, action.icon, action.label), /* @__PURE__ */ React.createElement(Button, {
       variant: "tertiary",
       size: "sm",
       shape: "square",
       className: cl27("close"),
       onClick: onClose
-    }, /* @__PURE__ */ React2.createElement(Cross2Icon, {
+    }, /* @__PURE__ */ React.createElement(Cross2Icon, {
       size: 16
     })));
   }
@@ -18166,7 +18166,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     const { toast } = Toaster;
     if (!toast)
       return -1;
-    activeNoticeId = toast.custom((id) => /* @__PURE__ */ React2.createElement(Notice, {
+    activeNoticeId = toast.custom((id) => /* @__PURE__ */ React.createElement(Notice, {
       ...options,
       onClose: () => {
         toast.dismiss(id);
@@ -18267,7 +18267,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     PopoverContent: () => PopoverContent,
     PopoverTrigger: () => PopoverTrigger,
     Portal: () => Portal,
-    React: () => React2,
+    React: () => React,
     ResponseStore: () => ResponseStore,
     ResponsiveDialog: () => ResponsiveDialog,
     RoutingStore: () => RoutingStore,

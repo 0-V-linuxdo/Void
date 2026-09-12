@@ -244,7 +244,11 @@ export default function PluginsTab() {
                     {emptyHint(search, category)}
                 </Paragraph>
             )}
-            {dialogPlugin && <PluginDialog plugin={dialogPlugin} onClose={() => setDialogName(null)} />}
+            {dialogPlugin && (
+                <ErrorBoundary fallback={null}>
+                    <PluginDialog plugin={dialogPlugin} onClose={() => setDialogName(null)} />
+                </ErrorBoundary>
+            )}
             <ConfirmDialog
                 open={showReload}
                 onOpenChange={v => { if (!v) onDismiss(); }}

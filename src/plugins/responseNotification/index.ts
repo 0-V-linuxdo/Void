@@ -8,7 +8,7 @@ import type { VoidPPEventMap } from "@api/Events";
 import { definePluginSettings } from "@api/Settings";
 import { Button, Flex, Paragraph } from "@components";
 import { BellIcon } from "@components/icons";
-import { React } from "@turbopack/common/react";
+import { createElement } from "@turbopack/common/react";
 import { ResponseStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
@@ -22,6 +22,26 @@ const RETRY_MS = 80;
 const CHIME_LOW = 523.25;
 const CHIME_HIGH = 659.25;
 const CHIME_GAIN = 0.18;
+
+function PreviewSound() {
+    return createElement(
+        Flex,
+        { flexDirection: "column", gap: "0.5rem" },
+        createElement(Paragraph, null, "Preview the default Cursor-style chime."),
+        createElement(
+            Button,
+            {
+                size: "sm",
+                variant: "secondary",
+                onClick() {
+                    markGestured();
+                    playChime();
+                },
+            },
+            "Play preview",
+        ),
+    );
+}
 
 const settings = definePluginSettings({
     sound: {
@@ -37,6 +57,7 @@ const settings = definePluginSettings({
     },
     preview: {
         type: OptionType.COMPONENT,
+        description: "Preview sound.",
         component: PreviewSound,
     },
     browserNotification: {
@@ -113,24 +134,6 @@ function playSound() {
     } else {
         playChime();
     }
-}
-
-function PreviewSound() {
-    return (
-        <Flex flexDirection="column" gap="0.35rem">
-            <Paragraph>Preview the default Cursor-style chime.</Paragraph>
-            <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                    markGestured();
-                    playChime();
-                }}
-            >
-                Play preview
-            </Button>
-        </Flex>
-    );
 }
 
 function isErrorResponse(response: { state?: string; error?: unknown } | undefined) {
