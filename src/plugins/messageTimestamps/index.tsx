@@ -28,6 +28,7 @@ import {
     harvestResponses,
     isFresh,
     isHumanSender,
+    isOptimisticState,
     neighborTime,
     parseTime,
     pickTimes,
@@ -40,7 +41,7 @@ import {
 
 const logger = new Logger("MessageTimestamps");
 const STAMP_MAX = 5000;
-const RESPONSE_URL = /\/(?:load-responses|share_links)(?:\/|\?|$)/i;
+const RESPONSE_URL = /\/(?:load-responses|share_links|response-node)(?:\/|\?|$)/i;
 
 const settings = definePluginSettings({
     showDate: {
@@ -201,6 +202,11 @@ function borrowedMs(id: string): number | null {
             const ms = childTimeFromNodes(id, (nodes ?? []) as unknown as Record<string, unknown>[], lookup);
             if (ms != null) return ms;
         }
+        const records = [
+            ...storeRecords(id),
+            ...Object.values(lookup).filter((r): r is Record<string, unknown> => r != null),
+        ];
+        return neighborTime(id, records) ?? conversationCreateTime(id);
     } catch (e) {
         logger.debug("node neighbor lookup failed", e);
     }
@@ -241,8 +247,9 @@ function resolveMs(response: GrokResponse, isUser?: boolean): number | null {
     const full = fullRecord(id, rec);
     const human = isUser === true || isHumanSender(full.sender);
     const stored = id ? storedMs(id, full, human) : null;
+    const fieldTimes = human && !isOptimisticState(full.state) ? [] : pickTimes(full);
     let ms = chooseTime({
-        fieldTimes: pickTimes(full),
+        fieldTimes,
         stored,
         uuid: uuidTime(id),
     });
@@ -410,17 +417,20 @@ export default definePlugin({
 
     zustand: {
         ResponseStore: {
-            selector: (s: ResponseStoreState) => s.byId,
-            handler(byId: ResponseStoreState["byId"]) {
+            selector: (s: ResponseStoreState) => {
+                let n = 0;
+                for (const list of Object.values(s.nodesByConversationId ?? {})) n += list?.length ?? 0;
+                return `${Object.keys(s.byId ?? {}).length}:${n}`;
+            },
+            handler() {
                 try {
-                    const { nodesByConversationId } = ResponseStore.useResponseStore.getState();
+                    const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
                     ingest({
                         responses: Object.values(byId ?? {}),
                         nodes: Object.values(nodesByConversationId ?? {}).flat(),
                     });
                 } catch (e) {
                     logger.debug("store ingest failed", e);
-                    ingest({ responses: Object.values(byId ?? {}) });
                 }
             },
         },

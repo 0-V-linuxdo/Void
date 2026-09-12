@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.12] v1.0.0
+// @version      [20260912.13] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.12] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.13] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7150,9 +7150,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.12] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"6020909"}`
-    }, `(${"6020909"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.13] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"2e2f269"}`
+    }, `(${"2e2f269"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -8688,6 +8688,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(id, now), now });
     return ms == null ? null : ms - BORROW_MS;
   }
+  function nextNonHuman(records, from) {
+    for (let i = from;i < records.length; i++) {
+      if (!isHumanSender(records[i].sender))
+        return records[i];
+    }
+    return null;
+  }
   function neighborTime(id, records, now = Date.now()) {
     if (!id)
       return null;
@@ -8700,10 +8707,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         if (ms != null)
           return ms;
       }
-      if (recId === id && i + 1 < records.length)
-        next = records[i + 1];
+      if (recId === id && next == null)
+        next = nextNonHuman(records, i + 1);
     }
-    if (!next || isHumanSender(next.sender))
+    if (!next)
       return null;
     return stampOf(next, now);
   }
@@ -8720,16 +8727,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         if (ms != null)
           return ms;
       }
-      if (recId === id && i + 1 < nodes.length)
-        nextId = recordId(nodes[i + 1]);
+      if (recId === id && !nextId)
+        nextId = recordId(nextNonHuman(nodes, i + 1) ?? {});
     }
     if (!nextId)
       return null;
-    const nextNode = nodes.find((n) => recordId(n) === nextId);
-    if (nextNode && isHumanSender(nextNode.sender))
-      return null;
-    const rec = byId[nextId] ?? nextNode;
-    return rec ? stampOf(rec, now) : null;
+    const rec = byId[nextId] ?? nodes.find((n) => recordId(n) === nextId);
+    return rec && !isHumanSender(rec.sender) ? stampOf(rec, now) : null;
   }
   function shouldPersistStamp(sender, ms, stored, now = Date.now(), state) {
     if (stored != null)
@@ -8747,11 +8751,12 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       const id = recordId(rec);
       if (!id || seen.has(id))
         continue;
-      const fieldTimes = pickTimes(rec, now);
       const uuid = uuidTime(id, now);
-      let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
       const { sender, state } = rec;
-      if (isHumanSender(sender)) {
+      const human = isHumanSender(sender);
+      const fieldTimes = human && !isOptimisticState(state) ? [] : pickTimes(rec, now);
+      let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
+      if (human) {
         if (isOptimisticState(state)) {
           if (ms == null)
             continue;
@@ -8791,7 +8796,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   // src/plugins/messageTimestamps/index.tsx
   var logger18 = new Logger("MessageTimestamps");
   var STAMP_MAX = 5000;
-  var RESPONSE_URL = /\/(?:load-responses|share_links)(?:\/|\?|$)/i;
+  var RESPONSE_URL = /\/(?:load-responses|share_links|response-node)(?:\/|\?|$)/i;
   var settings9 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
@@ -8956,6 +8961,11 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
         if (ms != null)
           return ms;
       }
+      const records = [
+        ...storeRecords(id),
+        ...Object.values(lookup).filter((r) => r != null)
+      ];
+      return neighborTime(id, records) ?? conversationCreateTime(id);
     } catch (e) {
       logger18.debug("node neighbor lookup failed", e);
     }
@@ -8997,8 +9007,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     const full = fullRecord(id, rec);
     const human = isUser === true || isHumanSender(full.sender);
     const stored = id ? storedMs(id, full, human) : null;
+    const fieldTimes = human && !isOptimisticState(full.state) ? [] : pickTimes(full);
     let ms = chooseTime({
-      fieldTimes: pickTimes(full),
+      fieldTimes,
       stored,
       uuid: uuidTime(id)
     });
@@ -9169,17 +9180,21 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     },
     zustand: {
       ResponseStore: {
-        selector: (s) => s.byId,
-        handler(byId) {
+        selector: (s) => {
+          let n = 0;
+          for (const list of Object.values(s.nodesByConversationId ?? {}))
+            n += list?.length ?? 0;
+          return `${Object.keys(s.byId ?? {}).length}:${n}`;
+        },
+        handler() {
           try {
-            const { nodesByConversationId } = ResponseStore.useResponseStore.getState();
+            const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
             ingest({
               responses: Object.values(byId ?? {}),
               nodes: Object.values(nodesByConversationId ?? {}).flat()
             });
           } catch (e) {
             logger18.debug("store ingest failed", e);
-            ingest({ responses: Object.values(byId ?? {}) });
           }
         }
       }

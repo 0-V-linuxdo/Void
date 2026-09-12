@@ -173,6 +173,13 @@ function stampOf(rec: Record<string, unknown>, now: number): number | null {
     return ms == null ? null : ms - BORROW_MS;
 }
 
+function nextNonHuman(records: Array<Record<string, unknown>>, from: number): Record<string, unknown> | null {
+    for (let i = from; i < records.length; i++) {
+        if (!isHumanSender(records[i].sender)) return records[i];
+    }
+    return null;
+}
+
 export function neighborTime(id: string, records: Array<Record<string, unknown>>, now = Date.now()): number | null {
     if (!id) return null;
     let next: Record<string, unknown> | null = null;
@@ -183,9 +190,9 @@ export function neighborTime(id: string, records: Array<Record<string, unknown>>
             const ms = stampOf(rec, now);
             if (ms != null) return ms;
         }
-        if (recId === id && i + 1 < records.length) next = records[i + 1];
+        if (recId === id && next == null) next = nextNonHuman(records, i + 1);
     }
-    if (!next || isHumanSender(next.sender)) return null;
+    if (!next) return null;
     return stampOf(next, now);
 }
 
@@ -205,13 +212,11 @@ export function childTimeFromNodes(
             const ms = stampOf(rec, now);
             if (ms != null) return ms;
         }
-        if (recId === id && i + 1 < nodes.length) nextId = recordId(nodes[i + 1]);
+        if (recId === id && !nextId) nextId = recordId(nextNonHuman(nodes, i + 1) ?? {});
     }
     if (!nextId) return null;
-    const nextNode = nodes.find(n => recordId(n) === nextId);
-    if (nextNode && isHumanSender(nextNode.sender)) return null;
-    const rec = byId[nextId] ?? nextNode;
-    return rec ? stampOf(rec, now) : null;
+    const rec = byId[nextId] ?? nodes.find(n => recordId(n) === nextId);
+    return rec && !isHumanSender(rec.sender) ? stampOf(rec, now) : null;
 }
 
 export function shouldPersistStamp(
@@ -240,11 +245,12 @@ export function harvestResponses(value: unknown, now = Date.now()): HarvestedTim
     for (const rec of records) {
         const id = recordId(rec);
         if (!id || seen.has(id)) continue;
-        const fieldTimes = pickTimes(rec, now);
         const uuid = uuidTime(id, now);
-        let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
         const { sender, state } = rec;
-        if (isHumanSender(sender)) {
+        const human = isHumanSender(sender);
+        const fieldTimes = human && !isOptimisticState(state) ? [] : pickTimes(rec, now);
+        let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
+        if (human) {
             if (isOptimisticState(state)) {
                 if (ms == null) continue;
             } else {

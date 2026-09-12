@@ -234,6 +234,14 @@ describe("neighborTime", () => {
         ], NOW)).toBe(HOUR_AGO - BORROW_MS);
     });
 
+    test("skips a human sibling to the following assistant", () => {
+        expect(neighborTime(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
+            { responseId: "other-human", sender: "human", createTime: ISO_NOW },
+            { responseId: v7(HOUR_AGO), sender: "assistant", createTime: ISO_HOUR_AGO },
+        ], NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
     test("ignores a fresh-only neighbor", () => {
         expect(neighborTime(HUMAN_V4, [
             { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
@@ -263,6 +271,18 @@ describe("childTimeFromNodes", () => {
         expect(childTimeFromNodes(HUMAN_V4, [
             { responseId: HUMAN_V4, sender: "human" },
             { responseId: child, sender: "assistant" },
+        ], byId, NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
+    test("skips a human node to the following assistant", () => {
+        const child = v7(HOUR_AGO);
+        const byId = {
+            [child]: { responseId: child, sender: "assistant", thinkingStartTime: ISO_HOUR_AGO },
+        };
+        expect(childTimeFromNodes(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human" },
+            { responseId: "other-human", sender: "human" },
+            { responseId: child, sender: "assistant", parentResponseId: "other-human" },
         ], byId, NOW)).toBe(HOUR_AGO - BORROW_MS);
     });
 });
@@ -316,6 +336,27 @@ describe("harvestResponses", () => {
             ],
         }, NOW);
         expect(ids(hits)).toEqual([]);
+    });
+
+    test("omits aged closed human hydration without a neighbor", () => {
+        const hits = harvestResponses({
+            responses: [
+                { responseId: HUMAN_V4, sender: "human", state: "closed", createTime: ISO_RELOAD },
+            ],
+        }, NOW);
+        expect(ids(hits)).toEqual([]);
+    });
+
+    test("pairs via response-node parentResponseId and assistant uuid", () => {
+        const child = v7(HOUR_AGO);
+        const hits = harvestResponses({
+            responseNodes: [
+                { responseId: HUMAN_V4, sender: "human" },
+                { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4 },
+            ],
+        }, NOW);
+        expect(ids(hits)).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
+        expect(ids(hits)).toContainEqual({ id: child, ms: HOUR_AGO });
     });
 
     test("replaces an aged hydration stamp with the child", () => {
