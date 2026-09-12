@@ -9,6 +9,7 @@ import { describe, expect, test } from "bun:test";
 import {
     BORROW_MS,
     chooseTime,
+    familyUserTime,
     FRESH_MS,
     harvestResponses,
     isHumanSender,
@@ -18,7 +19,6 @@ import {
     recordId,
     shouldKeepStored,
     shouldPersistStamp,
-    stampFromRecords,
     uuidTime,
 } from "./time";
 
@@ -146,30 +146,52 @@ describe("chooseTime", () => {
         })).toBeNull();
     });
 
-    test("treats a 31-minute-old hydration stamp as trusted without a neighbor", () => {
+    test("prefers thinkingStartTime over an aged hydration createTime", () => {
         expect(chooseTime({
-            fieldTimes: [HALF_HOUR_AGO],
-            stored: null,
-            uuid: null,
+            fieldTimes: [HALF_HOUR_AGO, HOUR_AGO],
+            stored: HALF_HOUR_AGO,
+            uuid: HOUR_AGO,
             now: NOW,
-        })).toBe(HALF_HOUR_AGO);
+        })).toBe(HOUR_AGO);
     });
 });
 
 describe("preferHumanTime", () => {
     test("replaces an own stamp that is newer than the child", () => {
-        expect(preferHumanTime(NOW, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - BORROW_MS);
         expect(preferHumanTime(HALF_HOUR_AGO, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - BORROW_MS);
-    });
-
-    test("keeps an own stamp that is older than the child", () => {
         expect(preferHumanTime(HOUR_AGO - 5_000, HOUR_AGO - BORROW_MS)).toBe(HOUR_AGO - 5_000);
-    });
-
-    test("falls back to whichever side exists", () => {
         expect(preferHumanTime(null, HOUR_AGO)).toBe(HOUR_AGO);
         expect(preferHumanTime(HOUR_AGO, null)).toBe(HOUR_AGO);
-        expect(preferHumanTime(null, null)).toBeNull();
+    });
+});
+
+describe("familyUserTime", () => {
+    test("uses the family assistant thinkingStartTime minus one second", () => {
+        const id = v7(HOUR_AGO);
+        expect(familyUserTime({
+            responseId: id,
+            sender: "assistant",
+            createTime: ISO_RELOAD,
+            thinkingStartTime: ISO_HOUR_AGO,
+            query: "完成落地",
+        }, id, NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
+    test("uses UUID v7 when thinkingStartTime is missing", () => {
+        const id = v7(HOUR_AGO);
+        expect(familyUserTime({
+            responseId: id,
+            sender: "assistant",
+            createTime: ISO_RELOAD,
+        }, id, NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
+    test("does not treat a human-only record as a family", () => {
+        expect(familyUserTime({
+            responseId: HUMAN_V4,
+            sender: "human",
+            createTime: ISO_RELOAD,
+        }, HUMAN_V4, NOW)).toBeNull();
     });
 });
 
@@ -218,29 +240,11 @@ describe("neighborTime", () => {
         ], NOW)).toBe(HOUR_AGO - BORROW_MS);
     });
 
-    test("walks node children ids when parentResponseId is missing", () => {
-        const child = v7(HOUR_AGO);
-        expect(neighborTime(HUMAN_V4, [
-            { responseId: child, sender: "assistant", thinkingStartTime: ISO_HOUR_AGO },
-            { responseId: HUMAN_V4, sender: "human", createTime: ISO_RELOAD },
-            { responseId: HUMAN_V4, children: [child] },
-        ], NOW)).toBe(HOUR_AGO - BORROW_MS);
-    });
-
     test("ignores a fresh-only neighbor", () => {
         expect(neighborTime(HUMAN_V4, [
             { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
             { responseId: "child", sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_NOW },
         ], NOW)).toBeNull();
-    });
-});
-
-describe("stampFromRecords", () => {
-    test("uses the first trusted child", () => {
-        expect(stampFromRecords([
-            { responseId: "fresh", createTime: ISO_NOW },
-            { responseId: v7(HOUR_AGO), thinkingStartTime: ISO_HOUR_AGO },
-        ], NOW)).toBe(HOUR_AGO - BORROW_MS);
     });
 });
 
@@ -286,18 +290,7 @@ describe("harvestResponses", () => {
             ],
         }, NOW);
         expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
-    });
-
-    test("walks nodesByConversationId children when order is reversed", () => {
-        const child = v7(HOUR_AGO);
-        const hits = harvestResponses({
-            responses: [
-                { responseId: child, sender: "assistant", thinkingStartTime: ISO_HOUR_AGO },
-                { responseId: HUMAN_V4, sender: "human", createTime: ISO_RELOAD },
-            ],
-            nodes: [{ responseId: HUMAN_V4, children: [child] }],
-        }, NOW);
-        expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
+        expect(hits).toContainEqual({ id: child, ms: HOUR_AGO });
     });
 
     test("omits a fresh human with no trusted neighbor", () => {

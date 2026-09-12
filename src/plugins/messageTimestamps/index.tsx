@@ -24,6 +24,7 @@ import definePlugin, { OptionType } from "@utils/types";
 import {
     asRecord,
     chooseTime,
+    familyUserTime,
     harvestResponses,
     isFresh,
     isHumanSender,
@@ -33,7 +34,6 @@ import {
     preferHumanTime,
     recordId,
     shouldPersistStamp,
-    stampFromRecords,
     uuidTime,
 } from "./time";
 
@@ -103,7 +103,8 @@ function remember(id: string, ms: number, sender?: unknown): boolean {
     return prev !== ms;
 }
 
-function extraKeys(rec: Record<string, unknown>, id: string): string[] {
+function extraKeys(rec: Record<string, unknown>, id: string, user = false): string[] {
+    if (user) return id ? [`u:${id}`] : [];
     const keys: string[] = [];
     if (id) keys.push(`h:${id}`);
     const { parentResponseId } = rec;
@@ -122,20 +123,26 @@ function extraKeys(rec: Record<string, unknown>, id: string): string[] {
     return keys;
 }
 
-function storedMs(id: string, rec: Record<string, unknown>): number | null {
+function storedMs(id: string, rec: Record<string, unknown>, user = false): number | null {
     const map = stamps();
+    if (user) {
+        const mine = map.get(`u:${id}`);
+        if (mine != null) return mine;
+        return null;
+    }
     const direct = map.get(id);
     if (direct != null) return direct;
-    for (const key of extraKeys(rec, id)) {
+    for (const key of extraKeys(rec, id, false)) {
         const ms = map.get(key);
         if (ms != null) return ms;
     }
     return null;
 }
 
-function rememberKeys(id: string, rec: Record<string, unknown>, ms: number, sender: unknown): boolean {
-    let changed = remember(id, ms, sender);
-    for (const key of extraKeys(rec, id)) {
+function rememberKeys(id: string, rec: Record<string, unknown>, ms: number, sender: unknown, user = false): boolean {
+    let changed = false;
+    if (!user && remember(id, ms, sender)) changed = true;
+    for (const key of extraKeys(rec, id, user)) {
         if (remember(key, ms, sender)) changed = true;
     }
     return changed;
@@ -154,51 +161,15 @@ function storeRecords(id: string): Record<string, unknown>[] {
     }
 }
 
-function graphChildRecords(id: string): Record<string, unknown>[] {
+function fullRecord(id: string, rec: Record<string, unknown>): Record<string, unknown> {
+    if (!id) return rec;
     try {
-        const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-        const out: Record<string, unknown>[] = [];
-        for (const nodes of Object.values(nodesByConversationId ?? {})) {
-            for (const node of nodes ?? []) {
-                if (node.responseId !== id) continue;
-                for (const childId of node.children ?? []) {
-                    const rec = asRecord(byId?.[childId]);
-                    if (rec) out.push(rec);
-                }
-            }
-        }
-        return out;
+        const hit = asRecord(ResponseStore.useResponseStore.getState().byId?.[id]);
+        if (hit) return hit;
     } catch (e) {
-        logger.debug("node children lookup failed", e);
-        return [];
+        logger.debug("byId lookup failed", e);
     }
-}
-
-function queryChildRecords(rec: Record<string, unknown>): Record<string, unknown>[] {
-    const text = typeof rec.message === "string" && rec.message
-        ? rec.message
-        : typeof rec.query === "string" ? rec.query : "";
-    if (!text) return [];
-    try {
-        const { byId } = ResponseStore.useResponseStore.getState();
-        const out: Record<string, unknown>[] = [];
-        for (const row of Object.values(byId ?? {})) {
-            const { sender, query } = row;
-            if (isHumanSender(sender)) continue;
-            if (query === text) out.push(row as unknown as Record<string, unknown>);
-        }
-        return out;
-    } catch (e) {
-        logger.debug("query child lookup failed", e);
-        return [];
-    }
-}
-
-function borrowedMs(id: string, rec: Record<string, unknown>): number | null {
-    return stampFromRecords(graphChildRecords(id))
-        ?? neighborTime(id, storeRecords(id))
-        ?? stampFromRecords(queryChildRecords(rec))
-        ?? conversationCreateTime(id);
+    return rec;
 }
 
 function conversationCreateTime(id: string): number | null {
@@ -221,15 +192,21 @@ function resolveMs(response: GrokResponse, isUser?: boolean): number | null {
     const rec = asRecord(response);
     if (!rec) return null;
     const id = recordId(rec);
-    const human = isUser === true || isHumanSender(rec.sender);
-    const stored = id ? storedMs(id, rec) : null;
+    const full = fullRecord(id, rec);
+    const human = isUser === true || isHumanSender(full.sender);
+    const stored = id ? storedMs(id, full, human) : null;
     let ms = chooseTime({
-        fieldTimes: pickTimes(rec),
+        fieldTimes: pickTimes(full),
         stored,
         uuid: uuidTime(id),
     });
-    if (human && id) ms = preferHumanTime(ms, borrowedMs(id, rec));
-    if (id && ms != null) rememberKeys(id, rec, ms, human ? "human" : rec.sender);
+    if (human && id) {
+        const borrowed = familyUserTime(full, id)
+            ?? neighborTime(id, storeRecords(id))
+            ?? conversationCreateTime(id);
+        ms = preferHumanTime(ms, borrowed);
+    }
+    if (id && ms != null) rememberKeys(id, full, ms, human ? "human" : full.sender, human);
     return ms;
 }
 
@@ -393,16 +370,7 @@ export default definePlugin({
         ResponseStore: {
             selector: (s: ResponseStoreState) => s.byId,
             handler(byId: ResponseStoreState["byId"]) {
-                try {
-                    const { nodesByConversationId } = ResponseStore.useResponseStore.getState();
-                    ingest({
-                        responses: Object.values(byId ?? {}),
-                        nodes: Object.values(nodesByConversationId ?? {}).flat(),
-                    });
-                } catch (e) {
-                    logger.debug("store ingest failed", e);
-                    ingest({ responses: Object.values(byId ?? {}) });
-                }
+                ingest({ responses: Object.values(byId ?? {}) });
             },
         },
     },

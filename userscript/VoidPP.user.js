@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.9] v1.0.0
+// @version      [20260912.10] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.9] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.10] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7150,9 +7150,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.9] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"11dffba"}`
-    }, `(${"11dffba"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.10] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"746759a"}`
+    }, `(${"746759a"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -8525,7 +8525,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var BORROW_MS = 1000;
   var MIN_MS = Date.UTC(2020, 0, 1);
   var MAX_SKEW_MS = 24 * 60 * 60 * 1000;
-  var TIME_KEYS = ["createTime", "create_time", "createdAt", "created_at", "thinkingStartTime"];
+  var TIME_KEYS = ["thinkingStartTime", "createTime", "create_time", "createdAt", "created_at"];
   function isFresh(ms, now = Date.now()) {
     return Math.abs(now - ms) < FRESH_MS;
   }
@@ -8628,31 +8628,26 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
     return out;
   }
+  function oldestTrusted(values, now = Date.now()) {
+    let best = null;
+    for (const ms of values) {
+      if (ms == null || isFresh(ms, now))
+        continue;
+      if (best == null || ms < best)
+        best = ms;
+    }
+    return best;
+  }
   function chooseTime(opts) {
     const now = opts.now ?? Date.now();
-    const { stored } = opts;
-    const { uuid } = opts;
-    const { fieldTimes } = opts;
-    if (stored != null && !isFresh(stored, now))
-      return stored;
-    const trustedField = fieldTimes.find((ms) => !isFresh(ms, now));
-    if (trustedField != null)
-      return trustedField;
-    if (uuid != null && !isFresh(uuid, now))
-      return uuid;
-    return stored ?? fieldTimes[0] ?? uuid ?? null;
+    const trusted = oldestTrusted([opts.stored, ...opts.fieldTimes, opts.uuid], now);
+    if (trusted != null)
+      return trusted;
+    return opts.stored ?? opts.fieldTimes[0] ?? opts.uuid ?? null;
   }
   function trustedTime(opts) {
     const now = opts.now ?? Date.now();
-    const stored = opts.stored ?? null;
-    if (stored != null && !isFresh(stored, now))
-      return stored;
-    const trustedField = opts.fieldTimes.find((ms) => !isFresh(ms, now));
-    if (trustedField != null)
-      return trustedField;
-    if (opts.uuid != null && !isFresh(opts.uuid, now))
-      return opts.uuid;
-    return null;
+    return oldestTrusted([opts.stored ?? null, ...opts.fieldTimes, opts.uuid], now);
   }
   function shouldKeepStored(prev, incoming, now = Date.now()) {
     if (incoming === prev)
@@ -8663,14 +8658,6 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return true;
     return false;
   }
-  function stampFromRecords(records, now = Date.now()) {
-    for (const rec of records) {
-      const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(recordId(rec), now), now });
-      if (ms != null)
-        return ms - BORROW_MS;
-    }
-    return null;
-  }
   function preferHumanTime(own, borrowed) {
     if (borrowed == null)
       return own;
@@ -8678,56 +8665,33 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return borrowed;
     return own;
   }
-  function childIdsOf(rec) {
-    const { children } = rec;
-    if (!Array.isArray(children))
-      return [];
-    const ids = [];
-    for (const kid of children) {
-      if (typeof kid === "string" && kid) {
-        ids.push(kid);
-        continue;
-      }
-      const child = asRecord(kid);
-      const id = child ? recordId(child) : "";
-      if (id)
-        ids.push(id);
-    }
-    return ids;
+  function familyUserTime(record, id, now = Date.now()) {
+    const uuid = uuidTime(id, now);
+    const thinking = parseTime(record.thinkingStartTime, now);
+    if (isHumanSender(record.sender) && thinking == null && uuid == null)
+      return null;
+    const ms = trustedTime({ fieldTimes: pickTimes(record, now), uuid, now });
+    return ms == null ? null : ms - BORROW_MS;
   }
   function neighborTime(id, records, now = Date.now()) {
     if (!id)
       return null;
     let next = null;
-    const childIds = new Set;
     for (let i = 0;i < records.length; i++) {
       const rec = records[i];
       const recId = recordId(rec);
       if (rec.parentResponseId === id) {
-        const ms = stampFromRecords([rec], now);
+        const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(recId, now), now });
         if (ms != null)
-          return ms;
+          return ms - BORROW_MS;
       }
-      if (recId !== id)
-        continue;
-      if (i + 1 < records.length)
+      if (recId === id && i + 1 < records.length)
         next = records[i + 1];
-      for (const childId of childIdsOf(rec))
-        childIds.add(childId);
-    }
-    if (childIds.size) {
-      const children = [];
-      for (const rec of records) {
-        if (childIds.has(recordId(rec)))
-          children.push(rec);
-      }
-      const ms = stampFromRecords(children, now);
-      if (ms != null)
-        return ms;
     }
     if (!next || isHumanSender(next.sender))
       return null;
-    return stampFromRecords([next], now);
+    const ms = trustedTime({ fieldTimes: pickTimes(next, now), uuid: uuidTime(recordId(next), now), now });
+    return ms == null ? null : ms - BORROW_MS;
   }
   function shouldPersistStamp(sender, ms, stored, now = Date.now()) {
     if (stored != null)
@@ -8845,7 +8809,9 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     persist2();
     return prev !== ms;
   }
-  function extraKeys(rec, id) {
+  function extraKeys(rec, id, user = false) {
+    if (user)
+      return id ? [`u:${id}`] : [];
     const keys = [];
     if (id)
       keys.push(`h:${id}`);
@@ -8866,21 +8832,29 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
     return keys;
   }
-  function storedMs(id, rec) {
+  function storedMs(id, rec, user = false) {
     const map = stamps();
+    if (user) {
+      const mine = map.get(`u:${id}`);
+      if (mine != null)
+        return mine;
+      return null;
+    }
     const direct = map.get(id);
     if (direct != null)
       return direct;
-    for (const key of extraKeys(rec, id)) {
+    for (const key of extraKeys(rec, id, false)) {
       const ms = map.get(key);
       if (ms != null)
         return ms;
     }
     return null;
   }
-  function rememberKeys(id, rec, ms, sender) {
-    let changed = remember(id, ms, sender);
-    for (const key of extraKeys(rec, id)) {
+  function rememberKeys(id, rec, ms, sender, user = false) {
+    let changed = false;
+    if (!user && remember(id, ms, sender))
+      changed = true;
+    for (const key of extraKeys(rec, id, user)) {
       if (remember(key, ms, sender))
         changed = true;
     }
@@ -8899,49 +8873,17 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return [];
     }
   }
-  function graphChildRecords(id) {
+  function fullRecord(id, rec) {
+    if (!id)
+      return rec;
     try {
-      const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
-      const out = [];
-      for (const nodes of Object.values(nodesByConversationId ?? {})) {
-        for (const node of nodes ?? []) {
-          if (node.responseId !== id)
-            continue;
-          for (const childId of node.children ?? []) {
-            const rec = asRecord(byId?.[childId]);
-            if (rec)
-              out.push(rec);
-          }
-        }
-      }
-      return out;
+      const hit = asRecord(ResponseStore.useResponseStore.getState().byId?.[id]);
+      if (hit)
+        return hit;
     } catch (e) {
-      logger18.debug("node children lookup failed", e);
-      return [];
+      logger18.debug("byId lookup failed", e);
     }
-  }
-  function queryChildRecords(rec) {
-    const text = typeof rec.message === "string" && rec.message ? rec.message : typeof rec.query === "string" ? rec.query : "";
-    if (!text)
-      return [];
-    try {
-      const { byId } = ResponseStore.useResponseStore.getState();
-      const out = [];
-      for (const row of Object.values(byId ?? {})) {
-        const { sender, query } = row;
-        if (isHumanSender(sender))
-          continue;
-        if (query === text)
-          out.push(row);
-      }
-      return out;
-    } catch (e) {
-      logger18.debug("query child lookup failed", e);
-      return [];
-    }
-  }
-  function borrowedMs(id, rec) {
-    return stampFromRecords(graphChildRecords(id)) ?? neighborTime(id, storeRecords(id)) ?? stampFromRecords(queryChildRecords(rec)) ?? conversationCreateTime(id);
+    return rec;
   }
   function conversationCreateTime(id) {
     try {
@@ -8964,17 +8906,20 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     if (!rec)
       return null;
     const id = recordId(rec);
-    const human = isUser === true || isHumanSender(rec.sender);
-    const stored = id ? storedMs(id, rec) : null;
+    const full = fullRecord(id, rec);
+    const human = isUser === true || isHumanSender(full.sender);
+    const stored = id ? storedMs(id, full, human) : null;
     let ms = chooseTime({
-      fieldTimes: pickTimes(rec),
+      fieldTimes: pickTimes(full),
       stored,
       uuid: uuidTime(id)
     });
-    if (human && id)
-      ms = preferHumanTime(ms, borrowedMs(id, rec));
+    if (human && id) {
+      const borrowed = familyUserTime(full, id) ?? neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
+      ms = preferHumanTime(ms, borrowed);
+    }
     if (id && ms != null)
-      rememberKeys(id, rec, ms, human ? "human" : rec.sender);
+      rememberKeys(id, full, ms, human ? "human" : full.sender, human);
     return ms;
   }
   function ingest(value) {
@@ -9139,16 +9084,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       ResponseStore: {
         selector: (s) => s.byId,
         handler(byId) {
-          try {
-            const { nodesByConversationId } = ResponseStore.useResponseStore.getState();
-            ingest({
-              responses: Object.values(byId ?? {}),
-              nodes: Object.values(nodesByConversationId ?? {}).flat()
-            });
-          } catch (e) {
-            logger18.debug("store ingest failed", e);
-            ingest({ responses: Object.values(byId ?? {}) });
-          }
+          ingest({ responses: Object.values(byId ?? {}) });
         }
       }
     },
