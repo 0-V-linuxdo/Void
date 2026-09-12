@@ -38,6 +38,11 @@ const settings = definePluginSettings({
         description: "Start with the sidebar collapsed on page load.",
         default: false,
     },
+    botsDefaultCollapsed: {
+        type: OptionType.BOOLEAN,
+        description: "Start with the Bots section collapsed on page load.",
+        default: true,
+    },
     batchSelect: {
         type: OptionType.BOOLEAN,
         description: "Show checkboxes on conversations for bulk selection and deletion.",
@@ -60,9 +65,58 @@ migrateSettingsToPlugin("BetterSidebar", "BotsPlusHover", "titleRowHover", "chat
 
 const BTN_CLASS = "void-chats-plus flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary hover:bg-button-ghost-hover hover:text-primary focus:outline-none focus-visible:bg-button-ghost-hover";
 
+const BOTS_PLUS_SEL = "[data-sidebar=sidebar] :is([data-void-bots-plus], .void-bots-plus)";
+
+let botsCollapseObserver: MutationObserver | null = null;
+let botsCollapseTimer: ReturnType<typeof setTimeout> | null = null;
+
 function applyHeaderHover() {
     if (settings.store.titleRowHover) enableStyle("headerHover");
     else disableStyle("headerHover");
+}
+
+function collapseBotsSection() {
+    const plus = document.querySelector<HTMLElement>(BOTS_PLUS_SEL);
+    if (!plus) return false;
+    const group = plus.closest("[data-sidebar=group]");
+    if (!group) return false;
+    const expanded = group.querySelector<HTMLElement>("button[aria-expanded=true]");
+    if (!expanded) return true;
+    expanded.click();
+    return true;
+}
+
+function stopBotsCollapse() {
+    botsCollapseObserver?.disconnect();
+    botsCollapseObserver = null;
+    if (botsCollapseTimer != null) {
+        clearTimeout(botsCollapseTimer);
+        botsCollapseTimer = null;
+    }
+}
+
+function startBotsCollapse() {
+    stopBotsCollapse();
+    if (!settings.store.botsDefaultCollapsed) return;
+
+    let done = false;
+    const tick = () => {
+        if (done) return;
+        if (collapseBotsSection()) {
+            done = true;
+            stopBotsCollapse();
+        }
+    };
+
+    tick();
+    if (done) return;
+
+    botsCollapseObserver = new MutationObserver(tick);
+    botsCollapseObserver.observe(document.documentElement, { childList: true, subtree: true });
+    botsCollapseTimer = setTimeout(() => {
+        done = true;
+        stopBotsCollapse();
+    }, 10_000);
 }
 
 function newChat(event: ReactMouseEvent) {
@@ -161,7 +215,7 @@ const WrappedCheckbox = ErrorBoundary.wrap(SelectCheckbox, null);
 export default definePlugin({
     name: "BetterSidebar",
     icon: PanelLeftIcon,
-    description: "Sidebar improvements, including header-action hover and a New chat plus on Chats.",
+    description: "Sidebar improvements, including header-action hover, a New chat plus on Chats, and Bots default collapsed.",
     authors: [Devs.Prism, Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
@@ -193,6 +247,10 @@ export default definePlugin({
         return !settings.store.defaultCollapsed;
     },
 
+    _botsDefaultCollapsed() {
+        return settings.store.botsDefaultCollapsed;
+    },
+
     _onSidebarClick() {
         if (!settings.store.clickToToggle) return;
         return (e: MouseEvent) => {
@@ -206,6 +264,7 @@ export default definePlugin({
     start() {
         selection.clear();
         applyHeaderHover();
+        startBotsCollapse();
     },
 
     onSettingsChange: applyHeaderHover,
@@ -213,6 +272,7 @@ export default definePlugin({
     stop() {
         selection.clear();
         disableStyle("headerHover");
+        stopBotsCollapse();
     },
 
     patches: [
@@ -278,6 +338,13 @@ export default definePlugin({
             replacement: {
                 match: /(\i\("sidebar-chats","Chats"\):\i\("sidebar-history","History"\),collapsed:\i,onToggle:\(\)=>\i\(\i\))/,
                 replace: "$1,action:$self._ChatsPlus()",
+            },
+        },
+        {
+            find: "\"sidebar.section-title\",\"Bots\"",
+            replacement: {
+                match: /\(0,(\i)\.useState\)\(!1\)(?=,\[.{0,30}\]=\(0,\1\.useState\)\(!1\),.{0,48}\.COLLAPSED_BOT_LIMIT)/,
+                replace: "(0,$1.useState)($self._botsDefaultCollapsed())",
             },
         },
     ],

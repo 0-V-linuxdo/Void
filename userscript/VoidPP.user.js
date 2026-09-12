@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.33] v1.0.0
+// @version      [20260912.34] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.33] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.34] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7183,9 +7183,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.33] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"a89c02d"}`
-    }, `(${"a89c02d"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.34] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"a7208c5"}`
+    }, `(${"a7208c5"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7797,6 +7797,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       description: "Start with the sidebar collapsed on page load.",
       default: false
     },
+    botsDefaultCollapsed: {
+      type: 3 /* BOOLEAN */,
+      description: "Start with the Bots section collapsed on page load.",
+      default: true
+    },
     batchSelect: {
       type: 3 /* BOOLEAN */,
       description: "Show checkboxes on conversations for bulk selection and deletion.",
@@ -7816,11 +7821,58 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   migrateSettingsToPlugin("BetterSidebar", "SidebarHeaderHover", "titleRowHover", "chatsPlus");
   migrateSettingsToPlugin("BetterSidebar", "BotsPlusHover", "titleRowHover", "chatsPlus");
   var BTN_CLASS = "void-chats-plus flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary hover:bg-button-ghost-hover hover:text-primary focus:outline-none focus-visible:bg-button-ghost-hover";
+  var BOTS_PLUS_SEL = "[data-sidebar=sidebar] :is([data-void-bots-plus], .void-bots-plus)";
+  var botsCollapseObserver = null;
+  var botsCollapseTimer = null;
   function applyHeaderHover() {
     if (settings7.store.titleRowHover)
       enableStyle("headerHover");
     else
       disableStyle("headerHover");
+  }
+  function collapseBotsSection() {
+    const plus = document.querySelector(BOTS_PLUS_SEL);
+    if (!plus)
+      return false;
+    const group = plus.closest("[data-sidebar=group]");
+    if (!group)
+      return false;
+    const expanded = group.querySelector("button[aria-expanded=true]");
+    if (!expanded)
+      return true;
+    expanded.click();
+    return true;
+  }
+  function stopBotsCollapse() {
+    botsCollapseObserver?.disconnect();
+    botsCollapseObserver = null;
+    if (botsCollapseTimer != null) {
+      clearTimeout(botsCollapseTimer);
+      botsCollapseTimer = null;
+    }
+  }
+  function startBotsCollapse() {
+    stopBotsCollapse();
+    if (!settings7.store.botsDefaultCollapsed)
+      return;
+    let done = false;
+    const tick = () => {
+      if (done)
+        return;
+      if (collapseBotsSection()) {
+        done = true;
+        stopBotsCollapse();
+      }
+    };
+    tick();
+    if (done)
+      return;
+    botsCollapseObserver = new MutationObserver(tick);
+    botsCollapseObserver.observe(document.documentElement, { childList: true, subtree: true });
+    botsCollapseTimer = setTimeout(() => {
+      done = true;
+      stopBotsCollapse();
+    }, 1e4);
   }
   function newChat(event) {
     event.preventDefault();
@@ -7914,7 +7966,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var betterSidebar_default = definePlugin({
     name: "BetterSidebar",
     icon: PanelLeftIcon,
-    description: "Sidebar improvements, including header-action hover and a New chat plus on Chats.",
+    description: "Sidebar improvements, including header-action hover, a New chat plus on Chats, and Bots default collapsed.",
     authors: [Devs.Prism, Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
@@ -7945,6 +7997,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     _defaultOpen() {
       return !settings7.store.defaultCollapsed;
     },
+    _botsDefaultCollapsed() {
+      return settings7.store.botsDefaultCollapsed;
+    },
     _onSidebarClick() {
       if (!settings7.store.clickToToggle)
         return;
@@ -7958,11 +8013,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     start() {
       selection.clear();
       applyHeaderHover();
+      startBotsCollapse();
     },
     onSettingsChange: applyHeaderHover,
     stop() {
       selection.clear();
       disableStyle("headerHover");
+      stopBotsCollapse();
     },
     patches: [
       {
@@ -8027,6 +8084,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         replacement: {
           match: /(\i\("sidebar-chats","Chats"\):\i\("sidebar-history","History"\),collapsed:\i,onToggle:\(\)=>\i\(\i\))/,
           replace: "$1,action:$self._ChatsPlus()"
+        }
+      },
+      {
+        find: '"sidebar.section-title","Bots"',
+        replacement: {
+          match: /\(0,(\i)\.useState\)\(!1\)(?=,\[.{0,30}\]=\(0,\1\.useState\)\(!1\),.{0,48}\.COLLAPSED_BOT_LIMIT)/,
+          replace: "(0,$1.useState)($self._botsDefaultCollapsed())"
         }
       }
     ]
@@ -10393,7 +10457,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     const [openId, setOpenId] = useState(null);
     const [confirm, setConfirm] = useState(false);
     const needle = query.trim().toLowerCase();
-    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).reverse();
+    const visible = list.map((text, index) => ({ text, index })).filter((row) => !needle || row.text.toLowerCase().includes(needle)).toReversed();
     const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
     const current = Math.min(page, pageCount - 1);
     const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
@@ -11721,7 +11785,7 @@ html.void-rt-open [data-sidebar="gap"] {
     return t;
   }
   function plainText(md) {
-    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
+    const t = md.replaceAll(/```[\s\S]*?```/g, " ").replaceAll(/`([^`]+)`/g, "$1").replaceAll(/!\[[^\]]*\]\([^)]*\)/g, " ").replaceAll(/\[([^\]]+)\]\([^)]*\)/g, "$1").replaceAll(/^#{1,6}\s+/gm, "").replaceAll(/[*_~]{1,3}/g, "").replaceAll(/^>\s+/gm, "");
     return scrubText(t);
   }
   function clipLine(text, max) {
@@ -11794,7 +11858,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
     const cached = byConversationId[id];
     if (cached?.length)
-      return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+      return [...cached].toSorted((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
     try {
       const chat = ChatPageStore.useChatPageStore.getState();
       if (chat.conversationId === id) {
