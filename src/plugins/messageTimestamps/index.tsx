@@ -24,6 +24,7 @@ import definePlugin, { OptionType } from "@utils/types";
 
 import {
     asRecord,
+    childTime,
     childTimeFromNodes,
     chooseTime,
     harvestResponses,
@@ -90,11 +91,11 @@ function persistNow() {
 
 const persist = debounce(persistNow, 400);
 
-function remember(id: string, ms: number, sender?: unknown, state?: unknown): boolean {
+function remember(id: string, ms: number, sender?: unknown, state?: unknown, force = false): boolean {
     if (!id) return false;
     const map = stamps();
     const prev = map.get(id) ?? null;
-    if (!shouldPersistStamp(sender, ms, prev, Date.now(), state)) return false;
+    if (!force && !shouldPersistStamp(sender, ms, prev, Date.now(), state)) return false;
     if (map.has(id)) map.delete(id);
     map.set(id, ms);
     while (map.size > STAMP_MAX) {
@@ -138,7 +139,7 @@ function userKeys(rec: Record<string, unknown>, id: string): string[] {
     return keys;
 }
 
-function gatewayRecords(cid?: string): Record<string, unknown>[] {
+function gatewayRecords(cid: string): Record<string, unknown>[] {
     const out: Record<string, unknown>[] = [];
     try {
         const { conversations } = MessageStore.useMessageStore.getState();
@@ -147,13 +148,30 @@ function gatewayRecords(cid?: string): Record<string, unknown>[] {
             for (const { status, content } of Object.values(slice?.nodes ?? {})) {
                 if (!content) continue;
                 const { responseId, sender, parentResponseId, createTime, thinkingStartTime, state } = content;
-                out.push({ responseId, sender, parentResponseId, createTime, thinkingStartTime, state: status === "ack-pending" ? "optimistic" : state });
+                out.push({
+                    responseId,
+                    sender,
+                    parentResponseId,
+                    thinkingStartTime,
+                    createTime: status === "complete" ? undefined : createTime,
+                    state: status === "ack-pending" ? "optimistic" : state,
+                });
             }
         }
     } catch (e) {
         logger.debug("message store unavailable", e);
     }
     return out;
+}
+
+function gatewaySettled(cid: string, id: string): boolean {
+    if (!cid) return false;
+    try {
+        return MessageStore.useMessageStore.getState().conversations?.[cid]?.nodes?.[id]?.status === "complete";
+    } catch (e) {
+        logger.debug("message store unavailable", e);
+        return false;
+    }
 }
 
 function extraKeys(rec: Record<string, unknown>, id: string): string[] {
@@ -185,18 +203,18 @@ function storedMs(id: string, rec: Record<string, unknown>, user: boolean): numb
     return null;
 }
 
-function rememberKeys(id: string, rec: Record<string, unknown>, ms: number, sender: unknown, user: boolean): boolean {
+function rememberKeys(id: string, rec: Record<string, unknown>, ms: number, sender: unknown, user: boolean, force = false): boolean {
     const { state } = rec;
     let changed = false;
     if (user) {
         for (const key of userKeys(rec, id)) {
-            if (remember(key, ms, "human", state)) changed = true;
+            if (remember(key, ms, "human", state, force)) changed = true;
         }
         return changed;
     }
-    if (remember(id, ms, sender, state)) changed = true;
+    if (remember(id, ms, sender, state, force)) changed = true;
     for (const key of extraKeys(rec, id)) {
-        if (remember(key, ms, sender, state)) changed = true;
+        if (remember(key, ms, sender, state, force)) changed = true;
     }
     return changed;
 }
@@ -270,23 +288,31 @@ function resolveMs(response: GrokResponse, isUser?: boolean): number | null {
     const id = recordId(rec);
     const full = fullRecord(id, rec);
     const human = isUser === true || isHumanSender(full.sender);
+    const sender = human ? "human" : full.sender;
+    const cid = id ? conversationIdOf(id, full) : "";
+    let authoritative: number | null = null;
+    if (id) authoritative = human ? childTime(id, [...gatewayRecords(cid), ...storeRecords(id)]) : parseTime(full.thinkingStartTime);
+    if (authoritative != null) {
+        rememberKeys(id, full, authoritative, sender, human, true);
+        return authoritative;
+    }
     const stored = id ? storedMs(id, full, human) : null;
-    const fieldTimes = human && !isOptimisticState(full.state) ? [] : pickTimes(full);
+    const fieldTimes = (human && !isOptimisticState(full.state)) || gatewaySettled(cid, id) ? [] : pickTimes(full);
     let ms = chooseTime({
         fieldTimes,
         stored,
         uuid: uuidTime(id),
     });
-    if (human && id) ms = preferHumanTime(ms, borrowedMs(id, conversationIdOf(id, full)));
-    if (id && ms != null) rememberKeys(id, full, ms, human ? "human" : full.sender, human);
+    if (human && id) ms = preferHumanTime(ms, borrowedMs(id, cid));
+    if (id && ms != null) rememberKeys(id, full, ms, sender, human);
     return ms;
 }
 
 function ingest(value: unknown) {
     let changed = false;
-    for (const { id, ms, rec } of harvestResponses(value)) {
+    for (const { id, ms, rec, authoritative } of harvestResponses(value)) {
         const human = isHumanSender(rec.sender);
-        if (rememberKeys(id, rec, ms, rec.sender, human)) changed = true;
+        if (rememberKeys(id, rec, ms, rec.sender, human, authoritative)) changed = true;
     }
     if (changed) tick.notify();
 }
@@ -465,7 +491,7 @@ export default definePlugin({
                 return n;
             },
             handler() {
-                ingest({ responses: gatewayRecords() });
+                ingest({ responses: gatewayRecords("") });
             },
         },
     },

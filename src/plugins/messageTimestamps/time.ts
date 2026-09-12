@@ -180,6 +180,21 @@ function nextNonHuman(records: Array<Record<string, unknown>>, from: number): Re
     return null;
 }
 
+export function childTime(id: string, records: Array<Record<string, unknown>>, now = Date.now()): number | null {
+    if (!id) return null;
+    for (const rec of records) {
+        if (rec.parentResponseId !== id || isHumanSender(rec.sender)) continue;
+        const ms = parseTime(rec.thinkingStartTime, now);
+        if (ms != null) return ms - BORROW_MS;
+    }
+    return null;
+}
+
+function authoritativeTime(rec: Record<string, unknown>, records: Array<Record<string, unknown>>, now = Date.now()): number | null {
+    if (isHumanSender(rec.sender)) return childTime(recordId(rec), records, now);
+    return parseTime(rec.thinkingStartTime, now);
+}
+
 export function neighborTime(id: string, records: Array<Record<string, unknown>>, now = Date.now()): number | null {
     if (!id) return null;
     let next: Record<string, unknown> | null = null;
@@ -235,6 +250,7 @@ export interface HarvestedTime {
     id: string;
     ms: number;
     rec: Record<string, unknown>;
+    authoritative: boolean;
 }
 
 export function harvestResponses(value: unknown, now = Date.now()): HarvestedTime[] {
@@ -245,6 +261,12 @@ export function harvestResponses(value: unknown, now = Date.now()): HarvestedTim
     for (const rec of records) {
         const id = recordId(rec);
         if (!id || seen.has(id)) continue;
+        const authoritative = authoritativeTime(rec, records, now);
+        if (authoritative != null) {
+            seen.add(id);
+            out.push({ id, ms: authoritative, rec, authoritative: true });
+            continue;
+        }
         const uuid = uuidTime(id, now);
         const { sender, state } = rec;
         const human = isHumanSender(sender);
@@ -260,7 +282,7 @@ export function harvestResponses(value: unknown, now = Date.now()): HarvestedTim
         }
         if (ms == null) continue;
         seen.add(id);
-        out.push({ id, ms, rec });
+        out.push({ id, ms, rec, authoritative: false });
     }
     return out;
 }

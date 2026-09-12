@@ -8,6 +8,7 @@ import { describe, expect, test } from "bun:test";
 
 import {
     BORROW_MS,
+    childTime,
     childTimeFromNodes,
     chooseTime,
     FRESH_MS,
@@ -250,6 +251,24 @@ describe("neighborTime", () => {
     });
 });
 
+describe("childTime", () => {
+    test("uses the direct child thinkingStartTime even when fresh", () => {
+        expect(childTime(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
+            { responseId: "child", sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_NOW, thinkingStartTime: ISO_NOW },
+        ], NOW)).toBe(NOW - BORROW_MS);
+    });
+
+    test("ignores siblings, human children, and children without thinkingStartTime", () => {
+        expect(childTime(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human" },
+            { responseId: "other-human", sender: "human", parentResponseId: HUMAN_V4, thinkingStartTime: ISO_HOUR_AGO },
+            { responseId: "child", sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_HOUR_AGO },
+            { responseId: v7(HOUR_AGO), sender: "assistant", createTime: ISO_HOUR_AGO, thinkingStartTime: ISO_HOUR_AGO },
+        ], NOW)).toBeNull();
+    });
+});
+
 describe("childTimeFromNodes", () => {
     test("uses parentResponseId on the node, not children[]", () => {
         const child = v7(HOUR_AGO);
@@ -368,6 +387,23 @@ describe("harvestResponses", () => {
             ],
         }, NOW);
         expect(ids(hits)).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
+    });
+
+    test("marks thinkingStartTime and direct-child times authoritative", () => {
+        const hits = harvestResponses({
+            responses: [
+                { responseId: HUMAN_V4, sender: "human", state: "closed", createTime: ISO_NOW },
+                { responseId: "child", sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_RELOAD, thinkingStartTime: ISO_HOUR_AGO },
+                { responseId: "lone", sender: "assistant", createTime: ISO_HOUR_AGO },
+                { responseId: "sent", sender: "human", state: "optimistic", createTime: ISO_NOW },
+            ],
+        }, NOW);
+        expect(hits.map(({ id, ms, authoritative }) => ({ id, ms, authoritative }))).toEqual([
+            { id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS, authoritative: true },
+            { id: "child", ms: HOUR_AGO, authoritative: true },
+            { id: "lone", ms: HOUR_AGO, authoritative: false },
+            { id: "sent", ms: NOW, authoritative: false },
+        ]);
     });
 });
 

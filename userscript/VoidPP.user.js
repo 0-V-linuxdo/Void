@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.14] v1.0.0
+// @version      [20260912.15] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.14] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.15] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7086,9 +7086,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.14] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"ed877ac"}`
-    }, `(${"ed877ac"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.15] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"de8abfa"}`
+    }, `(${"de8abfa"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -15218,6 +15218,23 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
     return null;
   }
+  function childTime(id, records, now = Date.now()) {
+    if (!id)
+      return null;
+    for (const rec of records) {
+      if (rec.parentResponseId !== id || isHumanSender(rec.sender))
+        continue;
+      const ms = parseTime(rec.thinkingStartTime, now);
+      if (ms != null)
+        return ms - BORROW_MS;
+    }
+    return null;
+  }
+  function authoritativeTime(rec, records, now = Date.now()) {
+    if (isHumanSender(rec.sender))
+      return childTime(recordId(rec), records, now);
+    return parseTime(rec.thinkingStartTime, now);
+  }
   function neighborTime(id, records, now = Date.now()) {
     if (!id)
       return null;
@@ -15274,6 +15291,12 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       const id = recordId(rec);
       if (!id || seen.has(id))
         continue;
+      const authoritative = authoritativeTime(rec, records, now);
+      if (authoritative != null) {
+        seen.add(id);
+        out.push({ id, ms: authoritative, rec, authoritative: true });
+        continue;
+      }
       const uuid = uuidTime(id, now);
       const { sender: sender2, state: state2 } = rec;
       const human = isHumanSender(sender2);
@@ -15292,7 +15315,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
       if (ms == null)
         continue;
       seen.add(id);
-      out.push({ id, ms, rec });
+      out.push({ id, ms, rec, authoritative: false });
     }
     return out;
   }
@@ -15363,12 +15386,12 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     settings23.store.stamps = next;
   }
   var persist2 = debounce(persistNow, 400);
-  function remember(id, ms, sender2, state2) {
+  function remember(id, ms, sender2, state2, force = false) {
     if (!id)
       return false;
     const map = stamps();
     const prev = map.get(id) ?? null;
-    if (!shouldPersistStamp(sender2, ms, prev, Date.now(), state2))
+    if (!force && !shouldPersistStamp(sender2, ms, prev, Date.now(), state2))
       return false;
     if (map.has(id))
       map.delete(id);
@@ -15425,13 +15448,30 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
           if (!content)
             continue;
           const { responseId, sender: sender2, parentResponseId, createTime, thinkingStartTime, state: state2 } = content;
-          out.push({ responseId, sender: sender2, parentResponseId, createTime, thinkingStartTime, state: status === "ack-pending" ? "optimistic" : state2 });
+          out.push({
+            responseId,
+            sender: sender2,
+            parentResponseId,
+            thinkingStartTime,
+            createTime: status === "complete" ? undefined : createTime,
+            state: status === "ack-pending" ? "optimistic" : state2
+          });
         }
       }
     } catch (e) {
       logger29.debug("message store unavailable", e);
     }
     return out;
+  }
+  function gatewaySettled(cid, id) {
+    if (!cid)
+      return false;
+    try {
+      return MessageStore.useMessageStore.getState().conversations?.[cid]?.nodes?.[id]?.status === "complete";
+    } catch (e) {
+      logger29.debug("message store unavailable", e);
+      return false;
+    }
   }
   function extraKeys(rec, id) {
     const keys2 = [];
@@ -15464,20 +15504,20 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
     return null;
   }
-  function rememberKeys(id, rec, ms, sender2, user) {
+  function rememberKeys(id, rec, ms, sender2, user, force = false) {
     const { state: state2 } = rec;
     let changed = false;
     if (user) {
       for (const key of userKeys(rec, id)) {
-        if (remember(key, ms, "human", state2))
+        if (remember(key, ms, "human", state2, force))
           changed = true;
       }
       return changed;
     }
-    if (remember(id, ms, sender2, state2))
+    if (remember(id, ms, sender2, state2, force))
       changed = true;
     for (const key of extraKeys(rec, id)) {
-      if (remember(key, ms, sender2, state2))
+      if (remember(key, ms, sender2, state2, force))
         changed = true;
     }
     return changed;
@@ -15554,24 +15594,33 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     const id = recordId(rec);
     const full = fullRecord(id, rec);
     const human = isUser === true || isHumanSender(full.sender);
+    const sender2 = human ? "human" : full.sender;
+    const cid = id ? conversationIdOf(id, full) : "";
+    let authoritative = null;
+    if (id)
+      authoritative = human ? childTime(id, [...gatewayRecords(cid), ...storeRecords(id)]) : parseTime(full.thinkingStartTime);
+    if (authoritative != null) {
+      rememberKeys(id, full, authoritative, sender2, human, true);
+      return authoritative;
+    }
     const stored = id ? storedMs(id, full, human) : null;
-    const fieldTimes = human && !isOptimisticState(full.state) ? [] : pickTimes(full);
+    const fieldTimes = human && !isOptimisticState(full.state) || gatewaySettled(cid, id) ? [] : pickTimes(full);
     let ms = chooseTime({
       fieldTimes,
       stored,
       uuid: uuidTime(id)
     });
     if (human && id)
-      ms = preferHumanTime(ms, borrowedMs(id, conversationIdOf(id, full)));
+      ms = preferHumanTime(ms, borrowedMs(id, cid));
     if (id && ms != null)
-      rememberKeys(id, full, ms, human ? "human" : full.sender, human);
+      rememberKeys(id, full, ms, sender2, human);
     return ms;
   }
   function ingest(value) {
     let changed = false;
-    for (const { id, ms, rec } of harvestResponses(value)) {
+    for (const { id, ms, rec, authoritative } of harvestResponses(value)) {
       const human = isHumanSender(rec.sender);
-      if (rememberKeys(id, rec, ms, rec.sender, human))
+      if (rememberKeys(id, rec, ms, rec.sender, human, authoritative))
         changed = true;
     }
     if (changed)
@@ -15754,7 +15803,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
           return n;
         },
         handler() {
-          ingest({ responses: gatewayRecords() });
+          ingest({ responses: gatewayRecords("") });
         }
       }
     },
