@@ -10,8 +10,9 @@ Before any push to `voidpp`:
 
 1. Run `bun run build` so `userscript/VoidPP.user.js` is regenerated.
 2. Commit that userscript with the matching source. Do not push source-only.
-3. Install and update URLs are `userscript/VoidPP.user.js`.
-4. Purge jsDelivr for the canonical file only:
+3. Confirm the userscript header `// @version` matches `VERSION_DATE` in `build.ts`. Tampermonkey only reads that header — bumping `build.ts` alone leaves the bundle stale (source `.20` / userscript `.19`) and Check for updates will not fire.
+4. Install and update URLs are `userscript/VoidPP.user.js`.
+5. Purge jsDelivr for the canonical file only:
    `curl -s https://purge.jsdelivr.net/gh/0-V-linuxdo/VoidPP@heads/voidpp/userscript/VoidPP.user.js`
 
 Do not write `userscript/Void.user.js`. The hop is gone. Old Tampermonkey installs that already ate `[20260911.8]` or `[20260911.9]` follow `@updateURL` to `VoidPP.user.js`. Anyone still on a pre-hop `@updateURL` must reinstall from the canonical file.
