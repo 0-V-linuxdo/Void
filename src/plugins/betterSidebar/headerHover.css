@@ -1,0 +1,53 @@
+/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* stylelint-disable no-descending-specificity */
+
+@media (width >= 48rem) {
+    [data-sidebar="sidebar"] [data-void-bots-plus],
+    [data-sidebar="sidebar"] .void-bots-plus,
+    [data-sidebar="sidebar"] button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-void-chats-plus],
+    [data-sidebar="sidebar"] .void-chats-plus,
+    [data-sidebar="sidebar"] button[aria-label="Add project"],
+    [data-sidebar="sidebar"] button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
+        opacity: 0 !important;
+        transition: opacity 0.15s ease;
+    }
+
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-bots-plus],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-bots-plus,
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-chats-plus],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-chats-plus,
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="Add project"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) > :first-child :is(button, [role="button"]):not([aria-expanded]),
+    [data-sidebar="sidebar"] :has(> :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus)):is(:hover, :focus-within) > :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus),
+    [data-sidebar="sidebar"] [data-void-bots-plus]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] .void-bots-plus:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="New bot"]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] [data-void-chats-plus]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] .void-chats-plus:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="Add project"]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="All projects"]:is(:hover, :focus-visible, [data-state="open"]) {
+        opacity: 1 !important;
+    }
+}
+
+@media (width >= 48rem) and (prefers-reduced-motion: reduce) {
+    [data-sidebar="sidebar"] [data-void-bots-plus],
+    [data-sidebar="sidebar"] .void-bots-plus,
+    [data-sidebar="sidebar"] button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-void-chats-plus],
+    [data-sidebar="sidebar"] .void-chats-plus,
+    [data-sidebar="sidebar"] button[aria-label="Add project"],
+    [data-sidebar="sidebar"] button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
+        transition: none;
+    }
+}
