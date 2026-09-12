@@ -1,4 +1,4 @@
-# Void++
+# <img src="assets/logos/app-icon/voidpp-icon.svg" width="32" height="32" alt="Void++"> Void++
 
 [English](README.md) · [中文](README.zh.md)
 
@@ -16,30 +16,30 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 
 | Feature | Default | What it does |
 | --- | --- | --- |
-| Cleaner default-on | On | Upstream plugin; Void++ turns it on by default. Hides upgrade nags, the home banner, the composer SuperGrok chip, and locked models. |
-| InputHistory | On | Recall previous chat prompts with Arrow Up and Arrow Down, like a shell. |
-| NoGrokBot | On | Hide the top-right Grok Bot promo button. |
-| NoSidebarIdentity | On | Hide username and/or email in the Grok sidebar and account menu (separate toggles). Avatar stays so the account menu still opens. |
-| ChatStateFavicons | On | Tab favicon reflects chat state (streaming, done, ready, error) with five overlay styles. |
-| NoShareLink | On | Hide Share Project (in a project) and Create share link (top-right of chats); separate toggles. |
-| NoDictation | On | Hide the Dictation (voice input) button from the chat input bar. Optional toggle hides Dictation Refinement in Settings → Behavior. |
-| UsageDisplay | On | Shows official weekly SuperGrok usage in the chat bar. Optional daily stats (`usageStats`, off by default): hover week first, then today; click opens per-day history. |
-| Placeholder | Off | Replace the rotating chat input placeholder. |
-| ThemedScrollbar | On | Project pane scrollbar follows Grok’s light and dark theme. |
-| ComposerOpacity | On | Customizable chat input background opacity and blur. |
-| RecentTopics | On | Switch recently opened chats with Ctrl+` (glass cards, project name, last Q&A preview). |
-| CompactModeSelect | On | Keep the chat input model selector as an icon at every width. |
-| UserQuotes | On | Keep quoted lines in your own bubbles marked with a visible left bar after markdown hides `>`. |
-| NoRightPanel | On | Keep Grok's right panel closed, including auto-open and restore when switching chats. |
-| NoSidebarPlugins | On | Move the sidebar Plugins button into the avatar menu (next to Void++ / Help). |
-| BotsPlusHover | On | Show the sidebar Bots header plus only on hover, matching Projects. |
+| <img src="https://api.iconify.design/lucide/brush-cleaning.svg?color=%238b949e" width="16" height="16" alt=""> Cleaner default-on | On | Upstream plugin; Void++ turns it on by default. Hides upgrade nags, the home banner, the composer SuperGrok chip, and locked models. |
+| <img src="https://api.iconify.design/lucide/history.svg?color=%238b949e" width="16" height="16" alt=""> InputHistory | On | Recall previous chat prompts with Arrow Up and Arrow Down, like a shell. |
+| <img src="https://api.iconify.design/lucide/bot-off.svg?color=%238b949e" width="16" height="16" alt=""> NoGrokBot | On | Hide the top-right Grok Bot promo button. |
+| <img src="https://api.iconify.design/lucide/user-round-x.svg?color=%238b949e" width="16" height="16" alt=""> NoSidebarIdentity | On | Hide username and/or email in the Grok sidebar and account menu (separate toggles). Avatar stays so the account menu still opens. |
+| <img src="https://api.iconify.design/lucide/app-window.svg?color=%238b949e" width="16" height="16" alt=""> ChatStateFavicons | On | Tab favicon reflects chat state (streaming, done, ready, error) with five overlay styles. |
+| <img src="https://api.iconify.design/lucide/link-2-off.svg?color=%238b949e" width="16" height="16" alt=""> NoShareLink | On | Hide Share Project (in a project) and Create share link (top-right of chats); separate toggles. |
+| <img src="https://api.iconify.design/lucide/mic-off.svg?color=%238b949e" width="16" height="16" alt=""> NoDictation | On | Hide the Dictation (voice input) button from the chat input bar. Optional toggle hides Dictation Refinement in Settings → Behavior. |
+| <img src="https://api.iconify.design/lucide/circle-gauge.svg?color=%238b949e" width="16" height="16" alt=""> UsageDisplay | On | Shows official weekly SuperGrok usage in the chat bar. Optional daily stats (`usageStats`, off by default): hover week first, then today; click opens per-day history. |
+| <img src="https://api.iconify.design/lucide/text-cursor-input.svg?color=%238b949e" width="16" height="16" alt=""> Placeholder | Off | Replace the rotating chat input placeholder. |
+| <img src="https://api.iconify.design/lucide/scroll-text.svg?color=%238b949e" width="16" height="16" alt=""> ThemedScrollbar | On | Project pane scrollbar follows Grok’s light and dark theme. |
+| <img src="https://api.iconify.design/lucide/blend.svg?color=%238b949e" width="16" height="16" alt=""> ComposerOpacity | On | Customizable chat input background opacity and blur. |
+| <img src="https://api.iconify.design/lucide/layout-grid.svg?color=%238b949e" width="16" height="16" alt=""> RecentTopics | On | Switch recently opened chats with Ctrl+` (glass cards, project name, last Q&A preview). |
+| <img src="https://api.iconify.design/lucide/minimize-2.svg?color=%238b949e" width="16" height="16" alt=""> CompactModeSelect | On | Keep the chat input model selector as an icon at every width. |
+| <img src="https://api.iconify.design/lucide/text-quote.svg?color=%238b949e" width="16" height="16" alt=""> UserQuotes | On | Keep quoted lines in your own bubbles marked with a visible left bar after markdown hides `>`. |
+| <img src="https://api.iconify.design/lucide/panel-right-close.svg?color=%238b949e" width="16" height="16" alt=""> NoRightPanel | On | Keep Grok's right panel closed, including auto-open and restore when switching chats. |
+| <img src="https://api.iconify.design/lucide/blocks.svg?color=%238b949e" width="16" height="16" alt=""> NoSidebarPlugins | On | Move the sidebar Plugins button into the avatar menu (next to Void++ / Help). |
+| <img src="https://api.iconify.design/lucide/plus.svg?color=%238b949e" width="16" height="16" alt=""> BotsPlusHover | On | Show the sidebar Bots header plus only on hover, matching Projects. |
 
 #### Settings UI
 
 | Feature | Default | What it does |
 | --- | --- | --- |
-| Plugin pin | — | Pin plugin cards to the top of the current category. |
-| Plugin favorites | — | Star a plugin to collect it in the Favorites tab (the default Plugins view). Categories: Favorites, All, Chat, UI, Privacy, Other. |
+| <img src="https://api.iconify.design/lucide/pin.svg?color=%238b949e" width="16" height="16" alt=""> Plugin pin | — | Pin plugin cards to the top of the current category. |
+| <img src="https://api.iconify.design/lucide/star.svg?color=%238b949e" width="16" height="16" alt=""> Plugin favorites | — | Star a plugin to collect it in the Favorites tab (the default Plugins view). Categories: Favorites, All, Chat, UI, Privacy, Other. |
 
 ### Fixed
 
@@ -47,14 +47,14 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 
 | Feature | Default | What it does |
 | --- | --- | --- |
-| Cleaner | On | Hide inaccessible models in the model selector again. |
+| <img src="https://api.iconify.design/lucide/brush-cleaning.svg?color=%238b949e" width="16" height="16" alt=""> Cleaner | On | Hide inaccessible models in the model selector again. |
 
 #### Settings UI
 
 | Feature | Default | What it does |
 | --- | --- | --- |
-| Settings / icons | — | Void++ tabs in the Grok settings sidebar. Avatar-menu Void++ row uses a 16px V++ glyph; script `@icon` is the same mark on the app tile. The Plugins flyout shows each plugin’s icon. |
-| Chat bar buttons | — | Restored after Grok removed `ButtonWithTooltipOptimized`. |
+| <img src="https://api.iconify.design/lucide/settings-2.svg?color=%238b949e" width="16" height="16" alt=""> Settings / icons | — | Void++ tabs in the Grok settings sidebar. Avatar-menu Void++ row uses a 16px V++ glyph; script `@icon` is the same mark on the app tile. The Plugins flyout shows each plugin’s icon. |
+| <img src="https://api.iconify.design/lucide/panel-bottom.svg?color=%238b949e" width="16" height="16" alt=""> Chat bar buttons | — | Restored after Grok removed `ButtonWithTooltipOptimized`. |
 
 ### Removed
 
@@ -62,4 +62,4 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 
 | Feature | Default | What it does |
 | --- | --- | --- |
-| RateLimitDisplay | — | Dropped after Grok credit rules changed; the old per-mode rate-limit readout no longer works. Weekly usage now lives in UsageDisplay. |
+| <img src="https://api.iconify.design/lucide/gauge.svg?color=%238b949e" width="16" height="16" alt=""> RateLimitDisplay | — | Dropped after Grok credit rules changed; the old per-mode rate-limit readout no longer works. Weekly usage now lives in UsageDisplay.
