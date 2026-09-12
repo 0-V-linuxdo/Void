@@ -9,3 +9,5 @@ export const Devs = Object.freeze({
     adryd: "adryd",
     p: "0-V",
 });
+
+export const LEGACY_WRITE_STOPPED = "[20260912]";

@@ -6,6 +6,7 @@
 
 import { describe, expect, test } from "bun:test";
 
+import { LEGACY_WRITE_STOPPED } from "./constants";
 import { LEGACY_STORAGE_KEY, parseStoredSettings, STORAGE_KEY } from "./SettingsStore";
 
 describe("parseStoredSettings", () => {
@@ -35,8 +36,21 @@ describe("parseStoredSettings", () => {
 });
 
 describe("storage keys", () => {
-    test("uses VoidPPSettings as the only write key", () => {
+    test("writes VoidPPSettings only after LEGACY_WRITE_STOPPED", () => {
         expect(STORAGE_KEY).toBe("VoidPPSettings");
         expect(LEGACY_STORAGE_KEY).toBe("VoidSettings");
+        expect(LEGACY_WRITE_STOPPED).toBe("[20260912]");
+    });
+
+    test("save() never writes the legacy key", async () => {
+        const src = await Bun.file(new URL("./SettingsStore.ts", import.meta.url)).text();
+        const start = src.indexOf("private save()");
+        const end = src.indexOf("public markAsChanged");
+        expect(start).toBeGreaterThan(-1);
+        expect(end).toBeGreaterThan(start);
+        const save = src.slice(start, end);
+        expect(save).toContain("STORAGE_KEY");
+        expect(save).not.toContain("LEGACY_STORAGE_KEY");
+        expect(save).not.toContain("VoidSettings");
     });
 });

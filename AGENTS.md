@@ -20,9 +20,9 @@ Do not write `userscript/Void.user.js`. The hop is gone. Old Tampermonkey instal
 
 Canonical:
 
-- `window.VoidPP` (`window.Void` is the same object)
-- IndexedDB `VoidPP` (copied from `Void` once, then the old database is deleted)
-- Settings key `VoidPPSettings` (read `VoidSettings` once, then delete it)
+- `window.VoidPP` (`window.Void` stays the same object; do not drop the alias)
+- IndexedDB `VoidPP` — read `Void` once, copy, delete the old database. Never write `Void` after `[20260912]`
+- Settings key `VoidPPSettings` — read `VoidSettings` once, flush to the new key, delete the old key. Never write `VoidSettings` after `[20260912]`
 - Cookie bridge `voidpp-cookies`
 - Settings tab ids `voidpp_*_tab` and nav group `voidpp`
 

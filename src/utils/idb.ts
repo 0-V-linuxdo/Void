@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { LEGACY_WRITE_STOPPED } from "./constants";
 import { Logger } from "./Logger";
 
 const logger = new Logger("IDB");
@@ -87,6 +88,7 @@ async function migrateLegacy(db: IDBDatabase): Promise<void> {
         legacy = await openExisting(LEGACY_DB_NAME);
         if (legacy) {
             await copyStore(legacy, db);
+            logger.info(`Migrated leftover IndexedDB ${LEGACY_DB_NAME} onto ${DB_NAME}; writes to ${LEGACY_DB_NAME} stopped at ${LEGACY_WRITE_STOPPED}`);
             drop = true;
         }
     } catch (e) {

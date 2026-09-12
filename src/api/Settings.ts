@@ -5,6 +5,7 @@
  */
 
 import { useEffect } from "@turbopack/common/react";
+import { LEGACY_WRITE_STOPPED } from "@utils/constants";
 import { idbDelete, idbGet } from "@utils/idb";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/misc";
@@ -92,7 +93,10 @@ export async function initSettings(): Promise<void> {
     mergeDefaults(settings, DefaultSettings);
     const meta = settings.plugins.Settings;
     if (meta && meta.enabled === false) meta.enabled = true;
-    if (stored?.fromLegacy) SettingsStore.flush();
+    if (stored?.fromLegacy) {
+        logger.info(`Copied ${LEGACY_STORAGE_KEY} → ${STORAGE_KEY}; writes to ${LEGACY_STORAGE_KEY} stopped at ${LEGACY_WRITE_STOPPED}`);
+        SettingsStore.flush();
+    }
     await dropLegacySettings();
 }
 
