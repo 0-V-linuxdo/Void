@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.19] v1.0.0
+// @version      [20260912.20] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.19] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.20] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -4635,9 +4635,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return;
     started = true;
     waitFor(filters.byProps("useChatPageStore"), (mod) => {
-      mod.useChatPageStore.subscribe((s) => s.streamedMessageId, (current, prev) => {
-        if (!current && prev)
-          dispatch("streamEnd", { responseId: prev });
+      mod.useChatPageStore.subscribe((state, prev) => {
+        const current = state.streamedMessageId;
+        const previous = prev?.streamedMessageId;
+        if (!current && previous)
+          dispatch("streamEnd", { responseId: previous });
       });
     });
   }
@@ -7154,9 +7156,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.19] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"e5fa9f9"}`
-    }, `(${"e5fa9f9"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.20] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"6a0c702"}`
+    }, `(${"6a0c702"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -13006,6 +13008,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var audioCtx = null;
   var retryTimer;
   var buffers = new Map;
+  var notified = new Set;
   function getCtx() {
     if (audioCtx && audioCtx.state !== "closed")
       return audioCtx;
@@ -13058,14 +13061,14 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function playUrl(ctx, url) {
     loadBuffer(ctx, url).then((buf) => playBuffer(ctx, buf), (err) => {
-      logger24.debug("sample play failed:", err);
+      logger24.info("sample play failed:", err);
       if (url !== DEFAULT_CHIME)
-        loadBuffer(ctx, DEFAULT_CHIME).then((buf) => playBuffer(ctx, buf), (e) => logger24.debug("default chime failed:", e));
+        loadBuffer(ctx, DEFAULT_CHIME).then((buf) => playBuffer(ctx, buf), (e) => logger24.info("default chime failed:", e));
     });
   }
   function playSound() {
     if (!userGestured) {
-      logger24.debug("sound skipped, no user gesture yet");
+      logger24.info("sound skipped, no user gesture yet");
       return;
     }
     const ctx = getCtx();
@@ -13073,7 +13076,7 @@ html.void-rt-open [data-sidebar="gap"] {
       return;
     const url = settings16.store.soundUrl?.trim() || DEFAULT_CHIME;
     if (ctx.state === "suspended")
-      ctx.resume().then(() => playUrl(ctx, url), () => logger24.debug("AudioContext resume failed"));
+      ctx.resume().then(() => playUrl(ctx, url), () => logger24.info("AudioContext resume failed"));
     else
       playUrl(ctx, url);
   }
@@ -13089,7 +13092,7 @@ html.void-rt-open [data-sidebar="gap"] {
     return true;
   }
   function notify(responseId, state) {
-    logger24.debug("notify", responseId, state ?? "unset", "permission", Notification.permission);
+    logger24.info("notify", responseId, state ?? "unset", "permission", Notification.permission);
     if (settings16.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
     if (settings16.store.sound)
@@ -13097,7 +13100,26 @@ html.void-rt-open [data-sidebar="gap"] {
     if (settings16.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
+  function notifyOnce(responseId, state) {
+    if (notified.has(responseId))
+      return;
+    notified.add(responseId);
+    if (notified.size > 80)
+      notified.clear();
+    notify(responseId, state);
+  }
+  function onResponses(current, prev) {
+    const cur = current?.byId;
+    const old = prev?.byId;
+    if (!cur || !old)
+      return;
+    for (const id of Object.keys(cur)) {
+      if (isLiveResponse(old[id]) && shouldNotify(cur[id]))
+        notifyOnce(id, cur[id]?.state);
+    }
+  }
   function onStreamEnd2({ responseId }) {
+    logger24.info("streamEnd", responseId);
     if (retryTimer)
       clearTimeout(retryTimer);
     const attempt = (retried) => {
@@ -13105,14 +13127,14 @@ html.void-rt-open [data-sidebar="gap"] {
       try {
         response = ResponseStore.useResponseStore.getState().byId[responseId];
       } catch (e) {
-        logger24.debug("ResponseStore unavailable:", e);
+        logger24.info("ResponseStore unavailable:", e);
       }
       if (shouldNotify(response)) {
-        notify(responseId, response?.state);
+        notifyOnce(responseId, response?.state);
         return;
       }
       if (isErrorResponse(response)) {
-        logger24.debug("skip error", responseId);
+        logger24.info("skip error", responseId);
         return;
       }
       if (!retried && (!response || isLiveResponse(response))) {
@@ -13120,10 +13142,10 @@ html.void-rt-open [data-sidebar="gap"] {
         return;
       }
       if (!response) {
-        notify(responseId, "missing");
+        notifyOnce(responseId, "missing");
         return;
       }
-      logger24.debug("skip", responseId, response.state ?? "unset");
+      logger24.info("skip", responseId, response.state ?? "unset");
     };
     attempt(false);
   }
@@ -13151,12 +13173,18 @@ html.void-rt-open [data-sidebar="gap"] {
       gestureCtrl?.abort();
       gestureCtrl = null;
       buffers.clear();
+      notified.clear();
       if (audioCtx && audioCtx.state !== "closed")
         audioCtx.close();
       audioCtx = null;
     },
     events: {
       streamEnd: onStreamEnd2
+    },
+    zustand: {
+      ResponseStore: {
+        handler: onResponses
+      }
     }
   });
 

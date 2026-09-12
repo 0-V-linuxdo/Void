@@ -77,6 +77,7 @@ let gestureCtrl: AbortController | null = null;
 let audioCtx: AudioContext | null = null;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
 const buffers = new Map<string, AudioBuffer>();
+const notified = new Set<string>();
 
 function getCtx(): AudioContext | null {
     if (audioCtx && audioCtx.state !== "closed") return audioCtx;
@@ -131,21 +132,21 @@ function playUrl(ctx: AudioContext, url: string) {
     void loadBuffer(ctx, url).then(
         buf => playBuffer(ctx, buf),
         err => {
-            logger.debug("sample play failed:", err);
-            if (url !== DEFAULT_CHIME) void loadBuffer(ctx, DEFAULT_CHIME).then(buf => playBuffer(ctx, buf), e => logger.debug("default chime failed:", e));
+            logger.info("sample play failed:", err);
+            if (url !== DEFAULT_CHIME) void loadBuffer(ctx, DEFAULT_CHIME).then(buf => playBuffer(ctx, buf), e => logger.info("default chime failed:", e));
         },
     );
 }
 
 function playSound() {
     if (!userGestured) {
-        logger.debug("sound skipped, no user gesture yet");
+        logger.info("sound skipped, no user gesture yet");
         return;
     }
     const ctx = getCtx();
     if (!ctx) return;
     const url = settings.store.soundUrl?.trim() || DEFAULT_CHIME;
-    if (ctx.state === "suspended") void ctx.resume().then(() => playUrl(ctx, url), () => logger.debug("AudioContext resume failed"));
+    if (ctx.state === "suspended") void ctx.resume().then(() => playUrl(ctx, url), () => logger.info("AudioContext resume failed"));
     else playUrl(ctx, url);
 }
 
@@ -163,27 +164,44 @@ function shouldNotify(response: { state?: string; error?: unknown } | undefined)
 }
 
 function notify(responseId: string, state: string | undefined) {
-    logger.debug("notify", responseId, state ?? "unset", "permission", Notification.permission);
+    logger.info("notify", responseId, state ?? "unset", "permission", Notification.permission);
     if (settings.store.onlyWhenHidden && document.visibilityState === "visible") return;
     if (settings.store.sound) playSound();
     if (settings.store.browserNotification) sendBrowserNotification("Grok", "Response complete.");
 }
 
+function notifyOnce(responseId: string, state: string | undefined) {
+    if (notified.has(responseId)) return;
+    notified.add(responseId);
+    if (notified.size > 80) notified.clear();
+    notify(responseId, state);
+}
+
+function onResponses(current: { byId?: Record<string, { state?: string; error?: unknown }> } | undefined, prev: { byId?: Record<string, { state?: string; error?: unknown }> } | undefined) {
+    const cur = current?.byId;
+    const old = prev?.byId;
+    if (!cur || !old) return;
+    for (const id of Object.keys(cur)) {
+        if (isLiveResponse(old[id]) && shouldNotify(cur[id])) notifyOnce(id, cur[id]?.state);
+    }
+}
+
 function onStreamEnd({ responseId }: VoidPPEventMap["streamEnd"]) {
+    logger.info("streamEnd", responseId);
     if (retryTimer) clearTimeout(retryTimer);
     const attempt = (retried: boolean) => {
         let response: { state?: string; error?: unknown } | undefined;
         try {
             response = ResponseStore.useResponseStore.getState().byId[responseId];
         } catch (e) {
-            logger.debug("ResponseStore unavailable:", e);
+            logger.info("ResponseStore unavailable:", e);
         }
         if (shouldNotify(response)) {
-            notify(responseId, response?.state);
+            notifyOnce(responseId, response?.state);
             return;
         }
         if (isErrorResponse(response)) {
-            logger.debug("skip error", responseId);
+            logger.info("skip error", responseId);
             return;
         }
         if (!retried && (!response || isLiveResponse(response))) {
@@ -191,10 +209,10 @@ function onStreamEnd({ responseId }: VoidPPEventMap["streamEnd"]) {
             return;
         }
         if (!response) {
-            notify(responseId, "missing");
+            notifyOnce(responseId, "missing");
             return;
         }
-        logger.debug("skip", responseId, response.state ?? "unset");
+        logger.info("skip", responseId, response.state ?? "unset");
     };
     attempt(false);
 }
@@ -223,11 +241,18 @@ export default definePlugin({
         gestureCtrl?.abort();
         gestureCtrl = null;
         buffers.clear();
+        notified.clear();
         if (audioCtx && audioCtx.state !== "closed") void audioCtx.close();
         audioCtx = null;
     },
 
     events: {
         streamEnd: onStreamEnd,
+    },
+
+    zustand: {
+        ResponseStore: {
+            handler: onResponses,
+        },
     },
 });
