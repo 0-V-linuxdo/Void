@@ -31,7 +31,7 @@ const settings = definePluginSettings({
     clickToToggle: {
         type: OptionType.BOOLEAN,
         description: "Click anywhere on the sidebar to toggle it.",
-        default: true,
+        default: false,
     },
     defaultCollapsed: {
         type: OptionType.BOOLEAN,
@@ -46,12 +46,12 @@ const settings = definePluginSettings({
     chatsDefaultExpanded: {
         type: OptionType.BOOLEAN,
         description: "Start with the Chats section expanded on page load.",
-        default: true,
+        default: false,
     },
     projectsDefaultCollapsed: {
         type: OptionType.BOOLEAN,
         description: "Start with the Projects section collapsed on page load.",
-        default: true,
+        default: false,
     },
     batchSelect: {
         type: OptionType.BOOLEAN,

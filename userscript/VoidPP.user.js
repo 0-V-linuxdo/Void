@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.36] v1.0.0
+// @version      [20260912.37] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.36] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.37] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7183,9 +7183,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.36] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"bf39267"}`
-    }, `(${"bf39267"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.37] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"65b038f"}`
+    }, `(${"65b038f"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7790,7 +7790,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
-      default: true
+      default: false
     },
     defaultCollapsed: {
       type: 3 /* BOOLEAN */,
@@ -7805,12 +7805,12 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     chatsDefaultExpanded: {
       type: 3 /* BOOLEAN */,
       description: "Start with the Chats section expanded on page load.",
-      default: true
+      default: false
     },
     projectsDefaultCollapsed: {
       type: 3 /* BOOLEAN */,
       description: "Start with the Projects section collapsed on page load.",
-      default: true
+      default: false
     },
     batchSelect: {
       type: 3 /* BOOLEAN */,
