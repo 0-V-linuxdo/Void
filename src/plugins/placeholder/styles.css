@@ -1,5 +1,5 @@
 .void-ph-root {
-    contain: content;
+    contain: layout;
 }
 
 .void-ph-textarea-wrap {
@@ -8,8 +8,8 @@
 }
 
 .void-ph-textarea-wrap:focus-within {
-    outline: 2px solid hsl(var(--fg-primary));
-    outline-offset: 2px;
+    border-color: hsl(var(--fg-primary));
+    box-shadow: inset 0 0 0 1px hsl(var(--fg-primary));
 }
 
 .void-ph-textarea {
@@ -24,6 +24,8 @@
     resize: vertical;
 }
 
-.void-ph-textarea:focus {
+.void-ph-textarea:focus,
+.void-ph-textarea:focus-visible {
     outline: none;
+    box-shadow: none;
 }
