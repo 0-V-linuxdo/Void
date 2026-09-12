@@ -5,6 +5,7 @@
  */
 
 export const FRESH_MS = 2 * 60 * 1000;
+export const BORROW_MS = 1000;
 const MIN_MS = Date.UTC(2020, 0, 1);
 const MAX_SKEW_MS = 24 * 60 * 60 * 1000;
 const TIME_KEYS = ["createTime", "create_time", "createdAt", "created_at", "thinkingStartTime"] as const;
@@ -77,6 +78,18 @@ export function asRecord(value: unknown): Record<string, unknown> | null {
         : null;
 }
 
+export function recordId(record: Record<string, unknown>): string {
+    const { responseId, _id } = record;
+    if (typeof responseId === "string" && responseId) return responseId;
+    return typeof _id === "string" ? _id : "";
+}
+
+export function isHumanSender(sender: unknown): boolean {
+    if (typeof sender !== "string") return false;
+    const normalized = sender.toLowerCase();
+    return normalized === "human" || normalized === "user";
+}
+
 export function pickTimes(record: Record<string, unknown>, now = Date.now()): number[] {
     const out: number[] = [];
     const seen = new Set<number>();
@@ -113,38 +126,19 @@ export function chooseTime(opts: {
     return stored ?? fieldTimes[0] ?? uuid ?? null;
 }
 
-export interface HarvestedTime {
-    id: string;
-    ms: number;
-}
-
-export function harvestResponses(value: unknown, now = Date.now()): HarvestedTime[] {
-    const out: HarvestedTime[] = [];
-    walkHarvest(value, 0, now, out, new Set<object>());
-    return out;
-}
-
-function walkHarvest(value: unknown, depth: number, now: number, out: HarvestedTime[], seen: Set<object>): void {
-    if (value == null || depth > 8) return;
-    if (typeof value !== "object") return;
-    if (seen.has(value)) return;
-    seen.add(value);
-
-    if (Array.isArray(value)) {
-        for (const item of value) walkHarvest(item, depth + 1, now, out, seen);
-        return;
-    }
-
-    const rec = value as Record<string, unknown>;
-    const { responseId } = rec;
-    const id = typeof responseId === "string" ? responseId : "";
-    if (id) {
-        const fieldTimes = pickTimes(rec, now);
-        const ms = chooseTime({ fieldTimes, stored: null, uuid: uuidTime(id, now), now });
-        if (ms != null) out.push({ id, ms });
-    }
-
-    for (const child of Object.values(rec)) walkHarvest(child, depth + 1, now, out, seen);
+export function trustedTime(opts: {
+    fieldTimes: number[];
+    stored?: number | null;
+    uuid: number | null;
+    now?: number;
+}): number | null {
+    const now = opts.now ?? Date.now();
+    const stored = opts.stored ?? null;
+    if (stored != null && !isFresh(stored, now)) return stored;
+    const trustedField = opts.fieldTimes.find(ms => !isFresh(ms, now));
+    if (trustedField != null) return trustedField;
+    if (opts.uuid != null && !isFresh(opts.uuid, now)) return opts.uuid;
+    return null;
 }
 
 export function shouldKeepStored(prev: number, incoming: number, now = Date.now()): boolean {
@@ -152,4 +146,70 @@ export function shouldKeepStored(prev: number, incoming: number, now = Date.now(
     if (isFresh(incoming, now) && incoming >= prev) return true;
     if (!isFresh(prev, now) && incoming > prev) return true;
     return false;
+}
+
+export function neighborTime(id: string, records: Array<Record<string, unknown>>, now = Date.now()): number | null {
+    if (!id) return null;
+    let next: Record<string, unknown> | null = null;
+    for (let i = 0; i < records.length; i++) {
+        const rec = records[i];
+        const recId = recordId(rec);
+        if (rec.parentResponseId === id) {
+            const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(recId, now), now });
+            if (ms != null) return ms - BORROW_MS;
+        }
+        if (recId === id && i + 1 < records.length) next = records[i + 1];
+    }
+    if (!next) return null;
+    const ms = trustedTime({ fieldTimes: pickTimes(next, now), uuid: uuidTime(recordId(next), now), now });
+    return ms == null ? null : ms - BORROW_MS;
+}
+
+export function shouldPersistStamp(sender: unknown, ms: number, stored: number | null, now = Date.now()): boolean {
+    if (stored != null) return !shouldKeepStored(stored, ms, now);
+    return !(isHumanSender(sender) && isFresh(ms, now));
+}
+
+export interface HarvestedTime {
+    id: string;
+    ms: number;
+}
+
+export function harvestResponses(value: unknown, now = Date.now()): HarvestedTime[] {
+    const records: Record<string, unknown>[] = [];
+    collectRecords(value, 0, records, new Set<object>());
+    const out: HarvestedTime[] = [];
+    const seen = new Set<string>();
+    for (const rec of records) {
+        const id = recordId(rec);
+        if (!id || seen.has(id)) continue;
+        const fieldTimes = pickTimes(rec, now);
+        const uuid = uuidTime(id, now);
+        let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
+        const { sender } = rec;
+        if (ms != null && isFresh(ms, now) && isHumanSender(sender)) {
+            const borrowed = neighborTime(id, records, now);
+            ms = borrowed != null && !isFresh(borrowed, now) ? borrowed : null;
+        }
+        if (ms == null) continue;
+        seen.add(id);
+        out.push({ id, ms });
+    }
+    return out;
+}
+
+function collectRecords(value: unknown, depth: number, out: Record<string, unknown>[], seen: Set<object>): void {
+    if (value == null || depth > 8) return;
+    if (typeof value !== "object") return;
+    if (seen.has(value)) return;
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+        for (const item of value) collectRecords(item, depth + 1, out, seen);
+        return;
+    }
+
+    const rec = value as Record<string, unknown>;
+    if (recordId(rec)) out.push(rec);
+    for (const child of Object.values(rec)) collectRecords(child, depth + 1, out, seen);
 }

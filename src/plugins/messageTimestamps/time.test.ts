@@ -6,11 +6,30 @@
 
 import { describe, expect, test } from "bun:test";
 
-import { chooseTime, FRESH_MS, harvestResponses, parseTime, shouldKeepStored, uuidTime } from "./time";
+import {
+    BORROW_MS,
+    chooseTime,
+    FRESH_MS,
+    harvestResponses,
+    isHumanSender,
+    neighborTime,
+    parseTime,
+    recordId,
+    shouldKeepStored,
+    shouldPersistStamp,
+    uuidTime,
+} from "./time";
 
 const NOW = Date.UTC(2026, 8, 12, 4, 0, 0);
 const HOUR_AGO = NOW - 60 * 60 * 1000;
 const ISO_HOUR_AGO = new Date(HOUR_AGO).toISOString();
+const ISO_NOW = new Date(NOW).toISOString();
+const HUMAN_V4 = "550e8400-e29b-41d4-a716-446655440000";
+
+function v7(ms: number): string {
+    const hex = ms.toString(16).padStart(12, "0");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-7000-8000-0123456789ab`;
+}
 
 describe("parseTime", () => {
     test("reads ISO strings", () => {
@@ -45,13 +64,25 @@ describe("parseTime", () => {
 
 describe("uuidTime", () => {
     test("extracts unix ms from UUID v7", () => {
-        const hex = HOUR_AGO.toString(16).padStart(12, "0");
-        const id = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-7000-8000-0123456789ab`;
-        expect(uuidTime(id, NOW)).toBe(HOUR_AGO);
+        expect(uuidTime(v7(HOUR_AGO), NOW)).toBe(HOUR_AGO);
     });
 
     test("ignores UUID v4", () => {
-        expect(uuidTime("550e8400-e29b-41d4-a716-446655440000", NOW)).toBeNull();
+        expect(uuidTime(HUMAN_V4, NOW)).toBeNull();
+    });
+});
+
+describe("recordId and isHumanSender", () => {
+    test("prefers responseId then _id", () => {
+        expect(recordId({ responseId: "a", _id: "b" })).toBe("a");
+        expect(recordId({ _id: "b" })).toBe("b");
+        expect(recordId({})).toBe("");
+    });
+
+    test("detects human senders", () => {
+        expect(isHumanSender("human")).toBe(true);
+        expect(isHumanSender("USER")).toBe(true);
+        expect(isHumanSender("assistant")).toBe(false);
     });
 });
 
@@ -123,6 +154,43 @@ describe("shouldKeepStored", () => {
     });
 });
 
+describe("shouldPersistStamp", () => {
+    test("does not persist a first-seen fresh human stamp", () => {
+        expect(shouldPersistStamp("human", NOW, null, NOW)).toBe(false);
+        expect(shouldPersistStamp("assistant", NOW, null, NOW)).toBe(true);
+        expect(shouldPersistStamp("human", HOUR_AGO, null, NOW)).toBe(true);
+    });
+
+    test("overwrites a poisoned now with a trusted older stamp", () => {
+        expect(shouldPersistStamp("human", HOUR_AGO, NOW, NOW)).toBe(true);
+        expect(shouldPersistStamp("human", NOW, HOUR_AGO, NOW)).toBe(false);
+    });
+});
+
+describe("neighborTime", () => {
+    test("borrows a child assistant thinkingStartTime", () => {
+        const child = v7(HOUR_AGO);
+        expect(neighborTime(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
+            { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_NOW, thinkingStartTime: ISO_HOUR_AGO },
+        ], NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
+    test("falls back to the next sibling", () => {
+        expect(neighborTime(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
+            { responseId: v7(HOUR_AGO), sender: "assistant", createTime: ISO_HOUR_AGO },
+        ], NOW)).toBe(HOUR_AGO - BORROW_MS);
+    });
+
+    test("ignores a fresh-only neighbor", () => {
+        expect(neighborTime(HUMAN_V4, [
+            { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
+            { responseId: "child", sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_NOW },
+        ], NOW)).toBeNull();
+    });
+});
+
 describe("harvestResponses", () => {
     test("walks load-responses payloads", () => {
         const hits = harvestResponses({
@@ -135,6 +203,34 @@ describe("harvestResponses", () => {
             { id: "a", ms: HOUR_AGO },
             { id: "b", ms: HOUR_AGO },
         ]);
+    });
+
+    test("treats _id as a responseId alias", () => {
+        const hits = harvestResponses({
+            responses: [{ _id: "legacy", createTime: ISO_HOUR_AGO }],
+        }, NOW);
+        expect(hits).toEqual([{ id: "legacy", ms: HOUR_AGO }]);
+    });
+
+    test("borrows assistant time for a human row rewritten to now", () => {
+        const child = v7(HOUR_AGO);
+        const hits = harvestResponses({
+            responses: [
+                { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
+                { responseId: child, sender: "assistant", parentResponseId: HUMAN_V4, createTime: ISO_NOW, thinkingStartTime: ISO_HOUR_AGO },
+            ],
+        }, NOW);
+        expect(hits).toContainEqual({ id: HUMAN_V4, ms: HOUR_AGO - BORROW_MS });
+        expect(hits).toContainEqual({ id: child, ms: HOUR_AGO });
+    });
+
+    test("omits a fresh human with no trusted neighbor", () => {
+        const hits = harvestResponses({
+            responses: [
+                { responseId: HUMAN_V4, sender: "human", createTime: ISO_NOW },
+            ],
+        }, NOW);
+        expect(hits).toEqual([]);
     });
 });
 

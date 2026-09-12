@@ -11,14 +11,29 @@ import { ErrorBoundary } from "@components/ErrorBoundary";
 import { Text } from "@components/Text";
 import { ClockIcon } from "@components/icons";
 import type { GrokResponse } from "@grok-types";
+import type { ResponseStoreState } from "@grok-types/stores/ResponseStore";
 import { React } from "@turbopack/common/react";
+import { ConversationStore, ResponseStore } from "@turbopack/common/stores";
+import { ApiClients } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import { createExternalStore, debounce } from "@utils/misc";
 import { useExternalStore } from "@utils/react";
 import definePlugin, { OptionType } from "@utils/types";
 
-import { asRecord, chooseTime, harvestResponses, pickTimes, shouldKeepStored, uuidTime } from "./time";
+import {
+    asRecord,
+    chooseTime,
+    harvestResponses,
+    isFresh,
+    isHumanSender,
+    neighborTime,
+    parseTime,
+    pickTimes,
+    recordId,
+    shouldPersistStamp,
+    uuidTime,
+} from "./time";
 
 const logger = new Logger("MessageTimestamps");
 const STAMP_MAX = 5000;
@@ -40,7 +55,11 @@ const settings = definePluginSettings({
 const tick = createExternalStore();
 let cache: Map<string, number> | null = null;
 let origFetch: typeof fetch | null = null;
+let origXhrOpen: typeof XMLHttpRequest.prototype.open | null = null;
+let origXhrSend: typeof XMLHttpRequest.prototype.send | null = null;
+let origList: typeof ApiClients.chatApi.chatListResponses | null = null;
 let hookedWindow: Window | null = null;
+const xhrMeta = new WeakMap<XMLHttpRequest, string>();
 
 function pageWindow(): Window {
     return (typeof unsafeWindow !== "undefined" ? unsafeWindow : window) as Window;
@@ -66,10 +85,11 @@ function persistNow() {
 
 const persist = debounce(persistNow, 400);
 
-function remember(id: string, ms: number): boolean {
+function remember(id: string, ms: number, sender?: unknown): boolean {
+    if (!id) return false;
     const map = stamps();
-    const prev = map.get(id);
-    if (prev != null && shouldKeepStored(prev, ms)) return false;
+    const prev = map.get(id) ?? null;
+    if (!shouldPersistStamp(sender, ms, prev)) return false;
     if (map.has(id)) map.delete(id);
     map.set(id, ms);
     while (map.size > STAMP_MAX) {
@@ -81,18 +101,88 @@ function remember(id: string, ms: number): boolean {
     return prev !== ms;
 }
 
+function extraKeys(rec: Record<string, unknown>, id: string): string[] {
+    const keys: string[] = [];
+    const { parentResponseId } = rec;
+    if (typeof parentResponseId === "string" && parentResponseId) keys.push(`h:${parentResponseId}`);
+    try {
+        const { byConversationId } = ResponseStore.useResponseStore.getState();
+        for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+            const index = list?.findIndex(r => r.responseId === id) ?? -1;
+            if (index < 0) continue;
+            keys.push(`h:${cid}:${index}`);
+            break;
+        }
+    } catch (e) {
+        logger.debug("stable key lookup failed", e);
+    }
+    return keys;
+}
+
+function storedMs(id: string, rec: Record<string, unknown>): number | null {
+    const map = stamps();
+    const direct = map.get(id);
+    if (direct != null) return direct;
+    for (const key of extraKeys(rec, id)) {
+        const ms = map.get(key);
+        if (ms != null) return ms;
+    }
+    return null;
+}
+
+function rememberKeys(id: string, rec: Record<string, unknown>, ms: number, sender: unknown): boolean {
+    let changed = remember(id, ms, sender);
+    for (const key of extraKeys(rec, id)) {
+        if (remember(key, ms, sender)) changed = true;
+    }
+    return changed;
+}
+
+function storeRecords(id: string): Record<string, unknown>[] {
+    try {
+        const { byId, byConversationId } = ResponseStore.useResponseStore.getState();
+        for (const list of Object.values(byConversationId ?? {})) {
+            if (list?.some(r => r.responseId === id)) return list as unknown as Record<string, unknown>[];
+        }
+        return Object.values(byId ?? {}) as unknown as Record<string, unknown>[];
+    } catch (e) {
+        logger.debug("response store unavailable", e);
+        return [];
+    }
+}
+
+function conversationCreateTime(id: string): number | null {
+    try {
+        const { byConversationId } = ResponseStore.useResponseStore.getState();
+        for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+            const first = list?.find(r => isHumanSender(r.sender));
+            if (first?.responseId !== id) continue;
+            const conv = ConversationStore.useConversationStore.getState().byId?.[cid];
+            const ms = parseTime(conv?.createTime);
+            return ms != null && !isFresh(ms) ? ms : null;
+        }
+    } catch (e) {
+        logger.debug("conversation time lookup failed", e);
+    }
+    return null;
+}
+
 function resolveMs(response: GrokResponse): number | null {
     const rec = asRecord(response);
     if (!rec) return null;
-    const { responseId } = rec;
-    const id = typeof responseId === "string" ? responseId : "";
-    const stored = id ? stamps().get(id) ?? null : null;
-    const ms = chooseTime({
+    const id = recordId(rec);
+    const { sender } = rec;
+    const stored = id ? storedMs(id, rec) : null;
+    let ms = chooseTime({
         fieldTimes: pickTimes(rec),
         stored,
         uuid: uuidTime(id),
     });
-    if (id && ms != null) remember(id, ms);
+    if (id && isHumanSender(sender) && (ms == null || isFresh(ms))) {
+        const borrowed = neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
+        if (borrowed != null && !isFresh(borrowed)) ms = borrowed;
+    }
+    if (id && ms != null) rememberKeys(id, rec, ms, sender);
     return ms;
 }
 
@@ -126,7 +216,9 @@ function hookFetch() {
         return promise.then(res => {
             try {
                 res.clone().json().then(ingest, () => {});
-            } catch {}
+            } catch (e) {
+                logger.debug("fetch ingest failed", e);
+            }
             return res;
         });
     };
@@ -137,6 +229,83 @@ function unhookFetch() {
     hookedWindow.fetch = origFetch;
     origFetch = null;
     hookedWindow = null;
+}
+
+function ingestXhr(xhr: XMLHttpRequest) {
+    if (xhr.status < 200 || xhr.status >= 300) return;
+    const { responseType } = xhr;
+    if (responseType === "json") {
+        ingest(xhr.response);
+        return;
+    }
+    if (responseType !== "" && responseType !== "text") return;
+    const text = xhr.responseText;
+    if (!text) return;
+    ingest(JSON.parse(text));
+}
+
+function hookXhr() {
+    if (origXhrOpen) return;
+    const XHR = pageWindow().XMLHttpRequest;
+    origXhrOpen = XHR.prototype.open;
+    origXhrSend = XHR.prototype.send;
+    XHR.prototype.open = function voidMessageTimestampsOpen(this: XMLHttpRequest, method: string, url: string | URL, ...rest: unknown[]): void {
+        try {
+            xhrMeta.set(this, requestUrl(url));
+        } catch (e) {
+            logger.debug("xhr open failed", e);
+        }
+        return (origXhrOpen as (...a: unknown[]) => void).call(this, method, url, ...rest);
+    };
+    XHR.prototype.send = function voidMessageTimestampsSend(this: XMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null): void {
+        const url = xhrMeta.get(this) ?? "";
+        if (RESPONSE_URL.test(url)) {
+            this.addEventListener("load", () => {
+                try {
+                    ingestXhr(this);
+                } catch (e) {
+                    logger.debug("xhr ingest failed", e);
+                }
+            }, { once: true });
+        }
+        return origXhrSend!.call(this, body);
+    };
+}
+
+function unhookXhr() {
+    if (!origXhrOpen || !origXhrSend) return;
+    const XHR = pageWindow().XMLHttpRequest;
+    XHR.prototype.open = origXhrOpen;
+    XHR.prototype.send = origXhrSend;
+    origXhrOpen = null;
+    origXhrSend = null;
+}
+
+function hookListResponses() {
+    if (origList) return;
+    try {
+        const { chatApi } = ApiClients;
+        origList = chatApi.chatListResponses;
+        chatApi.chatListResponses = function voidMessageTimestampsList(a: { conversationId: string }) {
+            return origList!.call(chatApi, a).then(data => {
+                ingest(data);
+                return data;
+            });
+        };
+    } catch (e) {
+        origList = null;
+        logger.debug("chatListResponses wrap skipped", e);
+    }
+}
+
+function unhookListResponses() {
+    if (!origList) return;
+    try {
+        ApiClients.chatApi.chatListResponses = origList;
+    } catch (e) {
+        logger.debug("chatListResponses unwrap skipped", e);
+    }
+    origList = null;
 }
 
 function formatTimestamp(ms: number, showDate: boolean) {
@@ -159,14 +328,27 @@ export default definePlugin({
     start() {
         try {
             hookFetch();
+            hookXhr();
+            hookListResponses();
         } catch (e) {
-            logger.warn("Failed to hook fetch", e);
+            logger.warn("Failed to hook network", e);
         }
     },
 
     stop() {
         unhookFetch();
+        unhookXhr();
+        unhookListResponses();
         persistNow();
+    },
+
+    zustand: {
+        ResponseStore: {
+            selector: (s: ResponseStoreState) => s.byId,
+            handler(byId: ResponseStoreState["byId"]) {
+                ingest({ responses: Object.values(byId ?? {}) });
+            },
+        },
     },
 
     _renderTimestamp: ErrorBoundary.wrap(({ response }: { response: GrokResponse }) => {

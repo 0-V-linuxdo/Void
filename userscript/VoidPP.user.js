@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.7] v1.0.0
+// @version      [20260912.8] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.7] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.8] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7169,9 +7169,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.7] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"645b96b"}`
-    }, `(${"645b96b"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.8] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"00b0d42"}`
+    }, `(${"00b0d42"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -12547,6 +12547,7 @@ html.void-cms-picked .void-cms-ghost {
 
   // src/plugins/messageTimestamps/time.ts
   var FRESH_MS = 2 * 60 * 1000;
+  var BORROW_MS = 1000;
   var MIN_MS = Date.UTC(2020, 0, 1);
   var MAX_SKEW_MS = 24 * 60 * 60 * 1000;
   var TIME_KEYS = ["createTime", "create_time", "createdAt", "created_at", "thinkingStartTime"];
@@ -12621,6 +12622,18 @@ html.void-cms-picked .void-cms-ghost {
   function asRecord(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
   }
+  function recordId(record) {
+    const { responseId, _id } = record;
+    if (typeof responseId === "string" && responseId)
+      return responseId;
+    return typeof _id === "string" ? _id : "";
+  }
+  function isHumanSender(sender) {
+    if (typeof sender !== "string")
+      return false;
+    const normalized = sender.toLowerCase();
+    return normalized === "human" || normalized === "user";
+  }
   function pickTimes(record, now = Date.now()) {
     const out = [];
     const seen = new Set;
@@ -12654,35 +12667,17 @@ html.void-cms-picked .void-cms-ghost {
       return uuid;
     return stored ?? fieldTimes[0] ?? uuid ?? null;
   }
-  function harvestResponses(value, now = Date.now()) {
-    const out = [];
-    walkHarvest(value, 0, now, out, new Set);
-    return out;
-  }
-  function walkHarvest(value, depth, now, out, seen) {
-    if (value == null || depth > 8)
-      return;
-    if (typeof value !== "object")
-      return;
-    if (seen.has(value))
-      return;
-    seen.add(value);
-    if (Array.isArray(value)) {
-      for (const item of value)
-        walkHarvest(item, depth + 1, now, out, seen);
-      return;
-    }
-    const rec = value;
-    const { responseId } = rec;
-    const id = typeof responseId === "string" ? responseId : "";
-    if (id) {
-      const fieldTimes = pickTimes(rec, now);
-      const ms = chooseTime({ fieldTimes, stored: null, uuid: uuidTime(id, now), now });
-      if (ms != null)
-        out.push({ id, ms });
-    }
-    for (const child of Object.values(rec))
-      walkHarvest(child, depth + 1, now, out, seen);
+  function trustedTime(opts) {
+    const now = opts.now ?? Date.now();
+    const stored = opts.stored ?? null;
+    if (stored != null && !isFresh(stored, now))
+      return stored;
+    const trustedField = opts.fieldTimes.find((ms) => !isFresh(ms, now));
+    if (trustedField != null)
+      return trustedField;
+    if (opts.uuid != null && !isFresh(opts.uuid, now))
+      return opts.uuid;
+    return null;
   }
   function shouldKeepStored(prev, incoming, now = Date.now()) {
     if (incoming === prev)
@@ -12692,6 +12687,74 @@ html.void-cms-picked .void-cms-ghost {
     if (!isFresh(prev, now) && incoming > prev)
       return true;
     return false;
+  }
+  function neighborTime(id, records, now = Date.now()) {
+    if (!id)
+      return null;
+    let next = null;
+    for (let i = 0;i < records.length; i++) {
+      const rec = records[i];
+      const recId = recordId(rec);
+      if (rec.parentResponseId === id) {
+        const ms = trustedTime({ fieldTimes: pickTimes(rec, now), uuid: uuidTime(recId, now), now });
+        if (ms != null)
+          return ms - BORROW_MS;
+      }
+      if (recId === id && i + 1 < records.length)
+        next = records[i + 1];
+    }
+    if (!next)
+      return null;
+    const ms = trustedTime({ fieldTimes: pickTimes(next, now), uuid: uuidTime(recordId(next), now), now });
+    return ms == null ? null : ms - BORROW_MS;
+  }
+  function shouldPersistStamp(sender, ms, stored, now = Date.now()) {
+    if (stored != null)
+      return !shouldKeepStored(stored, ms, now);
+    return !(isHumanSender(sender) && isFresh(ms, now));
+  }
+  function harvestResponses(value, now = Date.now()) {
+    const records = [];
+    collectRecords(value, 0, records, new Set);
+    const out = [];
+    const seen = new Set;
+    for (const rec of records) {
+      const id = recordId(rec);
+      if (!id || seen.has(id))
+        continue;
+      const fieldTimes = pickTimes(rec, now);
+      const uuid = uuidTime(id, now);
+      let ms = chooseTime({ fieldTimes, stored: null, uuid, now });
+      const { sender } = rec;
+      if (ms != null && isFresh(ms, now) && isHumanSender(sender)) {
+        const borrowed = neighborTime(id, records, now);
+        ms = borrowed != null && !isFresh(borrowed, now) ? borrowed : null;
+      }
+      if (ms == null)
+        continue;
+      seen.add(id);
+      out.push({ id, ms });
+    }
+    return out;
+  }
+  function collectRecords(value, depth, out, seen) {
+    if (value == null || depth > 8)
+      return;
+    if (typeof value !== "object")
+      return;
+    if (seen.has(value))
+      return;
+    seen.add(value);
+    if (Array.isArray(value)) {
+      for (const item of value)
+        collectRecords(item, depth + 1, out, seen);
+      return;
+    }
+    const rec = value;
+    if (recordId(rec))
+      out.push(rec);
+    for (const child of Object.values(rec))
+      collectRecords(child, depth + 1, out, seen);
   }
 
   // src/plugins/messageTimestamps/index.tsx
@@ -12713,7 +12776,11 @@ html.void-cms-picked .void-cms-ghost {
   var tick = createExternalStore();
   var cache = null;
   var origFetch = null;
+  var origXhrOpen = null;
+  var origXhrSend = null;
+  var origList = null;
   var hookedWindow = null;
+  var xhrMeta = new WeakMap;
   function pageWindow2() {
     return typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
   }
@@ -12737,10 +12804,12 @@ html.void-cms-picked .void-cms-ghost {
     settings15.store.stamps = next;
   }
   var persist2 = debounce(persistNow, 400);
-  function remember(id, ms) {
+  function remember(id, ms, sender) {
+    if (!id)
+      return false;
     const map = stamps();
-    const prev = map.get(id);
-    if (prev != null && shouldKeepStored(prev, ms))
+    const prev = map.get(id) ?? null;
+    if (!shouldPersistStamp(sender, ms, prev))
       return false;
     if (map.has(id))
       map.delete(id);
@@ -12754,20 +12823,93 @@ html.void-cms-picked .void-cms-ghost {
     persist2();
     return prev !== ms;
   }
+  function extraKeys(rec, id) {
+    const keys = [];
+    const { parentResponseId } = rec;
+    if (typeof parentResponseId === "string" && parentResponseId)
+      keys.push(`h:${parentResponseId}`);
+    try {
+      const { byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        const index = list?.findIndex((r) => r.responseId === id) ?? -1;
+        if (index < 0)
+          continue;
+        keys.push(`h:${cid}:${index}`);
+        break;
+      }
+    } catch (e) {
+      logger27.debug("stable key lookup failed", e);
+    }
+    return keys;
+  }
+  function storedMs(id, rec) {
+    const map = stamps();
+    const direct = map.get(id);
+    if (direct != null)
+      return direct;
+    for (const key of extraKeys(rec, id)) {
+      const ms = map.get(key);
+      if (ms != null)
+        return ms;
+    }
+    return null;
+  }
+  function rememberKeys(id, rec, ms, sender) {
+    let changed = remember(id, ms, sender);
+    for (const key of extraKeys(rec, id)) {
+      if (remember(key, ms, sender))
+        changed = true;
+    }
+    return changed;
+  }
+  function storeRecords(id) {
+    try {
+      const { byId, byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const list of Object.values(byConversationId ?? {})) {
+        if (list?.some((r) => r.responseId === id))
+          return list;
+      }
+      return Object.values(byId ?? {});
+    } catch (e) {
+      logger27.debug("response store unavailable", e);
+      return [];
+    }
+  }
+  function conversationCreateTime(id) {
+    try {
+      const { byConversationId } = ResponseStore.useResponseStore.getState();
+      for (const [cid, list] of Object.entries(byConversationId ?? {})) {
+        const first = list?.find((r) => isHumanSender(r.sender));
+        if (first?.responseId !== id)
+          continue;
+        const conv = ConversationStore.useConversationStore.getState().byId?.[cid];
+        const ms = parseTime(conv?.createTime);
+        return ms != null && !isFresh(ms) ? ms : null;
+      }
+    } catch (e) {
+      logger27.debug("conversation time lookup failed", e);
+    }
+    return null;
+  }
   function resolveMs(response) {
     const rec = asRecord(response);
     if (!rec)
       return null;
-    const { responseId } = rec;
-    const id = typeof responseId === "string" ? responseId : "";
-    const stored = id ? stamps().get(id) ?? null : null;
-    const ms = chooseTime({
+    const id = recordId(rec);
+    const { sender } = rec;
+    const stored = id ? storedMs(id, rec) : null;
+    let ms = chooseTime({
       fieldTimes: pickTimes(rec),
       stored,
       uuid: uuidTime(id)
     });
+    if (id && isHumanSender(sender) && (ms == null || isFresh(ms))) {
+      const borrowed = neighborTime(id, storeRecords(id)) ?? conversationCreateTime(id);
+      if (borrowed != null && !isFresh(borrowed))
+        ms = borrowed;
+    }
     if (id && ms != null)
-      remember(id, ms);
+      rememberKeys(id, rec, ms, sender);
     return ms;
   }
   function ingest(value) {
@@ -12804,7 +12946,9 @@ html.void-cms-picked .void-cms-ghost {
       return promise.then((res) => {
         try {
           res.clone().json().then(ingest, () => {});
-        } catch {}
+        } catch (e) {
+          logger27.debug("fetch ingest failed", e);
+        }
         return res;
       });
     };
@@ -12815,6 +12959,85 @@ html.void-cms-picked .void-cms-ghost {
     hookedWindow.fetch = origFetch;
     origFetch = null;
     hookedWindow = null;
+  }
+  function ingestXhr(xhr) {
+    if (xhr.status < 200 || xhr.status >= 300)
+      return;
+    const { responseType } = xhr;
+    if (responseType === "json") {
+      ingest(xhr.response);
+      return;
+    }
+    if (responseType !== "" && responseType !== "text")
+      return;
+    const text = xhr.responseText;
+    if (!text)
+      return;
+    ingest(JSON.parse(text));
+  }
+  function hookXhr() {
+    if (origXhrOpen)
+      return;
+    const XHR = pageWindow2().XMLHttpRequest;
+    origXhrOpen = XHR.prototype.open;
+    origXhrSend = XHR.prototype.send;
+    XHR.prototype.open = function voidMessageTimestampsOpen(method, url, ...rest) {
+      try {
+        xhrMeta.set(this, requestUrl(url));
+      } catch (e) {
+        logger27.debug("xhr open failed", e);
+      }
+      return origXhrOpen.call(this, method, url, ...rest);
+    };
+    XHR.prototype.send = function voidMessageTimestampsSend(body) {
+      const url = xhrMeta.get(this) ?? "";
+      if (RESPONSE_URL.test(url)) {
+        this.addEventListener("load", () => {
+          try {
+            ingestXhr(this);
+          } catch (e) {
+            logger27.debug("xhr ingest failed", e);
+          }
+        }, { once: true });
+      }
+      return origXhrSend.call(this, body);
+    };
+  }
+  function unhookXhr() {
+    if (!origXhrOpen || !origXhrSend)
+      return;
+    const XHR = pageWindow2().XMLHttpRequest;
+    XHR.prototype.open = origXhrOpen;
+    XHR.prototype.send = origXhrSend;
+    origXhrOpen = null;
+    origXhrSend = null;
+  }
+  function hookListResponses() {
+    if (origList)
+      return;
+    try {
+      const { chatApi } = ApiClients;
+      origList = chatApi.chatListResponses;
+      chatApi.chatListResponses = function voidMessageTimestampsList(a) {
+        return origList.call(chatApi, a).then((data) => {
+          ingest(data);
+          return data;
+        });
+      };
+    } catch (e) {
+      origList = null;
+      logger27.debug("chatListResponses wrap skipped", e);
+    }
+  }
+  function unhookListResponses() {
+    if (!origList)
+      return;
+    try {
+      ApiClients.chatApi.chatListResponses = origList;
+    } catch (e) {
+      logger27.debug("chatListResponses unwrap skipped", e);
+    }
+    origList = null;
   }
   function formatTimestamp(ms, showDate) {
     const date = new Date(ms);
@@ -12835,13 +13058,25 @@ html.void-cms-picked .void-cms-ghost {
     start() {
       try {
         hookFetch();
+        hookXhr();
+        hookListResponses();
       } catch (e) {
-        logger27.warn("Failed to hook fetch", e);
+        logger27.warn("Failed to hook network", e);
       }
     },
     stop() {
       unhookFetch();
+      unhookXhr();
+      unhookListResponses();
       persistNow();
+    },
+    zustand: {
+      ResponseStore: {
+        selector: (s) => s.byId,
+        handler(byId) {
+          ingest({ responses: Object.values(byId ?? {}) });
+        }
+      }
     },
     _renderTimestamp: ErrorBoundary.wrap(({ response }) => {
       useExternalStore(tick);
