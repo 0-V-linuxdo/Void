@@ -32,7 +32,7 @@ Install from `userscript/VoidPP.user.js`. Existing Tampermonkey installs update 
 | <img src="https://api.iconify.design/lucide/text-quote.svg?color=%238b949e" width="16" height="16" alt=""> UserQuotes | On | Keep quoted lines in your own bubbles marked with a visible left bar after markdown hides `>`. |
 | <img src="https://api.iconify.design/lucide/panel-right-close.svg?color=%238b949e" width="16" height="16" alt=""> NoRightPanel | On | Keep Grok's right panel closed, including auto-open and restore when switching chats. |
 | <img src="https://api.iconify.design/lucide/blocks.svg?color=%238b949e" width="16" height="16" alt=""> NoSidebarPlugins | On | Move the sidebar Plugins button into the avatar menu (next to Void++ / Help). |
-| <img src="https://api.iconify.design/lucide/plus.svg?color=%238b949e" width="16" height="16" alt=""> BotsPlusHover | On | Show the sidebar Bots header plus only on hover, matching Projects. |
+| <img src="https://api.iconify.design/lucide/plus.svg?color=%238b949e" width="16" height="16" alt=""> BotsPlusHover | On | Show Bots/Chats/Projects header actions on section hover, and add a New chat plus on Chats (own setting). |
 
 #### Settings UI
 
