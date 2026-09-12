@@ -32,8 +32,8 @@ const settings = definePluginSettings({
 });
 
 function apply() {
-    if (settings.store.titleRowHover) enableStyle("botsPlusHover");
-    else disableStyle("botsPlusHover");
+    if (settings.store.titleRowHover) enableStyle("sidebarHeaderHover");
+    else disableStyle("sidebarHeaderHover");
 }
 
 function newChat(event: MouseEvent) {
@@ -74,13 +74,13 @@ const ChatsPlus = ErrorBoundary.wrap(function ChatsPlusButton() {
 }, null);
 
 export default definePlugin({
-    name: "BotsPlusHover",
+    name: "SidebarHeaderHover",
     icon: PlusIcon,
     description: "Show Bots, Chats, and Projects header actions on section hover, and add a New chat plus on Chats.",
     authors: [Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
-    managedStyle: "botsPlusHover",
+    managedStyle: "sidebarHeaderHover",
     settings,
 
     _ChatsPlus: () => createElement(ChatsPlus),
@@ -111,6 +111,6 @@ export default definePlugin({
     start: apply,
     onSettingsChange: apply,
     stop() {
-        disableStyle("botsPlusHover");
+        disableStyle("sidebarHeaderHover");
     },
 });

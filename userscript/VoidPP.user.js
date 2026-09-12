@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.29] v1.0.0
+// @version      [20260912.30] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.29] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.30] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -7183,9 +7183,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.29] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"38b7da3"}`
-    }, `(${"38b7da3"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.30] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"f9b7de4"}`
+    }, `(${"f9b7de4"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -12469,153 +12469,6 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/botsPlusHover/styles.css
-  registerStyle("botsPlusHover", `/*
- * Void++, a modification for grok.com
- * Copyright (c) 2026 Void++ Contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
-/* stylelint-disable no-descending-specificity */
-
-@media (width >= 48rem) {
-    [data-sidebar="sidebar"] [data-void-bots-plus],
-    [data-sidebar="sidebar"] .void-bots-plus,
-    [data-sidebar="sidebar"] button[aria-label="New bot"],
-    [data-sidebar="sidebar"] [data-void-chats-plus],
-    [data-sidebar="sidebar"] .void-chats-plus,
-    [data-sidebar="sidebar"] button[aria-label="Add project"],
-    [data-sidebar="sidebar"] button[aria-label="All projects"],
-    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
-        opacity: 0 !important;
-        transition: opacity 0.15s ease;
-    }
-
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-bots-plus],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-bots-plus,
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="New bot"],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-chats-plus],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-chats-plus,
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="Add project"],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="All projects"],
-    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) > :first-child :is(button, [role="button"]):not([aria-expanded]),
-    [data-sidebar="sidebar"] :has(> :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus)):is(:hover, :focus-within) > :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus),
-    [data-sidebar="sidebar"] [data-void-bots-plus]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] .void-bots-plus:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] button[aria-label="New bot"]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] [data-void-chats-plus]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] .void-chats-plus:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] button[aria-label="Add project"]:is(:hover, :focus-visible, [data-state="open"]),
-    [data-sidebar="sidebar"] button[aria-label="All projects"]:is(:hover, :focus-visible, [data-state="open"]) {
-        opacity: 1 !important;
-    }
-}
-
-@media (width >= 48rem) and (prefers-reduced-motion: reduce) {
-    [data-sidebar="sidebar"] [data-void-bots-plus],
-    [data-sidebar="sidebar"] .void-bots-plus,
-    [data-sidebar="sidebar"] button[aria-label="New bot"],
-    [data-sidebar="sidebar"] [data-void-chats-plus],
-    [data-sidebar="sidebar"] .void-chats-plus,
-    [data-sidebar="sidebar"] button[aria-label="Add project"],
-    [data-sidebar="sidebar"] button[aria-label="All projects"],
-    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
-        transition: none;
-    }
-}
-`);
-
-  // src/plugins/botsPlusHover/index.tsx
-  var BTN_CLASS = "void-chats-plus flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary hover:bg-button-ghost-hover hover:text-primary focus:outline-none focus-visible:bg-button-ghost-hover";
-  var settings14 = definePluginSettings({
-    titleRowHover: {
-      type: 3 /* BOOLEAN */,
-      description: "Show Bots, Chats, and Projects header actions only when hovering that section, like the expand chevron.",
-      default: true
-    },
-    chatsPlus: {
-      type: 3 /* BOOLEAN */,
-      description: "Show a plus on the Chats header that starts a new chat.",
-      default: true
-    }
-  });
-  function apply2() {
-    if (settings14.store.titleRowHover)
-      enableStyle("botsPlusHover");
-    else
-      disableStyle("botsPlusHover");
-  }
-  function newChat(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const native = document.querySelector('[data-testid="new-chat"]');
-    if (native) {
-      native.click();
-      return;
-    }
-    const { route, push } = RoutingStore.useRoutingStore.getState();
-    const teamId = route.teamId ?? null;
-    const workspaceId = route.workspaceId;
-    if (workspaceId) {
-      push({ page: "workspace", workspaceId, tab: "conversations", teamId });
-      const chat = ChatPageStore.useChatPageStore.getState();
-      chat.setProjectId(workspaceId);
-      chat.setConversationId(undefined);
-      return;
-    }
-    ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
-    push({ page: "main", teamId });
-  }
-  var ChatsPlus = ErrorBoundary.wrap(function ChatsPlusButton() {
-    if (!settings14.use(["chatsPlus"]).chatsPlus)
-      return null;
-    return createElement("button", {
-      type: "button",
-      className: BTN_CLASS,
-      "aria-label": "New chat",
-      "data-void-chats-plus": "",
-      onClick: newChat
-    }, createElement(PlusIcon, { size: 14 }));
-  }, null);
-  var botsPlusHover_default = definePlugin({
-    name: "BotsPlusHover",
-    icon: PlusIcon,
-    description: "Show Bots, Chats, and Projects header actions on section hover, and add a New chat plus on Chats.",
-    authors: [Devs.p],
-    tags: ["ui"],
-    enabledByDefault: true,
-    managedStyle: "botsPlusHover",
-    settings: settings14,
-    _ChatsPlus: () => createElement(ChatsPlus),
-    patches: [
-      {
-        find: '"sidebar.new-bot-btn.aria-label","New bot"',
-        replacement: [
-          {
-            match: /(\i)\("flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary","hover:bg-button-ghost-hover hover:text-primary","focus:outline-none focus-visible:bg-button-ghost-hover"\)/,
-            replace: '$1("flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary void-bots-plus","hover:bg-button-ghost-hover hover:text-primary","focus:outline-none focus-visible:bg-button-ghost-hover")'
-          },
-          {
-            match: /("button",\{type:"button","aria-label":\i,className:\i,onClick:\i)/,
-            replace: '$&,"data-void-bots-plus":""'
-          }
-        ]
-      },
-      {
-        find: '"sidebar-chats","Chats"',
-        replacement: {
-          match: /(\i\("sidebar-chats","Chats"\):\i\("sidebar-history","History"\),collapsed:\i,onToggle:\(\)=>\i\(\i\))/,
-          replace: "$1,action:$self._ChatsPlus()"
-        }
-      }
-    ],
-    start: apply2,
-    onSettingsChange: apply2,
-    stop() {
-      disableStyle("botsPlusHover");
-    }
-  });
-
   // src/plugins/betterLinks/index.tsx
   var DEFAULT_LINK = "#4a9eff";
   var DEFAULT_VISITED = "#9b59b6";
@@ -12625,31 +12478,31 @@ html.void-rt-open [data-sidebar="gap"] {
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings15.store[key];
+    const val = settings14.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
     const link = getColor("linkColor", DEFAULT_LINK);
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings15.store.enableVisitedColor) {
+    if (settings14.store.enableVisitedColor) {
       const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
     registerStyle(STYLE_NAME4, css);
   }
   function ColorRow({ settingKey, title, description, fallback }) {
-    settings15.use([settingKey]);
+    settings14.use([settingKey]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
-        settings15.store[settingKey] = v;
+        settings14.store[settingKey] = v;
         applyColors();
       },
       title,
       description
     });
   }
-  var settings15 = definePluginSettings({
+  var settings14 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -12686,7 +12539,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings15,
+    settings: settings14,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -12705,7 +12558,7 @@ html.void-rt-open [data-sidebar="gap"] {
       }
     ],
     _remarkLinkify() {
-      const { store } = settings15;
+      const { store } = settings14;
       return (tree) => {
         try {
           if (!store.linkifyDomains)
@@ -12749,8 +12602,8 @@ html.void-rt-open [data-sidebar="gap"] {
       };
     },
     start() {
-      settings15.store.linkColor ??= DEFAULT_LINK;
-      settings15.store.visitedColor ??= DEFAULT_VISITED;
+      settings14.store.linkColor ??= DEFAULT_LINK;
+      settings14.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
       enableStyle(STYLE_NAME4);
     },
@@ -12935,20 +12788,20 @@ html.void-rt-open [data-sidebar="gap"] {
   var TrashIcon = findExportedComponentLazy("TrashIcon");
   var PlusIcon2 = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings16 = definePluginSettings({
+  var settings15 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings16.plain.presets ?? [];
+    return settings15.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings16.store.presets = presets;
+    settings15.store.presets = presets;
   }
   function getAssignments() {
-    return settings16.plain.assignments ?? {};
+    return settings15.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
@@ -13031,7 +12884,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings16.use(["presets"]).presets ?? [];
+    const presets = settings15.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -13043,7 +12896,7 @@ html.void-rt-open [data-sidebar="gap"] {
         if (v === id)
           delete a[k];
       }
-      settings16.store.assignments = a;
+      settings15.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -13078,8 +12931,8 @@ html.void-rt-open [data-sidebar="gap"] {
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings16.use(["presets"]).presets ?? [];
-    const assignments = settings16.use(["assignments"]).assignments ?? {};
+    const presets = settings15.use(["presets"]).presets ?? [];
+    const assignments = settings15.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -13087,7 +12940,7 @@ html.void-rt-open [data-sidebar="gap"] {
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings16.store.assignments = a;
+      settings15.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
@@ -13118,7 +12971,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings16,
+    settings: settings15,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -13165,7 +13018,7 @@ html.void-rt-open [data-sidebar="gap"] {
       }
     }, "Play preview"));
   }
-  var settings17 = definePluginSettings({
+  var settings16 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -13213,7 +13066,7 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function onUserGesture() {
     userGestured = true;
-    if (settings17.store.browserNotification && Notification.permission === "default")
+    if (settings16.store.browserNotification && Notification.permission === "default")
       Notification.requestPermission();
     const ctx = getCtx();
     if (!ctx)
@@ -13266,7 +13119,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const ctx = getCtx();
     if (!ctx)
       return;
-    const url = settings17.store.soundUrl?.trim() || DEFAULT_CHIME;
+    const url = settings16.store.soundUrl?.trim() || DEFAULT_CHIME;
     if (ctx.state === "suspended")
       ctx.resume().then(() => playUrl(ctx, url), () => logger24.info("AudioContext resume failed"));
     else
@@ -13283,11 +13136,11 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function notify(responseId, state) {
     logger24.info("notify", responseId, state ?? "unset", "permission", Notification.permission);
-    if (settings17.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings16.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings17.store.sound)
+    if (settings16.store.sound)
       playSound();
-    if (settings17.store.browserNotification)
+    if (settings16.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   function notifyOnce(responseId, state) {
@@ -13341,7 +13194,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism, Devs.p],
     tags: ["chat"],
-    settings: settings17,
+    settings: settings16,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -13396,6 +13249,153 @@ html.void-rt-open [data-sidebar="gap"] {
       unsubscribe?.();
       unsubscribe = null;
       store2().setIsIncognito(false);
+    }
+  });
+
+  // voidpp-css:/workspace/artifacts/Void-src/src/plugins/sidebarHeaderHover/styles.css
+  registerStyle("sidebarHeaderHover", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* stylelint-disable no-descending-specificity */
+
+@media (width >= 48rem) {
+    [data-sidebar="sidebar"] [data-void-bots-plus],
+    [data-sidebar="sidebar"] .void-bots-plus,
+    [data-sidebar="sidebar"] button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-void-chats-plus],
+    [data-sidebar="sidebar"] .void-chats-plus,
+    [data-sidebar="sidebar"] button[aria-label="Add project"],
+    [data-sidebar="sidebar"] button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
+        opacity: 0 !important;
+        transition: opacity 0.15s ease;
+    }
+
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-bots-plus],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-bots-plus,
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) [data-void-chats-plus],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) .void-chats-plus,
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="Add project"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"]:is(:hover, :focus-within) > :first-child :is(button, [role="button"]):not([aria-expanded]),
+    [data-sidebar="sidebar"] :has(> :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus)):is(:hover, :focus-within) > :is([data-void-bots-plus], [data-void-chats-plus], .void-bots-plus, .void-chats-plus),
+    [data-sidebar="sidebar"] [data-void-bots-plus]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] .void-bots-plus:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="New bot"]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] [data-void-chats-plus]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] .void-chats-plus:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="Add project"]:is(:hover, :focus-visible, [data-state="open"]),
+    [data-sidebar="sidebar"] button[aria-label="All projects"]:is(:hover, :focus-visible, [data-state="open"]) {
+        opacity: 1 !important;
+    }
+}
+
+@media (width >= 48rem) and (prefers-reduced-motion: reduce) {
+    [data-sidebar="sidebar"] [data-void-bots-plus],
+    [data-sidebar="sidebar"] .void-bots-plus,
+    [data-sidebar="sidebar"] button[aria-label="New bot"],
+    [data-sidebar="sidebar"] [data-void-chats-plus],
+    [data-sidebar="sidebar"] .void-chats-plus,
+    [data-sidebar="sidebar"] button[aria-label="Add project"],
+    [data-sidebar="sidebar"] button[aria-label="All projects"],
+    [data-sidebar="sidebar"] [data-sidebar="group"] > :first-child :is(button, [role="button"]):not([aria-expanded]) {
+        transition: none;
+    }
+}
+`);
+
+  // src/plugins/sidebarHeaderHover/index.tsx
+  var BTN_CLASS = "void-chats-plus flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary hover:bg-button-ghost-hover hover:text-primary focus:outline-none focus-visible:bg-button-ghost-hover";
+  var settings17 = definePluginSettings({
+    titleRowHover: {
+      type: 3 /* BOOLEAN */,
+      description: "Show Bots, Chats, and Projects header actions only when hovering that section, like the expand chevron.",
+      default: true
+    },
+    chatsPlus: {
+      type: 3 /* BOOLEAN */,
+      description: "Show a plus on the Chats header that starts a new chat.",
+      default: true
+    }
+  });
+  function apply2() {
+    if (settings17.store.titleRowHover)
+      enableStyle("sidebarHeaderHover");
+    else
+      disableStyle("sidebarHeaderHover");
+  }
+  function newChat(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const native = document.querySelector('[data-testid="new-chat"]');
+    if (native) {
+      native.click();
+      return;
+    }
+    const { route, push } = RoutingStore.useRoutingStore.getState();
+    const teamId = route.teamId ?? null;
+    const workspaceId = route.workspaceId;
+    if (workspaceId) {
+      push({ page: "workspace", workspaceId, tab: "conversations", teamId });
+      const chat = ChatPageStore.useChatPageStore.getState();
+      chat.setProjectId(workspaceId);
+      chat.setConversationId(undefined);
+      return;
+    }
+    ChatPageStore.useChatPageStore.getState().setConversationId(undefined);
+    push({ page: "main", teamId });
+  }
+  var ChatsPlus = ErrorBoundary.wrap(function ChatsPlusButton() {
+    if (!settings17.use(["chatsPlus"]).chatsPlus)
+      return null;
+    return createElement("button", {
+      type: "button",
+      className: BTN_CLASS,
+      "aria-label": "New chat",
+      "data-void-chats-plus": "",
+      onClick: newChat
+    }, createElement(PlusIcon, { size: 14 }));
+  }, null);
+  var sidebarHeaderHover_default = definePlugin({
+    name: "SidebarHeaderHover",
+    icon: PlusIcon,
+    description: "Show Bots, Chats, and Projects header actions on section hover, and add a New chat plus on Chats.",
+    authors: [Devs.p],
+    tags: ["ui"],
+    enabledByDefault: true,
+    managedStyle: "sidebarHeaderHover",
+    settings: settings17,
+    _ChatsPlus: () => createElement(ChatsPlus),
+    patches: [
+      {
+        find: '"sidebar.new-bot-btn.aria-label","New bot"',
+        replacement: [
+          {
+            match: /(\i)\("flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary","hover:bg-button-ghost-hover hover:text-primary","focus:outline-none focus-visible:bg-button-ghost-hover"\)/,
+            replace: '$1("flex size-5 shrink-0 items-center justify-center rounded-md text-tertiary void-bots-plus","hover:bg-button-ghost-hover hover:text-primary","focus:outline-none focus-visible:bg-button-ghost-hover")'
+          },
+          {
+            match: /("button",\{type:"button","aria-label":\i,className:\i,onClick:\i)/,
+            replace: '$&,"data-void-bots-plus":""'
+          }
+        ]
+      },
+      {
+        find: '"sidebar-chats","Chats"',
+        replacement: {
+          match: /(\i\("sidebar-chats","Chats"\):\i\("sidebar-history","History"\),collapsed:\i,onToggle:\(\)=>\i\(\i\))/,
+          replace: "$1,action:$self._ChatsPlus()"
+        }
+      }
+    ],
+    start: apply2,
+    onSettingsChange: apply2,
+    stop() {
+      disableStyle("sidebarHeaderHover");
     }
   });
 
@@ -18282,7 +18282,7 @@ div:has(> #grok-bot-nav-button) {
   // virtual:~plugins
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  var __plugins_default = { [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [cleaner_default.name]: cleaner_default, [betterSidebar_default.name]: betterSidebar_default, [betterImagine_default.name]: betterImagine_default, [messageTimestamps_default.name]: messageTimestamps_default, [autoRetry_default.name]: autoRetry_default, [userQuotes_default.name]: userQuotes_default, [cloneChats_default.name]: cloneChats_default, [streamerMode_default.name]: streamerMode_default, [inputHistory_default.name]: inputHistory_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [themedScrollbar_default.name]: themedScrollbar_default, [botsPlusHover_default.name]: botsPlusHover_default, [betterLinks_default.name]: betterLinks_default, [experiments_default.name]: experiments_default, [customInstructions_default.name]: customInstructions_default, [responseNotification_default.name]: responseNotification_default, [incognito_default.name]: incognito_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [noRightPanel_default.name]: noRightPanel_default, [composerOpacity_default.name]: composerOpacity_default, [exportChat_default.name]: exportChat_default, [autoCollapse_default.name]: autoCollapse_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default, [settingsFlyout_default.name]: settingsFlyout_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [noDictation_default.name]: noDictation_default, [betterFiles_default.name]: betterFiles_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [stableComposer_default.name]: stableComposer_default, [compactModeSelect_default.name]: compactModeSelect_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [noGrokBot_default.name]: noGrokBot_default, [placeholder_default.name]: placeholder_default };
+  var __plugins_default = { [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [cleaner_default.name]: cleaner_default, [betterSidebar_default.name]: betterSidebar_default, [betterImagine_default.name]: betterImagine_default, [messageTimestamps_default.name]: messageTimestamps_default, [autoRetry_default.name]: autoRetry_default, [userQuotes_default.name]: userQuotes_default, [cloneChats_default.name]: cloneChats_default, [streamerMode_default.name]: streamerMode_default, [inputHistory_default.name]: inputHistory_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [themedScrollbar_default.name]: themedScrollbar_default, [betterLinks_default.name]: betterLinks_default, [experiments_default.name]: experiments_default, [customInstructions_default.name]: customInstructions_default, [responseNotification_default.name]: responseNotification_default, [incognito_default.name]: incognito_default, [sidebarHeaderHover_default.name]: sidebarHeaderHover_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [noRightPanel_default.name]: noRightPanel_default, [composerOpacity_default.name]: composerOpacity_default, [exportChat_default.name]: exportChat_default, [autoCollapse_default.name]: autoCollapse_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default, [settingsFlyout_default.name]: settingsFlyout_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [noDictation_default.name]: noDictation_default, [betterFiles_default.name]: betterFiles_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [stableComposer_default.name]: stableComposer_default, [compactModeSelect_default.name]: compactModeSelect_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [noGrokBot_default.name]: noGrokBot_default, [placeholder_default.name]: placeholder_default };
   // voidpp-css:/workspace/artifacts/Void-src/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
