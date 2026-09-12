@@ -10,6 +10,7 @@ import type {
     FeatureStoreModule,
     FilesPageStoreModule,
     MediaStoreModule,
+    MessageStoreModule,
     ModesStoreModule,
     ResponseStoreModule,
     RoutingStoreModule,
@@ -27,6 +28,7 @@ export const ConversationStore: ConversationStoreModule = findByPropsLazy("useCo
 export const FeatureStore: FeatureStoreModule = findByPropsLazy("useFeatureStore");
 export const FilesPageStore: FilesPageStoreModule = findByPropsLazy("useFilesPageStore", "useAssetsList");
 export const MediaStore: MediaStoreModule = findByPropsLazy("useMediaStore", "useImagineModeStore");
+export const MessageStore: MessageStoreModule = findByPropsLazy("useMessageStore", "nodeToResponse");
 export const ModesStore: ModesStoreModule = findByPropsLazy("useModesStore");
 export const ResponseStore: ResponseStoreModule = findByPropsLazy("useResponseStore", "createOptimisticResponse");
 export const RoutingStore: RoutingStoreModule = findByPropsLazy("useRoutingStore", "formatUrl");

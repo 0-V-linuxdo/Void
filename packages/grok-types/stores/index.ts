@@ -4,6 +4,7 @@ export * from "./CreditQuotaStore";
 export * from "./FeatureStore";
 export * from "./FilesPageStore";
 export * from "./MediaStore";
+export * from "./MessageStore";
 export * from "./ModesStore";
 export * from "./ResponseStore";
 export * from "./RoutingStore";

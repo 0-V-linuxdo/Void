@@ -8,12 +8,13 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { ErrorBoundary } from "@components/ErrorBoundary";
-import { Text } from "@components/Text";
 import { ClockIcon } from "@components/icons";
+import { Text } from "@components/Text";
 import type { GrokResponse } from "@grok-types";
+import type { MessageStoreState } from "@grok-types/stores/MessageStore";
 import type { ResponseStoreState } from "@grok-types/stores/ResponseStore";
 import { React } from "@turbopack/common/react";
-import { ConversationStore, ResponseStore } from "@turbopack/common/stores";
+import { ConversationStore, MessageStore, ResponseStore } from "@turbopack/common/stores";
 import { ApiClients } from "@turbopack/common/utils";
 import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
@@ -105,7 +106,8 @@ function remember(id: string, ms: number, sender?: unknown, state?: unknown): bo
     return prev !== ms;
 }
 
-function conversationIdOf(id: string): string {
+function conversationIdOf(id: string, rec: Record<string, unknown>): string {
+    if (typeof rec.conversationId === "string") return rec.conversationId;
     try {
         const { byConversationId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
         for (const [cid, list] of Object.entries(byConversationId ?? {})) {
@@ -127,13 +129,31 @@ function userKeys(rec: Record<string, unknown>, id: string): string[] {
     if (typeof parentResponseId === "string" && parentResponseId) keys.push(`u:p:${parentResponseId}`);
     const text = typeof rec.message === "string" && rec.message
         ? rec.message
-        : typeof rec.query === "string" ? rec.query : "";
+        : (typeof rec.query === "string" ? rec.query : "");
     const fp = textKey(text);
     if (fp) {
-        const cid = conversationIdOf(id);
+        const cid = conversationIdOf(id, rec);
         keys.push(cid ? `u:t:${cid}:${fp}` : `u:t:${fp}`);
     }
     return keys;
+}
+
+function gatewayRecords(cid?: string): Record<string, unknown>[] {
+    const out: Record<string, unknown>[] = [];
+    try {
+        const { conversations } = MessageStore.useMessageStore.getState();
+        const slices = cid ? [conversations?.[cid]] : Object.values(conversations ?? {});
+        for (const slice of slices) {
+            for (const { status, content } of Object.values(slice?.nodes ?? {})) {
+                if (!content) continue;
+                const { responseId, sender, parentResponseId, createTime, thinkingStartTime, state } = content;
+                out.push({ responseId, sender, parentResponseId, createTime, thinkingStartTime, state: status === "ack-pending" ? "optimistic" : state });
+            }
+        }
+    } catch (e) {
+        logger.debug("message store unavailable", e);
+    }
+    return out;
 }
 
 function extraKeys(rec: Record<string, unknown>, id: string): string[] {
@@ -194,7 +214,11 @@ function storeRecords(id: string): Record<string, unknown>[] {
     }
 }
 
-function borrowedMs(id: string): number | null {
+function borrowedMs(id: string, cid: string): number | null {
+    if (cid) {
+        const ms = neighborTime(id, gatewayRecords(cid));
+        if (ms != null) return ms;
+    }
     try {
         const { byId, nodesByConversationId } = ResponseStore.useResponseStore.getState();
         const lookup = byId as unknown as Record<string, Record<string, unknown> | undefined>;
@@ -253,7 +277,7 @@ function resolveMs(response: GrokResponse, isUser?: boolean): number | null {
         stored,
         uuid: uuidTime(id),
     });
-    if (human && id) ms = preferHumanTime(ms, borrowedMs(id));
+    if (human && id) ms = preferHumanTime(ms, borrowedMs(id, conversationIdOf(id, full)));
     if (id && ms != null) rememberKeys(id, full, ms, human ? "human" : full.sender, human);
     return ms;
 }
@@ -432,6 +456,16 @@ export default definePlugin({
                 } catch (e) {
                     logger.debug("store ingest failed", e);
                 }
+            },
+        },
+        MessageStore: {
+            selector: (s: MessageStoreState) => {
+                let n = 0;
+                for (const slice of Object.values(s.conversations ?? {})) n += Object.keys(slice?.nodes ?? {}).length;
+                return n;
+            },
+            handler() {
+                ingest({ responses: gatewayRecords() });
             },
         },
     },
