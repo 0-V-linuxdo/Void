@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.40] v1.0.0
+// @version      [20260912.41] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.40] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.41] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -2563,6 +2563,15 @@ ${sourceUrl}`;
     y1: "16",
     y2: "16"
   }));
+  var InfoIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 16v-4"
+  }), /* @__PURE__ */ React.createElement("path", {
+    d: "M12 8h.01"
+  }));
   var PaletteIcon = (props = {}) => svg(props, /* @__PURE__ */ React.createElement("path", {
     d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
   }), /* @__PURE__ */ React.createElement("circle", {
@@ -4895,6 +4904,29 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     overscroll-behavior: contain;
 }
 
+.void-settings-tab-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.void-settings-tab-info {
+    display: inline-flex;
+    align-items: center;
+    color: hsl(var(--fg-secondary));
+    cursor: default;
+    flex-shrink: 0;
+}
+
+.void-settings-tab-info svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+button .void-settings-tab-info {
+    display: none;
+}
+
 .void-settings-row {
     display: flex;
     align-items: center;
@@ -6411,7 +6443,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       flexDirection: "column",
       gap: "1rem",
       className: "void-tab-root"
-    }, /* @__PURE__ */ React.createElement(Paragraph, null, "Toggle features. Some need a reload. Click the sliders icon to configure."), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
+    }, needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       className: cl11("reload-banner")
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7263,7 +7295,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   });
   var PLUGINS_TAB_ID = "voidpp_plugins_tab";
   var allTabs = [
-    { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2 },
+    { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2, description: "Toggle features. Some need a reload. Click the sliders icon to configure." },
     { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
     { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
     { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
@@ -7299,9 +7331,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.40] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"b4a34eb"}`
-    }, `(${"b4a34eb"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.41] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"b0063d0"}`
+    }, `(${"b0063d0"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7311,6 +7343,21 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       as: "span",
       color: "secondary"
     }, "Userscript")));
+  }
+  function TabLabel({ text, description }) {
+    return /* @__PURE__ */ React.createElement("span", {
+      className: cl16("tab-label")
+    }, text, /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: cl16("tab-info"),
+      "aria-label": description
+    }, /* @__PURE__ */ React.createElement(InfoIcon, {
+      size: 16
+    }))), /* @__PURE__ */ React.createElement(TooltipContent, {
+      side: "right",
+      sideOffset: 8
+    }, description)));
   }
   function openSettingsTab(tab) {
     const store = SettingsDialogStore.useSettingsDialogStore.getState();
@@ -7372,12 +7419,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
         icon: t.icon,
         i18nKey: t.name,
         defaultLabel: t.name,
+        description: t.description,
         visible: () => true,
         component: t.component
       }));
     },
     _tabLabel(tab) {
-      return tab.defaultLabel || tab.i18nKey || tab.id;
+      const label = tab.defaultLabel || tab.i18nKey || tab.id;
+      if (!tab.description)
+        return label;
+      return /* @__PURE__ */ React.createElement(TabLabel, {
+        text: label,
+        description: tab.description
+      });
     },
     _renderVersion() {
       return /* @__PURE__ */ React.createElement(VersionInfo, {

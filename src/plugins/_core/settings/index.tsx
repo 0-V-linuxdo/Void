@@ -9,8 +9,8 @@ import "./styles.css";
 import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings, migratePluginSetting } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
-import { ErrorBoundary, Flex, Text } from "@components";
-import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidPPIcon } from "@components/icons";
+import { ErrorBoundary, Flex, Text, Tooltip, TooltipContent, TooltipTrigger } from "@components";
+import { BracesIcon, InfoIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidPPIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import { usePluginMenu } from "@plugins/pluginsFlyout";
@@ -48,12 +48,13 @@ interface SettingsTab {
     icon: ComponentType<any>;
     component: ComponentType;
     plugin?: string;
+    description?: string;
 }
 
 const PLUGINS_TAB_ID = "voidpp_plugins_tab";
 
 export const allTabs: SettingsTab[] = [
-    { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab },
+    { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab, description: "Toggle features. Some need a reload. Click the sliders icon to configure." },
     { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
     { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
     { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
@@ -95,6 +96,24 @@ function VersionInfo() {
                 </Text>
             </Flex>
         </Flex>
+    );
+}
+
+function TabLabel({ text, description }: { text: string; description: string }) {
+    return (
+        <span className={cl("tab-label")}>
+            {text}
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <span className={cl("tab-info")} aria-label={description}>
+                        <InfoIcon size={16} />
+                    </span>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                    {description}
+                </TooltipContent>
+            </Tooltip>
+        </span>
     );
 }
 
@@ -181,13 +200,16 @@ export default definePlugin({
             icon: t.icon,
             i18nKey: t.name,
             defaultLabel: t.name,
+            description: t.description,
             visible: () => true,
             component: t.component,
         }));
     },
 
-    _tabLabel(tab: { defaultLabel?: string; i18nKey?: string; id: string }) {
-        return tab.defaultLabel || tab.i18nKey || tab.id;
+    _tabLabel(tab: { defaultLabel?: string; i18nKey?: string; id: string; description?: string }) {
+        const label = tab.defaultLabel || tab.i18nKey || tab.id;
+        if (!tab.description) return label;
+        return <TabLabel text={label} description={tab.description} />;
     },
 
     _renderVersion() {

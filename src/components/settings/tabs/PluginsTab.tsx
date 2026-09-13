@@ -185,7 +185,6 @@ export default function PluginsTab() {
 
     return (
         <Flex flexDirection="column" gap="1rem" className="void-tab-root">
-            <Paragraph>Toggle features. Some need a reload. Click the sliders icon to configure.</Paragraph>
             {needsReload && !showReload && (
                 <Flex alignItems="center" className={cl("reload-banner")}>
                     <Text size="xs" className={cl("reload-text")}>
