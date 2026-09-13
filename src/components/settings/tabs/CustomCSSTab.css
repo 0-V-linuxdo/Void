@@ -3,3 +3,7 @@
     height: 100%;
     min-height: 0;
 }
+
+.void-css-header {
+    flex-shrink: 0;
+}

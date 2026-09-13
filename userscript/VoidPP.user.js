@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.46] v1.0.0
+// @version      [20260912.47] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.46] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.47] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -4130,7 +4130,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0",
-      className: ClassNames.cn("min-w-0 flex-1", className)
+      className: ClassNames.cn("max-w-sm min-w-0", className)
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
@@ -5184,6 +5184,10 @@ button .void-info-hint {
     height: 100%;
     min-height: 0;
 }
+
+.void-css-header {
+    flex-shrink: 0;
+}
 `);
 
   // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/CssEditor.css
@@ -5441,12 +5445,17 @@ button .void-info-hint {
       flexDirection: "column",
       gap: "1rem",
       className: classes(cl6("root"), "void-tab-root")
-    }, /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Switch, {
-        checked: enabled,
-        onCheckedChange: handleToggle
-      })
-    }, /* @__PURE__ */ React.createElement(SettingsDescription, null, "Applies as you type. Stored on this device. Disable to keep code without applying it.")), /* @__PURE__ */ React.createElement(CssEditor, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      className: cl6("header")
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Quick CSS",
+      description: "Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it."
+    }), /* @__PURE__ */ React.createElement(Switch, {
+      checked: enabled,
+      onCheckedChange: handleToggle
+    })), /* @__PURE__ */ React.createElement(CssEditor, {
       value: css,
       onChange: apply,
       disabled: !enabled
@@ -5519,7 +5528,7 @@ button .void-info-hint {
 }
 
 .void-tab-root {
-    padding: 0;
+    padding: 0 0.75rem;
 }
 
 .void-tab-empty {
@@ -6765,22 +6774,32 @@ button .void-info-hint {
       flexDirection: "column",
       gap: "1rem",
       className: "void-tab-root"
-    }, /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Button, {
-        variant: "secondary",
-        size: "md",
-        onClick: () => setOnlineDialogOpen(true)
-      }, "Manage")
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Online Themes"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Load themes from a URL. Re-fetched on every page load so updates apply automatically.")), /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Button, {
-        variant: "secondary",
-        size: "md",
-        onClick: () => {
-          setEditingTheme(undefined);
-          setLocalDialogOpen(true);
-        }
-      }, "Manage")
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Local Themes"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly.")), /* @__PURE__ */ React.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React.createElement(SearchFilterBar, {
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Online Themes",
+      description: "Load themes from a URL. Re-fetched on every page load so updates apply automatically."
+    }), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "md",
+      onClick: () => setOnlineDialogOpen(true)
+    }, "Manage")), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Local Themes",
+      description: "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly."
+    }), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "md",
+      onClick: () => {
+        setEditingTheme(undefined);
+        setLocalDialogOpen(true);
+      }
+    }, "Manage")), /* @__PURE__ */ React.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React.createElement(SearchFilterBar, {
       placeholder: `Search ${themes.length} themes...`,
       search,
       onSearchChange: setSearch,
@@ -7314,8 +7333,8 @@ button .void-info-hint {
   var PLUGINS_TAB_ID = "voidpp_plugins_tab";
   var allTabs = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2, description: "Toggle features. Some need a reload. Click the sliders icon to configure." },
-    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2, description: "Load CSS themes from a URL or this device." },
-    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2, description: "Applies as you type. Stored on this device. Disable to keep code without applying it." },
+    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
+    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
     { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
   ];
   function getVisibleTabs() {
@@ -7349,9 +7368,9 @@ button .void-info-hint {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.46] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"aa2f071"}`
-    }, `(${"aa2f071"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.47] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"ea71bda"}`
+    }, `(${"ea71bda"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -18633,7 +18652,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
   noTelemetry_default.updatedAt = 1787870966000;
-  settings_default.updatedAt = 1789246749000;
+  settings_default.updatedAt = 1789262431000;
   chatBarButtons_default.updatedAt = 1781101259000;
   contextMenu_default.updatedAt = 1781702684000;
   autoCollapse_default.updatedAt = 1787789817000;

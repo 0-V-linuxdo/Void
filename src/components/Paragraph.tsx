@@ -45,7 +45,7 @@ export function InfoHint({ children }: { children: ReactNode }) {
 
 export function SectionHeader({ title, description, className }: { title: string; description?: string; className?: string }) {
     return (
-        <Flex flexDirection="column" gap="0" className={ClassNames.cn("min-w-0 flex-1", className)}>
+        <Flex flexDirection="column" gap="0" className={ClassNames.cn("max-w-sm min-w-0", className)}>
             <Text size="sm" weight="medium">{title}</Text>
             {description && <Paragraph>{description}</Paragraph>}
         </Flex>

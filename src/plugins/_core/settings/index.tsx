@@ -55,8 +55,8 @@ const PLUGINS_TAB_ID = "voidpp_plugins_tab";
 
 export const allTabs: SettingsTab[] = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab, description: "Toggle features. Some need a reload. Click the sliders icon to configure." },
-    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab, description: "Load CSS themes from a URL or this device." },
-    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab, description: "Applies as you type. Stored on this device. Disable to keep code without applying it." },
+    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
+    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
     { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
 ];
 
