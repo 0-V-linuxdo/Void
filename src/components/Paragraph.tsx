@@ -45,9 +45,9 @@ export function InfoHint({ children }: { children: ReactNode }) {
 
 export function SectionHeader({ title, description, className }: { title: string; description?: string; className?: string }) {
     return (
-        <Flex alignItems="center" gap="0.375rem" className={ClassNames.cn("min-w-0", className)}>
+        <Flex flexDirection="column" gap="0" className={ClassNames.cn("min-w-0 flex-1", className)}>
             <Text size="sm" weight="medium">{title}</Text>
-            {description && <InfoHint>{description}</InfoHint>}
+            {description && <Paragraph>{description}</Paragraph>}
         </Flex>
     );
 }

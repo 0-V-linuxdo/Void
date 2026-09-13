@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.43] v1.0.0
+// @version      [20260912.44] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.43] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.44] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -4128,13 +4128,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function SectionHeader({ title, description, className }) {
     return /* @__PURE__ */ React.createElement(Flex, {
-      alignItems: "center",
-      gap: "0.375rem",
-      className: ClassNames.cn("min-w-0", className)
+      flexDirection: "column",
+      gap: "0",
+      className: ClassNames.cn("min-w-0 flex-1", className)
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
-    }, title), description && /* @__PURE__ */ React.createElement(InfoHint, null, description));
+    }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
   // voidpp-css:/workspace/artifacts/Void-src/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
@@ -6777,7 +6777,7 @@ button .void-info-hint {
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Online Themes",
-      description: "Load from a URL. Re-fetched on every page load."
+      description: "Load themes from a URL. Re-fetched on every page load so updates apply automatically."
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "md",
@@ -6788,7 +6788,7 @@ button .void-info-hint {
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Local Themes",
-      description: "Stored on this device. For private tweaks and drafts."
+      description: "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly."
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "md",
@@ -7365,9 +7365,9 @@ button .void-info-hint {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.43] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"a39eee0"}`
-    }, `(${"a39eee0"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.44] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"e8e8d72"}`
+    }, `(${"e8e8d72"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
