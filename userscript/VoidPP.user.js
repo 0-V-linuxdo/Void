@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.51] v1.0.0
+// @version      [20260912.52] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.51] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.52] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -5155,19 +5155,20 @@ button .void-info-hint {
 
   // voidpp-css:/tmp/voidpp-src/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
-    min-height: 0;
+    contain: content;
     height: 100%;
+    min-height: 0;
 }
 
-.void-css-root > .void-css-wrap {
-    margin-inline: 0.75rem;
+.void-css-header {
+    flex-shrink: 0;
 }
 `);
 
   // voidpp-css:/tmp/voidpp-src/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
-    min-height: 15.625rem;
+    min-height: 0;
     border: 1px solid hsl(var(--border-l1));
     border-radius: 0.75rem;
     background: transparent;
@@ -5418,13 +5419,18 @@ button .void-info-hint {
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
-      className: cl6("root")
-    }, /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Switch, {
-        checked: enabled,
-        onCheckedChange: handleToggle
-      })
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Enable Quick CSS"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it.")), /* @__PURE__ */ React.createElement(CssEditor, {
+      className: classes(cl6("root"), "void-tab-root")
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      className: cl6("header")
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Quick CSS",
+      description: "Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it."
+    }), /* @__PURE__ */ React.createElement(Switch, {
+      checked: enabled,
+      onCheckedChange: handleToggle
+    })), /* @__PURE__ */ React.createElement(CssEditor, {
       value: css,
       onChange: apply,
       disabled: !enabled
@@ -6521,10 +6527,6 @@ button .void-info-hint {
     color: hsl(var(--fg-danger));
 }
 
-.void-themes-list {
-    padding: 1rem 0.75rem 0;
-}
-
 .void-themes-local-css-field {
     flex: 1;
     min-height: 0;
@@ -6745,27 +6747,34 @@ button .void-info-hint {
     };
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
-      gap: "0"
-    }, /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Button, {
-        variant: "secondary",
-        size: "sm",
-        onClick: () => setOnlineDialogOpen(true)
-      }, "Manage")
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Online Themes"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Load themes from a URL. Re-fetched on every page load so updates apply automatically.")), /* @__PURE__ */ React.createElement(SettingsRow, {
-      action: /* @__PURE__ */ React.createElement(Button, {
-        variant: "secondary",
-        size: "sm",
-        onClick: () => {
-          setEditingTheme(undefined);
-          setLocalDialogOpen(true);
-        }
-      }, "Manage")
-    }, /* @__PURE__ */ React.createElement(SettingsTitle, null, "Local Themes"), /* @__PURE__ */ React.createElement(SettingsDescription, null, "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly.")), themes.length > 0 && /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
       gap: "1rem",
-      className: cl13("list")
-    }, /* @__PURE__ */ React.createElement(SearchFilterBar, {
+      className: "void-tab-root"
+    }, /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Online Themes",
+      description: "Load themes from a URL. Re-fetched on every page load so updates apply automatically."
+    }), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "md",
+      onClick: () => setOnlineDialogOpen(true)
+    }, "Manage")), /* @__PURE__ */ React.createElement(Flex, {
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem"
+    }, /* @__PURE__ */ React.createElement(SectionHeader, {
+      title: "Local Themes",
+      description: "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly."
+    }), /* @__PURE__ */ React.createElement(Button, {
+      variant: "secondary",
+      size: "md",
+      onClick: () => {
+        setEditingTheme(undefined);
+        setLocalDialogOpen(true);
+      }
+    }, "Manage")), /* @__PURE__ */ React.createElement(Separator, null), themes.length > 0 && /* @__PURE__ */ React.createElement(SearchFilterBar, {
       placeholder: `Search ${themes.length} themes...`,
       search,
       onSearchChange: setSearch,
@@ -6785,10 +6794,10 @@ button .void-info-hint {
         setEditingTheme(t);
         setLocalDialogOpen(true);
       } : undefined
-    })))), !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
+    })))), themes.length > 0 && !filtered.length && /* @__PURE__ */ React.createElement(Paragraph, {
       color: "secondary",
       className: "void-tab-empty"
-    }, "No themes match your search.")), /* @__PURE__ */ React.createElement(ConfirmDialog, {
+    }, "No themes match your search."), /* @__PURE__ */ React.createElement(ConfirmDialog, {
       open: removeUrl != null,
       onOpenChange: (v) => {
         if (!v)
@@ -7334,7 +7343,7 @@ button .void-info-hint {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.51] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+    }, "[20260912.52] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
       href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"48af977"}`
     }, `(${"48af977"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",

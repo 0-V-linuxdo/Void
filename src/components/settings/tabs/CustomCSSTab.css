@@ -1,8 +1,9 @@
 .void-css-root {
-    min-height: 0;
+    contain: content;
     height: 100%;
+    min-height: 0;
 }
 
-.void-css-root > .void-css-wrap {
-    margin-inline: 0.75rem;
+.void-css-header {
+    flex-shrink: 0;
 }

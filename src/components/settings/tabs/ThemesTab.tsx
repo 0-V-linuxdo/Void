@@ -16,9 +16,8 @@ import {
     Grid,
     Input,
     Paragraph,
-    SettingsDescription,
-    SettingsRow,
-    SettingsTitle,
+    SectionHeader,
+    Separator,
     Text,
 } from "@components";
 import { React, useMemo, useState } from "@turbopack/common/react";
@@ -179,48 +178,43 @@ export default function ThemesTab() {
     };
 
     return (
-        <Flex flexDirection="column" gap="0">
-            <SettingsRow action={
-                <Button variant="secondary" size="sm" onClick={() => setOnlineDialogOpen(true)}>
+        <Flex flexDirection="column" gap="1rem" className="void-tab-root">
+            <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
+                <SectionHeader title="Online Themes" description="Load themes from a URL. Re-fetched on every page load so updates apply automatically." />
+                <Button variant="secondary" size="md" onClick={() => setOnlineDialogOpen(true)}>
                     Manage
                 </Button>
-            }>
-                <SettingsTitle>Online Themes</SettingsTitle>
-                <SettingsDescription>Load themes from a URL. Re-fetched on every page load so updates apply automatically.</SettingsDescription>
-            </SettingsRow>
-            <SettingsRow action={
-                <Button variant="secondary" size="sm" onClick={() => { setEditingTheme(undefined); setLocalDialogOpen(true); }}>
+            </Flex>
+            <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
+                <SectionHeader title="Local Themes" description="Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly." />
+                <Button variant="secondary" size="md" onClick={() => { setEditingTheme(undefined); setLocalDialogOpen(true); }}>
                     Manage
                 </Button>
-            }>
-                <SettingsTitle>Local Themes</SettingsTitle>
-                <SettingsDescription>Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly.</SettingsDescription>
-            </SettingsRow>
+            </Flex>
+            <Separator />
             {themes.length > 0 && (
-                <Flex flexDirection="column" gap="1rem" className={cl("list")}>
-                    <SearchFilterBar<ThemeFilter>
-                        placeholder={`Search ${themes.length} themes...`}
-                        search={search}
-                        onSearchChange={setSearch}
-                        filter={filter}
-                        onFilterChange={setFilter}
-                        options={FILTER_OPTIONS}
-                    />
-                    {filtered.length > 0 && (
-                        <Grid columns="repeat(2, 1fr)">
-                            {filtered.map(t => (
-                                <ErrorBoundary key={t.url} fallback={null}>
-                                    <ThemeCard theme={t} onRemove={setRemoveUrl} onToggle={refreshThemes} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
-                                </ErrorBoundary>
-                            ))}
-                        </Grid>
-                    )}
-                    {!filtered.length && (
-                        <Paragraph color="secondary" className="void-tab-empty">
-                            No themes match your search.
-                        </Paragraph>
-                    )}
-                </Flex>
+                <SearchFilterBar<ThemeFilter>
+                    placeholder={`Search ${themes.length} themes...`}
+                    search={search}
+                    onSearchChange={setSearch}
+                    filter={filter}
+                    onFilterChange={setFilter}
+                    options={FILTER_OPTIONS}
+                />
+            )}
+            {filtered.length > 0 && (
+                <Grid columns="repeat(2, 1fr)">
+                    {filtered.map(t => (
+                        <ErrorBoundary key={t.url} fallback={null}>
+                            <ThemeCard theme={t} onRemove={setRemoveUrl} onToggle={refreshThemes} onEdit={t.local ? () => { setEditingTheme(t); setLocalDialogOpen(true); } : undefined} />
+                        </ErrorBoundary>
+                    ))}
+                </Grid>
+            )}
+            {themes.length > 0 && !filtered.length && (
+                <Paragraph color="secondary" className="void-tab-empty">
+                    No themes match your search.
+                </Paragraph>
             )}
             <ConfirmDialog
                 open={removeUrl != null}
