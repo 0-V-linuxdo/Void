@@ -6,9 +6,9 @@
 
 import "./CustomCSSTab.css";
 
-import { getSettingsPluginData, pluginPath, SettingsStore, updateSettingsPluginData } from "@api/Settings";
-import { Flex, Switch } from "@components";
-import { React, useCallback, useEffect, useState } from "@turbopack/common/react";
+import { getSettingsPluginData, updateSettingsPluginData } from "@api/Settings";
+import { Flex, SettingsDescription, SettingsRow, Switch } from "@components";
+import { React, useCallback, useState } from "@turbopack/common/react";
 import { classes, classNameFactory, disableStyle, enableStyle, registerStyle } from "@utils/css";
 
 import { CssEditor } from "../CssEditor";
@@ -26,23 +26,6 @@ function setCustomCSSEnabled(enabled: boolean) {
     }
 }
 
-function useCustomCSSEnabled() {
-    const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
-
-    useEffect(() => {
-        const sync = () => setEnabled(getSettingsPluginData().customCSSEnabled !== false);
-        SettingsStore.addChangeListener(pluginPath("Settings"), sync);
-        return () => SettingsStore.removeChangeListener(pluginPath("Settings"), sync);
-    }, []);
-
-    const update = useCallback((checked: boolean) => {
-        setEnabled(checked);
-        setCustomCSSEnabled(checked);
-    }, []);
-
-    return [enabled, update] as const;
-}
-
 export function loadSavedCSS(): string {
     const { customCSS: saved, customCSSEnabled } = getSettingsPluginData();
     if (typeof saved === "string" && saved && customCSSEnabled !== false) {
@@ -51,13 +34,8 @@ export function loadSavedCSS(): string {
     return typeof saved === "string" ? saved : "";
 }
 
-export function QuickCSSSwitch() {
-    const [enabled, update] = useCustomCSSEnabled();
-    return <Switch checked={enabled} onCheckedChange={update} />;
-}
-
 export default function CustomCSSTab() {
-    const [enabled] = useCustomCSSEnabled();
+    const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
     const [css, setCss] = useState(loadSavedCSS);
 
     const apply = useCallback((val: string) => {
@@ -66,8 +44,16 @@ export default function CustomCSSTab() {
         if (getSettingsPluginData().customCSSEnabled !== false) registerStyle(STYLE_ID, val);
     }, []);
 
+    const handleToggle = (checked: boolean) => {
+        setEnabled(checked);
+        setCustomCSSEnabled(checked);
+    };
+
     return (
         <Flex flexDirection="column" gap="1rem" className={classes(cl("root"), "void-tab-root")}>
+            <SettingsRow action={<Switch checked={enabled} onCheckedChange={handleToggle} />}>
+                <SettingsDescription>Applies as you type. Stored on this device. Disable to keep code without applying it.</SettingsDescription>
+            </SettingsRow>
             <CssEditor value={css} onChange={apply} disabled={!enabled} />
         </Flex>
     );

@@ -46,25 +46,8 @@
     gap: 0.375rem;
 }
 
-.void-settings-tab-label:has(.void-settings-tab-extra) {
-    width: 100%;
-    padding-inline-end: 2.5rem;
-    box-sizing: border-box;
-}
-
-.void-settings-tab-extra {
-    display: inline-flex;
-    align-items: center;
-    margin-inline-start: auto;
-}
-
-button .void-info-hint,
-button .void-settings-tab-extra {
+button .void-info-hint {
     display: none;
-}
-
-button .void-settings-tab-label:has(.void-settings-tab-extra) {
-    width: auto;
 }
 
 .void-settings-row {

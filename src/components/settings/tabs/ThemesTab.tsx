@@ -16,8 +16,10 @@ import {
     Grid,
     Input,
     Paragraph,
-    SectionHeader,
     Separator,
+    SettingsDescription,
+    SettingsRow,
+    SettingsTitle,
     Text,
 } from "@components";
 import { React, useMemo, useState } from "@turbopack/common/react";
@@ -179,18 +181,22 @@ export default function ThemesTab() {
 
     return (
         <Flex flexDirection="column" gap="1rem" className="void-tab-root">
-            <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
-                <SectionHeader title="Online Themes" description="Load themes from a URL. Re-fetched on every page load so updates apply automatically." />
+            <SettingsRow action={
                 <Button variant="secondary" size="md" onClick={() => setOnlineDialogOpen(true)}>
                     Manage
                 </Button>
-            </Flex>
-            <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
-                <SectionHeader title="Local Themes" description="Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly." />
+            }>
+                <SettingsTitle>Online Themes</SettingsTitle>
+                <SettingsDescription>Load themes from a URL. Re-fetched on every page load so updates apply automatically.</SettingsDescription>
+            </SettingsRow>
+            <SettingsRow action={
                 <Button variant="secondary" size="md" onClick={() => { setEditingTheme(undefined); setLocalDialogOpen(true); }}>
                     Manage
                 </Button>
-            </Flex>
+            }>
+                <SettingsTitle>Local Themes</SettingsTitle>
+                <SettingsDescription>Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly.</SettingsDescription>
+            </SettingsRow>
             <Separator />
             {themes.length > 0 && (
                 <SearchFilterBar<ThemeFilter>
