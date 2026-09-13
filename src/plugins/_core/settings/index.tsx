@@ -11,7 +11,7 @@ import { definePluginSettings, migratePluginSetting } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
 import { ErrorBoundary, Flex, InfoHint, Text } from "@components";
 import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidPPIcon } from "@components/icons";
-import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
+import { CustomCSSTab, loadSavedCSS, PluginsTab, QuickCSSSwitch, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import { usePluginMenu } from "@plugins/pluginsFlyout";
 import {
@@ -49,6 +49,7 @@ interface SettingsTab {
     component: ComponentType;
     plugin?: string;
     description?: string;
+    extra?: ComponentType;
 }
 
 const PLUGINS_TAB_ID = "voidpp_plugins_tab";
@@ -56,7 +57,7 @@ const PLUGINS_TAB_ID = "voidpp_plugins_tab";
 export const allTabs: SettingsTab[] = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab, description: "Toggle features. Some need a reload. Click the sliders icon to configure." },
     { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab, description: "Load CSS themes from a URL or this device." },
-    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab, description: "Applies as you type. Stored on this device. Disable to keep code without applying it." },
+    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab, description: "Applies as you type. Stored on this device. Disable to keep code without applying it.", extra: QuickCSSSwitch },
     { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
 ];
 
@@ -99,11 +100,16 @@ function VersionInfo() {
     );
 }
 
-function TabLabel({ text, description }: { text: string; description: string }) {
+function TabLabel({ text, description, extra: Extra }: { text: string; description?: string; extra?: ComponentType }) {
     return (
         <span className={cl("tab-label")}>
             {text}
-            <InfoHint>{description}</InfoHint>
+            {description && <InfoHint>{description}</InfoHint>}
+            {Extra && (
+                <span className={cl("tab-extra")} onClick={e => e.stopPropagation()}>
+                    <Extra />
+                </span>
+            )}
         </span>
     );
 }
@@ -192,15 +198,16 @@ export default definePlugin({
             i18nKey: t.name,
             defaultLabel: t.name,
             description: t.description,
+            extra: t.extra,
             visible: () => true,
             component: t.component,
         }));
     },
 
-    _tabLabel(tab: { defaultLabel?: string; i18nKey?: string; id: string; description?: string }) {
+    _tabLabel(tab: { defaultLabel?: string; i18nKey?: string; id: string; description?: string; extra?: ComponentType }) {
         const label = tab.defaultLabel || tab.i18nKey || tab.id;
-        if (!tab.description) return label;
-        return <TabLabel text={label} description={tab.description} />;
+        if (!tab.description && !tab.extra) return label;
+        return <TabLabel text={label} description={tab.description} extra={tab.extra} />;
     },
 
     _renderVersion() {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.44] v1.0.0
+// @version      [20260912.45] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.44] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.45] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -4944,8 +4944,25 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     gap: 0.375rem;
 }
 
-button .void-info-hint {
+.void-settings-tab-label:has(.void-settings-tab-extra) {
+    width: 100%;
+    padding-inline-end: 2.5rem;
+    box-sizing: border-box;
+}
+
+.void-settings-tab-extra {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-start: auto;
+}
+
+button .void-info-hint,
+button .void-settings-tab-extra {
     display: none;
+}
+
+button .void-settings-tab-label:has(.void-settings-tab-extra) {
+    width: auto;
 }
 
 .void-settings-row {
@@ -5184,10 +5201,6 @@ button .void-info-hint {
     height: 100%;
     min-height: 0;
 }
-
-.void-css-header {
-    flex-shrink: 0;
-}
 `);
 
   // voidpp-css:/workspace/artifacts/Void-src/src/components/settings/CssEditor.css
@@ -5421,6 +5434,19 @@ button .void-info-hint {
       enableStyle(STYLE_ID);
     }
   }
+  function useCustomCSSEnabled() {
+    const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
+    useEffect(() => {
+      const sync = () => setEnabled(getSettingsPluginData().customCSSEnabled !== false);
+      SettingsStore3.addChangeListener(pluginPath("Settings"), sync);
+      return () => SettingsStore3.removeChangeListener(pluginPath("Settings"), sync);
+    }, []);
+    const update = useCallback((checked) => {
+      setEnabled(checked);
+      setCustomCSSEnabled(checked);
+    }, []);
+    return [enabled, update];
+  }
   function loadSavedCSS() {
     const { customCSS: saved, customCSSEnabled } = getSettingsPluginData();
     if (typeof saved === "string" && saved && customCSSEnabled !== false) {
@@ -5428,8 +5454,15 @@ button .void-info-hint {
     }
     return typeof saved === "string" ? saved : "";
   }
+  function QuickCSSSwitch() {
+    const [enabled, update] = useCustomCSSEnabled();
+    return /* @__PURE__ */ React.createElement(Switch, {
+      checked: enabled,
+      onCheckedChange: update
+    });
+  }
   function CustomCSSTab() {
-    const [enabled, setEnabled] = useState(() => getSettingsPluginData().customCSSEnabled !== false);
+    const [enabled] = useCustomCSSEnabled();
     const [css, setCss] = useState(loadSavedCSS);
     const apply = useCallback((val) => {
       setCss(val);
@@ -5437,22 +5470,11 @@ button .void-info-hint {
       if (getSettingsPluginData().customCSSEnabled !== false)
         registerStyle(STYLE_ID, val);
     }, []);
-    const handleToggle = (checked) => {
-      setEnabled(checked);
-      setCustomCSSEnabled(checked);
-    };
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "1rem",
       className: classes(cl6("root"), "void-tab-root")
-    }, /* @__PURE__ */ React.createElement(Flex, {
-      alignItems: "center",
-      justifyContent: "flex-end",
-      className: cl6("header")
-    }, /* @__PURE__ */ React.createElement(Switch, {
-      checked: enabled,
-      onCheckedChange: handleToggle
-    })), /* @__PURE__ */ React.createElement(CssEditor, {
+    }, /* @__PURE__ */ React.createElement(CssEditor, {
       value: css,
       onChange: apply,
       disabled: !enabled
@@ -5525,7 +5547,7 @@ button .void-info-hint {
 }
 
 .void-tab-root {
-    padding: 0 0.75rem;
+    padding: 0;
 }
 
 .void-tab-empty {
@@ -7331,7 +7353,7 @@ button .void-info-hint {
   var allTabs = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2, description: "Toggle features. Some need a reload. Click the sliders icon to configure." },
     { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2, description: "Load CSS themes from a URL or this device." },
-    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2, description: "Applies as you type. Stored on this device. Disable to keep code without applying it." },
+    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2, description: "Applies as you type. Stored on this device. Disable to keep code without applying it.", extra: QuickCSSSwitch },
     { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
   ];
   function getVisibleTabs() {
@@ -7365,9 +7387,9 @@ button .void-info-hint {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.44] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"e8e8d72"}`
-    }, `(${"e8e8d72"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.45] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"5deb35f"}`
+    }, `(${"5deb35f"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7378,10 +7400,13 @@ button .void-info-hint {
       color: "secondary"
     }, "Userscript")));
   }
-  function TabLabel({ text, description }) {
+  function TabLabel({ text, description, extra: Extra }) {
     return /* @__PURE__ */ React.createElement("span", {
       className: cl16("tab-label")
-    }, text, /* @__PURE__ */ React.createElement(InfoHint, null, description));
+    }, text, description && /* @__PURE__ */ React.createElement(InfoHint, null, description), Extra && /* @__PURE__ */ React.createElement("span", {
+      className: cl16("tab-extra"),
+      onClick: (e) => e.stopPropagation()
+    }, /* @__PURE__ */ React.createElement(Extra, null)));
   }
   function openSettingsTab(tab) {
     const store = SettingsDialogStore.useSettingsDialogStore.getState();
@@ -7444,17 +7469,19 @@ button .void-info-hint {
         i18nKey: t.name,
         defaultLabel: t.name,
         description: t.description,
+        extra: t.extra,
         visible: () => true,
         component: t.component
       }));
     },
     _tabLabel(tab) {
       const label = tab.defaultLabel || tab.i18nKey || tab.id;
-      if (!tab.description)
+      if (!tab.description && !tab.extra)
         return label;
       return /* @__PURE__ */ React.createElement(TabLabel, {
         text: label,
-        description: tab.description
+        description: tab.description,
+        extra: tab.extra
       });
     },
     _renderVersion() {
