@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { definePluginSettings } from "@api/Settings";
 import { FrameIcon } from "@components/icons";
 import type { ChatPageStoreState } from "@grok-types/stores/ChatPageStore";
 import { ChatPageStore } from "@turbopack/common/stores";
 import { Devs } from "@utils/constants";
 import { registerStyle, unregisterStyle } from "@utils/css";
-import definePlugin, { StartAt } from "@utils/types";
+import definePlugin, { OptionType, StartAt } from "@utils/types";
 
 const STYLE_NAME = "betterCanvas";
 const FRAME_STYLE_ID = "void-better-canvas";
@@ -51,6 +52,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
 }
 `;
 
+const settings = definePluginSettings({
+    themedScrollbar: {
+        type: OptionType.BOOLEAN,
+        description: "Make the project pane scrollbar follow Grok's light and dark theme.",
+        default: true,
+    },
+    hideRightPanel: {
+        type: OptionType.BOOLEAN,
+        description: "Keep Grok's right panel closed, including auto-open and restore.",
+        default: false,
+    },
+});
+
 let domObs: MutationObserver | null = null;
 let themeObs: MutationObserver | null = null;
 const hooked = new WeakSet<HTMLIFrameElement>();
@@ -87,6 +101,10 @@ function applyToDocument(doc: Document, dark: boolean) {
     el.textContent = frameCss(dark);
 }
 
+function clearDocument(doc: Document) {
+    doc.getElementById(FRAME_STYLE_ID)?.remove();
+}
+
 export function bootstrapPreviewFrame() {
     applyToDocument(document, matchMedia("(prefers-color-scheme: dark)").matches);
     window.addEventListener("message", onFrameMessage);
@@ -100,10 +118,23 @@ export function bootstrapPreviewFrame() {
 function onFrameMessage(event: MessageEvent) {
     const { data } = event;
     if (!data || data.type !== MSG) return;
+    if (data.off) {
+        clearDocument(document);
+        return;
+    }
     applyToDocument(document, data.dark === true);
 }
 
+function postIframe(iframe: HTMLIFrameElement, payload: { type: string; dark?: boolean; off?: boolean }) {
+    try {
+        iframe.contentWindow?.postMessage(payload, "*");
+    } catch {
+        void 0;
+    }
+}
+
 function paintIframe(iframe: HTMLIFrameElement) {
+    if (!settings.store.themedScrollbar) return;
     const dark = isDark();
     try {
         const doc = iframe.contentDocument;
@@ -111,11 +142,17 @@ function paintIframe(iframe: HTMLIFrameElement) {
     } catch {
         void 0;
     }
+    postIframe(iframe, { type: MSG, dark });
+}
+
+function clearIframe(iframe: HTMLIFrameElement) {
     try {
-        iframe.contentWindow?.postMessage({ type: MSG, dark }, "*");
+        const doc = iframe.contentDocument;
+        if (doc) clearDocument(doc);
     } catch {
         void 0;
     }
+    postIframe(iframe, { type: MSG, off: true });
 }
 
 function hookIframe(iframe: HTMLIFrameElement) {
@@ -129,31 +166,43 @@ function scanIframes() {
     document.querySelectorAll<HTMLIFrameElement>(IFRAME_SEL).forEach(hookIframe);
 }
 
+function clearIframes() {
+    document.querySelectorAll<HTMLIFrameElement>(IFRAME_SEL).forEach(clearIframe);
+}
+
+function replyFrame(src: Window, origin: string, payload: { type: string; dark?: boolean; off?: boolean }) {
+    try {
+        src.postMessage(payload, origin === "null" ? "*" : origin);
+    } catch {
+        src.postMessage(payload, "*");
+    }
+}
+
 function onParentMessage(event: MessageEvent) {
     const { data } = event;
     if (!data || data.type !== MSG_HELLO) return;
     const src = event.source as Window | null;
     if (!src) return;
-    try {
-        src.postMessage({ type: MSG, dark: isDark() }, event.origin === "null" ? "*" : event.origin);
-    } catch {
-        src.postMessage({ type: MSG, dark: isDark() }, "*");
+    if (!settings.store.themedScrollbar) {
+        replyFrame(src, event.origin, { type: MSG, off: true });
+        return;
     }
+    replyFrame(src, event.origin, { type: MSG, dark: isDark() });
 }
 
-function startParent() {
+function startScrollbar() {
     registerStyle(STYLE_NAME, CSS);
     scanIframes();
-    window.addEventListener("message", onParentMessage);
+    if (domObs) return;
     domObs = new MutationObserver(scanIframes);
     domObs.observe(document.documentElement, { childList: true, subtree: true });
     themeObs = new MutationObserver(scanIframes);
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme", "data-color-scheme"] });
 }
 
-function stopParent() {
+function stopScrollbar() {
     unregisterStyle(STYLE_NAME);
-    window.removeEventListener("message", onParentMessage);
+    clearIframes();
     domObs?.disconnect();
     themeObs?.disconnect();
     domObs = null;
@@ -165,26 +214,37 @@ function isRightOpen(s: ChatPageStoreState) {
 }
 
 function enforce() {
+    if (!settings.store.hideRightPanel) return;
     const state = ChatPageStore.useChatPageStore.getState();
     if (isRightOpen(state)) state.closeSidePanelExplicitly();
+}
+
+function apply() {
+    if (settings.store.themedScrollbar) startScrollbar();
+    else stopScrollbar();
+    enforce();
 }
 
 export default definePlugin({
     name: "BetterCanvas",
     icon: FrameIcon,
-    description: "Keep the right panel closed and theme the project pane scrollbar.",
+    description: "Theme the project pane scrollbar and optionally keep the right panel closed.",
     authors: [Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
     startAt: StartAt.TurbopackReady,
+    settings,
 
     start() {
-        startParent();
-        enforce();
+        window.addEventListener("message", onParentMessage);
+        apply();
     },
 
+    onSettingsChange: apply,
+
     stop() {
-        stopParent();
+        window.removeEventListener("message", onParentMessage);
+        stopScrollbar();
     },
 
     zustand: {
@@ -200,15 +260,15 @@ export default definePlugin({
         {
             find: "willRestoreRightPanelByIntent",
             replacement: {
-                match: /willRestoreRightPanelByIntent=\i=>\{/,
-                replace: "willRestoreRightPanelByIntent=()=>{return!1;",
+                match: /willRestoreRightPanelByIntent=(\i)=>\{/,
+                replace: "willRestoreRightPanelByIntent=$1=>{if($self.settings.store.hideRightPanel)return!1;",
             },
         },
         {
             find: '"computePreviewAutoOpen"',
             replacement: {
                 match: /&&(\i)\(\{source:"auto"\}\)/,
-                replace: "&&!1&&$1({source:\"auto\"})",
+                replace: "&&!$self.settings.store.hideRightPanel&&$1({source:\"auto\"})",
             },
         },
     ],

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.38] v1.0.0
+// @version      [20260912.39] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.38] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.39] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -1566,6 +1566,934 @@ ${sourceUrl}`;
   });
   var Fragment = Symbol.for("react.fragment");
 
+  // src/utils/constants.ts
+  var Devs = Object.freeze({
+    Prism: "Prism",
+    adryd: "adryd",
+    p: "0_V"
+  });
+  var LEGACY_WRITE_STOPPED = "[20260912]";
+
+  // src/utils/idb.ts
+  var logger5 = new Logger("IDB");
+  var DB_NAME = "VoidPP";
+  var LEGACY_DB_NAME = "Void";
+  var STORE_NAME = "kv";
+  var DB_VERSION = 1;
+  var dbPromise = null;
+  function openNamed(name) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(name, DB_VERSION);
+      req.onupgradeneeded = () => {
+        if (!req.result.objectStoreNames.contains(STORE_NAME)) {
+          req.result.createObjectStore(STORE_NAME);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  function request(req) {
+    return new Promise((resolve, reject) => {
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function copyStore(from, to) {
+    if (!from.objectStoreNames.contains(STORE_NAME) || !to.objectStoreNames.contains(STORE_NAME))
+      return;
+    const destCount = await request(to.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count());
+    if (destCount > 0)
+      return;
+    const src = from.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME);
+    const keys = await request(src.getAllKeys());
+    if (!keys.length)
+      return;
+    const values = await request(src.getAll());
+    const destTx = to.transaction(STORE_NAME, "readwrite");
+    const dest = destTx.objectStore(STORE_NAME);
+    for (let i = 0;i < keys.length; i++)
+      dest.put(values[i], keys[i]);
+    await new Promise((resolve, reject) => {
+      destTx.oncomplete = () => resolve();
+      destTx.onerror = () => reject(destTx.error);
+    });
+  }
+  function openExisting(name) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      let created = false;
+      req.onupgradeneeded = () => {
+        created = true;
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        if (created) {
+          db.close();
+          indexedDB.deleteDatabase(name);
+          resolve(null);
+          return;
+        }
+        resolve(db);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  }
+  function dropLegacyDatabase() {
+    return new Promise((resolve) => {
+      const req = indexedDB.deleteDatabase(LEGACY_DB_NAME);
+      req.onsuccess = () => resolve();
+      req.onerror = () => resolve();
+      req.onblocked = () => resolve();
+    });
+  }
+  async function migrateLegacy(db) {
+    let legacy = null;
+    let drop = false;
+    try {
+      legacy = await openExisting(LEGACY_DB_NAME);
+      if (legacy) {
+        await copyStore(legacy, db);
+        logger5.info(`Migrated leftover IndexedDB ${LEGACY_DB_NAME} onto ${DB_NAME}; writes to ${LEGACY_DB_NAME} stopped at ${LEGACY_WRITE_STOPPED}`);
+        drop = true;
+      }
+    } catch (e) {
+      if (false)
+        ;
+    } finally {
+      legacy?.close();
+    }
+    if (drop)
+      await dropLegacyDatabase();
+  }
+  function open() {
+    if (dbPromise)
+      return dbPromise;
+    const promise = openNamed(DB_NAME).then(async (db) => {
+      await migrateLegacy(db);
+      return db;
+    });
+    promise.catch((e) => {
+      dbPromise = null;
+      if (false)
+        ;
+    });
+    dbPromise = promise;
+    return promise;
+  }
+  async function withStore(mode, run) {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, mode);
+      run(tx.objectStore(STORE_NAME), resolve);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  function idbGet(key) {
+    return withStore("readonly", (store, resolve) => {
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result);
+    });
+  }
+  function idbSet(key, value) {
+    return withStore("readwrite", (store, resolve) => {
+      store.put(value, key);
+      store.transaction.oncomplete = () => resolve();
+    });
+  }
+  function idbDelete(key) {
+    return withStore("readwrite", (store, resolve) => {
+      store.delete(key);
+      store.transaction.oncomplete = () => resolve();
+    });
+  }
+
+  // src/utils/guards.ts
+  function isTruthy(item) {
+    return Boolean(item);
+  }
+  function isNonNullish(item) {
+    return item != null;
+  }
+  function isObject(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
+  // src/utils/misc.ts
+  function mergeDefaults(target, defaults) {
+    for (const [key, defaultValue] of Object.entries(defaults)) {
+      const value = target[key];
+      if (isObject(value)) {
+        mergeDefaults(value, defaultValue);
+      } else if (value === undefined) {
+        target[key] = defaultValue;
+      }
+    }
+    return target;
+  }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      if (typeof GM_setClipboard === "function") {
+        GM_setClipboard(text);
+      }
+    }
+  }
+  function onlyOnce(fn) {
+    let result;
+    let f = fn;
+    return (...args) => {
+      if (!f)
+        return result;
+      result = f(...args);
+      f = null;
+      return result;
+    };
+  }
+  function debounce(fn, ms) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), ms);
+    };
+  }
+  var FETCH_TIMEOUT_MS = 30000;
+  function fetchExternal(url) {
+    if (typeof GM_xmlhttpRequest === "undefined") {
+      const controller = new AbortController;
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+    }
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        responseType: "blob",
+        timeout: FETCH_TIMEOUT_MS,
+        onload(resp) {
+          resolve(new Response(resp.response, {
+            status: resp.status,
+            statusText: resp.statusText
+          }));
+        },
+        ontimeout() {
+          reject(new Error("fetch timeout"));
+        },
+        onerror() {
+          reject(new Error("fetch error"));
+        },
+        onabort() {
+          reject(new Error("fetch aborted"));
+        }
+      });
+    });
+  }
+  function createExternalStore() {
+    const listeners = new Set;
+    let version = 0;
+    return {
+      notify() {
+        version++;
+        for (const fn of listeners)
+          fn();
+      },
+      subscribe(callback) {
+        listeners.add(callback);
+        return () => {
+          listeners.delete(callback);
+        };
+      },
+      getSnapshot() {
+        return version;
+      }
+    };
+  }
+  function createSelectionStore() {
+    const set = new Set;
+    const store = createExternalStore();
+    return {
+      ...store,
+      has: (id) => set.has(id),
+      toggle(id) {
+        if (set.has(id))
+          set.delete(id);
+        else
+          set.add(id);
+        store.notify();
+      },
+      add(id) {
+        if (!set.has(id)) {
+          set.add(id);
+          store.notify();
+        }
+      },
+      remove(id) {
+        if (set.delete(id))
+          store.notify();
+      },
+      clear() {
+        if (set.size) {
+          set.clear();
+          store.notify();
+        }
+      },
+      all: () => [...set],
+      size: () => set.size
+    };
+  }
+  var pad = (n) => String(n).padStart(2, "0");
+  function hms(totalSeconds) {
+    return [Math.floor(totalSeconds / 3600), Math.floor(totalSeconds % 3600 / 60), totalSeconds % 60];
+  }
+  function formatCountdown(totalSeconds) {
+    if (totalSeconds <= 0)
+      return "0:00";
+    const [h, m, s] = hms(totalSeconds);
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  }
+  function formatDuration(totalSeconds) {
+    if (totalSeconds <= 0)
+      return "0m";
+    const [h, m] = hms(totalSeconds);
+    if (h > 0 && m > 0)
+      return `${h}h ${m}m`;
+    return h > 0 ? `${h}h` : `${m}m`;
+  }
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+  function errorMessage(err) {
+    return err instanceof Error ? err.message : String(err);
+  }
+  var FILENAME_ILLEGAL = /[<>:"/\\|?*\x00-\x1f]/g;
+  var WHITESPACE_RUN = /\s+/g;
+  function sanitizeFilename(title, fallback = "file") {
+    return title.replaceAll(FILENAME_ILLEGAL, "").trim().replaceAll(WHITESPACE_RUN, "-") || fallback;
+  }
+  function mapGetOrCreate(map, key, create) {
+    let value = map.get(key);
+    if (value === undefined) {
+      value = create();
+      map.set(key, value);
+    }
+    return value;
+  }
+  function safeUrl(url) {
+    try {
+      const { protocol } = new URL(url);
+      return protocol === "https:" || protocol === "http:" || protocol === "mailto:" ? url : null;
+    } catch {
+      return null;
+    }
+  }
+  function randomId(prefix = "") {
+    const tail = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return prefix ? `${prefix}-${tail}` : tail;
+  }
+  function sortedEntries(map) {
+    return [...map.entries()].toSorted(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
+  }
+  function sendBrowserNotification(title, body, icon = "/favicon.ico") {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body, icon });
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then((p) => {
+        if (p === "granted")
+          new Notification(title, { body, icon });
+      }).catch(() => {});
+    }
+  }
+
+  // src/api/Events.ts
+  var logger6 = new Logger("Events");
+  var listeners = new Map;
+  function subscribe(event, handler) {
+    const set = mapGetOrCreate(listeners, event, () => new Set);
+    set.add(handler);
+    return () => {
+      set.delete(handler);
+      if (!set.size)
+        listeners.delete(event);
+    };
+  }
+  function dispatch(event, ...args) {
+    const set = listeners.get(event);
+    if (!set?.size)
+      return;
+    const data = args[0];
+    for (const handler of Array.from(set)) {
+      try {
+        handler(data);
+      } catch (e) {
+        logger6.error(`Event handler error (${event}):`, e);
+      }
+    }
+  }
+
+  // src/turbopack/common/stores.ts
+  var exports_stores = {};
+  __export(exports_stores, {
+    ChatPageStore: () => ChatPageStore,
+    ConversationStore: () => ConversationStore,
+    FeatureStore: () => FeatureStore,
+    FilesPageStore: () => FilesPageStore,
+    MediaStore: () => MediaStore,
+    MessageStore: () => MessageStore,
+    ModesStore: () => ModesStore,
+    ResponseStore: () => ResponseStore,
+    RoutingStore: () => RoutingStore,
+    SessionStore: () => SessionStore,
+    SettingsDialogStore: () => SettingsDialogStore,
+    SettingsStore: () => SettingsStore,
+    SubscriptionsStore: () => SubscriptionsStore,
+    TextToSpeechStore: () => TextToSpeechStore
+  });
+  var ChatPageStore = findByPropsLazy("useChatPageStore");
+  var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
+  var FeatureStore = findByPropsLazy("useFeatureStore");
+  var FilesPageStore = findByPropsLazy("useFilesPageStore", "useAssetsList");
+  var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
+  var MessageStore = findByPropsLazy("useMessageStore", "nodeToResponse");
+  var ModesStore = findByPropsLazy("useModesStore");
+  var ResponseStore = findByPropsLazy("useResponseStore", "createOptimisticResponse");
+  var RoutingStore = findByPropsLazy("useRoutingStore", "formatUrl");
+  var SessionStore = findByPropsLazy("useSession", "SessionStoreProvider");
+  var SettingsDialogStore = findByPropsLazy("useSettingsDialogStore");
+  var SettingsStore = findByPropsLazy("useSettingsStore", "modelConfigOverrideSchema");
+  var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
+  var TextToSpeechStore = findByPropsLazy("useTextToSpeechStore");
+
+  // src/utils/react.ts
+  function findFiberKey(el) {
+    for (const k in el) {
+      if (k.startsWith("__reactFiber$"))
+        return k;
+    }
+    return null;
+  }
+  function getFiber(el) {
+    let cur = el;
+    while (cur) {
+      const k = findFiberKey(cur);
+      if (k)
+        return cur[k];
+      cur = cur.parentElement;
+    }
+    return null;
+  }
+  function getReactRoot() {
+    for (const el of [document.body, document.getElementById("__next"), document.getElementById("root")]) {
+      if (!el)
+        continue;
+      const k = findFiberKey(el);
+      if (k)
+        return el[k];
+    }
+    return null;
+  }
+  function walkFiberTree(root, visit, maxProcessed) {
+    const visited = new WeakSet;
+    const queue = [root];
+    let processed = 0;
+    while (queue.length && processed < maxProcessed) {
+      const fiber = queue.shift();
+      if (visited.has(fiber))
+        continue;
+      visited.add(fiber);
+      processed++;
+      if (visit(fiber) === false)
+        return;
+      if (fiber.child)
+        queue.push(fiber.child);
+      if (fiber.sibling)
+        queue.push(fiber.sibling);
+    }
+  }
+  function walkFiberUp(fiber, max, test) {
+    const seen = new WeakSet;
+    let cur = fiber;
+    let d = 0;
+    while (cur && d < max) {
+      if (seen.has(cur))
+        return null;
+      seen.add(cur);
+      if (test(cur))
+        return cur;
+      cur = cur.return;
+      d++;
+    }
+    return null;
+  }
+  function resolveLazy(v) {
+    return typeof v === "function" ? v() : v;
+  }
+  function useExternalStore(store) {
+    useSyncExternalStore(store.subscribe, store.getSnapshot);
+  }
+  function useSelectionHas(store, id) {
+    useExternalStore(store);
+    return store.has(id);
+  }
+  function useSelectionSize(store) {
+    useExternalStore(store);
+    return store.size();
+  }
+  function useIsStreaming(conversationId) {
+    return ChatPageStore.useChatPageStore((s) => !!s.streamedMessageId && (conversationId == null || s.conversationId === conversationId));
+  }
+  function useForceUpdater() {
+    return useReducer((x) => x + 1, 0)[1];
+  }
+  function useEventSubscription(event, handler) {
+    const ref = useRef(handler);
+    ref.current = handler;
+    useEffect(() => subscribe(event, () => ref.current()), [event]);
+  }
+  function useFiltered(list, search, getKey) {
+    return useMemo(() => {
+      const q = search.toLowerCase().trim();
+      if (!q)
+        return list;
+      return list.filter((item) => getKey(item).toLowerCase().includes(q));
+    }, [list, search, getKey]);
+  }
+  function useAsyncAction(fn) {
+    const [busy, setBusy] = useState(false);
+    const fnRef = useRef(fn);
+    fnRef.current = fn;
+    const execute = useCallback(async () => {
+      setBusy(true);
+      try {
+        await fnRef.current();
+      } finally {
+        setBusy(false);
+      }
+    }, []);
+    return [busy, execute];
+  }
+
+  // src/utils/SettingsStore.ts
+  var logger7 = new Logger("SettingsStore");
+  var STORAGE_KEY = "VoidPPSettings";
+  var LEGACY_STORAGE_KEY = "VoidSettings";
+  var SAVE_DEBOUNCE_MS = 100;
+  function parseStoredSettings(raw) {
+    if (isObject(raw))
+      return raw;
+    if (typeof raw !== "string" || !raw)
+      return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (isObject(parsed))
+        return parsed;
+      if (typeof parsed === "string") {
+        const nested = JSON.parse(parsed);
+        return isObject(nested) ? nested : null;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  class SettingsStore2 {
+    globalListeners = new Set;
+    pathListeners = new Map;
+    prefixListeners = new Map;
+    defaultGetters = new Map;
+    saveTimer = null;
+    proxyCache = new WeakMap;
+    constructor(plain) {
+      this.plain = plain;
+      this.store = this.makeProxy(plain);
+      window.addEventListener("beforeunload", () => this.flush(), { once: true });
+    }
+    flush() {
+      if (this.saveTimer) {
+        clearTimeout(this.saveTimer);
+        this.saveTimer = null;
+      }
+      this.save();
+    }
+    setDefaultGetter(prefix, getter) {
+      this.defaultGetters.set(prefix, getter);
+    }
+    makeProxy(target, path = "") {
+      const cached = this.proxyCache.get(target);
+      if (cached)
+        return cached;
+      const proxy = new Proxy(target, {
+        get: (t, key) => {
+          let value = t[key];
+          if (value === undefined && key !== "__proto__") {
+            const fullPath = path ? `${path}.${key}` : key;
+            for (const [prefix, getter] of this.defaultGetters) {
+              if (fullPath.startsWith(prefix)) {
+                const settingKey = fullPath.slice(prefix.length + 1);
+                if (settingKey && !settingKey.includes(".")) {
+                  const defaultVal = getter(settingKey);
+                  if (defaultVal !== undefined) {
+                    t[key] = defaultVal;
+                    value = defaultVal;
+                  }
+                  break;
+                }
+              }
+            }
+          }
+          if (isObject(value)) {
+            return this.makeProxy(value, path ? `${path}.${key}` : key);
+          }
+          return value;
+        },
+        set: (t, key, value) => {
+          if (t[key] === value)
+            return true;
+          t[key] = value;
+          const fullPath = path ? `${path}.${key}` : key;
+          this.notifyListeners(fullPath);
+          return true;
+        },
+        deleteProperty: (t, key) => {
+          if (!(key in t))
+            return true;
+          delete t[key];
+          const fullPath = path ? `${path}.${key}` : key;
+          this.notifyListeners(fullPath);
+          return true;
+        }
+      });
+      this.proxyCache.set(target, proxy);
+      return proxy;
+    }
+    invokeListeners(listeners, path) {
+      for (const l of Array.from(listeners)) {
+        try {
+          l(path);
+        } catch (e) {
+          logger7.error("Settings listener error:", e);
+        }
+      }
+    }
+    notifyListeners(path) {
+      this.invokeListeners(this.globalListeners, path);
+      const listeners = this.pathListeners.get(path);
+      if (listeners)
+        this.invokeListeners(listeners, path);
+      for (const [prefix, set] of Array.from(this.prefixListeners)) {
+        if (path.startsWith(prefix))
+          this.invokeListeners(set, path);
+      }
+      this.scheduleSave();
+    }
+    scheduleSave() {
+      if (this.saveTimer)
+        return;
+      this.saveTimer = setTimeout(() => {
+        this.saveTimer = null;
+        this.save();
+      }, SAVE_DEBOUNCE_MS);
+    }
+    save() {
+      try {
+        const json = JSON.stringify(this.plain);
+        if (typeof GM_setValue === "function") {
+          try {
+            GM_setValue(STORAGE_KEY, this.plain);
+          } catch {
+            try {
+              GM_setValue(STORAGE_KEY, json);
+            } catch (e2) {
+              logger7.warn("Failed to save settings to GM:", e2);
+            }
+          }
+        } else {
+          try {
+            localStorage.setItem(STORAGE_KEY, json);
+          } catch {}
+        }
+        idbSet(STORAGE_KEY, json).catch((e) => logger7.warn("Failed to save settings to IndexedDB:", e));
+      } catch (e) {
+        logger7.error("Failed to save settings:", e);
+      }
+    }
+    markAsChanged() {
+      this.notifyListeners("");
+    }
+    addGlobalChangeListener(listener) {
+      this.globalListeners.add(listener);
+    }
+    removeGlobalChangeListener(listener) {
+      this.globalListeners.delete(listener);
+    }
+    addToMap(map, key, listener) {
+      mapGetOrCreate(map, key, () => new Set).add(listener);
+    }
+    removeFromMap(map, key, listener) {
+      const set = map.get(key);
+      if (set) {
+        set.delete(listener);
+        if (!set.size)
+          map.delete(key);
+      }
+    }
+    addChangeListener(path, listener) {
+      this.addToMap(this.pathListeners, path, listener);
+    }
+    removeChangeListener(path, listener) {
+      this.removeFromMap(this.pathListeners, path, listener);
+    }
+    addPrefixChangeListener(prefix, listener) {
+      this.addToMap(this.prefixListeners, prefix, listener);
+    }
+    removePrefixChangeListener(prefix, listener) {
+      this.removeFromMap(this.prefixListeners, prefix, listener);
+    }
+  }
+
+  // src/utils/types.ts
+  function definePlugin(p) {
+    return p;
+  }
+  var StartAt;
+  ((StartAt) => {
+    StartAt["Init"] = "Init";
+    StartAt["DOMContentLoaded"] = "DOMContentLoaded";
+    StartAt["TurbopackReady"] = "TurbopackReady";
+  })(StartAt ||= {});
+  var OptionType;
+  ((OptionType) => {
+    OptionType[OptionType["STRING"] = 0] = "STRING";
+    OptionType[OptionType["NUMBER"] = 1] = "NUMBER";
+    OptionType[OptionType["BIGINT"] = 2] = "BIGINT";
+    OptionType[OptionType["BOOLEAN"] = 3] = "BOOLEAN";
+    OptionType[OptionType["SELECT"] = 4] = "SELECT";
+    OptionType[OptionType["SLIDER"] = 5] = "SLIDER";
+    OptionType[OptionType["COMPONENT"] = 6] = "COMPONENT";
+    OptionType[OptionType["CUSTOM"] = 7] = "CUSTOM";
+  })(OptionType ||= {});
+
+  // src/api/Settings.ts
+  var logger8 = new Logger("Settings");
+  var DefaultSettings = { plugins: {} };
+  var settings = {};
+  mergeDefaults(settings, DefaultSettings);
+  var SettingsStore3 = new SettingsStore2(settings);
+  var PlainSettings = settings;
+  var Settings = SettingsStore3.store;
+  var pluginPath = (name, key) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
+  async function readGmValue(key) {
+    if (typeof GM_getValue !== "function")
+      return null;
+    try {
+      const value = GM_getValue(key, null);
+      if (value != null && typeof value.then === "function") {
+        return await value;
+      }
+      return value;
+    } catch (e) {
+      logger8.warn("Failed to read GM storage:", e);
+      return null;
+    }
+  }
+  async function readKey(key) {
+    const gm = parseStoredSettings(await readGmValue(key));
+    if (gm)
+      return gm;
+    try {
+      const idb = parseStoredSettings(await idbGet(key) ?? null);
+      if (idb)
+        return idb;
+    } catch (e) {
+      logger8.warn("Failed to read IndexedDB:", e);
+    }
+    try {
+      return parseStoredSettings(localStorage.getItem(key));
+    } catch (e) {
+      logger8.warn("Failed to read localStorage:", e);
+      return null;
+    }
+  }
+  async function dropLegacySettings() {
+    if (typeof GM_deleteValue === "function") {
+      try {
+        GM_deleteValue(LEGACY_STORAGE_KEY);
+      } catch {}
+    }
+    try {
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch {}
+    try {
+      await idbDelete(LEGACY_STORAGE_KEY);
+    } catch (e) {
+      logger8.warn("Failed to drop legacy settings:", e);
+    }
+  }
+  async function readStoredSettings() {
+    const next = await readKey(STORAGE_KEY);
+    if (next)
+      return { parsed: next, fromLegacy: false };
+    const legacy = await readKey(LEGACY_STORAGE_KEY);
+    if (legacy)
+      return { parsed: legacy, fromLegacy: true };
+    return null;
+  }
+  async function initSettings() {
+    const stored = await readStoredSettings();
+    if (stored)
+      Object.assign(settings, stored.parsed);
+    mergeDefaults(settings, DefaultSettings);
+    const meta = settings.plugins.Settings;
+    if (meta && meta.enabled === false)
+      meta.enabled = true;
+    if (stored?.fromLegacy) {
+      logger8.info(`Copied ${LEGACY_STORAGE_KEY} → ${STORAGE_KEY}; writes to ${LEGACY_STORAGE_KEY} stopped at ${LEGACY_WRITE_STOPPED}`);
+      SettingsStore3.flush();
+    }
+    await dropLegacySettings();
+  }
+  function migratePluginSettings(name, ...oldNames) {
+    const { plugins } = SettingsStore3.plain;
+    if (name in plugins)
+      return;
+    for (const oldName of oldNames) {
+      if (oldName in plugins) {
+        logger8.info(`Migrating settings from old name ${oldName} to ${name}`);
+        plugins[name] = plugins[oldName];
+        delete plugins[oldName];
+        SettingsStore3.markAsChanged();
+        break;
+      }
+    }
+  }
+  function migratePluginSetting(pluginName, newKey, oldKey) {
+    const pluginSettings = SettingsStore3.plain.plugins[pluginName];
+    if (!pluginSettings || !(oldKey in pluginSettings) || newKey in pluginSettings)
+      return;
+    logger8.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
+    pluginSettings[newKey] = pluginSettings[oldKey];
+    delete pluginSettings[oldKey];
+    SettingsStore3.markAsChanged();
+  }
+  function migrateSettingsToPlugin(targetPlugin, sourcePlugin, ...settingKeys) {
+    const source = SettingsStore3.plain.plugins[sourcePlugin];
+    if (!source)
+      return;
+    const target = SettingsStore3.plain.plugins[targetPlugin] ??= { enabled: false };
+    let changed = false;
+    for (const key of settingKeys) {
+      if (key in source && !(key in target)) {
+        target[key] = source[key];
+        delete source[key];
+        changed = true;
+      }
+    }
+    if (changed) {
+      logger8.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
+      SettingsStore3.markAsChanged();
+    }
+  }
+  function getSettingsPluginData() {
+    return Settings.plugins.Settings ?? {};
+  }
+  function updateSettingsPluginData(patch) {
+    Settings.plugins.Settings = { ...Settings.plugins.Settings ?? { enabled: true }, ...patch };
+  }
+  function getPinnedPlugins() {
+    return getSettingsPluginData().pinnedPlugins ?? [];
+  }
+  function isPluginPinned(name) {
+    return getPinnedPlugins().includes(name);
+  }
+  function togglePluginPinned(name) {
+    const current = getPinnedPlugins();
+    const pinned = current.includes(name);
+    updateSettingsPluginData({
+      pinnedPlugins: pinned ? current.filter((n) => n !== name) : [name, ...current]
+    });
+    return !pinned;
+  }
+  function getStarredPlugins() {
+    return getSettingsPluginData().starredPlugins ?? [];
+  }
+  function isPluginStarred(name) {
+    return getStarredPlugins().includes(name);
+  }
+  function togglePluginStarred(name) {
+    const current = getStarredPlugins();
+    const starred = current.includes(name);
+    updateSettingsPluginData({
+      starredPlugins: starred ? current.filter((n) => n !== name) : [name, ...current]
+    });
+    return !starred;
+  }
+  function mergePluginSettings(name, patch) {
+    Settings.plugins[name] = { ...Settings.plugins[name] ?? { enabled: false }, ...patch };
+  }
+  function resolveDefault(setting) {
+    if ("default" in setting)
+      return setting.default;
+    if (setting.type === 4 /* SELECT */)
+      return setting.options.find((o) => o.default)?.value;
+    return;
+  }
+  function definePluginSettings(def, checks) {
+    let _pluginName = "";
+    const definedSettings = {
+      get store() {
+        if (!_pluginName)
+          throw new Error("Cannot access settings before plugin is initialized");
+        return Settings.plugins[_pluginName];
+      },
+      get plain() {
+        if (!_pluginName)
+          throw new Error("Cannot access settings before plugin is initialized");
+        return PlainSettings.plugins[_pluginName];
+      },
+      def,
+      checks: checks ?? {},
+      get pluginName() {
+        return _pluginName;
+      },
+      set pluginName(name) {
+        _pluginName = name;
+        if (!name)
+          return;
+        if (!PlainSettings.plugins[name])
+          PlainSettings.plugins[name] = {};
+        SettingsStore3.setDefaultGetter(pluginPath(name), (key) => {
+          const setting = def[key];
+          return setting ? resolveDefault(setting) : undefined;
+        });
+      },
+      use(keys) {
+        const forceUpdate = useForceUpdater();
+        useEffect(() => {
+          const prefix = pluginPath(_pluginName);
+          let listener = forceUpdate;
+          if (keys?.length) {
+            const watched = keys.map((k) => `${prefix}.${String(k)}`);
+            listener = (path) => {
+              if (watched.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
+                forceUpdate();
+            };
+          }
+          SettingsStore3.addPrefixChangeListener(prefix, listener);
+          return () => SettingsStore3.removePrefixChangeListener(prefix, listener);
+        }, []);
+        return definedSettings.store;
+      },
+      withPrivateSettings() {
+        return this;
+      }
+    };
+    return definedSettings;
+  }
+
   // src/components/icons.tsx
   var svg = (props, ...children) => /* @__PURE__ */ React.createElement("svg", {
     width: props.width ?? props.size ?? "1em",
@@ -2243,49 +3171,8 @@ ${sourceUrl}`;
     height: "5.0"
   })));
 
-  // src/turbopack/common/stores.ts
-  var exports_stores = {};
-  __export(exports_stores, {
-    ChatPageStore: () => ChatPageStore,
-    ConversationStore: () => ConversationStore,
-    FeatureStore: () => FeatureStore,
-    FilesPageStore: () => FilesPageStore,
-    MediaStore: () => MediaStore,
-    MessageStore: () => MessageStore,
-    ModesStore: () => ModesStore,
-    ResponseStore: () => ResponseStore,
-    RoutingStore: () => RoutingStore,
-    SessionStore: () => SessionStore,
-    SettingsDialogStore: () => SettingsDialogStore,
-    SettingsStore: () => SettingsStore,
-    SubscriptionsStore: () => SubscriptionsStore,
-    TextToSpeechStore: () => TextToSpeechStore
-  });
-  var ChatPageStore = findByPropsLazy("useChatPageStore");
-  var ConversationStore = findByPropsLazy("useConversationStore", "createOptimisticConversation");
-  var FeatureStore = findByPropsLazy("useFeatureStore");
-  var FilesPageStore = findByPropsLazy("useFilesPageStore", "useAssetsList");
-  var MediaStore = findByPropsLazy("useMediaStore", "useImagineModeStore");
-  var MessageStore = findByPropsLazy("useMessageStore", "nodeToResponse");
-  var ModesStore = findByPropsLazy("useModesStore");
-  var ResponseStore = findByPropsLazy("useResponseStore", "createOptimisticResponse");
-  var RoutingStore = findByPropsLazy("useRoutingStore", "formatUrl");
-  var SessionStore = findByPropsLazy("useSession", "SessionStoreProvider");
-  var SettingsDialogStore = findByPropsLazy("useSettingsDialogStore");
-  var SettingsStore = findByPropsLazy("useSettingsStore", "modelConfigOverrideSchema");
-  var SubscriptionsStore = findByPropsLazy("useSubscriptionsStore");
-  var TextToSpeechStore = findByPropsLazy("useTextToSpeechStore");
-
-  // src/utils/constants.ts
-  var Devs = Object.freeze({
-    Prism: "Prism",
-    adryd: "adryd",
-    p: "0_V"
-  });
-  var LEGACY_WRITE_STOPPED = "[20260912]";
-
   // src/utils/css.ts
-  var logger5 = new Logger("Styles", "#a6d189");
+  var logger9 = new Logger("Styles", "#a6d189");
   var styleRegistry = new Map;
   var activeStyles = new Map;
   var container = null;
@@ -2364,7 +3251,7 @@ ${sourceUrl}`;
     }
     const css = styleRegistry.get(name);
     if (!css) {
-      logger5.warn(`Style "${name}" not registered.`);
+      logger9.warn(`Style "${name}" not registered.`);
       return false;
     }
     const root = getContainer();
@@ -2408,28 +3295,6 @@ ${sourceUrl}`;
     return names.filter(Boolean).join(" ");
   }
 
-  // src/utils/types.ts
-  function definePlugin(p) {
-    return p;
-  }
-  var StartAt;
-  ((StartAt) => {
-    StartAt["Init"] = "Init";
-    StartAt["DOMContentLoaded"] = "DOMContentLoaded";
-    StartAt["TurbopackReady"] = "TurbopackReady";
-  })(StartAt ||= {});
-  var OptionType;
-  ((OptionType) => {
-    OptionType[OptionType["STRING"] = 0] = "STRING";
-    OptionType[OptionType["NUMBER"] = 1] = "NUMBER";
-    OptionType[OptionType["BIGINT"] = 2] = "BIGINT";
-    OptionType[OptionType["BOOLEAN"] = 3] = "BOOLEAN";
-    OptionType[OptionType["SELECT"] = 4] = "SELECT";
-    OptionType[OptionType["SLIDER"] = 5] = "SLIDER";
-    OptionType[OptionType["COMPONENT"] = 6] = "COMPONENT";
-    OptionType[OptionType["CUSTOM"] = 7] = "CUSTOM";
-  })(OptionType ||= {});
-
   // src/plugins/betterCanvas/index.ts
   var STYLE_NAME = "betterCanvas";
   var FRAME_STYLE_ID = "void-better-canvas";
@@ -2467,6 +3332,18 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     background-color: ${THUMB_HOVER} !important;
 }
 `;
+  var settings2 = definePluginSettings({
+    themedScrollbar: {
+      type: 3 /* BOOLEAN */,
+      description: "Make the project pane scrollbar follow Grok's light and dark theme.",
+      default: true
+    },
+    hideRightPanel: {
+      type: 3 /* BOOLEAN */,
+      description: "Keep Grok's right panel closed, including auto-open and restore.",
+      default: false
+    }
+  });
   var domObs = null;
   var themeObs = null;
   var hooked = new WeakSet;
@@ -2494,6 +3371,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     el.textContent = frameCss(dark);
   }
+  function clearDocument(doc) {
+    doc.getElementById(FRAME_STYLE_ID)?.remove();
+  }
   function bootstrapPreviewFrame() {
     applyToDocument(document, matchMedia("(prefers-color-scheme: dark)").matches);
     window.addEventListener("message", onFrameMessage);
@@ -2505,18 +3385,35 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const { data } = event;
     if (!data || data.type !== MSG)
       return;
+    if (data.off) {
+      clearDocument(document);
+      return;
+    }
     applyToDocument(document, data.dark === true);
   }
+  function postIframe(iframe, payload) {
+    try {
+      iframe.contentWindow?.postMessage(payload, "*");
+    } catch {}
+  }
   function paintIframe(iframe) {
+    if (!settings2.store.themedScrollbar)
+      return;
     const dark = isDark();
     try {
       const doc = iframe.contentDocument;
       if (doc)
         applyToDocument(doc, dark);
     } catch {}
+    postIframe(iframe, { type: MSG, dark });
+  }
+  function clearIframe(iframe) {
     try {
-      iframe.contentWindow?.postMessage({ type: MSG, dark }, "*");
+      const doc = iframe.contentDocument;
+      if (doc)
+        clearDocument(doc);
     } catch {}
+    postIframe(iframe, { type: MSG, off: true });
   }
   function hookIframe(iframe) {
     paintIframe(iframe);
@@ -2528,6 +3425,16 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function scanIframes() {
     document.querySelectorAll(IFRAME_SEL).forEach(hookIframe);
   }
+  function clearIframes() {
+    document.querySelectorAll(IFRAME_SEL).forEach(clearIframe);
+  }
+  function replyFrame(src, origin, payload) {
+    try {
+      src.postMessage(payload, origin === "null" ? "*" : origin);
+    } catch {
+      src.postMessage(payload, "*");
+    }
+  }
   function onParentMessage(event) {
     const { data } = event;
     if (!data || data.type !== MSG_HELLO)
@@ -2535,24 +3442,25 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     const src = event.source;
     if (!src)
       return;
-    try {
-      src.postMessage({ type: MSG, dark: isDark() }, event.origin === "null" ? "*" : event.origin);
-    } catch {
-      src.postMessage({ type: MSG, dark: isDark() }, "*");
+    if (!settings2.store.themedScrollbar) {
+      replyFrame(src, event.origin, { type: MSG, off: true });
+      return;
     }
+    replyFrame(src, event.origin, { type: MSG, dark: isDark() });
   }
-  function startParent() {
+  function startScrollbar() {
     registerStyle(STYLE_NAME, CSS);
     scanIframes();
-    window.addEventListener("message", onParentMessage);
+    if (domObs)
+      return;
     domObs = new MutationObserver(scanIframes);
     domObs.observe(document.documentElement, { childList: true, subtree: true });
     themeObs = new MutationObserver(scanIframes);
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme", "data-color-scheme"] });
   }
-  function stopParent() {
+  function stopScrollbar() {
     unregisterStyle(STYLE_NAME);
-    window.removeEventListener("message", onParentMessage);
+    clearIframes();
     domObs?.disconnect();
     themeObs?.disconnect();
     domObs = null;
@@ -2562,24 +3470,36 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return s.sidePanelContent?.type === "rightPanel";
   }
   function enforce() {
+    if (!settings2.store.hideRightPanel)
+      return;
     const state = ChatPageStore.useChatPageStore.getState();
     if (isRightOpen(state))
       state.closeSidePanelExplicitly();
   }
+  function apply() {
+    if (settings2.store.themedScrollbar)
+      startScrollbar();
+    else
+      stopScrollbar();
+    enforce();
+  }
   var betterCanvas_default = definePlugin({
     name: "BetterCanvas",
     icon: FrameIcon,
-    description: "Keep the right panel closed and theme the project pane scrollbar.",
+    description: "Theme the project pane scrollbar and optionally keep the right panel closed.",
     authors: [Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
     startAt: "TurbopackReady" /* TurbopackReady */,
+    settings: settings2,
     start() {
-      startParent();
-      enforce();
+      window.addEventListener("message", onParentMessage);
+      apply();
     },
+    onSettingsChange: apply,
     stop() {
-      stopParent();
+      window.removeEventListener("message", onParentMessage);
+      stopScrollbar();
     },
     zustand: {
       ChatPageStore: {
@@ -2594,15 +3514,15 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       {
         find: "willRestoreRightPanelByIntent",
         replacement: {
-          match: /willRestoreRightPanelByIntent=\i=>\{/,
-          replace: "willRestoreRightPanelByIntent=()=>{return!1;"
+          match: /willRestoreRightPanelByIntent=(\i)=>\{/,
+          replace: "willRestoreRightPanelByIntent=$1=>{if($self.settings.store.hideRightPanel)return!1;"
         }
       },
       {
         find: '"computePreviewAutoOpen"',
         replacement: {
           match: /&&(\i)\(\{source:"auto"\}\)/,
-          replace: '&&!1&&$1({source:"auto"})'
+          replace: '&&!$self.settings.store.hideRightPanel&&$1({source:"auto"})'
         }
       }
     ]
@@ -2754,871 +3674,6 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     walkFiberTree: () => walkFiberTree,
     walkFiberUp: () => walkFiberUp
   });
-
-  // src/utils/idb.ts
-  var logger6 = new Logger("IDB");
-  var DB_NAME = "VoidPP";
-  var LEGACY_DB_NAME = "Void";
-  var STORE_NAME = "kv";
-  var DB_VERSION = 1;
-  var dbPromise = null;
-  function openNamed(name) {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(name, DB_VERSION);
-      req.onupgradeneeded = () => {
-        if (!req.result.objectStoreNames.contains(STORE_NAME)) {
-          req.result.createObjectStore(STORE_NAME);
-        }
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-  function request(req) {
-    return new Promise((resolve, reject) => {
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-  async function copyStore(from, to) {
-    if (!from.objectStoreNames.contains(STORE_NAME) || !to.objectStoreNames.contains(STORE_NAME))
-      return;
-    const destCount = await request(to.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).count());
-    if (destCount > 0)
-      return;
-    const src = from.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME);
-    const keys = await request(src.getAllKeys());
-    if (!keys.length)
-      return;
-    const values = await request(src.getAll());
-    const destTx = to.transaction(STORE_NAME, "readwrite");
-    const dest = destTx.objectStore(STORE_NAME);
-    for (let i = 0;i < keys.length; i++)
-      dest.put(values[i], keys[i]);
-    await new Promise((resolve, reject) => {
-      destTx.oncomplete = () => resolve();
-      destTx.onerror = () => reject(destTx.error);
-    });
-  }
-  function openExisting(name) {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      let created = false;
-      req.onupgradeneeded = () => {
-        created = true;
-      };
-      req.onsuccess = () => {
-        const db = req.result;
-        if (created) {
-          db.close();
-          indexedDB.deleteDatabase(name);
-          resolve(null);
-          return;
-        }
-        resolve(db);
-      };
-      req.onerror = () => reject(req.error);
-    });
-  }
-  function dropLegacyDatabase() {
-    return new Promise((resolve) => {
-      const req = indexedDB.deleteDatabase(LEGACY_DB_NAME);
-      req.onsuccess = () => resolve();
-      req.onerror = () => resolve();
-      req.onblocked = () => resolve();
-    });
-  }
-  async function migrateLegacy(db) {
-    let legacy = null;
-    let drop = false;
-    try {
-      legacy = await openExisting(LEGACY_DB_NAME);
-      if (legacy) {
-        await copyStore(legacy, db);
-        logger6.info(`Migrated leftover IndexedDB ${LEGACY_DB_NAME} onto ${DB_NAME}; writes to ${LEGACY_DB_NAME} stopped at ${LEGACY_WRITE_STOPPED}`);
-        drop = true;
-      }
-    } catch (e) {
-      if (false)
-        ;
-    } finally {
-      legacy?.close();
-    }
-    if (drop)
-      await dropLegacyDatabase();
-  }
-  function open() {
-    if (dbPromise)
-      return dbPromise;
-    const promise = openNamed(DB_NAME).then(async (db) => {
-      await migrateLegacy(db);
-      return db;
-    });
-    promise.catch((e) => {
-      dbPromise = null;
-      if (false)
-        ;
-    });
-    dbPromise = promise;
-    return promise;
-  }
-  async function withStore(mode, run) {
-    const db = await open();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, mode);
-      run(tx.objectStore(STORE_NAME), resolve);
-      tx.onerror = () => reject(tx.error);
-    });
-  }
-  function idbGet(key) {
-    return withStore("readonly", (store, resolve) => {
-      const req = store.get(key);
-      req.onsuccess = () => resolve(req.result);
-    });
-  }
-  function idbSet(key, value) {
-    return withStore("readwrite", (store, resolve) => {
-      store.put(value, key);
-      store.transaction.oncomplete = () => resolve();
-    });
-  }
-  function idbDelete(key) {
-    return withStore("readwrite", (store, resolve) => {
-      store.delete(key);
-      store.transaction.oncomplete = () => resolve();
-    });
-  }
-
-  // src/utils/guards.ts
-  function isTruthy(item) {
-    return Boolean(item);
-  }
-  function isNonNullish(item) {
-    return item != null;
-  }
-  function isObject(value) {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-  }
-
-  // src/utils/misc.ts
-  function mergeDefaults(target, defaults) {
-    for (const [key, defaultValue] of Object.entries(defaults)) {
-      const value = target[key];
-      if (isObject(value)) {
-        mergeDefaults(value, defaultValue);
-      } else if (value === undefined) {
-        target[key] = defaultValue;
-      }
-    }
-    return target;
-  }
-  function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-  async function copyToClipboard(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      if (typeof GM_setClipboard === "function") {
-        GM_setClipboard(text);
-      }
-    }
-  }
-  function onlyOnce(fn) {
-    let result;
-    let f = fn;
-    return (...args) => {
-      if (!f)
-        return result;
-      result = f(...args);
-      f = null;
-      return result;
-    };
-  }
-  function debounce(fn, ms) {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), ms);
-    };
-  }
-  var FETCH_TIMEOUT_MS = 30000;
-  function fetchExternal(url) {
-    if (typeof GM_xmlhttpRequest === "undefined") {
-      const controller = new AbortController;
-      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
-    }
-    return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
-        method: "GET",
-        url,
-        responseType: "blob",
-        timeout: FETCH_TIMEOUT_MS,
-        onload(resp) {
-          resolve(new Response(resp.response, {
-            status: resp.status,
-            statusText: resp.statusText
-          }));
-        },
-        ontimeout() {
-          reject(new Error("fetch timeout"));
-        },
-        onerror() {
-          reject(new Error("fetch error"));
-        },
-        onabort() {
-          reject(new Error("fetch aborted"));
-        }
-      });
-    });
-  }
-  function createExternalStore() {
-    const listeners = new Set;
-    let version = 0;
-    return {
-      notify() {
-        version++;
-        for (const fn of listeners)
-          fn();
-      },
-      subscribe(callback) {
-        listeners.add(callback);
-        return () => {
-          listeners.delete(callback);
-        };
-      },
-      getSnapshot() {
-        return version;
-      }
-    };
-  }
-  function createSelectionStore() {
-    const set = new Set;
-    const store = createExternalStore();
-    return {
-      ...store,
-      has: (id) => set.has(id),
-      toggle(id) {
-        if (set.has(id))
-          set.delete(id);
-        else
-          set.add(id);
-        store.notify();
-      },
-      add(id) {
-        if (!set.has(id)) {
-          set.add(id);
-          store.notify();
-        }
-      },
-      remove(id) {
-        if (set.delete(id))
-          store.notify();
-      },
-      clear() {
-        if (set.size) {
-          set.clear();
-          store.notify();
-        }
-      },
-      all: () => [...set],
-      size: () => set.size
-    };
-  }
-  var pad = (n) => String(n).padStart(2, "0");
-  function hms(totalSeconds) {
-    return [Math.floor(totalSeconds / 3600), Math.floor(totalSeconds % 3600 / 60), totalSeconds % 60];
-  }
-  function formatCountdown(totalSeconds) {
-    if (totalSeconds <= 0)
-      return "0:00";
-    const [h, m, s] = hms(totalSeconds);
-    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
-  }
-  function formatDuration(totalSeconds) {
-    if (totalSeconds <= 0)
-      return "0m";
-    const [h, m] = hms(totalSeconds);
-    if (h > 0 && m > 0)
-      return `${h}h ${m}m`;
-    return h > 0 ? `${h}h` : `${m}m`;
-  }
-  function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  }
-  function errorMessage(err) {
-    return err instanceof Error ? err.message : String(err);
-  }
-  var FILENAME_ILLEGAL = /[<>:"/\\|?*\x00-\x1f]/g;
-  var WHITESPACE_RUN = /\s+/g;
-  function sanitizeFilename(title, fallback = "file") {
-    return title.replaceAll(FILENAME_ILLEGAL, "").trim().replaceAll(WHITESPACE_RUN, "-") || fallback;
-  }
-  function mapGetOrCreate(map, key, create) {
-    let value = map.get(key);
-    if (value === undefined) {
-      value = create();
-      map.set(key, value);
-    }
-    return value;
-  }
-  function safeUrl(url) {
-    try {
-      const { protocol } = new URL(url);
-      return protocol === "https:" || protocol === "http:" || protocol === "mailto:" ? url : null;
-    } catch {
-      return null;
-    }
-  }
-  function randomId(prefix = "") {
-    const tail = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    return prefix ? `${prefix}-${tail}` : tail;
-  }
-  function sortedEntries(map) {
-    return [...map.entries()].toSorted(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0));
-  }
-  function sendBrowserNotification(title, body, icon = "/favicon.ico") {
-    if (Notification.permission === "granted") {
-      new Notification(title, { body, icon });
-    } else if (Notification.permission !== "denied") {
-      Notification.requestPermission().then((p) => {
-        if (p === "granted")
-          new Notification(title, { body, icon });
-      }).catch(() => {});
-    }
-  }
-
-  // src/api/Events.ts
-  var logger7 = new Logger("Events");
-  var listeners = new Map;
-  function subscribe(event, handler) {
-    const set = mapGetOrCreate(listeners, event, () => new Set);
-    set.add(handler);
-    return () => {
-      set.delete(handler);
-      if (!set.size)
-        listeners.delete(event);
-    };
-  }
-  function dispatch(event, ...args) {
-    const set = listeners.get(event);
-    if (!set?.size)
-      return;
-    const data = args[0];
-    for (const handler of Array.from(set)) {
-      try {
-        handler(data);
-      } catch (e) {
-        logger7.error(`Event handler error (${event}):`, e);
-      }
-    }
-  }
-
-  // src/utils/react.ts
-  function findFiberKey(el) {
-    for (const k in el) {
-      if (k.startsWith("__reactFiber$"))
-        return k;
-    }
-    return null;
-  }
-  function getFiber(el) {
-    let cur = el;
-    while (cur) {
-      const k = findFiberKey(cur);
-      if (k)
-        return cur[k];
-      cur = cur.parentElement;
-    }
-    return null;
-  }
-  function getReactRoot() {
-    for (const el of [document.body, document.getElementById("__next"), document.getElementById("root")]) {
-      if (!el)
-        continue;
-      const k = findFiberKey(el);
-      if (k)
-        return el[k];
-    }
-    return null;
-  }
-  function walkFiberTree(root, visit, maxProcessed) {
-    const visited = new WeakSet;
-    const queue = [root];
-    let processed = 0;
-    while (queue.length && processed < maxProcessed) {
-      const fiber = queue.shift();
-      if (visited.has(fiber))
-        continue;
-      visited.add(fiber);
-      processed++;
-      if (visit(fiber) === false)
-        return;
-      if (fiber.child)
-        queue.push(fiber.child);
-      if (fiber.sibling)
-        queue.push(fiber.sibling);
-    }
-  }
-  function walkFiberUp(fiber, max, test) {
-    const seen = new WeakSet;
-    let cur = fiber;
-    let d = 0;
-    while (cur && d < max) {
-      if (seen.has(cur))
-        return null;
-      seen.add(cur);
-      if (test(cur))
-        return cur;
-      cur = cur.return;
-      d++;
-    }
-    return null;
-  }
-  function resolveLazy(v) {
-    return typeof v === "function" ? v() : v;
-  }
-  function useExternalStore(store) {
-    useSyncExternalStore(store.subscribe, store.getSnapshot);
-  }
-  function useSelectionHas(store, id) {
-    useExternalStore(store);
-    return store.has(id);
-  }
-  function useSelectionSize(store) {
-    useExternalStore(store);
-    return store.size();
-  }
-  function useIsStreaming(conversationId) {
-    return ChatPageStore.useChatPageStore((s) => !!s.streamedMessageId && (conversationId == null || s.conversationId === conversationId));
-  }
-  function useForceUpdater() {
-    return useReducer((x) => x + 1, 0)[1];
-  }
-  function useEventSubscription(event, handler) {
-    const ref = useRef(handler);
-    ref.current = handler;
-    useEffect(() => subscribe(event, () => ref.current()), [event]);
-  }
-  function useFiltered(list, search, getKey) {
-    return useMemo(() => {
-      const q = search.toLowerCase().trim();
-      if (!q)
-        return list;
-      return list.filter((item) => getKey(item).toLowerCase().includes(q));
-    }, [list, search, getKey]);
-  }
-  function useAsyncAction(fn) {
-    const [busy, setBusy] = useState(false);
-    const fnRef = useRef(fn);
-    fnRef.current = fn;
-    const execute = useCallback(async () => {
-      setBusy(true);
-      try {
-        await fnRef.current();
-      } finally {
-        setBusy(false);
-      }
-    }, []);
-    return [busy, execute];
-  }
-
-  // src/utils/SettingsStore.ts
-  var logger8 = new Logger("SettingsStore");
-  var STORAGE_KEY = "VoidPPSettings";
-  var LEGACY_STORAGE_KEY = "VoidSettings";
-  var SAVE_DEBOUNCE_MS = 100;
-  function parseStoredSettings(raw) {
-    if (isObject(raw))
-      return raw;
-    if (typeof raw !== "string" || !raw)
-      return null;
-    try {
-      const parsed = JSON.parse(raw);
-      if (isObject(parsed))
-        return parsed;
-      if (typeof parsed === "string") {
-        const nested = JSON.parse(parsed);
-        return isObject(nested) ? nested : null;
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  class SettingsStore2 {
-    globalListeners = new Set;
-    pathListeners = new Map;
-    prefixListeners = new Map;
-    defaultGetters = new Map;
-    saveTimer = null;
-    proxyCache = new WeakMap;
-    constructor(plain) {
-      this.plain = plain;
-      this.store = this.makeProxy(plain);
-      window.addEventListener("beforeunload", () => this.flush(), { once: true });
-    }
-    flush() {
-      if (this.saveTimer) {
-        clearTimeout(this.saveTimer);
-        this.saveTimer = null;
-      }
-      this.save();
-    }
-    setDefaultGetter(prefix, getter) {
-      this.defaultGetters.set(prefix, getter);
-    }
-    makeProxy(target, path = "") {
-      const cached = this.proxyCache.get(target);
-      if (cached)
-        return cached;
-      const proxy = new Proxy(target, {
-        get: (t, key) => {
-          let value = t[key];
-          if (value === undefined && key !== "__proto__") {
-            const fullPath = path ? `${path}.${key}` : key;
-            for (const [prefix, getter] of this.defaultGetters) {
-              if (fullPath.startsWith(prefix)) {
-                const settingKey = fullPath.slice(prefix.length + 1);
-                if (settingKey && !settingKey.includes(".")) {
-                  const defaultVal = getter(settingKey);
-                  if (defaultVal !== undefined) {
-                    t[key] = defaultVal;
-                    value = defaultVal;
-                  }
-                  break;
-                }
-              }
-            }
-          }
-          if (isObject(value)) {
-            return this.makeProxy(value, path ? `${path}.${key}` : key);
-          }
-          return value;
-        },
-        set: (t, key, value) => {
-          if (t[key] === value)
-            return true;
-          t[key] = value;
-          const fullPath = path ? `${path}.${key}` : key;
-          this.notifyListeners(fullPath);
-          return true;
-        },
-        deleteProperty: (t, key) => {
-          if (!(key in t))
-            return true;
-          delete t[key];
-          const fullPath = path ? `${path}.${key}` : key;
-          this.notifyListeners(fullPath);
-          return true;
-        }
-      });
-      this.proxyCache.set(target, proxy);
-      return proxy;
-    }
-    invokeListeners(listeners, path) {
-      for (const l of Array.from(listeners)) {
-        try {
-          l(path);
-        } catch (e) {
-          logger8.error("Settings listener error:", e);
-        }
-      }
-    }
-    notifyListeners(path) {
-      this.invokeListeners(this.globalListeners, path);
-      const listeners = this.pathListeners.get(path);
-      if (listeners)
-        this.invokeListeners(listeners, path);
-      for (const [prefix, set] of Array.from(this.prefixListeners)) {
-        if (path.startsWith(prefix))
-          this.invokeListeners(set, path);
-      }
-      this.scheduleSave();
-    }
-    scheduleSave() {
-      if (this.saveTimer)
-        return;
-      this.saveTimer = setTimeout(() => {
-        this.saveTimer = null;
-        this.save();
-      }, SAVE_DEBOUNCE_MS);
-    }
-    save() {
-      try {
-        const json = JSON.stringify(this.plain);
-        if (typeof GM_setValue === "function") {
-          try {
-            GM_setValue(STORAGE_KEY, this.plain);
-          } catch {
-            try {
-              GM_setValue(STORAGE_KEY, json);
-            } catch (e2) {
-              logger8.warn("Failed to save settings to GM:", e2);
-            }
-          }
-        } else {
-          try {
-            localStorage.setItem(STORAGE_KEY, json);
-          } catch {}
-        }
-        idbSet(STORAGE_KEY, json).catch((e) => logger8.warn("Failed to save settings to IndexedDB:", e));
-      } catch (e) {
-        logger8.error("Failed to save settings:", e);
-      }
-    }
-    markAsChanged() {
-      this.notifyListeners("");
-    }
-    addGlobalChangeListener(listener) {
-      this.globalListeners.add(listener);
-    }
-    removeGlobalChangeListener(listener) {
-      this.globalListeners.delete(listener);
-    }
-    addToMap(map, key, listener) {
-      mapGetOrCreate(map, key, () => new Set).add(listener);
-    }
-    removeFromMap(map, key, listener) {
-      const set = map.get(key);
-      if (set) {
-        set.delete(listener);
-        if (!set.size)
-          map.delete(key);
-      }
-    }
-    addChangeListener(path, listener) {
-      this.addToMap(this.pathListeners, path, listener);
-    }
-    removeChangeListener(path, listener) {
-      this.removeFromMap(this.pathListeners, path, listener);
-    }
-    addPrefixChangeListener(prefix, listener) {
-      this.addToMap(this.prefixListeners, prefix, listener);
-    }
-    removePrefixChangeListener(prefix, listener) {
-      this.removeFromMap(this.prefixListeners, prefix, listener);
-    }
-  }
-
-  // src/api/Settings.ts
-  var logger9 = new Logger("Settings");
-  var DefaultSettings = { plugins: {} };
-  var settings = {};
-  mergeDefaults(settings, DefaultSettings);
-  var SettingsStore3 = new SettingsStore2(settings);
-  var PlainSettings = settings;
-  var Settings = SettingsStore3.store;
-  var pluginPath = (name, key) => key ? `plugins.${name}.${key}` : `plugins.${name}`;
-  async function readGmValue(key) {
-    if (typeof GM_getValue !== "function")
-      return null;
-    try {
-      const value = GM_getValue(key, null);
-      if (value != null && typeof value.then === "function") {
-        return await value;
-      }
-      return value;
-    } catch (e) {
-      logger9.warn("Failed to read GM storage:", e);
-      return null;
-    }
-  }
-  async function readKey(key) {
-    const gm = parseStoredSettings(await readGmValue(key));
-    if (gm)
-      return gm;
-    try {
-      const idb = parseStoredSettings(await idbGet(key) ?? null);
-      if (idb)
-        return idb;
-    } catch (e) {
-      logger9.warn("Failed to read IndexedDB:", e);
-    }
-    try {
-      return parseStoredSettings(localStorage.getItem(key));
-    } catch (e) {
-      logger9.warn("Failed to read localStorage:", e);
-      return null;
-    }
-  }
-  async function dropLegacySettings() {
-    if (typeof GM_deleteValue === "function") {
-      try {
-        GM_deleteValue(LEGACY_STORAGE_KEY);
-      } catch {}
-    }
-    try {
-      localStorage.removeItem(LEGACY_STORAGE_KEY);
-    } catch {}
-    try {
-      await idbDelete(LEGACY_STORAGE_KEY);
-    } catch (e) {
-      logger9.warn("Failed to drop legacy settings:", e);
-    }
-  }
-  async function readStoredSettings() {
-    const next = await readKey(STORAGE_KEY);
-    if (next)
-      return { parsed: next, fromLegacy: false };
-    const legacy = await readKey(LEGACY_STORAGE_KEY);
-    if (legacy)
-      return { parsed: legacy, fromLegacy: true };
-    return null;
-  }
-  async function initSettings() {
-    const stored = await readStoredSettings();
-    if (stored)
-      Object.assign(settings, stored.parsed);
-    mergeDefaults(settings, DefaultSettings);
-    const meta = settings.plugins.Settings;
-    if (meta && meta.enabled === false)
-      meta.enabled = true;
-    if (stored?.fromLegacy) {
-      logger9.info(`Copied ${LEGACY_STORAGE_KEY} → ${STORAGE_KEY}; writes to ${LEGACY_STORAGE_KEY} stopped at ${LEGACY_WRITE_STOPPED}`);
-      SettingsStore3.flush();
-    }
-    await dropLegacySettings();
-  }
-  function migratePluginSettings(name, ...oldNames) {
-    const { plugins } = SettingsStore3.plain;
-    if (name in plugins)
-      return;
-    for (const oldName of oldNames) {
-      if (oldName in plugins) {
-        logger9.info(`Migrating settings from old name ${oldName} to ${name}`);
-        plugins[name] = plugins[oldName];
-        delete plugins[oldName];
-        SettingsStore3.markAsChanged();
-        break;
-      }
-    }
-  }
-  function migratePluginSetting(pluginName, newKey, oldKey) {
-    const pluginSettings = SettingsStore3.plain.plugins[pluginName];
-    if (!pluginSettings || !(oldKey in pluginSettings) || newKey in pluginSettings)
-      return;
-    logger9.info(`Migrating setting ${oldKey} -> ${newKey} in ${pluginName}`);
-    pluginSettings[newKey] = pluginSettings[oldKey];
-    delete pluginSettings[oldKey];
-    SettingsStore3.markAsChanged();
-  }
-  function migrateSettingsToPlugin(targetPlugin, sourcePlugin, ...settingKeys) {
-    const source = SettingsStore3.plain.plugins[sourcePlugin];
-    if (!source)
-      return;
-    const target = SettingsStore3.plain.plugins[targetPlugin] ??= { enabled: false };
-    let changed = false;
-    for (const key of settingKeys) {
-      if (key in source && !(key in target)) {
-        target[key] = source[key];
-        delete source[key];
-        changed = true;
-      }
-    }
-    if (changed) {
-      logger9.info(`Migrated settings [${settingKeys.join(", ")}] from ${sourcePlugin} to ${targetPlugin}`);
-      SettingsStore3.markAsChanged();
-    }
-  }
-  function getSettingsPluginData() {
-    return Settings.plugins.Settings ?? {};
-  }
-  function updateSettingsPluginData(patch) {
-    Settings.plugins.Settings = { ...Settings.plugins.Settings ?? { enabled: true }, ...patch };
-  }
-  function getPinnedPlugins() {
-    return getSettingsPluginData().pinnedPlugins ?? [];
-  }
-  function isPluginPinned(name) {
-    return getPinnedPlugins().includes(name);
-  }
-  function togglePluginPinned(name) {
-    const current = getPinnedPlugins();
-    const pinned = current.includes(name);
-    updateSettingsPluginData({
-      pinnedPlugins: pinned ? current.filter((n) => n !== name) : [name, ...current]
-    });
-    return !pinned;
-  }
-  function getStarredPlugins() {
-    return getSettingsPluginData().starredPlugins ?? [];
-  }
-  function isPluginStarred(name) {
-    return getStarredPlugins().includes(name);
-  }
-  function togglePluginStarred(name) {
-    const current = getStarredPlugins();
-    const starred = current.includes(name);
-    updateSettingsPluginData({
-      starredPlugins: starred ? current.filter((n) => n !== name) : [name, ...current]
-    });
-    return !starred;
-  }
-  function mergePluginSettings(name, patch) {
-    Settings.plugins[name] = { ...Settings.plugins[name] ?? { enabled: false }, ...patch };
-  }
-  function resolveDefault(setting) {
-    if ("default" in setting)
-      return setting.default;
-    if (setting.type === 4 /* SELECT */)
-      return setting.options.find((o) => o.default)?.value;
-    return;
-  }
-  function definePluginSettings(def, checks) {
-    let _pluginName = "";
-    const definedSettings = {
-      get store() {
-        if (!_pluginName)
-          throw new Error("Cannot access settings before plugin is initialized");
-        return Settings.plugins[_pluginName];
-      },
-      get plain() {
-        if (!_pluginName)
-          throw new Error("Cannot access settings before plugin is initialized");
-        return PlainSettings.plugins[_pluginName];
-      },
-      def,
-      checks: checks ?? {},
-      get pluginName() {
-        return _pluginName;
-      },
-      set pluginName(name) {
-        _pluginName = name;
-        if (!name)
-          return;
-        if (!PlainSettings.plugins[name])
-          PlainSettings.plugins[name] = {};
-        SettingsStore3.setDefaultGetter(pluginPath(name), (key) => {
-          const setting = def[key];
-          return setting ? resolveDefault(setting) : undefined;
-        });
-      },
-      use(keys) {
-        const forceUpdate = useForceUpdater();
-        useEffect(() => {
-          const prefix = pluginPath(_pluginName);
-          let listener = forceUpdate;
-          if (keys?.length) {
-            const watched = keys.map((k) => `${prefix}.${String(k)}`);
-            listener = (path) => {
-              if (watched.some((p) => path.startsWith(p) || p.startsWith(path + ".")))
-                forceUpdate();
-            };
-          }
-          SettingsStore3.addPrefixChangeListener(prefix, listener);
-          return () => SettingsStore3.removePrefixChangeListener(prefix, listener);
-        }, []);
-        return definedSettings.store;
-      },
-      withPrivateSettings() {
-        return this;
-      }
-    };
-    return definedSettings;
-  }
 
   // src/api/BuildHealth.ts
   var logger10 = new Logger("TurbopackPatcher", "#e78284");
@@ -6810,7 +6865,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/plugins/experiments/index.tsx
   var cl14 = classNameFactory("void-experiments-");
   var NEW_FLAG_TTL = 24 * 60 * 60 * 1000;
-  var settings2 = definePluginSettings({
+  var settings3 = definePluginSettings({
     toastNotifications: {
       type: 3 /* BOOLEAN */,
       description: "Show a toast when experiment flags change.",
@@ -6842,16 +6897,16 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       return;
     const message = parts.join(`
 `);
-    if (settings2.store.toastNotifications)
+    if (settings3.store.toastNotifications)
       showToast(message, 3 /* INFO */);
-    if (settings2.store.browserNotifications)
+    if (settings3.store.browserNotifications)
       sendBrowserNotification("Grok Experiments", message);
   }
   function syncKnownFlags(config) {
     const booleanKeys = getBooleanKeys(config);
     if (!booleanKeys.length)
       return;
-    const existing = settings2.plain.knownFlags;
+    const existing = settings3.plain.knownFlags;
     const firstRun = existing == null;
     const known = { ...existing };
     const now = Date.now();
@@ -6883,13 +6938,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     lastConfigSnapshot = Object.fromEntries(booleanKeys.map((k) => [k, !!config[k]]));
     if (changed) {
-      settings2.store.knownFlags = { ...known };
+      settings3.store.knownFlags = { ...known };
     }
     if (!firstRun)
       notifyChanges(newFlags, removedFlags, flipped);
   }
   function isNewFlag(key) {
-    const seen = settings2.plain.knownFlags?.[key];
+    const seen = settings3.plain.knownFlags?.[key];
     if (seen == null)
       return false;
     return Date.now() - seen < NEW_FLAG_TTL;
@@ -7052,11 +7107,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     icon: TestTubeIcon,
     description: "Unlock and toggle unreleased Grok features.",
     authors: [Devs.Prism],
-    settings: settings2,
+    settings: settings3,
     startAt: "TurbopackReady" /* TurbopackReady */,
     _proxy: overrideProxy,
     start() {
-      if (settings2.store.browserNotifications && Notification.permission === "default")
+      if (settings3.store.browserNotifications && Notification.permission === "default")
         Notification.requestPermission().catch(() => {});
       const state = FeatureStore.useFeatureStore.getState();
       if (state.status === "ready")
@@ -7128,7 +7183,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/plugins/pluginsFlyout/index.tsx
   var PLUGIN_NAME = "PluginsFlyout";
   var cl15 = classNameFactory("void-pf-");
-  var settings3 = definePluginSettings({
+  var settings4 = definePluginSettings({
     menuPlugins: {
       type: 6 /* COMPONENT */,
       description: "Plugins shown under Void++ → Plugins.",
@@ -7140,7 +7195,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return Object.keys(plugins).filter((n) => !plugins[n].hidden).toSorted((a, b) => a.localeCompare(b));
   }
   function menuPluginMap() {
-    const raw = settings3.store.menuPlugins;
+    const raw = settings4.store.menuPlugins;
     return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
   }
   function isShownInPluginMenu(name) {
@@ -7150,7 +7205,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return hasVisibleSettings(plugins[name]);
   }
   function setShownInPluginMenu(name, shown) {
-    settings3.store.menuPlugins = { ...menuPluginMap(), [name]: shown };
+    settings4.store.menuPlugins = { ...menuPluginMap(), [name]: shown };
   }
   function getVisibleMenuPlugins() {
     const names = listedPlugins();
@@ -7159,11 +7214,11 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     return names.filter(isShownInPluginMenu);
   }
   function usePluginMenu() {
-    settings3.use(["menuPlugins"]);
+    settings4.use(["menuPlugins"]);
     return getVisibleMenuPlugins();
   }
   function MenuPluginsEditor() {
-    settings3.use(["menuPlugins"]);
+    settings4.use(["menuPlugins"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
@@ -7196,13 +7251,13 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     authors: [Devs.p],
     tags: ["ui", "settings"],
     enabledByDefault: true,
-    settings: settings3
+    settings: settings4
   });
 
   // src/plugins/_core/settings/index.tsx
   var logger15 = new Logger("Settings");
   var cl16 = classNameFactory("void-settings-");
-  var settings4 = definePluginSettings({
+  var settings5 = definePluginSettings({
     showVoidPPMenu: {
       type: 3 /* BOOLEAN */,
       description: "Show the Void++ sub-menu in the avatar dropdown.",
@@ -7247,9 +7302,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.38] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"7e7e685"}`
-    }, `(${"7e7e685"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.39] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"8535b78"}`
+    }, `(${"8535b78"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7272,7 +7327,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   function VoidPPMenu() {
     const forceUpdate = useForceUpdater();
     useEventSubscription("pluginToggle", forceUpdate);
-    const { showVoidPPMenu } = settings4.use(["showVoidPPMenu"]);
+    const { showVoidPPMenu } = settings5.use(["showVoidPPMenu"]);
     const menuPlugins = usePluginMenu();
     if (!showVoidPPMenu)
       return null;
@@ -7307,7 +7362,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     description: "Adds Void++ settings UI.",
     authors: [Devs.Prism, Devs.p],
     required: true,
-    settings: settings4,
+    settings: settings5,
     _renderVoidPPMenu: () => createElement(WrappedVoidPPMenu),
     _setPrimitive(name, component) {
       setSettingsPrimitive(name, component);
@@ -7562,7 +7617,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/plugins/autoRetry/index.ts
   var logger16 = new Logger("AutoRetry");
   var CONTENT_MODERATED = "grok:content-moderated";
-  var settings5 = definePluginSettings({
+  var settings6 = definePluginSettings({
     retryModeration: {
       type: 3 /* BOOLEAN */,
       description: "Retry content moderation errors.",
@@ -7597,19 +7652,19 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   }
   function shouldRetry(response) {
     if (isModeration(response))
-      return settings5.store.retryModeration;
-    return settings5.store.retryNetwork;
+      return settings6.store.retryModeration;
+    return settings6.store.retryNetwork;
   }
   function retry(responseId, conversationId, response) {
     const count = (retryCounts.get(conversationId) ?? 0) + 1;
-    const max = settings5.store.maxRetries;
+    const max = settings6.store.maxRetries;
     if (count > max) {
       showToast("Max retries reached.", 2 /* ERROR */);
       retryCounts.delete(conversationId);
       return;
     }
     retryCounts.set(conversationId, count);
-    const delaySec = settings5.store.delay;
+    const delaySec = settings6.store.delay;
     showToast(`Retrying... (${count}/${max})`, 0 /* MESSAGE */);
     logger16.info(`Retry ${count}/${max} for ${conversationId} in ${delaySec}s`);
     clearPending();
@@ -7650,7 +7705,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     description: "Automatically retry failed messages on moderation or network errors.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings5,
+    settings: settings6,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       retryCounts.clear();
@@ -7829,7 +7884,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   // src/plugins/betterImagine/index.tsx
   var logger18 = new Logger("BetterImagine");
   var cl17 = classNameFactory("void-imagine-");
-  var settings6 = definePluginSettings({
+  var settings7 = definePluginSettings({
     hideDefaultPreviews: {
       type: 3 /* BOOLEAN */,
       description: "Hide the community image grid and templates on the Imagine home page.",
@@ -7877,7 +7932,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
   });
   function buildFilename(post, isVideo) {
-    if (!settings6.store.smartFilenames || !post)
+    if (!settings7.store.smartFilenames || !post)
       return null;
     const prompt = (post.prompt ?? post.originalPrompt ?? "").trim();
     const slug = sanitizeFilename(prompt.slice(0, 60), "").slice(0, 60);
@@ -7940,7 +7995,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
   var randomSeed = Date.now();
   var filterStore = createExternalStore();
   function persist() {
-    if (!settings6.store.persistFilters)
+    if (!settings7.store.persistFilters)
       return;
     try {
       sessionStorage.setItem(STORAGE_KEY2, JSON.stringify({ filter: currentFilter, search: currentSearch, date: currentDate, sort: currentSort }));
@@ -8019,7 +8074,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var cacheList = null;
   var cacheResult = [];
   function filterItems(items) {
-    const { hideModerated } = settings6.store;
+    const { hideModerated } = settings7.store;
     const key = `${items.length}|${currentFilter}|${currentSearch}|${currentDate}|${currentSort}|${hideModerated ? 1 : 0}|${randomSeed}`;
     if (cacheList === items && cacheKey === key)
       return cacheResult;
@@ -8314,7 +8369,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   }
   function onVisibilityChange() {
-    if (!settings6.store.pauseWhenHidden)
+    if (!settings7.store.pauseWhenHidden)
       return;
     if (document.visibilityState !== "hidden")
       return;
@@ -8330,13 +8385,13 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Imagine polish: filter, sort, shortcuts, autoplay control, hide moderated, bulk upscale + copy-prompts, smart filenames, pause-on-hidden.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings6,
-    _hideDefault: () => settings6.store.hideDefaultPreviews,
+    settings: settings7,
+    _hideDefault: () => settings7.store.hideDefaultPreviews,
     _NullGrid: () => null,
-    _autoPlay: () => !settings6.store.noAutoplay,
-    _bypassPaywall: () => settings6.store.bypassPaywall,
-    _ctrlClickSelect: () => settings6.store.ctrlClickSelect,
-    _hoverProps: () => settings6.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
+    _autoPlay: () => !settings7.store.noAutoplay,
+    _bypassPaywall: () => settings7.store.bypassPaywall,
+    _ctrlClickSelect: () => settings7.store.ctrlClickSelect,
+    _hoverProps: () => settings7.store.playOnHover ? { onMouseEnter, onMouseLeave } : {},
     _useFilteredFavorites: useFilteredFavorites,
     _renderFilterButtons: ErrorBoundary.wrap(FilterButtons, null),
     _renderUpscaleItem: ErrorBoundary.wrap(UpscaleItem, null),
@@ -8441,31 +8496,31 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     return /^#[0-9a-fA-F]{6}$/.test(c);
   }
   function getColor(key, fallback) {
-    const val = settings7.store[key];
+    const val = settings8.store[key];
     return val && isValidHex(val) ? val : fallback;
   }
   function applyColors() {
     const link = getColor("linkColor", DEFAULT_LINK);
     let css = `.void-colored-link{color:${link}!important;text-decoration-color:${link}!important}`;
-    if (settings7.store.enableVisitedColor) {
+    if (settings8.store.enableVisitedColor) {
       const visited = getColor("visitedColor", DEFAULT_VISITED);
       css += `.void-colored-link:visited{color:${visited}!important;text-decoration-color:${visited}!important}`;
     }
     registerStyle(STYLE_NAME2, css);
   }
   function ColorRow({ settingKey, title, description, fallback }) {
-    settings7.use([settingKey]);
+    settings8.use([settingKey]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: getColor(settingKey, fallback),
       onChange: (v) => {
-        settings7.store[settingKey] = v;
+        settings8.store[settingKey] = v;
         applyColors();
       },
       title,
       description
     });
   }
-  var settings7 = definePluginSettings({
+  var settings8 = definePluginSettings({
     linkifyDomains: {
       type: 3 /* BOOLEAN */,
       description: "Detect bare domains in messages and make them clickable.",
@@ -8502,7 +8557,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     description: "Colorize links and detect bare domains in chat messages.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings7,
+    settings: settings8,
     patches: [
       {
         find: "chat-markdown:a:link",
@@ -8521,7 +8576,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       }
     ],
     _remarkLinkify() {
-      const { store } = settings7;
+      const { store } = settings8;
       return (tree) => {
         try {
           if (!store.linkifyDomains)
@@ -8565,8 +8620,8 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       };
     },
     start() {
-      settings7.store.linkColor ??= DEFAULT_LINK;
-      settings7.store.visitedColor ??= DEFAULT_VISITED;
+      settings8.store.linkColor ??= DEFAULT_LINK;
+      settings8.store.visitedColor ??= DEFAULT_VISITED;
       applyColors();
       enableStyle(STYLE_NAME2);
     },
@@ -8708,7 +8763,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   // src/plugins/betterSidebar/index.tsx
   var logger19 = new Logger("BetterSidebar");
   var cl18 = classNameFactory("void-sidebar-");
-  var settings8 = definePluginSettings({
+  var settings9 = definePluginSettings({
     clickToToggle: {
       type: 3 /* BOOLEAN */,
       description: "Click anywhere on the sidebar to toggle it.",
@@ -8765,7 +8820,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var projectsCollapseObserver = null;
   var projectsCollapseTimer = null;
   function applyHeaderHover() {
-    if (settings8.store.titleRowHover)
+    if (settings9.store.titleRowHover)
       enableStyle("headerHover");
     else
       disableStyle("headerHover");
@@ -8793,7 +8848,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function startBotsCollapse() {
     stopBotsCollapse();
-    if (!settings8.store.botsDefaultCollapsed)
+    if (!settings9.store.botsDefaultCollapsed)
       return;
     let done = false;
     const tick = () => {
@@ -8815,7 +8870,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }, 1e4);
   }
   function resetChatsCollapsedStorage() {
-    if (!settings8.store.chatsDefaultExpanded)
+    if (!settings9.store.chatsDefaultExpanded)
       return;
     try {
       localStorage.removeItem(CHATS_COLLAPSED_KEY);
@@ -8857,7 +8912,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function startChatsExpand() {
     stopChatsExpand();
-    if (!settings8.store.chatsDefaultExpanded)
+    if (!settings9.store.chatsDefaultExpanded)
       return;
     resetChatsCollapsedStorage();
     let done = false;
@@ -8880,7 +8935,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }, 1e4);
   }
   function resetProjectsCollapsedStorage() {
-    if (!settings8.store.projectsDefaultCollapsed)
+    if (!settings9.store.projectsDefaultCollapsed)
       return;
     try {
       localStorage.setItem(PROJECTS_COLLAPSED_KEY, "true");
@@ -8920,7 +8975,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   }
   function startProjectsCollapse() {
     stopProjectsCollapse();
-    if (!settings8.store.projectsDefaultCollapsed)
+    if (!settings9.store.projectsDefaultCollapsed)
       return;
     resetProjectsCollapsedStorage();
     let done = false;
@@ -8964,7 +9019,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     push({ page: "main", teamId });
   }
   var ChatsPlus = ErrorBoundary.wrap(function ChatsPlusButton() {
-    if (!settings8.use(["chatsPlus"]).chatsPlus)
+    if (!settings9.use(["chatsPlus"]).chatsPlus)
       return null;
     return /* @__PURE__ */ React.createElement("button", {
       type: "button",
@@ -9022,7 +9077,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     await Promise.allSettled(ids.map((id) => fetchSoftDeleteConversation(id).catch((e) => logger19.error("Failed to delete", id, e))));
   }
   function SelectCheckbox({ id, route }) {
-    const enabled = settings8.use(["batchSelect"]).batchSelect;
+    const enabled = settings9.use(["batchSelect"]).batchSelect;
     if (!enabled || !id || !isConversationRoute(route))
       return null;
     return /* @__PURE__ */ React.createElement(SelectionCheckbox, {
@@ -9038,7 +9093,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     authors: [Devs.Prism, Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
-    settings: settings8,
+    settings: settings9,
     managedStyle: "betterSidebar",
     _ChatsPlus: () => createElement(ChatsPlus),
     _UserCard: ErrorBoundary.wrap(UserCard),
@@ -9053,7 +9108,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     },
     _wrapSidebarClick(onClick, id, route) {
       return (e) => {
-        if (id && settings8.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
+        if (id && settings9.store.batchSelect && isConversationRoute(route) && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           e.stopPropagation();
           selection2.toggle(id);
@@ -9063,10 +9118,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       };
     },
     _defaultOpen() {
-      return !settings8.store.defaultCollapsed;
+      return !settings9.store.defaultCollapsed;
     },
     _botsDefaultCollapsed() {
-      return settings8.store.botsDefaultCollapsed;
+      return settings9.store.botsDefaultCollapsed;
     },
     _chatsCollapsedInit() {
       resetChatsCollapsedStorage();
@@ -9077,10 +9132,10 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
       return true;
     },
     _projectsAutoExpand() {
-      return !settings8.store.projectsDefaultCollapsed;
+      return !settings9.store.projectsDefaultCollapsed;
     },
     _onSidebarClick() {
-      if (!settings8.store.clickToToggle)
+      if (!settings9.store.clickToToggle)
         return;
       return (e) => {
         const target = e.target;
@@ -10158,7 +10213,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var logger21 = new Logger("ChatStateFavicons");
   var ICON_ID = "void-chat-state-favicon";
   var LIVE_RESPONSE = new Set(["streaming", "optimistic", "reconnecting"]);
-  var settings9 = definePluginSettings({
+  var settings10 = definePluginSettings({
     style: {
       type: 4 /* SELECT */,
       description: "How the Grok mark is overlaid with chat state.",
@@ -10185,7 +10240,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   var raf2 = 0;
   var started3 = false;
   function currentStyle() {
-    const value = settings9.store.style;
+    const value = settings10.store.style;
     return isIconStyle(value) ? value : "badge";
   }
   function captureOfficial() {
@@ -10598,7 +10653,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings9,
+    settings: settings10,
     startAt: "TurbopackReady" /* TurbopackReady */,
     cleanupSelectors: [`#${ICON_ID}`],
     start() {
@@ -10651,7 +10706,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
   });
 
   // src/plugins/cleaner/index.ts
-  var settings10 = definePluginSettings({
+  var settings11 = definePluginSettings({
     hideUpgradePlan: {
       type: 3 /* BOOLEAN */,
       description: "Hide the upgrade plan button in the user menu.",
@@ -10703,7 +10758,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     authors: [Devs.Prism, Devs.p],
     tags: ["ui"],
     enabledByDefault: true,
-    settings: settings10,
+    settings: settings11,
     patches: [
       {
         find: '"user-dropdown.upgrade","Upgrade plan"',
@@ -10995,7 +11050,7 @@ html.void-cms-picked .void-cms-ghost {
   var PICK_MS = 900;
   var POINTER = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", button: 0 };
   var GHOST_STYLE = { opacity: "0", visibility: "hidden" };
-  var settings11 = definePluginSettings({
+  var settings12 = definePluginSettings({
     pinList: {
       type: 6 /* COMPONENT */,
       description: "Toggle pins and drag to set chip order.",
@@ -11145,10 +11200,10 @@ html.void-cms-picked .void-cms-ghost {
     return next;
   }
   function setOrder(ids) {
-    settings11.store.pinOrder = ids.join(",");
+    settings12.store.pinOrder = ids.join(",");
   }
   function setPinned(pin, on) {
-    settings11.store[pin] = on;
+    settings12.store[pin] = on;
   }
   function itemText(el) {
     return `${el.getAttribute("aria-label") ?? ""} ${el.textContent ?? ""}`.replaceAll(/\s+/g, " ").trim().toLowerCase();
@@ -11389,7 +11444,7 @@ html.void-cms-picked .void-cms-ghost {
     e.dataTransfer.dropEffect = "move";
   }
   function PinOrderEditor() {
-    const cfg = settings11.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
+    const cfg = settings12.use(["pinAuto", "pinFast", "pinExpert", "pinHeavy", "pinBuild", "pinOrder"]);
     const ids = parseOrder(cfg.pinOrder);
     const [dragId, setDragId] = React.useState(null);
     const onDragStart = (id) => (e) => {
@@ -11466,7 +11521,7 @@ html.void-cms-picked .void-cms-ghost {
     })));
   }
   function PinnedModes() {
-    const cfg = settings11.use([...SETTING_KEYS]);
+    const cfg = settings12.use([...SETTING_KEYS]);
     const page = RoutingStore.useRoutingStore((s) => s.route.page);
     const selectedModeId = ModesStore.useModesStore((s) => s.selectedModeId);
     const catalog = ModesStore.useModesStore((s) => s.modes);
@@ -11508,7 +11563,7 @@ html.void-cms-picked .void-cms-ghost {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings11,
+    settings: settings12,
     managedStyle: "compactModeSelect",
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
@@ -11548,7 +11603,7 @@ html.void-cms-picked .void-cms-ghost {
   var FRAME_KIDS = "form:has(.query-bar)>:first-child>*";
   var BACKDROP = ".chat-input-backdrop,.pointer-events-none.absolute.bottom-0.z-0[class*=bg-gradient-to-t]";
   var RADIUS = "var(--border-t-radius,10rem) var(--border-t-radius,10rem) var(--border-b-radius,10rem) var(--border-b-radius,10rem)";
-  var settings12 = definePluginSettings({
+  var settings13 = definePluginSettings({
     opacity: {
       type: 5 /* SLIDER */,
       description: "Background opacity of the chat input. 100 is fully opaque.",
@@ -11564,9 +11619,9 @@ html.void-cms-picked .void-cms-ghost {
       default: 16
     }
   });
-  function apply() {
-    const pct = clamp(settings12.store.opacity, 0, 100);
-    const blur = clamp(settings12.store.blur, 0, 40);
+  function apply2() {
+    const pct = clamp(settings13.store.opacity, 0, 100);
+    const blur = clamp(settings13.store.blur, 0, 40);
     const alpha = pct / 100;
     const frost = pct < 100 && blur > 0 ? `-webkit-backdrop-filter:blur(${blur}px)!important;backdrop-filter:blur(${blur}px)!important;` : "-webkit-backdrop-filter:none!important;backdrop-filter:none!important;";
     registerStyle(STYLE_NAME3, `${FRAME}{background:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}` + `${FRAME_KIDS}{pointer-events:auto!important}` + `${BACKDROP}{display:none!important}` + `${SHELL}{` + `background-color:hsl(var(--surface-l1)/${alpha})!important;` + "background-image:none!important;" + `border-radius:${RADIUS}!important;` + "overflow:hidden!important;" + `clip-path:inset(0 round ${RADIUS})!important;` + frost + "}");
@@ -11578,9 +11633,9 @@ html.void-cms-picked .void-cms-ghost {
     authors: [Devs.p],
     tags: ["ui", "chat"],
     enabledByDefault: true,
-    settings: settings12,
-    start: apply,
-    onSettingsChange: apply,
+    settings: settings13,
+    start: apply2,
+    onSettingsChange: apply2,
     stop() {
       unregisterStyle(STYLE_NAME3);
     }
@@ -11778,20 +11833,20 @@ html.void-cms-picked .void-cms-ghost {
   var TrashIcon = findExportedComponentLazy("TrashIcon");
   var PlusIcon2 = findExportedComponentLazy("PlusIcon");
   var MAX_LENGTH = 4000;
-  var settings13 = definePluginSettings({
+  var settings14 = definePluginSettings({
     editor: {
       type: 6 /* COMPONENT */,
       component: () => /* @__PURE__ */ React.createElement(PresetsEditor, null)
     }
   }).withPrivateSettings();
   function getPresets() {
-    return settings13.plain.presets ?? [];
+    return settings14.plain.presets ?? [];
   }
   function setPresets(presets) {
-    settings13.store.presets = presets;
+    settings14.store.presets = presets;
   }
   function getAssignments() {
-    return settings13.plain.assignments ?? {};
+    return settings14.plain.assignments ?? {};
   }
   function PresetCard({ preset, onEdit, onDelete }) {
     return /* @__PURE__ */ React.createElement("div", {
@@ -11874,7 +11929,7 @@ html.void-cms-picked .void-cms-ghost {
     }, "Done")));
   }
   function PresetsEditor() {
-    const presets = settings13.use(["presets"]).presets ?? [];
+    const presets = settings14.use(["presets"]).presets ?? [];
     const [editingId, setEditingId] = useState(null);
     const updatePreset = useCallback((updated) => {
       setPresets(getPresets().map((p) => p.id === updated.id ? updated : p));
@@ -11886,7 +11941,7 @@ html.void-cms-picked .void-cms-ghost {
         if (v === id)
           delete a[k];
       }
-      settings13.store.assignments = a;
+      settings14.store.assignments = a;
       setEditingId((prev) => prev === id ? null : prev);
     }, []);
     const addPreset = useCallback(() => {
@@ -11921,8 +11976,8 @@ html.void-cms-picked .void-cms-ghost {
     }));
   }
   function InstructionsMenu({ conversationId }) {
-    const presets = settings13.use(["presets"]).presets ?? [];
-    const assignments = settings13.use(["assignments"]).assignments ?? {};
+    const presets = settings14.use(["presets"]).presets ?? [];
+    const assignments = settings14.use(["assignments"]).assignments ?? {};
     const activePresetId = assignments[conversationId];
     const assign = useCallback((presetId) => {
       const a = { ...getAssignments() };
@@ -11930,7 +11985,7 @@ html.void-cms-picked .void-cms-ghost {
         a[conversationId] = presetId;
       else
         delete a[conversationId];
-      settings13.store.assignments = a;
+      settings14.store.assignments = a;
     }, [conversationId]);
     if (!presets.length)
       return null;
@@ -11961,7 +12016,7 @@ html.void-cms-picked .void-cms-ghost {
     description: "Create instruction presets and assign them to conversations.",
     authors: [Devs.Prism],
     tags: ["chat"],
-    settings: settings13,
+    settings: settings14,
     contextMenuItems: {
       conversation: {
         label: "Instructions",
@@ -12460,7 +12515,7 @@ html.void-cms-picked .void-cms-ghost {
   var APPLY_QUIET_MS = 120;
   var CAPTURE_DEDUPE_MS = 2000;
   var PAGE_SIZE = 10;
-  var settings14 = definePluginSettings({
+  var settings15 = definePluginSettings({
     maxEntries: {
       type: 5 /* SLIDER */,
       description: "Maximum stored prompts.",
@@ -12485,15 +12540,15 @@ html.void-cms-picked .void-cms-ghost {
   var applyEl = null;
   var applyAtStart = true;
   function getEntries() {
-    const raw = settings14.plain.entries;
+    const raw = settings15.plain.entries;
     return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
   }
   function cap(entries) {
-    const max = clamp(settings14.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
+    const max = clamp(settings15.store.maxEntries ?? MAX_DEFAULT, MAX_MIN, MAX_MAX);
     return entries.length > max ? entries.slice(entries.length - max) : entries;
   }
   function setEntries(entries) {
-    settings14.store.entries = entries;
+    settings15.store.entries = entries;
   }
   function normalize(text) {
     return text.replaceAll(ZWSP, "").replace(/\n$/, "").trim();
@@ -12830,7 +12885,7 @@ html.void-cms-picked .void-cms-ghost {
     resetBrowse(next.length);
   }
   function HistoryPanel() {
-    const { entries } = settings14.use(["entries"]);
+    const { entries } = settings15.use(["entries"]);
     const list = entries ?? [];
     const [query, setQuery] = useState("");
     const [page, setPage] = useState(0);
@@ -12970,7 +13025,7 @@ html.void-cms-picked .void-cms-ghost {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings14,
+    settings: settings15,
     managedStyle: "inputHistory",
     cleanupSelectors: [".void-ih-hud"],
     start() {
@@ -13321,7 +13376,7 @@ html.void-cms-picked .void-cms-ghost {
   var logger27 = new Logger("MessageTimestamps");
   var STAMP_MAX = 5000;
   var RESPONSE_URL = /\/(?:load-responses|share_links|response-node)(?:\/|\?|$)/i;
-  var settings15 = definePluginSettings({
+  var settings16 = definePluginSettings({
     showDate: {
       type: 3 /* BOOLEAN */,
       description: "Show the full date for messages older than today.",
@@ -13348,7 +13403,7 @@ html.void-cms-picked .void-cms-ghost {
     if (cache)
       return cache;
     cache = new Map;
-    const raw = settings15.plain.stamps;
+    const raw = settings16.plain.stamps;
     if (raw && typeof raw === "object") {
       for (const [id, ms] of Object.entries(raw)) {
         if (typeof ms === "number" && Number.isFinite(ms))
@@ -13361,7 +13416,7 @@ html.void-cms-picked .void-cms-ghost {
     const next = {};
     for (const [id, ms] of stamps())
       next[id] = ms;
-    settings15.store.stamps = next;
+    settings16.store.stamps = next;
   }
   var persist2 = debounce(persistNow, 400);
   function remember(id, ms, sender, state, force = false) {
@@ -13737,7 +13792,7 @@ html.void-cms-picked .void-cms-ghost {
     description: "Shows timestamps on chat messages.",
     authors: [Devs.Prism, Devs.p],
     tags: ["chat"],
-    settings: settings15,
+    settings: settings16,
     start() {
       try {
         hookFetch();
@@ -13788,7 +13843,7 @@ html.void-cms-picked .void-cms-ghost {
     _renderTimestamp: ErrorBoundary.wrap(({ response, isUser }) => {
       useExternalStore(tick);
       const human = isUser === true || isHumanSender(response.sender);
-      if (settings15.store.hideOwnMessages && human)
+      if (settings16.store.hideOwnMessages && human)
         return null;
       const ms = resolveMs(response, isUser);
       if (ms == null)
@@ -13798,7 +13853,7 @@ html.void-cms-picked .void-cms-ghost {
         size: "xs",
         color: "muted",
         className: "void-timestamp"
-      }, formatTimestamp(ms, settings15.store.showDate));
+      }, formatTimestamp(ms, settings16.store.showDate));
     }),
     patches: [
       {
@@ -13824,16 +13879,16 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
 }
 `;
   var REFINEMENT_CSS = `.${REFINEMENT_MARK}{display:none!important}`;
-  var settings16 = definePluginSettings({
+  var settings17 = definePluginSettings({
     hideDictationRefinement: {
       type: 3 /* BOOLEAN */,
       description: 'Hide "Dictation Refinement" in the Grok Settings dialog (Behavior tab).',
       default: true
     }
   });
-  function apply2() {
+  function apply3() {
     const rules = [BUTTON_CSS];
-    if (settings16.store.hideDictationRefinement)
+    if (settings17.store.hideDictationRefinement)
       rules.push(REFINEMENT_CSS);
     registerStyle(STYLE_NAME4, rules.join(`
 `));
@@ -13845,7 +13900,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings16,
+    settings: settings17,
     patches: [
       {
         find: 'settings.behavior.dictation-refinement.description","How much Grok refines your speech-to-text transcriptions',
@@ -13855,8 +13910,8 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
         }
       }
     ],
-    start: apply2,
-    onSettingsChange: apply2,
+    start: apply3,
+    onSettingsChange: apply3,
     stop() {
       unregisterStyle(STYLE_NAME4);
     }
@@ -13890,7 +13945,7 @@ div:has(> #grok-bot-nav-button) {
 
   // src/plugins/noShareLink/index.ts
   var STYLE_NAME6 = "noShareLink";
-  var settings17 = definePluginSettings({
+  var settings18 = definePluginSettings({
     hideShareProject: {
       type: 3 /* BOOLEAN */,
       description: "Inside a project: hide the top-right Share Project button.",
@@ -13902,12 +13957,12 @@ div:has(> #grok-bot-nav-button) {
       default: true
     }
   });
-  function apply3() {
+  function apply4() {
     const rules = [];
-    if (settings17.store.hideShareProject) {
+    if (settings18.store.hideShareProject) {
       rules.push('button[aria-label="Share Project"]{display:none!important}');
     }
-    if (settings17.store.hideCreateShareLink) {
+    if (settings18.store.hideCreateShareLink) {
       rules.push('button[aria-label="Create share link"]{display:none!important}');
     }
     registerStyle(STYLE_NAME6, rules.join(`
@@ -13920,9 +13975,9 @@ div:has(> #grok-bot-nav-button) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings17,
-    start: apply3,
-    onSettingsChange: apply3,
+    settings: settings18,
+    start: apply4,
+    onSettingsChange: apply4,
     stop() {
       unregisterStyle(STYLE_NAME6);
     }
@@ -13934,7 +13989,7 @@ div:has(> #grok-bot-nav-button) {
   var STACK = `${FOOTER} button[data-slot="button"] div.flex.flex-col.items-start.min-w-0.text-left`;
   var TEXT_WRAP = `${FOOTER} button[data-slot="button"]>div.min-w-0.flex-1.overflow-hidden,${FOOTER} button[data-state]>div.min-w-0.flex-1.overflow-hidden`;
   var MENU_EMAIL = '[role="menu"] [class*="max-w-[400px]"].truncate';
-  var settings18 = definePluginSettings({
+  var settings19 = definePluginSettings({
     hideUsername: {
       type: 3 /* BOOLEAN */,
       description: "Hide the username next to the sidebar avatar.",
@@ -13946,17 +14001,17 @@ div:has(> #grok-bot-nav-button) {
       default: true
     }
   });
-  function apply4() {
+  function apply5() {
     const rules = [];
-    if (settings18.store.hideUsername) {
+    if (settings19.store.hideUsername) {
       rules.push(`${STACK}>:first-child{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-name{display:none!important}`);
     }
-    if (settings18.store.hideEmail) {
+    if (settings19.store.hideEmail) {
       rules.push(`${STACK}>:nth-child(2){display:none!important}`);
       rules.push(`${MENU_EMAIL}{display:none!important}`);
     }
-    if (settings18.store.hideUsername && settings18.store.hideEmail) {
+    if (settings19.store.hideUsername && settings19.store.hideEmail) {
       rules.push(`${TEXT_WRAP}{display:none!important}`);
       rules.push(`${FOOTER} .void-sidebar-info{display:none!important}`);
     }
@@ -13970,7 +14025,7 @@ div:has(> #grok-bot-nav-button) {
     authors: [Devs.p],
     tags: ["ui", "privacy"],
     enabledByDefault: true,
-    settings: settings18,
+    settings: settings19,
     patches: [
       {
         find: '"max-w-[400px] truncate"',
@@ -13981,8 +14036,8 @@ div:has(> #grok-bot-nav-button) {
         }
       }
     ],
-    start: apply4,
-    onSettingsChange: apply4,
+    start: apply5,
+    onSettingsChange: apply5,
     stop() {
       unregisterStyle(STYLE_NAME7);
     }
@@ -14108,7 +14163,7 @@ div:has(> #grok-bot-nav-button) {
     return String(raw ?? "").split(`
 `).map((s) => s.trim()).filter(Boolean);
   }
-  var settings19 = definePluginSettings({
+  var settings20 = definePluginSettings({
     phrases: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_PHRASES,
@@ -14116,7 +14171,7 @@ div:has(> #grok-bot-nav-button) {
     }
   }).withPrivateSettings();
   function PhrasesEditor() {
-    const { phrases } = settings19.use(["phrases"]);
+    const { phrases } = settings20.use(["phrases"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       flexDirection: "column",
       gap: "0.5rem",
@@ -14133,7 +14188,7 @@ div:has(> #grok-bot-nav-button) {
       className: cl23("textarea"),
       value: phrases ?? DEFAULT_PHRASES,
       onChange: (e) => {
-        settings19.store.phrases = e.target.value;
+        settings20.store.phrases = e.target.value;
       },
       placeholder: DEFAULT_PHRASES
     })));
@@ -14144,9 +14199,9 @@ div:has(> #grok-bot-nav-button) {
     description: "Replace the rotating chat and Grok Bot input placeholder.",
     authors: [Devs.p],
     tags: ["chat"],
-    settings: settings19,
+    settings: settings20,
     _phrases() {
-      const lines = parsePhrases(settings19.store.phrases ?? DEFAULT_PHRASES);
+      const lines = parsePhrases(settings20.store.phrases ?? DEFAULT_PHRASES);
       return lines.length ? lines : null;
     },
     _inputPlaceholder(value) {
@@ -14527,7 +14582,7 @@ html.void-rt-open [data-sidebar="gap"] {
   var TIME_TOKEN = /(?:^|\s)\d{1,2}:\d{2}\s*(?:am|pm)\b/gi;
   var STATUS_TOKEN = /\b(?:connected to computer|continuing the(?: task)?|worked for \d+\s*m(?:\s*\d+\s*s)?|worked for \d+\s*s)\b/gi;
   var COUNT_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ label: String(n), value: n, default: n === 5 }));
-  var settings20 = definePluginSettings({
+  var settings21 = definePluginSettings({
     maxRecent: {
       type: 4 /* SELECT */,
       description: "How many recently opened conversations to show.",
@@ -14573,14 +14628,14 @@ html.void-rt-open [data-sidebar="gap"] {
     return out;
   }
   function readVisits() {
-    return settings20.plain.visits ?? [];
+    return settings21.plain.visits ?? [];
   }
   function maxCount() {
-    const n = Number(settings20.store.maxRecent);
+    const n = Number(settings21.store.maxRecent);
     return Number.isFinite(n) && n > 0 ? n : 5;
   }
   function capVisits(ids) {
-    const allowHome = settings20.store.includeHome;
+    const allowHome = settings21.store.includeHome;
     return unique(ids).filter((id) => isHomeId(id) ? allowHome && (id === HOME_KEY || !!workspaceFromHomeId(id)) : !!id).slice(0, maxCount());
   }
   function pruneRecord(source, ids) {
@@ -14604,9 +14659,9 @@ html.void-rt-open [data-sidebar="gap"] {
     return keys.every((k) => src[k] === b[k]);
   }
   function assignRecord(key, next) {
-    if (sameRecord(settings20.plain[key], next))
+    if (sameRecord(settings21.plain[key], next))
       return false;
-    settings20.store[key] = next;
+    settings21.store[key] = next;
     return true;
   }
   var writing = false;
@@ -14616,14 +14671,14 @@ html.void-rt-open [data-sidebar="gap"] {
     writing = true;
     try {
       const visits = capVisits(next);
-      const rawWs = pruneRecord(settings20.plain.workspaceByConv, visits);
+      const rawWs = pruneRecord(settings21.plain.workspaceByConv, visits);
       const workspaceByConv = {};
       for (const [id, value] of Object.entries(rawWs)) {
         const ws = asWorkspaceId(value);
         if (ws)
           workspaceByConv[id] = ws;
       }
-      const pages = pruneRecord(settings20.plain.pages, visits);
+      const pages = pruneRecord(settings21.plain.pages, visits);
       const usedWs = new Set(Object.values(workspaceByConv));
       for (const id of visits) {
         const ws = workspaceFromHomeId(id);
@@ -14633,17 +14688,17 @@ html.void-rt-open [data-sidebar="gap"] {
         workspaceByConv[id] = ws;
       }
       const keepProjects = {};
-      for (const [id, name] of Object.entries(settings20.plain.projectNames ?? {})) {
+      for (const [id, name] of Object.entries(settings21.plain.projectNames ?? {})) {
         const n = usableName(name);
         if (usedWs.has(id) && n)
           keepProjects[id] = n;
       }
       let changed = false;
       if (!sameList(readVisits(), visits)) {
-        settings20.store.visits = visits;
+        settings21.store.visits = visits;
         changed = true;
       }
-      if (assignRecord("titles", pruneRecord(settings20.plain.titles, visits)))
+      if (assignRecord("titles", pruneRecord(settings21.plain.titles, visits)))
         changed = true;
       if (assignRecord("workspaceByConv", workspaceByConv))
         changed = true;
@@ -14661,10 +14716,10 @@ html.void-rt-open [data-sidebar="gap"] {
     const t = title?.trim();
     if (!id || isHomeId(id) || !t)
       return;
-    const prev = settings20.plain.titles ?? {};
+    const prev = settings21.plain.titles ?? {};
     if (prev[id] === t)
       return;
-    settings20.store.titles = { ...prev, [id]: t };
+    settings21.store.titles = { ...prev, [id]: t };
   }
   function isHomeId(id) {
     return id === HOME_KEY || id.startsWith(HOME_SEP);
@@ -14810,7 +14865,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const conv = lookup(id);
     if (conv?.title?.trim())
       return conv.title.trim();
-    const cached = settings20.plain.titles?.[id];
+    const cached = settings21.plain.titles?.[id];
     if (cached)
       return cached;
     if (id === currentVisit())
@@ -15001,12 +15056,12 @@ html.void-rt-open [data-sidebar="gap"] {
     return "";
   }
   function dropWorkspace(id) {
-    const prev = settings20.plain.workspaceByConv ?? {};
+    const prev = settings21.plain.workspaceByConv ?? {};
     if (!prev[id])
       return;
     const next = { ...prev };
     delete next[id];
-    settings20.store.workspaceByConv = next;
+    settings21.store.workspaceByConv = next;
   }
   function workspaceOf(id) {
     if (!id)
@@ -15015,7 +15070,7 @@ html.void-rt-open [data-sidebar="gap"] {
       const fromKey = workspaceFromHomeId(id);
       if (fromKey)
         return fromKey;
-      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings20.plain.workspaceByConv?.[id]);
+      return id === currentVisit() ? liveWorkspaceId() : asWorkspaceId(settings21.plain.workspaceByConv?.[id]);
     }
     const fromConv = convWorkspaceId(id);
     if (fromConv)
@@ -15025,7 +15080,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const fromSidebar = sidebarIndex().wsByConv[id] || workspaceFromDom(id);
     if (fromSidebar)
       return fromSidebar;
-    const cached = asWorkspaceId(settings20.plain.workspaceByConv?.[id]);
+    const cached = asWorkspaceId(settings21.plain.workspaceByConv?.[id]);
     if (cached)
       return cached;
     const fromHist = workspaceFromHistory(id);
@@ -15056,7 +15111,7 @@ html.void-rt-open [data-sidebar="gap"] {
     if (!ws)
       return "";
     const idx = sidebarIndex();
-    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings20.plain.projectNames?.[ws] || "");
+    const named = usableName(idx.nameByConv[id] || idx.nameByWs[ws] || wsNames[ws] || settings21.plain.projectNames?.[ws] || "");
     if (!named)
       return "";
     const live = liveWorkspaceId();
@@ -15071,24 +15126,24 @@ html.void-rt-open [data-sidebar="gap"] {
     const ws = workspaceOf(id);
     if (!ws)
       return;
-    const prevWs = settings20.plain.workspaceByConv ?? {};
+    const prevWs = settings21.plain.workspaceByConv ?? {};
     if (prevWs[id] !== ws)
-      settings20.store.workspaceByConv = { ...prevWs, [id]: ws };
+      settings21.store.workspaceByConv = { ...prevWs, [id]: ws };
     const idx = sidebarIndex();
     const sidebarName = idx.nameByConv[id] || idx.nameByWs[ws] || "";
     const liveName = ws === liveWorkspaceId() ? readOpenProjectName() : "";
-    const name = usableName(sidebarName || wsNames[ws] || liveName || settings20.plain.projectNames?.[ws] || "");
+    const name = usableName(sidebarName || wsNames[ws] || liveName || settings21.plain.projectNames?.[ws] || "");
     if (!name)
       return;
     wsNames[ws] = name;
-    const prevNames = settings20.plain.projectNames ?? {};
+    const prevNames = settings21.plain.projectNames ?? {};
     if (prevNames[ws] !== name)
-      settings20.store.projectNames = { ...prevNames, [ws]: name };
+      settings21.store.projectNames = { ...prevNames, [ws]: name };
   }
   function reconcileSidebarCache() {
     const idx = sidebarIndex();
-    const prevWs = { ...settings20.plain.workspaceByConv };
-    const prevNames = { ...settings20.plain.projectNames };
+    const prevWs = { ...settings21.plain.workspaceByConv };
+    const prevNames = { ...settings21.plain.projectNames };
     let wsChanged = false;
     let namesChanged = false;
     for (const [conv, ws] of Object.entries(idx.wsByConv)) {
@@ -15115,9 +15170,9 @@ html.void-rt-open [data-sidebar="gap"] {
       namesChanged = true;
     }
     if (wsChanged)
-      settings20.store.workspaceByConv = prevWs;
+      settings21.store.workspaceByConv = prevWs;
     if (namesChanged)
-      settings20.store.projectNames = prevNames;
+      settings21.store.projectNames = prevNames;
   }
   function requestWorkspace(id) {
     if (!id || isHomeId(id) || pendingWs.has(id))
@@ -15146,16 +15201,16 @@ html.void-rt-open [data-sidebar="gap"] {
             paint2();
           return;
         }
-        const prev = settings20.plain.workspaceByConv ?? {};
+        const prev = settings21.plain.workspaceByConv ?? {};
         if (prev[id] !== ws)
-          settings20.store.workspaceByConv = { ...prev, [id]: ws };
+          settings21.store.workspaceByConv = { ...prev, [id]: ws };
         const live = liveWorkspaceId();
         const liveName = usableName(readOpenProjectName());
-        const names = settings20.plain.projectNames ?? {};
+        const names = settings21.plain.projectNames ?? {};
         if (live && ws !== live && liveName && names[ws] === liveName) {
           const next = { ...names };
           delete next[ws];
-          settings20.store.projectNames = next;
+          settings21.store.projectNames = next;
           delete wsNames[ws];
         }
         if (open2)
@@ -15409,14 +15464,14 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   }
   function snapOf(id) {
-    return thumbs.get(id) ?? parseSnap(settings20.plain.pages?.[id]);
+    return thumbs.get(id) ?? parseSnap(settings21.plain.pages?.[id]);
   }
   function rememberPage(id, snap) {
     const json = JSON.stringify(snap);
-    const prev = settings20.plain.pages ?? {};
+    const prev = settings21.plain.pages ?? {};
     if (prev[id] === json)
       return;
-    settings20.store.pages = { ...prev, [id]: json };
+    settings21.store.pages = { ...prev, [id]: json };
   }
   function applyLineStyle(el, role, theme) {
     el.style.display = "-webkit-box";
@@ -15507,7 +15562,7 @@ html.void-rt-open [data-sidebar="gap"] {
   function bump(id) {
     if (!id)
       return;
-    if (isHomeId(id) && !settings20.store.includeHome)
+    if (isHomeId(id) && !settings21.store.includeHome)
       return;
     writeVisits(capVisits([id, ...readVisits()]));
     if (isHomeId(id)) {
@@ -16034,7 +16089,7 @@ html.void-rt-open [data-sidebar="gap"] {
     authors: [Devs.p],
     tags: ["chat", "ui"],
     enabledByDefault: true,
-    settings: settings20,
+    settings: settings21,
     managedStyle: "recentTopics",
     _mark({ response }) {
       try {
@@ -16167,7 +16222,7 @@ html.void-rt-open [data-sidebar="gap"] {
       }
     }, "Play preview"));
   }
-  var settings21 = definePluginSettings({
+  var settings22 = definePluginSettings({
     sound: {
       type: 3 /* BOOLEAN */,
       description: "Play a notification sound.",
@@ -16215,7 +16270,7 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function onUserGesture() {
     userGestured = true;
-    if (settings21.store.browserNotification && Notification.permission === "default")
+    if (settings22.store.browserNotification && Notification.permission === "default")
       Notification.requestPermission();
     const ctx = getCtx();
     if (!ctx)
@@ -16268,7 +16323,7 @@ html.void-rt-open [data-sidebar="gap"] {
     const ctx = getCtx();
     if (!ctx)
       return;
-    const url = settings21.store.soundUrl?.trim() || DEFAULT_CHIME;
+    const url = settings22.store.soundUrl?.trim() || DEFAULT_CHIME;
     if (ctx.state === "suspended")
       ctx.resume().then(() => playUrl(ctx, url), () => logger29.info("AudioContext resume failed"));
     else
@@ -16285,11 +16340,11 @@ html.void-rt-open [data-sidebar="gap"] {
   }
   function notify(responseId, state) {
     logger29.info("notify", responseId, state ?? "unset", "permission", Notification.permission);
-    if (settings21.store.onlyWhenHidden && document.visibilityState === "visible")
+    if (settings22.store.onlyWhenHidden && document.visibilityState === "visible")
       return;
-    if (settings21.store.sound)
+    if (settings22.store.sound)
       playSound();
-    if (settings21.store.browserNotification)
+    if (settings22.store.browserNotification)
       sendBrowserNotification("Grok", "Response complete.");
   }
   function notifyOnce(responseId, state) {
@@ -16343,7 +16398,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Notify when Grok finishes responding.",
     authors: [Devs.Prism, Devs.p],
     tags: ["chat"],
-    settings: settings21,
+    settings: settings22,
     startAt: "TurbopackReady" /* TurbopackReady */,
     start() {
       if (gestureCtrl)
@@ -16479,7 +16534,7 @@ html.void-rt-open [data-sidebar="gap"] {
 
   // src/plugins/settingsFlyout/index.tsx
   var cl25 = classNameFactory("void-sf-");
-  var settings22 = definePluginSettings({
+  var settings23 = definePluginSettings({
     showOpenSettings: {
       type: 3 /* BOOLEAN */,
       description: 'Show "Open Settings" (last used tab).',
@@ -16591,7 +16646,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }, "Void++"), tabItems(tabs));
   }
   function SettingsMenu({ onOpen }) {
-    const cfg = settings22.use([
+    const cfg = settings23.use([
       "showOpenSettings",
       "voidppPosition",
       "plugins",
@@ -16633,7 +16688,7 @@ html.void-rt-open [data-sidebar="gap"] {
     tags: ["ui", "settings"],
     enabledByDefault: true,
     requiresRestart: true,
-    settings: settings22,
+    settings: settings23,
     start() {
       migratePluginSetting("SettingsFlyout", "voidppPosition", "voidPosition");
     },
@@ -16691,18 +16746,18 @@ html.void-rt-open [data-sidebar="gap"] {
     return [n >> 16 & 255, n >> 8 & 255, n & 255];
   }
   function ColorRow2() {
-    const { starColor } = settings23.use(["starColor"]);
+    const { starColor } = settings24.use(["starColor"]);
     return /* @__PURE__ */ React.createElement(ColorSettingRow, {
       value: starColor,
       onChange: (v) => {
-        settings23.store.starColor = v;
+        settings24.store.starColor = v;
       },
       title: "Star color",
       description: "Color of the twinkling stars."
     });
   }
   function StarryBackground() {
-    const { starColor } = settings23.use(["starColor"]);
+    const { starColor } = settings24.use(["starColor"]);
     return /* @__PURE__ */ React.createElement("div", {
       "aria-hidden": true,
       className: "fixed inset-0 -z-10 pointer-events-none"
@@ -16711,7 +16766,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }));
   }
   var WrappedStarry = ErrorBoundary.wrap(StarryBackground);
-  var settings23 = definePluginSettings({
+  var settings24 = definePluginSettings({
     starColor: {
       type: 6 /* COMPONENT */,
       default: DEFAULT_COLOR,
@@ -16724,7 +16779,7 @@ html.void-rt-open [data-sidebar="gap"] {
     description: "Adds Grok's native twinkling starry background to the main page.",
     authors: [Devs.Prism],
     tags: ["ui"],
-    settings: settings23,
+    settings: settings24,
     _StarryBg() {
       return /* @__PURE__ */ React.createElement(WrappedStarry, {
         key: "void-starry-bg"
@@ -16848,7 +16903,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     projects: "void-streamer-projects",
     conversations: "void-streamer-conversations"
   };
-  var settings24 = definePluginSettings({
+  var settings25 = definePluginSettings({
     sidebarAvatar: {
       type: 3 /* BOOLEAN */,
       description: "Blur your avatar in the sidebar.",
@@ -16893,7 +16948,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
   function syncClasses() {
     const { classList } = document.documentElement;
     for (const [key, cls] of Object.entries(CSS_CLASSES)) {
-      classList.toggle(cls, !!settings24.store[key]);
+      classList.toggle(cls, !!settings25.store[key]);
     }
   }
   var streamerMode_default = definePlugin({
@@ -16902,7 +16957,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     description: "Blurs personal information for privacy while streaming.",
     authors: [Devs.Prism],
     tags: ["privacy"],
-    settings: settings24,
+    settings: settings25,
     start: syncClasses,
     onSettingsChange: syncClasses,
     stop() {
@@ -17814,7 +17869,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   // src/plugins/usageDisplay/index.tsx
   var logger31 = new Logger("UsageDisplay");
   var cl26 = classNameFactory("void-ud-");
-  var settings25 = definePluginSettings({
+  var settings26 = definePluginSettings({
     usageStats: {
       type: 3 /* BOOLEAN */,
       description: "Record daily usage. Hover shows today after a delay; click opens history.",
@@ -17929,12 +17984,12 @@ button:has(.void-ud-trigger > .void-ud-label) {
     SettingsStore3.markAsChanged();
   }
   function snapshotToday() {
-    if (!settings25.store.usageStats)
+    if (!settings26.store.usageStats)
       return;
     syncAccount();
     if (!state.userId)
       return;
-    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings25.store.retainDays));
+    recordSnapshot(state.userId, state.usage?.weekly.usedPercent ?? null, state.usage?.weekly.resetAt ?? null, retainDaysOf(settings26.store.retainDays));
   }
   async function refresh(reason = "manual") {
     if (refreshPromise)
@@ -18052,7 +18107,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function ButtonIcon() {
     useExternalStore(store3);
-    const { showPercent } = settings25.use(["showPercent"]);
+    const { showPercent } = settings26.use(["showPercent"]);
     const weekly = state.usage?.weekly;
     const percent = weekly?.usedPercent ?? null;
     const tone = usageTone(percent);
@@ -18122,7 +18177,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
   }
   function UsagePanel() {
     useExternalStore(store3);
-    const { usageStats, hoverStatsDelay } = settings25.use(["usageStats", "hoverStatsDelay"]);
+    const { usageStats, hoverStatsDelay } = settings26.use(["usageStats", "hoverStatsDelay"]);
     const delay = hoverDelayOf(hoverStatsDelay);
     const [showToday, setShowToday] = useState(usageStats && delay <= 0);
     const weekly = state.usage?.weekly;
@@ -18164,7 +18219,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }));
   }
   function StatsToggle() {
-    const { usageStats } = settings25.use(["usageStats"]);
+    const { usageStats } = settings26.use(["usageStats"]);
     return /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       justifyContent: "space-between",
@@ -18182,7 +18237,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }, "Record local daily usage on this device.")), /* @__PURE__ */ React.createElement(Switch, {
       checked: !!usageStats,
       onCheckedChange: (value) => {
-        settings25.store.usageStats = value;
+        settings26.store.usageStats = value;
         store3.notify();
         if (value)
           refresh("manual");
@@ -18291,14 +18346,14 @@ button:has(.void-ud-trigger > .void-ud-label) {
       onClick: () => {
         if (pre == null)
           return;
-        writeDay(userId, repairWipedReset(rec, dayStart, pre, Date.now()), retainDaysOf(settings25.store.retainDays));
+        writeDay(userId, repairWipedReset(rec, dayStart, pre, Date.now()), retainDaysOf(settings26.store.retainDays));
         store3.notify();
       }
     }, "Repair")));
   }
   function StatsModal({ onClose }) {
     useExternalStore(store3);
-    const { usageStats } = settings25.use(["usageStats"]);
+    const { usageStats } = settings26.use(["usageStats"]);
     const days = usageStats && state.userId ? listDays(state.userId) : [];
     const todayKey = localDateKey(Date.now());
     const bars = days.length ? fillChartDays(days) : [];
@@ -18434,7 +18489,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     authors: [Devs.p],
     tags: ["chat"],
     enabledByDefault: true,
-    settings: settings25,
+    settings: settings26,
     start() {
       migrateUsageStats();
       try {
@@ -18457,7 +18512,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
       streamEnd: onStreamEnd5
     },
     onSettingsChange() {
-      if (settings25.store.usageStats)
+      if (settings26.store.usageStats)
         refresh("manual");
     }
   });
@@ -18489,7 +18544,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
 
   // src/plugins/widerChat/index.ts
   var STYLE_NAME9 = "widerChat";
-  var settings26 = definePluginSettings({
+  var settings27 = definePluginSettings({
     width: {
       type: 1 /* NUMBER */,
       description: "Maximum chat width in rem.",
@@ -18497,7 +18552,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
   function applyWidth() {
-    const w = settings26.store.width;
+    const w = settings27.store.width;
     registerStyle(STYLE_NAME9, `.breakout{--content-max-width:${w}rem!important}` + `.max-w-breakout{max-width:${w}rem!important}` + '.max-w-breakout [class*="w-4/5"]{width:100%!important}');
   }
   var widerChat_default = definePlugin({
@@ -18506,7 +18561,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     description: "Adjustable chat width for big monitors.",
     authors: [Devs.Prism],
     tags: ["chat", "ui"],
-    settings: settings26,
+    settings: settings27,
     start: applyWidth,
     onSettingsChange: applyWidth,
     stop() {
