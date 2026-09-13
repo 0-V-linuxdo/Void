@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "fs";
-import { basename, dirname, resolve } from "path";
+import { basename, dirname, relative, resolve } from "path";
 
 import { Logger } from "./src/utils/Logger";
 
@@ -14,7 +14,7 @@ const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/VoidPP";
 const SCRIPT_CDN = "https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp";
-const VERSION_DATE = "20260912.48";
+const VERSION_DATE = "20260912.49";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
@@ -71,10 +71,15 @@ const FOLDER_CONVENTIONS: FolderConvention[] = [
 ];
 
 const SKIP_UPDATE_SUBJECT = /^(chore|brand|docs|ci|style|test|build):/i;
+const REPO_ROOT = import.meta.dir;
 
 function pluginUpdatedAt(dir: string): number {
-    const result = Bun.spawnSync(["git", "log", "--format=%ct %s", "--", dir]);
-    if (!result.success) return 0;
+    const rel = relative(REPO_ROOT, dir).replaceAll("\\", "/") || ".";
+    const result = Bun.spawnSync(["git", "log", "--format=%ct %s", "--", rel], { cwd: REPO_ROOT, stderr: "pipe" });
+    if (!result.success) {
+        logger.warn(`git log failed for ${rel}: ${result.stderr.toString().trim() || result.exitCode}`);
+        return 0;
+    }
     for (const line of result.stdout.toString().trim().split("\n")) {
         if (!line) continue;
         const space = line.indexOf(" ");
@@ -89,7 +94,7 @@ function pluginUpdatedAt(dir: string): number {
     return 0;
 }
 
-function scanPluginDir(baseDir: string, imports: string[], exports: string[], mutations: string[], counter: { i: number }, isExt: boolean) {
+function scanPluginDir(baseDir: string, imports: string[], exports: string[], mutations: string[], counter: { i: number; stamped: number }, isExt: boolean) {
     if (!existsSync(baseDir)) return;
     const entries = readdirSync(baseDir, { withFileTypes: true });
 
@@ -106,7 +111,9 @@ function scanPluginDir(baseDir: string, imports: string[], exports: string[], mu
         imports.push(`import ${varName} from "${resolve(baseDir, entry.name).replaceAll("\\", "/")}";`);
         exports.push(`[${varName}.name]: ${varName}`);
 
-        mutations.push(`${varName}.updatedAt=${pluginUpdatedAt(pluginDir)};`);
+        const updatedAt = pluginUpdatedAt(pluginDir);
+        if (updatedAt) counter.stamped++;
+        mutations.push(`${varName}.updatedAt=${updatedAt};`);
         if (convention) mutations.push(convention.mutations(varName));
     }
 }
@@ -115,13 +122,16 @@ function generatePluginModule(isExt: boolean): string {
     const imports: string[] = [];
     const exports: string[] = [];
     const mutations: string[] = [];
-    const counter = { i: 0 };
+    const counter = { i: 0, stamped: 0 };
 
     scanPluginDir(resolve(pluginDir, "_core"), imports, exports, mutations, counter, isExt);
     scanPluginDir(resolve(pluginDir, "_api"), imports, exports, mutations, counter, isExt);
     scanPluginDir(pluginDir, imports, exports, mutations, counter, isExt);
 
     logger.info(`Found ${counter.i} plugins`);
+    if (!isDev && counter.i > 0 && counter.stamped === 0) {
+        throw new Error("git log returned no plugin dates; Recent plugins tab would be empty");
+    }
 
     if (!imports.length) return "export default {} as Record<string, unknown>;\n";
     const mutationBlock = mutations.length ? `\n${mutations.join("\n")}\n` : "";
