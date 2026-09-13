@@ -17,7 +17,6 @@ import {
     Flex,
     Grid,
     Paragraph,
-    SectionHeader,
     Separator,
     Text,
 } from "@components";
@@ -186,7 +185,7 @@ export default function PluginsTab() {
 
     return (
         <Flex flexDirection="column" gap="1rem" className="void-tab-root">
-            <SectionHeader title="Plugins" description="Turn Void++ features on or off. Some require a reload to apply. Click the sliders icon to configure a plugin." />
+            <Paragraph>Toggle features. Some need a reload. Click the sliders icon to configure.</Paragraph>
             {needsReload && !showReload && (
                 <Flex alignItems="center" className={cl("reload-banner")}>
                     <Text size="xs" className={cl("reload-text")}>

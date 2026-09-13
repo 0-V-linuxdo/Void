@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.39] v1.0.0
+// @version      [20260912.40] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.39] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.40] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -6411,10 +6411,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       flexDirection: "column",
       gap: "1rem",
       className: "void-tab-root"
-    }, /* @__PURE__ */ React.createElement(SectionHeader, {
-      title: "Plugins",
-      description: "Turn Void++ features on or off. Some require a reload to apply. Click the sliders icon to configure a plugin."
-    }), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
+    }, /* @__PURE__ */ React.createElement(Paragraph, null, "Toggle features. Some need a reload. Click the sliders icon to configure."), needsReload && !showReload && /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       className: cl11("reload-banner")
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7302,9 +7299,9 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.39] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"8535b78"}`
-    }, `(${"8535b78"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.40] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"b4a34eb"}`
+    }, `(${"b4a34eb"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
