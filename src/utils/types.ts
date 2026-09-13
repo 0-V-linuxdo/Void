@@ -64,6 +64,7 @@ export interface PluginDef {
     settings?: DefinedSettings;
     managedStyle?: string;
     tags?: string[];
+    updatedAt?: number;
     zustand?: Partial<Record<keyof typeof Stores, ZustandSubscription>>;
     chatBarButton?: import("@api/ChatBarButtons").ChatBarButtonDef;
     contextMenuItems?: { [L in import("@api/ContextMenus").ContextMenuLocation]?: import("@api/ContextMenus").ContextMenuItemDef<L> };

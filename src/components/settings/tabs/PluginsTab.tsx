@@ -25,7 +25,7 @@ import { classes, classNameFactory } from "@utils/css";
 import { useFiltered } from "@utils/react";
 
 import PluginCard from "../PluginCard";
-import { PLUGIN_CATEGORY_TABS, pluginMatchesCategory, type ListFilter, type PluginCategory } from "../utils";
+import { PLUGIN_CATEGORY_TABS, isRecentlyUpdated, pluginMatchesCategory, type ListFilter, type PluginCategory } from "../utils";
 import PluginDialog from "./PluginDialog";
 import { SearchFilterBar } from "./SearchFilterBar";
 
@@ -48,6 +48,7 @@ function filterByEnabled(list: string[], filter: ListFilter): string[] {
 function emptyHint(search: string, category: PluginCategory): string {
     if (search) return "No plugins match your search.";
     if (category === "favorites") return "No favorites yet. Star a plugin to see it here.";
+    if (category === "recent") return "No plugins updated in the last 7 days.";
     return "No plugins available.";
 }
 
@@ -62,6 +63,10 @@ function sortPinnedFirst(list: string[]): string[] {
         if (pa) return (rank.get(a) ?? 0) - (rank.get(b) ?? 0);
         return 0;
     });
+}
+
+function sortByUpdated(list: string[]): string[] {
+    return list.toSorted((a, b) => (plugins[b].updatedAt ?? 0) - (plugins[a].updatedAt ?? 0) || a.localeCompare(b));
 }
 
 let pendingPluginDialog: string | null = null;
@@ -127,7 +132,7 @@ export default function PluginsTab() {
     }), []);
 
     const visibleTabs = useMemo(() => PLUGIN_CATEGORY_TABS.filter(t => {
-        if (t.id === "favorites" || t.id === "all") return true;
+        if (t.id === "favorites" || t.id === "all" || t.id === "recent") return true;
         const pool = t.id === "other" ? userPlugins : [...userPlugins, ...requiredPlugins];
         return pool.some(n => pluginMatchesCategory(plugins[n], t.id));
     }), [userPlugins, requiredPlugins]);
@@ -139,6 +144,10 @@ export default function PluginsTab() {
                 return !!p && !p.hidden;
             });
             return { tabUser: filterByEnabled(starred, filter), tabRequired: [] as string[] };
+        }
+        if (category === "recent") {
+            const recent = [...userPlugins, ...requiredPlugins].filter(n => isRecentlyUpdated(plugins[n]));
+            return { tabUser: filterByEnabled(sortByUpdated(recent), filter), tabRequired: [] as string[] };
         }
         if (category === "all") {
             return {

@@ -14,7 +14,7 @@ const environment = isDev ? "Development" : "Production";
 
 const FORK_URL = "https://github.com/0-V-linuxdo/VoidPP";
 const SCRIPT_CDN = "https://raw.githubusercontent.com/0-V-linuxdo/VoidPP/voidpp";
-const VERSION_DATE = "20260912.42";
+const VERSION_DATE = "20260912.43";
 const displayVersion = `[${VERSION_DATE}] v${pkg.version}`;
 
 const LICENSE_BANNER = `/**
@@ -70,6 +70,25 @@ const FOLDER_CONVENTIONS: FolderConvention[] = [
     { suffix: ".extension", skip: ({ isExt }) => !isExt, mutations: v => `${v}.extension=true;` },
 ];
 
+const SKIP_UPDATE_SUBJECT = /^(chore|brand|docs|ci|style|test|build):/i;
+
+function pluginUpdatedAt(dir: string): number {
+    const result = Bun.spawnSync(["git", "log", "--format=%ct %s", "--", dir]);
+    if (!result.success) return 0;
+    for (const line of result.stdout.toString().trim().split("\n")) {
+        if (!line) continue;
+        const space = line.indexOf(" ");
+        if (space < 0) continue;
+        const sec = Number.parseInt(line.slice(0, space), 10);
+        let subject = line.slice(space + 1);
+        const bracket = subject.indexOf("] ");
+        if (subject.startsWith("[") && bracket !== -1) subject = subject.slice(bracket + 2);
+        if (SKIP_UPDATE_SUBJECT.test(subject)) continue;
+        if (Number.isFinite(sec)) return sec * 1000;
+    }
+    return 0;
+}
+
 function scanPluginDir(baseDir: string, imports: string[], exports: string[], mutations: string[], counter: { i: number }, isExt: boolean) {
     if (!existsSync(baseDir)) return;
     const entries = readdirSync(baseDir, { withFileTypes: true });
@@ -87,6 +106,7 @@ function scanPluginDir(baseDir: string, imports: string[], exports: string[], mu
         imports.push(`import ${varName} from "${resolve(baseDir, entry.name).replaceAll("\\", "/")}";`);
         exports.push(`[${varName}.name]: ${varName}`);
 
+        mutations.push(`${varName}.updatedAt=${pluginUpdatedAt(pluginDir)};`);
         if (convention) mutations.push(convention.mutations(varName));
     }
 }
