@@ -11,7 +11,7 @@ export { ErrorBoundary, type ErrorBoundaryProps } from "./ErrorBoundary";
 export { ErrorCard, type ErrorCardProps } from "./ErrorCard";
 export { Flex, type FlexProps } from "./Flex";
 export { Grid, type GridProps } from "./Grid";
-export { Paragraph, type ParagraphProps, SectionHeader } from "./Paragraph";
+export { InfoHint, Paragraph, type ParagraphProps, SectionHeader } from "./Paragraph";
 export { SelectionActionBar, SelectionCheckbox } from "./SelectionUI";
 export { Text, type TextColor, type TextProps, type TextSize, type TextWeight } from "./Text";
 export * from "@turbopack/common/components";

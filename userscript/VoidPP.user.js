@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.41] v1.0.0
+// @version      [20260912.42] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.41] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.42] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -4049,6 +4049,27 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       ...restProps
     }, children);
   }
+  // voidpp-css:/workspace/artifacts/Void-src/src/components/Paragraph.css
+  registerStyle("Paragraph", `/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-info-hint {
+    display: inline-flex;
+    align-items: center;
+    color: hsl(var(--fg-secondary));
+    cursor: default;
+    flex-shrink: 0;
+}
+
+.void-info-hint svg {
+    width: 1rem;
+    height: 1rem;
+}
+`);
+
   // src/turbopack/common/utils.ts
   var ApiClients = findByPropsLazy("chatApi", "modelsApi");
   var Toaster = findByPropsLazy("Toaster", "toast");
@@ -4092,15 +4113,28 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       ...props
     }, children);
   }
+  function InfoHint({ children }) {
+    return /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
+      asChild: true
+    }, /* @__PURE__ */ React.createElement("span", {
+      className: "void-info-hint",
+      "aria-label": typeof children === "string" ? children : undefined
+    }, /* @__PURE__ */ React.createElement(InfoIcon, {
+      size: 16
+    }))), /* @__PURE__ */ React.createElement(TooltipContent, {
+      side: "right",
+      sideOffset: 8
+    }, children));
+  }
   function SectionHeader({ title, description, className }) {
     return /* @__PURE__ */ React.createElement(Flex, {
-      flexDirection: "column",
-      gap: "0",
-      className: ClassNames.cn("max-w-sm min-w-0", className)
+      alignItems: "center",
+      gap: "0.375rem",
+      className: ClassNames.cn("min-w-0", className)
     }, /* @__PURE__ */ React.createElement(Text2, {
       size: "sm",
       weight: "medium"
-    }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
+    }, title), description && /* @__PURE__ */ React.createElement(InfoHint, null, description));
   }
   // voidpp-css:/workspace/artifacts/Void-src/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
@@ -4910,20 +4944,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     gap: 0.375rem;
 }
 
-.void-settings-tab-info {
-    display: inline-flex;
-    align-items: center;
-    color: hsl(var(--fg-secondary));
-    cursor: default;
-    flex-shrink: 0;
-}
-
-.void-settings-tab-info svg {
-    width: 1rem;
-    height: 1rem;
-}
-
-button .void-settings-tab-info {
+button .void-info-hint {
     display: none;
 }
 
@@ -5426,12 +5447,9 @@ button .void-settings-tab-info {
       className: classes(cl6("root"), "void-tab-root")
     }, /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
-      justifyContent: "space-between",
+      justifyContent: "flex-end",
       className: cl6("header")
-    }, /* @__PURE__ */ React.createElement(SectionHeader, {
-      title: "Quick CSS",
-      description: "Write CSS that applies instantly as you type. Stored only on this device. Disable to keep your code without applying it."
-    }), /* @__PURE__ */ React.createElement(Switch, {
+    }, /* @__PURE__ */ React.createElement(Switch, {
       checked: enabled,
       onCheckedChange: handleToggle
     })), /* @__PURE__ */ React.createElement(CssEditor, {
@@ -6743,7 +6761,7 @@ button .void-settings-tab-info {
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Online Themes",
-      description: "Load themes from a URL. Re-fetched on every page load so updates apply automatically."
+      description: "Load from a URL. Re-fetched on every page load."
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "md",
@@ -6754,7 +6772,7 @@ button .void-settings-tab-info {
       gap: "0.75rem"
     }, /* @__PURE__ */ React.createElement(SectionHeader, {
       title: "Local Themes",
-      description: "Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly."
+      description: "Stored on this device. For private tweaks and drafts."
     }), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
       size: "md",
@@ -7296,8 +7314,8 @@ button .void-settings-tab-info {
   var PLUGINS_TAB_ID = "voidpp_plugins_tab";
   var allTabs = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab2, description: "Toggle features. Some need a reload. Click the sliders icon to configure." },
-    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2 },
-    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2 },
+    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab2, description: "Load CSS themes from a URL or this device." },
+    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab2, description: "Applies as you type. Stored on this device. Disable to keep code without applying it." },
     { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: Tab, plugin: "Experiments" }
   ];
   function getVisibleTabs() {
@@ -7331,9 +7349,9 @@ button .void-settings-tab-info {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.41] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"b0063d0"}`
-    }, `(${"b0063d0"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.42] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"4601520"}`
+    }, `(${"4601520"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7347,17 +7365,7 @@ button .void-settings-tab-info {
   function TabLabel({ text, description }) {
     return /* @__PURE__ */ React.createElement("span", {
       className: cl16("tab-label")
-    }, text, /* @__PURE__ */ React.createElement(Tooltip, null, /* @__PURE__ */ React.createElement(TooltipTrigger, {
-      asChild: true
-    }, /* @__PURE__ */ React.createElement("span", {
-      className: cl16("tab-info"),
-      "aria-label": description
-    }, /* @__PURE__ */ React.createElement(InfoIcon, {
-      size: 16
-    }))), /* @__PURE__ */ React.createElement(TooltipContent, {
-      side: "right",
-      sideOffset: 8
-    }, description)));
+    }, text, /* @__PURE__ */ React.createElement(InfoHint, null, description));
   }
   function openSettingsTab(tab) {
     const store = SettingsDialogStore.useSettingsDialogStore.getState();

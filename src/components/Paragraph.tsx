@@ -4,11 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import "./Paragraph.css";
+
+import { Tooltip, TooltipContent, TooltipTrigger } from "@turbopack/common/components";
 import { React } from "@turbopack/common/react";
 import { ClassNames } from "@turbopack/common/utils";
 import type { HTMLAttributes, ReactNode } from "react";
 
 import { Flex } from "./Flex";
+import { InfoIcon } from "./icons";
 import { Text, type TextColor } from "./Text";
 
 export interface ParagraphProps extends HTMLAttributes<HTMLParagraphElement> {
@@ -24,11 +28,26 @@ export function Paragraph({ color = "secondary", className, children, ...props }
     );
 }
 
+export function InfoHint({ children }: { children: ReactNode }) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span className="void-info-hint" aria-label={typeof children === "string" ? children : undefined}>
+                    <InfoIcon size={16} />
+                </span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+                {children}
+            </TooltipContent>
+        </Tooltip>
+    );
+}
+
 export function SectionHeader({ title, description, className }: { title: string; description?: string; className?: string }) {
     return (
-        <Flex flexDirection="column" gap="0" className={ClassNames.cn("max-w-sm min-w-0", className)}>
+        <Flex alignItems="center" gap="0.375rem" className={ClassNames.cn("min-w-0", className)}>
             <Text size="sm" weight="medium">{title}</Text>
-            {description && <Paragraph>{description}</Paragraph>}
+            {description && <InfoHint>{description}</InfoHint>}
         </Flex>
     );
 }

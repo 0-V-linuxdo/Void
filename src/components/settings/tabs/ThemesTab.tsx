@@ -180,13 +180,13 @@ export default function ThemesTab() {
     return (
         <Flex flexDirection="column" gap="1rem" className="void-tab-root">
             <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
-                <SectionHeader title="Online Themes" description="Load themes from a URL. Re-fetched on every page load so updates apply automatically." />
+                <SectionHeader title="Online Themes" description="Load from a URL. Re-fetched on every page load." />
                 <Button variant="secondary" size="md" onClick={() => setOnlineDialogOpen(true)}>
                     Manage
                 </Button>
             </Flex>
             <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
-                <SectionHeader title="Local Themes" description="Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly." />
+                <SectionHeader title="Local Themes" description="Stored on this device. For private tweaks and drafts." />
                 <Button variant="secondary" size="md" onClick={() => { setEditingTheme(undefined); setLocalDialogOpen(true); }}>
                     Manage
                 </Button>

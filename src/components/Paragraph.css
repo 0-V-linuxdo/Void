@@ -1,0 +1,18 @@
+/*
+ * Void++, a modification for grok.com
+ * Copyright (c) 2026 Void++ Contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.void-info-hint {
+    display: inline-flex;
+    align-items: center;
+    color: hsl(var(--fg-secondary));
+    cursor: default;
+    flex-shrink: 0;
+}
+
+.void-info-hint svg {
+    width: 1rem;
+    height: 1rem;
+}

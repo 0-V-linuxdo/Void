@@ -9,8 +9,8 @@ import "./styles.css";
 import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { definePluginSettings, migratePluginSetting } from "@api/Settings";
 import { loadSavedThemes } from "@api/Themes";
-import { ErrorBoundary, Flex, Text, Tooltip, TooltipContent, TooltipTrigger } from "@components";
-import { BracesIcon, InfoIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidPPIcon } from "@components/icons";
+import { ErrorBoundary, Flex, InfoHint, Text } from "@components";
+import { BracesIcon, PaletteIcon, SettingsIcon, TestTubeIcon, UnplugIcon, VoidPPIcon } from "@components/icons";
 import { CustomCSSTab, loadSavedCSS, PluginsTab, setPendingPluginDialog, ThemesTab } from "@components/settings/tabs";
 import { Tab as ExperimentsTab } from "@plugins/experiments";
 import { usePluginMenu } from "@plugins/pluginsFlyout";
@@ -55,8 +55,8 @@ const PLUGINS_TAB_ID = "voidpp_plugins_tab";
 
 export const allTabs: SettingsTab[] = [
     { id: PLUGINS_TAB_ID, name: "Plugins", icon: UnplugIcon, component: PluginsTab, description: "Toggle features. Some need a reload. Click the sliders icon to configure." },
-    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab },
-    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab },
+    { id: "voidpp_themes_tab", name: "Themes", icon: PaletteIcon, component: ThemesTab, description: "Load CSS themes from a URL or this device." },
+    { id: "voidpp_css_tab", name: "Quick CSS", icon: BracesIcon, component: CustomCSSTab, description: "Applies as you type. Stored on this device. Disable to keep code without applying it." },
     { id: "voidpp_experiments_tab", name: "Experiments", icon: TestTubeIcon, component: ExperimentsTab, plugin: "Experiments" },
 ];
 
@@ -103,16 +103,7 @@ function TabLabel({ text, description }: { text: string; description: string }) 
     return (
         <span className={cl("tab-label")}>
             {text}
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <span className={cl("tab-info")} aria-label={description}>
-                        <InfoIcon size={16} />
-                    </span>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>
-                    {description}
-                </TooltipContent>
-            </Tooltip>
+            <InfoHint>{description}</InfoHint>
         </span>
     );
 }

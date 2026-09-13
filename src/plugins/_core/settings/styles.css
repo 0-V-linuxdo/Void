@@ -46,20 +46,7 @@
     gap: 0.375rem;
 }
 
-.void-settings-tab-info {
-    display: inline-flex;
-    align-items: center;
-    color: hsl(var(--fg-secondary));
-    cursor: default;
-    flex-shrink: 0;
-}
-
-.void-settings-tab-info svg {
-    width: 1rem;
-    height: 1rem;
-}
-
-button .void-settings-tab-info {
+button .void-info-hint {
     display: none;
 }
 
