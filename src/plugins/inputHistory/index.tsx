@@ -8,7 +8,7 @@ import "./styles.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { Button, ButtonWithTooltip, ConfirmDialog, Flex, Input, Paragraph } from "@components";
-import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, HistoryIcon, Trash2Icon } from "@components/icons";
+import { CopyIcon, HistoryIcon, Trash2Icon } from "@components/icons";
 import { React, useState } from "@turbopack/common/react";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -28,7 +28,6 @@ const MAX_DEFAULT = 100;
 const HUD_GAP_PX = 8;
 const APPLY_QUIET_MS = 120;
 const CAPTURE_DEDUPE_MS = 2000;
-const PAGE_SIZE = 10;
 
 interface PrivateSettings {
     entries: string[];
@@ -403,22 +402,27 @@ function HistoryPanel() {
     const { entries } = settings.use(["entries"]);
     const list = entries ?? [];
     const [query, setQuery] = useState("");
-    const [page, setPage] = useState(0);
     const [openId, setOpenId] = useState<number | null>(null);
     const [confirm, setConfirm] = useState(false);
     const needle = query.trim().toLowerCase();
     const visible = list
         .map((text, index) => ({ text, index }))
         .filter(row => !needle || row.text.toLowerCase().includes(needle))
-        .reverse();
-    const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
-    const current = Math.min(page, pageCount - 1);
-    const slice = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
+        .toReversed();
 
     return (
-        <Flex flexDirection="column" gap="0.65rem" className={cl("panel")}>
-            <Flex className={cl("head")} alignItems="center" justifyContent="space-between" gap="0.75rem">
-                <Paragraph>
+        <Flex flexDirection="column" gap="0.5rem" className={cl("panel")}>
+            <Flex className={cl("toolbar")} alignItems="center" gap="0.5rem">
+                {list.length > 0 && (
+                    <Input
+                        type="text"
+                        placeholder="Search prompts"
+                        value={query}
+                        onChange={(e: { target: { value: string } }) => setQuery(e.target.value)}
+                        className={cl("search")}
+                    />
+                )}
+                <Paragraph className={cl("count")}>
                     {needle
                         ? pluralize(visible.length, "match", "matches")
                         : pluralize(list.length, "stored prompt")}
@@ -427,27 +431,15 @@ function HistoryPanel() {
                     Clear history
                 </Button>
             </Flex>
-            {list.length > 0 && (
-                <Input
-                    type="text"
-                    placeholder="Search prompts"
-                    value={query}
-                    onChange={(e: { target: { value: string } }) => {
-                        setQuery(e.target.value);
-                        setPage(0);
-                    }}
-                    className={cl("search")}
-                />
-            )}
             {list.length === 0 && <Paragraph className={cl("empty")}>No stored prompts.</Paragraph>}
             {list.length > 0 && visible.length === 0 && <Paragraph className={cl("empty")}>No matches.</Paragraph>}
-            {slice.length > 0 && (
+            {visible.length > 0 && (
                 <div className={cl("list")}>
-                    {slice.map(row => {
-                        const lines = row.text.split("\n").length;
+                    {visible.map(row => {
                         const expanded = openId === row.index;
                         return (
                             <div key={row.index} className={cl("item", expanded && "item-on")}>
+                                <span className={cl("index")}>{row.index + 1}</span>
                                 <div
                                     className={cl("main")}
                                     role="button"
@@ -461,63 +453,35 @@ function HistoryPanel() {
                                 >
                                     <span className={cl("body", !expanded && "clamp")}>{row.text}</span>
                                 </div>
-                                <div className={cl("side")}>
-                                    {lines > 1 && <span className={cl("lines")}>{lines}</span>}
-                                    <div className={cl("actions")}>
-                                        <ButtonWithTooltip
-                                            variant="tertiary"
-                                            size="sm"
-                                            shape="square"
-                                            tooltipContent="Copy"
-                                            aria-label="Copy"
-                                            onClick={() => { copyToClipboard(row.text).catch(err => logger.error("copy failed:", err)); }}
-                                        >
-                                            <CopyIcon size={18} />
-                                        </ButtonWithTooltip>
-                                        <ButtonWithTooltip
-                                            variant="tertiary"
-                                            size="sm"
-                                            shape="square"
-                                            tooltipContent="Delete"
-                                            aria-label="Delete"
-                                            onClick={() => {
-                                                if (openId === row.index) setOpenId(null);
-                                                removeEntry(row.index);
-                                            }}
-                                        >
-                                            <Trash2Icon size={18} />
-                                        </ButtonWithTooltip>
-                                    </div>
+                                <div className={cl("actions")}>
+                                    <ButtonWithTooltip
+                                        variant="tertiary"
+                                        size="sm"
+                                        shape="square"
+                                        tooltipContent="Copy"
+                                        aria-label="Copy"
+                                        onClick={() => { copyToClipboard(row.text).catch(err => logger.error("copy failed:", err)); }}
+                                    >
+                                        <CopyIcon size={16} />
+                                    </ButtonWithTooltip>
+                                    <ButtonWithTooltip
+                                        variant="tertiary"
+                                        size="sm"
+                                        shape="square"
+                                        tooltipContent="Delete"
+                                        aria-label="Delete"
+                                        onClick={() => {
+                                            if (openId === row.index) setOpenId(null);
+                                            removeEntry(row.index);
+                                        }}
+                                    >
+                                        <Trash2Icon size={16} />
+                                    </ButtonWithTooltip>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
-            )}
-            {visible.length > PAGE_SIZE && (
-                <Flex className={cl("pager")} alignItems="center" justifyContent="center" gap="0.5rem">
-                    <Button
-                        variant="tertiary"
-                        size="sm"
-                        shape="square"
-                        aria-label="Previous page"
-                        disabled={current <= 0}
-                        onClick={() => setPage(current - 1)}
-                    >
-                        <ChevronLeftIcon size={18} />
-                    </Button>
-                    <span className={cl("page")}>{current + 1} / {pageCount}</span>
-                    <Button
-                        variant="tertiary"
-                        size="sm"
-                        shape="square"
-                        aria-label="Next page"
-                        disabled={current >= pageCount - 1}
-                        onClick={() => setPage(current + 1)}
-                    >
-                        <ChevronRightIcon size={18} />
-                    </Button>
-                </Flex>
             )}
             <ConfirmDialog
                 open={confirm}
@@ -531,7 +495,6 @@ function HistoryPanel() {
                     resetBrowse(0);
                     setOpenId(null);
                     setQuery("");
-                    setPage(0);
                 }}
             />
         </Flex>

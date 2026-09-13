@@ -11,8 +11,8 @@
 
 .void-plugin-dialog-settings-list {
     margin-top: 0.5rem;
+    flex: 1 1 auto;
     min-height: 0;
-    max-height: min(24rem, calc(100vh - 18rem));
     overflow: auto;
     overscroll-behavior: contain;
 }
