@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Void++
 // @namespace    https://github.com/0-V-linuxdo/VoidPP
-// @version      [20260912.49] v1.0.0
+// @version      [20260912.50] v1.0.0
 // @description  A modification for grok.com
 // @author       Prism & Void++ Contributors
 // @environment  Production
@@ -30,7 +30,7 @@
 // ==/UserScript==
 
 /**
- * Void++ [20260912.49] v1.0.0 — A modification for grok.com
+ * Void++ [20260912.50] v1.0.0 — A modification for grok.com
  * (c) 2026 Prism & Void++ Contributors
  * Licensed under GPL-3.0-or-later
  * Source: https://github.com/0-V-linuxdo/VoidPP
@@ -3695,7 +3695,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     }
     updateSettingsPluginData({ chunkFingerprint: current });
   }
-  // voidpp-css:/tmp/voidpp/src/components/ColorSettingRow.css
+  // voidpp-css:/tmp/VoidPP/src/components/ColorSettingRow.css
   registerStyle("ColorSettingRow", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -3734,7 +3734,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       gap: "0"
     }, /* @__PURE__ */ React.createElement(SettingsTitle, null, title), /* @__PURE__ */ React.createElement(SettingsDescription, null, description)));
   }
-  // voidpp-css:/tmp/voidpp/src/components/ConfirmDialog.css
+  // voidpp-css:/tmp/VoidPP/src/components/ConfirmDialog.css
   registerStyle("ConfirmDialog", `.void-confirm-dialog {
     width: 100%;
     max-width: 28rem;
@@ -3983,7 +3983,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     },
     configurable: true
   });
-  // voidpp-css:/tmp/voidpp/src/components/ErrorCard.css
+  // voidpp-css:/tmp/VoidPP/src/components/ErrorCard.css
   registerStyle("ErrorCard", `.void-error-card-root {
     contain: content;
     padding: 1rem;
@@ -4043,7 +4043,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       ...restProps
     }, children);
   }
-  // voidpp-css:/tmp/voidpp/src/components/Paragraph.css
+  // voidpp-css:/tmp/VoidPP/src/components/Paragraph.css
   registerStyle("Paragraph", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -4130,7 +4130,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
       weight: "medium"
     }, title), description && /* @__PURE__ */ React.createElement(Paragraph, null, description));
   }
-  // voidpp-css:/tmp/voidpp/src/components/SelectionUI.css
+  // voidpp-css:/tmp/VoidPP/src/components/SelectionUI.css
   registerStyle("SelectionUI", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -4870,7 +4870,7 @@ ${SCROLLER}::-webkit-scrollbar-thumb:hover {
     ]
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/_core/settings/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/_core/settings/styles.css
   registerStyle("settings", `.void-settings-version,
 .void-settings-version * {
     user-select: text;
@@ -5153,7 +5153,7 @@ button .void-info-hint {
     }
   }
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/tabs/CustomCSSTab.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/tabs/CustomCSSTab.css
   registerStyle("CustomCSSTab", `.void-css-root {
     contain: content;
     height: 100%;
@@ -5165,7 +5165,7 @@ button .void-info-hint {
 }
 `);
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/CssEditor.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/CssEditor.css
   registerStyle("CssEditor", `.void-css-wrap {
     flex: 1;
     min-height: 0;
@@ -5437,7 +5437,7 @@ button .void-info-hint {
     }));
   }
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/shared.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/shared.css
   registerStyle("shared", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5512,7 +5512,7 @@ button .void-info-hint {
 }
 `);
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/tabs/PluginsTab.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/tabs/PluginsTab.css
   registerStyle("PluginsTab", `.void-plugins-reload-banner {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
@@ -5553,7 +5553,7 @@ button .void-info-hint {
 }
 `);
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/PluginCard.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/PluginCard.css
   registerStyle("PluginCard", `.void-plugin-card-required-icon,
 .void-plugin-card-badge,
 .void-plugin-card-crashed-icon {
@@ -5604,7 +5604,7 @@ button .void-info-hint {
 }
 `);
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/BaseCard.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/BaseCard.css
   registerStyle("BaseCard", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -5697,7 +5697,7 @@ button .void-info-hint {
     height: 1.5rem;
     border-radius: 0.5rem;
     color: hsl(var(--fg-primary));
-    background: hsl(var(--fg-primary) / 0.10);
+    background: hsl(var(--fg-primary) / 10%);
     line-height: 0;
 }
 
@@ -5884,7 +5884,7 @@ button .void-info-hint {
     });
   }
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/tabs/PluginDialog.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/tabs/PluginDialog.css
   registerStyle("PluginDialog", `.void-plugin-dialog-settings-list>.px-3 {
     padding-left: 0;
     padding-right: 0;
@@ -5910,7 +5910,7 @@ button .void-info-hint {
 }
 `);
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/SettingField.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/SettingField.css
   registerStyle("SettingField", `.void-setting-slider-row {
     align-items: center;
     width: 100%;
@@ -6522,7 +6522,7 @@ button .void-info-hint {
     }));
   }
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/tabs/ThemesTab.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/tabs/ThemesTab.css
   registerStyle("ThemesTab", `.void-themes-add-error {
     color: hsl(var(--fg-danger));
 }
@@ -6545,7 +6545,7 @@ button .void-info-hint {
 }
 `);
 
-  // voidpp-css:/tmp/voidpp/src/components/settings/ThemeCard.css
+  // voidpp-css:/tmp/VoidPP/src/components/settings/ThemeCard.css
   registerStyle("ThemeCard", `.void-theme-card-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6823,7 +6823,7 @@ button .void-info-hint {
   var PluginsTab2 = ErrorBoundary.wrap(PluginsTab);
   var ThemesTab2 = ErrorBoundary.wrap(ThemesTab);
 
-  // voidpp-css:/tmp/voidpp/src/plugins/experiments/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/experiments/styles.css
   registerStyle("experiments", `.void-experiments-section {
     padding: 0 0.75rem;
 }
@@ -7201,7 +7201,7 @@ button .void-info-hint {
     ]
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/pluginsFlyout/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/pluginsFlyout/styles.css
   registerStyle("pluginsFlyout", `.void-pf-icon {
     width: 1rem;
     height: 1rem;
@@ -7343,9 +7343,9 @@ button .void-info-hint {
     }, "Void++"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(Text2, {
       as: "span",
       color: "secondary"
-    }, "[20260912.49] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
-      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"728d5d0"}`
-    }, `(${"728d5d0"})`)), /* @__PURE__ */ React.createElement(Flex, {
+    }, "[20260912.50] v1.0.0"), /* @__PURE__ */ React.createElement(Dot, null), /* @__PURE__ */ React.createElement(VersionLink, {
+      href: `${"https://github.com/0-V-linuxdo/VoidPP"}/commit/${"79e5c0f"}`
+    }, `(${"79e5c0f"})`)), /* @__PURE__ */ React.createElement(Flex, {
       alignItems: "center",
       gap: "0.25rem"
     }, /* @__PURE__ */ React.createElement(Text2, {
@@ -7825,7 +7825,7 @@ button .void-info-hint {
     ]
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/betterSidebar/headerHover.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/betterSidebar/headerHover.css
   registerStyle("headerHover", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -7881,7 +7881,7 @@ button .void-info-hint {
 }
 `);
 
-  // voidpp-css:/tmp/voidpp/src/plugins/betterSidebar/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/betterSidebar/styles.css
   registerStyle("betterSidebar", `.group.peer [data-sidebar="sidebar"] + div,
 .group.peer [data-sidebar="content"] > .grow {
     cursor: default !important;
@@ -8452,7 +8452,7 @@ button .void-info-hint {
     ]
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/betterImagine/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/betterImagine/styles.css
   registerStyle("betterImagine", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -9095,7 +9095,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     ]
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/messageTimestamps/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/messageTimestamps/styles.css
   registerStyle("messageTimestamps", `.void-timestamp {
     margin-bottom: 0.125rem;
 }
@@ -10029,7 +10029,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/cloneChats/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/cloneChats/styles.css
   registerStyle("cloneChats", `.void-clone-icon {
     margin-inline-end: 0.5rem;
 }
@@ -10080,7 +10080,7 @@ ${p.originalPrompt ?? ""}`.toLowerCase();
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/streamerMode/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/streamerMode/styles.css
   registerStyle("streamerMode", `/* stylelint-disable no-descending-specificity */
 
 /* Sidebar avatar */
@@ -10252,7 +10252,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/inputHistory/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/inputHistory/styles.css
   registerStyle("inputHistory", `.void-ih-hud {
     contain: content;
     position: fixed;
@@ -10280,23 +10280,23 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 }
 
 .void-ih-toolbar {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+    flex-shrink: 0;
     min-width: 0;
-    padding: 0.15rem 0 0.35rem;
-    background: hsl(var(--surface-l1));
 }
 
 .void-ih-search {
-    flex: 1;
+    width: 100%;
     min-width: 0;
-    width: auto;
+}
+
+.void-ih-meta {
+    min-width: 0;
 }
 
 .void-ih-count {
     margin: 0;
-    flex-shrink: 0;
+    flex: 1;
+    min-width: 0;
     color: hsl(var(--fg-secondary));
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -10312,15 +10312,20 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     flex-direction: column;
     gap: 0.25rem;
     min-width: 0;
+    max-height: min(18rem, 40vh);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-l2) / 80%) transparent;
 }
 
 .void-ih-item {
     display: grid;
-    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    grid-template-columns: 3ch minmax(0, 1fr) auto;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.28rem 0.5rem;
     border: 1px solid transparent;
     border-radius: 0.5rem;
 }
@@ -10376,6 +10381,13 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     overflow: hidden;
 }
 
+.void-ih-item-on .void-ih-body {
+    max-height: 8rem;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
 .void-ih-actions {
     display: flex;
     flex-shrink: 0;
@@ -10383,10 +10395,10 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
 }
 
 .void-ih-actions :is(button) {
-    width: 1.75rem;
-    height: 1.75rem;
-    min-width: 1.75rem;
-    min-height: 1.75rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -10789,16 +10801,20 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       gap: "0.5rem",
       className: cl19("panel")
     }, /* @__PURE__ */ React.createElement(Flex, {
-      className: cl19("toolbar"),
-      alignItems: "center",
-      gap: "0.5rem"
+      flexDirection: "column",
+      gap: "0.35rem",
+      className: cl19("toolbar")
     }, list.length > 0 && /* @__PURE__ */ React.createElement(Input, {
       type: "text",
       placeholder: "Search prompts",
       value: query,
       onChange: (e) => setQuery(e.target.value),
       className: cl19("search")
-    }), /* @__PURE__ */ React.createElement(Paragraph, {
+    }), /* @__PURE__ */ React.createElement(Flex, {
+      className: cl19("meta"),
+      alignItems: "center",
+      gap: "0.5rem"
+    }, /* @__PURE__ */ React.createElement(Paragraph, {
       className: cl19("count")
     }, needle ? pluralize(visible.length, "match", "matches") : pluralize(list.length, "stored prompt")), /* @__PURE__ */ React.createElement(Button, {
       variant: "secondary",
@@ -10806,7 +10822,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
       shape: "rectangle",
       disabled: !list.length,
       onClick: () => setConfirm(true)
-    }, "Clear history")), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
+    }, "Clear history"))), list.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
       className: cl19("empty")
     }, "No stored prompts."), list.length > 0 && visible.length === 0 && /* @__PURE__ */ React.createElement(Paragraph, {
       className: cl19("empty")
@@ -10920,7 +10936,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/downloadTTS/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/downloadTTS/styles.css
   registerStyle("downloadTTS", `.void-download-tts-spinner {
     pointer-events: none;
 }
@@ -10982,7 +10998,7 @@ html.void-streamer-projects [data-sidebar="content"] a[href*="/project/"]:hover>
     _renderDownloadButton: ErrorBoundary.wrap(DownloadButton)
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/recentTopics/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/recentTopics/styles.css
   registerStyle("recentTopics", `.void-rt-root,
 .void-rt-root:popover-open {
     isolation: isolate;
@@ -11218,7 +11234,7 @@ html.void-rt-open [data-sidebar="gap"] {
     width: fit-content;
     max-width: 78%;
     padding: 6px 8px;
-    border-radius: 12px 12px 4px 12px;
+    border-radius: 12px 12px 4px;
     background: hsl(var(--surface-l2));
     color: hsl(var(--fg-primary));
     -webkit-line-clamp: 2;
@@ -12076,7 +12092,7 @@ html.void-rt-open [data-sidebar="gap"] {
     return t;
   }
   function plainText(md) {
-    const t = md.replace(/```[\s\S]*?```/g, " ").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/[*_~]{1,3}/g, "").replace(/^>\s+/gm, "");
+    const t = md.replaceAll(/```[\s\S]*?```/g, " ").replaceAll(/`([^`]+)`/g, "$1").replaceAll(/!\[[^\]]*\]\([^)]*\)/g, " ").replaceAll(/\[([^\]]+)\]\([^)]*\)/g, "$1").replaceAll(/^#{1,6}\s+/gm, "").replaceAll(/[*_~]{1,3}/g, "").replaceAll(/^>\s+/gm, "");
     return scrubText(t);
   }
   function clipLine(text, max) {
@@ -12149,7 +12165,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
     const cached = byConversationId[id];
     if (cached?.length)
-      return [...cached].sort((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
+      return [...cached].toSorted((a, b) => String(a.createTime ?? "").localeCompare(String(b.createTime ?? "")));
     try {
       const chat = ChatPageStore.useChatPageStore.getState();
       if (chat.conversationId === id) {
@@ -13101,7 +13117,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/customInstructions/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/customInstructions/styles.css
   registerStyle("customInstructions", `.void-ci-root {
     display: flex;
     flex-direction: column;
@@ -13838,7 +13854,7 @@ html.void-rt-open [data-sidebar="gap"] {
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/exportChat/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/exportChat/styles.css
   registerStyle("exportChat", `.void-export-icon {
     margin-inline-end: 0.5rem;
 }
@@ -14057,7 +14073,7 @@ html.void-rt-open [data-sidebar="gap"] {
     ]
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/usageDisplay/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/usageDisplay/styles.css
   registerStyle("usageDisplay", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -15633,7 +15649,7 @@ button:has(.void-ud-trigger > .void-ud-label) {
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/settingsFlyout/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/settingsFlyout/styles.css
   registerStyle("settingsFlyout", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -16665,7 +16681,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/betterFiles/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/betterFiles/styles.css
   registerStyle("betterFiles", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -16829,7 +16845,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/chatListStatus/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/chatListStatus/styles.css
   registerStyle("chatListStatus", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -17599,7 +17615,7 @@ div:has(> button[aria-label^="Dictation ("]):not([role="dialog"] *) {
     ]
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/compactModeSelect/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/compactModeSelect/styles.css
   registerStyle("compactModeSelect", `/*
  * Void++, a modification for grok.com
  * Copyright (c) 2026 Void++ Contributors
@@ -18465,7 +18481,7 @@ div:has(> #grok-bot-nav-button) {
     }
   });
 
-  // voidpp-css:/tmp/voidpp/src/plugins/placeholder/styles.css
+  // voidpp-css:/tmp/VoidPP/src/plugins/placeholder/styles.css
   registerStyle("placeholder", `.void-ph-root {
     contain: layout;
 }
@@ -18577,53 +18593,53 @@ div:has(> #grok-bot-nav-button) {
   });
 
   // virtual:~plugins
-  noTelemetry_default.updatedAt = 1787870966000;
-  settings_default.updatedAt = 1789262431000;
-  fixChrome_default.updatedAt = 1787789817000;
+  noTelemetry_default.updatedAt = 1789266387000;
+  settings_default.updatedAt = 1789266387000;
+  fixChrome_default.updatedAt = 1789266387000;
   fixChrome_default.chrome = true;
   fixChrome_default.hidden = !window.chrome;
-  chatBarButtons_default.updatedAt = 1781101259000;
-  contextMenu_default.updatedAt = 1781702684000;
-  noSidebarIdentity_default.updatedAt = 1788577403000;
-  cleaner_default.updatedAt = 1789246749000;
-  betterSidebar_default.updatedAt = 1789254776000;
-  betterImagine_default.updatedAt = 1787870966000;
-  messageTimestamps_default.updatedAt = 1789246749000;
-  autoRetry_default.updatedAt = 1787789817000;
-  userQuotes_default.updatedAt = 1788108581000;
-  cloneChats_default.updatedAt = 1787870966000;
-  streamerMode_default.updatedAt = 1787870966000;
-  inputHistory_default.updatedAt = 1789264114000;
-  downloadTTS_default.updatedAt = 1787870966000;
-  recentTopics_default.updatedAt = 1788966070000;
-  betterLinks_default.updatedAt = 1787870966000;
-  experiments_default.updatedAt = 1788047438000;
-  customInstructions_default.updatedAt = 1789208142000;
-  responseNotification_default.updatedAt = 1789246749000;
-  incognito_default.updatedAt = 1787870966000;
-  betterCanvas_default.updatedAt = 1789258440000;
-  noSidebarPlugins_default.updatedAt = 1789180630000;
-  composerOpacity_default.updatedAt = 1788044121000;
-  exportChat_default.updatedAt = 1787870966000;
-  autoCollapse_default.updatedAt = 1787789817000;
-  usageDisplay_default.updatedAt = 1789172854000;
-  widerChat_default.updatedAt = 1787870966000;
-  settingsFlyout_default.updatedAt = 1788095208000;
-  chatStateFavicons_default.updatedAt = 1787789817000;
-  noDictation_default.updatedAt = 1788037550000;
-  betterFiles_default.updatedAt = 1789246749000;
-  noShareLink_default.updatedAt = 1787789817000;
-  chatListStatus_default.updatedAt = 1789176375000;
-  stableComposer_default.updatedAt = 1789125421000;
-  compactModeSelect_default.updatedAt = 1789172854000;
-  consoleJanitor_default.updatedAt = 1787789817000;
-  oneko_default.updatedAt = 1787870966000;
-  starry_default.updatedAt = 1787870966000;
-  pluginsFlyout_default.updatedAt = 1788051053000;
-  noGrokBot_default.updatedAt = 1787789817000;
-  placeholder_default.updatedAt = 1789207633000;
+  chatBarButtons_default.updatedAt = 1789266387000;
+  contextMenu_default.updatedAt = 1789266387000;
+  noSidebarIdentity_default.updatedAt = 1789266387000;
+  cleaner_default.updatedAt = 1789266387000;
+  betterSidebar_default.updatedAt = 1789266387000;
+  betterImagine_default.updatedAt = 1789266387000;
+  messageTimestamps_default.updatedAt = 1789266387000;
+  autoRetry_default.updatedAt = 1789266387000;
+  userQuotes_default.updatedAt = 1789266387000;
+  cloneChats_default.updatedAt = 1789266387000;
+  streamerMode_default.updatedAt = 1789266387000;
+  inputHistory_default.updatedAt = 1789266387000;
+  downloadTTS_default.updatedAt = 1789266387000;
+  recentTopics_default.updatedAt = 1789266387000;
+  betterLinks_default.updatedAt = 1789266387000;
+  experiments_default.updatedAt = 1789266387000;
+  customInstructions_default.updatedAt = 1789266387000;
+  responseNotification_default.updatedAt = 1789266387000;
+  incognito_default.updatedAt = 1789266387000;
+  betterCanvas_default.updatedAt = 1789266387000;
+  noSidebarPlugins_default.updatedAt = 1789266387000;
+  composerOpacity_default.updatedAt = 1789266387000;
+  exportChat_default.updatedAt = 1789266387000;
+  autoCollapse_default.updatedAt = 1789266387000;
+  usageDisplay_default.updatedAt = 1789266387000;
+  widerChat_default.updatedAt = 1789266387000;
+  settingsFlyout_default.updatedAt = 1789266387000;
+  chatStateFavicons_default.updatedAt = 1789266387000;
+  noDictation_default.updatedAt = 1789266387000;
+  betterFiles_default.updatedAt = 1789266387000;
+  noShareLink_default.updatedAt = 1789266387000;
+  chatListStatus_default.updatedAt = 1789266387000;
+  stableComposer_default.updatedAt = 1789266387000;
+  compactModeSelect_default.updatedAt = 1789266387000;
+  consoleJanitor_default.updatedAt = 1789266387000;
+  oneko_default.updatedAt = 1789266387000;
+  starry_default.updatedAt = 1789266387000;
+  pluginsFlyout_default.updatedAt = 1789266387000;
+  noGrokBot_default.updatedAt = 1789266387000;
+  placeholder_default.updatedAt = 1789266387000;
   var __plugins_default = { [noTelemetry_default.name]: noTelemetry_default, [settings_default.name]: settings_default, [fixChrome_default.name]: fixChrome_default, [chatBarButtons_default.name]: chatBarButtons_default, [contextMenu_default.name]: contextMenu_default, [noSidebarIdentity_default.name]: noSidebarIdentity_default, [cleaner_default.name]: cleaner_default, [betterSidebar_default.name]: betterSidebar_default, [betterImagine_default.name]: betterImagine_default, [messageTimestamps_default.name]: messageTimestamps_default, [autoRetry_default.name]: autoRetry_default, [userQuotes_default.name]: userQuotes_default, [cloneChats_default.name]: cloneChats_default, [streamerMode_default.name]: streamerMode_default, [inputHistory_default.name]: inputHistory_default, [downloadTTS_default.name]: downloadTTS_default, [recentTopics_default.name]: recentTopics_default, [betterLinks_default.name]: betterLinks_default, [experiments_default.name]: experiments_default, [customInstructions_default.name]: customInstructions_default, [responseNotification_default.name]: responseNotification_default, [incognito_default.name]: incognito_default, [betterCanvas_default.name]: betterCanvas_default, [noSidebarPlugins_default.name]: noSidebarPlugins_default, [composerOpacity_default.name]: composerOpacity_default, [exportChat_default.name]: exportChat_default, [autoCollapse_default.name]: autoCollapse_default, [usageDisplay_default.name]: usageDisplay_default, [widerChat_default.name]: widerChat_default, [settingsFlyout_default.name]: settingsFlyout_default, [chatStateFavicons_default.name]: chatStateFavicons_default, [noDictation_default.name]: noDictation_default, [betterFiles_default.name]: betterFiles_default, [noShareLink_default.name]: noShareLink_default, [chatListStatus_default.name]: chatListStatus_default, [stableComposer_default.name]: stableComposer_default, [compactModeSelect_default.name]: compactModeSelect_default, [consoleJanitor_default.name]: consoleJanitor_default, [oneko_default.name]: oneko_default, [starry_default.name]: starry_default, [pluginsFlyout_default.name]: pluginsFlyout_default, [noGrokBot_default.name]: noGrokBot_default, [placeholder_default.name]: placeholder_default };
-  // voidpp-css:/tmp/voidpp/src/api/Notices.css
+  // voidpp-css:/tmp/VoidPP/src/api/Notices.css
   registerStyle("Notices", `.void-notice-root {
     contain: content;
     display: flex;

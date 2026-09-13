@@ -412,7 +412,7 @@ function HistoryPanel() {
 
     return (
         <Flex flexDirection="column" gap="0.5rem" className={cl("panel")}>
-            <Flex className={cl("toolbar")} alignItems="center" gap="0.5rem">
+            <Flex flexDirection="column" gap="0.35rem" className={cl("toolbar")}>
                 {list.length > 0 && (
                     <Input
                         type="text"
@@ -422,14 +422,16 @@ function HistoryPanel() {
                         className={cl("search")}
                     />
                 )}
-                <Paragraph className={cl("count")}>
-                    {needle
-                        ? pluralize(visible.length, "match", "matches")
-                        : pluralize(list.length, "stored prompt")}
-                </Paragraph>
-                <Button variant="secondary" size="sm" shape="rectangle" disabled={!list.length} onClick={() => setConfirm(true)}>
-                    Clear history
-                </Button>
+                <Flex className={cl("meta")} alignItems="center" gap="0.5rem">
+                    <Paragraph className={cl("count")}>
+                        {needle
+                            ? pluralize(visible.length, "match", "matches")
+                            : pluralize(list.length, "stored prompt")}
+                    </Paragraph>
+                    <Button variant="secondary" size="sm" shape="rectangle" disabled={!list.length} onClick={() => setConfirm(true)}>
+                        Clear history
+                    </Button>
+                </Flex>
             </Flex>
             {list.length === 0 && <Paragraph className={cl("empty")}>No stored prompts.</Paragraph>}
             {list.length > 0 && visible.length === 0 && <Paragraph className={cl("empty")}>No matches.</Paragraph>}
