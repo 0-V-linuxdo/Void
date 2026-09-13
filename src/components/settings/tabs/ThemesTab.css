@@ -2,6 +2,10 @@
     color: hsl(var(--fg-danger));
 }
 
+.void-themes-list {
+    padding: 1rem 0.75rem 0;
+}
+
 .void-themes-local-css-field {
     flex: 1;
     min-height: 0;
