@@ -7,3 +7,7 @@
 .void-css-header {
     flex-shrink: 0;
 }
+
+.void-css-root > .void-css-wrap {
+    min-height: 20rem;
+}

@@ -1,5 +1,5 @@
 .void-experiments-section {
-    padding: 0 0.75rem;
+    padding: 0 1.25rem;
 }
 
 .void-experiments-modified {
@@ -8,7 +8,7 @@
 }
 
 .void-experiments-warning {
-    margin: 0 0.75rem;
+    margin: 0 1.25rem;
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
     background: hsl(var(--fg-warning) / 12%);

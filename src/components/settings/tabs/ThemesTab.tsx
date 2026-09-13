@@ -185,6 +185,7 @@ export default function ThemesTab() {
                     Manage
                 </Button>
             </Flex>
+            <Separator />
             <Flex alignItems="center" justifyContent="space-between" gap="0.75rem">
                 <SectionHeader title="Local Themes" description="Custom CSS stored only on this device. Good for private tweaks or drafts you don't want to host publicly." />
                 <Button variant="secondary" size="md" onClick={() => { setEditingTheme(undefined); setLocalDialogOpen(true); }}>
